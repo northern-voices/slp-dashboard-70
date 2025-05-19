@@ -15,7 +15,7 @@ import { Student } from '@/types/database'
 import { useSchoolGrades } from '@/hooks/use-school-grades'
 
 interface SpeechScreeningStep1Props {
-  form: UseFormReturn<any>
+  form: UseFormReturn<Record<string, unknown>>
   selectedStudent: Student | null
   selectedGrade: string
   onStudentSelect: (student: Student | null) => void
