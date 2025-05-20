@@ -89,6 +89,7 @@ const SpeechScreeningStep1 = ({
     return uniqueGrades.sort((a, b) => b.academic_year.localeCompare(a.academic_year))
   }, [schoolGrades, selectedGrade])
 
+  // Reset student selection and grade ID when grade level changes
   const handleGradeChange = (grade: string) => {
     onGradeChange(grade)
     // Reset student selection when grade changes
