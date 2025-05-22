@@ -92,9 +92,7 @@ const SpeechScreeningStep1 = ({
   // Reset student selection and grade ID when grade level changes
   const handleGradeChange = (grade: string) => {
     onGradeChange(grade)
-    // Reset student selection when grade changes
     onStudentSelect(null)
-    // Reset grade ID when grade level changes
     onGradeIdChange('')
   }
 
