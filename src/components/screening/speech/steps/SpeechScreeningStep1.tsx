@@ -68,7 +68,6 @@ const SpeechScreeningStep1 = ({
   const availableGradeIds = React.useMemo(() => {
     if (!schoolGrades || !selectedGrade) return []
 
-    // Since all grade_levels in the database are strings, keep selectedGrade as string
     const gradeValue = selectedGrade
 
     const filteredGrades = schoolGrades.filter(grade => {
