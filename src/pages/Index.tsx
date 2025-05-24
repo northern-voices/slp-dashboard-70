@@ -6,11 +6,14 @@ import Header from '@/components/Header';
 import DashboardStats from '@/components/DashboardStats';
 import QuickActions from '@/components/QuickActions';
 import RecentActivity from '@/components/RecentActivity';
+import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 
-const Index = () => {
+const DashboardContent = () => {
+  const { userProfile, currentSchool, isLoading } = useOrganization();
+  
   // This would typically come from authentication context
-  const userRole = 'slp'; // or 'admin'
-  const userName = 'Dr. Sarah Johnson';
+  const userRole = userProfile?.role || 'slp';
+  const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
 
   // Time-aware greeting
   const getGreeting = () => {
@@ -19,6 +22,19 @@ const Index = () => {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex w-full bg-gray-25">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -34,10 +50,13 @@ const Index = () => {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-2 tracking-tight">
-                    {getGreeting()}, {userName.split(' ')[1]}!
+                    {getGreeting()}, {userName.split(' ')[1] || userName}!
                   </h1>
                   <p className="text-base lg:text-lg text-gray-600 font-medium">
-                    Here's what's happening with your students today.
+                    {currentSchool 
+                      ? `Here's what's happening at ${currentSchool.name} today.`
+                      : "Here's what's happening with your students today."
+                    }
                   </p>
                 </div>
                 <div className="hidden lg:block">
@@ -67,6 +86,14 @@ const Index = () => {
         </SidebarInset>
       </div>
     </SidebarProvider>
+  );
+};
+
+const Index = () => {
+  return (
+    <OrganizationProvider>
+      <DashboardContent />
+    </OrganizationProvider>
   );
 };
 

@@ -19,9 +19,12 @@ import {
   Settings,
   BarChart3,
   Calendar,
-  User
+  Building2,
+  GraduationCap
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useOrganization } from '@/contexts/OrganizationContext';
+import SchoolSelector from '@/components/SchoolSelector';
 
 interface AppSidebarProps {
   userRole?: 'admin' | 'slp';
@@ -29,6 +32,7 @@ interface AppSidebarProps {
 }
 
 const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSidebarProps) => {
+  const { currentOrganization, userProfile } = useOrganization();
   const initials = userName.split(' ').map(n => n[0]).join('');
 
   const mainItems = [
@@ -41,22 +45,35 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
     {
       title: "Students",
       url: "/students",
-      icon: Users,
+      icon: GraduationCap,
+    },
+    {
+      title: "Screenings",
+      url: "/screenings",
+      icon: FileText,
     },
     {
       title: "Reports",
       url: "/reports",
-      icon: FileText,
-    },
-    {
-      title: "Analytics",
-      url: "/analytics",
       icon: BarChart3,
     },
     {
       title: "Calendar",
       url: "/calendar",
       icon: Calendar,
+    }
+  ];
+
+  const managementItems = [
+    {
+      title: "Schools",
+      url: "/schools",
+      icon: Building2,
+    },
+    {
+      title: "Users",
+      url: "/users",
+      icon: Users,
     }
   ];
 
@@ -71,14 +88,24 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
   return (
     <Sidebar>
       <SidebarHeader className="border-b border-gray-100 p-4">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 mb-4">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
             <span className="text-white font-bold text-sm">SLP</span>
           </div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-gray-900 text-sm">Dashboard</span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-semibold text-gray-900 text-sm truncate">
+              {currentOrganization?.name || 'SLP Dashboard'}
+            </span>
             <span className="text-xs text-gray-500">Speech & Language</span>
           </div>
+        </div>
+        
+        {/* School Selector */}
+        <div className="space-y-2">
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Current School
+          </span>
+          <SchoolSelector />
         </div>
       </SidebarHeader>
       
@@ -106,6 +133,31 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {(userRole === 'admin' || userProfile?.role === 'admin') && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="px-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Management
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {managementItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild
+                      className="w-full justify-start hover:bg-gray-50 hover:text-gray-900"
+                    >
+                      <a href={item.url} className="flex items-center space-x-3 px-3 py-2">
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {userRole === 'admin' && (
           <SidebarGroup>
@@ -141,9 +193,11 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col min-w-0 flex-1">
-            <span className="text-sm font-medium text-gray-900 truncate">{userName}</span>
+            <span className="text-sm font-medium text-gray-900 truncate">
+              {userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : userName}
+            </span>
             <span className="text-xs text-gray-500">
-              {userRole === 'admin' ? 'Administrator' : 'Speech-Language Pathologist'}
+              {userProfile?.role === 'admin' ? 'Administrator' : 'Speech-Language Pathologist'}
             </span>
           </div>
         </div>
