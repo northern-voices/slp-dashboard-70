@@ -16,12 +16,24 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 interface HeaderProps {
-  userRole?: 'admin' | 'slp';
+  userRole?: 'admin' | 'slp' | 'supervisor';
   userName?: string;
 }
 
 const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: HeaderProps) => {
   const initials = userName.split(' ').map(n => n[0]).join('');
+
+  const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {
+    switch (role) {
+      case 'admin':
+        return 'Administrator';
+      case 'supervisor':
+        return 'Supervisor';
+      case 'slp':
+      default:
+        return 'Speech-Language Pathologist';
+    }
+  };
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
@@ -55,7 +67,7 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: HeaderProp
                 <div className="flex flex-col space-y-1 leading-none">
                   <p className="font-semibold text-gray-900 text-sm">{userName}</p>
                   <p className="w-[200px] truncate text-xs text-gray-500">
-                    {userRole === 'admin' ? 'Administrator' : 'Speech-Language Pathologist'}
+                    {getRoleDisplayName(userRole)}
                   </p>
                 </div>
               </div>

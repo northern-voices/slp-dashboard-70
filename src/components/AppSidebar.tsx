@@ -27,7 +27,7 @@ import { useOrganization } from '@/contexts/OrganizationContext';
 import SchoolSelector from '@/components/SchoolSelector';
 
 interface AppSidebarProps {
-  userRole?: 'admin' | 'slp';
+  userRole?: 'admin' | 'slp' | 'supervisor';
   userName?: string;
 }
 
@@ -134,7 +134,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {(userRole === 'admin' || userProfile?.role === 'admin') && (
+        {(userRole === 'admin' || userRole === 'supervisor' || userProfile?.role === 'admin' || userProfile?.role === 'supervisor') && (
           <SidebarGroup>
             <SidebarGroupLabel className="px-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
               Management
@@ -197,7 +197,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
               {userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : userName}
             </span>
             <span className="text-xs text-gray-500">
-              {userProfile?.role === 'admin' ? 'Administrator' : 'Speech-Language Pathologist'}
+              {userProfile?.role === 'admin' ? 'Administrator' : userProfile?.role === 'supervisor' ? 'Supervisor' : 'Speech-Language Pathologist'}
             </span>
           </div>
         </div>
