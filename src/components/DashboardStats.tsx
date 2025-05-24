@@ -36,20 +36,22 @@ const DashboardStats = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
       {stats.map((stat, index) => (
-        <Card key={index} className="hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+        <Card key={index} className="bg-white border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-gray-600 tracking-wide uppercase">
               {stat.title}
             </CardTitle>
-            <stat.icon className="h-4 w-4 text-blue-600" />
+            <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center">
+              <stat.icon className="h-5 w-5 text-slate-600" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-            <p className={`text-xs mt-1 ${
-              stat.trend === 'up' ? 'text-green-600' : 
-              stat.trend === 'down' ? 'text-red-600' : 
+          <CardContent className="pt-0">
+            <div className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">{stat.value}</div>
+            <p className={`text-sm font-medium ${
+              stat.trend === 'up' ? 'text-emerald-600' : 
+              stat.trend === 'down' ? 'text-red-500' : 
               'text-gray-500'
             }`}>
               {stat.change}
