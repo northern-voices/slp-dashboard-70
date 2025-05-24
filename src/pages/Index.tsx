@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import DashboardStats from '@/components/DashboardStats';
 import QuickActions from '@/components/QuickActions';
@@ -19,30 +21,52 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-25">
-      <Header userRole={userRole} userName={userName} />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section with enhanced typography */}
-        <div className="mb-10">
-          <h2 className="text-3xl font-semibold text-gray-900 mb-3 tracking-tight">
-            {getGreeting()}, {userName.split(' ')[1]}!
-          </h2>
-          <p className="text-lg text-gray-600 font-medium">
-            Here's what's happening with your students today.
-          </p>
-        </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gray-25">
+        <AppSidebar userRole={userRole} userName={userName} />
+        
+        <SidebarInset className="flex-1">
+          <Header userRole={userRole} userName={userName} />
+          
+          <main className="flex-1 p-6 lg:p-8">
+            {/* Welcome Section with enhanced layout */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-2 tracking-tight">
+                    {getGreeting()}, {userName.split(' ')[1]}!
+                  </h1>
+                  <p className="text-base lg:text-lg text-gray-600 font-medium">
+                    Here's what's happening with your students today.
+                  </p>
+                </div>
+                <div className="hidden lg:block">
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500">Today</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {new Date().toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        {/* Dashboard Stats */}
-        <DashboardStats />
+            {/* Dashboard Stats */}
+            <DashboardStats />
 
-        {/* Quick Actions */}
-        <QuickActions />
+            {/* Quick Actions */}
+            <QuickActions />
 
-        {/* Recent Activity */}
-        <RecentActivity />
-      </main>
-    </div>
+            {/* Recent Activity */}
+            <RecentActivity />
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 };
 
