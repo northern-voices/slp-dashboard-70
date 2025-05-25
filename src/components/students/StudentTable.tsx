@@ -17,6 +17,8 @@ import { Student } from '@/types/database';
 import StudentFilters from './StudentFilters';
 import StudentForm from './StudentForm';
 import { useToast } from '@/hooks/use-toast';
+import ScreeningForm from '../screening/ScreeningForm';
+import { ScreeningFormData } from '@/types/screening';
 
 // Mock data - in real app this would come from an API
 const mockStudents: Student[] = [
@@ -78,6 +80,8 @@ const StudentTable = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [showScreeningForm, setShowScreeningForm] = useState(false);
+  const [screeningStudent, setScreeningStudent] = useState<Student | null>(null);
   const { toast } = useToast();
 
   const handleSearch = (term: string) => {
@@ -150,6 +154,50 @@ const StudentTable = () => {
     return age;
   };
 
+  const handleScheduleScreening = (student: Student) => {
+    setScreeningStudent(student);
+    setShowScreeningForm(true);
+  };
+
+  const handleScreeningSubmit = (screeningData: ScreeningFormData) => {
+    console.log('Screening submitted:', screeningData);
+    
+    // In a real app, this would save to the database
+    toast({
+      title: "Screening completed",
+      description: screeningData.student_info 
+        ? `New student ${screeningData.student_info.first_name} ${screeningData.student_info.last_name} and screening have been recorded.`
+        : "Screening has been recorded successfully.",
+    });
+
+    // If a new student was created during screening, add them to the list
+    if (screeningData.student_info) {
+      const newStudent: Student = {
+        id: Date.now().toString(),
+        school_id: 'school1',
+        student_id: `STU${Date.now()}`,
+        first_name: screeningData.student_info.first_name,
+        last_name: screeningData.student_info.last_name,
+        date_of_birth: screeningData.student_info.date_of_birth,
+        grade: screeningData.student_info.grade,
+        gender: screeningData.student_info.gender,
+        emergency_contact_name: screeningData.student_info.emergency_contact_name,
+        emergency_contact_phone: screeningData.student_info.emergency_contact_phone,
+        notes: '',
+        active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const updatedStudents = [...students, newStudent];
+      setStudents(updatedStudents);
+      setFilteredStudents(updatedStudents);
+    }
+
+    setShowScreeningForm(false);
+    setScreeningStudent(null);
+  };
+
   const handleViewStudent = (studentId: string) => {
     navigate(`/students/${studentId}`);
   };
@@ -185,6 +233,14 @@ const StudentTable = () => {
           >
             <FileDown className="w-4 h-4" />
             Export
+          </Button>
+          <Button
+            onClick={() => setShowScreeningForm(true)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Calendar className="w-4 h-4" />
+            New Screening
           </Button>
           <Button
             onClick={() => setShowAddStudent(true)}
@@ -272,6 +328,7 @@ const StudentTable = () => {
                       size="sm"
                       className="h-8 w-8 p-0"
                       title="Schedule Screening"
+                      onClick={() => handleScheduleScreening(student)}
                     >
                       <Calendar className="w-4 h-4" />
                     </Button>
@@ -299,6 +356,18 @@ const StudentTable = () => {
         onSubmit={editingStudent ? handleEditStudent : handleAddStudent}
         student={editingStudent}
         title={editingStudent ? 'Edit Student' : 'Add New Student'}
+      />
+
+      {/* Screening Form */}
+      <ScreeningForm
+        isOpen={showScreeningForm}
+        onClose={() => {
+          setShowScreeningForm(false);
+          setScreeningStudent(null);
+        }}
+        onSubmit={handleScreeningSubmit}
+        existingStudent={screeningStudent}
+        title={screeningStudent ? `New Screening - ${screeningStudent.first_name} ${screeningStudent.last_name}` : 'New Screening'}
       />
     </div>
   );
