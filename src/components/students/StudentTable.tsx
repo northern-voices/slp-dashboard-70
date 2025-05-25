@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, Filter, FileDown, Eye, Edit, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -71,6 +71,7 @@ const mockStudents: Student[] = [
 ];
 
 const StudentTable = () => {
+  const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>(mockStudents);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>(mockStudents);
   const [searchTerm, setSearchTerm] = useState('');
@@ -147,6 +148,10 @@ const StudentTable = () => {
     }
     
     return age;
+  };
+
+  const handleViewStudent = (studentId: string) => {
+    navigate(`/students/${studentId}`);
   };
 
   return (
@@ -249,6 +254,7 @@ const StudentTable = () => {
                       size="sm"
                       className="h-8 w-8 p-0"
                       title="View Profile"
+                      onClick={() => handleViewStudent(student.id)}
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
