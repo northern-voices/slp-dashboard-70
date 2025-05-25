@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Sidebar,
@@ -15,7 +14,6 @@ import {
 import { 
   Home, 
   Users, 
-  FileText, 
   Settings,
   BarChart3,
   Calendar,
@@ -46,11 +44,6 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
       title: "Students",
       url: "/students",
       icon: GraduationCap,
-    },
-    {
-      title: "Screenings",
-      url: "/screenings",
-      icon: FileText,
     },
     {
       title: "Reports",
