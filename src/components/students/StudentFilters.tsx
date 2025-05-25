@@ -62,7 +62,6 @@ const StudentFilters = ({ students, onFilter }: StudentFiltersProps) => {
                   <SelectValue placeholder="All grades" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All grades</SelectItem>
                   {grades.map(grade => (
                     <SelectItem key={grade} value={grade}>{grade}</SelectItem>
                   ))}
@@ -77,7 +76,6 @@ const StudentFilters = ({ students, onFilter }: StudentFiltersProps) => {
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
                 </SelectContent>
@@ -91,7 +89,6 @@ const StudentFilters = ({ students, onFilter }: StudentFiltersProps) => {
                   <SelectValue placeholder="All genders" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All genders</SelectItem>
                   <SelectItem value="male">Male</SelectItem>
                   <SelectItem value="female">Female</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
