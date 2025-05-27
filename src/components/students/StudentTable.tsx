@@ -1,5 +1,5 @@
+
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, Filter, FileDown, Eye, Edit, Calendar } from 'lucide-react';
@@ -204,7 +204,7 @@ const StudentTable = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="w-full space-y-4">
       {/* Mobile-optimized Header Actions */}
       <div className="space-y-4">
         {/* Search bar - full width on mobile */}
@@ -285,90 +285,92 @@ const StudentTable = () => {
           )}
         </div>
       ) : (
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Student ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Grade</TableHead>
-                <TableHead>Age</TableHead>
-                <TableHead>Emergency Contact</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredStudents.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell className="font-medium">{student.student_id}</TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">
-                        {student.first_name} {student.last_name}
-                      </div>
-                      {student.notes && (
-                        <div className="text-sm text-gray-500 truncate max-w-xs">
-                          {student.notes}
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>{student.grade || 'N/A'}</TableCell>
-                  <TableCell>{calculateAge(student.date_of_birth)}</TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>{student.emergency_contact_name}</div>
-                      <div className="text-gray-500">{student.emergency_contact_phone}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={student.active ? "default" : "secondary"}>
-                      {student.active ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        title="View Profile"
-                        onClick={() => handleViewStudent(student.id)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        title="Edit Student"
-                        onClick={() => setEditingStudent(student)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        title="Schedule Screening"
-                        onClick={() => handleScheduleScreening(student)}
-                      >
-                        <Calendar className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        <div className="w-full bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="w-full">
+            <Table className="w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[120px]">Student ID</TableHead>
+                  <TableHead className="min-w-[200px]">Name</TableHead>
+                  <TableHead className="w-[80px]">Grade</TableHead>
+                  <TableHead className="w-[60px]">Age</TableHead>
+                  <TableHead className="min-w-[180px]">Emergency Contact</TableHead>
+                  <TableHead className="w-[100px]">Status</TableHead>
+                  <TableHead className="w-[120px]">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredStudents.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell className="font-medium">{student.student_id}</TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">
+                          {student.first_name} {student.last_name}
+                        </div>
+                        {student.notes && (
+                          <div className="text-sm text-gray-500 truncate max-w-xs">
+                            {student.notes}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>{student.grade || 'N/A'}</TableCell>
+                    <TableCell>{calculateAge(student.date_of_birth)}</TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        <div>{student.emergency_contact_name}</div>
+                        <div className="text-gray-500">{student.emergency_contact_phone}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={student.active ? "default" : "secondary"}>
+                        {student.active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          title="View Profile"
+                          onClick={() => handleViewStudent(student.id)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          title="Edit Student"
+                          onClick={() => setEditingStudent(student)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          title="Schedule Screening"
+                          onClick={() => handleScheduleScreening(student)}
+                        >
+                          <Calendar className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
 
-          {filteredStudents.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              {searchTerm ? 'No students found matching your search.' : 'No students found.'}
-            </div>
-          )}
-        </Card>
+            {filteredStudents.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                {searchTerm ? 'No students found matching your search.' : 'No students found.'}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Add/Edit Student Form */}
