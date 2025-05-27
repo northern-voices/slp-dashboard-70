@@ -1,52 +1,38 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Clock, 
-  FileText, 
-  User,
-  Calendar,
-  ArrowRight
-} from 'lucide-react';
-
+import { Clock, FileText, User, Calendar, ArrowRight } from 'lucide-react';
 const RecentActivity = () => {
-  const recentScreenings = [
-    {
-      id: 1,
-      studentName: 'Emma Rodriguez',
-      screeningType: 'Speech',
-      date: '2024-05-23',
-      status: 'completed',
-      grade: '3rd Grade'
-    },
-    {
-      id: 2,
-      studentName: 'Michael Chen',
-      screeningType: 'Hearing',
-      date: '2024-05-23',
-      status: 'pending',
-      grade: '1st Grade'
-    },
-    {
-      id: 3,
-      studentName: 'Sophia Williams',
-      screeningType: 'Progress',
-      date: '2024-05-22',
-      status: 'completed',
-      grade: '4th Grade'
-    },
-    {
-      id: 4,
-      studentName: 'James Johnson',
-      screeningType: 'Speech',
-      date: '2024-05-22',
-      status: 'in_progress',
-      grade: '2nd Grade'
-    }
-  ];
-
+  const recentScreenings = [{
+    id: 1,
+    studentName: 'Emma Rodriguez',
+    screeningType: 'Speech',
+    date: '2024-05-23',
+    status: 'completed',
+    grade: '3rd Grade'
+  }, {
+    id: 2,
+    studentName: 'Michael Chen',
+    screeningType: 'Hearing',
+    date: '2024-05-23',
+    status: 'pending',
+    grade: '1st Grade'
+  }, {
+    id: 3,
+    studentName: 'Sophia Williams',
+    screeningType: 'Progress',
+    date: '2024-05-22',
+    status: 'completed',
+    grade: '4th Grade'
+  }, {
+    id: 4,
+    studentName: 'James Johnson',
+    screeningType: 'Speech',
+    date: '2024-05-22',
+    status: 'in_progress',
+    grade: '2nd Grade'
+  }];
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -59,7 +45,6 @@ const RecentActivity = () => {
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
-
   const getStatusText = (status: string) => {
     switch (status) {
       case 'completed':
@@ -72,9 +57,7 @@ const RecentActivity = () => {
         return status;
     }
   };
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  return <div className="grid grid-cols-1 lg:grid-cols-1\n gap-8">
       {/* Recent Screenings */}
       <Card className="bg-white border-gray-100 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
@@ -90,8 +73,7 @@ const RecentActivity = () => {
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          {recentScreenings.map((screening) => (
-            <div key={screening.id} className="flex items-center justify-between p-4 bg-gray-25 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-gray-100">
+          {recentScreenings.map(screening => <div key={screening.id} className="flex items-center justify-between p-4 bg-gray-25 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-gray-100">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
                   <User className="w-6 h-6 text-gray-600" />
@@ -114,8 +96,7 @@ const RecentActivity = () => {
                   {screening.date}
                 </div>
               </div>
-            </div>
-          ))}
+            </div>)}
         </CardContent>
       </Card>
 
@@ -174,8 +155,6 @@ const RecentActivity = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default RecentActivity;
