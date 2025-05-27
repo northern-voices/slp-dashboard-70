@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import {
   Sidebar,
@@ -122,7 +123,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
                     <SidebarMenuButton 
                       asChild 
                       isActive={item.isActive}
-                      className="w-full justify-start hover:bg-gray-100 hover:text-gray-400 data-[active=true]:bg-blue-50 data-[active=true]:text-blue-700 data-[active=true]:font-medium"
+                      className="w-full justify-start hover:bg-gray-100 data-[active=true]:bg-blue-50 data-[active=true]:text-blue-700 data-[active=true]:font-medium"
                     >
                       <a href={item.url} className="flex items-center space-x-3 px-3 py-2">
                         <item.icon className="w-4 h-4" />
@@ -146,7 +147,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton 
                         asChild
-                        className="w-full justify-start hover:bg-gray-100 hover:text-gray-400"
+                        className="w-full justify-start hover:bg-gray-100"
                       >
                         <a href={item.url} className="flex items-center space-x-3 px-3 py-2">
                           <item.icon className="w-4 h-4" />
@@ -171,7 +172,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton 
                         asChild
-                        className="w-full justify-start hover:bg-gray-100 hover:text-gray-400"
+                        className="w-full justify-start hover:bg-gray-100"
                       >
                         <a href={item.url} className="flex items-center space-x-3 px-3 py-2">
                           <item.icon className="w-4 h-4" />
@@ -209,3 +210,4 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
 };
 
 export default AppSidebar;
+
