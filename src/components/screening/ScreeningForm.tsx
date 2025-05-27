@@ -19,25 +19,48 @@ import SpeechScreeningFields from './SpeechScreeningFields';
 import HearingScreeningFields from './HearingScreeningFields';
 import ProgressScreeningFields from './ProgressScreeningFields';
 
-const screeningFormSchema = z.object({
-  student_id: z.string().optional(),
-  student_info: z.object({
-    first_name: z.string().min(1, 'First name is required'),
-    last_name: z.string().min(1, 'Last name is required'),
-    date_of_birth: z.string().min(1, 'Date of birth is required'),
-    grade: z.string().optional(),
-    gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
-    emergency_contact_name: z.string().optional(),
-    emergency_contact_phone: z.string().optional(),
-  }).optional(),
-  screening_type: z.enum(['initial', 'follow_up', 'annual', 'referral']),
-  screening_date: z.string().min(1, 'Screening date is required'),
-  form_type: z.enum(['speech', 'hearing', 'progress']),
-  general_notes: z.string(),
-  recommendations: z.string(),
-  follow_up_required: z.boolean(),
-  follow_up_date: z.string().optional(),
-});
+// Dynamic schema factory function
+const createScreeningFormSchema = (isCreatingNewStudent: boolean) => {
+  const baseSchema = {
+    screening_type: z.enum(['initial', 'follow_up', 'annual', 'referral']),
+    screening_date: z.string().min(1, 'Screening date is required'),
+    form_type: z.enum(['speech', 'hearing', 'progress']),
+    general_notes: z.string(),
+    recommendations: z.string(),
+    follow_up_required: z.boolean(),
+    follow_up_date: z.string().optional(),
+  };
+
+  if (isCreatingNewStudent) {
+    return z.object({
+      ...baseSchema,
+      student_id: z.string().optional(),
+      student_info: z.object({
+        first_name: z.string().min(1, 'First name is required'),
+        last_name: z.string().min(1, 'Last name is required'),
+        date_of_birth: z.string().min(1, 'Date of birth is required'),
+        grade: z.string().optional(),
+        gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
+        emergency_contact_name: z.string().optional(),
+        emergency_contact_phone: z.string().optional(),
+      }),
+    });
+  } else {
+    return z.object({
+      ...baseSchema,
+      student_id: z.string().min(1, 'Student selection is required'),
+      student_info: z.object({
+        first_name: z.string().optional(),
+        last_name: z.string().optional(),
+        date_of_birth: z.string().optional(),
+        grade: z.string().optional(),
+        gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional(),
+        emergency_contact_name: z.string().optional(),
+        emergency_contact_phone: z.string().optional(),
+      }).optional(),
+    });
+  }
+};
 
 interface ScreeningFormProps {
   isOpen: boolean;
@@ -61,10 +84,13 @@ const ScreeningForm = ({
   const [currentFormType, setCurrentFormType] = useState(formType);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof screeningFormSchema>>({
-    resolver: zodResolver(screeningFormSchema),
+  // Create the appropriate schema based on the current mode
+  const currentSchema = createScreeningFormSchema(createNewStudent);
+
+  const form = useForm({
+    resolver: zodResolver(currentSchema),
     defaultValues: {
-      screening_type: 'initial',
+      screening_type: 'initial' as const,
       screening_date: new Date().toISOString().split('T')[0],
       form_type: currentFormType,
       general_notes: '',
@@ -72,6 +98,26 @@ const ScreeningForm = ({
       follow_up_required: false,
     },
   });
+
+  // Re-initialize form when switching between modes
+  useEffect(() => {
+    const newSchema = createScreeningFormSchema(createNewStudent);
+    const newForm = useForm({
+      resolver: zodResolver(newSchema),
+      defaultValues: {
+        screening_type: 'initial' as const,
+        screening_date: new Date().toISOString().split('T')[0],
+        form_type: currentFormType,
+        general_notes: '',
+        recommendations: '',
+        follow_up_required: false,
+        ...(createNewStudent ? {} : { student_id: selectedStudent?.id }),
+      },
+    });
+    
+    // Update the form instance
+    Object.assign(form, newForm);
+  }, [createNewStudent, selectedStudent?.id, currentFormType]);
 
   useEffect(() => {
     if (existingStudent) {
@@ -81,15 +127,14 @@ const ScreeningForm = ({
     }
   }, [existingStudent, form]);
 
-  const handleSubmit = (data: z.infer<typeof screeningFormSchema>) => {
+  const handleSubmit = (data: any) => {
     const formData: ScreeningFormData = {
       ...data,
       form_type: currentFormType,
     };
 
     if (createNewStudent && data.student_info) {
-      // Include student creation data - cast to correct type since validation ensures required fields
-      formData.student_info = data.student_info as ScreeningFormData['student_info'];
+      formData.student_info = data.student_info;
     } else if (selectedStudent) {
       formData.student_id = selectedStudent.id;
     }
@@ -299,7 +344,6 @@ const ScreeningForm = ({
                 </div>
               </div>
 
-              {/* Form Actions */}
               <div className="flex justify-end gap-2 pt-4 border-t">
                 <Button type="button" variant="outline" onClick={onClose}>
                   Cancel
