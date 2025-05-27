@@ -19,12 +19,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from '@/components/ui/navigation-menu';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
@@ -63,97 +61,123 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: HeaderProp
             </div>
           </div>
           
-          {/* Desktop Navigation */}
-          <div className="hidden lg:block">
-            <NavigationMenu>
-              <NavigationMenuList>
-                {/* Quick Screenings Navigation */}
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-sm font-medium">
-                    Quick Screenings
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="p-4 w-80">
-                      <div className="mb-3">
-                        <h4 className="text-sm font-semibold text-gray-900 mb-1">Start new assessments and screenings</h4>
+          {/* Desktop Navigation with Popover */}
+          <div className="hidden lg:flex items-center space-x-1">
+            {/* Quick Screenings Popover */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                  Quick Screenings
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className="w-80 p-0 bg-white shadow-lg border border-gray-200 animate-fade-in z-50" 
+                align="start"
+                onMouseLeave={(e) => {
+                  const popover = e.currentTarget.closest('[data-radix-popover-content]');
+                  if (popover) {
+                    popover.classList.add('animate-fade-out');
+                    setTimeout(() => {
+                      const trigger = document.querySelector('[data-radix-popover-trigger]');
+                      if (trigger) trigger.click();
+                    }, 200);
+                  }
+                }}
+              >
+                <div className="p-4">
+                  <div className="mb-3">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Start new assessments and screenings</h4>
+                  </div>
+                  <div className="space-y-3">
+                    <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left">
+                      <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <Mic className="w-5 h-5 text-white" />
                       </div>
-                      <div className="space-y-3">
-                        <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <Mic className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900 text-sm">New Speech Screening</div>
-                            <div className="text-xs text-gray-500">Start a new speech assessment</div>
-                          </div>
-                        </button>
-                        <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                          <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
-                            <Volume2 className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900 text-sm">New Hearing Screening</div>
-                            <div className="text-xs text-gray-500">Conduct hearing assessment</div>
-                          </div>
-                        </button>
+                      <div>
+                        <div className="font-medium text-gray-900 text-sm">New Speech Screening</div>
+                        <div className="text-xs text-gray-500">Start a new speech assessment</div>
                       </div>
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
+                    </button>
+                    <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left">
+                      <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
+                        <Volume2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900 text-sm">New Hearing Screening</div>
+                        <div className="text-xs text-gray-500">Conduct hearing assessment</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
 
-                {/* Management Tools Navigation */}
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-sm font-medium">
-                    Management Tools
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="p-4 w-80">
-                      <div className="mb-3">
-                        <h4 className="text-sm font-semibold text-gray-900 mb-1">Manage students, reports, and scheduling</h4>
+            {/* Management Tools Popover */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                  Management Tools
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className="w-80 p-0 bg-white shadow-lg border border-gray-200 animate-fade-in z-50" 
+                align="start"
+                onMouseLeave={(e) => {
+                  const popover = e.currentTarget.closest('[data-radix-popover-content]');
+                  if (popover) {
+                    popover.classList.add('animate-fade-out');
+                    setTimeout(() => {
+                      const trigger = document.querySelector('[data-radix-popover-trigger]');
+                      if (trigger) trigger.click();
+                    }, 200);
+                  }
+                }}
+              >
+                <div className="p-4">
+                  <div className="mb-3">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Manage students, reports, and scheduling</h4>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
+                      <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                        <BarChart3 className="w-5 h-5 text-white" />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
-                          <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                            <BarChart3 className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900 text-xs">Progress Report</div>
-                            <div className="text-xs text-gray-500">Generate progress assessment</div>
-                          </div>
-                        </button>
-                        <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
-                          <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900 text-xs">Schedule Session</div>
-                            <div className="text-xs text-gray-500">Book therapy session</div>
-                          </div>
-                        </button>
-                        <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
-                          <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
-                            <Users className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900 text-xs">Manage Students</div>
-                            <div className="text-xs text-gray-500">View and edit student profiles</div>
-                          </div>
-                        </button>
-                        <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
-                          <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900 text-xs">Generate Report</div>
-                            <div className="text-xs text-gray-500">Create comprehensive reports</div>
-                          </div>
-                        </button>
+                      <div>
+                        <div className="font-medium text-gray-900 text-xs">Progress Report</div>
+                        <div className="text-xs text-gray-500">Generate progress assessment</div>
                       </div>
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+                    </button>
+                    <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
+                      <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900 text-xs">Schedule Session</div>
+                        <div className="text-xs text-gray-500">Book therapy session</div>
+                      </div>
+                    </button>
+                    <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
+                      <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+                        <Users className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900 text-xs">Manage Students</div>
+                        <div className="text-xs text-gray-500">View and edit student profiles</div>
+                      </div>
+                    </button>
+                    <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
+                      <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900 text-xs">Generate Report</div>
+                        <div className="text-xs text-gray-500">Create comprehensive reports</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
