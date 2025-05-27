@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -87,40 +88,44 @@ const ReportsContent = () => {
               <p className="text-gray-600 text-sm md:text-base">Generate and manage screening reports and assessments</p>
             </div>
 
-            {/* Filters and Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div>
-                <Label htmlFor="timeframe">Timeframe</Label>
-                <Select value={selectedTimeframe} onValueChange={setSelectedTimeframe}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select timeframe" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="this_week">This Week</SelectItem>
-                    <SelectItem value="this_month">This Month</SelectItem>
-                    <SelectItem value="last_month">Last Month</SelectItem>
-                    <SelectItem value="this_year">This Year</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="report_type">Report Type</Label>
-                <Select value={selectedReportType} onValueChange={setSelectedReportType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Reports</SelectItem>
-                    <SelectItem value="summary">Summary Reports</SelectItem>
-                    <SelectItem value="individual">Individual Reports</SelectItem>
-                    <SelectItem value="progress">Progress Reports</SelectItem>
-                  </SelectContent>
-                </Select>
+            {/* Mobile-Optimized Filters and Actions */}
+            <div className="space-y-4 mb-6">
+              {/* Row 1: Timeframe and Report Type */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="timeframe" className="text-sm font-medium">Timeframe</Label>
+                  <Select value={selectedTimeframe} onValueChange={setSelectedTimeframe}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select timeframe" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="this_week">This Week</SelectItem>
+                      <SelectItem value="this_month">This Month</SelectItem>
+                      <SelectItem value="last_month">Last Month</SelectItem>
+                      <SelectItem value="this_year">This Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="report_type" className="text-sm font-medium">Report Type</Label>
+                  <Select value={selectedReportType} onValueChange={setSelectedReportType}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Reports</SelectItem>
+                      <SelectItem value="summary">Summary Reports</SelectItem>
+                      <SelectItem value="individual">Individual Reports</SelectItem>
+                      <SelectItem value="progress">Progress Reports</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="search">Search Reports</Label>
+              {/* Row 2: Search */}
+              <div className="space-y-2">
+                <Label htmlFor="search" className="text-sm font-medium">Search Reports</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
@@ -128,59 +133,60 @@ const ReportsContent = () => {
                     placeholder="Search by student name..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 h-11"
                   />
                 </div>
               </div>
 
-              <div className="flex items-end">
-                <Button className="w-full">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Apply Filters
-                </Button>
-              </div>
+              {/* Row 3: Apply Filters Button */}
+              <Button className="w-full h-11">
+                <Filter className="w-4 h-4 mr-2" />
+                Apply Filters
+              </Button>
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {/* Mobile-Optimized Quick Actions */}
+            <div className="space-y-4 mb-8">
               <Card className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">Generate Summary Report</CardTitle>
                   <CardDescription>Create comprehensive reports for multiple students</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full">Generate Report</Button>
+                  <Button className="w-full h-11">Generate Report</Button>
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Export Data</CardTitle>
-                  <CardDescription>Download screening data in various formats</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
-                    <Download className="w-4 h-4 mr-2" />
-                    Export CSV
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Card className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Export Data</CardTitle>
+                    <CardDescription>Download screening data in various formats</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full h-11">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export CSV
+                    </Button>
+                  </CardContent>
+                </Card>
 
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Schedule Reports</CardTitle>
-                  <CardDescription>Set up automated report generation</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
-                    <CalendarDays className="w-4 h-4 mr-2" />
-                    Schedule
-                  </Button>
-                </CardContent>
-              </Card>
+                <Card className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Schedule Reports</CardTitle>
+                    <CardDescription>Set up automated report generation</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full h-11">
+                      <CalendarDays className="w-4 h-4 mr-2" />
+                      Schedule
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
-            {/* Reports List */}
+            {/* Mobile-Optimized Reports List */}
             <Card>
               <CardHeader>
                 <CardTitle>Recent Reports</CardTitle>
@@ -189,13 +195,15 @@ const ReportsContent = () => {
               <CardContent>
                 <div className="space-y-4">
                   {mockReports.map((report) => (
-                    <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                      <div className="flex items-center space-x-4">
-                        {getReportTypeIcon(report.type)}
-                        <div>
-                          <h3 className="font-medium text-gray-900">{report.title}</h3>
-                          <p className="text-sm text-gray-600">{report.description}</p>
-                          <div className="flex items-center space-x-2 mt-1">
+                    <div key={report.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-gray-50 space-y-3 sm:space-y-0">
+                      <div className="flex items-start space-x-4">
+                        <div className="flex-shrink-0 mt-1">
+                          {getReportTypeIcon(report.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 break-words">{report.title}</h3>
+                          <p className="text-sm text-gray-600 break-words">{report.description}</p>
+                          <div className="flex flex-wrap items-center gap-2 mt-2">
                             <span className="text-xs text-gray-500">{report.date}</span>
                             {report.studentCount && (
                               <span className="text-xs text-gray-500">• {report.studentCount} students</span>
@@ -203,9 +211,9 @@ const ReportsContent = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center justify-between sm:justify-end space-x-3 sm:flex-col sm:space-x-0 sm:space-y-2 lg:flex-row lg:space-y-0 lg:space-x-3">
                         {getStatusBadge(report.status)}
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="h-9">
                           <Download className="w-4 h-4 mr-2" />
                           Download
                         </Button>
