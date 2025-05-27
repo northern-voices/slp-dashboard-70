@@ -1,9 +1,15 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, FileText, User, Calendar, ArrowRight } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
 const RecentActivity = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
   const recentScreenings = [{
     id: 1,
     studentName: 'Emma Rodriguez',
@@ -57,6 +63,47 @@ const RecentActivity = () => {
         return status;
     }
   };
+
+  const handleViewAllScreenings = () => {
+    navigate('/students');
+    toast({
+      title: "Navigating to Students",
+      description: "View all student screenings and records",
+    });
+  };
+
+  const handleViewAllTasks = () => {
+    navigate('/calendar');
+    toast({
+      title: "Navigating to Calendar",
+      description: "View all upcoming tasks and appointments",
+    });
+  };
+
+  const handleReviewReports = () => {
+    navigate('/reports');
+    toast({
+      title: "Opening Reports",
+      description: "Review and submit monthly reports",
+    });
+  };
+
+  const handlePrepareIEP = () => {
+    navigate('/calendar');
+    toast({
+      title: "IEP Preparation",
+      description: "Opening calendar to prepare for IEP meeting",
+    });
+  };
+
+  const handleScheduleTraining = () => {
+    navigate('/calendar');
+    toast({
+      title: "Schedule Training",
+      description: "Opening calendar to schedule team training",
+    });
+  };
+
   return <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 justify-start">
       {/* Recent Screenings */}
       <Card className="bg-white border-gray-100 shadow-sm">
@@ -67,7 +114,12 @@ const RecentActivity = () => {
             </div>
             <span>Recent Screenings</span>
           </CardTitle>
-          <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-gray-600 hover:text-gray-900"
+            onClick={handleViewAllScreenings}
+          >
             View All
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
@@ -109,7 +161,12 @@ const RecentActivity = () => {
             </div>
             <span>Upcoming Tasks</span>
           </CardTitle>
-          <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-gray-600 hover:text-gray-900"
+            onClick={handleViewAllTasks}
+          >
             View All
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
@@ -122,7 +179,11 @@ const RecentActivity = () => {
             </div>
             <div className="text-right">
               <div className="text-sm font-semibold text-amber-700 mb-2">Due Tomorrow</div>
-              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white shadow-sm">
+              <Button 
+                size="sm" 
+                className="bg-amber-600 hover:bg-amber-700 text-white shadow-sm"
+                onClick={handleReviewReports}
+              >
                 Review
               </Button>
             </div>
@@ -135,7 +196,12 @@ const RecentActivity = () => {
             </div>
             <div className="text-right">
               <div className="text-sm font-semibold text-blue-700 mb-2">May 25, 2024</div>
-              <Button size="sm" variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                onClick={handlePrepareIEP}
+              >
                 Prepare
               </Button>
             </div>
@@ -148,7 +214,12 @@ const RecentActivity = () => {
             </div>
             <div className="text-right">
               <div className="text-sm font-semibold text-emerald-700 mb-2">Next Week</div>
-              <Button size="sm" variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                onClick={handleScheduleTraining}
+              >
                 Schedule
               </Button>
             </div>
@@ -157,4 +228,5 @@ const RecentActivity = () => {
       </Card>
     </div>;
 };
+
 export default RecentActivity;
