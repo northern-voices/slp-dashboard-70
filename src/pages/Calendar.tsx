@@ -51,26 +51,26 @@ const CalendarContent = () => {
   const getEventTypeBadge = (type: string) => {
     switch (type) {
       case 'screening':
-        return <Badge className="bg-blue-100 text-blue-800">Screening</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 text-xs">Screening</Badge>;
       case 'review':
-        return <Badge className="bg-green-100 text-green-800">Review</Badge>;
+        return <Badge className="bg-green-100 text-green-800 text-xs">Review</Badge>;
       case 'assessment':
-        return <Badge className="bg-purple-100 text-purple-800">Assessment</Badge>;
+        return <Badge className="bg-purple-100 text-purple-800 text-xs">Assessment</Badge>;
       default:
-        return <Badge variant="secondary">{type}</Badge>;
+        return <Badge variant="secondary" className="text-xs">{type}</Badge>;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'scheduled':
-        return <Badge variant="outline">Scheduled</Badge>;
+        return <Badge variant="outline" className="text-xs">Scheduled</Badge>;
       case 'in_progress':
-        return <Badge className="bg-yellow-100 text-yellow-800">In Progress</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800 text-xs">In Progress</Badge>;
       case 'completed':
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+        return <Badge className="bg-green-100 text-green-800 text-xs">Completed</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="secondary" className="text-xs">{status}</Badge>;
     }
   };
 
@@ -83,44 +83,47 @@ const CalendarContent = () => {
           <Header userRole={userRole} userName={userName} />
           
           <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
-            <div className="mb-6 md:mb-8">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Calendar</h1>
-                  <p className="text-gray-600 text-sm md:text-base">Schedule and manage screening appointments</p>
-                </div>
-                <Button className="w-full md:w-auto">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Appointment
-                </Button>
-              </div>
+            {/* Mobile-optimized header */}
+            <div className="mb-6">
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">Calendar</h1>
+              <p className="text-gray-600 text-sm md:text-base mb-4">Schedule and manage screening appointments</p>
+              
+              {/* Mobile-first New Appointment button */}
+              <Button className="w-full md:w-auto h-12 md:h-10">
+                <Plus className="w-4 h-4 mr-2" />
+                New Appointment
+              </Button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Calendar Component */}
+            {/* Mobile-first layout - stacked on mobile, side-by-side on desktop */}
+            <div className="space-y-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0">
+              {/* Calendar Component - Full width on mobile */}
               <Card className="lg:col-span-1">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center text-lg">
                     <CalendarDays className="w-5 h-5 mr-2" />
                     Schedule
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <CalendarComponent
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    className="rounded-md border"
-                  />
+                <CardContent className="space-y-4">
+                  <div className="flex justify-center">
+                    <CalendarComponent
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      className="rounded-md border w-full"
+                    />
+                  </div>
                   
-                  <div className="mt-4 space-y-2">
+                  {/* Mobile-optimized quick actions */}
+                  <div className="space-y-3">
                     <h4 className="font-medium text-sm text-gray-900">Quick Actions</h4>
-                    <div className="space-y-2">
-                      <Button variant="outline" size="sm" className="w-full justify-start">
+                    <div className="grid grid-cols-1 gap-2">
+                      <Button variant="outline" size="sm" className="w-full justify-start h-11">
                         <Plus className="w-4 h-4 mr-2" />
                         Schedule Screening
                       </Button>
-                      <Button variant="outline" size="sm" className="w-full justify-start">
+                      <Button variant="outline" size="sm" className="w-full justify-start h-11">
                         <User className="w-4 h-4 mr-2" />
                         Book Follow-up
                       </Button>
@@ -129,36 +132,50 @@ const CalendarContent = () => {
                 </CardContent>
               </Card>
 
-              {/* Today's Schedule */}
+              {/* Today's Schedule - Full width on mobile */}
               <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Today's Schedule</CardTitle>
-                  <CardDescription>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg">Today's Schedule</CardTitle>
+                  <CardDescription className="text-sm">
                     {selectedDate ? selectedDate.toDateString() : 'Select a date to view schedule'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {mockEvents.map((event) => (
-                      <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex flex-col items-center">
-                            <Clock className="w-4 h-4 text-gray-400" />
-                            <span className="text-sm font-medium text-gray-900">{event.time}</span>
-                            <span className="text-xs text-gray-500">{event.duration}</span>
+                      <div key={event.id} className="p-4 border rounded-lg hover:bg-gray-50">
+                        {/* Mobile-first event layout */}
+                        <div className="space-y-3">
+                          {/* Time and duration */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <Clock className="w-4 h-4 text-gray-400" />
+                              <span className="text-sm font-medium text-gray-900">{event.time}</span>
+                              <span className="text-xs text-gray-500">({event.duration})</span>
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <h3 className="font-medium text-gray-900">{event.title}</h3>
-                            <p className="text-sm text-gray-600">Student: {event.student}</p>
-                            <div className="flex items-center space-x-2 mt-2">
+                          
+                          {/* Event details */}
+                          <div>
+                            <h3 className="font-medium text-gray-900 text-sm md:text-base">{event.title}</h3>
+                            <p className="text-xs md:text-sm text-gray-600 mt-1">Student: {event.student}</p>
+                          </div>
+                          
+                          {/* Badges and actions */}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="flex flex-wrap items-center gap-2">
                               {getEventTypeBadge(event.type)}
                               {getStatusBadge(event.status)}
                             </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-9">
+                                Edit
+                              </Button>
+                              <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-9">
+                                Start
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">Edit</Button>
-                          <Button variant="outline" size="sm">Start</Button>
                         </div>
                       </div>
                     ))}
@@ -167,21 +184,23 @@ const CalendarContent = () => {
               </Card>
             </div>
 
-            {/* Upcoming Appointments */}
+            {/* Upcoming Appointments - Mobile optimized */}
             <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Upcoming This Week</CardTitle>
-                <CardDescription>Your scheduled appointments for the next 7 days</CardDescription>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Upcoming This Week</CardTitle>
+                <CardDescription className="text-sm">Your scheduled appointments for the next 7 days</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[1, 2, 3, 4, 5, 6].map((day) => (
-                    <div key={day} className="p-4 border rounded-lg">
+                    <div key={day} className="p-4 border rounded-lg hover:bg-gray-50">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">Dec {day + 1}</h4>
-                        <Badge variant="outline">{Math.floor(Math.random() * 5) + 1} appointments</Badge>
+                        <h4 className="font-medium text-sm">Dec {day + 1}</h4>
+                        <Badge variant="outline" className="text-xs">
+                          {Math.floor(Math.random() * 5) + 1} appointments
+                        </Badge>
                       </div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-xs text-gray-600">
                         {day % 2 === 0 ? 'Speech screenings' : 'Progress reviews'}
                       </p>
                     </div>

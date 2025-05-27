@@ -16,9 +16,11 @@ import { Badge } from '@/components/ui/badge';
 import { Student } from '@/types/database';
 import StudentFilters from './StudentFilters';
 import StudentForm from './StudentForm';
+import MobileStudentCard from './MobileStudentCard';
 import { useToast } from '@/hooks/use-toast';
 import ScreeningForm from '../screening/ScreeningForm';
 import { ScreeningFormData } from '@/types/screening';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Mock data - in real app this would come from an API
 const mockStudents: Student[] = [
@@ -74,6 +76,7 @@ const mockStudents: Student[] = [
 
 const StudentTable = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [students, setStudents] = useState<Student[]>(mockStudents);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>(mockStudents);
   const [searchTerm, setSearchTerm] = useState('');
@@ -162,7 +165,6 @@ const StudentTable = () => {
   const handleScreeningSubmit = (screeningData: ScreeningFormData) => {
     console.log('Screening submitted:', screeningData);
     
-    // In a real app, this would save to the database
     toast({
       title: "Screening completed",
       description: screeningData.student_info 
@@ -170,7 +172,6 @@ const StudentTable = () => {
         : "Screening has been recorded successfully.",
     });
 
-    // If a new student was created during screening, add them to the list
     if (screeningData.student_info) {
       const newStudent: Student = {
         id: Date.now().toString(),
@@ -204,50 +205,52 @@ const StudentTable = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div className="flex-1 max-w-md">
+      {/* Mobile-optimized Header Actions */}
+      <div className="space-y-4">
+        {/* Search bar - full width on mobile */}
+        <div className="w-full">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Search students by name, ID, or grade..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-12"
             />
           </div>
         </div>
 
-        <div className="flex gap-2">
+        {/* Action buttons - stacked on mobile, inline on desktop */}
+        <div className="grid grid-cols-2 md:flex gap-2">
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 h-12"
           >
             <Filter className="w-4 h-4" />
-            Filters
+            <span className="hidden sm:inline">Filters</span>
           </Button>
           <Button
             variant="outline"
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 h-12"
           >
             <FileDown className="w-4 h-4" />
-            Export
+            <span className="hidden sm:inline">Export</span>
           </Button>
           <Button
             onClick={() => setShowScreeningForm(true)}
             variant="outline"
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 h-12"
           >
             <Calendar className="w-4 h-4" />
-            New Screening
+            <span className="hidden sm:inline">New Screening</span>
           </Button>
           <Button
             onClick={() => setShowAddStudent(true)}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 h-12"
           >
             <Plus className="w-4 h-4" />
-            Add Student
+            <span className="hidden sm:inline">Add Student</span>
           </Button>
         </div>
       </div>
@@ -260,91 +263,113 @@ const StudentTable = () => {
         />
       )}
 
-      {/* Table */}
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Student ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Grade</TableHead>
-              <TableHead>Age</TableHead>
-              <TableHead>Emergency Contact</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredStudents.map((student) => (
-              <TableRow key={student.id}>
-                <TableCell className="font-medium">{student.student_id}</TableCell>
-                <TableCell>
-                  <div>
-                    <div className="font-medium">
-                      {student.first_name} {student.last_name}
-                    </div>
-                    {student.notes && (
-                      <div className="text-sm text-gray-500 truncate max-w-xs">
-                        {student.notes}
-                      </div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>{student.grade || 'N/A'}</TableCell>
-                <TableCell>{calculateAge(student.date_of_birth)}</TableCell>
-                <TableCell>
-                  <div className="text-sm">
-                    <div>{student.emergency_contact_name}</div>
-                    <div className="text-gray-500">{student.emergency_contact_phone}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={student.active ? "default" : "secondary"}>
-                    {student.active ? 'Active' : 'Inactive'}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      title="View Profile"
-                      onClick={() => handleViewStudent(student.id)}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      title="Edit Student"
-                      onClick={() => setEditingStudent(student)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      title="Schedule Screening"
-                      onClick={() => handleScheduleScreening(student)}
-                    >
-                      <Calendar className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+      {/* Mobile Card View / Desktop Table View */}
+      {isMobile ? (
+        <div className="space-y-3">
+          {filteredStudents.map((student) => (
+            <MobileStudentCard
+              key={student.id}
+              student={student}
+              onView={handleViewStudent}
+              onEdit={setEditingStudent}
+              onScheduleScreening={handleScheduleScreening}
+              calculateAge={calculateAge}
+            />
+          ))}
+          {filteredStudents.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-sm">
+                {searchTerm ? 'No students found matching your search.' : 'No students found.'}
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Student ID</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Grade</TableHead>
+                <TableHead>Age</TableHead>
+                <TableHead>Emergency Contact</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredStudents.map((student) => (
+                <TableRow key={student.id}>
+                  <TableCell className="font-medium">{student.student_id}</TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">
+                        {student.first_name} {student.last_name}
+                      </div>
+                      {student.notes && (
+                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                          {student.notes}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>{student.grade || 'N/A'}</TableCell>
+                  <TableCell>{calculateAge(student.date_of_birth)}</TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <div>{student.emergency_contact_name}</div>
+                      <div className="text-gray-500">{student.emergency_contact_phone}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={student.active ? "default" : "secondary"}>
+                      {student.active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        title="View Profile"
+                        onClick={() => handleViewStudent(student.id)}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        title="Edit Student"
+                        onClick={() => setEditingStudent(student)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        title="Schedule Screening"
+                        onClick={() => handleScheduleScreening(student)}
+                      >
+                        <Calendar className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-        {filteredStudents.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            {searchTerm ? 'No students found matching your search.' : 'No students found.'}
-          </div>
-        )}
-      </Card>
+          {filteredStudents.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              {searchTerm ? 'No students found matching your search.' : 'No students found.'}
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Add/Edit Student Form */}
       <StudentForm
