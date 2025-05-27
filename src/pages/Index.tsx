@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -8,28 +7,24 @@ import QuickActions from '@/components/QuickActions';
 import RecentActivity from '@/components/RecentActivity';
 import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
-
 const DashboardContent = () => {
-  const { userProfile, isLoading } = useOrganization();
-  
+  const {
+    userProfile,
+    isLoading
+  } = useOrganization();
   const userRole = userProfile?.role || 'slp';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
-
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex w-full bg-gray-25">
+    return <div className="min-h-screen flex w-full bg-gray-25">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading dashboard...</p>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-25">
         <AppSidebar userRole={userRole} userName={userName} />
         
@@ -45,13 +40,11 @@ const DashboardContent = () => {
             <div className="space-y-6 md:space-y-8">
               <DashboardStats />
               
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 md:gap-8">
                 <div className="lg:col-span-2">
                   <RecentActivity />
                 </div>
-                <div>
-                  <QuickActions />
-                </div>
+                
               </div>
             </div>
           </main>
@@ -59,16 +52,11 @@ const DashboardContent = () => {
         
         <BottomNavigation />
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 const Index = () => {
-  return (
-    <OrganizationProvider>
+  return <OrganizationProvider>
       <DashboardContent />
-    </OrganizationProvider>
-  );
+    </OrganizationProvider>;
 };
-
 export default Index;
