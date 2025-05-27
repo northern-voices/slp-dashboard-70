@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -87,7 +86,7 @@ const ScreeningForm = ({
       form_type: currentFormType,
     };
 
-    if (createNewStudent) {
+    if (createNewStudent && data.student_info) {
       // Include student creation data
       formData.student_info = data.student_info;
     } else if (selectedStudent) {
