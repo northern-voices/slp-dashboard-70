@@ -309,7 +309,7 @@ const StudentTable = () => {
                           {student.first_name} {student.last_name}
                         </div>
                         {student.notes && (
-                          <div className="text-sm text-gray-500 truncate max-w-xs">
+                          <div className="text-sm text-gray-500 truncate">
                             {student.notes}
                           </div>
                         )}
