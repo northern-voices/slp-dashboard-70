@@ -57,7 +57,7 @@ const RecentActivity = () => {
         return status;
     }
   };
-  return <div className="grid grid-cols-1 lg:grid-cols-1\n gap-8">
+  return <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 justify-start">
       {/* Recent Screenings */}
       <Card className="bg-white border-gray-100 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
