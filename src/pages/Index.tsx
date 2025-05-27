@@ -6,22 +6,14 @@ import Header from '@/components/Header';
 import DashboardStats from '@/components/DashboardStats';
 import QuickActions from '@/components/QuickActions';
 import RecentActivity from '@/components/RecentActivity';
+import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 
 const DashboardContent = () => {
-  const { userProfile, currentSchool, isLoading } = useOrganization();
+  const { userProfile, isLoading } = useOrganization();
   
-  // This would typically come from authentication context
   const userRole = userProfile?.role || 'slp';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
-
-  // Time-aware greeting
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-  };
 
   if (isLoading) {
     return (
@@ -29,7 +21,7 @@ const DashboardContent = () => {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading your dashboard...</p>
+            <p className="text-gray-600">Loading dashboard...</p>
           </div>
         </div>
       </div>
@@ -44,46 +36,28 @@ const DashboardContent = () => {
         <SidebarInset className="flex-1">
           <Header userRole={userRole} userName={userName} />
           
-          <main className="flex-1 p-6 lg:p-8">
-            {/* Welcome Section with enhanced layout */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-2 tracking-tight">
-                    {getGreeting()}, {userName.split(' ')[1] || userName}!
-                  </h1>
-                  <p className="text-base lg:text-lg text-gray-600 font-medium">
-                    {currentSchool 
-                      ? `Here's what's happening at ${currentSchool.name} today.`
-                      : "Here's what's happening with your students today."
-                    }
-                  </p>
+          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Dashboard</h1>
+              <p className="text-gray-600 text-sm md:text-base">Welcome back! Here's an overview of your students and activities.</p>
+            </div>
+
+            <div className="space-y-6 md:space-y-8">
+              <DashboardStats />
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                <div className="lg:col-span-2">
+                  <RecentActivity />
                 </div>
-                <div className="hidden lg:block">
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">Today</p>
-                    <p className="text-lg font-semibold text-gray-900">
-                      {new Date().toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        month: 'short', 
-                        day: 'numeric' 
-                      })}
-                    </p>
-                  </div>
+                <div>
+                  <QuickActions />
                 </div>
               </div>
             </div>
-
-            {/* Dashboard Stats */}
-            <DashboardStats />
-
-            {/* Quick Actions */}
-            <QuickActions />
-
-            {/* Recent Activity */}
-            <RecentActivity />
           </main>
         </SidebarInset>
+        
+        <BottomNavigation />
       </div>
     </SidebarProvider>
   );

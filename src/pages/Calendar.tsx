@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
+import BottomNavigation from '@/components/BottomNavigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -81,14 +82,14 @@ const CalendarContent = () => {
         <SidebarInset className="flex-1">
           <Header userRole={userRole} userName={userName} />
           
-          <main className="flex-1 p-6 lg:p-8">
-            <div className="mb-8">
-              <div className="flex items-center justify-between">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+            <div className="mb-6 md:mb-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Calendar</h1>
-                  <p className="text-gray-600">Schedule and manage screening appointments</p>
+                  <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Calendar</h1>
+                  <p className="text-gray-600 text-sm md:text-base">Schedule and manage screening appointments</p>
                 </div>
-                <Button>
+                <Button className="w-full md:w-auto">
                   <Plus className="w-4 h-4 mr-2" />
                   New Appointment
                 </Button>
@@ -190,6 +191,8 @@ const CalendarContent = () => {
             </Card>
           </main>
         </SidebarInset>
+        
+        <BottomNavigation />
       </div>
     </SidebarProvider>
   );

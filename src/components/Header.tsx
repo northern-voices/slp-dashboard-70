@@ -36,11 +36,19 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: HeaderProp
   };
 
   return (
-    <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
       <div className="flex items-center justify-between h-14 px-4">
-        {/* Left side - Sidebar trigger */}
+        {/* Left side - Sidebar trigger for desktop only */}
         <div className="flex items-center space-x-4">
-          <SidebarTrigger className="md:hidden" />
+          <SidebarTrigger className="hidden md:flex" />
+          <div className="md:hidden">
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
+                <span className="text-white font-bold text-xs">SLP</span>
+              </div>
+              <span className="font-semibold text-gray-900 text-sm">SLP Dashboard</span>
+            </div>
+          </div>
         </div>
 
         {/* Right side - User actions */}
