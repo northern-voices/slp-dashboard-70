@@ -78,7 +78,7 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: HeaderProp
                   if (popover) {
                     popover.classList.add('animate-fade-out');
                     setTimeout(() => {
-                      const trigger = document.querySelector('[data-radix-popover-trigger]');
+                      const trigger = document.querySelector('[data-radix-popover-trigger]') as HTMLElement;
                       if (trigger) trigger.click();
                     }, 200);
                   }
@@ -127,7 +127,7 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: HeaderProp
                   if (popover) {
                     popover.classList.add('animate-fade-out');
                     setTimeout(() => {
-                      const trigger = document.querySelector('[data-radix-popover-trigger]');
+                      const trigger = document.querySelector('[data-radix-popover-trigger]') as HTMLElement;
                       if (trigger) trigger.click();
                     }, 200);
                   }
