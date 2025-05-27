@@ -54,7 +54,7 @@ const QuickActions = () => {
   ];
 
   return (
-    <div className="mb-8 space-y-6">
+    <div className="space-y-6">
       {/* Primary Actions */}
       <Card className="bg-white border-gray-100 shadow-sm">
         <CardHeader className="pb-4">
@@ -67,18 +67,18 @@ const QuickActions = () => {
           <p className="text-sm text-gray-600 ml-10">Start new assessments and screenings</p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {primaryActions.map((action, index) => (
               <Button 
                 key={index} 
                 variant="outline" 
-                className="h-auto p-6 flex flex-col items-center space-y-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-gray-200 bg-white hover:bg-gray-50 group" 
+                className="h-auto p-4 flex items-center space-x-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-gray-200 bg-white hover:bg-gray-50 group justify-start" 
                 onClick={action.action}
               >
-                <div className={`w-16 h-16 rounded-xl ${action.color} flex items-center justify-center transition-all duration-300 shadow-md group-hover:shadow-lg group-hover:scale-105`}>
-                  <action.icon className="w-8 h-8 text-white" />
+                <div className={`w-12 h-12 rounded-xl ${action.color} flex items-center justify-center transition-all duration-300 shadow-md group-hover:shadow-lg group-hover:scale-105 flex-shrink-0`}>
+                  <action.icon className="w-6 h-6 text-white" />
                 </div>
-                <div className="text-center">
+                <div className="text-left">
                   <div className="font-semibold text-gray-900 mb-1 text-base">{action.title}</div>
                   <div className="text-sm text-gray-500 leading-relaxed">{action.description}</div>
                 </div>
@@ -100,19 +100,19 @@ const QuickActions = () => {
           <p className="text-sm text-gray-600 ml-10">Manage students, reports, and scheduling</p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             {secondaryActions.map((action, index) => (
               <Button 
                 key={index} 
                 variant="outline" 
-                className="h-auto p-4 flex flex-col items-center space-y-3 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group" 
+                className="h-auto p-3 flex items-center space-x-3 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group justify-start" 
                 onClick={action.action}
               >
-                <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md`}>
-                  <action.icon className="w-6 h-6 text-white" />
+                <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md flex-shrink-0`}>
+                  <action.icon className="w-5 h-5 text-white" />
                 </div>
-                <div className="text-center">
-                  <div className="font-semibold text-gray-900 mb-1 text-sm">{action.title}</div>
+                <div className="text-left min-w-0">
+                  <div className="font-semibold text-gray-900 mb-1 text-sm truncate">{action.title}</div>
                   <div className="text-xs text-gray-500 leading-relaxed">{action.description}</div>
                 </div>
               </Button>
