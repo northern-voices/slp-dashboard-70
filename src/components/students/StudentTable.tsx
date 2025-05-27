@@ -203,6 +203,15 @@ const StudentTable = () => {
     navigate(`/students/${studentId}`);
   };
 
+  const handleRowClick = (studentId: string, event: React.MouseEvent) => {
+    // Don't navigate if user clicked on action buttons
+    const target = event.target as HTMLElement;
+    if (target.closest('button') || target.closest('[role="button"]')) {
+      return;
+    }
+    handleViewStudent(studentId);
+  };
+
   return (
     <div className="w-full space-y-4">
       {/* Mobile-optimized Header Actions */}
@@ -301,7 +310,11 @@ const StudentTable = () => {
               </TableHeader>
               <TableBody>
                 {filteredStudents.map((student) => (
-                  <TableRow key={student.id}>
+                  <TableRow 
+                    key={student.id}
+                    className="cursor-pointer hover:bg-gray-50"
+                    onClick={(e) => handleRowClick(student.id, e)}
+                  >
                     <TableCell className="font-medium">{student.student_id}</TableCell>
                     <TableCell>
                       <div>
@@ -335,7 +348,10 @@ const StudentTable = () => {
                           size="sm"
                           className="h-8 w-8 p-0"
                           title="View Profile"
-                          onClick={() => handleViewStudent(student.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewStudent(student.id);
+                          }}
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -344,7 +360,10 @@ const StudentTable = () => {
                           size="sm"
                           className="h-8 w-8 p-0"
                           title="Edit Student"
-                          onClick={() => setEditingStudent(student)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingStudent(student);
+                          }}
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -353,7 +372,10 @@ const StudentTable = () => {
                           size="sm"
                           className="h-8 w-8 p-0"
                           title="Schedule Screening"
-                          onClick={() => handleScheduleScreening(student)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleScheduleScreening(student);
+                          }}
                         >
                           <Calendar className="w-4 h-4" />
                         </Button>
