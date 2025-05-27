@@ -8,6 +8,7 @@ import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import StudentInfoHeader from '@/components/students/StudentInfoHeader';
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory';
+import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 
 const StudentDetailContent = () => {
@@ -32,11 +33,11 @@ const StudentDetailContent = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-gray-25">
         <AppSidebar userRole={userRole} userName={userName} />
         <div className="flex-1 flex flex-col">
           <Header userRole={userRole} userName={userName} />
-          <main className="flex-1 p-6 bg-gray-50">
+          <main className="flex-1 p-4 md:p-6 bg-gray-50 pb-20 md:pb-8">
             <div className="max-w-7xl mx-auto">
               {/* Breadcrumb Navigation */}
               <div className="mb-6">
@@ -66,6 +67,8 @@ const StudentDetailContent = () => {
             </div>
           </main>
         </div>
+        
+        <BottomNavigation />
       </div>
     </SidebarProvider>
   );

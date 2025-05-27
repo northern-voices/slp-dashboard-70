@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
+import BottomNavigation from '@/components/BottomNavigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -92,7 +93,7 @@ const ManagementContent = () => {
           <SidebarInset className="flex-1">
             <Header userRole={userRole} userName={userName} />
             
-            <main className="flex-1 p-6 lg:p-8">
+            <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
               <div className="text-center py-12">
                 <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h1 className="text-2xl font-semibold text-gray-900 mb-2">Access Restricted</h1>
@@ -103,6 +104,8 @@ const ManagementContent = () => {
               </div>
             </main>
           </SidebarInset>
+          
+          <BottomNavigation />
         </div>
       </SidebarProvider>
     );
@@ -116,10 +119,10 @@ const ManagementContent = () => {
         <SidebarInset className="flex-1">
           <Header userRole={userRole} userName={userName} />
           
-          <main className="flex-1 p-6 lg:p-8">
-            <div className="mb-8">
-              <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Management</h1>
-              <p className="text-gray-600">Manage schools, users, and system settings</p>
+          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Management</h1>
+              <p className="text-gray-600 text-sm md:text-base">Manage schools, users, and system settings</p>
             </div>
 
             <Tabs defaultValue="schools" className="space-y-6">
@@ -260,6 +263,8 @@ const ManagementContent = () => {
             </Tabs>
           </main>
         </SidebarInset>
+        
+        <BottomNavigation />
       </div>
     </SidebarProvider>
   );
