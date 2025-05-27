@@ -86,8 +86,9 @@ const ScreeningForm = ({
 
   // Create the appropriate schema based on the current mode
   const currentSchema = createScreeningFormSchema(createNewStudent);
+  type FormData = z.infer<typeof currentSchema>;
 
-  const form = useForm({
+  const form = useForm<FormData>({
     resolver: zodResolver(currentSchema),
     defaultValues: {
       screening_type: 'initial' as const,
@@ -96,47 +97,63 @@ const ScreeningForm = ({
       general_notes: '',
       recommendations: '',
       follow_up_required: false,
-    },
+      follow_up_date: '',
+      ...(createNewStudent ? {
+        student_info: {
+          first_name: '',
+          last_name: '',
+          date_of_birth: '',
+          grade: '',
+        }
+      } : {
+        student_id: selectedStudent?.id || '',
+      }),
+    } as FormData,
   });
 
   // Re-initialize form when switching between modes
   useEffect(() => {
     const newSchema = createScreeningFormSchema(createNewStudent);
-    const newForm = useForm({
-      resolver: zodResolver(newSchema),
-      defaultValues: {
-        screening_type: 'initial' as const,
-        screening_date: new Date().toISOString().split('T')[0],
-        form_type: currentFormType,
-        general_notes: '',
-        recommendations: '',
-        follow_up_required: false,
-        ...(createNewStudent ? {} : { student_id: selectedStudent?.id }),
-      },
-    });
+    type NewFormData = z.infer<typeof newSchema>;
     
-    // Update the form instance
-    Object.assign(form, newForm);
-  }, [createNewStudent, selectedStudent?.id, currentFormType]);
+    form.reset({
+      screening_type: 'initial' as const,
+      screening_date: new Date().toISOString().split('T')[0],
+      form_type: currentFormType,
+      general_notes: '',
+      recommendations: '',
+      follow_up_required: false,
+      follow_up_date: '',
+      ...(createNewStudent ? {
+        student_info: {
+          first_name: '',
+          last_name: '',
+          date_of_birth: '',
+          grade: '',
+        }
+      } : {
+        student_id: selectedStudent?.id || '',
+      }),
+    } as NewFormData);
+  }, [createNewStudent, selectedStudent?.id, currentFormType, form]);
 
   useEffect(() => {
     if (existingStudent) {
       setSelectedStudent(existingStudent);
       setCreateNewStudent(false);
-      form.setValue('student_id', existingStudent.id);
     }
-  }, [existingStudent, form]);
+  }, [existingStudent]);
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: FormData) => {
     const formData: ScreeningFormData = {
       ...data,
       form_type: currentFormType,
     };
 
     if (createNewStudent && data.student_info) {
-      formData.student_info = data.student_info;
-    } else if (selectedStudent) {
-      formData.student_id = selectedStudent.id;
+      formData.student_info = data.student_info as ScreeningFormData['student_info'];
+    } else if (selectedStudent && 'student_id' in data) {
+      formData.student_id = data.student_id;
     }
 
     onSubmit(formData);
@@ -151,15 +168,12 @@ const ScreeningForm = ({
     setSelectedStudent(student);
     if (student) {
       setCreateNewStudent(false);
-      form.setValue('student_id', student.id);
-      form.setValue('student_info', undefined);
     }
   };
 
   const handleCreateNewStudent = () => {
     setCreateNewStudent(true);
     setSelectedStudent(null);
-    form.setValue('student_id', undefined);
   };
 
   if (!isOpen) return null;
@@ -212,14 +226,14 @@ const ScreeningForm = ({
                       <div>
                         <Label htmlFor="first_name">First Name *</Label>
                         <Input
-                          {...form.register('student_info.first_name')}
+                          {...form.register('student_info.first_name' as keyof FormData)}
                           placeholder="Enter first name"
                         />
                       </div>
                       <div>
                         <Label htmlFor="last_name">Last Name *</Label>
                         <Input
-                          {...form.register('student_info.last_name')}
+                          {...form.register('student_info.last_name' as keyof FormData)}
                           placeholder="Enter last name"
                         />
                       </div>
@@ -227,13 +241,13 @@ const ScreeningForm = ({
                         <Label htmlFor="date_of_birth">Date of Birth *</Label>
                         <Input
                           type="date"
-                          {...form.register('student_info.date_of_birth')}
+                          {...form.register('student_info.date_of_birth' as keyof FormData)}
                         />
                       </div>
                       <div>
                         <Label htmlFor="grade">Grade</Label>
                         <Input
-                          {...form.register('student_info.grade')}
+                          {...form.register('student_info.grade' as keyof FormData)}
                           placeholder="e.g., K, 1, 2"
                         />
                       </div>
@@ -337,7 +351,7 @@ const ScreeningForm = ({
                       <Label htmlFor="follow_up_date">Follow-up Date</Label>
                       <Input
                         type="date"
-                        {...form.register('follow_up_date')}
+                        {...form.register('follow_up_date' as keyof FormData)}
                       />
                     </div>
                   )}
