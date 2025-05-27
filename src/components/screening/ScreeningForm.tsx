@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -87,8 +88,8 @@ const ScreeningForm = ({
     };
 
     if (createNewStudent && data.student_info) {
-      // Include student creation data
-      formData.student_info = data.student_info;
+      // Include student creation data - cast to correct type since validation ensures required fields
+      formData.student_info = data.student_info as ScreeningFormData['student_info'];
     } else if (selectedStudent) {
       formData.student_id = selectedStudent.id;
     }
