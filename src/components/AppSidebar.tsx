@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Sidebar,
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useLocation } from 'react-router-dom';
 import SchoolSelector from '@/components/SchoolSelector';
 
 interface AppSidebarProps {
@@ -31,6 +33,7 @@ interface AppSidebarProps {
 
 const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSidebarProps) => {
   const { currentOrganization, userProfile } = useOrganization();
+  const location = useLocation();
   const initials = userName.split(' ').map(n => n[0]).join('');
 
   const mainItems = [
@@ -38,31 +41,35 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
       title: "Dashboard",
       url: "/",
       icon: Home,
-      isActive: true
+      isActive: location.pathname === "/"
     },
     {
       title: "Students",
       url: "/students",
       icon: GraduationCap,
+      isActive: location.pathname.startsWith("/students")
     },
     {
       title: "Reports",
       url: "/reports",
       icon: BarChart3,
+      isActive: location.pathname === "/reports"
     },
     {
       title: "Calendar",
       url: "/calendar",
       icon: Calendar,
-    }
-  ];
-
-  const managementItems = [
+      isActive: location.pathname === "/calendar"
+    },
     {
       title: "Management",
       url: "/management",
       icon: Building2,
-    },
+      isActive: location.pathname === "/management"
+    }
+  ];
+
+  const managementItems = [
     {
       title: "Users",
       url: "/users",
@@ -115,7 +122,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
                     <SidebarMenuButton 
                       asChild 
                       isActive={item.isActive}
-                      className="w-full justify-start hover:bg-blue-50 hover:text-blue-700 data-[active=true]:bg-blue-50 data-[active=true]:text-blue-700 data-[active=true]:font-medium"
+                      className="w-full justify-start hover:bg-gray-100 hover:text-gray-400 data-[active=true]:bg-blue-50 data-[active=true]:text-blue-700 data-[active=true]:font-medium"
                     >
                       <a href={item.url} className="flex items-center space-x-3 px-3 py-2">
                         <item.icon className="w-4 h-4" />
@@ -131,7 +138,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
           {(userRole === 'admin' || userRole === 'supervisor' || userProfile?.role === 'admin' || userProfile?.role === 'supervisor') && (
             <SidebarGroup>
               <SidebarGroupLabel className="px-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Management
+                Administration
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -139,7 +146,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton 
                         asChild
-                        className="w-full justify-start hover:bg-gray-50 hover:text-gray-900"
+                        className="w-full justify-start hover:bg-gray-100 hover:text-gray-400"
                       >
                         <a href={item.url} className="flex items-center space-x-3 px-3 py-2">
                           <item.icon className="w-4 h-4" />
@@ -156,7 +163,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
           {userRole === 'admin' && (
             <SidebarGroup>
               <SidebarGroupLabel className="px-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Administration
+                System
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -164,7 +171,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton 
                         asChild
-                        className="w-full justify-start hover:bg-gray-50 hover:text-gray-900"
+                        className="w-full justify-start hover:bg-gray-100 hover:text-gray-400"
                       >
                         <a href={item.url} className="flex items-center space-x-3 px-3 py-2">
                           <item.icon className="w-4 h-4" />
