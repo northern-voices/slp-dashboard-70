@@ -89,7 +89,7 @@ const CalendarContent = () => {
               <p className="text-gray-600 text-sm md:text-base mb-4">Schedule and manage screening appointments</p>
               
               {/* Mobile-first New Appointment button */}
-              <Button className="w-full md:w-auto h-12 md:h-10">
+              <Button className="w-full md:w-auto h-12 md:h-10 bg-blue-600 hover:bg-blue-700">
                 <Plus className="w-4 h-4 mr-2" />
                 New Appointment
               </Button>
@@ -98,34 +98,34 @@ const CalendarContent = () => {
             {/* Mobile-first layout - stacked on mobile, side-by-side on desktop */}
             <div className="space-y-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0">
               {/* Calendar Component - Full width on mobile */}
-              <Card className="lg:col-span-1">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center text-lg">
-                    <CalendarDays className="w-5 h-5 mr-2" />
+              <Card className="lg:col-span-1 shadow-sm border-gray-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center text-lg font-semibold text-gray-900">
+                    <CalendarDays className="w-5 h-5 mr-2 text-blue-600" />
                     Schedule
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-center">
+                <CardContent className="space-y-6">
+                  <div className="bg-white rounded-lg border border-gray-200 p-1">
                     <CalendarComponent
                       mode="single"
                       selected={selectedDate}
                       onSelect={setSelectedDate}
-                      className="rounded-md border w-full"
+                      className="w-full"
                     />
                   </div>
                   
                   {/* Mobile-optimized quick actions */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm text-gray-900">Quick Actions</h4>
-                    <div className="grid grid-cols-1 gap-2">
-                      <Button variant="outline" size="sm" className="w-full justify-start h-11">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Schedule Screening
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-sm text-gray-900">Quick Actions</h4>
+                    <div className="space-y-3">
+                      <Button variant="outline" size="sm" className="w-full justify-start h-12 border-gray-200 hover:bg-blue-50 hover:border-blue-300">
+                        <Plus className="w-4 h-4 mr-3 text-blue-600" />
+                        <span className="text-gray-700">Schedule Screening</span>
                       </Button>
-                      <Button variant="outline" size="sm" className="w-full justify-start h-11">
-                        <User className="w-4 h-4 mr-2" />
-                        Book Follow-up
+                      <Button variant="outline" size="sm" className="w-full justify-start h-12 border-gray-200 hover:bg-green-50 hover:border-green-300">
+                        <User className="w-4 h-4 mr-3 text-green-600" />
+                        <span className="text-gray-700">Book Follow-up</span>
                       </Button>
                     </div>
                   </div>
@@ -133,31 +133,36 @@ const CalendarContent = () => {
               </Card>
 
               {/* Today's Schedule - Full width on mobile */}
-              <Card className="lg:col-span-2">
+              <Card className="lg:col-span-2 shadow-sm border-gray-200">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-lg">Today's Schedule</CardTitle>
-                  <CardDescription className="text-sm">
-                    {selectedDate ? selectedDate.toDateString() : 'Select a date to view schedule'}
+                  <CardTitle className="text-lg font-semibold text-gray-900">Today's Schedule</CardTitle>
+                  <CardDescription className="text-sm text-gray-600">
+                    {selectedDate ? selectedDate.toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    }) : 'Select a date to view schedule'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {mockEvents.map((event) => (
-                      <div key={event.id} className="p-4 border rounded-lg hover:bg-gray-50">
+                      <div key={event.id} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200">
                         {/* Mobile-first event layout */}
                         <div className="space-y-3">
                           {/* Time and duration */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
-                              <Clock className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm font-medium text-gray-900">{event.time}</span>
-                              <span className="text-xs text-gray-500">({event.duration})</span>
+                              <Clock className="w-4 h-4 text-blue-600" />
+                              <span className="text-sm font-semibold text-gray-900">{event.time}</span>
+                              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">({event.duration})</span>
                             </div>
                           </div>
                           
                           {/* Event details */}
                           <div>
-                            <h3 className="font-medium text-gray-900 text-sm md:text-base">{event.title}</h3>
+                            <h3 className="font-semibold text-gray-900 text-sm md:text-base">{event.title}</h3>
                             <p className="text-xs md:text-sm text-gray-600 mt-1">Student: {event.student}</p>
                           </div>
                           
@@ -168,10 +173,10 @@ const CalendarContent = () => {
                               {getStatusBadge(event.status)}
                             </div>
                             <div className="flex gap-2">
-                              <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-9">
+                              <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-9 border-gray-200 hover:bg-blue-50">
                                 Edit
                               </Button>
-                              <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-9">
+                              <Button size="sm" className="flex-1 sm:flex-none h-9 bg-blue-600 hover:bg-blue-700">
                                 Start
                               </Button>
                             </div>
@@ -185,18 +190,18 @@ const CalendarContent = () => {
             </div>
 
             {/* Upcoming Appointments - Mobile optimized */}
-            <Card className="mt-6">
+            <Card className="mt-6 shadow-sm border-gray-200">
               <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Upcoming This Week</CardTitle>
-                <CardDescription className="text-sm">Your scheduled appointments for the next 7 days</CardDescription>
+                <CardTitle className="text-lg font-semibold text-gray-900">Upcoming This Week</CardTitle>
+                <CardDescription className="text-sm text-gray-600">Your scheduled appointments for the next 7 days</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[1, 2, 3, 4, 5, 6].map((day) => (
-                    <div key={day} className="p-4 border rounded-lg hover:bg-gray-50">
+                    <div key={day} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-sm">Dec {day + 1}</h4>
-                        <Badge variant="outline" className="text-xs">
+                        <h4 className="font-semibold text-sm text-gray-900">May {day + 26}</h4>
+                        <Badge variant="outline" className="text-xs border-blue-200 text-blue-700">
                           {Math.floor(Math.random() * 5) + 1} appointments
                         </Badge>
                       </div>
