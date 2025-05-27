@@ -3,7 +3,9 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Bell,
-  User
+  User,
+  Mic,
+  Volume2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -12,6 +14,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
@@ -38,7 +47,7 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: HeaderProp
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
       <div className="flex items-center justify-between h-14 px-4">
-        {/* Left side - Sidebar trigger for desktop only */}
+        {/* Left side - Sidebar trigger and navigation for desktop */}
         <div className="flex items-center space-x-4">
           <SidebarTrigger className="hidden md:flex" />
           <div className="md:hidden">
@@ -48,6 +57,46 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: HeaderProp
               </div>
               <span className="font-semibold text-gray-900 text-sm">SLP Dashboard</span>
             </div>
+          </div>
+          
+          {/* Quick Screenings Navigation - Desktop only */}
+          <div className="hidden lg:block">
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="text-sm font-medium">
+                    Quick Screenings
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="p-4 w-80">
+                      <div className="mb-3">
+                        <h4 className="text-sm font-semibold text-gray-900 mb-1">Start new assessments and screenings</h4>
+                      </div>
+                      <div className="space-y-3">
+                        <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left">
+                          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <Mic className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900 text-sm">New Speech Screening</div>
+                            <div className="text-xs text-gray-500">Start a new speech assessment</div>
+                          </div>
+                        </button>
+                        <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left">
+                          <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
+                            <Volume2 className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900 text-sm">New Hearing Screening</div>
+                            <div className="text-xs text-gray-500">Conduct hearing assessment</div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
           </div>
         </div>
 
