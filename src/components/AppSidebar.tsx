@@ -59,8 +59,8 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
 
   const managementItems = [
     {
-      title: "Schools",
-      url: "/schools",
+      title: "Management",
+      url: "/management",
       icon: Building2,
     },
     {
