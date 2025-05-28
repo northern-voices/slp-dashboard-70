@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,7 +52,7 @@ const ScreeningFormModal = ({
       onClick={handleOverlayClick}
     >
       <div 
-        className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto m-4"
+        className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
         onClick={handleModalClick}
       >
         <Card>
