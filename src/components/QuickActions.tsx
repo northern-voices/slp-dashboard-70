@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -54,7 +55,7 @@ const QuickActions = () => {
       title: 'New Speech Screening',
       description: 'Start a new speech assessment',
       icon: Mic,
-      color: 'bg-blue-600 hover:bg-blue-700',
+      color: 'bg-brand hover:bg-brand/90',
       action: handleOpenSpeechScreening
     },
     {
@@ -108,7 +109,7 @@ const QuickActions = () => {
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center space-x-2 text-lg font-semibold text-gray-900">
                 <div className="w-6 h-6 bg-blue-50 rounded-md flex items-center justify-center">
-                  <Mic className="w-4 h-4 text-blue-600" />
+                  <Mic className="w-4 h-4 text-brand" />
                 </div>
                 <span>Quick Screenings</span>
               </CardTitle>

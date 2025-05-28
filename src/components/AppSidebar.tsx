@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Sidebar,
@@ -83,7 +84,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', classNam
       <Sidebar>
         <SidebarHeader className="border-b border-gray-100 p-4">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white font-bold text-sm">SLP</span>
             </div>
             <div className="flex flex-col min-w-0">

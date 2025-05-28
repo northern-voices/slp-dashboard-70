@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -98,7 +99,7 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', className }:
             <SidebarTrigger className="hidden md:flex" />
             <div className="md:hidden">
               <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
+                <div className="w-6 h-6 bg-brand rounded flex items-center justify-center">
                   <span className="text-white font-bold text-xs">SLP</span>
                 </div>
                 <span className="font-semibold text-gray-900 text-sm">SLP Dashboard</span>
@@ -137,7 +138,7 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', className }:
                         className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
                         onClick={handleOpenSpeechScreening}
                       >
-                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center">
                           <Mic className="w-5 h-5 text-white" />
                         </div>
                         <div>
