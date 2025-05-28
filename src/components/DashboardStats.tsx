@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, FileText, Clock, TrendingUp, ArrowUp, ArrowDown, Minus, GraduationCap } from 'lucide-react';
+import { FileText, ArrowUp, ArrowDown, Minus, GraduationCap } from 'lucide-react';
 import { useOrganization } from '@/contexts/OrganizationContext';
 
 const DashboardStats = () => {
@@ -28,26 +28,6 @@ const DashboardStats = () => {
       trend: 'up',
       color: 'text-emerald-600',
       bgColor: 'bg-emerald-50'
-    },
-    {
-      title: 'Pending Reports',
-      value: currentSchool ? '2' : '5',
-      change: 'Awaiting review',
-      percentage: '-2.3%',
-      icon: Clock,
-      trend: 'down',
-      color: 'text-amber-600',
-      bgColor: 'bg-amber-50'
-    },
-    {
-      title: 'Completion Rate',
-      value: currentSchool ? '96%' : '94%',
-      change: '+2% from last month',
-      percentage: '+2.1%',
-      icon: TrendingUp,
-      trend: 'up',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
     }
   ];
 
@@ -75,8 +55,8 @@ const DashboardStats = () => {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[1, 2, 3, 4].map((i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {[1, 2].map((i) => (
           <Card key={i} className="bg-white border-gray-100 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
@@ -117,7 +97,7 @@ const DashboardStats = () => {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {stats.map((stat, index) => (
           <Card key={index} className="bg-white border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, FileText, User, Calendar, ArrowRight } from 'lucide-react';
+import { Clock, User, Calendar, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const RecentActivity = () => {
@@ -39,6 +40,7 @@ const RecentActivity = () => {
     status: 'in_progress',
     grade: '2nd Grade'
   }];
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -51,6 +53,7 @@ const RecentActivity = () => {
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
+
   const getStatusText = (status: string) => {
     switch (status) {
       case 'completed':
@@ -72,39 +75,8 @@ const RecentActivity = () => {
     });
   };
 
-  const handleViewAllTasks = () => {
-    navigate('/calendar');
-    toast({
-      title: "Navigating to Calendar",
-      description: "View all upcoming tasks and appointments",
-    });
-  };
-
-  const handleReviewReports = () => {
-    navigate('/reports');
-    toast({
-      title: "Opening Reports",
-      description: "Review and submit monthly reports",
-    });
-  };
-
-  const handlePrepareIEP = () => {
-    navigate('/calendar');
-    toast({
-      title: "IEP Preparation",
-      description: "Opening calendar to prepare for IEP meeting",
-    });
-  };
-
-  const handleScheduleTraining = () => {
-    navigate('/calendar');
-    toast({
-      title: "Schedule Training",
-      description: "Opening calendar to schedule team training",
-    });
-  };
-
-  return <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 justify-start">
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 justify-start">
       {/* Recent Screenings */}
       <Card className="bg-white border-gray-100 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
@@ -125,7 +97,8 @@ const RecentActivity = () => {
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          {recentScreenings.map(screening => <div key={screening.id} className="flex items-center justify-between p-4 bg-gray-25 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-gray-100">
+          {recentScreenings.map(screening => (
+            <div key={screening.id} className="flex items-center justify-between p-4 bg-gray-25 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-gray-100">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
                   <User className="w-6 h-6 text-gray-600" />
@@ -148,85 +121,12 @@ const RecentActivity = () => {
                   {screening.date}
                 </div>
               </div>
-            </div>)}
+            </div>
+          ))}
         </CardContent>
       </Card>
-
-      {/* Upcoming Tasks */}
-      <Card className="bg-white border-gray-100 shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
-          <CardTitle className="flex items-center space-x-3 text-xl font-semibold text-gray-900">
-            <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-blue-600" />
-            </div>
-            <span>Upcoming Tasks</span>
-          </CardTitle>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-gray-600 hover:text-gray-900"
-            onClick={handleViewAllTasks}
-          >
-            View All
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-amber-25 rounded-xl border border-amber-100">
-            <div>
-              <div className="font-semibold text-gray-900 mb-1">Monthly Reports Due</div>
-              <div className="text-sm text-gray-600">5 reports pending submission</div>
-            </div>
-            <div className="text-right">
-              <div className="text-sm font-semibold text-amber-700 mb-2">Due Tomorrow</div>
-              <Button 
-                size="sm" 
-                className="bg-amber-600 hover:bg-amber-700 text-white shadow-sm"
-                onClick={handleReviewReports}
-              >
-                Review
-              </Button>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between p-4 bg-blue-25 rounded-xl border border-blue-100">
-            <div>
-              <div className="font-semibold text-gray-900 mb-1">IEP Meeting Prep</div>
-              <div className="text-sm text-gray-600">Emma Rodriguez - Progress review</div>
-            </div>
-            <div className="text-right">
-              <div className="text-sm font-semibold text-blue-700 mb-2">May 25, 2024</div>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="border-blue-200 text-blue-700 hover:bg-blue-50"
-                onClick={handlePrepareIEP}
-              >
-                Prepare
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-emerald-25 rounded-xl border border-emerald-100">
-            <div>
-              <div className="font-semibold text-gray-900 mb-1">Team Training</div>
-              <div className="text-sm text-gray-600">New assessment protocols</div>
-            </div>
-            <div className="text-right">
-              <div className="text-sm font-semibold text-emerald-700 mb-2">Next Week</div>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                onClick={handleScheduleTraining}
-              >
-                Schedule
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>;
+    </div>
+  );
 };
 
 export default RecentActivity;
