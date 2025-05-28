@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -12,12 +11,14 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarDays, Download, FileText, Filter, Search } from 'lucide-react';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
+import ScheduleReportsModal from '@/components/reports/ScheduleReportsModal';
 
 const ReportsContent = () => {
   const { userProfile } = useOrganization();
   const [selectedTimeframe, setSelectedTimeframe] = useState('this_month');
   const [selectedReportType, setSelectedReportType] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   const userRole = userProfile?.role || 'slp';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
@@ -177,7 +178,11 @@ const ReportsContent = () => {
                     <CardDescription>Set up automated report generation</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button variant="outline" className="w-full h-11">
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-11"
+                      onClick={() => setShowScheduleModal(true)}
+                    >
                       <CalendarDays className="w-4 h-4 mr-2" />
                       Schedule
                     </Button>
@@ -227,6 +232,11 @@ const ReportsContent = () => {
         </SidebarInset>
         
         <BottomNavigation />
+        
+        <ScheduleReportsModal 
+          open={showScheduleModal}
+          onOpenChange={setShowScheduleModal}
+        />
       </div>
     </SidebarProvider>
   );
