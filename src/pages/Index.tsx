@@ -5,6 +5,7 @@ import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import DashboardStats from '@/components/DashboardStats';
 import RecentActivity from '@/components/RecentActivity';
+import QuickActions from '@/components/QuickActions';
 import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 
@@ -44,6 +45,8 @@ const DashboardContent = () => {
             </div>
 
             <div className="space-y-6 md:space-y-8">
+              <QuickActions />
+              
               <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 md:gap-8">
                 <div className="lg:col-span-2">
                   <RecentActivity />
