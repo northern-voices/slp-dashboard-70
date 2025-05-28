@@ -155,9 +155,15 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="speech" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="speech">Speech Screen</TabsTrigger>
-            <TabsTrigger value="hearing">Hearing Screen</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 h-auto">
+            <TabsTrigger value="speech" className="text-xs sm:text-sm px-2 py-2 sm:px-3">
+              <span className="sm:hidden">Speech</span>
+              <span className="hidden sm:inline">Speech Screen</span>
+            </TabsTrigger>
+            <TabsTrigger value="hearing" className="text-xs sm:text-sm px-2 py-2 sm:px-3">
+              <span className="sm:hidden">Hearing</span>
+              <span className="hidden sm:inline">Hearing Screen</span>
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="speech" className="space-y-6 mt-6">
