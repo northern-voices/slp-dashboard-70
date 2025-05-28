@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { MoreHorizontal, Search, Edit, UserX, Mail } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
@@ -25,9 +26,18 @@ interface UsersTableProps {
   onEditUser: (user: User) => void;
   onDeactivateUser: (userId: string) => void;
   onResendInvite: (userId: string) => void;
+  selectedUsers?: string[];
+  onSelectionChange?: (selectedUsers: string[]) => void;
 }
 
-const UsersTable = ({ users, onEditUser, onDeactivateUser, onResendInvite }: UsersTableProps) => {
+const UsersTable = ({ 
+  users, 
+  onEditUser, 
+  onDeactivateUser, 
+  onResendInvite,
+  selectedUsers = [],
+  onSelectionChange
+}: UsersTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -40,6 +50,29 @@ const UsersTable = ({ users, onEditUser, onDeactivateUser, onResendInvite }: Use
     
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  const handleSelectAll = (checked: boolean) => {
+    if (onSelectionChange) {
+      if (checked) {
+        onSelectionChange(filteredUsers.map(user => user.id));
+      } else {
+        onSelectionChange([]);
+      }
+    }
+  };
+
+  const handleSelectUser = (userId: string, checked: boolean) => {
+    if (onSelectionChange) {
+      if (checked) {
+        onSelectionChange([...selectedUsers, userId]);
+      } else {
+        onSelectionChange(selectedUsers.filter(id => id !== userId));
+      }
+    }
+  };
+
+  const isAllSelected = filteredUsers.length > 0 && filteredUsers.every(user => selectedUsers.includes(user.id));
+  const isIndeterminate = selectedUsers.length > 0 && !isAllSelected;
 
   const getRoleBadge = (role: string) => {
     switch (role) {
@@ -113,6 +146,16 @@ const UsersTable = ({ users, onEditUser, onDeactivateUser, onResendInvite }: Use
             <Table>
               <TableHeader>
                 <TableRow>
+                  {onSelectionChange && (
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={isAllSelected}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all users"
+                        {...(isIndeterminate ? { 'data-state': 'indeterminate' } : {})}
+                      />
+                    </TableHead>
+                  )}
                   <TableHead>User</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
@@ -124,6 +167,15 @@ const UsersTable = ({ users, onEditUser, onDeactivateUser, onResendInvite }: Use
               <TableBody>
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
+                    {onSelectionChange && (
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedUsers.includes(user.id)}
+                          onCheckedChange={(checked) => handleSelectUser(user.id, !!checked)}
+                          aria-label={`Select ${user.name}`}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell>
                       <div>
                         <div className="font-medium text-gray-900">{user.name}</div>
