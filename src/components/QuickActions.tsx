@@ -83,8 +83,8 @@ const QuickActions = () => {
                     <action.icon className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-center flex-1 flex flex-col justify-center w-full">
-                    <div className="font-semibold text-gray-900 text-sm mb-1 leading-tight">{action.title}</div>
-                    <div className="text-xs text-gray-500 leading-tight">{action.description}</div>
+                    <div className="font-semibold text-gray-900 text-sm mb-1 leading-tight w-full">{action.title}</div>
+                    <div className="text-xs text-gray-500 leading-tight w-full">{action.description}</div>
                   </div>
                 </Button>
               ))}
@@ -117,8 +117,8 @@ const QuickActions = () => {
                     <action.icon className="w-5 h-5 text-white" />
                   </div>
                   <div className="text-center flex-1 flex flex-col justify-center w-full">
-                    <div className="font-medium text-gray-900 text-xs mb-0.5 leading-tight">{action.title}</div>
-                    <div className="text-xs text-gray-500 leading-tight hidden sm:block">{action.description}</div>
+                    <div className="font-medium text-gray-900 text-xs mb-0.5 leading-tight w-full">{action.title}</div>
+                    <div className="text-xs text-gray-500 leading-tight hidden sm:block w-full">{action.description}</div>
                   </div>
                 </Button>
               ))}
