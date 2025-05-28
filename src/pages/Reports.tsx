@@ -44,7 +44,7 @@ const ReportsContent = () => {
   }];
   return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-25">
-        <AppSidebar userRole={userRole} userName={userName} />
+        <AppSidebar userRole={userRole} userName={userName} className="font-medium" />
         
         <SidebarInset className="flex-1">
           <Header userRole={userRole} userName={userName} />
