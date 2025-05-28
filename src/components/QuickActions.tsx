@@ -76,14 +76,14 @@ const QuickActions = () => {
                 <Button
                   key={index}
                   variant="outline"
-                  className="h-auto min-h-[120px] p-4 flex flex-col items-center justify-center space-y-3 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group"
+                  className="h-auto min-h-[120px] p-4 flex flex-col items-center justify-between space-y-3 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group"
                   onClick={action.action}
                 >
-                  <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md`}>
+                  <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md flex-shrink-0`}>
                     <action.icon className="w-6 h-6 text-white" />
                   </div>
-                  <div className="text-center">
-                    <div className="font-semibold text-gray-900 text-sm mb-1">{action.title}</div>
+                  <div className="text-center flex-1 flex flex-col justify-center w-full">
+                    <div className="font-semibold text-gray-900 text-sm mb-1 leading-tight">{action.title}</div>
                     <div className="text-xs text-gray-500 leading-tight">{action.description}</div>
                   </div>
                 </Button>
@@ -110,13 +110,13 @@ const QuickActions = () => {
                 <Button
                   key={index}
                   variant="outline"
-                  className="h-auto min-h-[100px] p-3 flex flex-col items-center justify-center space-y-2 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group"
+                  className="h-auto min-h-[100px] p-3 flex flex-col items-center justify-between space-y-2 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group"
                   onClick={action.action}
                 >
-                  <div className={`w-10 h-10 rounded-md ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md`}>
+                  <div className={`w-10 h-10 rounded-md ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md flex-shrink-0`}>
                     <action.icon className="w-5 h-5 text-white" />
                   </div>
-                  <div className="text-center">
+                  <div className="text-center flex-1 flex flex-col justify-center w-full">
                     <div className="font-medium text-gray-900 text-xs mb-0.5 leading-tight">{action.title}</div>
                     <div className="text-xs text-gray-500 leading-tight hidden sm:block">{action.description}</div>
                   </div>
