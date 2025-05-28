@@ -55,11 +55,11 @@ const NotificationPreferencesSection = () => {
             Email Notifications
           </h4>
           
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-base">System Notifications</Label>
-                <p className="text-sm text-muted-foreground">
+          <div className="space-y-6">
+            <div className="flex items-start justify-between py-2">
+              <div className="flex-1 mr-4">
+                <Label className="text-base font-medium text-gray-900">System Notifications</Label>
+                <p className="text-sm text-gray-500 mt-1">
                   Important system updates and maintenance alerts
                 </p>
               </div>
@@ -69,10 +69,10 @@ const NotificationPreferencesSection = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-base">Security Alerts</Label>
-                <p className="text-sm text-muted-foreground">
+            <div className="flex items-start justify-between py-2">
+              <div className="flex-1 mr-4">
+                <Label className="text-base font-medium text-gray-900">Security Alerts</Label>
+                <p className="text-sm text-gray-500 mt-1">
                   Login attempts and security-related notifications
                 </p>
               </div>
@@ -82,10 +82,10 @@ const NotificationPreferencesSection = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-base">Report Notifications</Label>
-                <p className="text-sm text-muted-foreground">
+            <div className="flex items-start justify-between py-2">
+              <div className="flex-1 mr-4">
+                <Label className="text-base font-medium text-gray-900">Report Notifications</Label>
+                <p className="text-sm text-gray-500 mt-1">
                   Automated reports and data summaries
                 </p>
               </div>
@@ -95,10 +95,10 @@ const NotificationPreferencesSection = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-base">Student Updates</Label>
-                <p className="text-sm text-muted-foreground">
+            <div className="flex items-start justify-between py-2">
+              <div className="flex-1 mr-4">
+                <Label className="text-base font-medium text-gray-900">Student Updates</Label>
+                <p className="text-sm text-gray-500 mt-1">
                   New student registrations and profile changes
                 </p>
               </div>
@@ -108,10 +108,10 @@ const NotificationPreferencesSection = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-base">Marketing Communications</Label>
-                <p className="text-sm text-muted-foreground">
+            <div className="flex items-start justify-between py-2">
+              <div className="flex-1 mr-4">
+                <Label className="text-base font-medium text-gray-900">Marketing Communications</Label>
+                <p className="text-sm text-gray-500 mt-1">
                   Product updates and promotional content
                 </p>
               </div>
@@ -170,10 +170,10 @@ const NotificationPreferencesSection = () => {
         <div className="space-y-4 pt-4 border-t">
           <h4 className="font-semibold">In-App Notifications</h4>
           
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-base">System Alerts</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className="flex items-start justify-between py-2">
+            <div className="flex-1 mr-4">
+              <Label className="text-base font-medium text-gray-900">System Alerts</Label>
+              <p className="text-sm text-gray-500 mt-1">
                 Show popup notifications within the application
               </p>
             </div>
