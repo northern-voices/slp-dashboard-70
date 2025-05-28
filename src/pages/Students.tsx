@@ -27,7 +27,7 @@ const StudentsContent = () => {
         <AppSidebar userRole={userRole} userName={userName} />
         
         <SidebarInset className="flex-1">
-          <Header userRole={userRole} userName={userName} />
+          <Header userRole={userRole} userName={userName} className="font-medium" />
           
           {/* Header Section with Brand Colors */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 md:px-6 lg:px-8 py-6">
