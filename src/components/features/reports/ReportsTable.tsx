@@ -70,7 +70,7 @@ const ReportsTable = ({
                   {getReportTypeIcon(report.type)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h5 className="font-medium text-gray-900 break-words py-[4px] text-xs">{report.title}</h5>
+                  <h5 className="font-medium text-gray-900 break-words text-sm py-0">{report.title}</h5>
                   <p className="text-sm text-gray-600 break-words">{report.description}</p>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     <span className="text-xs text-gray-500">{report.date}</span>
