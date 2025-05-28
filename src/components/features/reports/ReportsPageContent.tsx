@@ -8,6 +8,42 @@ import ReportsQuickActions from './ReportsQuickActions';
 import ReportsTable from './ReportsTable';
 import { useAsync } from '@/hooks/useAsync';
 import { reportService } from '@/services/reportService';
+import { Report as DatabaseReport } from '@/types/database';
+
+// Transform database Report to ReportsTable format
+const transformReportForDisplay = (dbReport: DatabaseReport) => {
+  // Extract report type from title or content, default to 'individual'
+  const getReportType = (title: string, content: string): string => {
+    const titleLower = title.toLowerCase();
+    const contentLower = content.toLowerCase();
+    
+    if (titleLower.includes('summary') || contentLower.includes('summary')) return 'summary';
+    if (titleLower.includes('progress') || contentLower.includes('progress')) return 'progress';
+    return 'individual';
+  };
+
+  // Format date from ISO string to readable format
+  const formatDate = (isoDate: string): string => {
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  return {
+    id: parseInt(dbReport.id),
+    title: dbReport.title,
+    type: getReportType(dbReport.title, dbReport.content),
+    date: formatDate(dbReport.generated_at),
+    status: dbReport.status,
+    description: dbReport.content.length > 100 
+      ? dbReport.content.substring(0, 100) + '...' 
+      : dbReport.content,
+    studentCount: undefined // This would need to be calculated based on screening data
+  };
+};
 
 const ReportsPageContent = () => {
   const { userProfile } = useOrganization();
@@ -26,15 +62,18 @@ const ReportsPageContent = () => {
     ? `${userProfile.first_name} ${userProfile.last_name}` 
     : 'Dr. Sarah Johnson';
 
-  const filteredReports = reports?.filter(report => {
+  // Transform database reports to display format
+  const transformedReports = reports ? reports.map(transformReportForDisplay) : [];
+
+  const filteredReports = transformedReports.filter(report => {
     const matchesSearch = searchTerm === '' || 
       report.title.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesType = selectedReportType === 'all' || 
-      report.title.toLowerCase().includes(selectedReportType);
+      report.type === selectedReportType;
     
     return matchesSearch && matchesType;
-  }) || [];
+  });
 
   if (error) {
     return (
