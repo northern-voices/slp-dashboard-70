@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -166,7 +165,7 @@ const RecipientsStep = ({ formData, updateFormData }: RecipientsStepProps) => {
                 onChange={(e) => setNewRecipient({ ...newRecipient, name: e.target.value })}
               />
             </div>
-            <div className="flex flex-col">
+            <div>
               <Label htmlFor="recipientRole">Role</Label>
               <div className="flex space-x-2">
                 <Select
