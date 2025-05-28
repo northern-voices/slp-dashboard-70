@@ -48,7 +48,7 @@ const ReportConfigurationStep = ({
                     <type.icon className="w-6 h-6 text-blue-600" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-gray-900 font-normal text-base">{type.label}</h4>
+                    <h4 className="text-gray-900 text-base font-medium">{type.label}</h4>
                     <p className="text-sm text-gray-600 mt-1">{type.description}</p>
                   </div>
                 </div>
