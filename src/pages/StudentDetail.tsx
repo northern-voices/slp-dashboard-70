@@ -67,7 +67,7 @@ const StudentDetailContent = () => {
             </div>
           </div>
 
-          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8 pt-6 md:pt-4 -mt-4">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8 -mt-4">
             {/* White content card with shadow */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
               {/* Student Info Header */}
