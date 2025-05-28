@@ -14,11 +14,17 @@ import ManagementStats from '@/components/management/ManagementStats';
 import SchoolForm from '@/components/management/SchoolForm';
 import UserInviteModal from '@/components/management/UserInviteModal';
 import UsersTable from '@/components/management/UsersTable';
+import NotificationSettingsModal from '@/components/management/NotificationSettingsModal';
+import ScreeningTemplatesModal from '@/components/management/ScreeningTemplatesModal';
+import OrganizationSettingsModal from '@/components/management/OrganizationSettingsModal';
 
 const ManagementContent = () => {
   const { userProfile } = useOrganization();
   const [schoolFormOpen, setSchoolFormOpen] = useState(false);
   const [userInviteOpen, setUserInviteOpen] = useState(false);
+  const [notificationSettingsOpen, setNotificationSettingsOpen] = useState(false);
+  const [screeningTemplatesOpen, setScreeningTemplatesOpen] = useState(false);
+  const [organizationSettingsOpen, setOrganizationSettingsOpen] = useState(false);
   const [editingSchool, setEditingSchool] = useState(null);
   const [schoolSearch, setSchoolSearch] = useState('');
 
@@ -276,7 +282,13 @@ const ManagementContent = () => {
                       <CardDescription>Manage organization-wide preferences</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Button variant="outline" className="w-full">Configure</Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => setOrganizationSettingsOpen(true)}
+                      >
+                        Configure
+                      </Button>
                     </CardContent>
                   </Card>
 
@@ -286,7 +298,13 @@ const ManagementContent = () => {
                       <CardDescription>Customize screening forms and assessments</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Button variant="outline" className="w-full">Manage Templates</Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => setScreeningTemplatesOpen(true)}
+                      >
+                        Manage Templates
+                      </Button>
                     </CardContent>
                   </Card>
 
@@ -296,7 +314,13 @@ const ManagementContent = () => {
                       <CardDescription>Configure system notifications and alerts</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <Button variant="outline" className="w-full">Settings</Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => setNotificationSettingsOpen(true)}
+                      >
+                        Settings
+                      </Button>
                     </CardContent>
                   </Card>
 
@@ -332,6 +356,21 @@ const ManagementContent = () => {
         isOpen={userInviteOpen}
         onClose={() => setUserInviteOpen(false)}
         onInvite={handleInviteUser}
+      />
+
+      <NotificationSettingsModal
+        isOpen={notificationSettingsOpen}
+        onClose={() => setNotificationSettingsOpen(false)}
+      />
+
+      <ScreeningTemplatesModal
+        isOpen={screeningTemplatesOpen}
+        onClose={() => setScreeningTemplatesOpen(false)}
+      />
+
+      <OrganizationSettingsModal
+        isOpen={organizationSettingsOpen}
+        onClose={() => setOrganizationSettingsOpen(false)}
       />
     </SidebarProvider>
   );
