@@ -1,13 +1,14 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mic, Volume2, BarChart3, Users, FileText, Settings, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import ScreeningForm from '@/components/screening/ScreeningForm';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
 
 const QuickActions = () => {
+  const navigate = useNavigate();
   const [showScreeningForm, setShowScreeningForm] = useState(false);
   const [screeningType, setScreeningType] = useState<'speech' | 'hearing' | 'progress'>('speech');
   const { toast } = useToast();
@@ -85,7 +86,7 @@ const QuickActions = () => {
       description: 'View and edit student profiles',
       icon: Users,
       color: 'bg-orange-600 hover:bg-orange-700',
-      action: () => console.log('Manage Students')
+      action: () => navigate('/students')
     },
     {
       title: 'Generate Report',
