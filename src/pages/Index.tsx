@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -9,7 +8,6 @@ import QuickActions from '@/components/QuickActions';
 import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { GraduationCap } from 'lucide-react';
-
 const DashboardContent = () => {
   const {
     userProfile,
@@ -19,22 +17,17 @@ const DashboardContent = () => {
   } = useOrganization();
   const userRole = userProfile?.role || 'slp';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
-  
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex w-full bg-gray-25">
+    return <div className="min-h-screen flex w-full bg-gray-25">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading dashboard...</p>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-  
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-25">
         <AppSidebar userRole={userRole} userName={userName} />
         
@@ -43,8 +36,7 @@ const DashboardContent = () => {
           
           <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
             {/* Context Banner - Below header */}
-            {currentSchool && (
-              <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-6">
+            {currentSchool && <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-6">
                 <div className="flex items-center space-x-2">
                   <GraduationCap className="w-4 h-4 text-blue-600 flex-shrink-0" />
                   <div className="min-w-0">
@@ -56,11 +48,10 @@ const DashboardContent = () => {
                     </p>
                   </div>
                 </div>
-              </div>
-            )}
+              </div>}
 
             <div className="mb-6 md:mb-8">
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Dashboard</h1>
+              <h1 className="text-xl md:text-2xl lg:text-3xl text-gray-900 mb-2 font-medium">Dashboard</h1>
               <p className="text-gray-600 text-sm md:text-base">Welcome back! Here's an overview of your students and activities.</p>
             </div>
 
@@ -80,16 +71,11 @@ const DashboardContent = () => {
         
         <BottomNavigation />
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 const Index = () => {
-  return (
-    <OrganizationProvider>
+  return <OrganizationProvider>
       <DashboardContent />
-    </OrganizationProvider>
-  );
+    </OrganizationProvider>;
 };
-
 export default Index;
