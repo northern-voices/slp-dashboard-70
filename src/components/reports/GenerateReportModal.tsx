@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,13 +12,14 @@ import { useAsync } from '@/hooks/useAsync';
 import { reportService } from '@/services/reportService';
 import { useToast } from '@/hooks/use-toast';
 import { Report } from '@/types/database';
-
 interface GenerateReportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const GenerateReportModal = ({ isOpen, onClose }: GenerateReportModalProps) => {
+const GenerateReportModal = ({
+  isOpen,
+  onClose
+}: GenerateReportModalProps) => {
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [reportTitle, setReportTitle] = useState('');
   const [reportDescription, setReportDescription] = useState('');
@@ -32,53 +27,38 @@ const GenerateReportModal = ({ isOpen, onClose }: GenerateReportModalProps) => {
   const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
   const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState('last_30_days');
-  
-  const { execute: generateReport, loading: isGenerating } = useAsync();
-  const { toast } = useToast();
-
-  const reportTemplates = [
-    {
-      id: 'template-1',
-      name: 'Standard Individual Report',
-      description: 'Comprehensive individual student assessment report',
-      icon: User,
-      type: 'individual'
-    },
-    {
-      id: 'template-2',
-      name: 'Monthly Summary Report',
-      description: 'Monthly summary of all screenings and assessments',
-      icon: BarChart3,
-      type: 'summary'
-    },
-    {
-      id: 'template-3',
-      name: 'Progress Report',
-      description: 'Track student progress over time',
-      icon: TrendingUp,
-      type: 'progress'
-    }
-  ];
-
-  const mockSchools = [
-    'Lincoln Elementary',
-    'Washington Middle School',
-    'Roosevelt High School',
-    'Jefferson Academy'
-  ];
-
-  const gradeOptions = [
-    'Pre-K', 'Kindergarten', '1st Grade', '2nd Grade', '3rd Grade',
-    '4th Grade', '5th Grade', '6th Grade', '7th Grade', '8th Grade'
-  ];
-
+  const {
+    execute: generateReport,
+    loading: isGenerating
+  } = useAsync();
+  const {
+    toast
+  } = useToast();
+  const reportTemplates = [{
+    id: 'template-1',
+    name: 'Standard Individual Report',
+    description: 'Comprehensive individual student assessment report',
+    icon: User,
+    type: 'individual'
+  }, {
+    id: 'template-2',
+    name: 'Monthly Summary Report',
+    description: 'Monthly summary of all screenings and assessments',
+    icon: BarChart3,
+    type: 'summary'
+  }, {
+    id: 'template-3',
+    name: 'Progress Report',
+    description: 'Track student progress over time',
+    icon: TrendingUp,
+    type: 'progress'
+  }];
+  const mockSchools = ['Lincoln Elementary', 'Washington Middle School', 'Roosevelt High School', 'Jefferson Academy'];
+  const gradeOptions = ['Pre-K', 'Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade', '6th Grade', '7th Grade', '8th Grade'];
   const toggleSelection = (array: string[], item: string, setter: React.Dispatch<React.SetStateAction<string[]>>) => {
-    const newArray = array.includes(item)
-      ? array.filter(i => i !== item)
-      : [...array, item];
+    const newArray = array.includes(item) ? array.filter(i => i !== item) : [...array, item];
     setter(newArray);
   };
-
   const handleGenerate = async () => {
     if (!selectedTemplate) {
       toast({
@@ -88,7 +68,6 @@ const GenerateReportModal = ({ isOpen, onClose }: GenerateReportModalProps) => {
       });
       return;
     }
-
     try {
       const reportData = {
         schools: selectedSchools,
@@ -97,11 +76,7 @@ const GenerateReportModal = ({ isOpen, onClose }: GenerateReportModalProps) => {
         title: reportTitle,
         description: reportDescription
       };
-
-      const report = await generateReport(() => 
-        reportService.generateReport(selectedTemplate, reportData)
-      ) as Report;
-
+      const report = (await generateReport(() => reportService.generateReport(selectedTemplate, reportData))) as Report;
       if (outputFormat !== 'preview') {
         const blob = await reportService.exportReport(report.id, outputFormat as 'pdf' | 'csv' | 'xlsx');
         const url = URL.createObjectURL(blob);
@@ -113,12 +88,10 @@ const GenerateReportModal = ({ isOpen, onClose }: GenerateReportModalProps) => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }
-
       toast({
         title: "Report Generated Successfully",
         description: `Your ${reportTemplates.find(t => t.id === selectedTemplate)?.name} has been generated and ${outputFormat === 'preview' ? 'is ready for preview' : 'downloaded'}.`
       });
-
       onClose();
     } catch (error) {
       console.error('Failed to generate report:', error);
@@ -129,9 +102,7 @@ const GenerateReportModal = ({ isOpen, onClose }: GenerateReportModalProps) => {
       });
     }
   };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+  return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
@@ -156,29 +127,19 @@ const GenerateReportModal = ({ isOpen, onClose }: GenerateReportModalProps) => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {reportTemplates.map((template) => (
-                  <Card
-                    key={template.id}
-                    className={`cursor-pointer transition-all hover:shadow-md ${
-                      selectedTemplate === template.id
-                        ? 'ring-2 ring-blue-500 bg-blue-50'
-                        : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => setSelectedTemplate(template.id)}
-                  >
+                {reportTemplates.map(template => <Card key={template.id} className={`cursor-pointer transition-all hover:shadow-md ${selectedTemplate === template.id ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'}`} onClick={() => setSelectedTemplate(template.id)}>
                     <CardContent className="p-4">
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0">
                           <template.icon className="w-6 h-6 text-blue-600" />
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{template.name}</h4>
+                          <h4 className="text-gray-900 text-sm font-medium">{template.name}</h4>
                           <p className="text-sm text-gray-600 mt-1">{template.description}</p>
                         </div>
                       </div>
                     </CardContent>
-                  </Card>
-                ))}
+                  </Card>)}
               </div>
             </CardContent>
           </Card>
@@ -188,23 +149,12 @@ const GenerateReportModal = ({ isOpen, onClose }: GenerateReportModalProps) => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="reportTitle">Report Title</Label>
-                <Input
-                  id="reportTitle"
-                  placeholder="e.g., November Screening Summary"
-                  value={reportTitle}
-                  onChange={(e) => setReportTitle(e.target.value)}
-                />
+                <Input id="reportTitle" placeholder="e.g., November Screening Summary" value={reportTitle} onChange={e => setReportTitle(e.target.value)} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="reportDescription">Description (Optional)</Label>
-                <Textarea
-                  id="reportDescription"
-                  placeholder="Brief description of this report..."
-                  value={reportDescription}
-                  onChange={(e) => setReportDescription(e.target.value)}
-                  rows={3}
-                />
+                <Textarea id="reportDescription" placeholder="Brief description of this report..." value={reportDescription} onChange={e => setReportDescription(e.target.value)} rows={3} />
               </div>
 
               <div className="space-y-2">
@@ -244,71 +194,38 @@ const GenerateReportModal = ({ isOpen, onClose }: GenerateReportModalProps) => {
               <div className="space-y-2">
                 <Label>Schools (Optional)</Label>
                 <div className="space-y-2">
-                  {mockSchools.slice(0, 4).map((school) => (
-                    <label
-                      key={school}
-                      className="flex items-center space-x-2 text-sm cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedSchools.includes(school)}
-                        onChange={() => toggleSelection(selectedSchools, school, setSelectedSchools)}
-                        className="rounded"
-                      />
+                  {mockSchools.slice(0, 4).map(school => <label key={school} className="flex items-center space-x-2 text-sm cursor-pointer">
+                      <input type="checkbox" checked={selectedSchools.includes(school)} onChange={() => toggleSelection(selectedSchools, school, setSelectedSchools)} className="rounded" />
                       <span>{school}</span>
-                    </label>
-                  ))}
+                    </label>)}
                 </div>
-                {selectedSchools.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {selectedSchools.map((school) => (
-                      <Badge key={school} variant="secondary" className="text-xs">
+                {selectedSchools.length > 0 && <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedSchools.map(school => <Badge key={school} variant="secondary" className="text-xs">
                         {school}
-                        <button
-                          onClick={() => toggleSelection(selectedSchools, school, setSelectedSchools)}
-                          className="ml-1 hover:text-red-600"
-                        >
+                        <button onClick={() => toggleSelection(selectedSchools, school, setSelectedSchools)} className="ml-1 hover:text-red-600">
                           <X className="w-3 h-3" />
                         </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                      </Badge>)}
+                  </div>}
               </div>
 
               {/* Grades Filter */}
               <div className="space-y-2">
                 <Label>Grade Levels (Optional)</Label>
                 <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-                  {gradeOptions.map((grade) => (
-                    <label
-                      key={grade}
-                      className="flex items-center space-x-2 text-sm cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedGrades.includes(grade)}
-                        onChange={() => toggleSelection(selectedGrades, grade, setSelectedGrades)}
-                        className="rounded"
-                      />
+                  {gradeOptions.map(grade => <label key={grade} className="flex items-center space-x-2 text-sm cursor-pointer">
+                      <input type="checkbox" checked={selectedGrades.includes(grade)} onChange={() => toggleSelection(selectedGrades, grade, setSelectedGrades)} className="rounded" />
                       <span>{grade}</span>
-                    </label>
-                  ))}
+                    </label>)}
                 </div>
-                {selectedGrades.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {selectedGrades.slice(0, 3).map((grade) => (
-                      <Badge key={grade} variant="secondary" className="text-xs">
+                {selectedGrades.length > 0 && <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedGrades.slice(0, 3).map(grade => <Badge key={grade} variant="secondary" className="text-xs">
                         {grade}
-                      </Badge>
-                    ))}
-                    {selectedGrades.length > 3 && (
-                      <Badge variant="secondary" className="text-xs">
+                      </Badge>)}
+                    {selectedGrades.length > 3 && <Badge variant="secondary" className="text-xs">
                         +{selectedGrades.length - 3} more
-                      </Badge>
-                    )}
-                  </div>
-                )}
+                      </Badge>}
+                  </div>}
               </div>
             </div>
           </div>
@@ -319,23 +236,17 @@ const GenerateReportModal = ({ isOpen, onClose }: GenerateReportModalProps) => {
               Cancel
             </Button>
             <Button onClick={handleGenerate} disabled={isGenerating || !selectedTemplate}>
-              {isGenerating ? (
-                <>
+              {isGenerating ? <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Generating...
-                </>
-              ) : (
-                <>
+                </> : <>
                   <Download className="w-4 h-4 mr-2" />
                   Generate Report
-                </>
-              )}
+                </>}
             </Button>
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
-
 export default GenerateReportModal;
