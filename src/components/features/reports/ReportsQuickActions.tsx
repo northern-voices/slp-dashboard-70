@@ -21,7 +21,7 @@ const ReportsQuickActions = () => {
 
   const handleExportData = async () => {
     try {
-      const blob = await exportData(() => reportService.exportReport('sample', 'csv'));
+      const blob = await exportData(() => reportService.exportReport('sample', 'csv')) as Blob | null;
       if (blob) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
