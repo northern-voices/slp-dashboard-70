@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,7 +49,7 @@ const ScreeningFormModal = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 h-screen"
       onClick={handleOverlayClick}
     >
       <div 
@@ -90,3 +91,4 @@ const ScreeningFormModal = ({
 };
 
 export default ScreeningFormModal;
+
