@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -123,10 +124,10 @@ const QuickActions = () => {
                   <Button
                     key={index}
                     variant="outline"
-                    className="h-auto min-h-[120px] p-4 flex flex-col items-center justify-center space-y-3 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group"
+                    className="h-auto min-h-[120px] p-4 flex flex-col items-center justify-center space-y-3 transition-colors duration-200 border-gray-200 bg-white hover:bg-gray-50"
                     onClick={action.action}
                   >
-                    <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md`}>
+                    <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center transition-colors duration-200`}>
                       <action.icon className="w-6 h-6 text-white" />
                     </div>
                     <div className="text-center space-y-1 flex-1">
@@ -157,10 +158,10 @@ const QuickActions = () => {
                   <Button
                     key={index}
                     variant="outline"
-                    className="h-auto min-h-[100px] p-3 flex flex-col items-center justify-center space-y-2 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group"
+                    className="h-auto min-h-[100px] p-3 flex flex-col items-center justify-center space-y-2 transition-colors duration-200 border-gray-200 bg-white hover:bg-gray-50"
                     onClick={action.action}
                   >
-                    <div className={`w-10 h-10 rounded-md ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md`}>
+                    <div className={`w-10 h-10 rounded-md ${action.color} flex items-center justify-center transition-colors duration-200`}>
                       <action.icon className="w-5 h-5 text-white" />
                     </div>
                     <div className="text-center space-y-0.5 flex-1">
