@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -18,6 +17,7 @@ import { FileText, BarChart3, User, TrendingUp, Download, X, Loader2 } from 'luc
 import { useAsync } from '@/hooks/useAsync';
 import { reportService } from '@/services/reportService';
 import { useToast } from '@/hooks/use-toast';
+import { Report } from '@/types/database';
 
 interface GenerateReportModalProps {
   isOpen: boolean;
@@ -100,7 +100,7 @@ const GenerateReportModal = ({ isOpen, onClose }: GenerateReportModalProps) => {
 
       const report = await generateReport(() => 
         reportService.generateReport(selectedTemplate, reportData)
-      );
+      ) as Report;
 
       if (outputFormat !== 'preview') {
         const blob = await reportService.exportReport(report.id, outputFormat as 'pdf' | 'csv' | 'xlsx');
