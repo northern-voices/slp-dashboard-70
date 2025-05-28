@@ -23,7 +23,6 @@ interface SpeechScreeningStep1Props {
   onGradeIdChange: (gradeId: string) => void
 }
 
-// Map display names to database values (all as strings to match database)
 const gradeMapping = [
   { display: 'Pre-K', value: 'Pre-' },
   { display: 'Nursery', value: 'Nursery' },
