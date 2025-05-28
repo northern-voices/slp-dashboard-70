@@ -1,16 +1,17 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mic, Volume2, BarChart3, Users, FileText, Settings, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ScreeningForm from '@/components/screening/ScreeningForm';
+import GenerateReportModal from '@/components/reports/GenerateReportModal';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
 
 const QuickActions = () => {
   const navigate = useNavigate();
   const [showScreeningForm, setShowScreeningForm] = useState(false);
+  const [showGenerateReportModal, setShowGenerateReportModal] = useState(false);
   const [screeningType, setScreeningType] = useState<'speech' | 'hearing' | 'progress'>('speech');
   const { toast } = useToast();
 
@@ -94,14 +95,14 @@ const QuickActions = () => {
       description: 'Create comprehensive reports',
       icon: FileText,
       color: 'bg-indigo-600 hover:bg-indigo-700',
-      action: () => console.log('Generate Report')
+      action: () => setShowGenerateReportModal(true)
     }
   ];
 
   return (
     <>
+      {/* Dashboard Sections Grid */}
       <div className="w-full space-y-6">
-        {/* Dashboard Sections Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Quick Screenings Section */}
@@ -181,6 +182,12 @@ const QuickActions = () => {
         onSubmit={handleScreeningSubmit}
         formType={screeningType}
         title={getScreeningTitle()}
+      />
+
+      {/* Generate Report Modal */}
+      <GenerateReportModal
+        isOpen={showGenerateReportModal}
+        onClose={() => setShowGenerateReportModal(false)}
       />
     </>
   );
