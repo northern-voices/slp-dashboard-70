@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { ArrowLeft } from 'lucide-react';
 import AppSidebar from '@/components/AppSidebar';
@@ -35,11 +35,12 @@ const StudentDetailContent = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-25">
         <AppSidebar userRole={userRole} userName={userName} />
-        <div className="flex-1 flex flex-col">
+        
+        <SidebarInset className="flex-1">
           <Header userRole={userRole} userName={userName} />
           
           {/* Header Section with Brand Colors */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 md:px-6 py-6">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 md:px-6 lg:px-8 py-6">
             {/* Breadcrumb Navigation with white styling */}
             <div className="mb-4">
               <Breadcrumb>
@@ -59,10 +60,16 @@ const StudentDetailContent = () => {
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
+            
+            <div className="mb-4">
+              <h1 className="text-2xl md:text-3xl text-white mb-2 font-medium">Student Details</h1>
+              <p className="text-blue-100 text-base md:text-lg">View and manage student information and screening history</p>
+            </div>
           </div>
 
-          <main className="flex-1 p-4 md:p-6 bg-gray-50 pb-20 md:pb-8 -mt-4">
-            <div className="max-w-7xl mx-auto">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8 -mt-4">
+            {/* White content card with shadow */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
               {/* Student Info Header */}
               <StudentInfoHeader studentId={studentId} />
 
@@ -70,7 +77,7 @@ const StudentDetailContent = () => {
               <StudentScreeningHistory studentId={studentId} />
             </div>
           </main>
-        </div>
+        </SidebarInset>
         
         <BottomNavigation />
       </div>
