@@ -54,33 +54,33 @@ const QuickActions = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
       {/* Quick Screenings */}
       <Card className="bg-white border-gray-100 shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center space-x-3 text-xl font-semibold text-gray-900">
-            <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-              <Mic className="w-5 h-5 text-blue-600" />
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center space-x-2 text-lg font-semibold text-gray-900">
+            <div className="w-6 h-6 bg-blue-50 rounded-md flex items-center justify-center">
+              <Mic className="w-4 h-4 text-blue-600" />
             </div>
             <span>Quick Screenings</span>
           </CardTitle>
-          <p className="text-sm text-gray-600 ml-11">Start new assessments and screenings</p>
+          <p className="text-xs text-gray-600">Start new assessments and screenings</p>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
             {quickScreenings.map((action, index) => (
               <Button
                 key={index}
                 variant="outline"
-                className="h-auto p-6 flex flex-col items-center space-y-4 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group"
+                className="h-auto p-4 flex flex-col items-center space-y-2 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group"
                 onClick={action.action}
               >
-                <div className={`w-14 h-14 rounded-lg ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md`}>
-                  <action.icon className="w-7 h-7 text-white" />
+                <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md`}>
+                  <action.icon className="w-5 h-5 text-white" />
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-gray-900 mb-1">{action.title}</div>
-                  <div className="text-sm text-gray-500 leading-relaxed">{action.description}</div>
+                  <div className="font-medium text-gray-900 text-sm mb-0.5">{action.title}</div>
+                  <div className="text-xs text-gray-500 leading-tight">{action.description}</div>
                 </div>
               </Button>
             ))}
@@ -90,30 +90,30 @@ const QuickActions = () => {
 
       {/* Management Tools */}
       <Card className="bg-white border-gray-100 shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center space-x-3 text-xl font-semibold text-gray-900">
-            <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
-              <Settings className="w-5 h-5 text-gray-600" />
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center space-x-2 text-lg font-semibold text-gray-900">
+            <div className="w-6 h-6 bg-gray-50 rounded-md flex items-center justify-center">
+              <Settings className="w-4 h-4 text-gray-600" />
             </div>
             <span>Management Tools</span>
           </CardTitle>
-          <p className="text-sm text-gray-600 ml-11">Manage students, reports, and scheduling</p>
+          <p className="text-xs text-gray-600">Manage students, reports, and scheduling</p>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-2 gap-3">
             {managementTools.map((action, index) => (
               <Button
                 key={index}
                 variant="outline"
-                className="h-auto p-4 flex flex-col items-center space-y-3 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group"
+                className="h-auto p-3 flex flex-col items-center space-y-2 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border-gray-200 bg-white hover:bg-gray-50 group"
                 onClick={action.action}
               >
-                <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md`}>
-                  <action.icon className="w-6 h-6 text-white" />
+                <div className={`w-8 h-8 rounded-md ${action.color} flex items-center justify-center transition-all duration-200 shadow-sm group-hover:shadow-md`}>
+                  <action.icon className="w-4 h-4 text-white" />
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-gray-900 mb-1 text-sm">{action.title}</div>
-                  <div className="text-xs text-gray-500 leading-relaxed">{action.description}</div>
+                  <div className="font-medium text-gray-900 text-xs mb-0.5">{action.title}</div>
+                  <div className="text-xs text-gray-500 leading-tight hidden sm:block">{action.description}</div>
                 </div>
               </Button>
             ))}
