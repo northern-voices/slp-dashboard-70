@@ -6,10 +6,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText, BarChart3, User, TrendingUp } from 'lucide-react';
 import { ScheduleReportData } from '../ScheduleReportsModal';
+
 interface ReportConfigurationStepProps {
   formData: ScheduleReportData;
   updateFormData: (updates: Partial<ScheduleReportData>) => void;
 }
+
 const ReportConfigurationStep = ({
   formData,
   updateFormData
@@ -35,17 +37,26 @@ const ReportConfigurationStep = ({
     description: 'Build your own report with selected data points',
     icon: FileText
   }];
-  return <div className="space-y-6">
+
+  return (
+    <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium mb-4">Choose Report Type</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {reportTypes.map(type => <Card key={type.value} className={`cursor-pointer transition-all hover:shadow-md ${formData.reportType === type.value ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'}`} onClick={() => updateFormData({
-          reportType: type.value
-        })}>
+          {reportTypes.map(type => (
+            <Card
+              key={type.value}
+              className={`cursor-pointer transition-all hover:shadow-md ${
+                formData.reportType === type.value
+                  ? 'ring-2 ring-brand bg-brand/10'
+                  : 'hover:bg-gray-50'
+              }`}
+              onClick={() => updateFormData({ reportType: type.value })}
+            >
               <CardContent className="p-4">
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
-                    <type.icon className="w-6 h-6 text-blue-600" />
+                    <type.icon className="w-6 h-6 text-brand" />
                   </div>
                   <div className="flex-1">
                     <h4 className="text-gray-900 text-base font-medium">{type.label}</h4>
@@ -53,27 +64,36 @@ const ReportConfigurationStep = ({
                   </div>
                 </div>
               </CardContent>
-            </Card>)}
+            </Card>
+          ))}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="reportName">Report Name *</Label>
-          <Input id="reportName" placeholder="e.g., Monthly Screening Summary" value={formData.reportName} onChange={e => updateFormData({
-          reportName: e.target.value
-        })} />
+          <Input
+            id="reportName"
+            placeholder="e.g., Monthly Screening Summary"
+            value={formData.reportName}
+            onChange={e => updateFormData({ reportName: e.target.value })}
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="description">Description</Label>
-          <Textarea id="description" placeholder="Brief description of this scheduled report..." value={formData.description} onChange={e => updateFormData({
-          description: e.target.value
-        })} rows={3} />
+          <Textarea
+            id="description"
+            placeholder="Brief description of this scheduled report..."
+            value={formData.description}
+            onChange={e => updateFormData({ description: e.target.value })}
+            rows={3}
+          />
         </div>
       </div>
 
-      {formData.reportType && <Card>
+      {formData.reportType && (
+        <Card>
           <CardHeader>
             <CardTitle className="text-base">Report Content Options</CardTitle>
           </CardHeader>
@@ -82,13 +102,18 @@ const ReportConfigurationStep = ({
               Customize what data points and visualizations to include in your {formData.reportType} report.
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {['Student demographics', 'Screening results', 'Progress charts', 'Referral statistics', 'Compliance metrics', 'Trend analysis'].map(option => <label key={option} className="flex items-center space-x-2 text-sm">
+              {['Student demographics', 'Screening results', 'Progress charts', 'Referral statistics', 'Compliance metrics', 'Trend analysis'].map(option => (
+                <label key={option} className="flex items-center space-x-2 text-sm">
                   <input type="checkbox" className="rounded" defaultChecked />
                   <span>{option}</span>
-                </label>)}
+                </label>
+              ))}
             </div>
           </CardContent>
-        </Card>}
-    </div>;
+        </Card>
+      )}
+    </div>
+  );
 };
+
 export default ReportConfigurationStep;
