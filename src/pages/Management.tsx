@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -8,16 +7,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Users, Settings, Plus, UserPlus } from 'lucide-react';
+import { Building2, Users, Settings, Plus, UserPlus, Search } from 'lucide-react';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
+import { Input } from '@/components/ui/input';
+import ManagementStats from '@/components/management/ManagementStats';
+import SchoolForm from '@/components/management/SchoolForm';
+import UserInviteModal from '@/components/management/UserInviteModal';
+import UsersTable from '@/components/management/UsersTable';
 
 const ManagementContent = () => {
   const { userProfile } = useOrganization();
+  const [schoolFormOpen, setSchoolFormOpen] = useState(false);
+  const [userInviteOpen, setUserInviteOpen] = useState(false);
+  const [editingSchool, setEditingSchool] = useState(null);
+  const [schoolSearch, setSchoolSearch] = useState('');
 
   const userRole = userProfile?.role || 'slp';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
 
-  const mockSchools = [
+  const [mockSchools, setMockSchools] = useState([
     {
       id: 1,
       name: "Lincoln Elementary School",
@@ -36,28 +44,88 @@ const ManagementContent = () => {
       slpCount: 3,
       status: "active"
     }
-  ];
+  ]);
 
-  const mockSLPs = [
+  const [mockSLPs, setMockSLPs] = useState([
     {
-      id: 1,
+      id: "1",
       name: "Dr. Sarah Johnson",
       email: "sarah.johnson@district.edu",
       schools: ["Lincoln Elementary", "Roosevelt High"],
       role: "slp",
       status: "active",
-      lastActive: "2024-11-20"
+      lastActive: "2024-11-20",
+      licenseNumber: "SLP-12345"
     },
     {
-      id: 2,
+      id: "2",
       name: "Ms. Emily Chen",
       email: "emily.chen@district.edu",
       schools: ["Washington Middle"],
-      role: "slp",
+      role: "supervisor",
       status: "active",
-      lastActive: "2024-11-19"
+      lastActive: "2024-11-19",
+      licenseNumber: "SLP-67890"
     }
-  ];
+  ]);
+
+  const filteredSchools = mockSchools.filter(school =>
+    school.name.toLowerCase().includes(schoolSearch.toLowerCase())
+  );
+
+  const handleSaveSchool = (schoolData: any) => {
+    if (editingSchool) {
+      setMockSchools(prev => prev.map(school => 
+        school.id === editingSchool.id ? { ...school, ...schoolData } : school
+      ));
+    } else {
+      const newSchool = {
+        id: mockSchools.length + 1,
+        ...schoolData,
+        studentCount: 0,
+        slpCount: 0
+      };
+      setMockSchools(prev => [...prev, newSchool]);
+    }
+    setEditingSchool(null);
+  };
+
+  const handleEditSchool = (school: any) => {
+    setEditingSchool(school);
+    setSchoolFormOpen(true);
+  };
+
+  const handleInviteUser = (userData: any) => {
+    const newUser = {
+      id: (mockSLPs.length + 1).toString(),
+      name: `${userData.firstName} ${userData.lastName}`,
+      email: userData.email,
+      role: userData.role,
+      status: 'pending',
+      schools: userData.selectedSchools.map((id: string) => 
+        mockSchools.find(school => school.id.toString() === id)?.name || ''
+      ).filter(Boolean),
+      lastActive: 'Never',
+      licenseNumber: userData.licenseNumber
+    };
+    setMockSLPs(prev => [...prev, newUser]);
+  };
+
+  const handleEditUser = (user: any) => {
+    console.log('Edit user:', user);
+  };
+
+  const handleDeactivateUser = (userId: string) => {
+    setMockSLPs(prev => prev.map(user => 
+      user.id === userId 
+        ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
+        : user
+    ));
+  };
+
+  const handleResendInvite = (userId: string) => {
+    console.log('Resend invite to user:', userId);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -67,19 +135,6 @@ const ManagementContent = () => {
         return <Badge variant="outline">Inactive</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
-
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return <Badge className="bg-purple-100 text-purple-800">Administrator</Badge>;
-      case 'supervisor':
-        return <Badge className="bg-blue-100 text-blue-800">Supervisor</Badge>;
-      case 'slp':
-        return <Badge className="bg-green-100 text-green-800">SLP</Badge>;
-      default:
-        return <Badge variant="secondary">{role}</Badge>;
     }
   };
 
@@ -125,6 +180,8 @@ const ManagementContent = () => {
               <p className="text-gray-600 text-sm md:text-base">Manage schools, users, and system settings</p>
             </div>
 
+            <ManagementStats />
+
             <Tabs defaultValue="schools" className="space-y-6">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="schools" className="flex items-center">
@@ -142,16 +199,26 @@ const ManagementContent = () => {
               </TabsList>
 
               <TabsContent value="schools" className="space-y-6">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <h2 className="text-xl font-semibold">School Management</h2>
-                  <Button>
+                  <Button onClick={() => setSchoolFormOpen(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add School
                   </Button>
                 </div>
 
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="Search schools..."
+                    value={schoolSearch}
+                    onChange={(e) => setSchoolSearch(e.target.value)}
+                    className="pl-10 max-w-md"
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {mockSchools.map((school) => (
+                  {filteredSchools.map((school) => (
                     <Card key={school.id} className="hover:shadow-md transition-shadow">
                       <CardHeader>
                         <div className="flex items-center justify-between">
@@ -167,7 +234,13 @@ const ManagementContent = () => {
                           <p className="text-sm"><strong>SLPs Assigned:</strong> {school.slpCount}</p>
                         </div>
                         <div className="flex space-x-2 mt-4">
-                          <Button variant="outline" size="sm">Edit</Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEditSchool(school)}
+                          >
+                            Edit
+                          </Button>
                           <Button variant="outline" size="sm">View Details</Button>
                         </div>
                       </CardContent>
@@ -177,42 +250,20 @@ const ManagementContent = () => {
               </TabsContent>
 
               <TabsContent value="users" className="space-y-6">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <h2 className="text-xl font-semibold">User Management</h2>
-                  <Button>
+                  <Button onClick={() => setUserInviteOpen(true)}>
                     <UserPlus className="w-4 h-4 mr-2" />
                     Invite User
                   </Button>
                 </div>
 
-                <Card>
-                  <CardContent className="p-0">
-                    <div className="space-y-4 p-6">
-                      {mockSLPs.map((slp) => (
-                        <div key={slp.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="space-y-1">
-                            <h3 className="font-medium text-gray-900">{slp.name}</h3>
-                            <p className="text-sm text-gray-600">{slp.email}</p>
-                            <div className="flex items-center space-x-2">
-                              {getRoleBadge(slp.role)}
-                              {getStatusBadge(slp.status)}
-                            </div>
-                            <p className="text-xs text-gray-500">
-                              Schools: {slp.schools.join(', ')}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              Last active: {slp.lastActive}
-                            </p>
-                          </div>
-                          <div className="flex space-x-2">
-                            <Button variant="outline" size="sm">Edit</Button>
-                            <Button variant="outline" size="sm">Deactivate</Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                <UsersTable 
+                  users={mockSLPs}
+                  onEditUser={handleEditUser}
+                  onDeactivateUser={handleDeactivateUser}
+                  onResendInvite={handleResendInvite}
+                />
               </TabsContent>
 
               <TabsContent value="settings" className="space-y-6">
@@ -266,6 +317,22 @@ const ManagementContent = () => {
         
         <BottomNavigation />
       </div>
+
+      <SchoolForm
+        isOpen={schoolFormOpen}
+        onClose={() => {
+          setSchoolFormOpen(false);
+          setEditingSchool(null);
+        }}
+        school={editingSchool}
+        onSave={handleSaveSchool}
+      />
+
+      <UserInviteModal
+        isOpen={userInviteOpen}
+        onClose={() => setUserInviteOpen(false)}
+        onInvite={handleInviteUser}
+      />
     </SidebarProvider>
   );
 };
