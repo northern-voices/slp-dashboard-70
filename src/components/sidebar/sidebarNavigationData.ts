@@ -8,6 +8,7 @@ import {
   GraduationCap,
   User
 } from 'lucide-react';
+import { Location } from 'react-router-dom';
 
 export interface NavigationItem {
   title: string;
