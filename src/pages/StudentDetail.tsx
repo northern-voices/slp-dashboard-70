@@ -39,43 +39,40 @@ const StudentDetailContent = () => {
         <SidebarInset className="flex-1">
           <Header userRole={userRole} userName={userName} />
           
-          {/* Header Section with Brand Colors */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 md:px-6 lg:px-8 py-6">
-            {/* Breadcrumb Navigation with white styling */}
+          {/* Page Title Section */}
+          <div className="px-4 md:px-6 lg:px-8 py-6">
+            {/* Breadcrumb Navigation */}
             <div className="mb-4">
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem>
                     <BreadcrumbLink asChild>
-                      <Link to="/students" className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors">
+                      <Link to="/students" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
                         <ArrowLeft className="w-4 h-4" />
                         Students
                       </Link>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
-                  <BreadcrumbSeparator className="text-blue-200" />
+                  <BreadcrumbSeparator />
                   <BreadcrumbItem>
-                    <BreadcrumbPage className="text-white font-medium">Student Details</BreadcrumbPage>
+                    <BreadcrumbPage className="text-gray-900 font-medium">Student Details</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
             
-            <div className="mb-4">
-              <h1 className="text-2xl md:text-3xl text-white mb-2 font-medium">Student Details</h1>
-              <p className="text-blue-100 text-base md:text-lg">View and manage student information and screening history</p>
+            <div className="mb-6">
+              <h1 className="text-2xl md:text-3xl text-gray-900 mb-2 font-semibold">Student Details</h1>
+              <p className="text-gray-600 text-base md:text-lg">View and manage student information and screening history</p>
             </div>
           </div>
 
-          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8 -mt-4">
-            {/* White content card with shadow */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-              {/* Student Info Header */}
-              <StudentInfoHeader studentId={studentId} />
+          <main className="flex-1 px-4 md:px-6 lg:px-8 pb-20 md:pb-8 space-y-6">
+            {/* Student Info Header */}
+            <StudentInfoHeader studentId={studentId} />
 
-              {/* Screening History */}
-              <StudentScreeningHistory studentId={studentId} />
-            </div>
+            {/* Screening History */}
+            <StudentScreeningHistory studentId={studentId} />
           </main>
         </SidebarInset>
         
