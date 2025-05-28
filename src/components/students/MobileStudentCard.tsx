@@ -21,8 +21,17 @@ const MobileStudentCard = ({
   onScheduleScreening, 
   calculateAge 
 }: MobileStudentCardProps) => {
+  const handleCardClick = (event: React.MouseEvent) => {
+    // Don't navigate if user clicked on action buttons
+    const target = event.target as HTMLElement;
+    if (target.closest('button') || target.closest('[role="button"]')) {
+      return;
+    }
+    onView(student.id);
+  };
+
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={handleCardClick}>
       <CardContent className="p-4">
         {/* Student basic info */}
         <div className="mb-3">
@@ -70,7 +79,10 @@ const MobileStudentCard = ({
             variant="outline"
             size="sm"
             className="h-9 text-xs"
-            onClick={() => onView(student.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onView(student.id);
+            }}
           >
             <Eye className="w-3 h-3 mr-1" />
             View
@@ -79,7 +91,10 @@ const MobileStudentCard = ({
             variant="outline"
             size="sm"
             className="h-9 text-xs"
-            onClick={() => onEdit(student)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(student);
+            }}
           >
             <Edit className="w-3 h-3 mr-1" />
             Edit
@@ -88,7 +103,10 @@ const MobileStudentCard = ({
             variant="outline"
             size="sm"
             className="h-9 text-xs"
-            onClick={() => onScheduleScreening(student)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onScheduleScreening(student);
+            }}
           >
             <Calendar className="w-3 h-3 mr-1" />
             Screen
