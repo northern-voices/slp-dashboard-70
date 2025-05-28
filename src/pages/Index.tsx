@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -36,14 +37,14 @@ const DashboardContent = () => {
           
           <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
             {/* Context Banner - Below header */}
-            {currentSchool && <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-6">
+            {currentSchool && <div className="bg-brand/10 border border-brand/20 rounded-lg p-3 mb-6">
                 <div className="flex items-center space-x-2">
-                  <GraduationCap className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <GraduationCap className="w-4 h-4 text-brand flex-shrink-0" />
                   <div className="min-w-0">
-                    <h3 className="font-medium text-blue-900 text-sm truncate">
+                    <h3 className="font-medium text-brand text-sm truncate">
                       Viewing data for {currentSchool.name}
                     </h3>
-                    <p className="text-xs text-blue-700 truncate">
+                    <p className="text-xs text-brand/70 truncate">
                       {currentOrganization?.name} • Switch schools using the sidebar
                     </p>
                   </div>

@@ -116,7 +116,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', classNam
                     <SidebarMenuButton 
                       asChild 
                       isActive={item.isActive}
-                      className="w-full justify-start hover:bg-gray-100 data-[active=true]:bg-blue-50 data-[active=true]:text-blue-700 data-[active=true]:font-medium"
+                      className="w-full justify-start hover:bg-gray-100 data-[active=true]:bg-brand/10 data-[active=true]:text-brand data-[active=true]:font-medium"
                     >
                       <a href={item.url} className="flex items-center space-x-3 px-3 py-2">
                         <item.icon className="w-4 h-4" />
