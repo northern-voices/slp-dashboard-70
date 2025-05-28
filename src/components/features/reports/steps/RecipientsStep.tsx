@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -90,7 +91,7 @@ const RecipientsStep = ({ formData, updateFormData }: RecipientsStepProps) => {
                 key={method.value}
                 className={`cursor-pointer transition-all hover:shadow-md ${
                   formData.deliveryMethod === method.value
-                    ? 'ring-2 ring-blue-500 bg-blue-50'
+                    ? 'ring-2 ring-brand bg-brand/10'
                     : 'hover:bg-gray-50'
                 }`}
                 onClick={() => updateFormData({ deliveryMethod: method.value })}
