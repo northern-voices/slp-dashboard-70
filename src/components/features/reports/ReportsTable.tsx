@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, FileText } from 'lucide-react';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-
 interface Report {
   id: number;
   title: string;
@@ -15,13 +13,14 @@ interface Report {
   studentCount?: number;
   description: string;
 }
-
 interface ReportsTableProps {
   reports: Report[];
   loading?: boolean;
 }
-
-const ReportsTable = ({ reports, loading = false }: ReportsTableProps) => {
+const ReportsTable = ({
+  reports,
+  loading = false
+}: ReportsTableProps) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'final':
@@ -35,7 +34,6 @@ const ReportsTable = ({ reports, loading = false }: ReportsTableProps) => {
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
-
   const getReportTypeIcon = (type: string) => {
     switch (type) {
       case 'summary':
@@ -48,10 +46,8 @@ const ReportsTable = ({ reports, loading = false }: ReportsTableProps) => {
         return <FileText className="w-4 h-4" />;
     }
   };
-
   if (loading) {
-    return (
-      <Card>
+    return <Card>
         <CardHeader>
           <CardTitle>Recent Reports</CardTitle>
           <CardDescription>Your generated reports and assessments</CardDescription>
@@ -59,32 +55,26 @@ const ReportsTable = ({ reports, loading = false }: ReportsTableProps) => {
         <CardContent className="flex justify-center py-8">
           <LoadingSpinner size="lg" />
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
         <CardTitle>Recent Reports</CardTitle>
         <CardDescription>Your generated reports and assessments</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {reports.map((report) => (
-            <div key={report.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-gray-50 space-y-3 sm:space-y-0">
+          {reports.map(report => <div key={report.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg hover:bg-gray-50 space-y-3 sm:space-y-0">
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0 mt-1">
                   {getReportTypeIcon(report.type)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h5 className="font-medium text-gray-900 break-words">{report.title}</h5>
+                  <h5 className="font-medium text-gray-900 break-words py-[4px] text-xs">{report.title}</h5>
                   <p className="text-sm text-gray-600 break-words">{report.description}</p>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     <span className="text-xs text-gray-500">{report.date}</span>
-                    {report.studentCount && (
-                      <span className="text-xs text-gray-500">• {report.studentCount} students</span>
-                    )}
+                    {report.studentCount && <span className="text-xs text-gray-500">• {report.studentCount} students</span>}
                   </div>
                 </div>
               </div>
@@ -95,12 +85,9 @@ const ReportsTable = ({ reports, loading = false }: ReportsTableProps) => {
                   Download
                 </Button>
               </div>
-            </div>
-          ))}
+            </div>)}
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ReportsTable;
