@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,7 +14,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    /* Brand Primary Colors - Blue Theme */
+    --primary: 217.2 91.2% 59.8%; /* blue-500 */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -25,30 +27,69 @@
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
+    /* Status Colors */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+    
+    --success: 142.1 76.2% 36.3%; /* green-600 */
+    --success-foreground: 210 40% 98%;
+    
+    --warning: 45.4 93.4% 47.5%; /* amber-500 */
+    --warning-foreground: 222.2 47.4% 11.2%;
+    
+    --info: 217.2 91.2% 59.8%; /* blue-500 */
+    --info-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 217.2 91.2% 59.8%; /* blue-500 for focus rings */
 
     --radius: 0.5rem;
 
+    /* Brand Specific Colors */
+    --brand-primary: 221.2 83.2% 53.3%; /* blue-600 */
+    --brand-primary-dark: 224.3 76.3% 48%; /* blue-700 */
+    --brand-primary-light: 213.3 93.9% 67.8%; /* blue-400 */
+    --brand-primary-foreground: 210 40% 98%;
+
+    /* Sidebar Colors */
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    --sidebar-primary: 217.2 91.2% 59.8%;
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Typography Scale */
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-base: 1rem;     /* 16px */
+    --font-size-lg: 1.125rem;   /* 18px */
+    --font-size-xl: 1.25rem;    /* 20px */
+    --font-size-2xl: 1.5rem;    /* 24px */
+    --font-size-3xl: 1.875rem;  /* 30px */
+    --font-size-4xl: 2.25rem;   /* 36px */
+
+    /* Spacing Scale */
+    --spacing-xs: 0.25rem;      /* 4px */
+    --spacing-sm: 0.5rem;       /* 8px */
+    --spacing-md: 1rem;         /* 16px */
+    --spacing-lg: 1.5rem;       /* 24px */
+    --spacing-xl: 2rem;         /* 32px */
+    --spacing-2xl: 3rem;        /* 48px */
+
+    /* Border Radius Scale */
+    --radius-sm: 0.25rem;       /* 4px */
+    --radius-md: 0.5rem;        /* 8px */
+    --radius-lg: 0.75rem;       /* 12px */
+    --radius-xl: 1rem;          /* 16px */
+
+    /* Shadow Scale */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 
   .dark {
@@ -61,7 +102,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -76,9 +117,24 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 210 40% 98%;
+    
+    --warning: 45.4 93.4% 47.5%;
+    --warning-foreground: 222.2 47.4% 11.2%;
+    
+    --info: 217.2 91.2% 59.8%;
+    --info-foreground: 210 40% 98%;
+
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 217.2 91.2% 59.8%;
+
+    --brand-primary: 217.2 91.2% 59.8%;
+    --brand-primary-dark: 224.3 76.3% 48%;
+    --brand-primary-light: 213.3 93.9% 67.8%;
+    --brand-primary-foreground: 210 40% 98%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -97,5 +153,268 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Typography Base Styles */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl lg:text-5xl;
+  }
+
+  h2 {
+    @apply text-3xl lg:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl lg:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl lg:text-2xl;
+  }
+
+  h5 {
+    @apply text-lg lg:text-xl;
+  }
+
+  h6 {
+    @apply text-base lg:text-lg;
+  }
+
+  p {
+    @apply leading-7;
+  }
+
+  .text-muted {
+    @apply text-muted-foreground;
+  }
+
+  .text-brand {
+    color: hsl(var(--brand-primary));
+  }
+
+  .bg-brand {
+    background-color: hsl(var(--brand-primary));
+  }
+
+  .border-brand {
+    border-color: hsl(var(--brand-primary));
+  }
+}
+
+@layer components {
+  /* Button Component Utilities */
+  .btn-brand {
+    @apply bg-brand text-white hover:bg-brand/90 focus:ring-brand/20;
+  }
+
+  .btn-brand-outline {
+    @apply border-brand text-brand bg-transparent hover:bg-brand hover:text-white;
+  }
+
+  /* Card Component Utilities */
+  .card-elevated {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .card-outlined {
+    @apply border border-border;
+  }
+
+  .card-flat {
+    @apply bg-background;
+  }
+
+  /* Status Indicators */
+  .status-success {
+    color: hsl(var(--success));
+    background-color: hsl(var(--success) / 0.1);
+  }
+
+  .status-warning {
+    color: hsl(var(--warning));
+    background-color: hsl(var(--warning) / 0.1);
+  }
+
+  .status-error {
+    color: hsl(var(--destructive));
+    background-color: hsl(var(--destructive) / 0.1);
+  }
+
+  .status-info {
+    color: hsl(var(--info));
+    background-color: hsl(var(--info) / 0.1);
+  }
+
+  /* Focus Utilities */
+  .focus-brand {
+    @apply focus:outline-none focus:ring-2 focus:ring-brand/20 focus:ring-offset-2;
+  }
+}
+
+@layer utilities {
+  /* Spacing Utilities */
+  .space-xs { @apply space-y-1 space-x-1; }
+  .space-sm { @apply space-y-2 space-x-2; }
+  .space-md { @apply space-y-4 space-x-4; }
+  .space-lg { @apply space-y-6 space-x-6; }
+  .space-xl { @apply space-y-8 space-x-8; }
+
+  /* Padding Utilities */
+  .p-xs { padding: var(--spacing-xs); }
+  .p-sm { padding: var(--spacing-sm); }
+  .p-md { padding: var(--spacing-md); }
+  .p-lg { padding: var(--spacing-lg); }
+  .p-xl { padding: var(--spacing-xl); }
+
+  /* Margin Utilities */
+  .m-xs { margin: var(--spacing-xs); }
+  .m-sm { margin: var(--spacing-sm); }
+  .m-md { margin: var(--spacing-md); }
+  .m-lg { margin: var(--spacing-lg); }
+  .m-xl { margin: var(--spacing-xl); }
+
+  /* Border Radius Utilities */
+  .rounded-xs { border-radius: var(--radius-sm); }
+  .rounded-sm { border-radius: var(--radius-md); }
+  .rounded-md { border-radius: var(--radius-lg); }
+  .rounded-lg { border-radius: var(--radius-xl); }
+
+  /* Animation Utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Existing styles preserved for compatibility */
+#root {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Mobile-first responsive styles */
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 1em;
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: 2em;
+  }
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Prevent horizontal overflow on mobile */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure tables don't break layout on mobile */
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile-friendly touch targets */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Hide scrollbars on mobile for cleaner look */
+@media (max-width: 768px) {
+  .overflow-x-auto::-webkit-scrollbar {
+    display: none;
+  }
+  .overflow-x-auto {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
