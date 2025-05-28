@@ -10,8 +10,8 @@ export interface ReportTemplate {
   fields: string[];
 }
 
-// Mock data for reports
-const mockReports = [
+// Mock data for reports - fixed to match Report interface
+const mockReports: Report[] = [
   {
     id: '1',
     screening_id: 'screening-1',
@@ -21,16 +21,28 @@ const mockReports = [
     follow_up_required: true,
     follow_up_date: '2024-12-15',
     generated_at: '2024-11-01T00:00:00Z',
-    status: 'final' as const,
+    status: 'final',
   },
   {
     id: '2',
     screening_id: 'screening-2',
     title: 'Individual Report - Emma Thompson',
     content: 'Speech screening assessment results',
+    recommendations: 'No immediate follow-up required',
     follow_up_required: false,
     generated_at: '2024-11-15T00:00:00Z',
-    status: 'completed' as const,
+    status: 'final',
+  },
+  {
+    id: '3',
+    screening_id: 'screening-3',
+    title: 'Progress Report - Math Johnson',
+    content: '6-month progress evaluation',
+    recommendations: 'Schedule follow-up in 3 months',
+    follow_up_required: true,
+    follow_up_date: '2025-02-20',
+    generated_at: '2024-11-20T00:00:00Z',
+    status: 'draft',
   },
 ];
 
@@ -74,6 +86,7 @@ export const reportService = {
       screening_id: 'screening-new',
       title: `Generated Report - ${template.name}`,
       content: 'Generated report content based on template',
+      recommendations: 'Generated recommendations based on template data',
       follow_up_required: false,
       generated_at: new Date().toISOString(),
       status: 'draft',
