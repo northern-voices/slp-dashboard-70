@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import {
   Sidebar,
@@ -18,7 +16,6 @@ import {
   Users, 
   Settings,
   BarChart3,
-  Calendar,
   Building2,
   GraduationCap
 } from 'lucide-react';
@@ -55,12 +52,6 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
       url: "/reports",
       icon: BarChart3,
       isActive: location.pathname === "/reports"
-    },
-    {
-      title: "Calendar",
-      url: "/calendar",
-      icon: Calendar,
-      isActive: location.pathname === "/calendar"
     },
     {
       title: "Management",
@@ -210,4 +201,3 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
 };
 
 export default AppSidebar;
-

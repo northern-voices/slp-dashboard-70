@@ -8,7 +8,6 @@ import Index from "./pages/Index";
 import Students from "./pages/Students";
 import StudentDetail from "./pages/StudentDetail";
 import Reports from "./pages/Reports";
-import Calendar from "./pages/Calendar";
 import Management from "./pages/Management";
 import NotFound from "./pages/NotFound";
 
@@ -25,7 +24,6 @@ const App = () => (
           <Route path="/students" element={<Students />} />
           <Route path="/students/:studentId" element={<StudentDetail />} />
           <Route path="/reports" element={<Reports />} />
-          <Route path="/calendar" element={<Calendar />} />
           <Route path="/management" element={<Management />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

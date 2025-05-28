@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Users, BarChart3, Calendar, Building2 } from 'lucide-react';
+import { Home, Users, BarChart3, Building2 } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -25,12 +25,6 @@ const BottomNavigation = () => {
       url: "/reports",
       icon: BarChart3,
       isActive: location.pathname === "/reports"
-    },
-    {
-      title: "Calendar",
-      url: "/calendar",
-      icon: Calendar,
-      isActive: location.pathname === "/calendar"
     },
     {
       title: "Management",

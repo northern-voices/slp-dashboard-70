@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mic, Volume2, BarChart3, Calendar, Users, FileText, Settings } from 'lucide-react';
+import { Mic, Volume2, BarChart3, Users, FileText, Settings, TrendingUp } from 'lucide-react';
 
 const QuickActions = () => {
   const quickScreenings = [
@@ -31,11 +31,11 @@ const QuickActions = () => {
       action: () => console.log('Progress Report')
     },
     {
-      title: 'Schedule Session',
-      description: 'Book therapy session',
-      icon: Calendar,
+      title: 'View Analytics',
+      description: 'Review screening trends',
+      icon: TrendingUp,
       color: 'bg-emerald-600 hover:bg-emerald-700',
-      action: () => console.log('Schedule Session')
+      action: () => console.log('View Analytics')
     },
     {
       title: 'Manage Students',
@@ -101,7 +101,7 @@ const QuickActions = () => {
               </div>
               <span>Management Tools</span>
             </CardTitle>
-            <p className="text-sm text-gray-600">Manage students, reports, and scheduling</p>
+            <p className="text-sm text-gray-600">Manage students, reports, and analytics</p>
           </CardHeader>
           <CardContent className="pt-0">
             {/* Responsive Grid for Management Tools */}
