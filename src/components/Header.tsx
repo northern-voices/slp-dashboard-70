@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -29,9 +28,10 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 interface HeaderProps {
   userRole?: 'admin' | 'slp' | 'supervisor';
   userName?: string;
+  className?: string;
 }
 
-const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: HeaderProps) => {
+const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', className }: HeaderProps) => {
   const initials = userName.split(' ').map(n => n[0]).join('');
 
   const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {
@@ -47,7 +47,7 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: HeaderProp
   };
 
   return (
-    <header className="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm">
+    <header className={`bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm ${className || ''}`}>
       <div className="flex items-center justify-between h-14 px-4">
         {/* Left side - Sidebar trigger and navigation for desktop */}
         <div className="flex items-center space-x-4">
