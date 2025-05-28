@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Filter } from 'lucide-react';
-
 interface ReportsFiltersProps {
   selectedTimeframe: string;
   setSelectedTimeframe: (value: string) => void;
@@ -13,7 +11,6 @@ interface ReportsFiltersProps {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
 }
-
 const ReportsFilters = ({
   selectedTimeframe,
   setSelectedTimeframe,
@@ -22,18 +19,12 @@ const ReportsFilters = ({
   searchTerm,
   setSearchTerm
 }: ReportsFiltersProps) => {
-  return (
-    <div className="mb-8">
-      <h3 className="text-xl font-semibold text-gray-900 mb-4">Search Reports</h3>
+  return <div className="mb-8">
+      <h3 className="text-xl text-gray-900 mb-4 font-medium">Search Reports</h3>
       
       <div className="flex flex-col lg:flex-row gap-4 items-end">
         <div className="flex-1">
-          <Input
-            placeholder="e.g., John Doe"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-11"
-          />
+          <Input placeholder="e.g., John Doe" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="h-11" />
         </div>
         
         <div className="w-full lg:w-48">
@@ -69,8 +60,6 @@ const ReportsFilters = ({
           Apply Filters
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ReportsFilters;
