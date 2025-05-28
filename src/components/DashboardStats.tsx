@@ -80,12 +80,12 @@ const DashboardStats = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       {stats.map((stat, index) => (
-        <Card key={index} className="bg-white border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 group">
+        <Card key={index} className="bg-white border-gray-100 shadow-sm hover:bg-gray-50 transition-colors duration-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 tracking-wide">
               {stat.title}
             </CardTitle>
-            <div className={`w-10 h-10 ${stat.bgColor} rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200`}>
+            <div className={`w-10 h-10 ${stat.bgColor} rounded-lg flex items-center justify-center transition-colors duration-200`}>
               <stat.icon className={`h-5 w-5 ${stat.color}`} />
             </div>
           </CardHeader>
