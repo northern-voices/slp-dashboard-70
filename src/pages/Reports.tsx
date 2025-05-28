@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -6,14 +5,15 @@ import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import ScheduleReportsModal from '@/components/reports/ScheduleReportsModal';
+import ScheduleReportsHero from '@/components/reports/ScheduleReportsHero';
 import ReportsFilters from '@/components/reports/ReportsFilters';
 import ReportsQuickActions from '@/components/reports/ReportsQuickActions';
 import ReportsTable from '@/components/reports/ReportsTable';
 
 const ReportsContent = () => {
   const { userProfile } = useOrganization();
-  const [selectedTimeframe, setSelectedTimeframe] = useState('this_month');
-  const [selectedReportType, setSelectedReportType] = useState('all');
+  const [selectedTimeframe, setSelectedTimeframe] = useState('last_month');
+  const [selectedReportType, setSelectedReportType] = useState('individual');
   const [searchTerm, setSearchTerm] = useState('');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
@@ -57,10 +57,14 @@ const ReportsContent = () => {
           <Header userRole={userRole} userName={userName} />
           
           <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
-            <div className="mb-6 md:mb-8">
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Reports</h1>
-              <p className="text-gray-600 text-sm md:text-base">Generate and manage screening reports and assessments</p>
+            <div className="mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Reports</h1>
+              <p className="text-gray-600 text-base">Generate and manage screening reports and assessments</p>
             </div>
+
+            <ScheduleReportsHero
+              onScheduleClick={() => setShowScheduleModal(true)}
+            />
 
             <ReportsFilters
               selectedTimeframe={selectedTimeframe}
@@ -71,9 +75,7 @@ const ReportsContent = () => {
               setSearchTerm={setSearchTerm}
             />
 
-            <ReportsQuickActions
-              onScheduleClick={() => setShowScheduleModal(true)}
-            />
+            <ReportsQuickActions />
 
             <ReportsTable reports={mockReports} />
           </main>

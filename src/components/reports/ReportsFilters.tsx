@@ -1,10 +1,9 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter } from 'lucide-react';
+import { Filter } from 'lucide-react';
 
 interface ReportsFiltersProps {
   selectedTimeframe: string;
@@ -24,14 +23,23 @@ const ReportsFilters = ({
   setSearchTerm
 }: ReportsFiltersProps) => {
   return (
-    <div className="space-y-4 mb-6">
-      {/* Row 1: Timeframe and Report Type */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="timeframe" className="text-sm font-medium">Timeframe</Label>
+    <div className="mb-8">
+      <h3 className="text-xl font-semibold text-gray-900 mb-4">Search Reports</h3>
+      
+      <div className="flex flex-col lg:flex-row gap-4 items-end">
+        <div className="flex-1">
+          <Input
+            placeholder="e.g., John Doe"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-11"
+          />
+        </div>
+        
+        <div className="w-full lg:w-48">
           <Select value={selectedTimeframe} onValueChange={setSelectedTimeframe}>
             <SelectTrigger className="h-11">
-              <SelectValue placeholder="Select timeframe" />
+              <SelectValue placeholder="Last Month" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="this_week">This Week</SelectItem>
@@ -42,11 +50,10 @@ const ReportsFilters = ({
           </Select>
         </div>
         
-        <div className="space-y-2">
-          <Label htmlFor="report_type" className="text-sm font-medium">Report Type</Label>
+        <div className="w-full lg:w-52">
           <Select value={selectedReportType} onValueChange={setSelectedReportType}>
             <SelectTrigger className="h-11">
-              <SelectValue placeholder="Select type" />
+              <SelectValue placeholder="Individual Reports" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Reports</SelectItem>
@@ -56,28 +63,12 @@ const ReportsFilters = ({
             </SelectContent>
           </Select>
         </div>
+        
+        <Button className="h-11 px-6">
+          <Filter className="w-4 h-4 mr-2" />
+          Apply Filters
+        </Button>
       </div>
-
-      {/* Row 2: Search */}
-      <div className="space-y-2">
-        <Label htmlFor="search" className="text-sm font-medium">Search Reports</Label>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            id="search"
-            placeholder="Search by student name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-11"
-          />
-        </div>
-      </div>
-
-      {/* Row 3: Apply Filters Button */}
-      <Button className="w-full h-11">
-        <Filter className="w-4 h-4 mr-2" />
-        Apply Filters
-      </Button>
     </div>
   );
 };
