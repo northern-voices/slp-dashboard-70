@@ -27,9 +27,10 @@ import SchoolSelector from '@/components/SchoolSelector';
 interface AppSidebarProps {
   userRole?: 'admin' | 'slp' | 'supervisor';
   userName?: string;
+  className?: string;
 }
 
-const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSidebarProps) => {
+const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', className }: AppSidebarProps) => {
   const { currentOrganization, userProfile } = useOrganization();
   const location = useLocation();
   const initials = userName.split(' ').map(n => n[0]).join('');
@@ -78,7 +79,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson' }: AppSid
   ];
 
   return (
-    <div className="hidden md:block">
+    <div className={`hidden md:block ${className || ''}`}>
       <Sidebar>
         <SidebarHeader className="border-b border-gray-100 p-4">
           <div className="flex items-center space-x-3 mb-4">
