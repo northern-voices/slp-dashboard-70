@@ -114,19 +114,19 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
   };
 
   const ScreeningCard = ({ screening }: { screening: Screening }) => (
-    <div className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
+    <div className="border border-blue-100 rounded-lg p-4 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-white to-blue-25">
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant={getStatusColor(screening.status)}>
+            <Badge variant={getStatusColor(screening.status)} className="bg-emerald-100 text-emerald-800">
               {screening.status.replace('_', ' ')}
             </Badge>
-            <Badge variant="outline">
+            <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">
               {getTypeDisplay(screening.screening_type)}
             </Badge>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-            <Calendar className="w-4 h-4" />
+            <Calendar className="w-4 h-4 text-blue-500" />
             <span>{new Date(screening.screening_date).toLocaleDateString()}</span>
           </div>
           {screening.notes && (
@@ -134,10 +134,10 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
           )}
         </div>
         <div className="flex gap-1 ml-4">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-700">
             <Eye className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-700">
             <FileText className="w-4 h-4" />
           </Button>
         </div>
@@ -146,24 +146,24 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="w-5 h-5" />
+    <Card className="border-0 shadow-md">
+      <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-25 border-b border-blue-100">
+        <CardTitle className="flex items-center gap-2 text-blue-900">
+          <Clock className="w-5 h-5 text-blue-600" />
           Screening History
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <Tabs defaultValue="speech" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="speech">Speech Screen</TabsTrigger>
-            <TabsTrigger value="hearing">Hearing Screen</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-blue-50">
+            <TabsTrigger value="speech" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Speech Screen</TabsTrigger>
+            <TabsTrigger value="hearing" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Hearing Screen</TabsTrigger>
           </TabsList>
           
           <TabsContent value="speech" className="space-y-4 mt-6">
             {/* Recent Screenings - Always Visible */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              <h3 className="text-lg font-semibold text-blue-900 mb-3">
                 Recent Screenings (Last 6 months)
               </h3>
               {recentScreenings.length > 0 ? (
@@ -180,7 +180,7 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
             {/* Historical Screenings - Collapsible by Year */}
             {Object.keys(groupedHistorical).length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-blue-900 mb-3">
                   Historical Screenings
                 </h3>
                 <div className="space-y-2">
@@ -192,9 +192,9 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
                         open={openSections.includes(year)}
                         onOpenChange={() => toggleSection(year)}
                       >
-                        <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                          <span className="font-medium">{year} ({yearScreenings.length} screening{yearScreenings.length !== 1 ? 's' : ''})</span>
-                          <ChevronDown className={`w-4 h-4 transition-transform ${
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gradient-to-r from-blue-50 to-blue-25 rounded-lg hover:from-blue-100 hover:to-blue-50 transition-colors border border-blue-100">
+                          <span className="font-medium text-blue-900">{year} ({yearScreenings.length} screening{yearScreenings.length !== 1 ? 's' : ''})</span>
+                          <ChevronDown className={`w-4 h-4 transition-transform text-blue-600 ${
                             openSections.includes(year) ? 'rotate-180' : ''
                           }`} />
                         </CollapsibleTrigger>
@@ -215,7 +215,7 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
           <TabsContent value="hearing" className="mt-6">
             <div className="text-center py-8 text-gray-500">
               <p>No hearing screenings recorded yet.</p>
-              <Button className="mt-4">
+              <Button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
                 <Calendar className="w-4 h-4 mr-2" />
                 Schedule Hearing Screen
               </Button>

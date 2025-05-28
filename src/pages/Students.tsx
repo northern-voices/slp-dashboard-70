@@ -34,15 +34,19 @@ const StudentsContent = () => {
         <SidebarInset className="flex-1">
           <Header userRole={userRole} userName={userName} />
           
-          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
-            {/* Mobile-optimized header */}
-            <div className="mb-6">
-              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">Students</h1>
-              <p className="text-gray-600 text-sm md:text-base">Manage student information and records</p>
+          {/* Header Section with Brand Colors */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 md:px-6 lg:px-8 py-6">
+            <div className="mb-4">
+              <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Students</h1>
+              <p className="text-blue-100 text-base md:text-lg">Manage student information and records</p>
             </div>
-            
-            {/* Mobile-optimized StudentTable */}
-            <StudentTable />
+          </div>
+          
+          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8 -mt-4">
+            {/* White content card with shadow */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <StudentTable />
+            </div>
           </main>
         </SidebarInset>
         
