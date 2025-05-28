@@ -10,7 +10,7 @@ export class BaseApiService {
   protected baseUrl: string;
   protected defaultHeaders: Record<string, string>;
 
-  constructor(baseUrl: string = process.env.VITE_API_URL || 'http://localhost:3000/api') {
+  constructor(baseUrl: string = import.meta.env.VITE_API_URL || 'http://localhost:3000/api') {
     this.baseUrl = baseUrl;
     this.defaultHeaders = {
       'Content-Type': 'application/json',
