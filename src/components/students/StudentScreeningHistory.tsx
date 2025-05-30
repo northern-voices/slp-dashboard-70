@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -5,10 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, Calendar, FileText, Eye, Clock } from 'lucide-react';
-import { Screening } from '@/types/database';
-import { Database } from '@/types/supabase';
-
-type Student = Database['public']['Tables']['students']['Row'];
+import { Screening, Student } from '@/types/database';
 
 // Mock screening data
 const mockScreenings: Screening[] = [
