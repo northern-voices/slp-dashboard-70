@@ -52,14 +52,14 @@ const StudentSelectionSection = ({
             <div>
               <Label htmlFor="first_name">First Name *</Label>
               <Input
-                {...form.register('student_info.first_name')}
+                {...form.register('first_name')}
                 placeholder="Enter first name"
               />
             </div>
             <div>
               <Label htmlFor="last_name">Last Name *</Label>
               <Input
-                {...form.register('student_info.last_name')}
+                {...form.register('last_name')}
                 placeholder="Enter last name"
               />
             </div>
@@ -67,13 +67,13 @@ const StudentSelectionSection = ({
               <Label htmlFor="date_of_birth">Date of Birth *</Label>
               <Input
                 type="date"
-                {...form.register('student_info.date_of_birth')}
+                {...form.register('date_of_birth')}
               />
             </div>
             <div>
               <Label htmlFor="grade">Grade</Label>
               <Input
-                {...form.register('student_info.grade')}
+                {...form.register('grade')}
                 placeholder="e.g., K, 1, 2"
               />
             </div>

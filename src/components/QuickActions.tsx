@@ -4,52 +4,51 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Mic, Volume2, BarChart3, FileText, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import ScreeningForm from '@/components/screening/ScreeningForm';
+import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningModal';
+import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
 import GenerateReportModal from '@/components/reports/GenerateReportModal';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
 
 const QuickActions = () => {
   const navigate = useNavigate();
-  const [showScreeningForm, setShowScreeningForm] = useState(false);
+  const [showSpeechScreeningModal, setShowSpeechScreeningModal] = useState(false);
+  const [showHearingScreeningModal, setShowHearingScreeningModal] = useState(false);
   const [showGenerateReportModal, setShowGenerateReportModal] = useState(false);
-  const [screeningType, setScreeningType] = useState<'speech' | 'hearing' | 'progress'>('speech');
   const { toast } = useToast();
 
   const handleOpenSpeechScreening = () => {
-    setScreeningType('speech');
-    setShowScreeningForm(true);
+    setShowSpeechScreeningModal(true);
   };
 
   const handleOpenHearingScreening = () => {
-    setScreeningType('hearing');
-    setShowScreeningForm(true);
+    setShowHearingScreeningModal(true);
   };
 
-  const handleScreeningSubmit = (screeningData: ScreeningFormData) => {
-    console.log('Screening submitted:', screeningData);
+  const handleSpeechScreeningSubmit = (screeningData: ScreeningFormData) => {
+    console.log('Speech screening submitted:', screeningData);
     
     toast({
-      title: "Screening completed",
+      title: "Speech Screening completed",
       description: screeningData.student_info 
         ? `New student ${screeningData.student_info.first_name} ${screeningData.student_info.last_name} and screening have been recorded.`
-        : "Screening has been recorded successfully.",
+        : "Speech screening has been recorded successfully.",
     });
 
-    setShowScreeningForm(false);
+    setShowSpeechScreeningModal(false);
   };
 
-  const getScreeningTitle = () => {
-    switch (screeningType) {
-      case 'speech':
-        return 'New Speech Screening';
-      case 'hearing':
-        return 'New Hearing Screening';
-      case 'progress':
-        return 'New Progress Review';
-      default:
-        return 'New Screening';
-    }
+  const handleHearingScreeningSubmit = (screeningData: ScreeningFormData) => {
+    console.log('Hearing screening submitted:', screeningData);
+    
+    toast({
+      title: "Hearing Screening completed",
+      description: screeningData.student_info 
+        ? `New student ${screeningData.student_info.first_name} ${screeningData.student_info.last_name} and screening have been recorded.`
+        : "Hearing screening has been recorded successfully.",
+    });
+
+    setShowHearingScreeningModal(false);
   };
 
   const allActions = [
@@ -117,13 +116,20 @@ const QuickActions = () => {
         </CardContent>
       </Card>
 
-      {/* Screening Form Modal */}
-      <ScreeningForm
-        isOpen={showScreeningForm}
-        onClose={() => setShowScreeningForm(false)}
-        onSubmit={handleScreeningSubmit}
-        formType={screeningType}
-        title={getScreeningTitle()}
+      {/* Speech Screening Modal */}
+      <SpeechScreeningModal
+        isOpen={showSpeechScreeningModal}
+        onClose={() => setShowSpeechScreeningModal(false)}
+        onSubmit={handleSpeechScreeningSubmit}
+        title="New Speech Screening"
+      />
+
+      {/* Hearing Screening Modal */}
+      <HearingScreeningModal
+        isOpen={showHearingScreeningModal}
+        onClose={() => setShowHearingScreeningModal(false)}
+        onSubmit={handleHearingScreeningSubmit}
+        title="New Hearing Screening"
       />
 
       {/* Generate Report Modal */}

@@ -5,7 +5,8 @@ import { Bell, User, Settings as SettingsIcon } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import ScreeningForm from '@/components/screening/ScreeningForm';
+import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningModal';
+import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,8 +21,8 @@ const Header = ({
   userName = 'Dr. Sarah Johnson',
   className
 }: HeaderProps) => {
-  const [showScreeningForm, setShowScreeningForm] = useState(false);
-  const [screeningType, setScreeningType] = useState<'speech' | 'hearing' | 'progress'>('speech');
+  const [showSpeechScreeningModal, setShowSpeechScreeningModal] = useState(false);
+  const [showHearingScreeningModal, setShowHearingScreeningModal] = useState(false);
   const { toast } = useToast();
   
   const initials = userName.split(' ').map(n => n[0]).join('');
@@ -38,26 +39,22 @@ const Header = ({
     }
   };
 
-  const handleScreeningSubmit = (screeningData: ScreeningFormData) => {
-    console.log('Screening submitted:', screeningData);
+  const handleSpeechScreeningSubmit = (screeningData: ScreeningFormData) => {
+    console.log('Speech screening submitted:', screeningData);
     toast({
-      title: "Screening completed",
-      description: screeningData.student_info ? `New student ${screeningData.student_info.first_name} ${screeningData.student_info.last_name} and screening have been recorded.` : "Screening has been recorded successfully."
+      title: "Speech Screening completed",
+      description: screeningData.student_info ? `New student ${screeningData.student_info.first_name} ${screeningData.student_info.last_name} and screening have been recorded.` : "Speech screening has been recorded successfully."
     });
-    setShowScreeningForm(false);
+    setShowSpeechScreeningModal(false);
   };
 
-  const getScreeningTitle = () => {
-    switch (screeningType) {
-      case 'speech':
-        return 'New Speech Screening';
-      case 'hearing':
-        return 'New Hearing Screening';
-      case 'progress':
-        return 'New Progress Review';
-      default:
-        return 'New Screening';
-    }
+  const handleHearingScreeningSubmit = (screeningData: ScreeningFormData) => {
+    console.log('Hearing screening submitted:', screeningData);
+    toast({
+      title: "Hearing Screening completed", 
+      description: screeningData.student_info ? `New student ${screeningData.student_info.first_name} ${screeningData.student_info.last_name} and screening have been recorded.` : "Hearing screening has been recorded successfully."
+    });
+    setShowHearingScreeningModal(false);
   };
 
   return (
@@ -128,13 +125,20 @@ const Header = ({
         </div>
       </header>
 
-      {/* Screening Form Modal */}
-      <ScreeningForm 
-        isOpen={showScreeningForm} 
-        onClose={() => setShowScreeningForm(false)} 
-        onSubmit={handleScreeningSubmit} 
-        formType={screeningType} 
-        title={getScreeningTitle()} 
+      {/* Speech Screening Modal */}
+      <SpeechScreeningModal 
+        isOpen={showSpeechScreeningModal} 
+        onClose={() => setShowSpeechScreeningModal(false)} 
+        onSubmit={handleSpeechScreeningSubmit} 
+        title="New Speech Screening" 
+      />
+
+      {/* Hearing Screening Modal */}
+      <HearingScreeningModal 
+        isOpen={showHearingScreeningModal} 
+        onClose={() => setShowHearingScreeningModal(false)} 
+        onSubmit={handleHearingScreeningSubmit} 
+        title="New Hearing Screening" 
       />
     </>
   );
