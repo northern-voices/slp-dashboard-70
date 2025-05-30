@@ -38,7 +38,7 @@ const SpeechScreeningStep1 = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="grade">Grade *</Label>
+            <Label htmlFor="grade" className="mb-2 block">Grade *</Label>
             <Select value={selectedGrade} onValueChange={onGradeChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Select grade" />
@@ -55,8 +55,8 @@ const SpeechScreeningStep1 = ({
 
           {selectedGrade && (
             <div>
-              <Label>Select Student *</Label>
-              <div className="mt-2">
+              <Label className="mb-2 block">Select Student *</Label>
+              <div>
                 <StudentSearchSelector
                   selectedStudent={selectedStudent}
                   onStudentSelect={onStudentSelect}
