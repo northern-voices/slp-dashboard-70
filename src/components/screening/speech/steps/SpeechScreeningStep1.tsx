@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +25,7 @@ const SpeechScreeningStep1 = ({
 }: SpeechScreeningStep1Props) => {
   return <div className="space-y-6">
       <Card className="border-0 rounded-none shadow-none">
-        <CardHeader className="px-0 pt-0 pb-6">
+        <CardHeader className="px-0 pt-0 pb-0">
           <CardTitle className="flex items-center gap-2">
             <User className="w-5 h-5" />
             Student Information
