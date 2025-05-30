@@ -1,153 +1,70 @@
-import React, { useState, useMemo } from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { FileText, Search, Filter, Download, Eye, MoreVertical } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Database } from '@/types/supabase';
-
-type Report = Database['public']['Tables']['reports']['Row'];
-
-interface DisplayReport {
-  id: string;
-  title: string;
-  type: 'summary' | 'individual' | 'progress';
-  date: string;
-  status: string;
-  description: string;
-  studentCount?: number;
-}
-
-class ReportTransformer {
-  static toDisplayFormat(dbReport: Report): DisplayReport {
-    return {
-      id: dbReport.id,
-      title: dbReport.title,
-      type: this.extractReportType(dbReport.title, dbReport.content),
-      date: this.formatDate(dbReport.generated_at),
-      status: dbReport.status,
-      description: this.truncateDescription(dbReport.content),
-      studentCount: undefined
-    };
-  }
-
-  static toDisplayFormatBatch(dbReports: Report[]): DisplayReport[] {
-    return dbReports.map(report => this.toDisplayFormat(report));
-  }
-
-  private static extractReportType(title: string, content: string): 'summary' | 'individual' | 'progress' {
-    const titleLower = title.toLowerCase();
-    const contentLower = content.toLowerCase();
-    
-    if (titleLower.includes('summary') || contentLower.includes('summary')) {
-      return 'summary';
-    }
-    if (titleLower.includes('progress') || contentLower.includes('progress')) {
-      return 'progress';
-    }
-    return 'individual';
-  }
-
-  private static formatDate(isoDate: string): string {
-    const date = new Date(isoDate);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  }
-
-  private static truncateDescription(content: string, maxLength: number = 100): string {
-    return content.length > maxLength 
-      ? content.substring(0, maxLength) + '...' 
-      : content;
-  }
-}
-
-class FilterUtils {
-  static filterReports(
-    reports: DisplayReport[],
-    searchTerm: string,
-    reportType: string,
-    timeframe?: string
-  ): DisplayReport[] {
-    return reports.filter(report => {
-      const matchesSearch = searchTerm === '' || 
-        report.title.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesType = reportType === 'all' || 
-        report.type === reportType;
-      
-      return matchesSearch && matchesType;
-    });
-  }
-}
+import { FileText, Plus, Calendar, Filter } from 'lucide-react';
 
 const ReportsPageContent = () => {
-  const { userProfile } = useOrganization();
-  const [selectedTimeframe, setSelectedTimeframe] = useState('last_month');
-  const [selectedReportType, setSelectedReportType] = useState('individual');
-  const [searchTerm, setSearchTerm] = useState('');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
-  const { data: reports, loading, error } = useAsync(
-    reportService.getReports,
-    true
-  );
-
-  const userRole = userProfile?.role || 'slp';
-  const userName = userProfile 
-    ? `${userProfile.first_name} ${userProfile.last_name}` 
-    : 'Dr. Sarah Johnson';
-
-  // Transform database reports to display format
-  const transformedReports = reports ? ReportTransformer.toDisplayFormatBatch(reports) : [];
-
-  // Apply filters using utility function
-  const filteredReports = FilterUtils.filterReports(
-    transformedReports,
-    searchTerm,
-    selectedReportType,
-    selectedTimeframe
-  );
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-red-600">Error loading reports: {error.message}</p>
-      </div>
-    );
-  }
-
   return (
-    <>
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl text-gray-900 mb-2 font-medium">Reports</h1>
-        <p className="text-gray-600 text-base">Generate and manage screening reports and assessments</p>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900">Reports</h1>
+          <p className="text-gray-600">Generate and manage student reports</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" className="flex items-center gap-2">
+            <Filter className="w-4 h-4" />
+            Filter Reports
+          </Button>
+          <Button className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Generate Report
+          </Button>
+        </div>
       </div>
 
-      <ScheduleReportsHero onScheduleClick={() => setShowScheduleModal(true)} />
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            Quick Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2">
+              <FileText className="w-6 h-6" />
+              <span>Generate Student Report</span>
+            </Button>
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2">
+              <Calendar className="w-6 h-6" />
+              <span>Schedule Reports</span>
+            </Button>
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2">
+              <FileText className="w-6 h-6" />
+              <span>View All Reports</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-      <ReportsFilters
-        selectedTimeframe={selectedTimeframe}
-        setSelectedTimeframe={setSelectedTimeframe}
-        selectedReportType={selectedReportType}
-        setSelectedReportType={setSelectedReportType}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-      />
-
-      <ReportsQuickActions />
-
-      <ReportsTable reports={filteredReports} loading={loading} />
-
-      <ScheduleReportsModal
-        open={showScheduleModal}
-        onOpenChange={setShowScheduleModal}
-      />
-    </>
+      {/* Reports Table Placeholder */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Reports</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-gray-500">
+            No reports available. Generate your first report to get started.
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

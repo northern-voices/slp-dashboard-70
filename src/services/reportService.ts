@@ -1,29 +1,17 @@
 
 import { Database } from '@/types/supabase';
-import { supabaseService } from './supabaseService';
 
 type Report = Database['public']['Tables']['reports']['Row'];
 type ReportInsert = Database['public']['Tables']['reports']['Insert'];
 
+// Mock data for demonstration
+const mockReports: Report[] = [];
+
 export class ReportService {
   static async getReports(): Promise<Report[]> {
     try {
-      const { data, error } = await supabaseService.getClient()
-        .from('reports')
-        .select(`
-          *,
-          screening:screenings(
-            *,
-            student:students(*)
-          )
-        `);
-
-      if (error) {
-        console.error('Error fetching reports:', error);
-        throw error;
-      }
-
-      return data || [];
+      console.log('Fetching reports (mock data)');
+      return mockReports;
     } catch (error) {
       console.error('Error in getReports:', error);
       throw error;
@@ -32,24 +20,9 @@ export class ReportService {
 
   static async getReportById(id: string): Promise<Report | null> {
     try {
-      const { data, error } = await supabaseService.getClient()
-        .from('reports')
-        .select(`
-          *,
-          screening:screenings(
-            *,
-            student:students(*)
-          )
-        `)
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching report:', error);
-        throw error;
-      }
-
-      return data;
+      const report = mockReports.find(r => r.id === id);
+      console.log('Report fetched by ID (mock):', report);
+      return report || null;
     } catch (error) {
       console.error('Error in getReportById:', error);
       throw error;
@@ -66,28 +39,21 @@ export class ReportService {
     status?: 'draft' | 'final' | 'reviewed';
   }): Promise<Report> {
     try {
-      const insertData: ReportInsert = {
+      const newReport: Report = {
+        id: Math.random().toString(36).substr(2, 9),
         screening_id: reportData.screening_id,
         title: reportData.title,
         content: reportData.content,
         recommendations: reportData.recommendations || null,
         follow_up_required: reportData.follow_up_required || false,
         follow_up_date: reportData.follow_up_date || null,
-        status: reportData.status || 'draft'
+        status: reportData.status || 'draft',
+        generated_at: new Date().toISOString()
       };
 
-      const { data, error } = await supabaseService.getClient()
-        .from('reports')
-        .insert(insertData)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating report:', error);
-        throw error;
-      }
-
-      return data;
+      mockReports.push(newReport);
+      console.log('Report created (mock):', newReport);
+      return newReport;
     } catch (error) {
       console.error('Error in createReport:', error);
       throw error;
@@ -96,19 +62,19 @@ export class ReportService {
 
   static async updateReport(id: string, updates: Partial<ReportInsert>): Promise<Report> {
     try {
-      const { data, error } = await supabaseService.getClient()
-        .from('reports')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error updating report:', error);
-        throw error;
+      const reportIndex = mockReports.findIndex(r => r.id === id);
+      if (reportIndex === -1) {
+        throw new Error('Report not found');
       }
 
-      return data;
+      const updatedReport = {
+        ...mockReports[reportIndex],
+        ...updates
+      };
+
+      mockReports[reportIndex] = updatedReport;
+      console.log('Report updated (mock):', updatedReport);
+      return updatedReport;
     } catch (error) {
       console.error('Error in updateReport:', error);
       throw error;
@@ -117,14 +83,10 @@ export class ReportService {
 
   static async deleteReport(id: string): Promise<void> {
     try {
-      const { error } = await supabaseService.getClient()
-        .from('reports')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error deleting report:', error);
-        throw error;
+      const reportIndex = mockReports.findIndex(r => r.id === id);
+      if (reportIndex !== -1) {
+        mockReports.splice(reportIndex, 1);
+        console.log('Report deleted (mock):', id);
       }
     } catch (error) {
       console.error('Error in deleteReport:', error);

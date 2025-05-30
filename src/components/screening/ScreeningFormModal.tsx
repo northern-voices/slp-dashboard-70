@@ -1,9 +1,11 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { ScreeningFormData } from '@/types/screening';
 import { Database } from '@/types/supabase';
+import ScreeningFormContent from './ScreeningFormContent';
 
 type Student = Database['public']['Tables']['students']['Row'];
 
@@ -21,52 +23,67 @@ const ScreeningFormModal: React.FC<ScreeningFormModalProps> = ({
   onClose,
   onSubmit,
   existingStudent,
-  formType,
-  title,
+  formType = 'speech',
+  title = 'New Screening',
 }) => {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSubmit = (formData: any) => {
+    console.log('Screening form submitted:', formData);
+    
+    // Create screening data with mock structure
+    const screeningData: ScreeningFormData = {
+      screening_type: formType,
+      student_id: existingStudent?.id || '',
+      student_info: existingStudent ? undefined : {
+        first_name: formData.first_name || '',
+        last_name: formData.last_name || '',
+        date_of_birth: formData.date_of_birth || new Date().toISOString().split('T')[0],
+        student_id: formData.student_id || '',
+        grade: formData.grade,
+        gender: formData.gender,
+        emergency_contact_name: formData.emergency_contact_name,
+        emergency_contact_phone: formData.emergency_contact_phone
+      },
+      screening_data: formData.screening_data || {},
+      notes: formData.notes || '',
+      recommendations: formData.recommendations || ''
+    };
+
+    onSubmit(screeningData);
+    setIsSubmitted(true);
+    
+    setTimeout(() => {
+      setIsSubmitted(false);
+      onClose();
+    }, 1500);
+  };
+
+  if (isSubmitted) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Screening Completed!</h3>
+            <p className="text-gray-600">Your screening has been saved successfully.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{title || "New Screening"}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        
-        {/* Form Content - Replace with your actual form */}
-        <div className="grid gap-4 py-4">
-          {/* Example Form Fields - Replace with your actual form fields */}
-          <div>
-            <label htmlFor="studentName" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-              Student Name
-            </label>
-            <input
-              type="text"
-              id="studentName"
-              placeholder="Enter student name"
-              className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus:border-brand focus:text-brand focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
-              defaultValue={existingStudent ? `${existingStudent.first_name} ${existingStudent.last_name}` : ''}
-              disabled={!!existingStudent}
-            />
-          </div>
-          <div>
-            <label htmlFor="screeningNotes" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-              Screening Notes
-            </label>
-            <textarea
-              id="screeningNotes"
-              placeholder="Enter screening notes"
-              className="flex h-24 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus:border-brand focus:text-brand focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-end space-x-2">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" onClick={() => onSubmit({ student_info: { first_name: 'test', last_name: 'test' } })}>
-            Submit
-          </Button>
-        </div>
+        <ScreeningFormContent 
+          onSubmit={handleSubmit} 
+          existingStudent={existingStudent}
+          formType={formType}
+        />
       </DialogContent>
     </Dialog>
   );
