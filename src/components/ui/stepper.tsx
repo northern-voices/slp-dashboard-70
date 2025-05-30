@@ -2,10 +2,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Check } from "lucide-react";
 import * as React from "react";
 import { createContext, useContext } from "react";
-import { CheckIcon } from "@radix-ui/react-icons";
 
 // Types
 type StepperContextValue = {
@@ -191,7 +190,7 @@ const StepperIndicator = React.forwardRef<HTMLDivElement, StepperIndicatorProps>
             <span className="transition-all group-data-[loading=true]/step:scale-0 group-data-[state=completed]/step:scale-0 group-data-[loading=true]/step:opacity-0 group-data-[state=completed]/step:opacity-0 group-data-[loading=true]/step:transition-none">
               {step}
             </span>
-            <CheckIcon
+            <Check
               className="absolute scale-0 opacity-0 transition-all group-data-[state=completed]/step:scale-100 group-data-[state=completed]/step:opacity-100"
               size={16}
               strokeWidth={2}
