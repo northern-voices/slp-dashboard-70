@@ -26,7 +26,7 @@ const HearingScreeningForm = ({
 
   const form = useForm({
     defaultValues: {
-      screening_type: 'initial' as const,
+      screening_type: 'hearing',
       screening_date: new Date().toISOString().split('T')[0],
       first_name: existingStudent?.first_name || '',
       last_name: existingStudent?.last_name || '',
@@ -64,9 +64,8 @@ const HearingScreeningForm = ({
 
   const handleFormSubmit = (data: any) => {
     const formData: ScreeningFormData = {
-      screening_type: data.screening_type,
+      screening_type: 'hearing',
       screening_date: data.screening_date,
-      form_type: 'hearing',
       student_id: selectedStudent?.id,
       student_info: createNewStudent ? {
         first_name: data.first_name,
@@ -78,14 +77,9 @@ const HearingScreeningForm = ({
         emergency_contact_phone: data.emergency_contact_phone
       } : undefined,
       hearing_data: {
-        pure_tone_results: {
-          right_ear: {},
-          left_ear: {}
-        },
-        tympanometry_results: '',
-        observations: ''
+        // Add hearing-specific fields here
       },
-      general_notes: data.notes,
+      notes: data.notes,
       recommendations: data.recommendations,
       follow_up_required: data.follow_up_required,
       follow_up_date: data.follow_up_date
