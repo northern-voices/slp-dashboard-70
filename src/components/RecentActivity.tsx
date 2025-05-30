@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +7,11 @@ import { Clock, User, Calendar, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabaseService } from '@/services/supabaseService';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import type { Database } from '@/integrations/supabase/types';
+
+type Screening = Database['public']['Tables']['screenings']['Row'] & {
+  student: Database['public']['Tables']['students']['Row'] | null;
+};
 
 interface RecentScreeningData {
   id: string;
@@ -32,7 +36,7 @@ const RecentActivity = () => {
         const screenings = await supabaseService.getScreenings();
         
         // Transform screenings data for display
-        const transformedScreenings = screenings.slice(0, 4).map(screening => ({
+        const transformedScreenings = screenings.slice(0, 4).map((screening: any) => ({
           id: screening.id,
           studentName: screening.student ? `${screening.student.first_name} ${screening.student.last_name}` : 'Unknown Student',
           screeningType: screening.screening_type.charAt(0).toUpperCase() + screening.screening_type.slice(1),

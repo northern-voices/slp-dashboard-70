@@ -12,6 +12,9 @@ type Report = Tables['reports']['Row'];
 type SchoolAssignment = Tables['school_assignments']['Row'];
 
 export class SupabaseService {
+  // Expose the supabase client for external access
+  public supabase = supabase;
+
   // Organization Methods
   async getOrganizations() {
     const { data, error } = await supabase
@@ -211,12 +214,14 @@ export class SupabaseService {
     status?: Database['public']['Enums']['screening_status'];
     notes?: string;
   }): Promise<Screening> {
+    const screeningData = {
+      ...data,
+      status: (data.status || 'scheduled') as Database['public']['Enums']['screening_status']
+    };
+
     const { data: screening, error } = await supabase
       .from('screenings')
-      .insert({
-        ...data,
-        status: (data.status || 'scheduled') as Database['public']['Enums']['screening_status']
-      })
+      .insert(screeningData)
       .select()
       .single();
 

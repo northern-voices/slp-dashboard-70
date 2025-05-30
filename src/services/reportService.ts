@@ -1,6 +1,9 @@
 
 import { supabaseService } from './supabaseService';
-import type { Report } from '@/types/database';
+import type { Database } from '@/integrations/supabase/types';
+
+type Report = Database['public']['Tables']['reports']['Row'];
+type ReportInsert = Database['public']['Tables']['reports']['Insert'];
 
 export interface ReportTemplate {
   id: string;
@@ -52,12 +55,13 @@ export const reportService = {
     }
 
     // Create a new report based on template
-    const reportData: Omit<Report, 'id' | 'generated_at'> = {
+    const reportData: ReportInsert = {
       screening_id: 'temp-screening-id', // This should come from the data parameter
       title: `Generated Report - ${template.name}`,
       content: 'Generated report content based on template and provided data.',
       recommendations: 'Generated recommendations based on template data and analysis.',
       follow_up_required: false,
+      follow_up_date: null,
       status: 'draft' as const,
     };
 
@@ -81,7 +85,6 @@ export const reportService = {
   },
 
   async deleteReport(id: string): Promise<void> {
-    // This would need to be implemented in supabaseService
     const { error } = await supabaseService.supabase
       .from('reports')
       .delete()
