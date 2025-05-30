@@ -1,6 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 
 type Tables = Database['public']['Tables'];
 type Organization = Tables['organizations']['Row'];
@@ -9,6 +8,7 @@ type Student = Tables['students']['Row'];
 type SLPProfile = Tables['slp_profiles']['Row'];
 type Screening = Tables['screenings']['Row'];
 type Report = Tables['reports']['Row'];
+type SchoolAssignment = Tables['school_assignments']['Row'];
 
 export class SupabaseService {
   // Organization Methods
@@ -202,15 +202,25 @@ export class SupabaseService {
     return data;
   }
 
-  async createScreening(screeningData: Omit<Screening, 'id' | 'created_at' | 'updated_at'>) {
-    const { data, error } = await supabase
+  async createScreening(data: {
+    student_id: string;
+    slp_id: string;
+    screening_date: string;
+    screening_type: Database['public']['Enums']['screening_type'];
+    status?: Database['public']['Enums']['screening_status'];
+    notes?: string;
+  }): Promise<Screening> {
+    const { data: screening, error } = await supabase
       .from('screenings')
-      .insert([screeningData])
+      .insert({
+        ...data,
+        status: data.status || 'scheduled' as Database['public']['Enums']['screening_status']
+      })
       .select()
       .single();
-    
+
     if (error) throw error;
-    return data;
+    return screening;
   }
 
   async updateScreening(id: string, updates: Partial<Screening>) {
