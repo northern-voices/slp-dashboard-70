@@ -39,21 +39,19 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search students by name or ID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Button variant="outline" className="flex items-center gap-2">
-          <Filter className="w-4 h-4" />
-          Filter
-        </Button>
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <Input
+          placeholder="Search students by name or ID..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
       </div>
+      <Button variant="outline" className="flex items-center gap-2">
+        <Filter className="w-4 h-4" />
+        Filter
+      </Button>
 
       {/* Students Table */}
       <Card>
