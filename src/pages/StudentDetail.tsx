@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
@@ -10,15 +10,40 @@ import StudentInfoHeader from '@/components/students/StudentInfoHeader';
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory';
 import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
+import { StudentService } from '@/services/studentService';
+import { Database } from '@/types/supabase';
+
+type Student = Database['public']['Tables']['students']['Row'];
 
 const StudentDetailContent = () => {
   const { studentId } = useParams<{ studentId: string }>();
   const { userProfile, isLoading } = useOrganization();
+  const [student, setStudent] = useState<Student | null>(null);
+  const [studentLoading, setStudentLoading] = useState(true);
   
   const userRole = userProfile?.role || 'slp';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
 
-  if (isLoading) {
+  useEffect(() => {
+    const fetchStudent = async () => {
+      if (studentId) {
+        try {
+          const studentData = await StudentService.getStudentById(studentId);
+          setStudent(studentData);
+        } catch (error) {
+          console.error('Error fetching student:', error);
+        } finally {
+          setStudentLoading(false);
+        }
+      } else {
+        setStudentLoading(false);
+      }
+    };
+
+    fetchStudent();
+  }, [studentId]);
+
+  if (isLoading || studentLoading) {
     return (
       <div className="min-h-screen flex w-full bg-gray-25">
         <div className="flex-1 flex items-center justify-center">
@@ -69,7 +94,7 @@ const StudentDetailContent = () => {
 
           <main className="flex-1 px-4 md:px-6 lg:px-8 pb-20 md:pb-8 space-y-6">
             {/* Student Info Header */}
-            <StudentInfoHeader studentId={studentId} />
+            <StudentInfoHeader student={student} />
 
             {/* Screening History */}
             <StudentScreeningHistory studentId={studentId} />
