@@ -1,47 +1,29 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Bell,
-  User,
-  Mic,
-  Volume2,
-  BarChart3,
-  Calendar,
-  Users,
-  FileText
-} from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Bell, User, Mic, Volume2, BarChart3, Calendar, Users, FileText } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import ScreeningForm from '@/components/screening/ScreeningForm';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
-
 interface HeaderProps {
   userRole?: 'admin' | 'slp' | 'supervisor';
   userName?: string;
   className?: string;
 }
-
-const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', className }: HeaderProps) => {
+const Header = ({
+  userRole = 'slp',
+  userName = 'Dr. Sarah Johnson',
+  className
+}: HeaderProps) => {
   const [showScreeningForm, setShowScreeningForm] = useState(false);
   const [screeningType, setScreeningType] = useState<'speech' | 'hearing' | 'progress'>('speech');
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const initials = userName.split(' ').map(n => n[0]).join('');
-
   const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {
     switch (role) {
       case 'admin':
@@ -53,30 +35,22 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', className }:
         return 'Speech-Language Pathologist';
     }
   };
-
   const handleOpenSpeechScreening = () => {
     setScreeningType('speech');
     setShowScreeningForm(true);
   };
-
   const handleOpenHearingScreening = () => {
     setScreeningType('hearing');
     setShowScreeningForm(true);
   };
-
   const handleScreeningSubmit = (screeningData: ScreeningFormData) => {
     console.log('Screening submitted:', screeningData);
-    
     toast({
       title: "Screening completed",
-      description: screeningData.student_info 
-        ? `New student ${screeningData.student_info.first_name} ${screeningData.student_info.last_name} and screening have been recorded.`
-        : "Screening has been recorded successfully.",
+      description: screeningData.student_info ? `New student ${screeningData.student_info.first_name} ${screeningData.student_info.last_name} and screening have been recorded.` : "Screening has been recorded successfully."
     });
-
     setShowScreeningForm(false);
   };
-
   const getScreeningTitle = () => {
     switch (screeningType) {
       case 'speech':
@@ -89,9 +63,7 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', className }:
         return 'New Screening';
     }
   };
-
-  return (
-    <>
+  return <>
       <header className={`bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm ${className || ''}`}>
         <div className="flex items-center justify-between h-14 px-4">
           {/* Left side - Sidebar trigger and navigation for desktop */}
@@ -107,129 +79,7 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', className }:
             </div>
             
             {/* Desktop Navigation with Popover */}
-            <div className="hidden lg:flex items-center space-x-1">
-              {/* Quick Screenings Popover */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-                    Quick Screenings
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent 
-                  className="w-80 p-0 bg-white shadow-lg border border-gray-200 animate-fade-in z-50" 
-                  align="start"
-                  onMouseLeave={(e) => {
-                    const popover = e.currentTarget.closest('[data-radix-popover-content]');
-                    if (popover) {
-                      popover.classList.add('animate-fade-out');
-                      setTimeout(() => {
-                        const trigger = document.querySelector('[data-radix-popover-trigger]') as HTMLElement;
-                        if (trigger) trigger.click();
-                      }, 200);
-                    }
-                  }}
-                >
-                  <div className="p-4">
-                    <div className="mb-3">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Start new assessments and screenings</h4>
-                    </div>
-                    <div className="space-y-3">
-                      <button 
-                        className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
-                        onClick={handleOpenSpeechScreening}
-                      >
-                        <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center">
-                          <Mic className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 text-sm">New Speech Screening</div>
-                          <div className="text-xs text-gray-500">Start a new speech assessment</div>
-                        </div>
-                      </button>
-                      <button 
-                        className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
-                        onClick={handleOpenHearingScreening}
-                      >
-                        <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
-                          <Volume2 className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 text-sm">New Hearing Screening</div>
-                          <div className="text-xs text-gray-500">Conduct hearing assessment</div>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              {/* Management Tools Popover */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-                    Management Tools
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent 
-                  className="w-80 p-0 bg-white shadow-lg border border-gray-200 animate-fade-in z-50" 
-                  align="start"
-                  onMouseLeave={(e) => {
-                    const popover = e.currentTarget.closest('[data-radix-popover-content]');
-                    if (popover) {
-                      popover.classList.add('animate-fade-out');
-                      setTimeout(() => {
-                        const trigger = document.querySelector('[data-radix-popover-trigger]') as HTMLElement;
-                        if (trigger) trigger.click();
-                      }, 200);
-                    }
-                  }}
-                >
-                  <div className="p-4">
-                    <div className="mb-3">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Manage students, reports, and scheduling</h4>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
-                        <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                          <BarChart3 className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 text-xs">Progress Report</div>
-                          <div className="text-xs text-gray-500">Generate progress assessment</div>
-                        </div>
-                      </button>
-                      <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
-                        <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
-                          <Calendar className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 text-xs">Schedule Session</div>
-                          <div className="text-xs text-gray-500">Book therapy session</div>
-                        </div>
-                      </button>
-                      <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
-                        <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
-                          <Users className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 text-xs">Manage Students</div>
-                          <div className="text-xs text-gray-500">View and edit student profiles</div>
-                        </div>
-                      </button>
-                      <button className="flex flex-col items-center space-y-2 p-3 rounded-lg hover:bg-gray-50 transition-colors text-center">
-                        <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
-                          <FileText className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 text-xs">Generate Report</div>
-                          <div className="text-xs text-gray-500">Create comprehensive reports</div>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
+            
           </div>
 
           {/* Right side - User actions */}
@@ -280,15 +130,7 @@ const Header = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', className }:
       </header>
 
       {/* Screening Form Modal */}
-      <ScreeningForm
-        isOpen={showScreeningForm}
-        onClose={() => setShowScreeningForm(false)}
-        onSubmit={handleScreeningSubmit}
-        formType={screeningType}
-        title={getScreeningTitle()}
-      />
-    </>
-  );
+      <ScreeningForm isOpen={showScreeningForm} onClose={() => setShowScreeningForm(false)} onSubmit={handleScreeningSubmit} formType={screeningType} title={getScreeningTitle()} />
+    </>;
 };
-
 export default Header;
