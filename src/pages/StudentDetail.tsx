@@ -58,12 +58,6 @@ const StudentDetail = () => {
   if (error) return <ErrorMessage message={error} />;
   if (!student) return <div className="p-8 text-center">Student not found</div>;
 
-  // Ensure student has required grade field for the screening forms
-  const studentWithGrade: Student & { grade: string } = {
-    ...student,
-    grade: student.grade || 'N/A'
-  };
-
   return (
     <div className="container mx-auto p-6 space-y-6">
       <StudentInfoHeader student={student} />
@@ -81,14 +75,14 @@ const StudentDetail = () => {
         isOpen={showSpeechModal}
         onClose={() => setShowSpeechModal(false)}
         onSubmit={handleSpeechScreeningSubmit}
-        existingStudent={studentWithGrade as Student}
+        existingStudent={student}
       />
       
       <HearingScreeningModal 
         isOpen={showHearingModal}
         onClose={() => setShowHearingModal(false)}
         onSubmit={handleHearingScreeningSubmit}
-        existingStudent={studentWithGrade as Student}
+        existingStudent={student}
       />
     </div>
   );
