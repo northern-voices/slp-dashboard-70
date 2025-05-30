@@ -10,8 +10,12 @@ const SidebarHeader = () => {
   return (
     <SidebarHeaderComponent className="border-b border-gray-100 p-4">
       <div className="flex items-center space-x-3 mb-4">
-        <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
-          <span className="text-white font-bold text-sm">SLP</span>
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm overflow-hidden">
+          <img 
+            src="/lovable-uploads/60550859-aeae-4648-81dc-f233a9d39217.png" 
+            alt="School Logo" 
+            className="w-full h-full object-contain"
+          />
         </div>
         <div className="flex flex-col min-w-0">
           <span className="font-semibold text-gray-900 text-sm truncate">
