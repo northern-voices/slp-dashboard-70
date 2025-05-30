@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,6 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, Calendar, FileText, Eye, Clock } from 'lucide-react';
 import { Screening } from '@/types/database';
+import { Database } from '@/types/supabase';
+
+type Student = Database['public']['Tables']['students']['Row'];
 
 // Mock screening data
 const mockScreenings: Screening[] = [
@@ -58,9 +60,11 @@ const mockScreenings: Screening[] = [
 
 interface StudentScreeningHistoryProps {
   studentId?: string;
+  student?: Student | null;
+  onAddHearingScreening?: () => void;
 }
 
-const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) => {
+const StudentScreeningHistory = ({ studentId, student, onAddHearingScreening }: StudentScreeningHistoryProps) => {
   const [openSections, setOpenSections] = useState<string[]>(['recent']);
   
   const screenings = mockScreenings; // In real app, fetch by studentId
@@ -245,9 +249,9 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
           <TabsContent value="hearing" className="mt-6">
             <div className="text-center py-8 text-gray-500">
               <p>No hearing screenings recorded yet.</p>
-              <Button className="mt-4">
+              <Button className="mt-4" onClick={onAddHearingScreening}>
                 <Calendar className="w-4 h-4 mr-2" />
-                Schedule Hearing Screen
+                Add Hearing Screening
               </Button>
             </div>
           </TabsContent>

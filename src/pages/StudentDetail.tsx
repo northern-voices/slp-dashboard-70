@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -10,9 +9,12 @@ import StudentInfoHeader from '@/components/students/StudentInfoHeader';
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory';
 import IndividualReports from '@/components/students/IndividualReports';
 import BottomNavigation from '@/components/BottomNavigation';
+import ScreeningForm from '@/components/screening/ScreeningForm';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { StudentService } from '@/services/studentService';
 import { Student } from '@/types/database';
+import { ScreeningFormData } from '@/types/screening';
+import { useToast } from '@/hooks/use-toast';
 
 const StudentDetailContent = () => {
   const { studentId } = useParams<{ studentId: string }>();
@@ -20,6 +22,8 @@ const StudentDetailContent = () => {
   const [student, setStudent] = useState<Student | null>(null);
   const [studentLoading, setStudentLoading] = useState(true);
   const [studentError, setStudentError] = useState<string | null>(null);
+  const [hearingScreeningModalOpen, setHearingScreeningModalOpen] = useState(false);
+  const { toast } = useToast();
   
   const userRole = userProfile?.role || 'slp';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
@@ -54,6 +58,19 @@ const StudentDetailContent = () => {
 
     fetchStudent();
   }, [studentId]);
+
+  const handleAddHearingScreening = () => {
+    setHearingScreeningModalOpen(true);
+  };
+
+  const handleHearingScreeningSubmit = (data: ScreeningFormData) => {
+    console.log('Hearing screening submitted:', data);
+    toast({
+      title: "Hearing Screening Completed",
+      description: "The hearing screening has been saved successfully.",
+    });
+    setHearingScreeningModalOpen(false);
+  };
 
   if (isLoading || studentLoading) {
     return (
@@ -122,11 +139,25 @@ const StudentDetailContent = () => {
             )}
 
             {/* Screening History */}
-            <StudentScreeningHistory studentId={studentId} />
+            <StudentScreeningHistory 
+              studentId={studentId} 
+              student={student}
+              onAddHearingScreening={handleAddHearingScreening}
+            />
           </main>
         </SidebarInset>
         
         <BottomNavigation />
+
+        {/* Hearing Screening Form Modal */}
+        <ScreeningForm
+          isOpen={hearingScreeningModalOpen}
+          onClose={() => setHearingScreeningModalOpen(false)}
+          onSubmit={handleHearingScreeningSubmit}
+          existingStudent={student}
+          formType="hearing"
+          title="Add Hearing Screening"
+        />
       </div>
     </SidebarProvider>
   );
