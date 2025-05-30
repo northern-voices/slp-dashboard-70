@@ -1,14 +1,89 @@
+import React, { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { FileText, Search, Filter, Download, Eye, MoreVertical } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Database } from '@/types/supabase';
 
-import React, { useState } from 'react';
-import { useOrganization } from '@/contexts/OrganizationContext';
-import ScheduleReportsModal from './ScheduleReportsModal';
-import ScheduleReportsHero from './ScheduleReportsHero';
-import ReportsFilters from './ReportsFilters';
-import ReportsQuickActions from './ReportsQuickActions';
-import ReportsTable from './ReportsTable';
-import { useAsync } from '@/hooks/useAsync';
-import { reportService } from '@/services/reportService';
-import { ReportTransformer, FilterUtils } from '@/utils/dataTransformers';
+type Report = Database['public']['Tables']['reports']['Row'];
+
+interface DisplayReport {
+  id: string;
+  title: string;
+  type: 'summary' | 'individual' | 'progress';
+  date: string;
+  status: string;
+  description: string;
+  studentCount?: number;
+}
+
+class ReportTransformer {
+  static toDisplayFormat(dbReport: Report): DisplayReport {
+    return {
+      id: dbReport.id,
+      title: dbReport.title,
+      type: this.extractReportType(dbReport.title, dbReport.content),
+      date: this.formatDate(dbReport.generated_at),
+      status: dbReport.status,
+      description: this.truncateDescription(dbReport.content),
+      studentCount: undefined
+    };
+  }
+
+  static toDisplayFormatBatch(dbReports: Report[]): DisplayReport[] {
+    return dbReports.map(report => this.toDisplayFormat(report));
+  }
+
+  private static extractReportType(title: string, content: string): 'summary' | 'individual' | 'progress' {
+    const titleLower = title.toLowerCase();
+    const contentLower = content.toLowerCase();
+    
+    if (titleLower.includes('summary') || contentLower.includes('summary')) {
+      return 'summary';
+    }
+    if (titleLower.includes('progress') || contentLower.includes('progress')) {
+      return 'progress';
+    }
+    return 'individual';
+  }
+
+  private static formatDate(isoDate: string): string {
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  }
+
+  private static truncateDescription(content: string, maxLength: number = 100): string {
+    return content.length > maxLength 
+      ? content.substring(0, maxLength) + '...' 
+      : content;
+  }
+}
+
+class FilterUtils {
+  static filterReports(
+    reports: DisplayReport[],
+    searchTerm: string,
+    reportType: string,
+    timeframe?: string
+  ): DisplayReport[] {
+    return reports.filter(report => {
+      const matchesSearch = searchTerm === '' || 
+        report.title.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesType = reportType === 'all' || 
+        report.type === reportType;
+      
+      return matchesSearch && matchesType;
+    });
+  }
+}
 
 const ReportsPageContent = () => {
   const { userProfile } = useOrganization();

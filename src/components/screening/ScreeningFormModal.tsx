@@ -1,90 +1,74 @@
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Calendar } from 'lucide-react';
-import { Student } from '@/types/database';
-import ScreeningFormContent from './ScreeningFormContent';
+import { CheckCircle } from 'lucide-react';
+import { ScreeningFormData } from '@/types/screening';
+import { Database } from '@/types/supabase';
+
+type Student = Database['public']['Tables']['students']['Row'];
 
 interface ScreeningFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
-  form: UseFormReturn<any>;
-  onSubmit: (data: any) => void;
-  createNewStudent: boolean;
-  selectedStudent: Student | null;
-  currentFormType: string;
-  setCurrentFormType: (type: 'speech' | 'hearing' | 'progress') => void;
-  onStudentSelect: (student: Student | null) => void;
-  onCreateNewStudent: () => void;
+  onSubmit: (data: ScreeningFormData) => void;
+  existingStudent?: Student;
+  formType?: 'speech' | 'hearing' | 'progress';
+  title?: string;
 }
 
-const ScreeningFormModal = ({
+const ScreeningFormModal: React.FC<ScreeningFormModalProps> = ({
   isOpen,
   onClose,
-  title,
-  form,
   onSubmit,
-  createNewStudent,
-  selectedStudent,
-  currentFormType,
-  setCurrentFormType,
-  onStudentSelect,
-  onCreateNewStudent,
-}: ScreeningFormModalProps) => {
-  if (!isOpen) return null;
-
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  const handleModalClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
+  existingStudent,
+  formType,
+  title,
+}) => {
   return (
-    <div 
-      className="fixed top-0 left-0 right-0 bottom-0 w-screen h-screen m-0 p-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      onClick={handleOverlayClick}
-    >
-      <div 
-        className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={handleModalClick}
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  {title}
-                </CardTitle>
-                <p className="text-sm text-gray-600 mt-1">
-                  Complete the screening form with observations and results
-                </p>
-              </div>
-              <Button variant="ghost" onClick={onClose}>×</Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ScreeningFormContent
-              form={form}
-              onSubmit={onSubmit}
-              onClose={onClose}
-              createNewStudent={createNewStudent}
-              selectedStudent={selectedStudent}
-              currentFormType={currentFormType}
-              setCurrentFormType={setCurrentFormType}
-              onStudentSelect={onStudentSelect}
-              onCreateNewStudent={onCreateNewStudent}
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{title || "New Screening"}</DialogTitle>
+        </DialogHeader>
+        
+        {/* Form Content - Replace with your actual form */}
+        <div className="grid gap-4 py-4">
+          {/* Example Form Fields - Replace with your actual form fields */}
+          <div>
+            <label htmlFor="studentName" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+              Student Name
+            </label>
+            <input
+              type="text"
+              id="studentName"
+              placeholder="Enter student name"
+              className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus:border-brand focus:text-brand focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+              defaultValue={existingStudent ? `${existingStudent.first_name} ${existingStudent.last_name}` : ''}
+              disabled={!!existingStudent}
             />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          </div>
+          <div>
+            <label htmlFor="screeningNotes" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+              Screening Notes
+            </label>
+            <textarea
+              id="screeningNotes"
+              placeholder="Enter screening notes"
+              className="flex h-24 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus:border-brand focus:text-brand focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end space-x-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" onClick={() => onSubmit({ student_info: { first_name: 'test', last_name: 'test' } })}>
+            Submit
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

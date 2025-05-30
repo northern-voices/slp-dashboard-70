@@ -1,85 +1,152 @@
 
-import { Student } from '@/types/database';
-import { apiClient } from './api';
+import { Database } from '@/types/supabase';
+import { supabaseService } from './supabaseService';
 
-// Mock data service for now - will be replaced with real API calls
-const mockStudents: Student[] = [
-  {
-    id: '1',
-    school_id: 'school-1',
-    student_id: 'STU001',
-    first_name: 'Emma',
-    last_name: 'Thompson',
-    date_of_birth: '2010-05-15',
-    grade: '8th',
-    gender: 'female',
-    emergency_contact_name: 'Sarah Thompson',
-    emergency_contact_phone: '(555) 123-4567',
-    active: true,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
-  },
-  {
-    id: '2',
-    school_id: 'school-1',
-    student_id: 'STU002',
-    first_name: 'Math',
-    last_name: 'Johnson',
-    date_of_birth: '2011-03-22',
-    grade: '7th',
-    gender: 'male',
-    emergency_contact_name: 'Mike Johnson',
-    emergency_contact_phone: '(555) 987-6543',
-    active: true,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
-  },
-];
+type Student = Database['public']['Tables']['students']['Row'];
+type StudentInsert = Database['public']['Tables']['students']['Insert'];
 
-export const studentService = {
-  async getStudents(): Promise<Student[]> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return mockStudents;
-  },
+export class StudentService {
+  static async getStudents(): Promise<Student[]> {
+    try {
+      const { data, error } = await supabaseService.getClient()
+        .from('students')
+        .select('*, school:schools(*)')
+        .eq('active', true)
+        .order('last_name', { ascending: true });
 
-  async getStudent(id: string): Promise<Student | null> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockStudents.find(student => student.id === id) || null;
-  },
+      if (error) {
+        console.error('Error fetching students:', error);
+        throw error;
+      }
 
-  async createStudent(studentData: Omit<Student, 'id' | 'created_at' | 'updated_at'>): Promise<Student> {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const newStudent: Student = {
-      ...studentData,
-      id: `student-${Date.now()}`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    mockStudents.push(newStudent);
-    return newStudent;
-  },
-
-  async updateStudent(id: string, updates: Partial<Student>): Promise<Student> {
-    await new Promise(resolve => setTimeout(resolve, 600));
-    const index = mockStudents.findIndex(student => student.id === id);
-    if (index === -1) {
-      throw new Error(`Student with id ${id} not found`);
+      return data || [];
+    } catch (error) {
+      console.error('Error in getStudents:', error);
+      throw error;
     }
-    mockStudents[index] = {
-      ...mockStudents[index],
-      ...updates,
-      updated_at: new Date().toISOString(),
-    };
-    return mockStudents[index];
-  },
+  }
 
-  async deleteStudent(id: string): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    const index = mockStudents.findIndex(student => student.id === id);
-    if (index === -1) {
-      throw new Error(`Student with id ${id} not found`);
+  static async createStudent(studentData: {
+    school_id: string;
+    student_id: string;
+    first_name: string;
+    last_name: string;
+    date_of_birth: string;
+    grade?: string;
+    gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+    emergency_contact_name?: string;
+    emergency_contact_phone?: string;
+    notes?: string;
+  }): Promise<Student> {
+    try {
+      const insertData: StudentInsert = {
+        school_id: studentData.school_id,
+        student_id: studentData.student_id,
+        first_name: studentData.first_name,
+        last_name: studentData.last_name,
+        date_of_birth: studentData.date_of_birth,
+        grade: studentData.grade || null,
+        gender: studentData.gender || null,
+        emergency_contact_name: studentData.emergency_contact_name || null,
+        emergency_contact_phone: studentData.emergency_contact_phone || null,
+        notes: studentData.notes || null,
+        active: true
+      };
+
+      const { data, error } = await supabaseService.getClient()
+        .from('students')
+        .insert(insertData)
+        .select('*, school:schools(*)')
+        .single();
+
+      if (error) {
+        console.error('Error creating student:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in createStudent:', error);
+      throw error;
     }
-    mockStudents.splice(index, 1);
-  },
-};
+  }
+
+  static async updateStudent(id: string, updates: Partial<StudentInsert>): Promise<Student> {
+    try {
+      const { data, error } = await supabaseService.getClient()
+        .from('students')
+        .update(updates)
+        .eq('id', id)
+        .select('*, school:schools(*)')
+        .single();
+
+      if (error) {
+        console.error('Error updating student:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in updateStudent:', error);
+      throw error;
+    }
+  }
+
+  static async deleteStudent(id: string): Promise<void> {
+    try {
+      const { error } = await supabaseService.getClient()
+        .from('students')
+        .update({ active: false })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting student:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error in deleteStudent:', error);
+      throw error;
+    }
+  }
+
+  static async getStudentById(id: string): Promise<Student | null> {
+    try {
+      const { data, error } = await supabaseService.getClient()
+        .from('students')
+        .select('*, school:schools(*)')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching student:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in getStudentById:', error);
+      throw error;
+    }
+  }
+
+  static async searchStudents(query: string): Promise<Student[]> {
+    try {
+      const { data, error } = await supabaseService.getClient()
+        .from('students')
+        .select('*, school:schools(*)')
+        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,student_id.ilike.%${query}%`)
+        .eq('active', true)
+        .order('last_name', { ascending: true });
+
+      if (error) {
+        console.error('Error searching students:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in searchStudents:', error);
+      throw error;
+    }
+  }
+}

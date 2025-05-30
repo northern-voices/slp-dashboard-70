@@ -4,11 +4,11 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import DashboardStats from '@/components/DashboardStats';
-import RecentActivity from '@/components/RecentActivity';
 import QuickActions from '@/components/QuickActions';
 import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { GraduationCap } from 'lucide-react';
+
 const DashboardContent = () => {
   const {
     userProfile,
@@ -16,8 +16,10 @@ const DashboardContent = () => {
     currentSchool,
     isLoading
   } = useOrganization();
+  
   const userRole = userProfile?.role || 'slp';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
+  
   if (isLoading) {
     return <div className="min-h-screen flex w-full bg-gray-25">
         <div className="flex-1 flex items-center justify-center">
@@ -28,6 +30,7 @@ const DashboardContent = () => {
         </div>
       </div>;
   }
+  
   return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-25">
         <AppSidebar userRole={userRole} userName={userName} />
@@ -58,13 +61,6 @@ const DashboardContent = () => {
 
             <div className="space-y-6 md:space-y-8">
               <QuickActions />
-              
-              <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 md:gap-8">
-                <div className="lg:col-span-2">
-                  <RecentActivity />
-                </div>
-              </div>
-              
               <DashboardStats />
             </div>
           </main>
@@ -74,9 +70,11 @@ const DashboardContent = () => {
       </div>
     </SidebarProvider>;
 };
+
 const Index = () => {
   return <OrganizationProvider>
       <DashboardContent />
     </OrganizationProvider>;
 };
+
 export default Index;
