@@ -59,7 +59,7 @@ const StudentDetail = () => {
   if (!student) return <div className="p-8 text-center">Student not found</div>;
 
   // Ensure student has required grade field for the screening forms
-  const studentWithGrade = {
+  const studentWithGrade: Student & { grade: string } = {
     ...student,
     grade: student.grade || 'N/A'
   };
