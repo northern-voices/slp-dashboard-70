@@ -68,13 +68,6 @@ const QuickActions = () => {
       action: handleOpenHearingScreening
     },
     {
-      title: 'Progress Report',
-      description: 'Generate progress assessment',
-      icon: BarChart3,
-      color: 'bg-purple-600 hover:bg-purple-700',
-      action: () => console.log('Progress Report')
-    },
-    {
       title: 'Generate Report',
       description: 'Create comprehensive reports',
       icon: FileText,
@@ -98,7 +91,7 @@ const QuickActions = () => {
         </CardHeader>
         <CardContent className="pt-0">
           {/* Responsive Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {allActions.map((action, index) => (
               <div
                 key={index}
