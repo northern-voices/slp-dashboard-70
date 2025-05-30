@@ -4,10 +4,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, FileText, Mail, Phone, User } from 'lucide-react';
-import { Student } from '@/types/database';
+import { Database } from '@/types/supabase';
 import ScreeningForm from '../screening/ScreeningForm';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
+
+type Student = Database['public']['Tables']['students']['Row'];
 
 // Mock data - in real app this would come from an API
 const mockStudent: Student = {
@@ -79,7 +81,7 @@ const StudentInfoHeader = ({ studentId }: StudentInfoHeaderProps) => {
                   <Badge variant={student.active ? "default" : "secondary"}>
                     {student.active ? 'Active' : 'Inactive'}
                   </Badge>
-                  <Badge variant="outline">Grade {student.grade}</Badge>
+                  <Badge variant="outline">Grade {student.grade || 'N/A'}</Badge>
                 </div>
               </div>
             </div>
@@ -96,11 +98,11 @@ const StudentInfoHeader = ({ studentId }: StudentInfoHeaderProps) => {
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Phone className="w-4 h-4 text-blue-600" />
-                <span>Emergency: {student.emergency_contact_phone}</span>
+                <span>Emergency: {student.emergency_contact_phone || 'N/A'}</span>
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <User className="w-4 h-4 text-blue-600" />
-                <span>Contact: {student.emergency_contact_name}</span>
+                <span>Contact: {student.emergency_contact_name || 'N/A'}</span>
               </div>
             </div>
 

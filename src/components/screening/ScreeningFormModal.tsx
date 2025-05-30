@@ -37,7 +37,7 @@ const ScreeningFormModal: React.FC<ScreeningFormModalProps> = ({
     if (formType === 'hearing') screeningType = 'follow_up';
     if (formType === 'progress') screeningType = 'annual';
     
-    // Create screening data with mock structure
+    // Create screening data with all required properties
     const screeningData: ScreeningFormData = {
       screening_type: screeningType,
       student_id: existingStudent?.id || '',
@@ -51,7 +51,11 @@ const ScreeningFormModal: React.FC<ScreeningFormModalProps> = ({
         emergency_contact_phone: formData.emergency_contact_phone
       },
       screening_date: formData.screening_date || new Date().toISOString().split('T')[0],
-      recommendations: formData.recommendations || ''
+      form_type: formType,
+      general_notes: formData.notes || '',
+      recommendations: formData.recommendations || '',
+      follow_up_required: false,
+      follow_up_date: undefined
     };
 
     onSubmit(screeningData);
