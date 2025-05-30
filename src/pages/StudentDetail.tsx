@@ -9,7 +9,7 @@ import StudentInfoHeader from '@/components/students/StudentInfoHeader';
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory';
 import IndividualReports from '@/components/students/IndividualReports';
 import BottomNavigation from '@/components/BottomNavigation';
-import ScreeningForm from '@/components/screening/ScreeningForm';
+import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { StudentService } from '@/services/studentService';
 import { Student } from '@/types/database';
@@ -150,12 +150,11 @@ const StudentDetailContent = () => {
         <BottomNavigation />
 
         {/* Hearing Screening Form Modal */}
-        <ScreeningForm
+        <HearingScreeningModal
           isOpen={hearingScreeningModalOpen}
           onClose={() => setHearingScreeningModalOpen(false)}
           onSubmit={handleHearingScreeningSubmit}
           existingStudent={student}
-          formType="hearing"
           title="Add Hearing Screening"
         />
       </div>

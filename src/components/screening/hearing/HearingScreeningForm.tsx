@@ -2,30 +2,25 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Send } from 'lucide-react';
 import { Student } from '@/types/database';
-import StudentSelectionSection from './StudentSelectionSection';
-import ScreeningDetailsSection from './ScreeningDetailsSection';
-import NotesRecommendationsSection from './NotesRecommendationsSection';
-import SpeechScreeningFields from './SpeechScreeningFields';
-import HearingScreeningFields from './HearingScreeningFields';
-import ProgressScreeningFields from './ProgressScreeningFields';
+import StudentSelectionSection from '../shared/StudentSelectionSection';
+import NotesRecommendationsSection from '../shared/NotesRecommendationsSection';
+import HearingScreeningFields from '../HearingScreeningFields';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-interface ScreeningFormContentProps {
+interface HearingScreeningFormProps {
   onSubmit: (data: any) => void;
   existingStudent?: Student | null;
-  formType?: 'speech' | 'hearing' | 'progress';
 }
 
-const ScreeningFormContent = ({
+const HearingScreeningForm = ({
   onSubmit,
   existingStudent,
-  formType = 'speech',
-}: ScreeningFormContentProps) => {
+}: HearingScreeningFormProps) => {
   const [createNewStudent, setCreateNewStudent] = useState(!existingStudent);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null);
-  const [currentFormType, setCurrentFormType] = useState(formType);
   
   const form = useForm({
     defaultValues: {
@@ -39,9 +34,11 @@ const ScreeningFormContent = ({
       emergency_contact_name: existingStudent?.emergency_contact_name || '',
       emergency_contact_phone: existingStudent?.emergency_contact_phone || '',
       // Screening fields
+      screening_type: 'initial',
       screening_date: new Date().toISOString().split('T')[0],
-      notes: '',
+      general_notes: '',
       recommendations: '',
+      follow_up_required: false,
     }
   });
 
@@ -49,7 +46,6 @@ const ScreeningFormContent = ({
     setSelectedStudent(student);
     if (student) {
       setCreateNewStudent(false);
-      // Update form with student data
       form.reset({
         first_name: student.first_name,
         last_name: student.last_name,
@@ -59,9 +55,11 @@ const ScreeningFormContent = ({
         gender: student.gender || '',
         emergency_contact_name: student.emergency_contact_name || '',
         emergency_contact_phone: student.emergency_contact_phone || '',
+        screening_type: 'initial',
         screening_date: new Date().toISOString().split('T')[0],
-        notes: '',
+        general_notes: '',
         recommendations: '',
+        follow_up_required: false,
       });
     }
   };
@@ -78,9 +76,11 @@ const ScreeningFormContent = ({
       gender: '',
       emergency_contact_name: '',
       emergency_contact_phone: '',
+      screening_type: 'initial',
       screening_date: new Date().toISOString().split('T')[0],
-      notes: '',
+      general_notes: '',
       recommendations: '',
+      follow_up_required: false,
     });
   };
 
@@ -96,32 +96,30 @@ const ScreeningFormContent = ({
       />
 
       {/* Screening Details */}
-      <ScreeningDetailsSection
-        form={form}
-        currentFormType={currentFormType}
-        setCurrentFormType={setCurrentFormType}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="screening_type">Screening Type</Label>
+          <select
+            {...form.register('screening_type')}
+            className="w-full p-2 border rounded-md"
+          >
+            <option value="initial">Initial</option>
+            <option value="follow_up">Follow-up</option>
+            <option value="annual">Annual</option>
+            <option value="referral">Referral</option>
+          </select>
+        </div>
+        <div>
+          <Label htmlFor="screening_date">Screening Date</Label>
+          <Input
+            type="date"
+            {...form.register('screening_date')}
+          />
+        </div>
+      </div>
 
-      {/* Form Type Specific Fields */}
-      <Tabs value={currentFormType} onValueChange={(value) => setCurrentFormType(value as any)}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="speech">Speech Screening</TabsTrigger>
-          <TabsTrigger value="hearing">Hearing Screening</TabsTrigger>
-          <TabsTrigger value="progress">Progress Review</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="speech">
-          <SpeechScreeningFields form={form} />
-        </TabsContent>
-        
-        <TabsContent value="hearing">
-          <HearingScreeningFields form={form} />
-        </TabsContent>
-        
-        <TabsContent value="progress">
-          <ProgressScreeningFields form={form} />
-        </TabsContent>
-      </Tabs>
+      {/* Hearing Screening Fields */}
+      <HearingScreeningFields form={form} />
 
       {/* General Notes and Recommendations */}
       <NotesRecommendationsSection form={form} />
@@ -133,11 +131,11 @@ const ScreeningFormContent = ({
         </Button>
         <Button type="submit" className="flex items-center gap-2">
           <Send className="w-4 h-4" />
-          Submit Screening
+          Submit Hearing Screening
         </Button>
       </div>
     </form>
   );
 };
 
-export default ScreeningFormContent;
+export default HearingScreeningForm;
