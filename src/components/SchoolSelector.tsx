@@ -43,7 +43,13 @@ const SchoolSelector = () => {
           className="w-full justify-between text-left font-normal"
         >
           <div className="flex items-center space-x-2 min-w-0">
-            <Building2 className="w-4 h-4 shrink-0" />
+            <div className="w-4 h-4 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+              <img 
+                src="/lovable-uploads/bc930c0b-cb09-4e70-9ac0-a44c74d79d80.png" 
+                alt="School Logo" 
+                className="w-full h-full object-contain"
+              />
+            </div>
             <span className="truncate">
               {currentSchool ? currentSchool.name : "Select school..."}
             </span>
@@ -72,11 +78,20 @@ const SchoolSelector = () => {
                       currentSchool?.id === school.id ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  <div className="flex flex-col">
-                    <span>{school.name}</span>
-                    {school.address && (
-                      <span className="text-xs text-gray-500">{school.address}</span>
-                    )}
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <img 
+                        src="/lovable-uploads/bc930c0b-cb09-4e70-9ac0-a44c74d79d80.png" 
+                        alt="School Logo" 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <span>{school.name}</span>
+                      {school.address && (
+                        <span className="text-xs text-gray-500">{school.address}</span>
+                      )}
+                    </div>
                   </div>
                 </CommandItem>
               ))}

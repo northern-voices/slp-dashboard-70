@@ -9,23 +9,24 @@ const SidebarHeader = () => {
 
   return (
     <SidebarHeaderComponent className="border-b border-gray-100 p-4">
+      {/* Organization Section */}
       <div className="flex items-center space-x-3 mb-4">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm overflow-hidden">
           <img 
             src="/lovable-uploads/60550859-aeae-4648-81dc-f233a9d39217.png" 
-            alt="School Logo" 
+            alt="Organization Logo" 
             className="w-full h-full object-contain"
           />
         </div>
         <div className="flex flex-col min-w-0">
           <span className="font-semibold text-gray-900 text-sm truncate">
-            {currentOrganization?.name || 'SLP Dashboard'}
+            {currentOrganization?.name || 'Springfield School District'}
           </span>
           <span className="text-xs text-gray-500">Speech & Language</span>
         </div>
       </div>
       
-      {/* School Selector */}
+      {/* Current School Section */}
       <div className="space-y-2">
         <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
           Current School
