@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Filter } from 'lucide-react';
+import ReportsTableWithFilters from './ReportsTableWithFilters';
 
 const ReportsPageContent = () => {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -25,6 +26,9 @@ const ReportsPageContent = () => {
           </Button>
         </div>
       </div>
+
+      {/* Reports Table with Filters */}
+      <ReportsTableWithFilters />
     </div>
   );
 };
