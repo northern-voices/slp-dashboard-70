@@ -20,6 +20,7 @@ const mockStudents = [
     emergency_contact_phone: '(555) 123-4567',
     notes: '',
     active: true,
+    school_id: 'school-1',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -35,6 +36,7 @@ const mockStudents = [
     emergency_contact_phone: '(555) 987-6543',
     notes: '',
     active: true,
+    school_id: 'school-1',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   }

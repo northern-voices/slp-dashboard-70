@@ -15,6 +15,7 @@ const mockStudents: Student[] = [
     emergency_contact_phone: '(555) 123-4567',
     notes: '',
     active: true,
+    school_id: 'school-1',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -30,6 +31,7 @@ const mockStudents: Student[] = [
     emergency_contact_phone: '(555) 987-6543',
     notes: '',
     active: true,
+    school_id: 'school-1',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -45,6 +47,7 @@ const mockStudents: Student[] = [
     emergency_contact_phone: '(555) 456-7890',
     notes: 'Mild hearing impairment - uses hearing aids',
     active: true,
+    school_id: 'school-1',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -60,6 +63,7 @@ const mockStudents: Student[] = [
     emergency_contact_phone: '(555) 234-5678',
     notes: '',
     active: true,
+    school_id: 'school-1',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -75,6 +79,7 @@ const mockStudents: Student[] = [
     emergency_contact_phone: '(555) 345-6789',
     notes: 'Asthma - inhaler available in nurse office',
     active: true,
+    school_id: 'school-1',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   }
@@ -85,6 +90,10 @@ export class StudentService {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
     return mockStudents;
+  }
+
+  static async getStudents(): Promise<Student[]> {
+    return this.getAllStudents();
   }
 
   static async getStudentById(id: string): Promise<Student | null> {

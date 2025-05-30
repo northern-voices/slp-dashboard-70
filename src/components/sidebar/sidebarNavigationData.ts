@@ -5,8 +5,7 @@ import {
   Settings,
   BarChart3,
   Building2,
-  GraduationCap,
-  User
+  GraduationCap
 } from 'lucide-react';
 import { Location } from 'react-router-dom';
 
@@ -66,15 +65,6 @@ export const getNavigationGroups = (location: Location, userRole: string, userPr
     }
   ];
 
-  const profileItems: NavigationItem[] = [
-    {
-      title: "Profile",
-      url: "/profile",
-      icon: User,
-      isActive: location.pathname === "/profile"
-    }
-  ];
-
   const groups: NavigationGroup[] = [
     {
       label: "Main Menu",
@@ -97,12 +87,6 @@ export const getNavigationGroups = (location: Location, userRole: string, userPr
       items: adminItems
     });
   }
-
-  // Add account section
-  groups.push({
-    label: "Account",
-    items: profileItems
-  });
 
   return groups;
 };

@@ -1,18 +1,20 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Bell, User, Mic, Volume2, BarChart3, Calendar, Users, FileText } from 'lucide-react';
+import { Bell, User, Settings as SettingsIcon } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import ScreeningForm from '@/components/screening/ScreeningForm';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
+
 interface HeaderProps {
   userRole?: 'admin' | 'slp' | 'supervisor';
   userName?: string;
   className?: string;
 }
+
 const Header = ({
   userRole = 'slp',
   userName = 'Dr. Sarah Johnson',
@@ -20,10 +22,10 @@ const Header = ({
 }: HeaderProps) => {
   const [showScreeningForm, setShowScreeningForm] = useState(false);
   const [screeningType, setScreeningType] = useState<'speech' | 'hearing' | 'progress'>('speech');
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  
   const initials = userName.split(' ').map(n => n[0]).join('');
+
   const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {
     switch (role) {
       case 'admin':
@@ -35,14 +37,7 @@ const Header = ({
         return 'Speech-Language Pathologist';
     }
   };
-  const handleOpenSpeechScreening = () => {
-    setScreeningType('speech');
-    setShowScreeningForm(true);
-  };
-  const handleOpenHearingScreening = () => {
-    setScreeningType('hearing');
-    setShowScreeningForm(true);
-  };
+
   const handleScreeningSubmit = (screeningData: ScreeningFormData) => {
     console.log('Screening submitted:', screeningData);
     toast({
@@ -51,6 +46,7 @@ const Header = ({
     });
     setShowScreeningForm(false);
   };
+
   const getScreeningTitle = () => {
     switch (screeningType) {
       case 'speech':
@@ -63,7 +59,9 @@ const Header = ({
         return 'New Screening';
     }
   };
-  return <>
+
+  return (
+    <>
       <header className={`bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm ${className || ''}`}>
         <div className="flex items-center justify-between h-14 px-4">
           {/* Left side - Sidebar trigger and navigation for desktop */}
@@ -77,9 +75,6 @@ const Header = ({
                 <span className="font-semibold text-gray-900 text-sm">SLP Dashboard</span>
               </div>
             </div>
-            
-            {/* Desktop Navigation with Popover */}
-            
           </div>
 
           {/* Right side - User actions */}
@@ -111,12 +106,14 @@ const Header = ({
                   </div>
                 </div>
                 <DropdownMenuSeparator className="bg-gray-100" />
-                <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50">
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
+                <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50" asChild>
+                  <a href="/profile" className="flex items-center">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50">
-                  <Bell className="mr-2 h-4 w-4" />
+                  <SettingsIcon className="mr-2 h-4 w-4" />
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-gray-100" />
@@ -130,7 +127,15 @@ const Header = ({
       </header>
 
       {/* Screening Form Modal */}
-      <ScreeningForm isOpen={showScreeningForm} onClose={() => setShowScreeningForm(false)} onSubmit={handleScreeningSubmit} formType={screeningType} title={getScreeningTitle()} />
-    </>;
+      <ScreeningForm 
+        isOpen={showScreeningForm} 
+        onClose={() => setShowScreeningForm(false)} 
+        onSubmit={handleScreeningSubmit} 
+        formType={screeningType} 
+        title={getScreeningTitle()} 
+      />
+    </>
+  );
 };
+
 export default Header;
