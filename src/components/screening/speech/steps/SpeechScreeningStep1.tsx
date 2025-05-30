@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +30,7 @@ const SpeechScreeningStep1 = ({
             Student Information
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 px-0 py-0">
+        <CardContent className="space-y-4 pb-0">
           <div>
             <Label htmlFor="grade" className="mb-2 block">Grade *</Label>
             <Select value={selectedGrade} onValueChange={onGradeChange}>
