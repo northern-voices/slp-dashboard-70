@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Send } from 'lucide-react';
-import { Database } from '@/types/supabase';
+import { Student } from '@/types/database';
 import StudentSelectionSection from './StudentSelectionSection';
 import ScreeningDetailsSection from './ScreeningDetailsSection';
 import NotesRecommendationsSection from './NotesRecommendationsSection';
@@ -12,11 +12,9 @@ import SpeechScreeningFields from './SpeechScreeningFields';
 import HearingScreeningFields from './HearingScreeningFields';
 import ProgressScreeningFields from './ProgressScreeningFields';
 
-type Student = Database['public']['Tables']['students']['Row'];
-
 interface ScreeningFormContentProps {
   onSubmit: (data: any) => void;
-  existingStudent?: Student;
+  existingStudent?: Student | null;
   formType?: 'speech' | 'hearing' | 'progress';
 }
 

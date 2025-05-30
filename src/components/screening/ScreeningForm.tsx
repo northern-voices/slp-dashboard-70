@@ -1,16 +1,14 @@
 
 import React from 'react';
 import { ScreeningFormData } from '@/types/screening';
-import { Database } from '@/types/supabase';
+import { Student } from '@/types/database';
 import ScreeningFormContainer from './ScreeningFormContainer';
-
-type Student = Database['public']['Tables']['students']['Row'];
 
 interface ScreeningFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: ScreeningFormData) => void;
-  existingStudent?: Student;
+  existingStudent?: Student | null;
   formType?: 'speech' | 'hearing' | 'progress';
   title?: string;
 }
