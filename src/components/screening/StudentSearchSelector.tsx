@@ -39,16 +39,38 @@ const mockStudents = [
     school_id: 'school-1',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: '3',
+    first_name: 'Sarah',
+    last_name: 'Williams',
+    date_of_birth: '2011-03-10',
+    grade: '7th',
+    gender: 'female' as const,
+    student_id: 'STU003',
+    emergency_contact_name: 'David Williams',
+    emergency_contact_phone: '(555) 456-7890',
+    notes: '',
+    active: true,
+    school_id: 'school-1',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z'
   }
 ];
 
 interface StudentSearchSelectorProps {
   onStudentSelect: (student: any) => void;
   selectedStudent?: any;
+  gradeFilter?: string;
 }
 
-const StudentSearchSelector = ({ onStudentSelect, selectedStudent }: StudentSearchSelectorProps) => {
+const StudentSearchSelector = ({ onStudentSelect, selectedStudent, gradeFilter }: StudentSearchSelectorProps) => {
   const [open, setOpen] = useState(false);
+
+  // Filter students by grade if gradeFilter is provided
+  const filteredStudents = gradeFilter 
+    ? mockStudents.filter(student => student.grade === gradeFilter)
+    : mockStudents;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -71,7 +93,7 @@ const StudentSearchSelector = ({ onStudentSelect, selectedStudent }: StudentSear
           <CommandList>
             <CommandEmpty>No student found.</CommandEmpty>
             <CommandGroup>
-              {mockStudents.map((student) => (
+              {filteredStudents.map((student) => (
                 <CommandItem
                   key={student.id}
                   value={`${student.first_name} ${student.last_name} ${student.student_id}`}
@@ -86,7 +108,7 @@ const StudentSearchSelector = ({ onStudentSelect, selectedStudent }: StudentSear
                       selectedStudent?.id === student.id ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {student.first_name} {student.last_name} ({student.student_id})
+                  {student.first_name} {student.last_name} ({student.student_id}) - Grade {student.grade}
                 </CommandItem>
               ))}
             </CommandGroup>
