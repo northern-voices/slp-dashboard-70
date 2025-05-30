@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppSidebar from '@/components/AppSidebar';
@@ -13,8 +14,18 @@ import { User, Settings, Bell } from 'lucide-react';
 
 const ProfileContent = () => {
   const { userProfile } = useOrganization();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState('personal');
+  
   const userRole = userProfile?.role || 'admin';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['personal', 'account', 'notifications'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
 
   return (
     <SidebarProvider>
@@ -30,7 +41,7 @@ const ProfileContent = () => {
               <p className="text-gray-600 text-sm md:text-base">Manage your account information and preferences</p>
             </div>
 
-            <Tabs defaultValue="personal" className="space-y-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="personal" className="flex items-center">
                   <User className="w-4 h-4 mr-2" />

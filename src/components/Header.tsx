@@ -112,9 +112,11 @@ const Header = ({
                     Profile
                   </a>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50">
-                  <SettingsIcon className="mr-2 h-4 w-4" />
-                  Settings
+                <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50" asChild>
+                  <a href="/profile?tab=account" className="flex items-center">
+                    <SettingsIcon className="mr-2 h-4 w-4" />
+                    Account
+                  </a>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-gray-100" />
                 <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50">
