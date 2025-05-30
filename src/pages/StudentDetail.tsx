@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -18,23 +19,34 @@ const StudentDetailContent = () => {
   const { userProfile, isLoading } = useOrganization();
   const [student, setStudent] = useState<Student | null>(null);
   const [studentLoading, setStudentLoading] = useState(true);
+  const [studentError, setStudentError] = useState<string | null>(null);
   
   const userRole = userProfile?.role || 'slp';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
 
   useEffect(() => {
     const fetchStudent = async () => {
+      console.log('Fetching student with ID:', studentId);
       if (studentId) {
         try {
+          setStudentLoading(true);
+          setStudentError(null);
           const studentData = await StudentService.getStudentById(studentId);
+          console.log('Student data received:', studentData);
           setStudent(studentData);
+          if (!studentData) {
+            setStudentError('Student not found');
+          }
         } catch (error) {
           console.error('Error fetching student:', error);
+          setStudentError('Failed to load student data');
         } finally {
           setStudentLoading(false);
         }
       } else {
+        console.log('No studentId provided');
         setStudentLoading(false);
+        setStudentError('No student ID provided');
       }
     };
 
@@ -94,8 +106,15 @@ const StudentDetailContent = () => {
             {/* Student Info Header */}
             <StudentInfoHeader student={student} />
 
-            {/* Individual Reports */}
-            <IndividualReports student={student} />
+            {/* Individual Reports - Always show this section */}
+            <IndividualReports student={student} isLoading={studentLoading} />
+
+            {/* Error Message */}
+            {studentError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-600">{studentError}</p>
+              </div>
+            )}
 
             {/* Screening History */}
             <StudentScreeningHistory studentId={studentId} />
