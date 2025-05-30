@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -11,7 +10,6 @@ import { Settings, Database, Shield, Bell, FileText, Activity, Server, Key } fro
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import AdminSystemSettings from '@/components/admin/AdminSystemSettings';
 import AdminSecuritySettings from '@/components/admin/AdminSecuritySettings';
-import AdminActivityLogs from '@/components/admin/AdminActivityLogs';
 
 const AdminPanelContent = () => {
   const { userProfile } = useOrganization();
@@ -62,7 +60,7 @@ const AdminPanelContent = () => {
             </div>
 
             <Tabs defaultValue="system" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="system" className="flex items-center">
                   <Settings className="w-4 h-4 mr-2" />
                   System
@@ -74,10 +72,6 @@ const AdminPanelContent = () => {
                 <TabsTrigger value="database" className="flex items-center">
                   <Database className="w-4 h-4 mr-2" />
                   Database
-                </TabsTrigger>
-                <TabsTrigger value="logs" className="flex items-center">
-                  <Activity className="w-4 h-4 mr-2" />
-                  Logs
                 </TabsTrigger>
               </TabsList>
 
@@ -154,10 +148,6 @@ const AdminPanelContent = () => {
                     </CardContent>
                   </Card>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="logs" className="space-y-6">
-                <AdminActivityLogs />
               </TabsContent>
             </Tabs>
           </main>
