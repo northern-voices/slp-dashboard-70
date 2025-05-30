@@ -53,18 +53,18 @@ const mockStudents: Student[] = [
   }
 ];
 
-export const getStudents = async (): Promise<Student[]> => {
+const getStudents = async (): Promise<Student[]> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
   return mockStudents;
 };
 
-export const getStudentById = async (id: string): Promise<Student | null> => {
+const getStudentById = async (id: string): Promise<Student | null> => {
   await new Promise(resolve => setTimeout(resolve, 300));
   return mockStudents.find(student => student.id === id) || null;
 };
 
-export const createStudent = async (studentData: Omit<Student, 'id' | 'created_at' | 'updated_at'>): Promise<Student> => {
+const createStudent = async (studentData: Omit<Student, 'id' | 'created_at' | 'updated_at'>): Promise<Student> => {
   await new Promise(resolve => setTimeout(resolve, 500));
   
   const newStudent: Student = {
@@ -78,7 +78,7 @@ export const createStudent = async (studentData: Omit<Student, 'id' | 'created_a
   return newStudent;
 };
 
-export const updateStudent = async (id: string, studentData: Partial<Student>): Promise<Student> => {
+const updateStudent = async (id: string, studentData: Partial<Student>): Promise<Student> => {
   await new Promise(resolve => setTimeout(resolve, 500));
   
   const index = mockStudents.findIndex(student => student.id === id);
@@ -96,7 +96,7 @@ export const updateStudent = async (id: string, studentData: Partial<Student>): 
   return updatedStudent;
 };
 
-export const deleteStudent = async (id: string): Promise<void> => {
+const deleteStudent = async (id: string): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 500));
   
   const index = mockStudents.findIndex(student => student.id === id);
@@ -106,3 +106,15 @@ export const deleteStudent = async (id: string): Promise<void> => {
   
   mockStudents.splice(index, 1);
 };
+
+// Export as StudentService object to match the import pattern in the pages
+export const StudentService = {
+  getStudents,
+  getStudentById,
+  createStudent,
+  updateStudent,
+  deleteStudent
+};
+
+// Also export individual functions for backward compatibility
+export { getStudents, getStudentById, createStudent, updateStudent, deleteStudent };
