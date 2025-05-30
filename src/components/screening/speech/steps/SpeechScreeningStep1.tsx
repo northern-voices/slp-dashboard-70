@@ -23,14 +23,14 @@ const SpeechScreeningStep1 = ({
   onGradeChange
 }: SpeechScreeningStep1Props) => {
   return <div className="space-y-6">
-      <Card>
+      <Card className="border-0 rounded-none shadow-none">
         <CardHeader className="px-0 pt-0 pb-6">
           <CardTitle className="flex items-center gap-2">
             <User className="w-5 h-5" />
             Student Information
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 pb-0">
+        <CardContent className="space-y-4 p-0">
           <div>
             <Label htmlFor="grade" className="mb-2 block">Grade *</Label>
             <Select value={selectedGrade} onValueChange={onGradeChange}>
