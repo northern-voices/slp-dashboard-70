@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { User } from 'lucide-react';
 import StudentSearchSelector from '../../StudentSearchSelector';
 import { Student } from '@/types/database';
+
 interface SpeechScreeningStep1Props {
   form: UseFormReturn<any>;
   selectedStudent: Student | null;
@@ -24,7 +24,7 @@ const SpeechScreeningStep1 = ({
 }: SpeechScreeningStep1Props) => {
   return <div className="space-y-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="px-0 pt-0 pb-6">
           <CardTitle className="flex items-center gap-2">
             <User className="w-5 h-5" />
             Student Information
