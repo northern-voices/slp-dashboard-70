@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -244,11 +243,8 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
           
           <TabsContent value="hearing" className="mt-6">
             <div className="text-center py-8 text-gray-500">
-              <p>No hearing screenings recorded yet.</p>
-              <Button className="mt-4">
-                <Calendar className="w-4 h-4 mr-2" />
-                Schedule Hearing Screen
-              </Button>
+              <p className="text-base mb-2">Hearing screening functionality coming soon</p>
+              <p className="text-sm text-gray-400">This feature is not yet available</p>
             </div>
           </TabsContent>
         </Tabs>
