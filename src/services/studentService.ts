@@ -2,121 +2,147 @@
 import { Database } from '@/types/supabase';
 
 type Student = Database['public']['Tables']['students']['Row'];
-type StudentInsert = Database['public']['Tables']['students']['Insert'];
 
 // Mock data for demonstration
 const mockStudents: Student[] = [
   {
     id: '1',
-    school_id: 'school1',
-    first_name: 'John',
-    last_name: 'Doe',
+    first_name: 'Emma',
+    last_name: 'Johnson',
     date_of_birth: '2010-05-15',
+    grade: '8th',
+    gender: 'female',
     student_id: 'STU001',
-    grade: '5th Grade',
+    emergency_contact_name: 'John Johnson',
+    emergency_contact_phone: '(555) 123-4567',
+    medical_notes: '',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: '2',
+    first_name: 'Michael',
+    last_name: 'Chen',
+    date_of_birth: '2009-08-22',
+    grade: '9th',
     gender: 'male',
-    emergency_contact_name: 'Jane Doe',
-    emergency_contact_phone: '555-0123',
-    notes: null,
-    active: true,
+    student_id: 'STU002',
+    emergency_contact_name: 'Lisa Chen',
+    emergency_contact_phone: '(555) 987-6543',
+    medical_notes: '',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: '3',
+    first_name: 'Sophia',
+    last_name: 'Rodriguez',
+    date_of_birth: '2011-03-10',
+    grade: '7th',
+    gender: 'female',
+    student_id: 'STU003',
+    emergency_contact_name: 'Maria Rodriguez',
+    emergency_contact_phone: '(555) 456-7890',
+    medical_notes: 'Mild hearing impairment - uses hearing aids',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: '4',
+    first_name: 'James',
+    last_name: 'Williams',
+    date_of_birth: '2008-11-28',
+    grade: '10th',
+    gender: 'male',
+    student_id: 'STU004',
+    emergency_contact_name: 'Sarah Williams',
+    emergency_contact_phone: '(555) 234-5678',
+    medical_notes: '',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: '5',
+    first_name: 'Olivia',
+    last_name: 'Brown',
+    date_of_birth: '2012-07-14',
+    grade: '6th',
+    gender: 'female',
+    student_id: 'STU005',
+    emergency_contact_name: 'David Brown',
+    emergency_contact_phone: '(555) 345-6789',
+    medical_notes: 'Asthma - inhaler available in nurse office',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   }
 ];
 
 export class StudentService {
-  static async getStudents(): Promise<Student[]> {
-    try {
-      // Return mock data for now
-      console.log('Fetching students (mock data)');
-      return mockStudents.filter(student => student.active);
-    } catch (error) {
-      console.error('Error in getStudents:', error);
-      throw error;
-    }
-  }
-
-  static async createStudent(studentData: {
-    first_name: string;
-    last_name: string;
-    date_of_birth: string;
-    student_id: string;
-    grade?: string;
-    gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
-    emergency_contact_name?: string;
-    emergency_contact_phone?: string;
-    notes?: string;
-  }): Promise<Student> {
-    try {
-      const newStudent: Student = {
-        id: Math.random().toString(36).substr(2, 9),
-        school_id: 'school1', // Default school_id for mock data
-        first_name: studentData.first_name,
-        last_name: studentData.last_name,
-        date_of_birth: studentData.date_of_birth,
-        student_id: studentData.student_id,
-        grade: studentData.grade || null,
-        gender: studentData.gender || null,
-        emergency_contact_name: studentData.emergency_contact_name || null,
-        emergency_contact_phone: studentData.emergency_contact_phone || null,
-        notes: studentData.notes || null,
-        active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      mockStudents.push(newStudent);
-      console.log('Student created (mock):', newStudent);
-      return newStudent;
-    } catch (error) {
-      console.error('Error in createStudent:', error);
-      throw error;
-    }
-  }
-
-  static async updateStudent(id: string, updates: Partial<StudentInsert>): Promise<Student> {
-    try {
-      const studentIndex = mockStudents.findIndex(s => s.id === id);
-      if (studentIndex === -1) {
-        throw new Error('Student not found');
-      }
-
-      const updatedStudent = {
-        ...mockStudents[studentIndex],
-        ...updates,
-        updated_at: new Date().toISOString()
-      };
-
-      mockStudents[studentIndex] = updatedStudent;
-      console.log('Student updated (mock):', updatedStudent);
-      return updatedStudent;
-    } catch (error) {
-      console.error('Error in updateStudent:', error);
-      throw error;
-    }
-  }
-
-  static async deleteStudent(id: string): Promise<void> {
-    try {
-      const studentIndex = mockStudents.findIndex(s => s.id === id);
-      if (studentIndex !== -1) {
-        mockStudents[studentIndex].active = false;
-        console.log('Student deleted (mock):', id);
-      }
-    } catch (error) {
-      console.error('Error in deleteStudent:', error);
-      throw error;
-    }
+  static async getAllStudents(): Promise<Student[]> {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return mockStudents;
   }
 
   static async getStudentById(id: string): Promise<Student | null> {
-    try {
-      const student = mockStudents.find(s => s.id === id && s.active);
-      console.log('Student fetched by ID (mock):', student);
-      return student || null;
-    } catch (error) {
-      console.error('Error in getStudentById:', error);
-      throw error;
-    }
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return mockStudents.find(student => student.id === id) || null;
+  }
+
+  static async createStudent(studentData: Omit<Student, 'id' | 'created_at' | 'updated_at'>): Promise<Student> {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    const newStudent: Student = {
+      ...studentData,
+      id: (mockStudents.length + 1).toString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    mockStudents.push(newStudent);
+    return newStudent;
+  }
+
+  static async updateStudent(id: string, updates: Partial<Student>): Promise<Student | null> {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    const studentIndex = mockStudents.findIndex(student => student.id === id);
+    if (studentIndex === -1) return null;
+    
+    mockStudents[studentIndex] = {
+      ...mockStudents[studentIndex],
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+    
+    return mockStudents[studentIndex];
+  }
+
+  static async deleteStudent(id: string): Promise<boolean> {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 400));
+    
+    const studentIndex = mockStudents.findIndex(student => student.id === id);
+    if (studentIndex === -1) return false;
+    
+    mockStudents.splice(studentIndex, 1);
+    return true;
+  }
+
+  static async searchStudents(query: string): Promise<Student[]> {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    if (!query.trim()) return mockStudents;
+    
+    const lowercaseQuery = query.toLowerCase();
+    return mockStudents.filter(student => 
+      student.first_name.toLowerCase().includes(lowercaseQuery) ||
+      student.last_name.toLowerCase().includes(lowercaseQuery) ||
+      student.student_id.toLowerCase().includes(lowercaseQuery)
+    );
   }
 }
