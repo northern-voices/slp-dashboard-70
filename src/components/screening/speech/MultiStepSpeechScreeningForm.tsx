@@ -157,14 +157,14 @@ const MultiStepSpeechScreeningForm = ({
                 type="button" 
                 onClick={handleNext}
                 disabled={!canProceedToNext()}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-blue-600 hover:bg-blue-700"
               >
                 Next
               </Button>
             ) : (
               <Button 
                 type="submit"
-                className="bg-primary hover:bg-primary/90"
+                className="bg-green-600 hover:bg-green-700"
               >
                 Submit Screening
               </Button>

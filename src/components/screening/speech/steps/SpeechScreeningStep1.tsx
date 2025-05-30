@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Student } from '@/types/database';
+import { User } from 'lucide-react';
 import StudentSearchSelector from '../../StudentSearchSelector';
+import { Student } from '@/types/database';
 
 interface SpeechScreeningStep1Props {
   form: UseFormReturn<any>;
@@ -14,77 +16,69 @@ interface SpeechScreeningStep1Props {
   onGradeChange: (grade: string) => void;
 }
 
+const gradeOptions = [
+  'Pre-K', 'K', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'
+];
+
 const SpeechScreeningStep1 = ({
   form,
   selectedStudent,
   selectedGrade,
   onStudentSelect,
-  onGradeChange
+  onGradeChange,
 }: SpeechScreeningStep1Props) => {
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-          👤
-        </div>
-        <h2 className="text-xl font-semibold">Student Information</h2>
-      </div>
-
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <Label htmlFor="grade" className="text-base font-medium">
-            Grade <span className="text-red-500">*</span>
-          </Label>
-          <Select value={selectedGrade} onValueChange={onGradeChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select grade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="PK">Pre-K</SelectItem>
-              <SelectItem value="K">Kindergarten</SelectItem>
-              <SelectItem value="1">1st Grade</SelectItem>
-              <SelectItem value="2">2nd Grade</SelectItem>
-              <SelectItem value="3">3rd Grade</SelectItem>
-              <SelectItem value="4">4th Grade</SelectItem>
-              <SelectItem value="5">5th Grade</SelectItem>
-              <SelectItem value="6">6th Grade</SelectItem>
-              <SelectItem value="7">7th Grade</SelectItem>
-              <SelectItem value="8">8th Grade</SelectItem>
-              <SelectItem value="9">9th Grade</SelectItem>
-              <SelectItem value="10">10th Grade</SelectItem>
-              <SelectItem value="11">11th Grade</SelectItem>
-              <SelectItem value="12">12th Grade</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {selectedGrade && (
-          <div className="space-y-3">
-            <Label className="text-base font-medium">
-              Select Student <span className="text-red-500">*</span>
-            </Label>
-            <StudentSearchSelector
-              onStudentSelect={onStudentSelect}
-              selectedStudent={selectedStudent}
-              gradeFilter={selectedGrade}
-            />
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="w-5 h-5" />
+            Student Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="grade">Grade *</Label>
+            <Select value={selectedGrade} onValueChange={onGradeChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select grade" />
+              </SelectTrigger>
+              <SelectContent>
+                {gradeOptions.map(grade => (
+                  <SelectItem key={grade} value={grade}>
+                    {grade}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        )}
 
-        {selectedStudent && (
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-medium text-blue-900 mb-2">Selected Student</h3>
-            <div className="text-sm text-blue-800 space-y-1">
-              <p><strong>Name:</strong> {selectedStudent.first_name} {selectedStudent.last_name}</p>
-              <p><strong>Student ID:</strong> {selectedStudent.student_id}</p>
-              <p><strong>Grade:</strong> {selectedStudent.grade}</p>
-              {selectedStudent.date_of_birth && (
-                <p><strong>Date of Birth:</strong> {new Date(selectedStudent.date_of_birth).toLocaleDateString()}</p>
-              )}
+          {selectedGrade && (
+            <div>
+              <Label>Select Student *</Label>
+              <div className="mt-2">
+                <StudentSearchSelector
+                  selectedStudent={selectedStudent}
+                  onStudentSelect={onStudentSelect}
+                  gradeFilter={selectedGrade}
+                />
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+
+          {selectedStudent && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-medium text-blue-900">Selected Student</h4>
+              <p className="text-blue-700">
+                {selectedStudent.first_name} {selectedStudent.last_name} - Grade {selectedStudent.grade}
+              </p>
+              <p className="text-sm text-blue-600">
+                Student ID: {selectedStudent.student_id}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
