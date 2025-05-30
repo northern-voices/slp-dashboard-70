@@ -55,7 +55,9 @@ const DashboardContent = () => {
               </div>}
 
             <div className="mb-6 md:mb-8">
-              <h1 className="text-xl md:text-2xl lg:text-3xl text-gray-900 mb-2 font-medium">Dashboard</h1>
+              <h1 className="text-xl md:text-2xl lg:text-3xl text-gray-900 mb-2 font-medium">
+                {currentSchool ? `${currentSchool.name} Dashboard` : 'School Dashboard'}
+              </h1>
               <p className="text-gray-600 text-sm md:text-base">Welcome back! Here's an overview of your students and activities.</p>
             </div>
 
