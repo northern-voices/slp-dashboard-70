@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Download, FileText } from 'lucide-react';
 import { useAsync } from '@/hooks/useAsync';
-import { reportService } from '@/services/reportService';
+import { ReportService } from '@/services/reportService';
 import GenerateReportModal from '@/components/reports/GenerateReportModal';
 
 const ReportsQuickActions = () => {
@@ -13,7 +13,7 @@ const ReportsQuickActions = () => {
 
   const handleExportData = async () => {
     try {
-      const blob = await exportData(() => reportService.exportReport('sample', 'csv')) as Blob | null;
+      const blob = await exportData(() => ReportService.exportReport('sample', 'csv')) as Blob | null;
       if (blob) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

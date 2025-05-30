@@ -31,15 +31,20 @@ const ScreeningFormModal: React.FC<ScreeningFormModalProps> = ({
   const handleSubmit = (formData: any) => {
     console.log('Screening form submitted:', formData);
     
+    // Map formType to screening_type
+    let screeningType: 'initial' | 'follow_up' | 'annual' | 'referral' = 'initial';
+    if (formType === 'speech') screeningType = 'initial';
+    if (formType === 'hearing') screeningType = 'follow_up';
+    if (formType === 'progress') screeningType = 'annual';
+    
     // Create screening data with mock structure
     const screeningData: ScreeningFormData = {
-      screening_type: formType,
+      screening_type: screeningType,
       student_id: existingStudent?.id || '',
       student_info: existingStudent ? undefined : {
         first_name: formData.first_name || '',
         last_name: formData.last_name || '',
         date_of_birth: formData.date_of_birth || new Date().toISOString().split('T')[0],
-        student_id: formData.student_id || '',
         grade: formData.grade,
         gender: formData.gender,
         emergency_contact_name: formData.emergency_contact_name,

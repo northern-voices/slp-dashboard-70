@@ -9,13 +9,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { FileText, BarChart3, User, TrendingUp, Download, X, Loader2 } from 'lucide-react';
 import { useAsync } from '@/hooks/useAsync';
-import { reportService } from '@/services/reportService';
+import { ReportService } from '@/services/reportService';
 import { useToast } from '@/hooks/use-toast';
-import { Report } from '@/types/database';
+import { Database } from '@/types/supabase';
+
+type Report = Database['public']['Tables']['reports']['Row'];
+
 interface GenerateReportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
 const GenerateReportModal = ({
   isOpen,
   onClose
@@ -34,6 +38,7 @@ const GenerateReportModal = ({
   const {
     toast
   } = useToast();
+
   const reportTemplates = [{
     id: 'template-1',
     name: 'Standard Individual Report',
@@ -59,6 +64,7 @@ const GenerateReportModal = ({
     const newArray = array.includes(item) ? array.filter(i => i !== item) : [...array, item];
     setter(newArray);
   };
+
   const handleGenerate = async () => {
     if (!selectedTemplate) {
       toast({
@@ -76,9 +82,9 @@ const GenerateReportModal = ({
         title: reportTitle,
         description: reportDescription
       };
-      const report = (await generateReport(() => reportService.generateReport(selectedTemplate, reportData))) as Report;
+      const report = (await generateReport(() => ReportService.generateReport(selectedTemplate, reportData))) as Report;
       if (outputFormat !== 'preview') {
-        const blob = await reportService.exportReport(report.id, outputFormat as 'pdf' | 'csv' | 'xlsx');
+        const blob = await ReportService.exportReport(report.id, outputFormat as 'pdf' | 'csv' | 'xlsx');
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -102,6 +108,7 @@ const GenerateReportModal = ({
       });
     }
   };
+
   return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -249,4 +256,5 @@ const GenerateReportModal = ({
       </DialogContent>
     </Dialog>;
 };
+
 export default GenerateReportModal;

@@ -93,4 +93,42 @@ export class ReportService {
       throw error;
     }
   }
+
+  static async generateReport(templateId: string, data: any): Promise<Report> {
+    try {
+      const newReport: Report = {
+        id: Math.random().toString(36).substr(2, 9),
+        screening_id: 'mock-screening-id',
+        title: data.title || 'Generated Report',
+        content: `Report generated from template ${templateId}`,
+        recommendations: null,
+        follow_up_required: false,
+        follow_up_date: null,
+        status: 'draft',
+        generated_at: new Date().toISOString()
+      };
+
+      mockReports.push(newReport);
+      console.log('Report generated (mock):', newReport);
+      return newReport;
+    } catch (error) {
+      console.error('Error in generateReport:', error);
+      throw error;
+    }
+  }
+
+  static async exportReport(reportId: string, format: 'pdf' | 'csv' | 'xlsx'): Promise<Blob> {
+    try {
+      // Mock export - return empty blob
+      const content = `Mock ${format.toUpperCase()} export for report ${reportId}`;
+      return new Blob([content], { type: `application/${format}` });
+    } catch (error) {
+      console.error('Error in exportReport:', error);
+      throw error;
+    }
+  }
 }
+
+// Export default instance for easier importing
+export const reportService = new ReportService();
+export default ReportService;
