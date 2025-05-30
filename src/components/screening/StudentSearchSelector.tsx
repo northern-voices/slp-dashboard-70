@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Search, User, Plus } from 'lucide-react';
-import { Student } from '@/types/database';
+import { Database } from '@/types/supabase';
+
+type Student = Database['public']['Tables']['students']['Row'];
 
 // Mock students data - in real app this would come from API
 const mockStudents: Student[] = [
@@ -20,7 +22,7 @@ const mockStudents: Student[] = [
     gender: 'female',
     emergency_contact_name: 'Sarah Johnson',
     emergency_contact_phone: '(555) 123-4567',
-    notes: '',
+    notes: null,
     active: true,
     created_at: '2024-01-15T10:00:00Z',
     updated_at: '2024-01-15T10:00:00Z',
@@ -36,7 +38,7 @@ const mockStudents: Student[] = [
     gender: 'male',
     emergency_contact_name: 'Lisa Chen',
     emergency_contact_phone: '(555) 987-6543',
-    notes: '',
+    notes: null,
     active: true,
     created_at: '2024-01-16T10:00:00Z',
     updated_at: '2024-01-16T10:00:00Z',

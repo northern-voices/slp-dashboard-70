@@ -50,6 +50,7 @@ export class StudentService {
     try {
       const newStudent: Student = {
         id: Math.random().toString(36).substr(2, 9),
+        school_id: 'school1', // Default school_id for mock data
         first_name: studentData.first_name,
         last_name: studentData.last_name,
         date_of_birth: studentData.date_of_birth,
