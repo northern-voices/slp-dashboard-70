@@ -54,14 +54,14 @@ const QuickActions = () => {
 
   const allActions = [
     {
-      title: 'New Speech Screening',
+      title: 'Speech Screening',
       description: 'Start a new speech assessment',
       icon: Mic,
       color: 'bg-brand hover:bg-brand/90',
       action: handleOpenSpeechScreening
     },
     {
-      title: 'New Hearing Screening',
+      title: 'Hearing Screening',
       description: 'Conduct hearing assessment',
       icon: Volume2,
       color: 'bg-teal-600 hover:bg-teal-700',
