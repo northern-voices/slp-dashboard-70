@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mic, Volume2, BarChart3, Users, FileText, Settings, TrendingUp } from 'lucide-react';
+import { Mic, Volume2, BarChart3, FileText, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ScreeningForm from '@/components/screening/ScreeningForm';
 import GenerateReportModal from '@/components/reports/GenerateReportModal';
@@ -78,20 +78,6 @@ const QuickActions = () => {
       action: () => console.log('Progress Report')
     },
     {
-      title: 'View Analytics',
-      description: 'Review screening trends',
-      icon: TrendingUp,
-      color: 'bg-emerald-600 hover:bg-emerald-700',
-      action: () => console.log('View Analytics')
-    },
-    {
-      title: 'Manage Students',
-      description: 'View and edit student profiles',
-      icon: Users,
-      color: 'bg-orange-600 hover:bg-orange-700',
-      action: () => navigate('/students')
-    },
-    {
       title: 'Generate Report',
       description: 'Create comprehensive reports',
       icon: FileText,
@@ -149,7 +135,7 @@ const QuickActions = () => {
                 </div>
                 <span>Management Tools</span>
               </CardTitle>
-              <p className="text-sm text-gray-600">Manage students, reports, and analytics</p>
+              <p className="text-sm text-gray-600">Manage reports and progress tracking</p>
             </CardHeader>
             <CardContent className="pt-0">
               {/* Responsive Grid for Management Tools */}

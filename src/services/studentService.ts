@@ -10,7 +10,7 @@ export class StudentService {
     try {
       const { data, error } = await supabaseService.getClient()
         .from('students')
-        .select('*, school:schools(*)')
+        .select('*')
         .eq('active', true)
         .order('last_name', { ascending: true });
 
@@ -27,11 +27,10 @@ export class StudentService {
   }
 
   static async createStudent(studentData: {
-    school_id: string;
-    student_id: string;
     first_name: string;
     last_name: string;
     date_of_birth: string;
+    student_id: string;
     grade?: string;
     gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
     emergency_contact_name?: string;
@@ -40,11 +39,10 @@ export class StudentService {
   }): Promise<Student> {
     try {
       const insertData: StudentInsert = {
-        school_id: studentData.school_id,
-        student_id: studentData.student_id,
         first_name: studentData.first_name,
         last_name: studentData.last_name,
         date_of_birth: studentData.date_of_birth,
+        student_id: studentData.student_id,
         grade: studentData.grade || null,
         gender: studentData.gender || null,
         emergency_contact_name: studentData.emergency_contact_name || null,
@@ -56,7 +54,7 @@ export class StudentService {
       const { data, error } = await supabaseService.getClient()
         .from('students')
         .insert(insertData)
-        .select('*, school:schools(*)')
+        .select()
         .single();
 
       if (error) {
@@ -77,7 +75,7 @@ export class StudentService {
         .from('students')
         .update(updates)
         .eq('id', id)
-        .select('*, school:schools(*)')
+        .select()
         .single();
 
       if (error) {
@@ -113,8 +111,9 @@ export class StudentService {
     try {
       const { data, error } = await supabaseService.getClient()
         .from('students')
-        .select('*, school:schools(*)')
+        .select('*')
         .eq('id', id)
+        .eq('active', true)
         .single();
 
       if (error) {
@@ -125,27 +124,6 @@ export class StudentService {
       return data;
     } catch (error) {
       console.error('Error in getStudentById:', error);
-      throw error;
-    }
-  }
-
-  static async searchStudents(query: string): Promise<Student[]> {
-    try {
-      const { data, error } = await supabaseService.getClient()
-        .from('students')
-        .select('*, school:schools(*)')
-        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,student_id.ilike.%${query}%`)
-        .eq('active', true)
-        .order('last_name', { ascending: true });
-
-      if (error) {
-        console.error('Error searching students:', error);
-        throw error;
-      }
-
-      return data || [];
-    } catch (error) {
-      console.error('Error in searchStudents:', error);
       throw error;
     }
   }
