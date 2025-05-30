@@ -50,7 +50,7 @@ const ScreeningFormModal: React.FC<ScreeningFormModalProps> = ({
         emergency_contact_name: formData.emergency_contact_name,
         emergency_contact_phone: formData.emergency_contact_phone
       },
-      screening_data: formData.screening_data || {},
+      screening_date: formData.screening_date || new Date().toISOString().split('T')[0],
       notes: formData.notes || '',
       recommendations: formData.recommendations || ''
     };

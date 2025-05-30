@@ -1,8 +1,10 @@
 
 import React from 'react';
 import { ScreeningFormData } from '@/types/screening';
-import { Student } from '@/types/database';
+import { Database } from '@/types/supabase';
 import ScreeningFormContainer from './ScreeningFormContainer';
+
+type Student = Database['public']['Tables']['students']['Row'];
 
 interface ScreeningFormProps {
   isOpen: boolean;

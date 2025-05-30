@@ -41,7 +41,7 @@ const ScreeningFormContent = ({
       emergency_contact_name: existingStudent?.emergency_contact_name || '',
       emergency_contact_phone: existingStudent?.emergency_contact_phone || '',
       // Screening fields
-      screening_data: {},
+      screening_date: new Date().toISOString().split('T')[0],
       notes: '',
       recommendations: '',
     }
@@ -61,7 +61,7 @@ const ScreeningFormContent = ({
         gender: student.gender || '',
         emergency_contact_name: student.emergency_contact_name || '',
         emergency_contact_phone: student.emergency_contact_phone || '',
-        screening_data: {},
+        screening_date: new Date().toISOString().split('T')[0],
         notes: '',
         recommendations: '',
       });
@@ -80,7 +80,7 @@ const ScreeningFormContent = ({
       gender: '',
       emergency_contact_name: '',
       emergency_contact_phone: '',
-      screening_data: {},
+      screening_date: new Date().toISOString().split('T')[0],
       notes: '',
       recommendations: '',
     });
