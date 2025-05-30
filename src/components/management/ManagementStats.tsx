@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Users, FileText, Activity } from 'lucide-react';
+import { Building2, Users, FileText } from 'lucide-react';
 
 const ManagementStats = () => {
   const stats = [
@@ -25,18 +25,11 @@ const ManagementStats = () => {
       change: "+12% from last month",
       icon: FileText,
       color: "text-purple-600"
-    },
-    {
-      title: "System Activity",
-      value: "98%",
-      change: "Uptime this month",
-      icon: Activity,
-      color: "text-orange-600"
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
       {stats.map((stat) => (
         <Card key={stat.title}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
