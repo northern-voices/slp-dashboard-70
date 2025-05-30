@@ -9,8 +9,7 @@ import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationCo
 import PersonalInformationSection from '@/components/profile/PersonalInformationSection';
 import AccountSettingsSection from '@/components/profile/AccountSettingsSection';
 import NotificationPreferencesSection from '@/components/profile/NotificationPreferencesSection';
-import ActivitySecuritySection from '@/components/profile/ActivitySecuritySection';
-import { User, Settings, Bell, Shield } from 'lucide-react';
+import { User, Settings, Bell } from 'lucide-react';
 
 const ProfileContent = () => {
   const { userProfile } = useOrganization();
@@ -28,11 +27,11 @@ const ProfileContent = () => {
           <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
             <div className="mb-6 md:mb-8">
               <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Profile Settings</h1>
-              <p className="text-gray-600 text-sm md:text-base">Manage your account information, security settings, and preferences</p>
+              <p className="text-gray-600 text-sm md:text-base">Manage your account information and preferences</p>
             </div>
 
             <Tabs defaultValue="personal" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="personal" className="flex items-center">
                   <User className="w-4 h-4 mr-2" />
                   Personal
@@ -44,10 +43,6 @@ const ProfileContent = () => {
                 <TabsTrigger value="notifications" className="flex items-center">
                   <Bell className="w-4 h-4 mr-2" />
                   Notifications
-                </TabsTrigger>
-                <TabsTrigger value="security" className="flex items-center">
-                  <Shield className="w-4 h-4 mr-2" />
-                  Security
                 </TabsTrigger>
               </TabsList>
 
@@ -61,10 +56,6 @@ const ProfileContent = () => {
 
               <TabsContent value="notifications" className="space-y-6">
                 <NotificationPreferencesSection />
-              </TabsContent>
-
-              <TabsContent value="security" className="space-y-6">
-                <ActivitySecuritySection />
               </TabsContent>
             </Tabs>
           </main>
