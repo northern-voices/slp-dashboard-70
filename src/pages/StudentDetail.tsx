@@ -33,9 +33,11 @@ const StudentDetailContent = () => {
           setStudentError(null);
           const studentData = await StudentService.getStudentById(studentId);
           console.log('Student data received:', studentData);
+          console.log('Student ID from URL:', studentId);
+          console.log('Available student IDs in mock data:', ['1', '2', '3', 'emma-johnson', 'STU001']);
           setStudent(studentData);
           if (!studentData) {
-            setStudentError('Student not found');
+            setStudentError(`Student with ID "${studentId}" not found`);
           }
         } catch (error) {
           console.error('Error fetching student:', error);
@@ -104,7 +106,7 @@ const StudentDetailContent = () => {
 
           <main className="flex-1 px-4 md:px-6 lg:px-8 pb-20 md:pb-8 space-y-6">
             {/* Student Info Header */}
-            <StudentInfoHeader student={student} />
+            <StudentInfoHeader student={student} isLoading={studentLoading} />
 
             {/* Individual Reports - Always show this section */}
             <IndividualReports student={student} isLoading={studentLoading} />
@@ -113,6 +115,9 @@ const StudentDetailContent = () => {
             {studentError && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-red-600">{studentError}</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Try navigating to a student with ID: 1, 2, 3, emma-johnson, or STU001
+                </p>
               </div>
             )}
 

@@ -13,33 +13,15 @@ import {
   UserCheck 
 } from 'lucide-react';
 import type { Student } from '@/types/database';
-
-// Mock student data
-const mockStudent: Student = {
-  id: '1',
-  first_name: 'Emma',
-  last_name: 'Johnson',
-  date_of_birth: '2010-05-15',
-  grade: '8th',
-  gender: 'female' as const,
-  student_id: 'STU001',
-  emergency_contact_name: 'John Johnson',
-  emergency_contact_phone: '(555) 123-4567',
-  notes: '',
-  active: true,
-  school_id: 'school-1',
-  created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z'
-};
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface StudentInfoHeaderProps {
-  student?: Student;
+  student?: Student | null;
   onEdit?: () => void;
+  isLoading?: boolean;
 }
 
-const StudentInfoHeader = ({ student, onEdit }: StudentInfoHeaderProps) => {
-  const displayStudent = student || mockStudent;
-  
+const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHeaderProps) => {
   const getAgeFromBirthDate = (birthDate: string) => {
     const today = new Date();
     const birth = new Date(birthDate);
@@ -76,6 +58,33 @@ const StudentInfoHeader = ({ student, onEdit }: StudentInfoHeaderProps) => {
     });
   };
 
+  if (isLoading) {
+    return (
+      <Card className="mb-6">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <LoadingSpinner size="md" className="mx-auto mb-2" />
+              <p className="text-gray-600">Loading student information...</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!student) {
+    return (
+      <Card className="mb-6">
+        <CardContent className="p-6">
+          <div className="text-center py-8">
+            <p className="text-gray-600">Student information not available</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="mb-6">
       <CardContent className="p-6">
@@ -89,16 +98,16 @@ const StudentInfoHeader = ({ student, onEdit }: StudentInfoHeaderProps) => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-semibold text-gray-900">
-                    {displayStudent.first_name} {displayStudent.last_name}
+                    {student.first_name} {student.last_name}
                   </h1>
-                  <p className="text-gray-600">Student ID: {displayStudent.student_id}</p>
+                  <p className="text-gray-600">Student ID: {student.student_id}</p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-2">
-                <Badge variant={displayStudent.active ? "default" : "secondary"} className="flex items-center space-x-1">
+                <Badge variant={student.active ? "default" : "secondary"} className="flex items-center space-x-1">
                   <UserCheck className="w-3 h-3" />
-                  <span>{displayStudent.active ? 'Active' : 'Inactive'}</span>
+                  <span>{student.active ? 'Active' : 'Inactive'}</span>
                 </Badge>
                 {onEdit && (
                   <Button variant="outline" size="sm" onClick={onEdit}>
@@ -115,7 +124,7 @@ const StudentInfoHeader = ({ student, onEdit }: StudentInfoHeaderProps) => {
                 <GraduationCap className="w-4 h-4 text-gray-400 mt-0.5" />
                 <div>
                   <span className="text-sm font-medium text-gray-700">Grade</span>
-                  <p className="text-sm text-gray-600">{displayStudent.grade}</p>
+                  <p className="text-sm text-gray-600">{student.grade}</p>
                 </div>
               </div>
               
@@ -124,7 +133,7 @@ const StudentInfoHeader = ({ student, onEdit }: StudentInfoHeaderProps) => {
                 <div>
                   <span className="text-sm font-medium text-gray-700">Age</span>
                   <p className="text-sm text-gray-600">
-                    {getAgeFromBirthDate(displayStudent.date_of_birth)} years old
+                    {getAgeFromBirthDate(student.date_of_birth)} years old
                   </p>
                 </div>
               </div>
@@ -133,7 +142,7 @@ const StudentInfoHeader = ({ student, onEdit }: StudentInfoHeaderProps) => {
                 <User className="w-4 h-4 text-gray-400 mt-0.5" />
                 <div>
                   <span className="text-sm font-medium text-gray-700">Gender</span>
-                  <p className="text-sm text-gray-600">{getGenderDisplay(displayStudent.gender)}</p>
+                  <p className="text-sm text-gray-600">{getGenderDisplay(student.gender)}</p>
                 </div>
               </div>
               
@@ -141,8 +150,8 @@ const StudentInfoHeader = ({ student, onEdit }: StudentInfoHeaderProps) => {
                 <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
                 <div>
                   <span className="text-sm font-medium text-gray-700">Emergency Contact</span>
-                  <p className="text-sm text-gray-600">{displayStudent.emergency_contact_name}</p>
-                  <p className="text-sm text-gray-500">{displayStudent.emergency_contact_phone}</p>
+                  <p className="text-sm text-gray-600">{student.emergency_contact_name}</p>
+                  <p className="text-sm text-gray-500">{student.emergency_contact_phone}</p>
                 </div>
               </div>
             </div>
@@ -152,7 +161,7 @@ const StudentInfoHeader = ({ student, onEdit }: StudentInfoHeaderProps) => {
               <div className="flex items-start gap-2">
                 <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
                 <span className="text-sm text-gray-600">
-                  {displayStudent.notes || 'No medical notes on file'}
+                  {student.notes || 'No medical notes on file'}
                 </span>
               </div>
             </div>

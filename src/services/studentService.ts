@@ -1,7 +1,7 @@
 
 import { Student } from '@/types/database';
 
-// Mock data with all required Student properties
+// Expanded mock data with various ID formats
 const mockStudents: Student[] = [
   {
     id: '1',
@@ -46,6 +46,38 @@ const mockStudents: Student[] = [
     emergency_contact_name: 'David Williams',
     emergency_contact_phone: '(555) 456-7890',
     notes: '',
+    active: true,
+    school_id: 'school-1',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'emma-johnson',
+    first_name: 'Emma',
+    last_name: 'Johnson',
+    date_of_birth: '2010-05-15',
+    grade: '8th',
+    gender: 'female' as const,
+    student_id: 'STU001',
+    emergency_contact_name: 'John Johnson',
+    emergency_contact_phone: '(555) 123-4567',
+    notes: 'Excellent student with good communication skills',
+    active: true,
+    school_id: 'school-1',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'STU001',
+    first_name: 'Emma',
+    last_name: 'Johnson',
+    date_of_birth: '2010-05-15',
+    grade: '8th',
+    gender: 'female' as const,
+    student_id: 'STU001',
+    emergency_contact_name: 'John Johnson',
+    emergency_contact_phone: '(555) 123-4567',
+    notes: 'Needs regular hearing checks',
     active: true,
     school_id: 'school-1',
     created_at: '2024-01-01T00:00:00Z',
