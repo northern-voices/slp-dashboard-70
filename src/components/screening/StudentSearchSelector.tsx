@@ -1,11 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Search, User, Plus } from 'lucide-react';
-import { Student } from '@/types/database';
+import type { Database } from '@/integrations/supabase/types';
+
+type Student = Database['public']['Tables']['students']['Row'];
 
 // Mock students data - in real app this would come from API
 const mockStudents: Student[] = [

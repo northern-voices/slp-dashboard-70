@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card } from '@/components/ui/card';
@@ -6,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, User } from 'lucide-react';
-import { Student } from '@/types/database';
+import type { Database } from '@/integrations/supabase/types';
 import StudentSearchSelector from './StudentSearchSelector';
+
+type Student = Database['public']['Tables']['students']['Row'];
 
 interface StudentSelectionSectionProps {
   form: UseFormReturn<any>;

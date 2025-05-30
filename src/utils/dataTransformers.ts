@@ -1,79 +1,35 @@
 
-import { Report as DatabaseReport } from '@/types/database';
+import { format, parseISO } from 'date-fns';
+import type { Database } from '@/integrations/supabase/types';
 
-export interface DisplayReport {
-  id: number;
-  title: string;
-  type: 'summary' | 'individual' | 'progress';
-  date: string;
-  status: string;
-  description: string;
-  studentCount?: number;
-}
+type Student = Database['public']['Tables']['students']['Row'];
+type Screening = Database['public']['Tables']['screenings']['Row'];
 
-export class ReportTransformer {
-  static toDisplayFormat(dbReport: DatabaseReport): DisplayReport {
-    return {
-      id: parseInt(dbReport.id),
-      title: dbReport.title,
-      type: this.extractReportType(dbReport.title, dbReport.content),
-      date: this.formatDate(dbReport.generated_at),
-      status: dbReport.status,
-      description: this.truncateDescription(dbReport.content),
-      studentCount: undefined // Would be calculated from screening data
-    };
+export const transformStudentData = (student: Student) => {
+  return {
+    ...student,
+    fullName: `${student.first_name} ${student.last_name}`,
+    age: calculateAge(student.date_of_birth),
+  };
+};
+
+export const transformScreeningData = (screening: Screening) => {
+  return {
+    ...screening,
+    formattedDate: format(parseISO(screening.screening_date), 'MMM dd, yyyy'),
+    statusDisplay: screening.status.replace('_', ' ').toUpperCase(),
+  };
+};
+
+const calculateAge = (dateOfBirth: string): number => {
+  const today = new Date();
+  const birthDate = new Date(dateOfBirth);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
   }
-
-  static toDisplayFormatBatch(dbReports: DatabaseReport[]): DisplayReport[] {
-    return dbReports.map(report => this.toDisplayFormat(report));
-  }
-
-  private static extractReportType(title: string, content: string): 'summary' | 'individual' | 'progress' {
-    const titleLower = title.toLowerCase();
-    const contentLower = content.toLowerCase();
-    
-    if (titleLower.includes('summary') || contentLower.includes('summary')) {
-      return 'summary';
-    }
-    if (titleLower.includes('progress') || contentLower.includes('progress')) {
-      return 'progress';
-    }
-    return 'individual';
-  }
-
-  private static formatDate(isoDate: string): string {
-    const date = new Date(isoDate);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  }
-
-  private static truncateDescription(content: string, maxLength: number = 100): string {
-    return content.length > maxLength 
-      ? content.substring(0, maxLength) + '...' 
-      : content;
-  }
-}
-
-export class FilterUtils {
-  static filterReports(
-    reports: DisplayReport[],
-    searchTerm: string,
-    reportType: string,
-    timeframe?: string
-  ): DisplayReport[] {
-    return reports.filter(report => {
-      const matchesSearch = searchTerm === '' || 
-        report.title.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesType = reportType === 'all' || 
-        report.type === reportType;
-      
-      // Add timeframe filtering logic here if needed
-      
-      return matchesSearch && matchesType;
-    });
-  }
-}
+  
+  return age;
+};

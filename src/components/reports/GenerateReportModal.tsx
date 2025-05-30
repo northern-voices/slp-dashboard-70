@@ -11,7 +11,10 @@ import { FileText, BarChart3, User, TrendingUp, Download, X, Loader2 } from 'luc
 import { useAsync } from '@/hooks/useAsync';
 import { reportService } from '@/services/reportService';
 import { useToast } from '@/hooks/use-toast';
-import { Report } from '@/types/database';
+import type { Database } from '@/integrations/supabase/types';
+
+type Report = Database['public']['Tables']['reports']['Row'];
+
 interface GenerateReportModalProps {
   isOpen: boolean;
   onClose: () => void;

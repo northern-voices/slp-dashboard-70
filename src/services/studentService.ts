@@ -18,7 +18,11 @@ export const studentService = {
   async createStudent(studentData: Omit<StudentInsert, 'id' | 'created_at' | 'updated_at'>): Promise<Student> {
     const dataWithDefaults: StudentInsert = {
       ...studentData,
-      notes: studentData.notes || null
+      notes: studentData.notes || null,
+      emergency_contact_name: studentData.emergency_contact_name || null,
+      emergency_contact_phone: studentData.emergency_contact_phone || null,
+      gender: studentData.gender || null,
+      grade: studentData.grade || null
     };
     return await supabaseService.createStudent(dataWithDefaults);
   },

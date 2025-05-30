@@ -3,7 +3,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from 'lucide-react';
-import { Student } from '@/types/database';
+import type { Database } from '@/integrations/supabase/types';
 import ScreeningFormContent from './ScreeningFormContent';
 
 interface ScreeningFormModalProps {

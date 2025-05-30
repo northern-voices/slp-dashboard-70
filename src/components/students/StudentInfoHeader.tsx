@@ -1,13 +1,14 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, FileText, Mail, Phone, User } from 'lucide-react';
-import { Student } from '@/types/database';
+import type { Database } from '@/integrations/supabase/types';
 import ScreeningForm from '../screening/ScreeningForm';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
+
+type Student = Database['public']['Tables']['students']['Row'];
 
 // Mock data - in real app this would come from an API
 const mockStudent: Student = {

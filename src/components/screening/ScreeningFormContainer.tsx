@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ScreeningFormData } from '@/types/screening';
-import { Student } from '@/types/database';
+import type { Database } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 import { createScreeningFormSchema } from '@/types/screening-form';
 import ScreeningFormModal from './ScreeningFormModal';
