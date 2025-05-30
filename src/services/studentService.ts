@@ -8,6 +8,7 @@ type StudentInsert = Database['public']['Tables']['students']['Insert'];
 const mockStudents: Student[] = [
   {
     id: '1',
+    school_id: 'school1',
     first_name: 'John',
     last_name: 'Doe',
     date_of_birth: '2010-05-15',
