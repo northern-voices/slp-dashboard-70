@@ -58,6 +58,12 @@ const StudentDetail = () => {
   if (error) return <ErrorMessage message={error} />;
   if (!student) return <div className="p-8 text-center">Student not found</div>;
 
+  // Create a student object with required grade for components that need it
+  const studentForHistory = {
+    ...student,
+    grade: student.grade || 'N/A'
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <StudentInfoHeader student={student} />
@@ -65,7 +71,7 @@ const StudentDetail = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <StudentScreeningHistory 
           studentId={studentId} 
-          student={student}
+          student={studentForHistory}
           onAddHearingScreening={() => setShowHearingModal(true)}
         />
         <IndividualReports student={student} isLoading={loading} />
