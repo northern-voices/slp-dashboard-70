@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Student } from '@/types/database';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 interface StudentTableProps {
@@ -11,16 +12,24 @@ interface StudentTableProps {
 }
 
 const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const filteredStudents = students.filter(student =>
     student.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.student_id.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleRowClick = (studentId: string) => {
+    navigate(`/students/${studentId}`);
+  };
+
+  const handleViewClick = (e: React.MouseEvent, studentId: string) => {
+    e.stopPropagation();
+    navigate(`/students/${studentId}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -73,7 +82,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
                 </thead>
                 <tbody>
                   {filteredStudents.map((student) => (
-                    <tr key={student.id} className="border-b hover:bg-gray-50">
+                    <tr 
+                      key={student.id} 
+                      className="border-b hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => handleRowClick(student.id)}
+                    >
                       <td className="p-4">
                         <div>
                           <div className="font-medium">{student.first_name} {student.last_name}</div>
@@ -88,21 +101,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
                       <td className="p-4">{student.grade || 'N/A'}</td>
                       <td className="p-4">{new Date(student.date_of_birth).toLocaleDateString()}</td>
                       <td className="p-4">
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedStudent(student);
-                              setShowEditModal(true);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            View
-                          </Button>
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => handleViewClick(e, student.id)}
+                          className="flex items-center gap-2"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View
+                        </Button>
                       </td>
                     </tr>
                   ))}
