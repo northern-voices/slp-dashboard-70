@@ -3,7 +3,6 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User } from 'lucide-react';
 import { Student } from '@/types/database';
 import StudentSearchSelector from '../../StudentSearchSelector';
 
@@ -25,8 +24,8 @@ const SpeechScreeningStep1 = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-6">
-        <div className="w-8 h-8 rounded-full border-2 border-primary text-primary flex items-center justify-center">
-          <User className="w-4 h-4" />
+        <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+          👤
         </div>
         <h2 className="text-xl font-semibold">Student Information</h2>
       </div>
