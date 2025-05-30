@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -8,6 +7,7 @@ import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import StudentInfoHeader from '@/components/students/StudentInfoHeader';
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory';
+import IndividualReports from '@/components/students/IndividualReports';
 import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { StudentService } from '@/services/studentService';
@@ -93,6 +93,9 @@ const StudentDetailContent = () => {
           <main className="flex-1 px-4 md:px-6 lg:px-8 pb-20 md:pb-8 space-y-6">
             {/* Student Info Header */}
             <StudentInfoHeader student={student} />
+
+            {/* Individual Reports */}
+            <IndividualReports student={student} />
 
             {/* Screening History */}
             <StudentScreeningHistory studentId={studentId} />
