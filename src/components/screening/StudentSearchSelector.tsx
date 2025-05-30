@@ -18,7 +18,6 @@ const mockStudents = [
     student_id: 'STU001',
     emergency_contact_name: 'John Johnson',
     emergency_contact_phone: '(555) 123-4567',
-    medical_notes: '',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -32,7 +31,6 @@ const mockStudents = [
     student_id: 'STU002',
     emergency_contact_name: 'Lisa Chen',
     emergency_contact_phone: '(555) 987-6543',
-    medical_notes: '',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   }

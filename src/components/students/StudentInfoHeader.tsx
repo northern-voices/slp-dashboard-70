@@ -22,7 +22,6 @@ const mockStudent: Student = {
   student_id: 'STU001',
   emergency_contact_name: 'John Johnson',
   emergency_contact_phone: '(555) 123-4567',
-  medical_notes: '',
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z'
 };
@@ -100,7 +99,7 @@ const StudentInfoHeader = ({ student }: StudentInfoHeaderProps) => {
             <div className="flex items-start gap-2">
               <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
               <span className="text-sm text-gray-600">
-                {displayStudent.medical_notes || 'No medical notes on file'}
+                No medical notes on file
               </span>
             </div>
           </div>

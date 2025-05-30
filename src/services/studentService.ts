@@ -15,7 +15,6 @@ const mockStudents: Student[] = [
     student_id: 'STU001',
     emergency_contact_name: 'John Johnson',
     emergency_contact_phone: '(555) 123-4567',
-    medical_notes: '',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -29,7 +28,6 @@ const mockStudents: Student[] = [
     student_id: 'STU002',
     emergency_contact_name: 'Lisa Chen',
     emergency_contact_phone: '(555) 987-6543',
-    medical_notes: '',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -43,7 +41,6 @@ const mockStudents: Student[] = [
     student_id: 'STU003',
     emergency_contact_name: 'Maria Rodriguez',
     emergency_contact_phone: '(555) 456-7890',
-    medical_notes: 'Mild hearing impairment - uses hearing aids',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -57,7 +54,6 @@ const mockStudents: Student[] = [
     student_id: 'STU004',
     emergency_contact_name: 'Sarah Williams',
     emergency_contact_phone: '(555) 234-5678',
-    medical_notes: '',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -71,7 +67,6 @@ const mockStudents: Student[] = [
     student_id: 'STU005',
     emergency_contact_name: 'David Brown',
     emergency_contact_phone: '(555) 345-6789',
-    medical_notes: 'Asthma - inhaler available in nurse office',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   }

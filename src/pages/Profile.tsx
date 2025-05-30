@@ -8,10 +8,9 @@ import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import PersonalInformationSection from '@/components/profile/PersonalInformationSection';
 import AccountSettingsSection from '@/components/profile/AccountSettingsSection';
-import ProfessionalInformationSection from '@/components/profile/ProfessionalInformationSection';
 import NotificationPreferencesSection from '@/components/profile/NotificationPreferencesSection';
 import ActivitySecuritySection from '@/components/profile/ActivitySecuritySection';
-import { User, Settings, Briefcase, Bell, Shield } from 'lucide-react';
+import { User, Settings, Bell, Shield } from 'lucide-react';
 
 const ProfileContent = () => {
   const { userProfile } = useOrganization();
@@ -33,7 +32,7 @@ const ProfileContent = () => {
             </div>
 
             <Tabs defaultValue="personal" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="personal" className="flex items-center">
                   <User className="w-4 h-4 mr-2" />
                   Personal
@@ -41,10 +40,6 @@ const ProfileContent = () => {
                 <TabsTrigger value="account" className="flex items-center">
                   <Settings className="w-4 h-4 mr-2" />
                   Account
-                </TabsTrigger>
-                <TabsTrigger value="professional" className="flex items-center">
-                  <Briefcase className="w-4 h-4 mr-2" />
-                  Professional
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="flex items-center">
                   <Bell className="w-4 h-4 mr-2" />
@@ -62,10 +57,6 @@ const ProfileContent = () => {
 
               <TabsContent value="account" className="space-y-6">
                 <AccountSettingsSection />
-              </TabsContent>
-
-              <TabsContent value="professional" className="space-y-6">
-                <ProfessionalInformationSection />
               </TabsContent>
 
               <TabsContent value="notifications" className="space-y-6">
