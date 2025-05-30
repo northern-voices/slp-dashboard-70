@@ -174,13 +174,13 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
               </h3>
               {recentScreenings.length > 0 ? (
                 <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-4 font-medium text-gray-700">Type</th>
-                        <th className="text-left p-4 font-medium text-gray-700">Date</th>
-                        <th className="text-left p-4 font-medium text-gray-700">Notes</th>
-                        <th className="text-left p-4 font-medium text-gray-700">Actions</th>
+                  <table className="w-full border border-gray-200 rounded-lg">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left p-4 font-medium text-gray-700 border-b">Type</th>
+                        <th className="text-left p-4 font-medium text-gray-700 border-b">Date</th>
+                        <th className="text-left p-4 font-medium text-gray-700 border-b">Notes</th>
+                        <th className="text-left p-4 font-medium text-gray-700 border-b">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -218,13 +218,13 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
                         </CollapsibleTrigger>
                         <CollapsibleContent className="mt-2">
                           <div className="overflow-x-auto">
-                            <table className="w-full">
-                              <thead>
-                                <tr className="border-b">
-                                  <th className="text-left p-4 font-medium text-gray-700">Type</th>
-                                  <th className="text-left p-4 font-medium text-gray-700">Date</th>
-                                  <th className="text-left p-4 font-medium text-gray-700">Notes</th>
-                                  <th className="text-left p-4 font-medium text-gray-700">Actions</th>
+                            <table className="w-full border border-gray-200 rounded-lg">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th className="text-left p-4 font-medium text-gray-700 border-b">Type</th>
+                                  <th className="text-left p-4 font-medium text-gray-700 border-b">Date</th>
+                                  <th className="text-left p-4 font-medium text-gray-700 border-b">Notes</th>
+                                  <th className="text-left p-4 font-medium text-gray-700 border-b">Actions</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -243,12 +243,19 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
           </TabsContent>
           
           <TabsContent value="hearing" className="mt-6">
-            <div className="text-center py-8 text-gray-500">
-              <p>No hearing screenings recorded yet.</p>
-              <Button className="mt-4">
-                <Calendar className="w-4 h-4 mr-2" />
-                Schedule Hearing Screen
-              </Button>
+            <div className="text-center py-12 text-gray-500">
+              <div className="max-w-md mx-auto">
+                <div className="mb-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Calendar className="w-8 h-8 text-gray-400" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Hearing Screenings Coming Soon</h3>
+                <p className="text-sm text-gray-500">
+                  Hearing screening functionality will be available in a future update. 
+                  Stay tuned for this feature!
+                </p>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
