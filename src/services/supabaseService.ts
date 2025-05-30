@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -214,7 +215,7 @@ export class SupabaseService {
       .from('screenings')
       .insert({
         ...data,
-        status: data.status || 'scheduled' as Database['public']['Enums']['screening_status']
+        status: (data.status || 'scheduled') as Database['public']['Enums']['screening_status']
       })
       .select()
       .single();

@@ -1,17 +1,44 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, ArrowUp, ArrowDown, Minus, GraduationCap } from 'lucide-react';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { supabaseService } from '@/services/supabaseService';
+
+interface DashboardData {
+  totalStudents: number;
+  totalScreenings: number;
+  totalReports: number;
+  totalSchools: number;
+}
 
 const DashboardStats = () => {
-  const { currentSchool, isLoading } = useOrganization();
+  const { currentSchool, isLoading: contextLoading } = useOrganization();
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data - replace with actual data fetching based on currentSchool
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        setIsLoading(true);
+        const stats = await supabaseService.getDashboardStats();
+        setDashboardData(stats);
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (!contextLoading) {
+      fetchDashboardStats();
+    }
+  }, [contextLoading]);
+
   const stats = [
     {
       title: 'Active Students',
-      value: currentSchool ? '89' : '247',
+      value: dashboardData ? dashboardData.totalStudents.toString() : '0',
       change: currentSchool ? `at ${currentSchool.name}` : 'across all schools',
       percentage: '+5.1%',
       icon: GraduationCap,
@@ -21,7 +48,7 @@ const DashboardStats = () => {
     },
     {
       title: 'Recent Screenings',
-      value: currentSchool ? '6' : '18',
+      value: dashboardData ? dashboardData.totalScreenings.toString() : '0',
       change: 'Last 7 days',
       percentage: '+12.5%',
       icon: FileText,
@@ -53,7 +80,7 @@ const DashboardStats = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || contextLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {[1, 2].map((i) => (
