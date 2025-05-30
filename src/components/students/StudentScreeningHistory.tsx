@@ -113,27 +113,27 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
     );
   };
 
-  const ScreeningCard = ({ screening }: { screening: Screening }) => (
-    <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 bg-white">
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant={getStatusColor(screening.status)}>
-              {screening.status.replace('_', ' ')}
-            </Badge>
-            <Badge variant="outline">
-              {getTypeDisplay(screening.screening_type)}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-            <Calendar className="w-4 h-4" />
-            <span>{new Date(screening.screening_date).toLocaleDateString()}</span>
-          </div>
-          {screening.notes && (
-            <p className="text-sm text-gray-700">{screening.notes}</p>
-          )}
+  const ScreeningTableRow = ({ screening }: { screening: Screening }) => (
+    <tr className="border-b hover:bg-gray-50 transition-colors">
+      <td className="p-4">
+        <div className="flex items-center gap-2">
+          <Badge variant={getStatusColor(screening.status)} className="text-xs">
+            {screening.status}
+          </Badge>
+          <span className="text-sm font-medium">{getTypeDisplay(screening.screening_type)}</span>
         </div>
-        <div className="flex gap-1 ml-4">
+      </td>
+      <td className="p-4">
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <Calendar className="w-4 h-4" />
+          <span>{new Date(screening.screening_date).toLocaleDateString()}</span>
+        </div>
+      </td>
+      <td className="p-4">
+        <p className="text-sm text-gray-700">{screening.notes}</p>
+      </td>
+      <td className="p-4">
+        <div className="flex gap-1">
           <Button variant="ghost" size="sm">
             <Eye className="w-4 h-4" />
           </Button>
@@ -141,8 +141,8 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
             <FileText className="w-4 h-4" />
           </Button>
         </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 
   return (
@@ -167,16 +167,28 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
           </TabsList>
           
           <TabsContent value="speech" className="space-y-6 mt-6">
-            {/* Recent Screenings - Always Visible */}
+            {/* Recent Screenings Table */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
                 Recent Screenings (Last 6 months)
               </h3>
               {recentScreenings.length > 0 ? (
-                <div className="space-y-3">
-                  {recentScreenings.map(screening => (
-                    <ScreeningCard key={screening.id} screening={screening} />
-                  ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-4 font-medium text-gray-700">Type</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Date</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Notes</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentScreenings.map(screening => (
+                        <ScreeningTableRow key={screening.id} screening={screening} />
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               ) : (
                 <p className="text-gray-500 text-sm">No recent screenings found.</p>
@@ -205,10 +217,22 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
                           }`} />
                         </CollapsibleTrigger>
                         <CollapsibleContent className="mt-2">
-                          <div className="space-y-3 pl-4">
-                            {yearScreenings.map(screening => (
-                              <ScreeningCard key={screening.id} screening={screening} />
-                            ))}
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead>
+                                <tr className="border-b">
+                                  <th className="text-left p-4 font-medium text-gray-700">Type</th>
+                                  <th className="text-left p-4 font-medium text-gray-700">Date</th>
+                                  <th className="text-left p-4 font-medium text-gray-700">Notes</th>
+                                  <th className="text-left p-4 font-medium text-gray-700">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {yearScreenings.map(screening => (
+                                  <ScreeningTableRow key={screening.id} screening={screening} />
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
