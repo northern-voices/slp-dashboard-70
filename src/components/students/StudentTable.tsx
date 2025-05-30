@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import type { Database } from '@/integrations/supabase/types';
+import { Student } from '@/types/database';
 import StudentFilters from './StudentFilters';
 import StudentForm from './StudentForm';
 import MobileStudentCard from './MobileStudentCard';

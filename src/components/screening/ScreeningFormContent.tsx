@@ -1,17 +1,16 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Send } from 'lucide-react';
-import type { Database } from '@/integrations/supabase/types';
+import { Student } from '@/types/database';
 import StudentSelectionSection from './StudentSelectionSection';
 import ScreeningDetailsSection from './ScreeningDetailsSection';
 import NotesRecommendationsSection from './NotesRecommendationsSection';
 import SpeechScreeningFields from './SpeechScreeningFields';
 import HearingScreeningFields from './HearingScreeningFields';
 import ProgressScreeningFields from './ProgressScreeningFields';
-
-type Student = Database['public']['Tables']['students']['Row'];
 
 interface ScreeningFormContentProps {
   form: UseFormReturn<any>;

@@ -1,11 +1,10 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Eye, Edit, Calendar, Phone, User } from 'lucide-react';
-import type { Database } from '@/integrations/supabase/types';
-
-type Student = Database['public']['Tables']['students']['Row'];
+import { Student } from '@/types/database';
 
 interface MobileStudentCardProps {
   student: Student;

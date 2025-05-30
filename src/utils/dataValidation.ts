@@ -1,39 +1,53 @@
 
-import { z } from 'zod';
-import type { Database } from '@/integrations/supabase/types';
+import { Report } from '@/types/database';
 
-type Student = Database['public']['Tables']['students']['Row'];
+export class DataValidator {
+  static validateReport(report: unknown): report is Report {
+    if (!report || typeof report !== 'object') {
+      return false;
+    }
 
-export const validateStudentData = (student: Partial<Student>): boolean => {
-  const studentSchema = z.object({
-    first_name: z.string().min(1, 'First name is required'),
-    last_name: z.string().min(1, 'Last name is required'),
-    date_of_birth: z.string().min(1, 'Date of birth is required'),
-    student_id: z.string().min(1, 'Student ID is required'),
-    school_id: z.string().min(1, 'School ID is required'),
-  });
-
-  try {
-    studentSchema.parse(student);
-    return true;
-  } catch {
-    return false;
+    const r = report as Record<string, unknown>;
+    
+    return (
+      typeof r.id === 'string' &&
+      typeof r.screening_id === 'string' &&
+      typeof r.title === 'string' &&
+      typeof r.content === 'string' &&
+      typeof r.generated_at === 'string' &&
+      typeof r.status === 'string' &&
+      ['draft', 'final', 'reviewed'].includes(r.status as string) &&
+      typeof r.follow_up_required === 'boolean'
+    );
   }
-};
 
-export const validateScreeningData = (screening: any): boolean => {
-  const screeningSchema = z.object({
-    student_id: z.string().uuid(),
-    slp_id: z.string().uuid(),
-    screening_date: z.string(),
-    screening_type: z.enum(['initial', 'follow_up', 'annual', 'referral']),
-    status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled']).optional(),
-  });
-
-  try {
-    screeningSchema.parse(screening);
-    return true;
-  } catch {
-    return false;
+  static validateReports(reports: unknown): reports is Report[] {
+    return Array.isArray(reports) && reports.every(report => this.validateReport(report));
   }
-};
+
+  static sanitizeString(input: string): string {
+    return input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  }
+
+  static validateEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  static validateDateRange(startDate: string, endDate?: string): boolean {
+    const start = new Date(startDate);
+    if (isNaN(start.getTime())) {
+      return false;
+    }
+
+    if (endDate) {
+      const end = new Date(endDate);
+      if (isNaN(end.getTime())) {
+        return false;
+      }
+      return start <= end;
+    }
+
+    return true;
+  }
+}

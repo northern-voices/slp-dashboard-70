@@ -1,41 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabaseService } from '@/services/supabaseService';
-import { supabase } from '@/integrations/supabase/client';
-
-interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface School {
-  id: string;
-  organization_id: string;
-  name: string;
-  address?: string;
-  principal_name?: string;
-  principal_email?: string;
-  phone?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface SLPProfile {
-  id: string;
-  user_id: string;
-  organization_id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  license_number?: string;
-  role: 'slp' | 'admin' | 'supervisor';
-  active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { Organization, School, SLPProfile } from '@/types/database';
 
 interface OrganizationContextType {
   currentOrganization: Organization | null;
@@ -43,10 +8,8 @@ interface OrganizationContextType {
   userProfile: SLPProfile | null;
   availableSchools: School[];
   isLoading: boolean;
-  isAuthenticated: boolean;
   setCurrentSchool: (school: School | null) => void;
   refreshData: () => Promise<void>;
-  signOut: () => Promise<void>;
 }
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
@@ -69,81 +32,91 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   const [userProfile, setUserProfile] = useState<SLPProfile | null>(null);
   const [availableSchools, setAvailableSchools] = useState<School[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const refreshData = async () => {
     setIsLoading(true);
     try {
-      // Check authentication status
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        setIsAuthenticated(false);
-        setCurrentOrganization(null);
-        setUserProfile(null);
-        setAvailableSchools([]);
-        setCurrentSchool(null);
-        return;
-      }
+      // TODO: Replace with actual Supabase calls when integration is ready
+      // For now, using mock data
+      const mockOrganization: Organization = {
+        id: '1',
+        name: 'Springfield School District',
+        slug: 'springfield-sd',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
-      setIsAuthenticated(true);
+      const mockProfile: SLPProfile = {
+        id: '1',
+        user_id: '1',
+        organization_id: '1',
+        first_name: 'Sarah',
+        last_name: 'Johnson',
+        email: 'sarah.johnson@springfield.edu',
+        license_number: 'ADMIN-12345',
+        role: 'admin',
+        active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        organization: mockOrganization,
+      };
 
-      // Get user profile
-      const profile = await supabaseService.getCurrentUserProfile();
-      setUserProfile(profile);
-
-      // Get current organization
-      const organization = await supabaseService.getCurrentUserOrganization();
-      setCurrentOrganization(organization);
-
-      // Get available schools
-      const schools = await supabaseService.getSchools(organization.id);
-      setAvailableSchools(schools);
-      
-      // Set the first school as default if none selected and user has access
-      if (!currentSchool && schools.length > 0) {
-        // For admins, set first school. For others, check assignments
-        if (profile.role === 'admin') {
-          setCurrentSchool(schools[0]);
-        } else {
-          // Get school assignments for current user
-          const assignments = await supabaseService.getSchoolAssignments(profile.id);
-          const assignedSchool = schools.find(school => 
-            assignments.some(assignment => assignment.school_id === school.id)
-          );
-          if (assignedSchool) {
-            setCurrentSchool(assignedSchool);
-          }
+      const mockSchools: School[] = [
+        {
+          id: '1',
+          organization_id: '1',
+          name: 'Springfield Elementary',
+          address: '123 Main St, Springfield, IL',
+          principal_name: 'John Smith',
+          principal_email: 'j.smith@springfield.edu',
+          phone: '(555) 123-4567',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          organization: mockOrganization,
+        },
+        {
+          id: '2',
+          organization_id: '1',
+          name: 'Springfield Middle School',
+          address: '456 Oak Ave, Springfield, IL',
+          principal_name: 'Jane Doe',
+          principal_email: 'j.doe@springfield.edu',
+          phone: '(555) 123-4568',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          organization: mockOrganization,
+        },
+        {
+          id: '3',
+          organization_id: '1',
+          name: 'Springfield High School',
+          address: '789 Pine Blvd, Springfield, IL',
+          principal_name: 'Mike Wilson',
+          principal_email: 'm.wilson@springfield.edu',
+          phone: '(555) 123-4569',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          organization: mockOrganization,
         }
+      ];
+
+      setCurrentOrganization(mockOrganization);
+      setUserProfile(mockProfile);
+      setAvailableSchools(mockSchools);
+      
+      // Set the first school as default if none selected
+      if (!currentSchool && mockSchools.length > 0) {
+        setCurrentSchool(mockSchools[0]);
       }
     } catch (error) {
       console.error('Error loading organization data:', error);
-      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setIsAuthenticated(false);
-    setCurrentOrganization(null);
-    setUserProfile(null);
-    setAvailableSchools([]);
-    setCurrentSchool(null);
-  };
-
   useEffect(() => {
     refreshData();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-        refreshData();
-      }
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   const value: OrganizationContextType = {
@@ -152,10 +125,8 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
     userProfile,
     availableSchools,
     isLoading,
-    isAuthenticated,
     setCurrentSchool,
     refreshData,
-    signOut,
   };
 
   return (

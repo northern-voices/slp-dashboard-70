@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,9 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { Database } from '@/integrations/supabase/types';
-
-type Student = Database['public']['Tables']['students']['Row'];
+import { Student } from '@/types/database';
 
 const studentSchema = z.object({
   student_id: z.string().min(1, 'Student ID is required'),

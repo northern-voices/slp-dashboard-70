@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -5,9 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, Calendar, FileText, Eye, Clock } from 'lucide-react';
-import type { Database } from '@/integrations/supabase/types';
-
-type Screening = Database['public']['Tables']['screenings']['Row'];
+import { Screening } from '@/types/database';
 
 // Mock screening data
 const mockScreenings: Screening[] = [
@@ -193,7 +192,7 @@ const StudentScreeningHistory = ({ studentId }: StudentScreeningHistoryProps) =>
                 <div className="space-y-2">
                   {Object.entries(groupedHistorical)
                     .sort(([a], [b]) => Number(b) - Number(a))
-                    .map(([year, yearScreenings]: [string, Screening[]]) => (
+                    .map(([year, yearScreenings]) => (
                       <Collapsible
                         key={year}
                         open={openSections.includes(year)}
