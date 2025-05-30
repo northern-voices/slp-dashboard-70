@@ -1,121 +1,134 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-// Mock data for demonstration
-const mockStudents = [
-  {
-    id: '1',
-    first_name: 'Emma',
-    last_name: 'Johnson',
-    date_of_birth: '2010-05-15',
-    grade: '8th',
-    gender: 'female' as const,
-    student_id: 'STU001',
-    emergency_contact_name: 'John Johnson',
-    emergency_contact_phone: '(555) 123-4567',
-    notes: '',
-    active: true,
-    school_id: 'school-1',
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: '2',
-    first_name: 'Michael',
-    last_name: 'Chen',
-    date_of_birth: '2009-08-22',
-    grade: '9th',
-    gender: 'male' as const,
-    student_id: 'STU002',
-    emergency_contact_name: 'Lisa Chen',
-    emergency_contact_phone: '(555) 987-6543',
-    notes: '',
-    active: true,
-    school_id: 'school-1',
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: '3',
-    first_name: 'Sarah',
-    last_name: 'Williams',
-    date_of_birth: '2011-03-10',
-    grade: '7th',
-    gender: 'female' as const,
-    student_id: 'STU003',
-    emergency_contact_name: 'David Williams',
-    emergency_contact_phone: '(555) 456-7890',
-    notes: '',
-    active: true,
-    school_id: 'school-1',
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z'
-  }
-];
+import { Student } from '@/types/database';
+import { StudentService } from '@/services/studentService';
 
 interface StudentSearchSelectorProps {
-  onStudentSelect: (student: any) => void;
-  selectedStudent?: any;
+  onStudentSelect: (student: Student | null) => void;
+  selectedStudent?: Student | null;
   gradeFilter?: string;
 }
 
 const StudentSearchSelector = ({ onStudentSelect, selectedStudent, gradeFilter }: StudentSearchSelectorProps) => {
   const [open, setOpen] = useState(false);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
 
-  // Filter students by grade if gradeFilter is provided
-  const filteredStudents = gradeFilter 
-    ? mockStudents.filter(student => student.grade === gradeFilter)
-    : mockStudents;
+  useEffect(() => {
+    const loadStudents = async () => {
+      setLoading(true);
+      try {
+        const allStudents = await StudentService.getStudents();
+        // Filter students by grade if gradeFilter is provided
+        const filteredStudents = gradeFilter 
+          ? allStudents.filter(student => student.grade === gradeFilter)
+          : allStudents;
+        setStudents(filteredStudents);
+      } catch (error) {
+        console.error('Error loading students:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStudents();
+  }, [gradeFilter]);
+
+  // Filter students based on search input
+  const filteredStudents = students.filter(student =>
+    `${student.first_name} ${student.last_name} ${student.student_id}`.toLowerCase().includes(searchValue.toLowerCase())
+  );
+
+  const handleStudentSelect = (student: Student) => {
+    onStudentSelect(student);
+    setOpen(false);
+    setSearchValue('');
+  };
+
+  const handleClearSelection = () => {
+    onStudentSelect(null);
+    setSearchValue('');
+  };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between"
-        >
-          {selectedStudent
-            ? `${selectedStudent.first_name} ${selectedStudent.last_name} (${selectedStudent.student_id})`
-            : "Select student..."}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput placeholder="Search students..." />
-          <CommandList>
-            <CommandEmpty>No student found.</CommandEmpty>
-            <CommandGroup>
-              {filteredStudents.map((student) => (
-                <CommandItem
-                  key={student.id}
-                  value={`${student.first_name} ${student.last_name} ${student.student_id}`}
-                  onSelect={() => {
-                    onStudentSelect(student);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      selectedStudent?.id === student.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {student.first_name} {student.last_name} ({student.student_id}) - Grade {student.grade}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <div className="space-y-2">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between text-left"
+          >
+            {selectedStudent
+              ? `${selectedStudent.first_name} ${selectedStudent.last_name} (${selectedStudent.student_id})`
+              : "Select student..."}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0" align="start">
+          <Command shouldFilter={false}>
+            <CommandInput 
+              placeholder="Search students..." 
+              value={searchValue}
+              onValueChange={setSearchValue}
+            />
+            <CommandList>
+              <CommandEmpty>
+                {loading ? "Loading students..." : "No student found."}
+              </CommandEmpty>
+              <CommandGroup>
+                {filteredStudents.map((student) => (
+                  <CommandItem
+                    key={student.id}
+                    value={`${student.first_name} ${student.last_name} ${student.student_id}`}
+                    onSelect={() => handleStudentSelect(student)}
+                    className="cursor-pointer"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedStudent?.id === student.id ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    <div className="flex flex-col">
+                      <span className="font-medium">
+                        {student.first_name} {student.last_name}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        ID: {student.student_id} • Grade: {student.grade || 'N/A'}
+                      </span>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      
+      {selectedStudent && (
+        <div className="flex items-center justify-between p-2 bg-muted rounded-md">
+          <span className="text-sm text-muted-foreground">
+            Selected: {selectedStudent.first_name} {selectedStudent.last_name}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearSelection}
+            className="h-auto p-1 text-muted-foreground hover:text-foreground"
+          >
+            Clear
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 

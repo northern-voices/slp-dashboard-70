@@ -16,6 +16,7 @@ interface HearingScreeningFormProps {
 
 const HearingScreeningForm = ({ onSubmit, onCancel, existingStudent }: HearingScreeningFormProps) => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null);
+  const [createNewStudent, setCreateNewStudent] = useState(false);
   
   const form = useForm({
     defaultValues: {
@@ -84,7 +85,8 @@ const HearingScreeningForm = ({ onSubmit, onCancel, existingStudent }: HearingSc
         selectedStudent={selectedStudent}
         onStudentSelect={setSelectedStudent}
         form={form}
-        existingStudent={existingStudent}
+        createNewStudent={createNewStudent}
+        onCreateNewStudent={() => setCreateNewStudent(true)}
       />
       
       <HearingScreeningFields form={form} />
