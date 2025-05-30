@@ -2,90 +2,111 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Save, Send } from 'lucide-react';
-import { Student } from '@/types/database';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Volume2 } from 'lucide-react';
 import StudentSelectionSection from '../shared/StudentSelectionSection';
 import NotesRecommendationsSection from '../shared/NotesRecommendationsSection';
 import HearingScreeningFields from '../HearingScreeningFields';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Student } from '@/types/database';
+import { ScreeningFormData } from '@/types/screening';
 
 interface HearingScreeningFormProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: ScreeningFormData) => void;
+  onCancel: () => void;
   existingStudent?: Student | null;
 }
 
 const HearingScreeningForm = ({
   onSubmit,
-  existingStudent,
+  onCancel,
+  existingStudent
 }: HearingScreeningFormProps) => {
   const [createNewStudent, setCreateNewStudent] = useState(!existingStudent);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null);
-  
+
   const form = useForm({
     defaultValues: {
-      // Student info fields
+      screening_type: 'hearing',
+      screening_date: new Date().toISOString().split('T')[0],
       first_name: existingStudent?.first_name || '',
       last_name: existingStudent?.last_name || '',
       date_of_birth: existingStudent?.date_of_birth || '',
-      student_id: existingStudent?.student_id || '',
       grade: existingStudent?.grade || '',
       gender: existingStudent?.gender || '',
       emergency_contact_name: existingStudent?.emergency_contact_name || '',
       emergency_contact_phone: existingStudent?.emergency_contact_phone || '',
-      // Screening fields
-      screening_type: 'initial',
-      screening_date: new Date().toISOString().split('T')[0],
-      general_notes: '',
+      notes: '',
       recommendations: '',
       follow_up_required: false,
+      follow_up_date: ''
     }
   });
-
-  const handleStudentSelect = (student: Student | null) => {
-    setSelectedStudent(student);
-    if (student) {
-      setCreateNewStudent(false);
-      form.reset({
-        first_name: student.first_name,
-        last_name: student.last_name,
-        date_of_birth: student.date_of_birth,
-        student_id: student.student_id,
-        grade: student.grade || '',
-        gender: student.gender || '',
-        emergency_contact_name: student.emergency_contact_name || '',
-        emergency_contact_phone: student.emergency_contact_phone || '',
-        screening_type: 'initial',
-        screening_date: new Date().toISOString().split('T')[0],
-        general_notes: '',
-        recommendations: '',
-        follow_up_required: false,
-      });
-    }
-  };
 
   const handleCreateNewStudent = () => {
     setCreateNewStudent(true);
     setSelectedStudent(null);
-    form.reset({
-      first_name: '',
-      last_name: '',
-      date_of_birth: '',
-      student_id: '',
-      grade: '',
-      gender: '',
-      emergency_contact_name: '',
-      emergency_contact_phone: '',
-      screening_type: 'initial',
-      screening_date: new Date().toISOString().split('T')[0],
-      general_notes: '',
-      recommendations: '',
-      follow_up_required: false,
-    });
+  };
+
+  const handleStudentSelect = (student: Student | null) => {
+    setSelectedStudent(student);
+    setCreateNewStudent(false);
+    
+    if (student) {
+      form.setValue('first_name', student.first_name);
+      form.setValue('last_name', student.last_name);
+      form.setValue('date_of_birth', student.date_of_birth);
+      form.setValue('grade', student.grade || '');
+      form.setValue('gender', student.gender || '');
+      form.setValue('emergency_contact_name', student.emergency_contact_name || '');
+      form.setValue('emergency_contact_phone', student.emergency_contact_phone || '');
+    }
+  };
+
+  const handleFormSubmit = (data: any) => {
+    const formData: ScreeningFormData = {
+      screening_type: 'hearing',
+      screening_date: data.screening_date,
+      student_id: selectedStudent?.id,
+      student_info: createNewStudent ? {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        date_of_birth: data.date_of_birth,
+        grade: data.grade,
+        gender: data.gender,
+        emergency_contact_name: data.emergency_contact_name,
+        emergency_contact_phone: data.emergency_contact_phone
+      } : undefined,
+      hearing_data: {
+        // Add hearing-specific fields here
+      },
+      notes: data.notes,
+      recommendations: data.recommendations,
+      follow_up_required: data.follow_up_required,
+      follow_up_date: data.follow_up_date
+    };
+
+    onSubmit(formData);
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+      {/* Header */}
+      <Card className="bg-gradient-to-r from-teal-50 to-blue-50 border-teal-200">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center space-x-3 text-teal-800">
+            <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
+              <Volume2 className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold">Hearing Screening</h2>
+              <p className="text-sm text-teal-600 font-normal">
+                Assess auditory processing and hearing capabilities
+              </p>
+            </div>
+          </CardTitle>
+        </CardHeader>
+      </Card>
+
       {/* Student Selection */}
       <StudentSelectionSection
         form={form}
@@ -95,43 +116,19 @@ const HearingScreeningForm = ({
         onCreateNewStudent={handleCreateNewStudent}
       />
 
-      {/* Screening Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="screening_type">Screening Type</Label>
-          <select
-            {...form.register('screening_type')}
-            className="w-full p-2 border rounded-md"
-          >
-            <option value="initial">Initial</option>
-            <option value="follow_up">Follow-up</option>
-            <option value="annual">Annual</option>
-            <option value="referral">Referral</option>
-          </select>
-        </div>
-        <div>
-          <Label htmlFor="screening_date">Screening Date</Label>
-          <Input
-            type="date"
-            {...form.register('screening_date')}
-          />
-        </div>
-      </div>
-
       {/* Hearing Screening Fields */}
       <HearingScreeningFields form={form} />
 
-      {/* General Notes and Recommendations */}
+      {/* Notes and Recommendations */}
       <NotesRecommendationsSection form={form} />
 
-      <div className="flex justify-end gap-2 pt-4 border-t">
-        <Button type="button" variant="outline" className="flex items-center gap-2">
-          <Save className="w-4 h-4" />
-          Save Draft
+      {/* Action Buttons */}
+      <div className="flex justify-end space-x-3 pt-6 border-t">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
         </Button>
-        <Button type="submit" className="flex items-center gap-2">
-          <Send className="w-4 h-4" />
-          Submit Hearing Screening
+        <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+          Complete Hearing Screening
         </Button>
       </div>
     </form>
