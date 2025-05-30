@@ -81,14 +81,14 @@ const StudentDetail = () => {
         isOpen={showSpeechModal}
         onClose={() => setShowSpeechModal(false)}
         onSubmit={handleSpeechScreeningSubmit}
-        existingStudent={studentWithGrade}
+        existingStudent={studentWithGrade as Student}
       />
       
       <HearingScreeningModal 
         isOpen={showHearingModal}
         onClose={() => setShowHearingModal(false)}
         onSubmit={handleHearingScreeningSubmit}
-        existingStudent={studentWithGrade}
+        existingStudent={studentWithGrade as Student}
       />
     </div>
   );
