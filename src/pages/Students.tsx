@@ -7,9 +7,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import StudentTable from '@/components/students/StudentTable';
 import { StudentService } from '@/services/studentService';
-import { Database } from '@/types/supabase';
-
-type Student = Database['public']['Tables']['students']['Row'];
+import { Student } from '@/types/database';
 
 const StudentsContent = () => {
   const { userProfile } = useOrganization();

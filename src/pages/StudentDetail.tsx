@@ -11,9 +11,7 @@ import StudentScreeningHistory from '@/components/students/StudentScreeningHisto
 import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { StudentService } from '@/services/studentService';
-import { Database } from '@/types/supabase';
-
-type Student = Database['public']['Tables']['students']['Row'];
+import { Student } from '@/types/database';
 
 const StudentDetailContent = () => {
   const { studentId } = useParams<{ studentId: string }>();
