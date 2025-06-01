@@ -22,16 +22,29 @@ const StudentSearchSelector = ({ onStudentSelect, selectedStudent, gradeFilter }
 
   useEffect(() => {
     const loadStudents = async () => {
+      console.log('🔍 Starting to load students...');
+      console.log('📊 Grade filter:', gradeFilter);
+      
       setLoading(true);
       try {
         const allStudents = await StudentService.getStudents();
+        console.log('📥 Fetched students from service:', allStudents);
+        console.log('📊 Total students fetched:', allStudents.length);
+        
         // Filter students by grade if gradeFilter is provided
         const filteredStudents = gradeFilter 
-          ? allStudents.filter(student => student.grade === gradeFilter)
+          ? allStudents.filter(student => {
+              console.log(`🎓 Checking student ${student.first_name} ${student.last_name} - Grade: "${student.grade}" vs Filter: "${gradeFilter}"`);
+              return student.grade === gradeFilter;
+            })
           : allStudents;
+          
+        console.log('✅ Students after grade filtering:', filteredStudents);
+        console.log('📊 Filtered students count:', filteredStudents.length);
+        
         setStudents(filteredStudents);
       } catch (error) {
-        console.error('Error loading students:', error);
+        console.error('❌ Error loading students:', error);
       } finally {
         setLoading(false);
       }
@@ -41,9 +54,19 @@ const StudentSearchSelector = ({ onStudentSelect, selectedStudent, gradeFilter }
   }, [gradeFilter]);
 
   // Filter students based on search input
-  const filteredStudents = students.filter(student =>
-    `${student.first_name} ${student.last_name} ${student.student_id}`.toLowerCase().includes(searchValue.toLowerCase())
-  );
+  const filteredStudents = students.filter(student => {
+    const searchString = `${student.first_name} ${student.last_name} ${student.student_id}`.toLowerCase();
+    const matches = searchString.includes(searchValue.toLowerCase());
+    
+    if (searchValue) {
+      console.log(`🔎 Search filtering: "${searchString}" contains "${searchValue.toLowerCase()}"? ${matches}`);
+    }
+    
+    return matches;
+  });
+
+  console.log('🎯 Final filtered students for display:', filteredStudents);
+  console.log('📊 Final count:', filteredStudents.length);
 
   const handleStudentSelect = (student: Student) => {
     onStudentSelect(student);
