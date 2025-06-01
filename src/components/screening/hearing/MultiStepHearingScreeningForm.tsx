@@ -8,6 +8,7 @@ import ProgressIndicator from '../shared/ProgressIndicator';
 import HearingScreeningStep1 from './steps/HearingScreeningStep1';
 import HearingScreeningStep2 from './steps/HearingScreeningStep2';
 import HearingScreeningStep3 from './steps/HearingScreeningStep3';
+import { Save } from 'lucide-react';
 
 interface MultiStepHearingScreeningFormProps {
   onSubmit: (data: ScreeningFormData) => void;
@@ -60,6 +61,13 @@ const MultiStepHearingScreeningForm = ({
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const handleSaveDraft = () => {
+    const formData = form.getValues();
+    console.log('Saving hearing screening draft:', formData);
+    // Here you would typically save to localStorage or send to backend
+    // For now, we'll just log it
   };
 
   const handleSubmit = (data: any) => {
@@ -124,7 +132,7 @@ const MultiStepHearingScreeningForm = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-full mx-auto space-y-8">
       <ProgressIndicator 
         currentStep={currentStep} 
         totalSteps={3} 
@@ -155,6 +163,15 @@ const MultiStepHearingScreeningForm = ({
           </div>
           
           <div className="flex space-x-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSaveDraft}
+              className="flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              Save Draft
+            </Button>
             {currentStep < 3 ? (
               <Button
                 type="button"

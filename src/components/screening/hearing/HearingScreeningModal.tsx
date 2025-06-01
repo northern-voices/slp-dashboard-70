@@ -22,7 +22,7 @@ const HearingScreeningModal = ({
 }: HearingScreeningModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-full max-h-[90vh] overflow-y-auto w-[95vw] sm:w-[90vw] lg:w-[85vw]">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             {title}
