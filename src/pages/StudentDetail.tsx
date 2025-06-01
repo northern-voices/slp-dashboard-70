@@ -15,9 +15,6 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Mail } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import ClassWideReportsModal from '@/components/students/ClassWideReportsModal';
 
 const StudentDetailContent = () => {
   const { studentId } = useParams<{ studentId: string }>();
@@ -26,7 +23,6 @@ const StudentDetailContent = () => {
   const [error, setError] = useState<string | null>(null);
   const [showSpeechModal, setShowSpeechModal] = useState(false);
   const [showHearingModal, setShowHearingModal] = useState(false);
-  const [showClassWideModal, setShowClassWideModal] = useState(false);
   const { userProfile } = useOrganization();
 
   useEffect(() => {
@@ -98,24 +94,6 @@ const StudentDetailContent = () => {
                 
                 <div className="space-y-6">
                   <IndividualReports student={student} isLoading={loading} />
-                  
-                  {/* Class-Wide Reports Card */}
-                  <div className="bg-white rounded-lg border p-4 md:p-6">
-                    <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
-                      <Mail className="w-4 h-4 md:w-5 md:h-5" />
-                      Class-Wide Reports
-                    </h3>
-                    <p className="text-sm md:text-base text-gray-600 mb-4">
-                      Send comprehensive reports for entire classes or grade levels via email.
-                    </p>
-                    <Button 
-                      onClick={() => setShowClassWideModal(true)}
-                      className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      Send Class-Wide Reports
-                    </Button>
-                  </div>
                 </div>
               </div>
 
@@ -131,11 +109,6 @@ const StudentDetailContent = () => {
                 onClose={() => setShowHearingModal(false)}
                 onSubmit={handleHearingScreeningSubmit}
                 existingStudent={student}
-              />
-
-              <ClassWideReportsModal
-                isOpen={showClassWideModal}
-                onClose={() => setShowClassWideModal(false)}
               />
             </div>
           </main>
