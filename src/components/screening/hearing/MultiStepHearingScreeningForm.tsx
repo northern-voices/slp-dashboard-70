@@ -132,7 +132,7 @@ const MultiStepHearingScreeningForm = ({
   };
 
   return (
-    <div className="max-w-full mx-auto space-y-8">
+    <div className="space-y-6">
       <ProgressIndicator 
         currentStep={currentStep} 
         totalSteps={3} 
