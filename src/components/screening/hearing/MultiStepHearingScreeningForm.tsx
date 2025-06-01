@@ -8,7 +8,6 @@ import ProgressIndicator from '../shared/ProgressIndicator';
 import HearingScreeningStep1 from './steps/HearingScreeningStep1';
 import HearingScreeningStep2 from './steps/HearingScreeningStep2';
 import HearingScreeningStep3 from './steps/HearingScreeningStep3';
-import { Save } from 'lucide-react';
 
 interface MultiStepHearingScreeningFormProps {
   onSubmit: (data: ScreeningFormData) => void;
@@ -139,10 +138,10 @@ const MultiStepHearingScreeningForm = ({
         stepTitles={stepTitles} 
       />
       
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         {renderCurrentStep()}
         
-        <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+        <div className="flex justify-between items-center pt-6 border-t">
           <div className="flex space-x-3">
             <Button
               type="button"
@@ -167,9 +166,7 @@ const MultiStepHearingScreeningForm = ({
               type="button"
               variant="outline"
               onClick={handleSaveDraft}
-              className="flex items-center gap-2"
             >
-              <Save className="w-4 h-4" />
               Save Draft
             </Button>
             {currentStep < 3 ? (
@@ -177,6 +174,7 @@ const MultiStepHearingScreeningForm = ({
                 type="button"
                 onClick={handleNext}
                 disabled={currentStep === 1 && !canProceedToStep2}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 Next
               </Button>
@@ -184,6 +182,7 @@ const MultiStepHearingScreeningForm = ({
               <Button
                 type="submit"
                 disabled={!canSubmit}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 Submit Screening
               </Button>
