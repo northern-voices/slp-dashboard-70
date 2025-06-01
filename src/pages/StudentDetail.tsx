@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Student } from '@/types/database';
@@ -9,14 +10,20 @@ import StudentScreeningHistory from '@/components/students/StudentScreeningHisto
 import IndividualReports from '@/components/students/IndividualReports';
 import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningModal';
 import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
+import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import AppSidebar from '@/components/AppSidebar';
+import Header from '@/components/Header';
+import BottomNavigation from '@/components/BottomNavigation';
 
-const StudentDetail = () => {
+const StudentDetailContent = () => {
   const { studentId } = useParams<{ studentId: string }>();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSpeechModal, setShowSpeechModal] = useState(false);
   const [showHearingModal, setShowHearingModal] = useState(false);
+  const { userProfile } = useOrganization();
 
   useEffect(() => {
     const fetchStudent = async () => {
@@ -57,33 +64,61 @@ const StudentDetail = () => {
   if (error) return <ErrorMessage message={error} />;
   if (!student) return <div className="p-8 text-center">Student not found</div>;
 
-  return (
-    <div className="container mx-auto p-6 space-y-6">
-      <StudentInfoHeader student={student} />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <StudentScreeningHistory 
-          studentId={studentId} 
-          student={student}
-          onAddHearingScreening={() => setShowHearingModal(true)}
-        />
-        <IndividualReports student={student} isLoading={loading} />
-      </div>
+  const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
+  const userRole = userProfile?.role || 'slp';
 
-      <SpeechScreeningModal 
-        isOpen={showSpeechModal}
-        onClose={() => setShowSpeechModal(false)}
-        onSubmit={handleSpeechScreeningSubmit}
-        existingStudent={student}
-      />
-      
-      <HearingScreeningModal 
-        isOpen={showHearingModal}
-        onClose={() => setShowHearingModal(false)}
-        onSubmit={handleHearingScreeningSubmit}
-        existingStudent={student}
-      />
+  return (
+    <div className="min-h-screen flex w-full bg-gray-25">
+      <SidebarProvider>
+        <AppSidebar 
+          userRole={userRole as 'admin' | 'slp' | 'supervisor'} 
+          userName={userName}
+        />
+        <SidebarInset>
+          <Header 
+            userRole={userRole as 'admin' | 'slp' | 'supervisor'} 
+            userName={userName}
+          />
+          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+            <div className="space-y-6">
+              <StudentInfoHeader student={student} />
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <StudentScreeningHistory 
+                  studentId={studentId} 
+                  student={student}
+                  onAddHearingScreening={() => setShowHearingModal(true)}
+                />
+                <IndividualReports student={student} isLoading={loading} />
+              </div>
+
+              <SpeechScreeningModal 
+                isOpen={showSpeechModal}
+                onClose={() => setShowSpeechModal(false)}
+                onSubmit={handleSpeechScreeningSubmit}
+                existingStudent={student}
+              />
+              
+              <HearingScreeningModal 
+                isOpen={showHearingModal}
+                onClose={() => setShowHearingModal(false)}
+                onSubmit={handleHearingScreeningSubmit}
+                existingStudent={student}
+              />
+            </div>
+          </main>
+        </SidebarInset>
+        <BottomNavigation />
+      </SidebarProvider>
     </div>
+  );
+};
+
+const StudentDetail = () => {
+  return (
+    <OrganizationProvider>
+      <StudentDetailContent />
+    </OrganizationProvider>
   );
 };
 
