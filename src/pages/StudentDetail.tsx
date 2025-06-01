@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Student } from '@/types/database';
@@ -14,8 +15,8 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import Mail from '@/components/icons/Mail';
-import Button from '@/components/Button';
+import { Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import ClassWideReportsModal from '@/components/students/ClassWideReportsModal';
 
 const StudentDetailContent = () => {
