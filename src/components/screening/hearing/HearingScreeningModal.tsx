@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import HearingScreeningForm from './HearingScreeningForm';
+import MultiStepHearingScreeningForm from './MultiStepHearingScreeningForm';
 import { Student } from '@/types/database';
 import { ScreeningFormData } from '@/types/screening';
 
@@ -22,14 +22,14 @@ const HearingScreeningModal = ({
 }: HearingScreeningModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             {title}
           </DialogTitle>
         </DialogHeader>
         
-        <HearingScreeningForm
+        <MultiStepHearingScreeningForm
           onSubmit={onSubmit}
           onCancel={onClose}
           existingStudent={existingStudent}
