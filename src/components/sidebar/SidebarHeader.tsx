@@ -20,16 +20,16 @@ const SidebarHeader = () => {
         </div>
         <div className="flex flex-col min-w-0">
           <span className="font-semibold text-gray-900 text-sm truncate">
-            {currentOrganization?.name || 'Springfield School District'}
+            {currentOrganization?.name || 'NVSS'}
           </span>
-          <span className="text-xs text-gray-500 font-medium">Speech & Language</span>
+          <span className="text-xs text-gray-500 font-medium">Speech & Language Services</span>
         </div>
       </div>
       
       {/* Current School Section */}
       <div className="space-y-3">
         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">
-          Current School
+          Current Location
         </span>
         <SchoolSelector />
       </div>
