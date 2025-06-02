@@ -1,6 +1,6 @@
+
 import { 
   Home, 
-  Users, 
   Settings,
   BarChart3,
   Building2,
@@ -55,19 +55,12 @@ export const getNavigationGroups = (location: Location, userRole: string, userPr
     }
   ];
 
-  const managementItems: NavigationItem[] = [
-    {
-      title: "Users",
-      url: "/users",
-      icon: Users,
-    }
-  ];
-
   const adminItems: NavigationItem[] = [
     {
       title: "Admin Panel",
       url: "/admin",
       icon: Settings,
+      isActive: location.pathname === "/admin"
     }
   ];
 
@@ -77,14 +70,6 @@ export const getNavigationGroups = (location: Location, userRole: string, userPr
       items: mainItems
     }
   ];
-
-  // Add management section for admin and supervisor roles only (not SLPs)
-  if ((userRole === 'admin' || userRole === 'supervisor' || userProfile?.role === 'admin' || userProfile?.role === 'supervisor') && userRole !== 'slp') {
-    groups.push({
-      label: "Administration",
-      items: managementItems
-    });
-  }
 
   // Add system section for admin only
   if (userRole === 'admin') {

@@ -15,7 +15,6 @@ import ViewScreenings from "./pages/student/ViewScreenings";
 import GenerateGoalSheet from "./pages/student/GenerateGoalSheet";
 import Reports from "./pages/Reports";
 import Management from "./pages/Management";
-import Users from "./pages/Users";
 import AdminPanel from "./pages/AdminPanel";
 import Profile from "./pages/Profile";
 import Login from "./pages/auth/Login";
@@ -59,7 +58,6 @@ const App = () => (
             <Route path="/school-support" element={<SchoolSupport />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/management" element={<Management />} />
-            <Route path="/users" element={<Users />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/profile" element={<Profile />} />
             
