@@ -10,9 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Student } from '@/types/database';
 import { Mail, Send } from 'lucide-react';
+import Multiselect from '@/components/ui/multiselect';
 
 interface IndividualReportEmailModalProps {
   isOpen: boolean;
@@ -27,19 +27,11 @@ const IndividualReportEmailModal = ({ isOpen, onClose, student }: IndividualRepo
   const [isLoading, setIsLoading] = useState(false);
 
   const availableReports = [
-    { id: 'hearing-screen', label: 'Hearing Screen Report' },
-    { id: 'speech-screen', label: 'Speech Screen Report' },
-    { id: 'goal-sheet', label: 'Goal Sheet' },
-    { id: 'progress-report', label: 'Progress Report' }
+    'Hearing Screen Report',
+    'Speech Screen Report',
+    'Goal Sheet',
+    'Progress Report'
   ];
-
-  const handleReportToggle = (reportId: string) => {
-    setSelectedReports(prev => 
-      prev.includes(reportId) 
-        ? prev.filter(id => id !== reportId)
-        : [...prev, reportId]
-    );
-  };
 
   const handleSendEmail = async () => {
     if (!recipientEmail || selectedReports.length === 0) {
@@ -88,20 +80,14 @@ const IndividualReportEmailModal = ({ isOpen, onClose, student }: IndividualRepo
           {/* Report Selection */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Select Reports to Send</Label>
-            <div className="space-y-2">
-              {availableReports.map((report) => (
-                <div key={report.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={report.id}
-                    checked={selectedReports.includes(report.id)}
-                    onCheckedChange={() => handleReportToggle(report.id)}
-                  />
-                  <Label htmlFor={report.id} className="text-sm font-normal">
-                    {report.label}
-                  </Label>
-                </div>
-              ))}
-            </div>
+            <Multiselect
+              options={availableReports}
+              selected={selectedReports}
+              onChange={setSelectedReports}
+              placeholder="Select reports to send..."
+              searchPlaceholder="Search reports..."
+              emptyMessage="No reports found."
+            />
           </div>
 
           {/* Email Details */}

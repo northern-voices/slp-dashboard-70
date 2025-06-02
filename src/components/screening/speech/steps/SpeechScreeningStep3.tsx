@@ -4,15 +4,38 @@ import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText } from 'lucide-react';
+import Multiselect from '@/components/ui/multiselect';
 
 interface SpeechScreeningStep3Props {
   form: UseFormReturn<any>;
 }
 
 const SpeechScreeningStep3 = ({ form }: SpeechScreeningStep3Props) => {
+  const supportOptions = [
+    'Vocabulary Support (Language Ladder)',
+    'Suspected CAS',
+    'Additional Speech Support',
+    'Language Intervention',
+    'Articulation Therapy'
+  ];
+
+  const [selectedSupport, setSelectedSupport] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    const currentSupport = [];
+    if (form.watch('vocabulary_support')) currentSupport.push('Vocabulary Support (Language Ladder)');
+    if (form.watch('suspected_cas')) currentSupport.push('Suspected CAS');
+    setSelectedSupport(currentSupport);
+  }, [form.watch('vocabulary_support'), form.watch('suspected_cas')]);
+
+  const handleSupportChange = (selected: string[]) => {
+    setSelectedSupport(selected);
+    form.setValue('vocabulary_support', selected.includes('Vocabulary Support (Language Ladder)'));
+    form.setValue('suspected_cas', selected.includes('Suspected CAS'));
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -38,24 +61,17 @@ const SpeechScreeningStep3 = ({ form }: SpeechScreeningStep3Props) => {
             </Select>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="vocabulary_support"
-                checked={form.watch('vocabulary_support')}
-                onCheckedChange={(checked) => form.setValue('vocabulary_support', checked)}
-              />
-              <Label htmlFor="vocabulary_support">Vocabulary Support (Language Ladder)</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="suspected_cas"
-                checked={form.watch('suspected_cas')}
-                onCheckedChange={(checked) => form.setValue('suspected_cas', checked)}
-              />
-              <Label htmlFor="suspected_cas">Suspected CAS</Label>
-            </div>
+          <div className="space-y-3">
+            <Label>Support Options</Label>
+            <Multiselect
+              options={supportOptions}
+              selected={selectedSupport}
+              onChange={handleSupportChange}
+              placeholder="Select support options..."
+              searchPlaceholder="Search support options..."
+              emptyMessage="No support options found."
+              showSelectAll={false}
+            />
           </div>
 
           <div>

@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 import { Student } from '@/types/database';
+import Multiselect from '@/components/ui/multiselect';
 
 interface StudentFiltersProps {
   students: Student[];
@@ -13,96 +14,101 @@ interface StudentFiltersProps {
 }
 
 const StudentFilters = ({ students, onFilter }: StudentFiltersProps) => {
-  const [selectedGrade, setSelectedGrade] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [selectedGender, setSelectedGender] = useState<string>('');
+  const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
 
   // Get unique values for filter options
   const grades = Array.from(new Set(students.map(s => s.grade).filter(Boolean))).sort();
+  const statusOptions = ['Active', 'Inactive'];
+  const genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
+
   const activeFilters = [
-    selectedGrade && { type: 'Grade', value: selectedGrade, clear: () => setSelectedGrade('') },
-    selectedStatus && { type: 'Status', value: selectedStatus, clear: () => setSelectedStatus('') },
-    selectedGender && { type: 'Gender', value: selectedGender, clear: () => setSelectedGender('') },
-  ].filter(Boolean);
+    ...selectedGrades.map(grade => ({ type: 'Grade', value: grade, clear: () => setSelectedGrades(prev => prev.filter(g => g !== grade)) })),
+    ...selectedStatuses.map(status => ({ type: 'Status', value: status, clear: () => setSelectedStatuses(prev => prev.filter(s => s !== status)) })),
+    ...selectedGenders.map(gender => ({ type: 'Gender', value: gender, clear: () => setSelectedGenders(prev => prev.filter(g => g !== gender)) })),
+  ];
 
   useEffect(() => {
     let filtered = [...students];
 
-    if (selectedGrade) {
-      filtered = filtered.filter(student => student.grade === selectedGrade);
+    if (selectedGrades.length > 0) {
+      filtered = filtered.filter(student => selectedGrades.includes(student.grade));
     }
 
-    if (selectedStatus) {
-      const isActive = selectedStatus === 'active';
-      filtered = filtered.filter(student => student.active === isActive);
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter(student => {
+        const studentStatus = student.active ? 'Active' : 'Inactive';
+        return selectedStatuses.includes(studentStatus);
+      });
     }
 
-    if (selectedGender) {
-      filtered = filtered.filter(student => student.gender === selectedGender);
+    if (selectedGenders.length > 0) {
+      filtered = filtered.filter(student => {
+        const studentGender = student.gender.charAt(0).toUpperCase() + student.gender.slice(1);
+        return selectedGenders.includes(studentGender);
+      });
     }
 
     onFilter(filtered);
-  }, [selectedGrade, selectedStatus, selectedGender, students, onFilter]);
+  }, [selectedGrades, selectedStatuses, selectedGenders, students, onFilter]);
 
   const clearAllFilters = () => {
-    setSelectedGrade('');
-    setSelectedStatus('');
-    setSelectedGender('');
+    setSelectedGrades([]);
+    setSelectedStatuses([]);
+    setSelectedGenders([]);
   };
 
   return (
     <Card>
       <CardContent className="p-4">
         <div className="flex flex-col space-y-4">
-          <div className="flex flex-wrap gap-4">
-            <div className="min-w-0">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-              <Select value={selectedGrade} onValueChange={setSelectedGrade}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="All grades" />
-                </SelectTrigger>
-                <SelectContent>
-                  {grades.map(grade => (
-                    <SelectItem key={grade} value={grade}>{grade}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Grades</label>
+              <Multiselect
+                options={grades}
+                selected={selectedGrades}
+                onChange={setSelectedGrades}
+                placeholder="All grades"
+                searchPlaceholder="Search grades..."
+                emptyMessage="No grades found."
+                showSelectAll={false}
+              />
             </div>
 
-            <div className="min-w-0">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Status</label>
+              <Multiselect
+                options={statusOptions}
+                selected={selectedStatuses}
+                onChange={setSelectedStatuses}
+                placeholder="All statuses"
+                searchPlaceholder="Search status..."
+                emptyMessage="No statuses found."
+                showSelectAll={false}
+              />
             </div>
 
-            <div className="min-w-0">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-              <Select value={selectedGender} onValueChange={setSelectedGender}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="All genders" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                  <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Gender</label>
+              <Multiselect
+                options={genderOptions}
+                selected={selectedGenders}
+                onChange={setSelectedGenders}
+                placeholder="All genders"
+                searchPlaceholder="Search gender..."
+                emptyMessage="No genders found."
+                showSelectAll={false}
+              />
             </div>
           </div>
 
           {activeFilters.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm text-gray-500">Active filters:</span>
-              {activeFilters.map((filter) => (
-                <Badge key={filter.type} variant="secondary" className="flex items-center gap-1">
+              {activeFilters.map((filter, index) => (
+                <Badge key={`${filter.type}-${filter.value}-${index}`} variant="secondary" className="flex items-center gap-1">
                   {filter.type}: {filter.value}
                   <button
                     onClick={filter.clear}

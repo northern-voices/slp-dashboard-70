@@ -24,6 +24,11 @@ interface MultiselectProps {
   onChange: (selected: string[]) => void;
   placeholder?: string;
   className?: string;
+  maxHeight?: string;
+  searchPlaceholder?: string;
+  emptyMessage?: string;
+  showSelectAll?: boolean;
+  showClearAll?: boolean;
 }
 
 const Multiselect = ({ 
@@ -31,7 +36,12 @@ const Multiselect = ({
   selected, 
   onChange, 
   placeholder = "Select items...",
-  className 
+  className,
+  maxHeight = "max-h-[300px]",
+  searchPlaceholder = "Search...",
+  emptyMessage = "No items found.",
+  showSelectAll = true,
+  showClearAll = true
 }: MultiselectProps) => {
   const [open, setOpen] = useState(false);
 
@@ -44,6 +54,14 @@ const Multiselect = ({
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
+    onChange([]);
+  };
+
+  const handleSelectAll = () => {
+    onChange(options);
+  };
+
+  const handleClearAll = () => {
     onChange([]);
   };
 
@@ -89,10 +107,31 @@ const Multiselect = ({
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search..." />
-          <CommandList>
-            <CommandEmpty>No items found.</CommandEmpty>
+          <CommandInput placeholder={searchPlaceholder} />
+          <CommandList className={maxHeight}>
+            <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
+              {(showSelectAll || showClearAll) && (
+                <>
+                  {showSelectAll && (
+                    <CommandItem
+                      onSelect={handleSelectAll}
+                      className="font-medium text-blue-600"
+                    >
+                      Select All ({options.length})
+                    </CommandItem>
+                  )}
+                  {showClearAll && selected.length > 0 && (
+                    <CommandItem
+                      onSelect={handleClearAll}
+                      className="font-medium text-red-600"
+                    >
+                      Clear All
+                    </CommandItem>
+                  )}
+                  <div className="border-b border-gray-200 my-1" />
+                </>
+              )}
               {options.map((option) => (
                 <CommandItem
                   key={option}

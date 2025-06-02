@@ -3,10 +3,10 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { User } from 'lucide-react';
 import StudentSearchSelector from '../../StudentSearchSelector';
 import { Student } from '@/types/database';
+import Multiselect from '@/components/ui/multiselect';
 
 interface HearingScreeningStep1Props {
   form: UseFormReturn<any>;
@@ -25,6 +25,12 @@ const HearingScreeningStep1 = ({
   onStudentSelect,
   onGradeChange
 }: HearingScreeningStep1Props) => {
+  const handleGradeSelect = (grades: string[]) => {
+    // For this component, we'll use the first selected grade
+    // since the existing logic expects a single grade
+    onGradeChange(grades[0] || '');
+  };
+
   return (
     <div className="space-y-6">
       <Card className="border-0 rounded-none shadow-none">
@@ -39,18 +45,16 @@ const HearingScreeningStep1 = ({
             <Label htmlFor="grade" className="mb-3 block text-sm font-medium text-gray-700">
               Grade *
             </Label>
-            <Select value={selectedGrade} onValueChange={onGradeChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select grade" />
-              </SelectTrigger>
-              <SelectContent>
-                {gradeOptions.map(grade => (
-                  <SelectItem key={grade} value={grade}>
-                    {grade}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Multiselect
+              options={gradeOptions}
+              selected={selectedGrade ? [selectedGrade] : []}
+              onChange={handleGradeSelect}
+              placeholder="Select grade"
+              searchPlaceholder="Search grades..."
+              emptyMessage="No grades found."
+              showSelectAll={false}
+              showClearAll={false}
+            />
           </div>
 
           {selectedGrade && (
