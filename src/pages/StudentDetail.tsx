@@ -21,6 +21,8 @@ const StudentDetailContent = () => {
   const { studentId } = useParams<{ studentId: string }>();
   const navigate = useNavigate();
   const [student, setStudent] = useState<Student | null>(null);
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
+  const [currentStudentIndex, setCurrentStudentIndex] = useState<number>(-1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSpeechModal, setShowSpeechModal] = useState(false);
@@ -28,20 +30,28 @@ const StudentDetailContent = () => {
   const { userProfile } = useOrganization();
 
   useEffect(() => {
-    const fetchStudent = async () => {
+    const fetchStudentsAndCurrent = async () => {
       setLoading(true);
       setError(null);
       try {
+        // Fetch all students first
+        const students = await StudentService.getStudents();
+        setAllStudents(students);
+
         if (!studentId) {
           setError('Student ID is required.');
           return;
         }
-        const fetchedStudent = await StudentService.getStudentById(studentId);
-        if (fetchedStudent) {
-          setStudent(fetchedStudent);
-        } else {
+
+        // Find current student in the list
+        const currentIndex = students.findIndex(s => s.id === studentId);
+        if (currentIndex === -1) {
           setError('Student not found.');
+          return;
         }
+
+        setCurrentStudentIndex(currentIndex);
+        setStudent(students[currentIndex]);
       } catch (e: any) {
         setError(e.message || 'Failed to load student.');
       } finally {
@@ -49,8 +59,22 @@ const StudentDetailContent = () => {
       }
     };
 
-    fetchStudent();
+    fetchStudentsAndCurrent();
   }, [studentId]);
+
+  const handleNavigatePrevious = () => {
+    if (currentStudentIndex > 0) {
+      const previousStudent = allStudents[currentStudentIndex - 1];
+      navigate(`/students/${previousStudent.id}`);
+    }
+  };
+
+  const handleNavigateNext = () => {
+    if (currentStudentIndex < allStudents.length - 1) {
+      const nextStudent = allStudents[currentStudentIndex + 1];
+      navigate(`/students/${nextStudent.id}`);
+    }
+  };
 
   const handleSpeechScreeningSubmit = (data: any) => {
     console.log('Speech screening submitted:', data);
@@ -73,6 +97,9 @@ const StudentDetailContent = () => {
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
   const userRole = userProfile?.role || 'slp';
 
+  const hasPrevious = currentStudentIndex > 0;
+  const hasNext = currentStudentIndex < allStudents.length - 1;
+
   return (
     <div className="min-h-screen flex w-full bg-gray-25">
       <SidebarProvider>
@@ -88,9 +115,13 @@ const StudentDetailContent = () => {
           <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
             <StudentDetailPagination
               currentStudent={`${student.first_name} ${student.last_name}`}
+              currentIndex={currentStudentIndex}
+              totalStudents={allStudents.length}
               onNavigateBack={handleNavigateBack}
-              hasPrevious={false}
-              hasNext={false}
+              onNavigatePrevious={handleNavigatePrevious}
+              onNavigateNext={handleNavigateNext}
+              hasPrevious={hasPrevious}
+              hasNext={hasNext}
             />
             
             <div className="space-y-6">
