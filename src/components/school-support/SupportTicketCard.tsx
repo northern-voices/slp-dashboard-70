@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -82,12 +83,10 @@ const SupportTicketCard = ({ ticket, onViewDetails }: SupportTicketCardProps) =>
         </div>
         
         <div className="space-y-2">
-          <div className="flex flex-wrap gap-1">
-            {ticket.support_types.map((type) => (
-              <Badge key={type} variant="outline" className="text-xs">
-                {SUPPORT_TYPE_LABELS[type]}
-              </Badge>
-            ))}
+          <div>
+            <Badge variant="outline" className="text-xs">
+              {SUPPORT_TYPE_LABELS[ticket.support_types[0]]}
+            </Badge>
           </div>
           
           <p className="text-sm text-gray-700 line-clamp-2">
