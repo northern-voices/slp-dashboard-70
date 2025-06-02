@@ -1,9 +1,12 @@
+
 import React from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { NavigationGroup } from './sidebarNavigationData';
+
 interface SidebarNavigationGroupProps {
   group: NavigationGroup;
 }
+
 const SidebarNavigationGroup = ({
   group
 }: SidebarNavigationGroupProps) => {
@@ -13,11 +16,11 @@ const SidebarNavigationGroup = ({
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu className="space-y-1">
-          {group.items.map(item => <SidebarMenuItem key={item.title} className="rounded-sm">
+          {group.items.map(item => <SidebarMenuItem key={item.title} className="rounded-md">
               <SidebarMenuButton asChild isActive={item.isActive} className={`
-                  w-full justify-start px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
+                  w-full justify-start px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-200
                   hover:bg-gray-50 hover:text-gray-900
-                  ${item.isActive ? 'bg-blue-50 text-blue-700 border border-blue-100 shadow-sm' : 'text-gray-600 hover:text-gray-900'}
+                  ${item.isActive ? 'bg-blue-50 text-blue-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'}
                 `}>
                 <a href={item.url} className="flex items-center space-x-3">
                   <item.icon className={`w-4 h-4 ${item.isActive ? 'text-blue-600' : 'text-gray-400'}`} />
@@ -29,4 +32,5 @@ const SidebarNavigationGroup = ({
       </SidebarGroupContent>
     </SidebarGroup>;
 };
+
 export default SidebarNavigationGroup;
