@@ -60,7 +60,7 @@ const ViewScreenings = () => {
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const hasFilters = searchTerm || filterType !== 'all' || filterStatus !== 'all';
+  const hasFilters = Boolean(searchTerm) || filterType !== 'all' || filterStatus !== 'all';
 
   if (!studentId) {
     return <div>Student ID not found</div>;
