@@ -5,23 +5,26 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   actions?: React.ReactNode;
+  className?: string;
 }
 
-const PageHeader = ({ title, description, actions }: PageHeaderProps) => {
+const PageHeader = ({ title, description, actions, className }: PageHeaderProps) => {
   return (
-    <div className="mb-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl text-gray-900 mb-2 font-medium">{title}</h1>
-          {description && (
-            <p className="text-gray-600 text-base">{description}</p>
+    <div className={`mb-8 ${className || ''}`}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">{title}</h1>
+            {description && (
+              <p className="text-gray-600 text-sm leading-relaxed max-w-2xl">{description}</p>
+            )}
+          </div>
+          {actions && (
+            <div className="flex-shrink-0">
+              {actions}
+            </div>
           )}
         </div>
-        {actions && (
-          <div className="mt-4 sm:mt-0">
-            {actions}
-          </div>
-        )}
       </div>
     </div>
   );

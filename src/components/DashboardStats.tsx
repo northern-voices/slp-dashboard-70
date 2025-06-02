@@ -16,7 +16,7 @@ const DashboardStats = () => {
       percentage: '+5.1%',
       icon: GraduationCap,
       trend: 'up',
-      color: 'text-blue-600',
+      color: 'text-brand',
       bgColor: 'bg-blue-50'
     },
     {
@@ -55,19 +55,21 @@ const DashboardStats = () => {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[1, 2].map((i) => (
-          <Card key={i} className="bg-white border-gray-100 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
-              <div className="w-10 h-10 bg-gray-100 rounded-lg animate-pulse"></div>
+          <Card key={i} className="bg-white border border-gray-100 shadow-sm rounded-xl">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="h-4 bg-gray-200 rounded w-28 animate-pulse"></div>
+                <div className="w-12 h-12 bg-gray-100 rounded-xl animate-pulse"></div>
+              </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="h-8 bg-gray-200 rounded w-16 animate-pulse"></div>
                 <div className="flex items-center justify-between">
-                  <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
-                  <div className="h-6 bg-gray-200 rounded w-12 animate-pulse"></div>
+                  <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
+                  <div className="h-6 bg-gray-200 rounded-full w-16 animate-pulse"></div>
                 </div>
               </div>
             </CardContent>
@@ -78,27 +80,29 @@ const DashboardStats = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {stats.map((stat, index) => (
-        <Card key={index} className="bg-white border-gray-100 shadow-sm hover:bg-gray-50 transition-colors duration-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 tracking-wide">
-              {stat.title}
-            </CardTitle>
-            <div className={`w-10 h-10 ${stat.bgColor} rounded-lg flex items-center justify-center transition-colors duration-200`}>
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
+        <Card key={index} className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-gray-600 tracking-wide">
+                {stat.title}
+              </CardTitle>
+              <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center transition-colors duration-200`}>
+                <stat.icon className={`h-6 w-6 ${stat.color}`} />
+              </div>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="space-y-2">
-              <div className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
+            <div className="space-y-3">
+              <div className="text-3xl font-semibold text-gray-900 tracking-tight">
                 {stat.value}
               </div>
               <div className="flex items-center justify-between">
                 <p className="text-sm text-gray-500 font-medium">
                   {stat.change}
                 </p>
-                <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${getTrendColor(stat.trend)}`}>
+                <div className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium ${getTrendColor(stat.trend)}`}>
                   {getTrendIcon(stat.trend)}
                   <span>{stat.percentage}</span>
                 </div>

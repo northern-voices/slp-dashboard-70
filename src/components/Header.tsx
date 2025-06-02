@@ -59,64 +59,75 @@ const Header = ({
 
   return (
     <>
-      <header className={`bg-white border-b border-gray-100 sticky top-0 z-40 shadow-sm ${className || ''}`}>
-        <div className="flex items-center justify-between h-14 px-4">
-          {/* Left side - Sidebar trigger and navigation for desktop */}
-          <div className="flex items-center space-x-4">
-            <SidebarTrigger className="hidden md:flex" />
-            <div className="md:hidden">
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-brand rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">SLP</span>
-                </div>
-                <span className="font-semibold text-gray-900 text-sm">SLP Dashboard</span>
+      <header className={`bg-white border-b border-gray-100 sticky top-0 z-40 ${className || ''}`}>
+        <div className="flex items-center justify-between h-16 px-6">
+          {/* Left side - Sidebar trigger for desktop */}
+          <div className="flex items-center">
+            <SidebarTrigger className="hidden md:flex -ml-1 mr-2" />
+            
+            {/* Mobile brand */}
+            <div className="md:hidden flex items-center space-x-3">
+              <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
+                <span className="text-white font-semibold text-sm">SLP</span>
               </div>
+              <span className="font-semibold text-gray-900">Dashboard</span>
             </div>
           </div>
 
           {/* Right side - User actions */}
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm" className="relative text-gray-600 hover:text-gray-900 hover:bg-gray-100 h-8 w-8 p-0">
-              <Bell className="w-4 h-4" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center shadow-sm">
+            {/* Notifications */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="relative text-gray-500 hover:text-gray-700 hover:bg-gray-50 h-9 w-9 p-0 rounded-lg"
+            >
+              <Bell className="w-5 h-5" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
                 3
               </span>
             </Button>
             
+            {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-lg hover:bg-gray-100 p-0">
+                <Button variant="ghost" className="relative h-9 w-9 rounded-lg hover:bg-gray-50 p-0">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-slate-100 text-slate-700 text-xs font-medium">
+                    <AvatarFallback className="bg-gray-100 text-gray-700 text-sm font-medium">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-white shadow-lg border-gray-100" align="end" forceMount>
-                <div className="flex items-center justify-start gap-2 p-3">
-                  <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-semibold text-gray-900 text-sm">{userName}</p>
-                    <p className="w-[200px] truncate text-xs text-gray-500">
+              <DropdownMenuContent className="w-64 bg-white shadow-lg border border-gray-100 rounded-xl p-2" align="end" forceMount>
+                <div className="flex items-center gap-3 p-3 rounded-lg">
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback className="bg-gray-100 text-gray-700 text-sm font-medium">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col space-y-0.5 leading-none">
+                    <p className="font-medium text-gray-900 text-sm">{userName}</p>
+                    <p className="text-xs text-gray-500 leading-relaxed">
                       {getRoleDisplayName(userRole)}
                     </p>
                   </div>
                 </div>
-                <DropdownMenuSeparator className="bg-gray-100" />
-                <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50" asChild>
+                <DropdownMenuSeparator className="bg-gray-100 my-2" />
+                <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50 rounded-lg px-3 py-2" asChild>
                   <a href="/profile" className="flex items-center">
-                    <User className="mr-2 h-4 w-4" />
+                    <User className="mr-3 h-4 w-4" />
                     Profile
                   </a>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50" asChild>
+                <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50 rounded-lg px-3 py-2" asChild>
                   <a href="/profile?tab=account" className="flex items-center">
-                    <SettingsIcon className="mr-2 h-4 w-4" />
-                    Account
+                    <SettingsIcon className="mr-3 h-4 w-4" />
+                    Settings
                   </a>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-gray-100" />
-                <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50">
+                <DropdownMenuSeparator className="bg-gray-100 my-2" />
+                <DropdownMenuItem className="text-gray-700 hover:bg-gray-50 focus:bg-gray-50 rounded-lg px-3 py-2">
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -125,7 +136,7 @@ const Header = ({
         </div>
       </header>
 
-      {/* Speech Screening Modal */}
+      {/* Modals */}
       <SpeechScreeningModal 
         isOpen={showSpeechScreeningModal} 
         onClose={() => setShowSpeechScreeningModal(false)} 
@@ -133,7 +144,6 @@ const Header = ({
         title="New Speech Screening" 
       />
 
-      {/* Hearing Screening Modal */}
       <HearingScreeningModal 
         isOpen={showHearingScreeningModal} 
         onClose={() => setShowHearingScreeningModal(false)} 

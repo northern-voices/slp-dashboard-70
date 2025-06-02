@@ -1,9 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Mic, Volume2, BarChart3, FileText, Settings } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Mic, Volume2, FileText } from 'lucide-react';
 import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningModal';
 import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
 import GenerateReportModal from '@/components/reports/GenerateReportModal';
@@ -11,19 +9,10 @@ import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
 
 const QuickActions = () => {
-  const navigate = useNavigate();
   const [showSpeechScreeningModal, setShowSpeechScreeningModal] = useState(false);
   const [showHearingScreeningModal, setShowHearingScreeningModal] = useState(false);
   const [showGenerateReportModal, setShowGenerateReportModal] = useState(false);
   const { toast } = useToast();
-
-  const handleOpenSpeechScreening = () => {
-    setShowSpeechScreeningModal(true);
-  };
-
-  const handleOpenHearingScreening = () => {
-    setShowHearingScreeningModal(true);
-  };
 
   const handleSpeechScreeningSubmit = (screeningData: ScreeningFormData) => {
     console.log('Speech screening submitted:', screeningData);
@@ -57,14 +46,14 @@ const QuickActions = () => {
       description: 'Start a new speech assessment',
       icon: Mic,
       color: 'bg-brand hover:bg-brand/90',
-      action: handleOpenSpeechScreening
+      action: () => setShowSpeechScreeningModal(true)
     },
     {
       title: 'Hearing Screening',
       description: 'Conduct hearing assessment',
       icon: Volume2,
       color: 'bg-teal-600 hover:bg-teal-700',
-      action: handleOpenHearingScreening
+      action: () => setShowHearingScreeningModal(true)
     },
     {
       title: 'Generate Report',
@@ -78,15 +67,21 @@ const QuickActions = () => {
   return (
     <>
       {/* Quick Actions Section */}
-      <Card className="bg-white border-gray-100 shadow-sm">
+      <Card className="bg-white border border-gray-100 shadow-sm rounded-xl">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center space-x-2 text-lg font-semibold text-gray-900">
-            <div className="w-6 h-6 bg-blue-50 rounded-md flex items-center justify-center">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
               <Mic className="w-4 h-4 text-brand" />
             </div>
-            <span>Quick Actions</span>
-          </CardTitle>
-          <CardDescription>Start new assessments and manage reports</CardDescription>
+            <div>
+              <CardTitle className="text-lg font-semibold text-gray-900 tracking-tight">
+                Quick Actions
+              </CardTitle>
+              <CardDescription className="text-sm text-gray-600 mt-1">
+                Start new assessments and manage reports
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="pt-0">
           {/* Responsive Grid */}
@@ -94,12 +89,12 @@ const QuickActions = () => {
             {allActions.map((action, index) => (
               <div
                 key={index}
-                className="group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer"
+                className="group bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-gray-300 transition-all duration-200 cursor-pointer"
                 onClick={action.action}
               >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center transition-colors duration-200`}>
-                    <action.icon className="w-6 h-6 text-white" />
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className={`w-14 h-14 rounded-xl ${action.color} flex items-center justify-center transition-colors duration-200 group-hover:scale-105`}>
+                    <action.icon className="w-7 h-7 text-white" />
                   </div>
                   <div className="space-y-1">
                     <h3 className="font-semibold text-gray-900 text-sm leading-tight">
@@ -116,7 +111,7 @@ const QuickActions = () => {
         </CardContent>
       </Card>
 
-      {/* Speech Screening Modal */}
+      {/* Modals */}
       <SpeechScreeningModal
         isOpen={showSpeechScreeningModal}
         onClose={() => setShowSpeechScreeningModal(false)}
@@ -124,7 +119,6 @@ const QuickActions = () => {
         title="New Speech Screening"
       />
 
-      {/* Hearing Screening Modal */}
       <HearingScreeningModal
         isOpen={showHearingScreeningModal}
         onClose={() => setShowHearingScreeningModal(false)}
@@ -132,7 +126,6 @@ const QuickActions = () => {
         title="New Hearing Screening"
       />
 
-      {/* Generate Report Modal */}
       <GenerateReportModal
         isOpen={showGenerateReportModal}
         onClose={() => setShowGenerateReportModal(false)}
