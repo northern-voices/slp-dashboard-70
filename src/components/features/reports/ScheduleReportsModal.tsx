@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -88,48 +89,49 @@ const ScheduleReportsModal = ({ open, onOpenChange }: ScheduleReportsModalProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
+        <DialogHeader className="space-y-4 pb-6 border-b border-gray-100">
+          <DialogTitle className="text-2xl font-semibold text-gray-900">
             Schedule Automated Report
           </DialogTitle>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-between text-sm text-gray-600">
-              <span>Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}</span>
-              <span>{Math.round(progress)}% Complete</span>
+              <span className="font-medium">Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}</span>
+              <span className="text-gray-500">{Math.round(progress)}% Complete</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-2 bg-gray-100" />
           </div>
         </DialogHeader>
 
-        <div className="py-6">
+        <div className="py-8">
           <CurrentStepComponent
             formData={formData}
             updateFormData={updateFormData}
           />
         </div>
 
-        <div className="flex items-center justify-between pt-6 border-t">
+        <div className="flex items-center justify-between pt-6 border-t border-gray-100">
           <Button
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 0}
+            className="min-w-[100px]"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Previous
           </Button>
 
-          <div className="flex space-x-2">
+          <div className="flex space-x-3">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             
             {currentStep === steps.length - 1 ? (
-              <Button onClick={handleSubmit}>
+              <Button onClick={handleSubmit} className="min-w-[140px]">
                 Create Schedule
               </Button>
             ) : (
-              <Button onClick={handleNext}>
+              <Button onClick={handleNext} className="min-w-[100px]">
                 Next
                 <ChevronRight className="w-4 h-4 ml-2" />
               </Button>

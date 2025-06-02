@@ -45,14 +45,14 @@ const ClassWideHearingForm = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Class Wide Hearing Screen</CardTitle>
+    <Card className="bg-white border border-gray-200 shadow-sm">
+      <CardHeader className="pb-6">
+        <CardTitle className="text-xl font-semibold text-gray-900">Class Wide Hearing Screen</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="academic-year">Academic Year</Label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-3">
+            <Label htmlFor="academic-year" className="text-sm font-medium text-gray-700">Academic Year</Label>
             <Select value={academicYear} onValueChange={setAcademicYear}>
               <SelectTrigger>
                 <SelectValue placeholder="Select academic year" />
@@ -65,24 +65,24 @@ const ClassWideHearingForm = () => {
             </Select>
           </div>
 
-          <div>
-            <Label>Grades</Label>
-            <div className="grid grid-cols-4 gap-2 mt-2">
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-gray-700">Grades</Label>
+            <div className="grid grid-cols-4 gap-3">
               {grades.map(grade => (
-                <div key={grade} className="flex items-center space-x-2">
+                <div key={grade} className="flex items-center space-x-3">
                   <Checkbox
                     id={`grade-${grade}`}
                     checked={selectedGrades.includes(grade)}
                     onCheckedChange={(checked) => handleGradeChange(grade, !!checked)}
                   />
-                  <Label htmlFor={`grade-${grade}`} className="text-sm">{grade}</Label>
+                  <Label htmlFor={`grade-${grade}`} className="text-sm font-medium text-gray-700 cursor-pointer">{grade}</Label>
                 </div>
               ))}
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-3">
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
             <Input
               id="email"
               type="email"
@@ -92,7 +92,7 @@ const ClassWideHearingForm = () => {
             />
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <div className="flex gap-3 pt-6">
             <Button type="button" variant="outline" onClick={handleClearForm}>
               Clear Form
             </Button>
