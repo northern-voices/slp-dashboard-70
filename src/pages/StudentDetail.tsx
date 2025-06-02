@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Student } from '@/types/database';
 import { StudentService } from '@/services/studentService';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -8,6 +8,7 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import StudentInfoHeader from '@/components/students/StudentInfoHeader';
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory';
 import IndividualReports from '@/components/students/IndividualReports';
+import StudentDetailPagination from '@/components/students/StudentDetailPagination';
 import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningModal';
 import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
@@ -18,6 +19,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 
 const StudentDetailContent = () => {
   const { studentId } = useParams<{ studentId: string }>();
+  const navigate = useNavigate();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +62,10 @@ const StudentDetailContent = () => {
     setShowHearingModal(false);
   };
 
+  const handleNavigateBack = () => {
+    navigate('/students');
+  };
+
   if (loading) return <div className="flex justify-center p-8"><LoadingSpinner /></div>;
   if (error) return <ErrorMessage message={error} />;
   if (!student) return <div className="p-8 text-center">Student not found</div>;
@@ -80,6 +86,13 @@ const StudentDetailContent = () => {
             userName={userName}
           />
           <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+            <StudentDetailPagination
+              currentStudent={`${student.first_name} ${student.last_name}`}
+              onNavigateBack={handleNavigateBack}
+              hasPrevious={false}
+              hasNext={false}
+            />
+            
             <div className="space-y-6">
               <StudentInfoHeader student={student} />
               
