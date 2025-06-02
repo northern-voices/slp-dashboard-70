@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import Multiselect from '@/components/ui/multiselect';
 
 const ClassWideHearingForm = () => {
   const [academicYear, setAcademicYear] = useState('');
@@ -19,14 +19,6 @@ const ClassWideHearingForm = () => {
     `${currentYear}-${currentYear+1}`,
     `${currentYear+1}-${currentYear+2}`
   ];
-
-  const handleGradeChange = (grade: string, checked: boolean) => {
-    if (checked) {
-      setSelectedGrades([...selectedGrades, grade]);
-    } else {
-      setSelectedGrades(selectedGrades.filter(g => g !== grade));
-    }
-  };
 
   const handleClearForm = () => {
     setAcademicYear('');
@@ -67,18 +59,13 @@ const ClassWideHearingForm = () => {
 
           <div className="space-y-3">
             <Label className="text-sm font-medium text-gray-700">Grades</Label>
-            <div className="grid grid-cols-4 gap-3">
-              {grades.map(grade => (
-                <div key={grade} className="flex items-center space-x-3">
-                  <Checkbox
-                    id={`grade-${grade}`}
-                    checked={selectedGrades.includes(grade)}
-                    onCheckedChange={(checked) => handleGradeChange(grade, !!checked)}
-                  />
-                  <Label htmlFor={`grade-${grade}`} className="text-sm font-medium text-gray-700 cursor-pointer">{grade}</Label>
-                </div>
-              ))}
-            </div>
+            <Multiselect
+              options={grades}
+              selected={selectedGrades}
+              onChange={setSelectedGrades}
+              placeholder="Select grades..."
+              className="w-full"
+            />
           </div>
 
           <div className="space-y-3">
