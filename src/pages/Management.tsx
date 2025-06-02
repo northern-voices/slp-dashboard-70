@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Users, Settings } from 'lucide-react';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
+import { SchoolProvider } from '@/contexts/SchoolContext';
 import ManagementStats from '@/components/management/ManagementStats';
 import SchoolForm from '@/components/management/SchoolForm';
 import UserInviteModal from '@/components/management/UserInviteModal';
@@ -18,6 +19,7 @@ import SchoolDetailsModal from '@/components/management/SchoolDetailsModal';
 import SchoolsTabContent from '@/components/management/SchoolsTabContent';
 import UsersTabContent from '@/components/management/UsersTabContent';
 import SettingsTabContent from '@/components/management/SettingsTabContent';
+import SLPSchoolBrowser from '@/components/slp/SLPSchoolBrowser';
 import { useManagement } from '@/hooks/useManagement';
 
 const ManagementContent = () => {
@@ -62,7 +64,7 @@ const ManagementContent = () => {
   const userRole = userProfile?.role || 'slp';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
 
-  // Only show management page for admin/supervisor roles
+  // SLP view - only show assigned schools
   if (userRole === 'slp') {
     return (
       <SidebarProvider>
@@ -73,14 +75,12 @@ const ManagementContent = () => {
             <Header userRole={userRole} userName={userName} />
             
             <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
-              <div className="text-center py-12">
-                <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h1 className="text-2xl font-semibold text-gray-900 mb-2">Access Restricted</h1>
-                <p className="text-gray-600">You don't have permission to access management features.</p>
-                <Button className="mt-4" onClick={() => window.history.back()}>
-                  Go Back
-                </Button>
+              <div className="mb-6 md:mb-8">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Schools</h1>
+                <p className="text-gray-600 text-sm md:text-base">View your assigned schools and manage students</p>
               </div>
+
+              <SLPSchoolBrowser />
             </main>
           </SidebarInset>
           
@@ -90,6 +90,7 @@ const ManagementContent = () => {
     );
   }
 
+  // Admin/Supervisor view - full management capabilities
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-25">
@@ -205,7 +206,9 @@ const ManagementContent = () => {
 const Management = () => {
   return (
     <OrganizationProvider>
-      <ManagementContent />
+      <SchoolProvider>
+        <ManagementContent />
+      </SchoolProvider>
     </OrganizationProvider>
   );
 };

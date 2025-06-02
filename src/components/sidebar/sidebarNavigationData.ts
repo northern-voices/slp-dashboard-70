@@ -42,7 +42,7 @@ export const getNavigationGroups = (location: Location, userRole: string, userPr
       isActive: location.pathname === "/reports"
     },
     {
-      title: "Management",
+      title: userRole === 'slp' ? "Schools" : "Management",
       url: "/management",
       icon: Building2,
       isActive: location.pathname === "/management"
@@ -72,8 +72,8 @@ export const getNavigationGroups = (location: Location, userRole: string, userPr
     }
   ];
 
-  // Add management section for admin and supervisor roles
-  if (userRole === 'admin' || userRole === 'supervisor' || userProfile?.role === 'admin' || userProfile?.role === 'supervisor') {
+  // Add management section for admin and supervisor roles only (not SLPs)
+  if ((userRole === 'admin' || userRole === 'supervisor' || userProfile?.role === 'admin' || userProfile?.role === 'supervisor') && userRole !== 'slp') {
     groups.push({
       label: "Administration",
       items: managementItems

@@ -5,8 +5,12 @@ import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import DashboardStats from '@/components/DashboardStats';
 import QuickActions from '@/components/QuickActions';
+import SLPDashboardStats from '@/components/slp/SLPDashboardStats';
+import SLPQuickActions from '@/components/slp/SLPQuickActions';
+import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector';
 import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
+import { SchoolProvider, useSchool } from '@/contexts/SchoolContext';
 
 const DashboardContent = () => {
   const {
@@ -45,19 +49,42 @@ const DashboardContent = () => {
             <div className="mb-8">
               <div className="max-w-7xl mx-auto">
                 <h1 className="text-2xl font-semibold text-gray-900 tracking-tight mb-2">
-                  {currentSchool ? `${currentSchool.name} Dashboard` : 'Dashboard'}
+                  {userRole === 'slp' ? 'My Dashboard' : 
+                   currentSchool ? `${currentSchool.name} Dashboard` : 'Dashboard'}
                 </h1>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Welcome back, {userName}. Start new assessments and manage your speech & language screenings.
+                  Welcome back, {userName}. 
+                  {userRole === 'slp' ? ' Select a school and start managing screenings.' : ' Start new assessments and manage your speech & language screenings.'}
                 </p>
               </div>
             </div>
 
+            {/* School Selector for SLPs */}
+            {userRole === 'slp' && (
+              <div className="max-w-7xl mx-auto mb-8">
+                <div className="max-w-md">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select School
+                  </label>
+                  <SLPSchoolSelector />
+                </div>
+              </div>
+            )}
+
             {/* Dashboard Content */}
             <div className="max-w-7xl mx-auto">
               <div className="space-y-8">
-                <QuickActions />
-                <DashboardStats />
+                {userRole === 'slp' ? (
+                  <>
+                    <SLPQuickActions />
+                    <SLPDashboardStats />
+                  </>
+                ) : (
+                  <>
+                    <QuickActions />
+                    <DashboardStats />
+                  </>
+                )}
               </div>
             </div>
           </main>
@@ -72,7 +99,9 @@ const DashboardContent = () => {
 const Index = () => {
   return (
     <OrganizationProvider>
-      <DashboardContent />
+      <SchoolProvider>
+        <DashboardContent />
+      </SchoolProvider>
     </OrganizationProvider>
   );
 };

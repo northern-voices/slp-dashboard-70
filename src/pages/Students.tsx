@@ -5,12 +5,15 @@ import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
+import { SchoolProvider, useSchool } from '@/contexts/SchoolContext';
+import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector';
 import StudentTable from '@/components/students/StudentTable';
 import { StudentService } from '@/services/studentService';
 import { Student } from '@/types/database';
 
 const StudentsContent = () => {
   const { userProfile } = useOrganization();
+  const { selectedSchool } = useSchool();
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -24,7 +27,13 @@ const StudentsContent = () => {
       try {
         setIsLoading(true);
         const studentsData = await StudentService.getStudents();
-        setStudents(studentsData);
+        // Filter students by selected school for SLPs
+        if (userRole === 'slp' && selectedSchool) {
+          const filteredStudents = studentsData.filter(student => student.school_id === selectedSchool.id);
+          setStudents(filteredStudents);
+        } else {
+          setStudents(studentsData);
+        }
       } catch (error) {
         console.error('Error fetching students:', error);
       } finally {
@@ -33,7 +42,7 @@ const StudentsContent = () => {
     };
 
     fetchStudents();
-  }, []);
+  }, [selectedSchool, userRole]);
 
   if (isLoading) {
     return (
@@ -57,7 +66,42 @@ const StudentsContent = () => {
           <Header userRole={userRole} userName={userName} />
           
           <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
-            <StudentTable students={students} />
+            {/* Page Header */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                {userRole === 'slp' && selectedSchool ? `Students at ${selectedSchool.name}` : 'Students'}
+              </h1>
+              <p className="text-gray-600 text-sm">
+                {userRole === 'slp' ? 'Manage students and their screening records' : 'View and manage all students'}
+              </p>
+            </div>
+
+            {/* School Selector for SLPs */}
+            {userRole === 'slp' && (
+              <div className="mb-6">
+                <div className="max-w-md">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    School
+                  </label>
+                  <SLPSchoolSelector />
+                </div>
+              </div>
+            )}
+
+            {/* Show message if SLP hasn't selected a school */}
+            {userRole === 'slp' && !selectedSchool ? (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-4">
+                  <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Select a School</h3>
+                <p className="text-gray-600">Choose a school from the dropdown above to view and manage students.</p>
+              </div>
+            ) : (
+              <StudentTable students={students} />
+            )}
           </main>
         </SidebarInset>
         
@@ -70,7 +114,9 @@ const StudentsContent = () => {
 const Students = () => {
   return (
     <OrganizationProvider>
-      <StudentsContent />
+      <SchoolProvider>
+        <StudentsContent />
+      </SchoolProvider>
     </OrganizationProvider>
   );
 };
