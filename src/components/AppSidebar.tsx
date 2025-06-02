@@ -36,7 +36,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', classNam
           </div>
         </SidebarContent>
 
-        <SidebarFooter userRole={userRole} userName={userName} />
+        <SidebarFooter />
       </Sidebar>
     </div>
   );
