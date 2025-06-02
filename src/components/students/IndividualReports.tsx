@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Volume2, Mail } from 'lucide-react';
+import { FileText, Volume2, Mail, Calendar, CheckCircle, Eye, Target } from 'lucide-react';
 import { Student } from '@/types/database';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import IndividualReportEmailModal from './IndividualReportEmailModal';
@@ -13,6 +14,7 @@ interface IndividualReportsProps {
 }
 
 const IndividualReports = ({ student, isLoading = false }: IndividualReportsProps) => {
+  const navigate = useNavigate();
   const [showEmailModal, setShowEmailModal] = useState(false);
 
   const handleGenerateReport = (reportType: string) => {
@@ -50,6 +52,52 @@ const IndividualReports = ({ student, isLoading = false }: IndividualReportsProp
             </div>
           ) : (
             <>
+              {/* Student Individual Actions */}
+              <div className="space-y-3 md:space-y-4">
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Target className="w-4 h-4 md:w-5 md:h-5" />
+                  Student Individual
+                </h3>
+                <div className="space-y-3 md:space-y-0 md:flex md:flex-wrap md:gap-3">
+                  <Button 
+                    onClick={() => navigate(`/students/${student.id}/school-support`)}
+                    variant="outline"
+                    className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
+                    disabled={isDisabled}
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    School Support Form
+                  </Button>
+                  <Button 
+                    onClick={() => navigate(`/students/${student.id}/progress-check`)}
+                    variant="outline"
+                    className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
+                    disabled={isDisabled}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Monthly Progress Check
+                  </Button>
+                  <Button 
+                    onClick={() => navigate(`/students/${student.id}/screenings`)}
+                    variant="outline"
+                    className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
+                    disabled={isDisabled}
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    View Screenings
+                  </Button>
+                  <Button 
+                    onClick={() => navigate(`/students/${student.id}/goal-sheet`)}
+                    variant="outline"
+                    className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
+                    disabled={isDisabled}
+                  >
+                    <Target className="w-4 h-4 mr-2" />
+                    Generate Goal Sheet
+                  </Button>
+                </div>
+              </div>
+
               {/* Hearing Reports */}
               <div className="space-y-3 md:space-y-4">
                 <h3 className="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -79,14 +127,6 @@ const IndividualReports = ({ student, isLoading = false }: IndividualReportsProp
                     disabled={isDisabled}
                   >
                     Generate Speech Screen Report
-                  </Button>
-                  <Button 
-                    onClick={() => handleGenerateReport('goal-sheet')}
-                    variant="outline"
-                    className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
-                    disabled={isDisabled}
-                  >
-                    Generate Goal Sheet
                   </Button>
                   <Button 
                     onClick={() => handleGenerateReport('progress-report')}

@@ -8,6 +8,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Students from "./pages/Students";
 import StudentDetail from "./pages/StudentDetail";
+import SchoolSupportForm from "./pages/student/SchoolSupportForm";
+import MonthlyProgressCheck from "./pages/student/MonthlyProgressCheck";
+import ViewScreenings from "./pages/student/ViewScreenings";
+import GenerateGoalSheet from "./pages/student/GenerateGoalSheet";
 import Reports from "./pages/Reports";
 import Management from "./pages/Management";
 import Users from "./pages/Users";
@@ -47,6 +51,10 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/students" element={<Students />} />
             <Route path="/students/:studentId" element={<StudentDetail />} />
+            <Route path="/students/:studentId/school-support" element={<SchoolSupportForm />} />
+            <Route path="/students/:studentId/progress-check" element={<MonthlyProgressCheck />} />
+            <Route path="/students/:studentId/screenings" element={<ViewScreenings />} />
+            <Route path="/students/:studentId/goal-sheet" element={<GenerateGoalSheet />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/management" element={<Management />} />
             <Route path="/users" element={<Users />} />
