@@ -100,11 +100,11 @@ const ReportsTableWithFilters = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'final':
-        return <Badge variant="default" className="bg-green-100 text-green-800">Final</Badge>;
+        return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 font-medium">Final</Badge>;
       case 'draft':
-        return <Badge variant="outline">Draft</Badge>;
+        return <Badge variant="outline" className="border-amber-200 text-amber-700 bg-amber-25">Draft</Badge>;
       case 'reviewed':
-        return <Badge variant="secondary">Reviewed</Badge>;
+        return <Badge className="bg-blue-50 text-blue-700 border-blue-200 font-medium">Reviewed</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -115,7 +115,7 @@ const ReportsTableWithFilters = () => {
       case 'summary':
         return <FileText className="w-4 h-4 text-blue-600" />;
       case 'individual':
-        return <FileText className="w-4 h-4 text-green-600" />;
+        return <FileText className="w-4 h-4 text-emerald-600" />;
       case 'progress':
         return <FileText className="w-4 h-4 text-purple-600" />;
       default:
@@ -141,10 +141,10 @@ const ReportsTableWithFilters = () => {
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
         />
-        <Card>
-          <CardHeader>
-            <CardTitle>Reports</CardTitle>
-            <CardDescription>Generated reports and assessments</CardDescription>
+        <Card className="border-gray-200 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-gray-900 font-semibold">Reports</CardTitle>
+            <CardDescription className="text-gray-500">Generated reports and assessments</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center py-8">
             <LoadingSpinner size="lg" />
@@ -165,56 +165,69 @@ const ReportsTableWithFilters = () => {
         setSearchTerm={setSearchTerm}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Reports</CardTitle>
-          <CardDescription>Generated reports and assessments</CardDescription>
+      <Card className="border-gray-200 shadow-sm bg-white">
+        <CardHeader className="pb-4 border-b border-gray-100">
+          <CardTitle className="text-gray-900 font-semibold">Reports</CardTitle>
+          <CardDescription className="text-gray-500">Generated reports and assessments</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {/* Desktop Table */}
           <div className="hidden md:block">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12"></TableHead>
                   <TableHead>Report</TableHead>
                   <TableHead>Student/Class</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  <TableHead className="w-16"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredReports.map((report) => (
-                  <TableRow key={report.id}>
+                  <TableRow key={report.id} className="group">
                     <TableCell>
-                      <div className="flex items-start space-x-3">
-                        <div className="flex-shrink-0 mt-1">
-                          {getReportTypeIcon(report.type)}
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">{report.title}</div>
-                          <div className="text-sm text-gray-500">{report.description}</div>
-                        </div>
+                      <div className="flex items-center justify-center">
+                        {getReportTypeIcon(report.type)}
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">{report.student_name}</TableCell>
-                    <TableCell className="capitalize">{report.type}</TableCell>
-                    <TableCell>{new Date(report.date).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="font-medium text-gray-900 text-sm leading-tight">{report.title}</div>
+                        <div className="text-xs text-gray-500 leading-tight line-clamp-2">{report.description}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-medium text-gray-700 text-sm">{report.student_name}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-600 capitalize font-medium">{report.type}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-600 font-medium">
+                        {new Date(report.date).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </div>
+                    </TableCell>
                     <TableCell>{getStatusBadge(report.status)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuItem className="text-sm">
                             <Eye className="mr-2 h-4 w-4" />
                             View
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem className="text-sm">
                             <Download className="mr-2 h-4 w-4" />
                             Download
                           </DropdownMenuItem>
@@ -228,17 +241,17 @@ const ReportsTableWithFilters = () => {
           </div>
 
           {/* Mobile Cards */}
-          <div className="md:hidden space-y-4">
+          <div className="md:hidden p-4 space-y-3">
             {filteredReports.map((report) => (
-              <div key={report.id} className="border rounded-lg p-4 space-y-3">
+              <div key={report.id} className="border border-gray-200 rounded-lg p-4 space-y-3 bg-white shadow-sm">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3 flex-1">
                     <div className="flex-shrink-0 mt-1">
                       {getReportTypeIcon(report.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 text-sm">{report.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{report.description}</p>
+                      <h3 className="font-medium text-gray-900 text-sm leading-tight">{report.title}</h3>
+                      <p className="text-sm text-gray-500 mt-1 leading-tight">{report.description}</p>
                     </div>
                   </div>
                   <DropdownMenu>
@@ -279,8 +292,10 @@ const ReportsTableWithFilters = () => {
           </div>
 
           {filteredReports.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No reports found matching your criteria.
+            <div className="text-center py-12 text-gray-500">
+              <FileText className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+              <p className="text-gray-500 font-medium">No reports found</p>
+              <p className="text-sm text-gray-400 mt-1">Try adjusting your search or filter criteria</p>
             </div>
           )}
         </CardContent>

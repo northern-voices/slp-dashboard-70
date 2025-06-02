@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreHorizontal, Search, Edit, UserX, Mail } from 'lucide-react';
+import { MoreHorizontal, Search, Edit, UserX, Mail, Users } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface User {
@@ -77,11 +77,11 @@ const UsersTable = ({
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'admin':
-        return <Badge className="bg-purple-100 text-purple-800">Administrator</Badge>;
+        return <Badge className="bg-purple-50 text-purple-700 border-purple-200 font-medium">Administrator</Badge>;
       case 'supervisor':
-        return <Badge className="bg-blue-100 text-blue-800">Supervisor</Badge>;
+        return <Badge className="bg-blue-50 text-blue-700 border-blue-200 font-medium">Supervisor</Badge>;
       case 'slp':
-        return <Badge className="bg-green-100 text-green-800">SLP</Badge>;
+        return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 font-medium">SLP</Badge>;
       default:
         return <Badge variant="secondary">{role}</Badge>;
     }
@@ -90,18 +90,18 @@ const UsersTable = ({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+        return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 font-medium">Active</Badge>;
       case 'inactive':
-        return <Badge variant="outline">Inactive</Badge>;
+        return <Badge variant="outline" className="border-gray-300 text-gray-600">Inactive</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+        return <Badge className="bg-amber-50 text-amber-700 border-amber-200 font-medium">Pending</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -110,12 +110,12 @@ const UsersTable = ({
             placeholder="Search users by name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 border-gray-200 focus:border-blue-300 focus:ring-blue-200"
           />
         </div>
         
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-full sm:w-40">
+          <SelectTrigger className="w-full sm:w-40 border-gray-200">
             <SelectValue placeholder="All Roles" />
           </SelectTrigger>
           <SelectContent>
@@ -127,7 +127,7 @@ const UsersTable = ({
         </Select>
         
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-40">
+          <SelectTrigger className="w-full sm:w-40 border-gray-200">
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
           <SelectContent>
@@ -140,7 +140,7 @@ const UsersTable = ({
       </div>
 
       {/* Table */}
-      <Card>
+      <Card className="border-gray-200 shadow-sm bg-white">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
@@ -166,7 +166,7 @@ const UsersTable = ({
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
+                  <TableRow key={user.id} className="group">
                     {onSelectionChange && (
                       <TableCell>
                         <Checkbox
@@ -177,8 +177,8 @@ const UsersTable = ({
                       </TableCell>
                     )}
                     <TableCell>
-                      <div>
-                        <div className="font-medium text-gray-900">{user.name}</div>
+                      <div className="space-y-1">
+                        <div className="font-medium text-gray-900 text-sm">{user.name}</div>
                         <div className="text-sm text-gray-500">{user.email}</div>
                         {user.licenseNumber && (
                           <div className="text-xs text-gray-400">License: {user.licenseNumber}</div>
@@ -188,34 +188,41 @@ const UsersTable = ({
                     <TableCell>{getRoleBadge(user.role)}</TableCell>
                     <TableCell>{getStatusBadge(user.status)}</TableCell>
                     <TableCell>
-                      <div className="text-sm">
-                        {user.schools.length > 0 ? user.schools.join(', ') : 'No assignments'}
+                      <div className="text-sm text-gray-600">
+                        {user.schools.length > 0 ? (
+                          <div className="flex items-center gap-1">
+                            <Users className="w-3 h-3 text-gray-400" />
+                            <span>{user.schools.join(', ')}</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 italic">No assignments</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm text-gray-500">{user.lastActive}</div>
+                      <div className="text-sm text-gray-500 font-medium">{user.lastActive}</div>
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => onEditUser(user)}>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuItem onClick={() => onEditUser(user)} className="text-sm">
                             <Edit className="w-4 h-4 mr-2" />
                             Edit User
                           </DropdownMenuItem>
                           {user.status === 'pending' && (
-                            <DropdownMenuItem onClick={() => onResendInvite(user.id)}>
+                            <DropdownMenuItem onClick={() => onResendInvite(user.id)} className="text-sm">
                               <Mail className="w-4 h-4 mr-2" />
                               Resend Invite
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem 
                             onClick={() => onDeactivateUser(user.id)}
-                            className="text-red-600"
+                            className="text-red-600 text-sm"
                           >
                             <UserX className="w-4 h-4 mr-2" />
                             {user.status === 'active' ? 'Deactivate' : 'Activate'}
@@ -230,8 +237,10 @@ const UsersTable = ({
           </div>
           
           {filteredUsers.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No users found matching your criteria.
+            <div className="text-center py-12 text-gray-500">
+              <Users className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+              <p className="text-gray-500 font-medium">No users found</p>
+              <p className="text-sm text-gray-400 mt-1">Try adjusting your search or filter criteria</p>
             </div>
           )}
         </CardContent>
