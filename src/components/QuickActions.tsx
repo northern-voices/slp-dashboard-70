@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Mic, Volume2, FileText } from 'lucide-react';
 import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningModal';
 import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
@@ -87,9 +88,10 @@ const QuickActions = () => {
           {/* Responsive Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {allActions.map((action, index) => (
-              <div
+              <Button
                 key={index}
-                className="group bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-gray-300 transition-all duration-200 cursor-pointer"
+                variant="outline"
+                className="h-auto p-5 group bg-white border border-gray-200 rounded-xl hover:shadow-md hover:border-gray-300 transition-all duration-200"
                 onClick={action.action}
               >
                 <div className="flex flex-col items-center text-center space-y-4">
@@ -105,7 +107,7 @@ const QuickActions = () => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </Button>
             ))}
           </div>
         </CardContent>
