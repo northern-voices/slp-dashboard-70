@@ -1,11 +1,11 @@
-
 import { 
   Home, 
   Users, 
   Settings,
   BarChart3,
   Building2,
-  GraduationCap
+  GraduationCap,
+  HandHeart
 } from 'lucide-react';
 import { Location } from 'react-router-dom';
 
@@ -34,6 +34,12 @@ export const getNavigationGroups = (location: Location, userRole: string, userPr
       url: "/students",
       icon: GraduationCap,
       isActive: location.pathname.startsWith("/students")
+    },
+    {
+      title: "School Support",
+      url: "/school-support",
+      icon: HandHeart,
+      isActive: location.pathname.startsWith("/school-support")
     },
     {
       title: "Reports",
