@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -17,15 +18,18 @@ import UsersTable from '@/components/management/UsersTable';
 import NotificationSettingsModal from '@/components/management/NotificationSettingsModal';
 import ScreeningTemplatesModal from '@/components/management/ScreeningTemplatesModal';
 import OrganizationSettingsModal from '@/components/management/OrganizationSettingsModal';
+import SchoolDetailsModal from '@/components/management/SchoolDetailsModal';
 
 const ManagementContent = () => {
   const { userProfile } = useOrganization();
   const [schoolFormOpen, setSchoolFormOpen] = useState(false);
+  const [schoolDetailsOpen, setSchoolDetailsOpen] = useState(false);
   const [userInviteOpen, setUserInviteOpen] = useState(false);
   const [notificationSettingsOpen, setNotificationSettingsOpen] = useState(false);
   const [screeningTemplatesOpen, setScreeningTemplatesOpen] = useState(false);
   const [organizationSettingsOpen, setOrganizationSettingsOpen] = useState(false);
   const [editingSchool, setEditingSchool] = useState(null);
+  const [selectedSchool, setSelectedSchool] = useState(null);
   const [schoolSearch, setSchoolSearch] = useState('');
 
   const userRole = userProfile?.role || 'slp';
@@ -97,6 +101,17 @@ const ManagementContent = () => {
   };
 
   const handleEditSchool = (school: any) => {
+    setEditingSchool(school);
+    setSchoolFormOpen(true);
+  };
+
+  const handleViewSchoolDetails = (school: any) => {
+    setSelectedSchool(school);
+    setSchoolDetailsOpen(true);
+  };
+
+  const handleEditFromDetails = (school: any) => {
+    setSchoolDetailsOpen(false);
     setEditingSchool(school);
     setSchoolFormOpen(true);
   };
@@ -247,7 +262,13 @@ const ManagementContent = () => {
                           >
                             Edit
                           </Button>
-                          <Button variant="outline" size="sm">View Details</Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewSchoolDetails(school)}
+                          >
+                            View Details
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -350,6 +371,16 @@ const ManagementContent = () => {
         }}
         school={editingSchool}
         onSave={handleSaveSchool}
+      />
+
+      <SchoolDetailsModal
+        isOpen={schoolDetailsOpen}
+        onClose={() => {
+          setSchoolDetailsOpen(false);
+          setSelectedSchool(null);
+        }}
+        school={selectedSchool}
+        onEdit={handleEditFromDetails}
       />
 
       <UserInviteModal
