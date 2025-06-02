@@ -4,13 +4,9 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, Database, Shield, Bell, FileText, Activity, Server, Key, Users, UserPlus, Upload, Download } from 'lucide-react';
+import { Shield, Users, UserPlus, Upload, Download } from 'lucide-react';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
-import AdminSystemSettings from '@/components/admin/AdminSystemSettings';
-import AdminSecuritySettings from '@/components/admin/AdminSecuritySettings';
 import UsersTable from '@/components/management/UsersTable';
 import UserInviteModal from '@/components/management/UserInviteModal';
 import UserEditModal from '@/components/users/UserEditModal';
@@ -156,145 +152,49 @@ const AdminPanelContent = () => {
           <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
             <div className="mb-6 md:mb-8">
               <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Admin Panel</h1>
-              <p className="text-gray-600 text-sm md:text-base">System administration and configuration</p>
+              <p className="text-gray-600 text-sm md:text-base">Manage users, roles, and permissions across your organization</p>
             </div>
 
-            <Tabs defaultValue="system" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="system" className="flex items-center">
-                  <Settings className="w-4 h-4 mr-2" />
-                  System
-                </TabsTrigger>
-                <TabsTrigger value="security" className="flex items-center">
-                  <Shield className="w-4 h-4 mr-2" />
-                  Security
-                </TabsTrigger>
-                <TabsTrigger value="database" className="flex items-center">
-                  <Database className="w-4 h-4 mr-2" />
-                  Database
-                </TabsTrigger>
-                <TabsTrigger value="users" className="flex items-center">
-                  <Users className="w-4 h-4 mr-2" />
-                  Users
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="system" className="space-y-6">
-                <AdminSystemSettings />
-              </TabsContent>
-
-              <TabsContent value="security" className="space-y-6">
-                <AdminSecuritySettings />
-              </TabsContent>
-
-              <TabsContent value="database" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <Database className="w-5 h-5 mr-2" />
-                        Database Status
-                      </CardTitle>
-                      <CardDescription>Monitor database health and performance</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span>Status:</span>
-                          <span className="text-green-600 font-medium">Online</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Connections:</span>
-                          <span>24/100</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Storage Used:</span>
-                          <span>2.3 GB / 10 GB</span>
-                        </div>
-                      </div>
-                      <Button className="w-full mt-4" variant="outline">
-                        View Details
-                      </Button>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <Server className="w-5 h-5 mr-2" />
-                        Backup Management
-                      </CardTitle>
-                      <CardDescription>Manage database backups and restoration</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span>Last Backup:</span>
-                          <span>2 hours ago</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Backup Size:</span>
-                          <span>1.8 GB</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Retention:</span>
-                          <span>30 days</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 mt-4">
-                        <Button className="flex-1" variant="outline">
-                          Create Backup
-                        </Button>
-                        <Button className="flex-1" variant="outline">
-                          Restore
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">User Management</h2>
+                  <p className="text-gray-600 text-sm">Manage users, roles, and permissions across your organization</p>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="users" className="space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">User Management</h2>
-                    <p className="text-gray-600 text-sm">Manage users, roles, and permissions across your organization</p>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    <Button onClick={() => setUserInviteOpen(true)}>
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Invite User
-                    </Button>
-                    <Button variant="outline">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Import Users
-                    </Button>
-                    <Button variant="outline">
-                      <Download className="w-4 h-4 mr-2" />
-                      Export Users
-                    </Button>
-                  </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={() => setUserInviteOpen(true)}>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Invite User
+                  </Button>
+                  <Button variant="outline">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Import Users
+                  </Button>
+                  <Button variant="outline">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Users
+                  </Button>
                 </div>
+              </div>
 
-                {selectedUsers.length > 0 && (
-                  <UsersBulkActions 
-                    selectedCount={selectedUsers.length}
-                    onBulkAction={handleBulkAction}
-                    selectedUsers={selectedUsers}
-                  />
-                )}
-
-                <UsersTable 
-                  users={mockUsers}
-                  onEditUser={handleEditUser}
-                  onDeactivateUser={handleDeactivateUser}
-                  onResendInvite={handleResendInvite}
+              {selectedUsers.length > 0 && (
+                <UsersBulkActions 
+                  selectedCount={selectedUsers.length}
+                  onBulkAction={handleBulkAction}
                   selectedUsers={selectedUsers}
-                  onSelectionChange={setSelectedUsers}
                 />
-              </TabsContent>
-            </Tabs>
+              )}
+
+              <UsersTable 
+                users={mockUsers}
+                onEditUser={handleEditUser}
+                onDeactivateUser={handleDeactivateUser}
+                onResendInvite={handleResendInvite}
+                selectedUsers={selectedUsers}
+                onSelectionChange={setSelectedUsers}
+              />
+            </div>
           </main>
         </SidebarInset>
         
