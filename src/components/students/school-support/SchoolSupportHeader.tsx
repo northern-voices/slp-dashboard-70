@@ -16,11 +16,11 @@ const SchoolSupportHeader = ({ studentId }: SchoolSupportHeaderProps) => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => navigate(`/students/${studentId}`)}
+        onClick={() => navigate('/')}
         className="text-gray-600 hover:text-gray-900"
       >
         <ChevronLeft className="w-4 h-4 mr-1" />
-        Back to Student
+        Back to Dashboard
       </Button>
       <div className="h-4 w-px bg-gray-300" />
       <h1 className="text-2xl font-semibold text-gray-900">School Support Form</h1>
