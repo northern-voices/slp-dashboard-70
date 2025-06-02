@@ -16,6 +16,10 @@ import Profile from "./pages/Profile";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+import VerifyEmail from "./pages/auth/VerifyEmail";
+import AcceptInvitation from "./pages/auth/AcceptInvitation";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +36,12 @@ const App = () => (
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/signup" element={<Signup />} />
             <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+            <Route path="/auth/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/auth/verify-email/:token" element={<VerifyEmail />} />
+            <Route path="/invite/:token" element={<AcceptInvitation />} />
+            
+            {/* Onboarding Route */}
+            <Route path="/onboarding" element={<Onboarding />} />
             
             {/* Protected Routes */}
             <Route path="/" element={<Index />} />

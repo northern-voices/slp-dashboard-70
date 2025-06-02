@@ -54,10 +54,15 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
       return;
     }
 
-    onInvite(formData);
+    // Generate invitation link (in real app, this would come from backend)
+    const invitationToken = `invite_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const invitationLink = `${window.location.origin}/invite/${invitationToken}`;
+
+    onInvite({ ...formData, invitationLink });
+    
     toast({
       title: "Invitation Sent",
-      description: `Invitation sent to ${formData.email}`
+      description: `Invitation sent to ${formData.email}. They will receive an email with a link to join the organization.`
     });
     
     // Reset form
