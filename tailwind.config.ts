@@ -83,35 +83,37 @@ export default {
 					DEFAULT: 'hsl(var(--info))',
 					foreground: 'hsl(var(--info-foreground))'
 				},
-				// Extended color palette for consistency
+				// Sophisticated gray palette inspired by Attio
 				gray: {
 					25: '#fafafa',
-					50: '#f9fafb',
-					100: '#f3f4f6',
-					200: '#e5e7eb',
-					300: '#d1d5db',
-					400: '#9ca3af',
-					500: '#6b7280',
-					600: '#4b5563',
-					700: '#374151',
-					800: '#1f2937',
-					900: '#111827',
+					50: '#f8f9fa',
+					100: '#f1f3f4',
+					200: '#e8eaed',
+					300: '#dadce0',
+					400: '#9aa0a6',
+					500: '#5f6368',
+					600: '#3c4043',
+					700: '#202124',
+					800: '#171717',
+					900: '#0d0d0d',
 				},
+				// Professional blue palette
 				blue: {
-					25: '#f8fafc',
-					50: '#f0f9ff',
-					100: '#e0f2fe',
-					200: '#bae6fd',
-					300: '#7dd3fc',
-					400: '#38bdf8',
-					500: '#0ea5e9',
-					600: '#0284c7',
-					700: '#0369a1',
-					800: '#075985',
-					900: '#0c4a6e',
+					25: '#f8fbff',
+					50: '#eff8ff',
+					100: '#d1e9ff',
+					200: '#b2ddff',
+					300: '#84caff',
+					400: '#53b1fd',
+					500: '#2e90fa',
+					600: '#1570ef',
+					700: '#175cd3',
+					800: '#1849a9',
+					900: '#194185',
 				},
+				// Enhanced emerald palette
 				emerald: {
-					25: '#f0fdf4',
+					25: '#f6fef9',
 					50: '#ecfdf5',
 					100: '#d1fae5',
 					200: '#a7f3d0',
@@ -123,37 +125,37 @@ export default {
 					800: '#065f46',
 					900: '#064e3b',
 				},
+				// Professional amber palette
 				amber: {
-					25: '#fffbeb',
-					50: '#fef3c7',
-					100: '#fde68a',
-					200: '#fcd34d',
-					300: '#fbbf24',
-					400: '#f59e0b',
-					500: '#d97706',
-					600: '#b45309',
-					700: '#92400e',
-					800: '#78350f',
-					900: '#451a03',
+					25: '#fffcf5',
+					50: '#fffbeb',
+					100: '#fef3c7',
+					200: '#fde68a',
+					300: '#fcd34d',
+					400: '#fbbf24',
+					500: '#f59e0b',
+					600: '#d97706',
+					700: '#b45309',
+					800: '#92400e',
+					900: '#78350f',
 				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)',
-				// Extended radius scale
 				xs: 'var(--radius-sm)',
 				xl: 'var(--radius-xl)'
 			},
 			fontSize: {
-				xs: ['var(--font-size-xs)', { lineHeight: '1rem' }],
-				sm: ['var(--font-size-sm)', { lineHeight: '1.25rem' }],
-				base: ['var(--font-size-base)', { lineHeight: '1.5rem' }],
-				lg: ['var(--font-size-lg)', { lineHeight: '1.75rem' }],
-				xl: ['var(--font-size-xl)', { lineHeight: '1.75rem' }],
-				'2xl': ['var(--font-size-2xl)', { lineHeight: '2rem' }],
-				'3xl': ['var(--font-size-3xl)', { lineHeight: '2.25rem' }],
-				'4xl': ['var(--font-size-4xl)', { lineHeight: '2.5rem' }],
+				xs: ['var(--font-size-xs)', { lineHeight: '1.4' }],
+				sm: ['var(--font-size-sm)', { lineHeight: '1.5' }],
+				base: ['var(--font-size-base)', { lineHeight: '1.6' }],
+				lg: ['var(--font-size-lg)', { lineHeight: '1.6' }],
+				xl: ['var(--font-size-xl)', { lineHeight: '1.6' }],
+				'2xl': ['var(--font-size-2xl)', { lineHeight: '1.4' }],
+				'3xl': ['var(--font-size-3xl)', { lineHeight: '1.3' }],
+				'4xl': ['var(--font-size-4xl)', { lineHeight: '1.2' }],
 			},
 			spacing: {
 				xs: 'var(--spacing-xs)',
@@ -162,11 +164,27 @@ export default {
 				lg: 'var(--spacing-lg)',
 				xl: 'var(--spacing-xl)',
 				'2xl': 'var(--spacing-2xl)',
+				'3xl': 'var(--spacing-3xl)',
 			},
 			boxShadow: {
 				sm: 'var(--shadow-sm)',
 				md: 'var(--shadow-md)',
 				lg: 'var(--shadow-lg)',
+				xl: 'var(--shadow-xl)',
+			},
+			fontWeight: {
+				normal: '400',
+				medium: '500',
+				semibold: '600',
+				bold: '700',
+			},
+			letterSpacing: {
+				tighter: '-0.025em',
+				tight: '-0.0125em',
+				normal: '0',
+				wide: '0.025em',
+				wider: '0.05em',
+				widest: '0.1em',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -188,7 +206,7 @@ export default {
 				'fade-in': {
 					'0%': {
 						opacity: '0',
-						transform: 'translateY(10px)'
+						transform: 'translateY(8px)'
 					},
 					'100%': {
 						opacity: '1',
@@ -197,7 +215,7 @@ export default {
 				},
 				'slide-up': {
 					'0%': {
-						transform: 'translateY(20px)',
+						transform: 'translateY(16px)',
 						opacity: '0'
 					},
 					'100%': {
@@ -207,7 +225,7 @@ export default {
 				},
 				'scale-in': {
 					'0%': {
-						transform: 'scale(0.95)',
+						transform: 'scale(0.96)',
 						opacity: '0'
 					},
 					'100%': {
