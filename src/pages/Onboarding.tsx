@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import PageHeader from '@/components/layout/PageHeader';
 import OnboardingProgress from '@/components/onboarding/OnboardingProgress';
 import PersonalInfoStep from '@/components/onboarding/steps/PersonalInfoStep';
 import ProfessionalInfoStep from '@/components/onboarding/steps/ProfessionalInfoStep';
@@ -143,6 +143,11 @@ const Onboarding = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-3xl mx-auto">
+        <PageHeader 
+          title="Complete Your Profile"
+          description={`Step ${currentStep} of ${stepTitles.length}`}
+        />
+        
         <OnboardingProgress
           currentStep={currentStep}
           totalSteps={4}
