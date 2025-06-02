@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Bell, User, Settings as SettingsIcon } from 'lucide-react';
+import { Bell, User, Settings as SettingsIcon, HandHeart } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -9,6 +9,7 @@ import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningM
 import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface HeaderProps {
   userRole?: 'admin' | 'slp' | 'supervisor';
@@ -24,8 +25,13 @@ const Header = ({
   const [showSpeechScreeningModal, setShowSpeechScreeningModal] = useState(false);
   const [showHearingScreeningModal, setShowHearingScreeningModal] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
   
   const initials = userName.split(' ').map(n => n[0]).join('');
+
+  // Extract student ID from current path if on student detail page
+  const studentId = location.pathname.match(/\/students\/([^\/]+)/)?.[1];
 
   const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {
     switch (role) {
@@ -57,6 +63,14 @@ const Header = ({
     setShowHearingScreeningModal(false);
   };
 
+  const handleSchoolSupportClick = () => {
+    if (studentId) {
+      navigate(`/students/${studentId}/school-support`);
+    } else {
+      navigate('/school-support');
+    }
+  };
+
   return (
     <>
       <header className={`bg-white border-b border-gray-100 sticky top-0 z-40 ${className || ''}`}>
@@ -76,6 +90,19 @@ const Header = ({
 
           {/* Right side - User actions */}
           <div className="flex items-center space-x-3">
+            {/* School Support Form Button - only show on student detail pages */}
+            {studentId && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleSchoolSupportClick}
+                className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 h-9 px-3"
+              >
+                <HandHeart className="w-4 h-4 mr-2" />
+                School Support Form
+              </Button>
+            )}
+
             {/* Notifications */}
             <Button 
               variant="ghost" 
