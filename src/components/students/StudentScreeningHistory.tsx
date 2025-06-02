@@ -1,14 +1,19 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock } from 'lucide-react';
 import { Student } from '@/types/database';
-import { mockScreenings } from './screening-history/mockData';
-import { groupScreeningsByRecency } from './screening-history/screeningUtils';
-import ScreeningTable from './screening-history/ScreeningTable';
-import HistoricalScreeningsSection from './screening-history/HistoricalScreeningsSection';
-import HearingTabContent from './screening-history/HearingTabContent';
+import ScreeningFilters from './screening-filters/ScreeningFilters';
+import ScreeningsList from './screening-filters/ScreeningsList';
+
+interface Screening {
+  id: string;
+  type: 'speech' | 'hearing' | 'progress';
+  date: string;
+  status: 'completed' | 'in_progress' | 'scheduled';
+  screener: string;
+  results?: string;
+}
 
 interface StudentScreeningHistoryProps {
   studentId?: string;
@@ -17,18 +22,63 @@ interface StudentScreeningHistoryProps {
 }
 
 const StudentScreeningHistory = ({ studentId, student, onAddHearingScreening }: StudentScreeningHistoryProps) => {
-  const [openSections, setOpenSections] = useState<string[]>(['recent']);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   
-  const screenings = mockScreenings; // In real app, fetch by studentId
-  const { recentScreenings, groupedHistorical } = groupScreeningsByRecency(screenings);
+  // Mock data - replace with actual API call using studentId
+  const mockScreenings: Screening[] = [
+    {
+      id: '1',
+      type: 'speech',
+      date: '2024-05-15',
+      status: 'completed',
+      screener: 'Dr. Sarah Johnson',
+      results: 'Within normal limits for age group',
+    },
+    {
+      id: '2',
+      type: 'hearing',
+      date: '2024-04-20',
+      status: 'completed',
+      screener: 'Dr. Mike Wilson',
+      results: 'Mild hearing loss detected',
+    },
+    {
+      id: '3',
+      type: 'progress',
+      date: '2024-06-01',
+      status: 'in_progress',
+      screener: 'Dr. Sarah Johnson',
+    },
+    {
+      id: '4',
+      type: 'speech',
+      date: '2024-03-10',
+      status: 'completed',
+      screener: 'Dr. Emily Davis',
+      results: 'Articulation concerns noted',
+    },
+    {
+      id: '5',
+      type: 'hearing',
+      date: '2024-02-14',
+      status: 'completed',
+      screener: 'Dr. Mike Wilson',
+      results: 'Normal hearing thresholds',
+    },
+  ];
 
-  const toggleSection = (section: string) => {
-    setOpenSections(prev => 
-      prev.includes(section) 
-        ? prev.filter(s => s !== section)
-        : [...prev, section]
-    );
-  };
+  const filteredScreenings = mockScreenings.filter(screening => {
+    const matchesSearch = screening.screener.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         screening.results?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = filterType === 'all' || screening.type === filterType;
+    const matchesStatus = filterStatus === 'all' || screening.status === filterStatus;
+    
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  const hasFilters = Boolean(searchTerm) || filterType !== 'all' || filterStatus !== 'all';
 
   return (
     <Card>
@@ -38,37 +88,21 @@ const StudentScreeningHistory = ({ studentId, student, onAddHearingScreening }: 
           Screening History
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="speech" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-auto">
-            <TabsTrigger value="speech" className="text-xs sm:text-sm px-2 py-2 sm:px-3">
-              <span className="sm:hidden">Speech</span>
-              <span className="hidden sm:inline">Speech Screen</span>
-            </TabsTrigger>
-            <TabsTrigger value="hearing" className="text-xs sm:text-sm px-2 py-2 sm:px-3">
-              <span className="sm:hidden">Hearing</span>
-              <span className="hidden sm:inline">Hearing Screen</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="speech" className="space-y-6 mt-6">
-            <ScreeningTable 
-              screenings={recentScreenings} 
-              title="Recent Screenings (Last 6 months)"
-              emptyMessage="No recent screenings found."
-            />
-            
-            <HistoricalScreeningsSection
-              groupedHistorical={groupedHistorical}
-              openSections={openSections}
-              toggleSection={toggleSection}
-            />
-          </TabsContent>
-          
-          <TabsContent value="hearing" className="mt-6">
-            <HearingTabContent onAddHearingScreening={onAddHearingScreening} />
-          </TabsContent>
-        </Tabs>
+      <CardContent className="space-y-6">
+        <ScreeningFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filterType={filterType}
+          setFilterType={setFilterType}
+          filterStatus={filterStatus}
+          setFilterStatus={setFilterStatus}
+        />
+        
+        <ScreeningsList
+          screenings={filteredScreenings}
+          studentId={studentId || ''}
+          hasFilters={hasFilters}
+        />
       </CardContent>
     </Card>
   );

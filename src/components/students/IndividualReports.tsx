@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Volume2, Mail, CheckCircle, Eye, Target } from 'lucide-react';
+import { FileText, Volume2, Mail, CheckCircle, Target } from 'lucide-react';
 import { Student } from '@/types/database';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import IndividualReportEmailModal from './IndividualReportEmailModal';
@@ -67,15 +67,6 @@ const IndividualReports = ({ student, isLoading = false }: IndividualReportsProp
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Monthly Progress Check
-                  </Button>
-                  <Button 
-                    onClick={() => navigate(`/students/${student.id}/screenings`)}
-                    variant="outline"
-                    className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
-                    disabled={isDisabled}
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    View Screenings
                   </Button>
                   <Button 
                     onClick={() => navigate(`/students/${student.id}/goal-sheet`)}
