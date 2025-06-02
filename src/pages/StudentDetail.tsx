@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Student } from '@/types/database';
 import { StudentService } from '@/services/studentService';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -8,7 +8,6 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 import StudentInfoHeader from '@/components/students/StudentInfoHeader';
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory';
 import IndividualReports from '@/components/students/IndividualReports';
-import StudentDetailPagination from '@/components/students/StudentDetailPagination';
 import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningModal';
 import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
@@ -19,9 +18,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 
 const StudentDetailContent = () => {
   const { studentId } = useParams<{ studentId: string }>();
-  const navigate = useNavigate();
   const [student, setStudent] = useState<Student | null>(null);
-  const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSpeechModal, setShowSpeechModal] = useState(false);
@@ -29,19 +26,14 @@ const StudentDetailContent = () => {
   const { userProfile } = useOrganization();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchStudent = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch all students for pagination
-        const studentsData = await StudentService.getStudents();
-        setAllStudents(studentsData);
-
         if (!studentId) {
           setError('Student ID is required.');
           return;
         }
-        
         const fetchedStudent = await StudentService.getStudentById(studentId);
         if (fetchedStudent) {
           setStudent(fetchedStudent);
@@ -49,22 +41,14 @@ const StudentDetailContent = () => {
           setError('Student not found.');
         }
       } catch (e: any) {
-        setError(e.message || 'Failed to load student data.');
+        setError(e.message || 'Failed to load student.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchStudent();
   }, [studentId]);
-
-  const handleNavigateToStudent = (newStudentId: string) => {
-    navigate(`/students/${newStudentId}`);
-  };
-
-  const handleBackToStudents = () => {
-    navigate('/students');
-  };
 
   const handleSpeechScreeningSubmit = (data: any) => {
     console.log('Speech screening submitted:', data);
@@ -112,16 +96,6 @@ const StudentDetailContent = () => {
                   <IndividualReports student={student} isLoading={loading} />
                 </div>
               </div>
-
-              {/* Pagination */}
-              {allStudents.length > 0 && (
-                <StudentDetailPagination
-                  currentStudent={student}
-                  allStudents={allStudents}
-                  onNavigateToStudent={handleNavigateToStudent}
-                  onBackToStudents={handleBackToStudents}
-                />
-              )}
 
               <SpeechScreeningModal 
                 isOpen={showSpeechModal}
