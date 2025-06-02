@@ -1,19 +1,19 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mic, Volume2, FileText } from 'lucide-react';
 import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningModal';
 import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
-import GenerateReportModal from '@/components/reports/GenerateReportModal';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
 
 const QuickActions = () => {
   const [showSpeechScreeningModal, setShowSpeechScreeningModal] = useState(false);
   const [showHearingScreeningModal, setShowHearingScreeningModal] = useState(false);
-  const [showGenerateReportModal, setShowGenerateReportModal] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSpeechScreeningSubmit = (screeningData: ScreeningFormData) => {
     console.log('Speech screening submitted:', screeningData);
@@ -61,7 +61,7 @@ const QuickActions = () => {
       description: 'Create comprehensive reports',
       icon: FileText,
       color: 'bg-indigo-600 hover:bg-indigo-700',
-      action: () => setShowGenerateReportModal(true)
+      action: () => navigate('/reports')
     }
   ];
 
@@ -126,11 +126,6 @@ const QuickActions = () => {
         onClose={() => setShowHearingScreeningModal(false)}
         onSubmit={handleHearingScreeningSubmit}
         title="New Hearing Screening"
-      />
-
-      <GenerateReportModal
-        isOpen={showGenerateReportModal}
-        onClose={() => setShowGenerateReportModal(false)}
       />
     </>
   );
