@@ -25,13 +25,15 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', classNam
 
   return (
     <div className={`hidden md:block ${className || ''}`}>
-      <Sidebar>
+      <Sidebar className="border-r border-gray-100 bg-white">
         <SidebarHeader />
         
-        <SidebarContent>
-          {navigationGroups.map((group) => (
-            <SidebarNavigationGroup key={group.label} group={group} />
-          ))}
+        <SidebarContent className="px-3 py-2">
+          <div className="space-y-8">
+            {navigationGroups.map((group) => (
+              <SidebarNavigationGroup key={group.label} group={group} />
+            ))}
+          </div>
         </SidebarContent>
 
         <SidebarFooter userRole={userRole} userName={userName} />
