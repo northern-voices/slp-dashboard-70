@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
@@ -8,15 +8,54 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Users, Calendar, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { mockSchoolSupportTickets } from '@/data/mockSchoolSupport';
+import { SchoolSupportForm } from '@/types/student-enhancements';
+import SupportTicketFilters from '@/components/school-support/SupportTicketFilters';
+import SupportTicketsList from '@/components/school-support/SupportTicketsList';
+import SupportTicketModal from '@/components/school-support/SupportTicketModal';
 
 const SchoolSupport = () => {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [schoolFilter, setSchoolFilter] = useState('all');
+  const [selectedTicket, setSelectedTicket] = useState<SchoolSupportForm | null>(null);
+  const [showTicketModal, setShowTicketModal] = useState(false);
 
   const handleCreateSupportForm = () => {
-    // For now, we'll navigate to the students page
-    // In a real implementation, this might open a student selector modal
     navigate('/students');
   };
+
+  const handleViewTicketDetails = (ticket: SchoolSupportForm) => {
+    setSelectedTicket(ticket);
+    setShowTicketModal(true);
+  };
+
+  // Filter tickets based on search and filters
+  const filteredTickets = mockSchoolSupportTickets.filter(ticket => {
+    const matchesSearch = 
+      ticket.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.school_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.slp_names?.some(name => name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      ticket.notes.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
+    const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
+    const matchesSchool = schoolFilter === 'all' || ticket.school_name === schoolFilter;
+    
+    return matchesSearch && matchesStatus && matchesPriority && matchesSchool;
+  });
+
+  const hasFilters = Boolean(searchTerm) || statusFilter !== 'all' || priorityFilter !== 'all' || schoolFilter !== 'all';
+
+  // Calculate dynamic stats
+  const activeTickets = mockSchoolSupportTickets.filter(t => t.status === 'active').length;
+  const uniqueSchools = new Set(mockSchoolSupportTickets.map(t => t.school_name)).size;
+  const upcomingVisits = mockSchoolSupportTickets.filter(t => 
+    t.status === 'active' && 
+    t.support_types.some(type => type.startsWith('school_visit_'))
+  ).length;
 
   return (
     <OrganizationProvider>
@@ -39,8 +78,8 @@ const SchoolSupport = () => {
                       <FileText className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">12</div>
-                      <p className="text-xs text-muted-foreground">+2 from last month</p>
+                      <div className="text-2xl font-bold">{activeTickets}</div>
+                      <p className="text-xs text-muted-foreground">Currently in progress</p>
                     </CardContent>
                   </Card>
 
@@ -50,7 +89,7 @@ const SchoolSupport = () => {
                       <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">8</div>
+                      <div className="text-2xl font-bold">{uniqueSchools}</div>
                       <p className="text-xs text-muted-foreground">Across district</p>
                     </CardContent>
                   </Card>
@@ -61,14 +100,14 @@ const SchoolSupport = () => {
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">5</div>
-                      <p className="text-xs text-muted-foreground">This week</p>
+                      <div className="text-2xl font-bold">{upcomingVisits}</div>
+                      <p className="text-xs text-muted-foreground">School visits scheduled</p>
                     </CardContent>
                   </Card>
                 </div>
 
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Recent Support Forms</h2>
+                  <h2 className="text-xl font-semibold text-gray-900">Support Tickets</h2>
                   <Button onClick={handleCreateSupportForm}>
                     <Plus className="w-4 h-4 mr-2" />
                     Create Support Form
@@ -77,14 +116,23 @@ const SchoolSupport = () => {
 
                 <Card>
                   <CardContent className="p-6">
-                    <div className="text-center py-12">
-                      <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No support forms yet</h3>
-                      <p className="text-gray-600 mb-4">Create your first school support form to get started</p>
-                      <Button onClick={handleCreateSupportForm}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Support Form
-                      </Button>
+                    <div className="space-y-6">
+                      <SupportTicketFilters
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        statusFilter={statusFilter}
+                        setStatusFilter={setStatusFilter}
+                        priorityFilter={priorityFilter}
+                        setPriorityFilter={setPriorityFilter}
+                        schoolFilter={schoolFilter}
+                        setSchoolFilter={setSchoolFilter}
+                      />
+                      
+                      <SupportTicketsList
+                        tickets={filteredTickets}
+                        hasFilters={hasFilters}
+                        onViewDetails={handleViewTicketDetails}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -93,6 +141,12 @@ const SchoolSupport = () => {
           </SidebarInset>
         </div>
       </SidebarProvider>
+
+      <SupportTicketModal
+        isOpen={showTicketModal}
+        onClose={() => setShowTicketModal(false)}
+        ticket={selectedTicket}
+      />
     </OrganizationProvider>
   );
 };
