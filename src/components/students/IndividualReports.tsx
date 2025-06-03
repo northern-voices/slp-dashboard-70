@@ -48,20 +48,20 @@ const IndividualReports = ({
   }
 
   return <>
-      {/* Three Column Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Three Column Layout - Equal Heights and Responsive */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Student Individual Card */}
-        <Card className="h-fit">
-          <CardHeader className="pb-4">
+        <Card className="flex flex-col h-full">
+          <CardHeader className="pb-4 flex-shrink-0">
             <CardTitle className="flex items-center gap-2 text-lg">
               <User className="w-4 h-4 md:w-5 md:h-5" />
               Student Individual
             </CardTitle>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
               Tools for tracking individual student progress and goal management
             </p>
           </CardHeader>
-          <CardContent className="space-y-3 p-4 md:p-6">
+          <CardContent className="flex-1 flex flex-col gap-3 p-4 md:p-6 pt-0">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
@@ -99,17 +99,17 @@ const IndividualReports = ({
         </Card>
 
         {/* Speech Reports Card */}
-        <Card className="h-fit">
-          <CardHeader className="pb-4">
+        <Card className="flex flex-col h-full">
+          <CardHeader className="pb-4 flex-shrink-0">
             <CardTitle className="flex items-center gap-2 text-lg">
               <FileText className="w-4 h-4 md:w-5 md:h-5" />
               Speech Reports
             </CardTitle>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
               Generate comprehensive speech therapy screening and progress reports
             </p>
           </CardHeader>
-          <CardContent className="space-y-3 p-4 md:p-6">
+          <CardContent className="flex-1 flex flex-col gap-3 p-4 md:p-6 pt-0">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
@@ -145,17 +145,17 @@ const IndividualReports = ({
         </Card>
 
         {/* Hearing Reports Card */}
-        <Card className="h-fit">
-          <CardHeader className="pb-4">
+        <Card className="flex flex-col h-full">
+          <CardHeader className="pb-4 flex-shrink-0">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Volume2 className="w-4 h-4 md:w-5 md:h-5" />
               Hearing Reports
             </CardTitle>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
               Create detailed hearing assessment and screening documentation
             </p>
           </CardHeader>
-          <CardContent className="space-y-3 p-4 md:p-6">
+          <CardContent className="flex-1 flex flex-col gap-3 p-4 md:p-6 pt-0">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
