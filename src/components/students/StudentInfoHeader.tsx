@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   User, 
   Calendar, 
@@ -10,7 +11,9 @@ import {
   FileText, 
   GraduationCap, 
   Edit, 
-  UserCheck 
+  UserCheck,
+  Save,
+  X
 } from 'lucide-react';
 import type { Student } from '@/types/database';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -22,6 +25,9 @@ interface StudentInfoHeaderProps {
 }
 
 const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHeaderProps) => {
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [editedNotes, setEditedNotes] = useState('');
+
   const getAgeFromBirthDate = (birthDate: string) => {
     const today = new Date();
     const birth = new Date(birthDate);
@@ -56,6 +62,22 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const handleEditNotes = () => {
+    setEditedNotes(student?.notes || '');
+    setIsEditingNotes(true);
+  };
+
+  const handleSaveNotes = () => {
+    // TODO: Implement save functionality
+    console.log('Saving notes:', editedNotes);
+    setIsEditingNotes(false);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingNotes(false);
+    setEditedNotes('');
   };
 
   if (isLoading) {
@@ -160,9 +182,54 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
             <div className="mt-4 pt-4 border-t">
               <div className="flex items-start gap-2">
                 <FileText className="w-4 h-4 text-gray-400 mt-0.5" />
-                <span className="text-sm text-gray-600">
-                  {student.notes || 'No medical notes on file'}
-                </span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">Medical Notes</span>
+                    {!isEditingNotes && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleEditNotes}
+                        className="h-6 px-2 text-gray-500 hover:text-gray-700"
+                      >
+                        <Edit className="w-3 h-3" />
+                      </Button>
+                    )}
+                  </div>
+                  {isEditingNotes ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={editedNotes}
+                        onChange={(e) => setEditedNotes(e.target.value)}
+                        placeholder="Enter medical notes..."
+                        className="min-h-[80px]"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleSaveNotes}
+                          className="h-7 px-3"
+                        >
+                          <Save className="w-3 h-3 mr-1" />
+                          Save
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCancelEdit}
+                          className="h-7 px-3"
+                        >
+                          <X className="w-3 h-3 mr-1" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-gray-600">
+                      {student.notes || 'No medical notes on file'}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
