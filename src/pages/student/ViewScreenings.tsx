@@ -9,62 +9,11 @@ import ViewScreeningsHeader from '@/components/students/screening-filters/ViewSc
 import ScreeningFilters from '@/components/students/screening-filters/ScreeningFilters';
 import ScreeningsList from '@/components/students/screening-filters/ScreeningsList';
 
-interface Screening {
-  id: string;
-  type: 'speech' | 'hearing' | 'progress';
-  date: string;
-  status: 'completed' | 'in_progress' | 'scheduled';
-  screener: string;
-  results?: string;
-  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
-}
-
 const ViewScreenings = () => {
   const { studentId } = useParams<{ studentId: string }>();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-
-  // Mock data - replace with actual API call
-  const mockScreenings: Screening[] = [
-    {
-      id: '1',
-      type: 'speech',
-      date: '2024-05-15',
-      status: 'completed',
-      screener: 'Dr. Sarah Johnson',
-      results: 'Within normal limits for age group',
-      screening_result: 'P',
-    },
-    {
-      id: '2',
-      type: 'hearing',
-      date: '2024-04-20',
-      status: 'completed',
-      screener: 'Dr. Mike Wilson',
-      results: 'Mild hearing loss detected',
-      screening_result: 'M',
-    },
-    {
-      id: '3',
-      type: 'progress',
-      date: '2024-06-01',
-      status: 'in_progress',
-      screener: 'Dr. Sarah Johnson',
-      screening_result: 'Q',
-    },
-  ];
-
-  const filteredScreenings = mockScreenings.filter(screening => {
-    const matchesSearch = screening.screener.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         screening.results?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || screening.type === filterType;
-    const matchesStatus = filterStatus === 'all' || screening.status === filterStatus;
-    
-    return matchesSearch && matchesType && matchesStatus;
-  });
-
-  const hasFilters = Boolean(searchTerm) || filterType !== 'all' || filterStatus !== 'all';
 
   if (!studentId) {
     return <div>Student ID not found</div>;
@@ -89,9 +38,10 @@ const ViewScreenings = () => {
                   setFilterStatus={setFilterStatus}
                 />
                 <ScreeningsList
-                  screenings={filteredScreenings}
                   studentId={studentId}
-                  hasFilters={hasFilters}
+                  searchTerm={searchTerm}
+                  filterType={filterType}
+                  filterStatus={filterStatus}
                 />
               </div>
             </div>
