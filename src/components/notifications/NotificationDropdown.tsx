@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -119,7 +118,7 @@ const NotificationDropdown = () => {
           )}
         </div>
         
-        <ScrollArea className="max-h-96">
+        <ScrollArea className="max-h-80 [&>div>div[style]]:!pr-3">
           {notifications.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               <Bell className="w-8 h-8 mx-auto mb-2 text-gray-300" />

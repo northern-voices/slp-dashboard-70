@@ -16,6 +16,7 @@ import GenerateGoalSheet from "./pages/student/GenerateGoalSheet";
 import Reports from "./pages/Reports";
 import Management from "./pages/Management";
 import Profile from "./pages/Profile";
+import Notifications from "./pages/Notifications";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/reports" element={<Reports />} />
             <Route path="/management" element={<Management />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/notifications" element={<Notifications />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
