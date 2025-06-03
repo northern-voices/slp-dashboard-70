@@ -47,7 +47,7 @@ export const getNavigationGroups = (location: Location, userRole: string, userPr
       isActive: location.pathname === "/reports"
     },
     {
-      title: userRole === 'slp' ? "Schools" : "Management",
+      title: "Management",
       url: "/management",
       icon: Building2,
       isActive: location.pathname === "/management"
