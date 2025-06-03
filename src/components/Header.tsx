@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bell, User, Settings as SettingsIcon, HandHeart } from 'lucide-react';
@@ -31,6 +32,10 @@ const Header = ({
 
   // Extract student ID from current path if on student detail page
   const studentId = location.pathname.match(/\/students\/([^\/]+)/)?.[1];
+  
+  // Check if user is on main dashboard pages where School Support button should be visible
+  const isDashboardPage = ['/', '/students', '/school-support', '/reports', '/management'].includes(location.pathname);
+  const shouldShowSchoolSupportButton = studentId || isDashboardPage;
 
   const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {
     switch (role) {
@@ -89,8 +94,8 @@ const Header = ({
 
           {/* Right side - User actions */}
           <div className="flex items-center space-x-3">
-            {/* School Support Form Button - only show on student detail pages */}
-            {studentId && (
+            {/* School Support Form Button - show on student detail pages and main dashboard pages */}
+            {shouldShowSchoolSupportButton && (
               <Button 
                 variant="outline" 
                 size="sm" 
