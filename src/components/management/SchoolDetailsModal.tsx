@@ -1,182 +1,120 @@
 
 import React from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Building2, User, Phone, AtSign, MapPin, CalendarDays, GraduationCap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Building2, Phone, Mail, Users, GraduationCap, Edit, UserCheck } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { useManagement } from '@/hooks/useManagement';
 
 interface SchoolDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  school: any | null;
-  onEdit?: (school: any) => void;
+  school: any;
+  onEdit: (school: any) => void;
 }
 
-const SchoolDetailsModal = ({
-  isOpen,
-  onClose,
-  school,
-  onEdit
-}: SchoolDetailsModalProps) => {
+const SchoolDetailsModal = ({ isOpen, onClose, school, onEdit }: SchoolDetailsModalProps) => {
+  const { getGradeLabel } = useManagement();
+  
   if (!school) return null;
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
-      case 'inactive':
-        return <Badge variant="outline">Inactive</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
-
-  // Mock assigned SLPs data
-  const assignedSLPs = [
-    { name: "Dr. Sarah Johnson", role: "SLP", email: "sarah.johnson@district.edu" },
-    { name: "Ms. Emily Chen", role: "Supervisor", email: "emily.chen@district.edu" }
+  const infoItems = [
+    { icon: Building2, label: "School Name", value: school.name },
+    { icon: User, label: "Principal", value: school.principal || "N/A" },
+    { icon: AtSign, label: "Principal Email", value: school.principalEmail || "N/A" },
+    { icon: Phone, label: "Phone", value: school.phone || "N/A" },
+    { icon: MapPin, label: "Address", value: school.address || "N/A" },
+    { icon: Building2, label: "District", value: school.district || "N/A" }
   ];
 
+  const sortedGrades = [...(school.grades || [])].sort((a, b) => {
+    // Custom sort logic for school grades
+    if (a === 'PreK') return -1;
+    if (b === 'PreK') return 1;
+    if (a === 'K') return b === 'PreK' ? 1 : -1;
+    if (b === 'K') return a === 'PreK' ? 1 : -1;
+    return parseInt(a) - parseInt(b);
+  });
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-semibold flex items-center">
-              <Building2 className="w-6 h-6 mr-3 text-blue-600" />
-              {school.name}
-            </DialogTitle>
-            {getStatusBadge(school.status)}
-          </div>
+          <DialogTitle className="flex items-center gap-2">
+            <Building2 className="w-5 h-5" />
+            School Details
+          </DialogTitle>
         </DialogHeader>
-
+        
         <div className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <Building2 className="w-5 h-5 mr-2" />
-                Basic Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">School Name</label>
-                  <p className="text-gray-900 font-medium">{school.name}</p>
+          <div className="grid gap-4">
+            {infoItems.map((item, index) => (
+              <div key={index} className="flex items-start gap-3">
+                <div className="bg-gray-100 p-2 rounded-md">
+                  <item.icon className="w-4 h-4 text-gray-600" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Status</label>
-                  <div className="mt-1">{getStatusBadge(school.status)}</div>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="text-sm font-medium text-gray-500">Address</label>
-                  <p className="text-gray-900">{school.address}</p>
+                  <p className="text-sm font-medium text-gray-600">{item.label}</p>
+                  <p className="text-base">{item.value}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            ))}
 
-          {/* Contact Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <Phone className="w-5 h-5 mr-2" />
-                Contact Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Principal</label>
-                  <p className="text-gray-900 font-medium">{school.principal}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <p className="text-gray-900 flex items-center">
-                    <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                    (555) 123-4567
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
-                  <p className="text-gray-900 flex items-center">
-                    <Mail className="w-4 h-4 mr-2 text-gray-400" />
-                    principal@{school.name.toLowerCase().replace(/\s+/g, '')}.edu
-                  </p>
-                </div>
+            <div className="flex items-start gap-3">
+              <div className="bg-gray-100 p-2 rounded-md">
+                <GraduationCap className="w-4 h-4 text-gray-600" />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Statistics */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <Users className="w-5 h-5 mr-2" />
-                Statistics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <GraduationCap className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                  <p className="text-2xl font-bold text-blue-600">{school.studentCount}</p>
-                  <p className="text-sm text-gray-600">Total Students</p>
-                </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <UserCheck className="w-8 h-8 mx-auto mb-2 text-green-600" />
-                  <p className="text-2xl font-bold text-green-600">{school.slpCount}</p>
-                  <p className="text-sm text-gray-600">Assigned SLPs</p>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <Users className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-                  <p className="text-2xl font-bold text-purple-600">24</p>
-                  <p className="text-sm text-gray-600">Active Screenings</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Assigned SLPs */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <UserCheck className="w-5 h-5 mr-2" />
-                Assigned SLPs
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {assignedSLPs.map((slp, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{slp.name}</p>
-                      <p className="text-sm text-gray-600">{slp.email}</p>
-                    </div>
-                    <Badge variant="outline">{slp.role}</Badge>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600">Available Grades</p>
+                {sortedGrades.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {sortedGrades.map(grade => (
+                      <Badge key={grade} variant="secondary">
+                        {getGradeLabel(grade)}
+                      </Badge>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <p className="text-base">No grades specified</p>
+                )}
               </div>
-            </CardContent>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-600">Notes</p>
+            <p className="text-sm p-3 bg-gray-50 rounded-md min-h-[80px]">
+              {school.notes || "No additional notes."}
+            </p>
+          </div>
+          
+          <Card className="bg-gray-50 p-4 grid grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-gray-600">Students</p>
+              <p className="text-xl font-bold">{school.studentCount}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">SLPs</p>
+              <p className="text-xl font-bold">{school.slpCount}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Status</p>
+              <div className="mt-1">
+                {school.status === 'active' ? (
+                  <Badge className="bg-green-100 text-green-800">Active</Badge>
+                ) : (
+                  <Badge variant="outline">Inactive</Badge>
+                )}
+              </div>
+            </div>
           </Card>
-
-          <Separator />
-
-          {/* Action Buttons */}
-          <div className="flex justify-end space-x-3">
+          
+          <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>
-            <Button onClick={() => onEdit?.(school)} className="flex items-center">
-              <Edit className="w-4 h-4 mr-2" />
+            <Button onClick={() => onEdit(school)}>
               Edit School
             </Button>
           </div>

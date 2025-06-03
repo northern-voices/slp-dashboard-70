@@ -1,4 +1,3 @@
-
 export interface Organization {
   id: string;
   name: string;
@@ -15,6 +14,7 @@ export interface School {
   principal_name?: string;
   principal_email?: string;
   phone?: string;
+  grades?: string[];
   created_at: string;
   updated_at: string;
   organization?: Organization;

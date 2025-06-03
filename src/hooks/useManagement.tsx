@@ -19,18 +19,28 @@ export const useManagement = () => {
       name: "Lincoln Elementary School",
       address: "123 Main St, Springfield, IL",
       principal: "Dr. Jane Smith",
+      principalEmail: "jsmith@springfield.edu",
+      phone: "(555) 123-4567",
+      district: "Springfield District 22",
       studentCount: 245,
       slpCount: 2,
-      status: "active"
+      status: "active",
+      grades: ["K", "1", "2", "3", "4", "5"],
+      notes: "Renovated building in 2022"
     },
     {
       id: 2,
       name: "Washington Middle School",
       address: "456 Oak Ave, Springfield, IL",
       principal: "Mr. John Davis",
+      principalEmail: "jdavis@springfield.edu",
+      phone: "(555) 987-6543",
+      district: "Springfield District 22",
       studentCount: 380,
       slpCount: 3,
-      status: "active"
+      status: "active",
+      grades: ["6", "7", "8"],
+      notes: "STEM focus program"
     }
   ]);
 
@@ -64,14 +74,19 @@ export const useManagement = () => {
   const handleSaveSchool = (schoolData: any) => {
     if (editingSchool) {
       setMockSchools(prev => prev.map(school => 
-        school.id === editingSchool.id ? { ...school, ...schoolData } : school
+        school.id === editingSchool.id ? { 
+          ...school, 
+          ...schoolData,
+          grades: schoolData.grades || [] 
+        } : school
       ));
     } else {
       const newSchool = {
         id: mockSchools.length + 1,
         ...schoolData,
         studentCount: 0,
-        slpCount: 0
+        slpCount: 0,
+        grades: schoolData.grades || []
       };
       setMockSchools(prev => [...prev, newSchool]);
     }
@@ -137,6 +152,27 @@ export const useManagement = () => {
     }
   };
 
+  const getGradeLabel = (grade: string) => {
+    const gradeLabels: Record<string, string> = {
+      'PreK': 'Pre-K',
+      'K': 'Kindergarten',
+      '1': '1st Grade',
+      '2': '2nd Grade',
+      '3': '3rd Grade',
+      '4': '4th Grade',
+      '5': '5th Grade',
+      '6': '6th Grade',
+      '7': '7th Grade',
+      '8': '8th Grade',
+      '9': '9th Grade',
+      '10': '10th Grade',
+      '11': '11th Grade',
+      '12': '12th Grade'
+    };
+    
+    return gradeLabels[grade] || grade;
+  };
+
   return {
     // State
     schoolFormOpen,
@@ -172,6 +208,7 @@ export const useManagement = () => {
     handleEditUser,
     handleDeactivateUser,
     handleResendInvite,
-    getStatusBadge
+    getStatusBadge,
+    getGradeLabel
   };
 };

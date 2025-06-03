@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import GradeManagement from './GradeManagement';
 
 interface SchoolFormProps {
   isOpen: boolean;
@@ -25,7 +26,8 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
     phone: school?.phone || '',
     district: school?.district || '',
     status: school?.status || 'active',
-    notes: school?.notes || ''
+    notes: school?.notes || '',
+    grades: school?.grades || []
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,6 +37,15 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
       toast({
         title: "Error",
         description: "School name is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.grades.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one grade for this school",
         variant: "destructive"
       });
       return;
@@ -52,9 +63,13 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleGradesChange = (grades: string[]) => {
+    setFormData(prev => ({ ...prev, grades }));
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{school ? 'Edit School' : 'Add New School'}</DialogTitle>
         </DialogHeader>
@@ -141,6 +156,13 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="border rounded-lg p-4 bg-gray-50">
+            <GradeManagement 
+              selectedGrades={formData.grades}
+              onGradesChange={handleGradesChange}
+            />
           </div>
 
           <div className="space-y-2">
