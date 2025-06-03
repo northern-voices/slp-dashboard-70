@@ -72,11 +72,11 @@ const OrganizationSettingsModal = ({ isOpen, onClose }: OrganizationSettingsModa
         </DialogHeader>
 
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="branding">Branding</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
-            <TabsTrigger value="data">Data</TabsTrigger>
+          <TabsList className="w-full justify-start flex-wrap h-auto p-1">
+            <TabsTrigger value="general" className="flex-shrink-0">General</TabsTrigger>
+            <TabsTrigger value="branding" className="flex-shrink-0">Branding</TabsTrigger>
+            <TabsTrigger value="security" className="flex-shrink-0">Security</TabsTrigger>
+            <TabsTrigger value="data" className="flex-shrink-0">Data</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-4">
