@@ -27,8 +27,8 @@ const ReportsPageContent = () => {
           </Button>
         </div>
 
-        {/* Unified Report Form */}
-        <div className="max-w-2xl">
+        {/* Centered Unified Report Form */}
+        <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl mx-auto px-4 sm:px-0">
           <UnifiedReportForm />
         </div>
       </div>

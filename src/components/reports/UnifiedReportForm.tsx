@@ -68,15 +68,17 @@ const UnifiedReportForm = () => {
   };
 
   return (
-    <Card className="bg-white border border-gray-200 shadow-sm">
+    <Card className="w-full bg-white border border-gray-200 shadow-sm">
       <CardHeader className="pb-6">
-        <CardTitle className="text-xl font-semibold text-gray-900">Generate Class Wide Report</CardTitle>
+        <CardTitle className="text-xl font-semibold text-gray-900 text-center sm:text-left">
+          Generate Class Wide Report
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
             <Label className="text-sm font-medium text-gray-700">Report Type</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {reportTypes.map((type) => {
                 const Icon = type.icon;
                 return (
@@ -84,7 +86,7 @@ const UnifiedReportForm = () => {
                     key={type.value}
                     onClick={() => setReportType(type.value)}
                     className={`
-                      relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200
+                      relative cursor-pointer rounded-lg border-2 p-3 sm:p-4 transition-all duration-200
                       ${reportType === type.value 
                         ? 'border-blue-600 bg-blue-50 shadow-sm' 
                         : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
@@ -99,7 +101,7 @@ const UnifiedReportForm = () => {
                           : 'bg-gray-100 text-gray-600'
                         }
                       `}>
-                        <Icon className="w-5 h-5" />
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className={`
@@ -163,11 +165,11 @@ const UnifiedReportForm = () => {
             />
           </div>
 
-          <div className="flex gap-3 pt-6">
-            <Button type="button" variant="outline" onClick={handleClearForm}>
+          <div className="flex flex-col sm:flex-row gap-3 pt-6">
+            <Button type="button" variant="outline" onClick={handleClearForm} className="w-full sm:w-auto">
               Clear Form
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="w-full sm:w-auto">
               Generate Report
             </Button>
           </div>
