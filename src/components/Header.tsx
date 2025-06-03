@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Bell, User, Settings as SettingsIcon, HandHeart } from 'lucide-react';
+import { Bell, User, Settings as SettingsIcon, HandHeart, Menu } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningModal';
 import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
+import MobileNavMenu from '@/components/navigation/MobileNavMenu';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -15,15 +16,18 @@ interface HeaderProps {
   userRole?: 'admin' | 'slp' | 'supervisor';
   userName?: string;
   className?: string;
+  userProfile?: any;
 }
 
 const Header = ({
   userRole = 'slp',
   userName = 'Dr. Sarah Johnson',
-  className
+  className,
+  userProfile
 }: HeaderProps) => {
   const [showSpeechScreeningModal, setShowSpeechScreeningModal] = useState(false);
   const [showHearingScreeningModal, setShowHearingScreeningModal] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -79,8 +83,19 @@ const Header = ({
     <>
       <header className={`bg-white border-b border-gray-100 sticky top-0 z-40 ${className || ''}`}>
         <div className="flex items-center justify-between h-16 px-6">
-          {/* Left side - Sidebar trigger for desktop */}
+          {/* Left side - Mobile hamburger + Desktop sidebar trigger */}
           <div className="flex items-center">
+            {/* Mobile hamburger menu */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMobileNav(true)}
+              className="md:hidden -ml-1 mr-2 h-8 w-8 p-0"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+
+            {/* Desktop sidebar trigger */}
             <SidebarTrigger className="hidden md:flex -ml-1 mr-2" />
             
             {/* Mobile brand */}
@@ -166,6 +181,15 @@ const Header = ({
           </div>
         </div>
       </header>
+
+      {/* Mobile Navigation Menu */}
+      <MobileNavMenu
+        isOpen={showMobileNav}
+        onClose={() => setShowMobileNav(false)}
+        userRole={userRole}
+        userName={userName}
+        userProfile={userProfile}
+      />
 
       {/* Modals */}
       <SpeechScreeningModal 

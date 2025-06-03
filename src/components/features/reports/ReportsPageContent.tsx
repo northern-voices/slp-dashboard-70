@@ -10,7 +10,7 @@ const ReportsPageContent = () => {
 
   return (
     <div className="min-h-screen w-full overflow-hidden">
-      <div className="space-y-6 sm:space-y-8 pb-24 sm:pb-8">
+      <div className="space-y-6 sm:space-y-8 pb-8">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-1 sm:px-0">
           <div className="space-y-1 sm:space-y-2">

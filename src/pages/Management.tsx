@@ -3,7 +3,6 @@ import React from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
-import BottomNavigation from '@/components/BottomNavigation';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Users, Settings } from 'lucide-react';
@@ -72,9 +71,9 @@ const ManagementContent = () => {
           <AppSidebar userRole={userRole} userName={userName} />
           
           <SidebarInset className="flex-1">
-            <Header userRole={userRole} userName={userName} />
+            <Header userRole={userRole} userName={userName} userProfile={userProfile} />
             
-            <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+            <main className="flex-1 p-4 md:p-6 lg:p-8 pb-8">
               <div className="mb-6 md:mb-8">
                 <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Schools</h1>
                 <p className="text-gray-600 text-sm md:text-base">View your assigned schools and manage students</p>
@@ -83,8 +82,6 @@ const ManagementContent = () => {
               <SLPSchoolBrowser />
             </main>
           </SidebarInset>
-          
-          <BottomNavigation />
         </div>
       </SidebarProvider>
     );
@@ -97,9 +94,9 @@ const ManagementContent = () => {
         <AppSidebar userRole={userRole} userName={userName} />
         
         <SidebarInset className="flex-1">
-          <Header userRole={userRole} userName={userName} />
+          <Header userRole={userRole} userName={userName} userProfile={userProfile} />
           
-          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-8">
             <div className="mb-6 md:mb-8">
               <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">Management</h1>
               <p className="text-gray-600 text-sm md:text-base">Manage schools, users, and system settings</p>
@@ -155,8 +152,6 @@ const ManagementContent = () => {
             </Tabs>
           </main>
         </SidebarInset>
-        
-        <BottomNavigation />
       </div>
 
       <SchoolForm
