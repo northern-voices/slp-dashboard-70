@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Multiselect from '@/components/ui/multiselect';
 
 interface ClassWideSpeechFormProps {
   title: string;
@@ -13,8 +14,10 @@ interface ClassWideSpeechFormProps {
 
 const ClassWideSpeechForm = ({ title, reportType }: ClassWideSpeechFormProps) => {
   const [academicYear, setAcademicYear] = useState('');
+  const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
   const [email, setEmail] = useState('');
 
+  const grades = ['K', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
   const currentYear = new Date().getFullYear();
   const academicYears = [
     `${currentYear-1}-${currentYear}`,
@@ -24,6 +27,7 @@ const ClassWideSpeechForm = ({ title, reportType }: ClassWideSpeechFormProps) =>
 
   const handleClearForm = () => {
     setAcademicYear('');
+    setSelectedGrades([]);
     setEmail('');
   };
 
@@ -31,6 +35,7 @@ const ClassWideSpeechForm = ({ title, reportType }: ClassWideSpeechFormProps) =>
     e.preventDefault();
     console.log(`Generating class-wide speech ${reportType}:`, {
       academicYear,
+      grades: selectedGrades,
       email
     });
     // TODO: Implement report generation
@@ -55,6 +60,17 @@ const ClassWideSpeechForm = ({ title, reportType }: ClassWideSpeechFormProps) =>
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div>
+            <Label className="text-sm font-medium text-gray-700">Grades</Label>
+            <Multiselect
+              options={grades}
+              selected={selectedGrades}
+              onChange={setSelectedGrades}
+              placeholder="Select grades..."
+              className="w-full"
+            />
           </div>
 
           <div>
