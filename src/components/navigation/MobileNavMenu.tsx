@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector';
 import SchoolSelector from '@/components/SchoolSelector';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useSchool } from '@/contexts/SchoolContext';
 
 interface MobileNavMenuProps {
   isOpen: boolean;
@@ -18,6 +19,23 @@ interface MobileNavMenuProps {
   userName?: string;
   userProfile?: any;
 }
+
+// Helper component to safely render school selector
+const SafeSchoolSelector = ({ userRole }: { userRole: 'admin' | 'slp' | 'supervisor' }) => {
+  try {
+    if (userRole === 'slp') {
+      // Try to use SchoolProvider context
+      const schoolContext = useSchool();
+      return <SLPSchoolSelector />;
+    } else {
+      return <SchoolSelector />;
+    }
+  } catch (error) {
+    // If SchoolProvider is not available, fall back to regular SchoolSelector
+    console.log('SchoolProvider not available, using fallback');
+    return <SchoolSelector />;
+  }
+};
 
 const MobileNavMenu = ({
   isOpen,
@@ -69,11 +87,7 @@ const MobileNavMenu = ({
               <label className="block text-sm font-medium text-gray-700">
                 {userRole === 'slp' ? 'Select School' : 'Current School'}
               </label>
-              {userRole === 'slp' ? (
-                <SLPSchoolSelector />
-              ) : (
-                <SchoolSelector />
-              )}
+              <SafeSchoolSelector userRole={userRole} />
             </div>
           </div>
 
