@@ -1,12 +1,14 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Bell, User, Settings as SettingsIcon, HandHeart, Menu } from 'lucide-react';
+import { User, Settings as SettingsIcon, HandHeart, Menu } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningModal';
 import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
 import MobileNavMenu from '@/components/navigation/MobileNavMenu';
+import NotificationDropdown from '@/components/notifications/NotificationDropdown';
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -122,16 +124,7 @@ const Header = ({
             )}
 
             {/* Notifications */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="relative text-gray-500 hover:text-gray-700 hover:bg-gray-50 md:h-9 md:w-9 h-8 w-8 p-0 rounded-lg"
-            >
-              <Bell className="md:w-5 md:h-5 w-4 h-4" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full md:w-5 md:h-5 w-4 h-4 flex items-center justify-center font-medium">
-                3
-              </span>
-            </Button>
+            <NotificationDropdown />
             
             {/* User Menu */}
             <DropdownMenu>
