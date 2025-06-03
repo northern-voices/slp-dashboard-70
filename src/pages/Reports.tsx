@@ -17,13 +17,13 @@ const ReportsContent = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-25">
+      <div className="min-h-screen flex w-full bg-gray-25 overflow-hidden">
         <AppSidebar userRole={userRole} userName={userName} className="font-medium" />
         
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 overflow-hidden">
           <Header userRole={userRole} userName={userName} />
           
-          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-28 md:pb-8 overflow-x-hidden max-w-full">
             <ReportsPageContent />
           </main>
         </SidebarInset>
