@@ -16,9 +16,10 @@ interface Screening {
 
 interface ScreeningCardProps {
   screening: Screening;
+  onViewDetails?: (screening: Screening) => void;
 }
 
-const ScreeningCard = ({ screening }: ScreeningCardProps) => {
+const ScreeningCard = ({ screening, onViewDetails }: ScreeningCardProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -45,8 +46,17 @@ const ScreeningCard = ({ screening }: ScreeningCardProps) => {
     }
   };
 
+  const handleCardClick = () => {
+    if (onViewDetails) {
+      onViewDetails(screening);
+    }
+  };
+
   return (
-    <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+    <div 
+      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -70,7 +80,14 @@ const ScreeningCard = ({ screening }: ScreeningCardProps) => {
             </p>
           )}
         </div>
-        <Button variant="outline" size="sm">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCardClick();
+          }}
+        >
           <Eye className="w-4 h-4 mr-2" />
           View Details
         </Button>

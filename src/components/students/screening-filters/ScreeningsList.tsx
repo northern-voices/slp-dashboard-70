@@ -1,8 +1,8 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Filter } from 'lucide-react';
+import React, { useState } from 'react';
 import ScreeningCard from './ScreeningCard';
+import ScreeningDetailsModal from '../screening-history/ScreeningDetailsModal';
+import { Student } from '@/types/database';
 
 interface Screening {
   id: string;
@@ -17,36 +17,57 @@ interface ScreeningsListProps {
   screenings: Screening[];
   studentId: string;
   hasFilters: boolean;
+  student?: Student;
 }
 
-const ScreeningsList = ({ screenings, studentId, hasFilters }: ScreeningsListProps) => {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-medium">All Screenings ({screenings.length})</h3>
-      </div>
-      
-      {screenings.length === 0 ? (
-        <div className="text-center py-12 border border-gray-200 rounded-lg">
-          <div className="text-gray-400 mb-4">
-            <Filter className="w-16 h-16 mx-auto" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Screenings Found</h3>
-          <p className="text-gray-600">
-            {hasFilters
-              ? 'Try adjusting your filters or search terms.'
-              : 'No screenings have been recorded for this student yet.'
-            }
+const ScreeningsList = ({ screenings, studentId, hasFilters, student }: ScreeningsListProps) => {
+  const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleViewDetails = (screening: Screening) => {
+    setSelectedScreening(screening);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedScreening(null);
+  };
+
+  if (screenings.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">
+          {hasFilters ? 'No screenings match your current filters.' : 'No screenings found for this student.'}
+        </p>
+        {hasFilters && (
+          <p className="text-sm text-gray-400 mt-1">
+            Try adjusting your search criteria or filters.
           </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {screenings.map((screening) => (
-            <ScreeningCard key={screening.id} screening={screening} />
-          ))}
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-4">
+        {screenings.map((screening) => (
+          <ScreeningCard 
+            key={screening.id} 
+            screening={screening}
+            onViewDetails={handleViewDetails}
+          />
+        ))}
+      </div>
+
+      <ScreeningDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        screening={selectedScreening}
+        student={student}
+      />
+    </>
   );
 };
 

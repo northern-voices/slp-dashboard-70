@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock } from 'lucide-react';
@@ -102,6 +101,7 @@ const StudentScreeningHistory = ({ studentId, student, onAddHearingScreening }: 
           screenings={filteredScreenings}
           studentId={studentId || ''}
           hasFilters={hasFilters}
+          student={student}
         />
       </CardContent>
     </Card>
