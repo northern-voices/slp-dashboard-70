@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import IndividualReportEmailModal from '../IndividualReportEmailModal';
 import { Student } from '@/types/database';
 import ScreeningResultBadge from './ScreeningResultBadge';
@@ -32,19 +33,6 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening, student }: Screenin
 
   if (!screening) return null;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in_progress':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'scheduled':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'speech':
@@ -58,6 +46,39 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening, student }: Screenin
     }
   };
 
+  const getStatusDisplay = (status: string) => {
+    const statusConfig = {
+      'completed': {
+        icon: CheckCircle,
+        text: 'Completed',
+        color: 'text-green-600'
+      },
+      'in_progress': {
+        icon: Clock,
+        text: 'In Progress',
+        color: 'text-yellow-600'
+      },
+      'scheduled': {
+        icon: AlertTriangle,
+        text: 'Scheduled',
+        color: 'text-blue-600'
+      }
+    };
+    
+    const config = statusConfig[status as keyof typeof statusConfig];
+    if (!config) return null;
+    
+    const IconComponent = config.icon;
+    return (
+      <div className="flex items-center gap-2">
+        <IconComponent className={`w-4 h-4 ${config.color}`} />
+        <span className={`text-sm font-medium ${config.color}`}>
+          {config.text}
+        </span>
+      </div>
+    );
+  };
+
   const resultDisplay = ScreeningResultBadge({ result: screening.screening_result });
 
   return (
@@ -65,14 +86,14 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening, student }: Screenin
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <Badge className={getTypeColor(screening.type)}>
-                {screening.type.charAt(0).toUpperCase() + screening.type.slice(1)} Screening
-              </Badge>
-              <Badge className={getStatusColor(screening.status)}>
-                {screening.status.replace('_', ' ').charAt(0).toUpperCase() + 
-                 screening.status.replace('_', ' ').slice(1)}
-              </Badge>
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Badge className={getTypeColor(screening.type)}>
+                  {screening.type.charAt(0).toUpperCase() + screening.type.slice(1)} Screening
+                </Badge>
+                {getStatusDisplay(screening.status)}
+              </div>
+              {resultDisplay && resultDisplay.badge}
             </DialogTitle>
           </DialogHeader>
 

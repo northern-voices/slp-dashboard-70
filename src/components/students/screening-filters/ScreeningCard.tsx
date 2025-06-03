@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye } from 'lucide-react';
+import { Eye, Calendar, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Screening {
@@ -21,19 +21,6 @@ interface ScreeningCardProps {
 }
 
 const ScreeningCard = ({ screening, onViewDetails }: ScreeningCardProps) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in_progress':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'scheduled':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'speech':
@@ -47,23 +34,56 @@ const ScreeningCard = ({ screening, onViewDetails }: ScreeningCardProps) => {
     }
   };
 
+  const getStatusDisplay = (status: string) => {
+    const statusConfig = {
+      'completed': {
+        icon: CheckCircle,
+        text: 'Completed',
+        color: 'text-green-600'
+      },
+      'in_progress': {
+        icon: Clock,
+        text: 'In Progress',
+        color: 'text-yellow-600'
+      },
+      'scheduled': {
+        icon: AlertTriangle,
+        text: 'Scheduled',
+        color: 'text-blue-600'
+      }
+    };
+    
+    const config = statusConfig[status as keyof typeof statusConfig];
+    if (!config) return null;
+    
+    const IconComponent = config.icon;
+    return (
+      <div className="flex items-center gap-1">
+        <IconComponent className={`w-4 h-4 ${config.color}`} />
+        <span className={`text-sm font-medium ${config.color}`}>
+          {config.text}
+        </span>
+      </div>
+    );
+  };
+
   const getResultBadge = (result?: string) => {
     if (!result) return null;
     
     const resultConfig = {
-      'P': { label: '(P) Passed', color: 'bg-green-100 text-green-800' },
-      'M': { label: '(M) Monitor', color: 'bg-yellow-100 text-yellow-800' },
-      'Q': { label: '(Q) Qualified', color: 'bg-red-100 text-red-800' },
-      'NR': { label: '(NR) Non Registered', color: 'bg-blue-100 text-blue-800' },
-      'NC': { label: '(NC) No Consent', color: 'bg-orange-100 text-orange-800' },
-      'C': { label: '(C) Complex Needs', color: 'bg-red-100 text-red-800' }
+      'P': { label: '(P) Passed', color: 'bg-green-100 text-green-800 border-green-200' },
+      'M': { label: '(M) Monitor', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+      'Q': { label: '(Q) Qualified', color: 'bg-red-100 text-red-800 border-red-200' },
+      'NR': { label: '(NR) Non Registered', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+      'NC': { label: '(NC) No Consent', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+      'C': { label: '(C) Complex Needs', color: 'bg-red-100 text-red-800 border-red-200' }
     };
 
     const config = resultConfig[result as keyof typeof resultConfig];
     if (!config) return null;
 
     return (
-      <Badge className={config.color}>
+      <Badge className={`${config.color} border font-semibold text-sm px-3 py-1`}>
         {config.label}
       </Badge>
     );
@@ -77,32 +97,21 @@ const ScreeningCard = ({ screening, onViewDetails }: ScreeningCardProps) => {
 
   return (
     <div 
-      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+      className="border border-gray-200 rounded-lg p-5 hover:bg-gray-50 transition-colors cursor-pointer"
       onClick={handleCardClick}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <Badge className={getTypeColor(screening.type)}>
-              {screening.type.charAt(0).toUpperCase() + screening.type.slice(1)}
-            </Badge>
-            <Badge className={getStatusColor(screening.status)}>
-              {screening.status.replace('_', ' ').charAt(0).toUpperCase() + 
-               screening.status.replace('_', ' ').slice(1)}
-            </Badge>
-            {getResultBadge(screening.screening_result)}
-            <span className="text-sm text-gray-500">
+      {/* Header with type badge and date */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <Badge className={getTypeColor(screening.type)}>
+            {screening.type.charAt(0).toUpperCase() + screening.type.slice(1)}
+          </Badge>
+          <div className="flex items-center gap-2 text-gray-600">
+            <Calendar className="w-4 h-4" />
+            <span className="text-sm font-medium">
               {format(new Date(screening.date), 'MMM dd, yyyy')}
             </span>
           </div>
-          <p className="text-sm text-gray-600 mb-1">
-            <strong>Screener:</strong> {screening.screener}
-          </p>
-          {screening.results && (
-            <p className="text-sm text-gray-600">
-              <strong>Results:</strong> {screening.results}
-            </p>
-          )}
         </div>
         <Button 
           variant="outline" 
@@ -115,6 +124,24 @@ const ScreeningCard = ({ screening, onViewDetails }: ScreeningCardProps) => {
           <Eye className="w-4 h-4 mr-2" />
           View Details
         </Button>
+      </div>
+
+      {/* Status and Result */}
+      <div className="flex items-center justify-between mb-3">
+        {getStatusDisplay(screening.status)}
+        {getResultBadge(screening.screening_result)}
+      </div>
+
+      {/* Screener and Results */}
+      <div className="space-y-1">
+        <p className="text-sm text-gray-600">
+          <span className="font-medium">Screener:</span> {screening.screener}
+        </p>
+        {screening.results && (
+          <p className="text-sm text-gray-600">
+            <span className="font-medium">Notes:</span> {screening.results}
+          </p>
+        )}
       </div>
     </div>
   );
