@@ -109,13 +109,13 @@ const Header = ({
 
           {/* Right side - User actions */}
           <div className="flex items-center md:space-x-3 space-x-2">
-            {/* School Support Form Button - show on student detail pages and main dashboard pages */}
+            {/* School Support Form Button - show on desktop only */}
             {shouldShowSchoolSupportButton && (
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={handleSchoolSupportClick}
-                className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 md:h-9 h-10 md:px-3 px-3 md:text-sm text-sm"
+                className="hidden md:flex text-gray-700 hover:text-gray-900 hover:bg-gray-50 md:h-9 h-10 md:px-3 px-3 md:text-sm text-sm"
               >
                 <HandHeart className="md:w-4 md:h-4 w-3.5 h-3.5 mr-2" />
                 School Support
