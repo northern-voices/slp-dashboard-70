@@ -15,7 +15,6 @@ import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationCo
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
-import BottomNavigation from '@/components/BottomNavigation';
 
 const StudentDetailContent = () => {
   const { studentId } = useParams<{ studentId: string }>();
@@ -112,7 +111,7 @@ const StudentDetailContent = () => {
             userRole={userRole as 'admin' | 'slp' | 'supervisor'} 
             userName={userName}
           />
-          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-8">
             <StudentDetailPagination
               currentStudent={`${student.first_name} ${student.last_name}`}
               currentIndex={currentStudentIndex}
@@ -157,7 +156,6 @@ const StudentDetailContent = () => {
             </div>
           </main>
         </SidebarInset>
-        <BottomNavigation />
       </SidebarProvider>
     </div>
   );

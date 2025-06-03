@@ -1,14 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
-import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { SchoolProvider, useSchool } from '@/contexts/SchoolContext';
 import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector';
 import StudentTable from '@/components/students/StudentTable';
 import { StudentService } from '@/services/studentService';
 import { Student } from '@/types/database';
+
 const StudentsContent = () => {
   const {
     userProfile
@@ -20,6 +21,7 @@ const StudentsContent = () => {
   const [isLoading, setIsLoading] = useState(true);
   const userRole = userProfile?.role || 'slp';
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
+
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -40,6 +42,7 @@ const StudentsContent = () => {
     };
     fetchStudents();
   }, [selectedSchool, userRole]);
+
   if (isLoading) {
     return <div className="min-h-screen flex w-full bg-gray-25">
         <div className="flex-1 flex items-center justify-center">
@@ -50,6 +53,7 @@ const StudentsContent = () => {
         </div>
       </div>;
   }
+
   return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-25">
         <AppSidebar userRole={userRole} userName={userName} />
@@ -57,10 +61,7 @@ const StudentsContent = () => {
         <SidebarInset className="flex-1">
           <Header userRole={userRole} userName={userName} />
           
-          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
-            {/* Page Header */}
-            
-
+          <main className="flex-1 p-4 md:p-6 lg:p-8 pb-8">
             {/* School Selector for SLPs */}
             {userRole === 'slp' && <div className="mb-6">
                 <div className="max-w-md">
@@ -83,11 +84,10 @@ const StudentsContent = () => {
               </div> : <StudentTable students={students} />}
           </main>
         </SidebarInset>
-        
-        <BottomNavigation />
       </div>
     </SidebarProvider>;
 };
+
 const Students = () => {
   return <OrganizationProvider>
       <SchoolProvider>
@@ -95,4 +95,5 @@ const Students = () => {
       </SchoolProvider>
     </OrganizationProvider>;
 };
+
 export default Students;

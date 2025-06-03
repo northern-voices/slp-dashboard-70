@@ -8,7 +8,6 @@ import QuickActions from '@/components/QuickActions';
 import SLPDashboardStats from '@/components/slp/SLPDashboardStats';
 import SLPQuickActions from '@/components/slp/SLPQuickActions';
 import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector';
-import BottomNavigation from '@/components/BottomNavigation';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { SchoolProvider, useSchool } from '@/contexts/SchoolContext';
 
@@ -44,7 +43,7 @@ const DashboardContent = () => {
         <SidebarInset className="flex-1">
           <Header userRole={userRole} userName={userName} />
           
-          <main className="flex-1 px-6 py-8 pb-20 md:pb-8">
+          <main className="flex-1 px-6 py-8 pb-8">
             {/* Page Header */}
             <div className="mb-8">
               <div className="max-w-7xl mx-auto">
@@ -89,8 +88,6 @@ const DashboardContent = () => {
             </div>
           </main>
         </SidebarInset>
-        
-        <BottomNavigation />
       </div>
     </SidebarProvider>
   );
