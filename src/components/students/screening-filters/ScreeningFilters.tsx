@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,7 +20,7 @@ const ScreeningFilters = ({
   filterStatus,
   setFilterStatus
 }: ScreeningFiltersProps) => {
-  return <Card className="mb-6">
+  return <Card className="mb-6 border-none shadow-none">
       <CardContent className="p-6 px-0 py-0">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
