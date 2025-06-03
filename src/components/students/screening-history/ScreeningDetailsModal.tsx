@@ -16,6 +16,7 @@ interface Screening {
   status: 'completed' | 'in_progress' | 'scheduled';
   screener: string;
   results?: string;
+  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
 }
 
 interface ScreeningDetailsModalProps {
@@ -54,6 +55,48 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening, student }: Screenin
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getScreeningResultDisplay = (result?: string) => {
+    if (!result) return null;
+
+    const resultConfig = {
+      'P': { 
+        label: '(P) Passed (Age-Appropriate)', 
+        color: 'bg-green-100 text-green-800',
+        description: 'Student demonstrates age-appropriate skills with no concerns identified.'
+      },
+      'M': { 
+        label: '(M) Mild/Moderate (Monitor)', 
+        color: 'bg-yellow-100 text-yellow-800',
+        description: 'Student shows mild to moderate concerns that require monitoring and possible intervention.'
+      },
+      'Q': { 
+        label: '(Q) Severe/Profound (Qualified for Program)', 
+        color: 'bg-red-100 text-red-800',
+        description: 'Student demonstrates significant concerns and qualifies for specialized services.'
+      },
+      'NR': { 
+        label: '(NR) Non Registered', 
+        color: 'bg-blue-100 text-blue-800',
+        description: 'Student was not registered or available for screening at the time.'
+      },
+      'NC': { 
+        label: '(NC) No Consent', 
+        color: 'bg-orange-100 text-orange-800',
+        description: 'Parent/guardian did not provide consent for screening.'
+      },
+      'C': { 
+        label: '(C) Complex Needs (does NOT qualify)', 
+        color: 'bg-red-100 text-red-800',
+        description: 'Student has complex needs but does not qualify for this specific program.'
+      }
+    };
+
+    const config = resultConfig[result as keyof typeof resultConfig];
+    if (!config) return null;
+
+    return config;
   };
 
   const getDetailedContent = () => {
@@ -132,6 +175,8 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening, student }: Screenin
     }
   };
 
+  const resultDisplay = getScreeningResultDisplay(screening.screening_result);
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -174,6 +219,25 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening, student }: Screenin
                 </div>
               </CardContent>
             </Card>
+
+            {/* Screening Result */}
+            {resultDisplay && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Screening Result</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Badge className={`${resultDisplay.color} text-sm font-medium`}>
+                      {resultDisplay.label}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                    {resultDisplay.description}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Detailed Results */}
             <Card>

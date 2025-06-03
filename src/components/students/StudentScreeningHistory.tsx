@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock } from 'lucide-react';
@@ -12,6 +13,7 @@ interface Screening {
   status: 'completed' | 'in_progress' | 'scheduled';
   screener: string;
   results?: string;
+  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
 }
 
 interface StudentScreeningHistoryProps {
@@ -34,6 +36,7 @@ const StudentScreeningHistory = ({ studentId, student, onAddHearingScreening }: 
       status: 'completed',
       screener: 'Dr. Sarah Johnson',
       results: 'Within normal limits for age group',
+      screening_result: 'P',
     },
     {
       id: '2',
@@ -42,6 +45,7 @@ const StudentScreeningHistory = ({ studentId, student, onAddHearingScreening }: 
       status: 'completed',
       screener: 'Dr. Mike Wilson',
       results: 'Mild hearing loss detected',
+      screening_result: 'M',
     },
     {
       id: '3',
@@ -49,6 +53,7 @@ const StudentScreeningHistory = ({ studentId, student, onAddHearingScreening }: 
       date: '2024-06-01',
       status: 'in_progress',
       screener: 'Dr. Sarah Johnson',
+      screening_result: 'Q',
     },
     {
       id: '4',
@@ -57,6 +62,7 @@ const StudentScreeningHistory = ({ studentId, student, onAddHearingScreening }: 
       status: 'completed',
       screener: 'Dr. Emily Davis',
       results: 'Articulation concerns noted',
+      screening_result: 'M',
     },
     {
       id: '5',
@@ -65,6 +71,7 @@ const StudentScreeningHistory = ({ studentId, student, onAddHearingScreening }: 
       status: 'completed',
       screener: 'Dr. Mike Wilson',
       results: 'Normal hearing thresholds',
+      screening_result: 'P',
     },
   ];
 

@@ -11,6 +11,7 @@ interface Screening {
   status: 'completed' | 'in_progress' | 'scheduled';
   screener: string;
   results?: string;
+  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
 }
 
 interface ScreeningsListProps {

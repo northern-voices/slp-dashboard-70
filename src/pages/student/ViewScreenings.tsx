@@ -16,6 +16,7 @@ interface Screening {
   status: 'completed' | 'in_progress' | 'scheduled';
   screener: string;
   results?: string;
+  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
 }
 
 const ViewScreenings = () => {
@@ -33,6 +34,7 @@ const ViewScreenings = () => {
       status: 'completed',
       screener: 'Dr. Sarah Johnson',
       results: 'Within normal limits for age group',
+      screening_result: 'P',
     },
     {
       id: '2',
@@ -41,6 +43,7 @@ const ViewScreenings = () => {
       status: 'completed',
       screener: 'Dr. Mike Wilson',
       results: 'Mild hearing loss detected',
+      screening_result: 'M',
     },
     {
       id: '3',
@@ -48,6 +51,7 @@ const ViewScreenings = () => {
       date: '2024-06-01',
       status: 'in_progress',
       screener: 'Dr. Sarah Johnson',
+      screening_result: 'Q',
     },
   ];
 

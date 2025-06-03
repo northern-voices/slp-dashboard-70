@@ -12,6 +12,7 @@ interface Screening {
   status: 'completed' | 'in_progress' | 'scheduled';
   screener: string;
   results?: string;
+  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
 }
 
 interface ScreeningCardProps {
@@ -46,6 +47,28 @@ const ScreeningCard = ({ screening, onViewDetails }: ScreeningCardProps) => {
     }
   };
 
+  const getResultBadge = (result?: string) => {
+    if (!result) return null;
+    
+    const resultConfig = {
+      'P': { label: '(P) Passed', color: 'bg-green-100 text-green-800' },
+      'M': { label: '(M) Monitor', color: 'bg-yellow-100 text-yellow-800' },
+      'Q': { label: '(Q) Qualified', color: 'bg-red-100 text-red-800' },
+      'NR': { label: '(NR) Non Registered', color: 'bg-blue-100 text-blue-800' },
+      'NC': { label: '(NC) No Consent', color: 'bg-orange-100 text-orange-800' },
+      'C': { label: '(C) Complex Needs', color: 'bg-red-100 text-red-800' }
+    };
+
+    const config = resultConfig[result as keyof typeof resultConfig];
+    if (!config) return null;
+
+    return (
+      <Badge className={config.color}>
+        {config.label}
+      </Badge>
+    );
+  };
+
   const handleCardClick = () => {
     if (onViewDetails) {
       onViewDetails(screening);
@@ -59,7 +82,7 @@ const ScreeningCard = ({ screening, onViewDetails }: ScreeningCardProps) => {
     >
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
             <Badge className={getTypeColor(screening.type)}>
               {screening.type.charAt(0).toUpperCase() + screening.type.slice(1)}
             </Badge>
@@ -67,6 +90,7 @@ const ScreeningCard = ({ screening, onViewDetails }: ScreeningCardProps) => {
               {screening.status.replace('_', ' ').charAt(0).toUpperCase() + 
                screening.status.replace('_', ' ').slice(1)}
             </Badge>
+            {getResultBadge(screening.screening_result)}
             <span className="text-sm text-gray-500">
               {format(new Date(screening.date), 'MMM dd, yyyy')}
             </span>
