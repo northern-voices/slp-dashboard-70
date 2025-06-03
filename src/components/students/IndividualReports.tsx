@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Volume2, Mail, CheckCircle, Target } from 'lucide-react';
+import { FileText, Volume2, Mail, CheckCircle, Target, User } from 'lucide-react';
 import { Student } from '@/types/database';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import IndividualReportEmailModal from './IndividualReportEmailModal';
@@ -28,115 +28,120 @@ const IndividualReports = ({ student, isLoading = false }: IndividualReportsProp
 
   const isDisabled = !student || isLoading;
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="text-center">
+          <LoadingSpinner size="md" className="mx-auto mb-2" />
+          <p className="text-gray-600 text-sm md:text-base">Loading student data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!student) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-600 text-sm md:text-base">Student data not available</p>
+      </div>
+    );
+  }
+
   return (
     <>
-      <Card className="h-fit">
-        <CardHeader className="pb-4 md:pb-6">
-          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-            <FileText className="w-4 h-4 md:w-5 md:h-5" />
-            Individual Reports
-            {isLoading && <LoadingSpinner size="sm" />}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6 md:space-y-8 p-4 md:p-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8 md:py-12">
-              <div className="text-center">
-                <LoadingSpinner size="md" className="mx-auto mb-2" />
-                <p className="text-gray-600 text-sm md:text-base">Loading student data...</p>
-              </div>
-            </div>
-          ) : !student ? (
-            <div className="text-center py-8 md:py-12">
-              <p className="text-gray-600 text-sm md:text-base">Student data not available</p>
-            </div>
-          ) : (
-            <>
-              {/* Student Individual Actions */}
-              <div className="space-y-3 md:space-y-4">
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Target className="w-4 h-4 md:w-5 md:h-5" />
-                  Student Individual
-                </h3>
-                <div className="space-y-3 md:space-y-0 md:flex md:flex-wrap md:gap-3">
-                  <Button 
-                    onClick={() => navigate(`/students/${student.id}/progress-check`)}
-                    variant="outline"
-                    className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
-                    disabled={isDisabled}
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Monthly Progress Check
-                  </Button>
-                  <Button 
-                    onClick={() => navigate(`/students/${student.id}/goal-sheet`)}
-                    variant="outline"
-                    className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
-                    disabled={isDisabled}
-                  >
-                    <Target className="w-4 h-4 mr-2" />
-                    Generate Goal Sheet
-                  </Button>
-                </div>
-              </div>
+      {/* Three Column Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Student Individual Card */}
+        <Card className="h-fit">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <User className="w-4 h-4 md:w-5 md:h-5" />
+              Student Individual
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 md:p-6">
+            <Button 
+              onClick={() => navigate(`/students/${student.id}/progress-check`)}
+              variant="outline"
+              className="w-full h-11 text-sm px-4"
+              disabled={isDisabled}
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Monthly Progress Check
+            </Button>
+            <Button 
+              onClick={() => navigate(`/students/${student.id}/goal-sheet`)}
+              variant="outline"
+              className="w-full h-11 text-sm px-4"
+              disabled={isDisabled}
+            >
+              <Target className="w-4 h-4 mr-2" />
+              Generate Goal Sheet
+            </Button>
+          </CardContent>
+        </Card>
 
-              {/* Hearing Reports */}
-              <div className="space-y-3 md:space-y-4">
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Volume2 className="w-4 h-4 md:w-5 md:h-5" />
-                  Hearing Reports
-                </h3>
-                <Button 
-                  onClick={() => handleGenerateReport('hearing-screen')}
-                  variant="secondary"
-                  size="sm"
-                  className="w-full md:w-auto text-sm"
-                  disabled={isDisabled}
-                >
-                  Generate Hearing Screen Report
-                </Button>
-              </div>
+        {/* Speech Reports Card */}
+        <Card className="h-fit">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <FileText className="w-4 h-4 md:w-5 md:h-5" />
+              Speech Reports
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 md:p-6">
+            <Button 
+              onClick={() => handleGenerateReport('speech-screen')}
+              variant="outline"
+              className="w-full h-11 text-sm px-4"
+              disabled={isDisabled}
+            >
+              Speech Screen Report
+            </Button>
+            <Button 
+              onClick={() => handleGenerateReport('progress-report')}
+              variant="outline"
+              className="w-full h-11 text-sm px-4"
+              disabled={isDisabled}
+            >
+              Progress Report
+            </Button>
+          </CardContent>
+        </Card>
 
-              {/* Speech Reports */}
-              <div className="space-y-3 md:space-y-4">
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <FileText className="w-4 h-4 md:w-5 md:h-5" />
-                  Speech Reports
-                </h3>
-                <div className="space-y-3 md:space-y-0 md:flex md:flex-wrap md:gap-3">
-                  <Button 
-                    onClick={() => handleGenerateReport('speech-screen')}
-                    variant="outline"
-                    className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
-                    disabled={isDisabled}
-                  >
-                    Speech Screen Report
-                  </Button>
-                  <Button 
-                    onClick={() => handleGenerateReport('progress-report')}
-                    variant="outline"
-                    className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
-                    disabled={isDisabled}
-                  >
-                    Progress Report
-                  </Button>
-                </div>
-              </div>
+        {/* Hearing Reports Card */}
+        <Card className="h-fit">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Volume2 className="w-4 h-4 md:w-5 md:h-5" />
+              Hearing Reports
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 md:p-6">
+            <Button 
+              onClick={() => handleGenerateReport('hearing-screen')}
+              variant="outline"
+              className="w-full h-11 text-sm px-4"
+              disabled={isDisabled}
+            >
+              Generate Hearing Screen Report
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
-              {/* Send Reports via Email */}
-              <div className="border-t pt-4 md:pt-6">
-                <Button 
-                  onClick={() => setShowEmailModal(true)}
-                  variant="default"
-                  className="w-full h-11 md:h-10 text-sm md:text-base px-4 md:px-6"
-                  disabled={isDisabled}
-                >
-                  <Mail className="w-4 h-4 mr-2" />
-                  Send Reports via Email
-                </Button>
-              </div>
-            </>
-          )}
+      {/* Send Reports via Email - Full Width Section */}
+      <Card className="mt-6">
+        <CardContent className="p-4 md:p-6">
+          <Button 
+            onClick={() => setShowEmailModal(true)}
+            variant="default"
+            className="w-full h-11 text-sm px-4"
+            disabled={isDisabled}
+          >
+            <Mail className="w-4 h-4 mr-2" />
+            Send Reports via Email
+          </Button>
         </CardContent>
       </Card>
 
