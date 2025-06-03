@@ -10,6 +10,7 @@ import Students from "./pages/Students";
 import StudentDetail from "./pages/StudentDetail";
 import SchoolSupportForm from "./pages/student/SchoolSupportForm";
 import SchoolSupport from "./pages/SchoolSupport";
+import CreateSchoolSupportForm from "./pages/CreateSchoolSupportForm";
 import MonthlyProgressCheck from "./pages/student/MonthlyProgressCheck";
 import GenerateGoalSheet from "./pages/student/GenerateGoalSheet";
 import Reports from "./pages/Reports";
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/students/:studentId/progress-check" element={<MonthlyProgressCheck />} />
             <Route path="/students/:studentId/goal-sheet" element={<GenerateGoalSheet />} />
             <Route path="/school-support" element={<SchoolSupport />} />
+            <Route path="/school-support/create" element={<CreateSchoolSupportForm />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/management" element={<Management />} />
             <Route path="/profile" element={<Profile />} />

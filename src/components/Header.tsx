@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bell, User, Settings as SettingsIcon, HandHeart, Menu } from 'lucide-react';
@@ -75,7 +74,7 @@ const Header = ({
     if (studentId) {
       navigate(`/students/${studentId}/school-support`);
     } else {
-      navigate('/school-support');
+      navigate('/school-support/create');
     }
   };
 
