@@ -6,7 +6,7 @@ import { StudentService } from '@/services/studentService';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, FileText } from 'lucide-react';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import MultiStepHearingScreeningForm from '@/components/screening/hearing/MultiStepHearingScreeningForm';
@@ -111,11 +111,24 @@ const HearingScreeningContent = () => {
                 </Breadcrumb>
               </div>
               
-              <div className="space-y-1">
-                <h1 className="text-2xl font-semibold text-gray-900">Hearing Screening</h1>
-                {student && <p className="text-gray-600">
-                    Creating hearing screening for {student.first_name} {student.last_name}
-                  </p>}
+              {/* Title and View Drafts Button */}
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <h1 className="text-2xl font-semibold text-gray-900">Hearing Screening</h1>
+                  {student && <p className="text-gray-600">
+                      Creating hearing screening for {student.first_name} {student.last_name}
+                    </p>}
+                </div>
+
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleViewDrafts}
+                  className="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                >
+                  <FileText className="w-4 h-4" />
+                  View Drafts
+                </Button>
               </div>
             </div>
 
