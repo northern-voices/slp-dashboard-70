@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Student } from '@/types/database';
@@ -126,19 +125,13 @@ const StudentDetailContent = () => {
             <div className="space-y-6">
               <StudentInfoHeader student={student} />
               
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <StudentScreeningHistory 
-                    studentId={studentId} 
-                    student={student}
-                    onAddHearingScreening={() => setShowHearingModal(true)}
-                  />
-                </div>
-                
-                <div className="space-y-6">
-                  <IndividualReports student={student} isLoading={loading} />
-                </div>
-              </div>
+              <IndividualReports student={student} isLoading={loading} />
+              
+              <StudentScreeningHistory 
+                studentId={studentId} 
+                student={student}
+                onAddHearingScreening={() => setShowHearingModal(true)}
+              />
 
               <SpeechScreeningModal 
                 isOpen={showSpeechModal}
