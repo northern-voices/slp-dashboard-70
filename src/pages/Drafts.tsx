@@ -12,78 +12,68 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 // Mock drafts data - replace with actual API call
-const mockDrafts: Draft[] = [
-  {
-    id: '1',
-    user_id: 'user1',
-    student_id: 'student1',
-    screening_type: 'speech',
-    title: 'Speech Screening - John Doe',
-    form_data: {},
-    completion_percentage: 65,
-    created_at: '2024-01-15T10:00:00Z',
-    updated_at: '2024-01-15T14:30:00Z',
-    student_name: 'John Doe',
-    user_name: 'Dr. Sarah Johnson'
-  },
-  {
-    id: '2',
-    user_id: 'user2',
-    student_id: 'student2',
-    screening_type: 'hearing',
-    title: 'Hearing Screening - Jane Smith',
-    form_data: {},
-    completion_percentage: 30,
-    created_at: '2024-01-14T09:00:00Z',
-    updated_at: '2024-01-14T11:15:00Z',
-    student_name: 'Jane Smith',
-    user_name: 'Dr. Mike Wilson'
-  },
-  {
-    id: '3',
-    user_id: 'user1',
-    screening_type: 'speech',
-    title: 'New Speech Screening Draft',
-    form_data: {},
-    completion_percentage: 15,
-    created_at: '2024-01-16T08:00:00Z',
-    updated_at: '2024-01-16T08:30:00Z',
-    user_name: 'Dr. Sarah Johnson'
-  }
-];
-
+const mockDrafts: Draft[] = [{
+  id: '1',
+  user_id: 'user1',
+  student_id: 'student1',
+  screening_type: 'speech',
+  title: 'Speech Screening - John Doe',
+  form_data: {},
+  completion_percentage: 65,
+  created_at: '2024-01-15T10:00:00Z',
+  updated_at: '2024-01-15T14:30:00Z',
+  student_name: 'John Doe',
+  user_name: 'Dr. Sarah Johnson'
+}, {
+  id: '2',
+  user_id: 'user2',
+  student_id: 'student2',
+  screening_type: 'hearing',
+  title: 'Hearing Screening - Jane Smith',
+  form_data: {},
+  completion_percentage: 30,
+  created_at: '2024-01-14T09:00:00Z',
+  updated_at: '2024-01-14T11:15:00Z',
+  student_name: 'Jane Smith',
+  user_name: 'Dr. Mike Wilson'
+}, {
+  id: '3',
+  user_id: 'user1',
+  screening_type: 'speech',
+  title: 'New Speech Screening Draft',
+  form_data: {},
+  completion_percentage: 15,
+  created_at: '2024-01-16T08:00:00Z',
+  updated_at: '2024-01-16T08:30:00Z',
+  user_name: 'Dr. Sarah Johnson'
+}];
 const DraftsContent = () => {
-  const { userProfile } = useOrganization();
+  const {
+    userProfile
+  } = useOrganization();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [drafts, setDrafts] = useState<Draft[]>(mockDrafts);
-
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
   const userRole = userProfile?.role || 'slp';
   const currentUserId = userProfile?.id || 'user1';
-
   const handleBack = () => {
     // Go back to the previous page in browser history
     window.history.back();
   };
-
   const handleView = (draft: Draft) => {
     console.log('Viewing draft:', draft);
     // Navigate to screening page with draft data
-    const route = draft.screening_type === 'speech' 
-      ? `/screening/speech${draft.student_id ? `/${draft.student_id}` : ''}?draft=${draft.id}`
-      : `/screening/hearing${draft.student_id ? `/${draft.student_id}` : ''}?draft=${draft.id}`;
+    const route = draft.screening_type === 'speech' ? `/screening/speech${draft.student_id ? `/${draft.student_id}` : ''}?draft=${draft.id}` : `/screening/hearing${draft.student_id ? `/${draft.student_id}` : ''}?draft=${draft.id}`;
     navigate(route);
   };
-
   const handleEdit = (draft: Draft) => {
     console.log('Editing draft:', draft);
-    const route = draft.screening_type === 'speech' 
-      ? `/screening/speech${draft.student_id ? `/${draft.student_id}` : ''}?draft=${draft.id}&edit=true`
-      : `/screening/hearing${draft.student_id ? `/${draft.student_id}` : ''}?draft=${draft.id}&edit=true`;
+    const route = draft.screening_type === 'speech' ? `/screening/speech${draft.student_id ? `/${draft.student_id}` : ''}?draft=${draft.id}&edit=true` : `/screening/hearing${draft.student_id ? `/${draft.student_id}` : ''}?draft=${draft.id}&edit=true`;
     navigate(route);
   };
-
   const handleDelete = (draft: Draft) => {
     console.log('Deleting draft:', draft);
     if (window.confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
@@ -94,7 +84,6 @@ const DraftsContent = () => {
       });
     }
   };
-
   const handleDuplicate = (draft: Draft) => {
     console.log('Duplicating draft:', draft);
     const newDraft: Draft = {
@@ -113,9 +102,7 @@ const DraftsContent = () => {
       description: "A copy of the draft has been created."
     });
   };
-
-  return (
-    <div className="min-h-screen flex w-full bg-gray-25">
+  return <div className="min-h-screen flex w-full bg-gray-25">
       <SidebarProvider>
         <AppSidebar userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
         <SidebarInset>
@@ -124,26 +111,13 @@ const DraftsContent = () => {
             {/* Breadcrumb Navigation */}
             <div className="mb-6">
               <div className="flex items-center gap-4 mb-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleBack}
-                  className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2"
-                >
+                <Button variant="ghost" size="sm" onClick={handleBack} className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2">
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Back
                 </Button>
                 
                 <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>Drafts</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
+                  
                 </Breadcrumb>
               </div>
               
@@ -156,28 +130,15 @@ const DraftsContent = () => {
             </div>
 
             {/* Drafts List */}
-            <DraftsList
-              drafts={drafts}
-              onView={handleView}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onDuplicate={handleDuplicate}
-              currentUserId={currentUserId}
-              userRole={userRole}
-            />
+            <DraftsList drafts={drafts} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} onDuplicate={handleDuplicate} currentUserId={currentUserId} userRole={userRole} />
           </main>
         </SidebarInset>
       </SidebarProvider>
-    </div>
-  );
+    </div>;
 };
-
 const Drafts = () => {
-  return (
-    <OrganizationProvider>
+  return <OrganizationProvider>
       <DraftsContent />
-    </OrganizationProvider>
-  );
+    </OrganizationProvider>;
 };
-
 export default Drafts;
