@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -5,7 +6,7 @@ import Header from '@/components/Header';
 import { OrganizationProvider } from '@/contexts/OrganizationContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Calendar, FileText } from 'lucide-react';
+import { Plus, Users, Calendar, FileText, HandHeart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { mockSchoolSupportTickets } from '@/data/mockSchoolSupport';
 import { SchoolSupportForm } from '@/types/student-enhancements';
@@ -107,9 +108,14 @@ const SchoolSupport = () => {
 
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-900">Support Tickets</h2>
-                  <Button onClick={handleCreateSupportForm}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Support Form
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleCreateSupportForm}
+                    className="text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                  >
+                    <HandHeart className="w-4 h-4 mr-2" />
+                    Submit Ticket
                   </Button>
                 </div>
 
