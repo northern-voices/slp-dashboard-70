@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bell, User, Settings as SettingsIcon, HandHeart, Menu } from 'lucide-react';
@@ -118,7 +117,7 @@ const Header = ({
                 className="hidden md:flex text-gray-700 hover:text-gray-900 hover:bg-gray-50 md:h-9 h-10 md:px-3 px-3 md:text-sm text-sm"
               >
                 <HandHeart className="md:w-4 md:h-4 w-3.5 h-3.5 mr-2" />
-                School Support
+                Submit Ticket
               </Button>
             )}
 
