@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bell, User, Settings as SettingsIcon, HandHeart, Menu } from 'lucide-react';
@@ -36,9 +37,9 @@ const Header = ({
   // Extract student ID from current path if on student detail page
   const studentId = location.pathname.match(/\/students\/([^\/]+)/)?.[1];
   
-  // Check if user is on main dashboard pages where School Support button should be visible
+  // Check if user is on main dashboard pages where Submit Ticket button should be visible
   const isDashboardPage = ['/', '/students', '/school-support', '/reports', '/management'].includes(location.pathname);
-  const shouldShowSchoolSupportButton = studentId || isDashboardPage;
+  const shouldShowSubmitTicketButton = studentId || isDashboardPage;
 
   const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {
     switch (role) {
@@ -70,7 +71,7 @@ const Header = ({
     setShowHearingScreeningModal(false);
   };
 
-  const handleSchoolSupportClick = () => {
+  const handleSubmitTicketClick = () => {
     if (studentId) {
       navigate(`/students/${studentId}/school-support`);
     } else {
@@ -108,12 +109,12 @@ const Header = ({
 
           {/* Right side - User actions */}
           <div className="flex items-center md:space-x-3 space-x-2">
-            {/* School Support Form Button - show on desktop only */}
-            {shouldShowSchoolSupportButton && (
+            {/* Submit Ticket Button - show on desktop only */}
+            {shouldShowSubmitTicketButton && (
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={handleSchoolSupportClick}
+                onClick={handleSubmitTicketClick}
                 className="hidden md:flex text-gray-700 hover:text-gray-900 hover:bg-gray-50 md:h-9 h-10 md:px-3 px-3 md:text-sm text-sm"
               >
                 <HandHeart className="md:w-4 md:h-4 w-3.5 h-3.5 mr-2" />
