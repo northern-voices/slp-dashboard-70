@@ -7,6 +7,9 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useLocation, Link } from 'react-router-dom';
 import { getNavigationGroups } from '@/components/sidebar/sidebarNavigationData';
 import { cn } from '@/lib/utils';
+import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector';
+import SchoolSelector from '@/components/SchoolSelector';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 interface MobileNavMenuProps {
   isOpen: boolean;
@@ -24,6 +27,7 @@ const MobileNavMenu = ({
   userProfile
 }: MobileNavMenuProps) => {
   const location = useLocation();
+  const { userProfile: orgUserProfile } = useOrganization();
   const navigationGroups = getNavigationGroups(location, userRole, userProfile);
   const initials = userName.split(' ').map(n => n[0]).join('');
 
@@ -57,6 +61,20 @@ const MobileNavMenu = ({
               </div>
             </div>
           </SheetHeader>
+
+          {/* School Selector Section */}
+          <div className="p-4 border-b border-gray-100">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                {userRole === 'slp' ? 'Select School' : 'Current School'}
+              </label>
+              {userRole === 'slp' ? (
+                <SLPSchoolSelector />
+              ) : (
+                <SchoolSelector />
+              )}
+            </div>
+          </div>
 
           {/* Navigation Menu */}
           <div className="flex-1 overflow-y-auto p-4">
