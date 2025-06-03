@@ -88,7 +88,7 @@ const Header = ({
               <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
                 <span className="text-white font-semibold text-sm">SLP</span>
               </div>
-              <span className="font-semibold text-gray-900">Dashboard</span>
+              <span className="font-semibold text-gray-900 hidden md:block">Dashboard</span>
             </div>
           </div>
 
