@@ -1,7 +1,8 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft } from 'lucide-react';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import DraftsList from '@/components/drafts/DraftsList';
@@ -61,6 +62,11 @@ const DraftsContent = () => {
   const userRole = userProfile?.role || 'slp';
   const currentUserId = userProfile?.id || 'user1';
 
+  const handleBack = () => {
+    // Go back to the previous page in browser history
+    window.history.back();
+  };
+
   const handleView = (draft: Draft) => {
     console.log('Viewing draft:', draft);
     // Navigate to screening page with draft data
@@ -117,17 +123,29 @@ const DraftsContent = () => {
           <main className="flex-1 p-4 md:p-6 lg:p-8">
             {/* Breadcrumb Navigation */}
             <div className="mb-6">
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Drafts</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
+              <div className="flex items-center gap-4 mb-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleBack}
+                  className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Back
+                </Button>
+                
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>Drafts</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+              </div>
               
               <div className="space-y-1 mt-4">
                 <h1 className="text-2xl font-semibold text-gray-900">Screening Drafts</h1>
