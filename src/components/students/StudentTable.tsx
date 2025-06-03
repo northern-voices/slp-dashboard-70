@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, Filter, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import StudentForm from './StudentForm';
+import { StudentService } from '@/services/studentService';
+import { useToast } from '@/hooks/use-toast';
 
 interface StudentTableProps {
   students: Student[];
@@ -13,8 +16,10 @@ interface StudentTableProps {
 
 const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const filteredStudents = students.filter(student =>
     student.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -29,6 +34,40 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
   const handleViewClick = (e: React.MouseEvent, studentId: string) => {
     e.stopPropagation();
     navigate(`/students/${studentId}`);
+  };
+
+  const handleAddStudent = async (studentData: any) => {
+    try {
+      setIsSubmitting(true);
+      
+      // Add required fields for student creation
+      const newStudentData = {
+        ...studentData,
+        school_id: 'school-1', // Default school for now
+        active: true
+      };
+
+      await StudentService.createStudent(newStudentData);
+      
+      toast({
+        title: "Success",
+        description: "Student added successfully"
+      });
+      
+      setShowAddModal(false);
+      
+      // Refresh the page to show the new student
+      window.location.reload();
+    } catch (error) {
+      console.error('Error adding student:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add student. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -123,6 +162,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Student Modal */}
+      <StudentForm
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSubmit={handleAddStudent}
+        student={null}
+        title="Add New Student"
+      />
     </div>
   );
 };
