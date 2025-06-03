@@ -25,7 +25,7 @@ import {
   AlertCircle,
   ExternalLink
 } from 'lucide-react';
-import { AppSidebar } from '@/components/AppSidebar';
+import AppSidebar from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import Header from '@/components/Header';
 import { Notification, NOTIFICATION_TYPE_CONFIG, NotificationType } from '@/types/notifications';
