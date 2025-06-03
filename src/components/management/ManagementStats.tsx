@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Users, FileText } from 'lucide-react';
+import { Building2, FileText } from 'lucide-react';
 
 const ManagementStats = () => {
   const stats = [
@@ -11,13 +10,6 @@ const ManagementStats = () => {
       change: "+2 this month",
       icon: Building2,
       color: "text-blue-600"
-    },
-    {
-      title: "Active SLPs",
-      value: "24",
-      change: "+3 this quarter",
-      icon: Users,
-      color: "text-green-600"
     },
     {
       title: "Screenings This Month",
