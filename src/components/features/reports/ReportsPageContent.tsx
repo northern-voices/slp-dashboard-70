@@ -1,15 +1,11 @@
-
 import React, { useState } from 'react';
 import { Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UnifiedReportForm from '@/components/reports/UnifiedReportForm';
 import ClassWideReportsModal from '@/components/students/ClassWideReportsModal';
-
 const ReportsPageContent = () => {
   const [showClassWideModal, setShowClassWideModal] = useState(false);
-
-  return (
-    <>
+  return <>
       <div className="space-y-8">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -18,27 +14,19 @@ const ReportsPageContent = () => {
             <p className="text-gray-600">Generate class-wide reports for hearing and speech assessments</p>
           </div>
           
-          <Button 
-            onClick={() => setShowClassWideModal(true)}
-            className="flex items-center gap-2"
-          >
+          <Button onClick={() => setShowClassWideModal(true)} className="flex items-center gap-2">
             <Mail className="w-4 h-4" />
             Send Class-Wide Reports
           </Button>
         </div>
 
         {/* Full Width Unified Report Form on Mobile */}
-        <div className="w-full sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl mx-auto px-4 sm:px-6 md:px-0">
+        <div className="w-full sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl mx-auto sm:px-6 md:px-0 px-0">
           <UnifiedReportForm />
         </div>
       </div>
 
-      <ClassWideReportsModal
-        isOpen={showClassWideModal}
-        onClose={() => setShowClassWideModal(false)}
-      />
-    </>
-  );
+      <ClassWideReportsModal isOpen={showClassWideModal} onClose={() => setShowClassWideModal(false)} />
+    </>;
 };
-
 export default ReportsPageContent;
