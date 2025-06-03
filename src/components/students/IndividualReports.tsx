@@ -88,7 +88,9 @@ const IndividualReports = ({ student, isLoading = false }: IndividualReportsProp
                 </h3>
                 <Button 
                   onClick={() => handleGenerateReport('hearing-screen')}
-                  className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
+                  variant="secondary"
+                  size="sm"
+                  className="w-full md:w-auto text-sm"
                   disabled={isDisabled}
                 >
                   Generate Hearing Screen Report
@@ -108,7 +110,7 @@ const IndividualReports = ({ student, isLoading = false }: IndividualReportsProp
                     className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
                     disabled={isDisabled}
                   >
-                    Generate Speech Screen Report
+                    Speech Screen Report
                   </Button>
                   <Button 
                     onClick={() => handleGenerateReport('progress-report')}
@@ -116,7 +118,7 @@ const IndividualReports = ({ student, isLoading = false }: IndividualReportsProp
                     className="w-full h-11 md:h-10 md:w-auto text-sm md:text-base px-4 md:px-6"
                     disabled={isDisabled}
                   >
-                    Generate Progress Report
+                    Progress Report
                   </Button>
                 </div>
               </div>
