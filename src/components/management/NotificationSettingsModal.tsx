@@ -35,9 +35,9 @@ const NotificationSettingsModal = ({ isOpen, onClose }: NotificationSettingsModa
         </DialogHeader>
 
         <Tabs defaultValue="system" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="system">System Settings</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
+          <TabsList className="w-full justify-start flex-wrap h-auto p-1">
+            <TabsTrigger value="system" className="flex-shrink-0">System Settings</TabsTrigger>
+            <TabsTrigger value="templates" className="flex-shrink-0">Templates</TabsTrigger>
           </TabsList>
 
           <TabsContent value="system" className="space-y-4">

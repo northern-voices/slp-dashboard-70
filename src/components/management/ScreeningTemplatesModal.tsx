@@ -106,10 +106,10 @@ const ScreeningTemplatesModal = ({ isOpen, onClose }: ScreeningTemplatesModalPro
         </DialogHeader>
 
         <Tabs defaultValue="library" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="library">Template Library</TabsTrigger>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsList className="w-full justify-start flex-wrap h-auto p-1">
+            <TabsTrigger value="library" className="flex-shrink-0">Template Library</TabsTrigger>
+            <TabsTrigger value="categories" className="flex-shrink-0">Categories</TabsTrigger>
+            <TabsTrigger value="settings" className="flex-shrink-0">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="library" className="space-y-4">

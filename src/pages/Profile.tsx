@@ -41,16 +41,16 @@ const ProfileContent = () => {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="personal" className="flex items-center">
+              <TabsList className="w-full justify-start flex-wrap h-auto p-1">
+                <TabsTrigger value="personal" className="flex items-center flex-shrink-0">
                   <User className="w-4 h-4 mr-2" />
                   Personal
                 </TabsTrigger>
-                <TabsTrigger value="account" className="flex items-center">
+                <TabsTrigger value="account" className="flex items-center flex-shrink-0">
                   <Settings className="w-4 h-4 mr-2" />
                   Account
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="flex items-center">
+                <TabsTrigger value="notifications" className="flex items-center flex-shrink-0">
                   <Bell className="w-4 h-4 mr-2" />
                   Notifications
                 </TabsTrigger>

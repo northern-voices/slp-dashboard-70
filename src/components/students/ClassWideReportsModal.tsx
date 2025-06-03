@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -86,12 +85,14 @@ const ClassWideReportsModal = ({ isOpen, onClose }: ClassWideReportsModalProps) 
 
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="hearing">Hearing</TabsTrigger>
-              <TabsTrigger value="speech-screens">Speech Screens</TabsTrigger>
-              <TabsTrigger value="goal-sheets">Goal Sheets</TabsTrigger>
-              <TabsTrigger value="progress">Progress</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto">
+              <TabsList className="w-full justify-start flex-nowrap h-auto p-1 min-w-max">
+                <TabsTrigger value="hearing" className="flex-shrink-0 whitespace-nowrap">Hearing</TabsTrigger>
+                <TabsTrigger value="speech-screens" className="flex-shrink-0 whitespace-nowrap">Speech Screens</TabsTrigger>
+                <TabsTrigger value="goal-sheets" className="flex-shrink-0 whitespace-nowrap">Goal Sheets</TabsTrigger>
+                <TabsTrigger value="progress" className="flex-shrink-0 whitespace-nowrap">Progress</TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="hearing" className="mt-6">
               <ClassWideHearingForm />

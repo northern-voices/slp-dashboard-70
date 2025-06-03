@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -105,16 +104,16 @@ const ManagementContent = () => {
             <ManagementStats />
 
             <Tabs defaultValue="schools" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="schools" className="flex items-center">
+              <TabsList className="w-full justify-start flex-wrap h-auto p-1">
+                <TabsTrigger value="schools" className="flex items-center flex-shrink-0">
                   <Building2 className="w-4 h-4 mr-2" />
                   Schools
                 </TabsTrigger>
-                <TabsTrigger value="users" className="flex items-center">
+                <TabsTrigger value="users" className="flex items-center flex-shrink-0">
                   <Users className="w-4 h-4 mr-2" />
                   Users
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="flex items-center">
+                <TabsTrigger value="settings" className="flex items-center flex-shrink-0">
                   <Settings className="w-4 h-4 mr-2" />
                   Settings
                 </TabsTrigger>
