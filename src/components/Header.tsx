@@ -93,16 +93,16 @@ const Header = ({
           </div>
 
           {/* Right side - User actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center md:space-x-3 space-x-2">
             {/* School Support Form Button - show on student detail pages and main dashboard pages */}
             {shouldShowSchoolSupportButton && (
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={handleSchoolSupportClick}
-                className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 h-9 px-3"
+                className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 md:h-9 h-10 md:px-3 px-3 md:text-sm text-sm"
               >
-                <HandHeart className="w-4 h-4 mr-2" />
+                <HandHeart className="md:w-4 md:h-4 w-3.5 h-3.5 mr-2" />
                 School Support
               </Button>
             )}
@@ -111,10 +111,10 @@ const Header = ({
             <Button 
               variant="ghost" 
               size="sm" 
-              className="relative text-gray-500 hover:text-gray-700 hover:bg-gray-50 h-9 w-9 p-0 rounded-lg"
+              className="relative text-gray-500 hover:text-gray-700 hover:bg-gray-50 md:h-9 md:w-9 h-8 w-8 p-0 rounded-lg"
             >
-              <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+              <Bell className="md:w-5 md:h-5 w-4 h-4" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full md:w-5 md:h-5 w-4 h-4 flex items-center justify-center font-medium">
                 3
               </span>
             </Button>
@@ -122,9 +122,9 @@ const Header = ({
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-lg hover:bg-gray-50 p-0">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-gray-100 text-gray-700 text-sm font-medium">
+                <Button variant="ghost" className="relative md:h-9 md:w-9 h-8 w-8 rounded-lg hover:bg-gray-50 p-0">
+                  <Avatar className="md:h-8 md:w-8 h-7 w-7">
+                    <AvatarFallback className="bg-gray-100 text-gray-700 md:text-sm text-xs font-medium">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
