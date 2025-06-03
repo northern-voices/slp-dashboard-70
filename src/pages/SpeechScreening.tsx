@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Student } from '@/types/database';
@@ -137,17 +136,17 @@ const SpeechScreeningContent = () => {
                 </Breadcrumb>
               </div>
               
-              <div className="space-y-1">
-                <h1 className="text-2xl font-semibold text-gray-900">Speech Screening</h1>
-                {student && (
-                  <p className="text-gray-600">
-                    Creating speech screening for {student.first_name} {student.last_name}
-                  </p>
-                )}
-              </div>
+              {/* Title and View Drafts Button */}
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <h1 className="text-2xl font-semibold text-gray-900">Speech Screening</h1>
+                  {student && (
+                    <p className="text-gray-600">
+                      Creating speech screening for {student.first_name} {student.last_name}
+                    </p>
+                  )}
+                </div>
 
-              {/* View Drafts Button */}
-              <div className="mt-4">
                 <Button 
                   variant="outline" 
                   size="sm" 
