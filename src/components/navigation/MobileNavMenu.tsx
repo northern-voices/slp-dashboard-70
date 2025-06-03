@@ -27,9 +27,10 @@ const MobileNavMenu = ({
   userProfile
 }: MobileNavMenuProps) => {
   const location = useLocation();
-  const { userProfile: orgUserProfile } = useOrganization();
+  const { userProfile: orgUserProfile, currentOrganization } = useOrganization();
   const navigationGroups = getNavigationGroups(location, userRole, userProfile);
   const initials = userName.split(' ').map(n => n[0]).join('');
+  const orgInitials = currentOrganization?.name.split(' ').map(n => n[0]).join('') || 'ORG';
 
   const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {
     switch (role) {
@@ -112,18 +113,17 @@ const MobileNavMenu = ({
 
           {/* Footer with quick actions */}
           <div className="p-4 border-t border-gray-100 space-y-2">
-            <Link
-              to="/profile"
-              onClick={onClose}
-              className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 min-h-[44px]"
-            >
+            <div className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 min-h-[44px]">
               <Avatar className="h-5 w-5">
                 <AvatarFallback className="bg-gray-100 text-gray-700 text-xs">
-                  {initials}
+                  {orgInitials}
                 </AvatarFallback>
               </Avatar>
-              <span>Profile & Settings</span>
-            </Link>
+              <div className="flex flex-col">
+                <span className="font-medium">{currentOrganization?.name || 'Organization'}</span>
+                <span className="text-xs text-gray-500">Organization Info</span>
+              </div>
+            </div>
             <button className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 w-full text-left min-h-[44px]">
               <span className="w-5 h-5 text-center">⏻</span>
               <span>Log out</span>
