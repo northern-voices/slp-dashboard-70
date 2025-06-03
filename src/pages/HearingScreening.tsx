@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Student } from '@/types/database';
@@ -30,7 +29,7 @@ const HearingScreeningContent = () => {
       const fetchStudent = async () => {
         setLoading(true);
         try {
-          const studentData = await StudentService.getStudent(studentId);
+          const studentData = await StudentService.getStudentById(studentId);
           setStudent(studentData);
         } catch (error) {
           console.error('Failed to fetch student:', error);
