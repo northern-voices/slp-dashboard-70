@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +49,7 @@ const StudentInfoHeader = ({
 }: StudentInfoHeaderProps) => {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [editedNotes, setEditedNotes] = useState('');
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const { toast } = useToast();
 
   const getAgeFromBirthDate = (birthDate: string) => {
@@ -109,11 +111,7 @@ const StudentInfoHeader = ({
   const handleDeleteStudent = () => {
     if (onDelete) {
       onDelete();
-      toast({
-        title: "Student deleted",
-        description: "The student has been successfully deleted.",
-        variant: "destructive",
-      });
+      setDeleteConfirmation(''); // Reset confirmation text
     }
   };
 
@@ -145,6 +143,9 @@ const StudentInfoHeader = ({
     };
     return gradeMap[currentGrade || ''] || 'Next Grade';
   };
+
+  const studentFullName = student ? `${student.first_name} ${student.last_name}` : '';
+  const isDeleteConfirmationValid = deleteConfirmation === studentFullName;
 
   if (isLoading) {
     return (
@@ -244,14 +245,26 @@ const StudentInfoHeader = ({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete Student</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete {student.first_name} {student.last_name}? This action cannot be undone and will permanently remove all student data, including screening history and reports.
+                        This action cannot be undone. This will permanently delete {student.first_name} {student.last_name} and remove all student data, including screening history and reports.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <div className="py-4">
+                      <p className="text-sm text-gray-700 mb-2">
+                        To confirm deletion, please type the student's full name: <span className="font-semibold">{studentFullName}</span>
+                      </p>
+                      <Input
+                        value={deleteConfirmation}
+                        onChange={(e) => setDeleteConfirmation(e.target.value)}
+                        placeholder="Type the student's full name"
+                        className="w-full"
+                      />
+                    </div>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel onClick={() => setDeleteConfirmation('')}>Cancel</AlertDialogCancel>
                       <AlertDialogAction 
                         onClick={handleDeleteStudent}
-                        className="bg-red-600 hover:bg-red-700"
+                        disabled={!isDeleteConfirmationValid}
+                        className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
                       >
                         Delete Student
                       </AlertDialogAction>
