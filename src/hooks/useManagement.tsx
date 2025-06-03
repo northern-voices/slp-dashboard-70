@@ -1,6 +1,6 @@
-
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 export const useManagement = () => {
   const [schoolFormOpen, setSchoolFormOpen] = useState(false);
@@ -12,6 +12,7 @@ export const useManagement = () => {
   const [editingSchool, setEditingSchool] = useState(null);
   const [selectedSchool, setSelectedSchool] = useState(null);
   const [schoolSearch, setSchoolSearch] = useState('');
+  const { toast } = useToast();
 
   const [mockSchools, setMockSchools] = useState([
     {
@@ -109,6 +110,17 @@ export const useManagement = () => {
     setSchoolFormOpen(true);
   };
 
+  const handleDeleteSchool = (schoolId: number) => {
+    const schoolToDelete = mockSchools.find(school => school.id === schoolId);
+    setMockSchools(prev => prev.filter(school => school.id !== schoolId));
+    
+    toast({
+      title: "School deleted",
+      description: `${schoolToDelete?.name} has been successfully deleted.`,
+      variant: "destructive",
+    });
+  };
+
   const handleInviteUser = (userData: any) => {
     const newUser = {
       id: (mockSLPs.length + 1).toString(),
@@ -204,6 +216,7 @@ export const useManagement = () => {
     handleEditSchool,
     handleViewSchoolDetails,
     handleEditFromDetails,
+    handleDeleteSchool,
     handleInviteUser,
     handleEditUser,
     handleDeactivateUser,

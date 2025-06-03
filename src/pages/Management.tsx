@@ -52,6 +52,7 @@ const ManagementContent = () => {
     handleEditSchool,
     handleViewSchoolDetails,
     handleEditFromDetails,
+    handleDeleteSchool,
     handleInviteUser,
     handleEditUser,
     handleDeactivateUser,
@@ -127,6 +128,7 @@ const ManagementContent = () => {
                   onAddSchool={() => setSchoolFormOpen(true)}
                   onEditSchool={handleEditSchool}
                   onViewSchoolDetails={handleViewSchoolDetails}
+                  onDeleteSchool={handleDeleteSchool}
                   getStatusBadge={getStatusBadge}
                 />
               </TabsContent>
