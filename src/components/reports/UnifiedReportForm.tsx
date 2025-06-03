@@ -69,16 +69,16 @@ const UnifiedReportForm = () => {
 
   return (
     <Card className="w-full bg-white border border-gray-200 shadow-sm">
-      <CardHeader className="pb-6">
-        <CardTitle className="text-xl font-semibold text-gray-900 text-center sm:text-left">
+      <CardHeader className="pb-4 sm:pb-6 px-4 sm:px-6">
+        <CardTitle className="text-lg sm:text-xl font-semibold text-gray-900 text-center sm:text-left">
           Generate Class Wide Report
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-3">
+      <CardContent className="px-4 sm:px-6">
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+          <div className="space-y-2 sm:space-y-3">
             <Label className="text-sm font-medium text-gray-700">Report Type</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
               {reportTypes.map((type) => {
                 const Icon = type.icon;
                 return (
@@ -93,25 +93,25 @@ const UnifiedReportForm = () => {
                       }
                     `}
                   >
-                    <div className="flex items-start space-x-3">
+                    <div className="flex items-start space-x-2 sm:space-x-3">
                       <div className={`
-                        flex-shrink-0 p-2 rounded-lg
+                        flex-shrink-0 p-1.5 sm:p-2 rounded-lg
                         ${reportType === type.value 
                           ? 'bg-blue-600 text-white' 
                           : 'bg-gray-100 text-gray-600'
                         }
                       `}>
-                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <Icon className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className={`
-                          text-sm font-medium
+                          text-xs sm:text-sm font-medium leading-tight
                           ${reportType === type.value ? 'text-blue-900' : 'text-gray-900'}
                         `}>
                           {type.label}
                         </h3>
                         <p className={`
-                          text-xs mt-1
+                          text-xs mt-0.5 sm:mt-1 leading-tight
                           ${reportType === type.value ? 'text-blue-700' : 'text-gray-500'}
                         `}>
                           {type.description}
@@ -129,7 +129,7 @@ const UnifiedReportForm = () => {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <Label htmlFor="academic-year" className="text-sm font-medium text-gray-700">Academic Year</Label>
             <Select value={academicYear} onValueChange={setAcademicYear}>
               <SelectTrigger>
@@ -143,7 +143,7 @@ const UnifiedReportForm = () => {
             </Select>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <Label className="text-sm font-medium text-gray-700">Grades</Label>
             <Multiselect
               options={grades}
@@ -154,7 +154,7 @@ const UnifiedReportForm = () => {
             />
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
             <Input
               id="email"
@@ -165,7 +165,7 @@ const UnifiedReportForm = () => {
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-6">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 sm:pt-6">
             <Button type="button" variant="outline" onClick={handleClearForm} className="w-full sm:w-auto">
               Clear Form
             </Button>
