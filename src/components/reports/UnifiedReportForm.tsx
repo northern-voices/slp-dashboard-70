@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Volume2, Mic, Target, TrendingUp } from 'lucide-react';
 import Multiselect from '@/components/ui/multiselect';
 
 const UnifiedReportForm = () => {
@@ -15,10 +15,30 @@ const UnifiedReportForm = () => {
   const [email, setEmail] = useState('');
 
   const reportTypes = [
-    { value: 'hearing', label: 'Class Wide Hearing Screen' },
-    { value: 'speech-screens', label: 'Class Wide Speech Screens' },
-    { value: 'goal-sheets', label: 'Class Wide Goal Sheets' },
-    { value: 'progress-reports', label: 'Class Wide Progress Reports' }
+    { 
+      value: 'hearing', 
+      label: 'Class Wide Hearing Screen',
+      description: 'Class-wide hearing screenings',
+      icon: Volume2
+    },
+    { 
+      value: 'speech-screens', 
+      label: 'Class Wide Speech Screens',
+      description: 'Speech assessment screenings',
+      icon: Mic
+    },
+    { 
+      value: 'goal-sheets', 
+      label: 'Class Wide Goal Sheets',
+      description: 'Student goal tracking sheets',
+      icon: Target
+    },
+    { 
+      value: 'progress-reports', 
+      label: 'Class Wide Progress Reports',
+      description: 'Student progress summaries',
+      icon: TrendingUp
+    }
   ];
 
   const grades = ['K', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
@@ -56,19 +76,55 @@ const UnifiedReportForm = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
             <Label className="text-sm font-medium text-gray-700">Report Type</Label>
-            <RadioGroup value={reportType} onValueChange={setReportType} className="grid grid-cols-1 gap-3">
-              {reportTypes.map((type) => (
-                <div key={type.value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={type.value} id={type.value} />
-                  <Label 
-                    htmlFor={type.value} 
-                    className="text-sm font-normal text-gray-700 cursor-pointer flex-1"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {reportTypes.map((type) => {
+                const Icon = type.icon;
+                return (
+                  <div
+                    key={type.value}
+                    onClick={() => setReportType(type.value)}
+                    className={`
+                      relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200
+                      ${reportType === type.value 
+                        ? 'border-blue-600 bg-blue-50 shadow-sm' 
+                        : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                      }
+                    `}
                   >
-                    {type.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
+                    <div className="flex items-start space-x-3">
+                      <div className={`
+                        flex-shrink-0 p-2 rounded-lg
+                        ${reportType === type.value 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-100 text-gray-600'
+                        }
+                      `}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className={`
+                          text-sm font-medium
+                          ${reportType === type.value ? 'text-blue-900' : 'text-gray-900'}
+                        `}>
+                          {type.label}
+                        </h3>
+                        <p className={`
+                          text-xs mt-1
+                          ${reportType === type.value ? 'text-blue-700' : 'text-gray-500'}
+                        `}>
+                          {type.description}
+                        </p>
+                      </div>
+                    </div>
+                    {reportType === type.value && (
+                      <div className="absolute top-2 right-2">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           <div className="space-y-3">
