@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Student } from '@/types/database';
@@ -8,8 +9,6 @@ import StudentInfoHeader from '@/components/students/StudentInfoHeader';
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory';
 import IndividualReports from '@/components/students/IndividualReports';
 import StudentDetailPagination from '@/components/students/StudentDetailPagination';
-import SpeechScreeningModal from '@/components/screening/speech/SpeechScreeningModal';
-import HearingScreeningModal from '@/components/screening/hearing/HearingScreeningModal';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -23,8 +22,6 @@ const StudentDetailContent = () => {
   const [currentStudentIndex, setCurrentStudentIndex] = useState<number>(-1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showSpeechModal, setShowSpeechModal] = useState(false);
-  const [showHearingModal, setShowHearingModal] = useState(false);
   const { userProfile } = useOrganization();
 
   useEffect(() => {
@@ -74,18 +71,16 @@ const StudentDetailContent = () => {
     }
   };
 
-  const handleSpeechScreeningSubmit = (data: any) => {
-    console.log('Speech screening submitted:', data);
-    setShowSpeechModal(false);
-  };
-
-  const handleHearingScreeningSubmit = (data: any) => {
-    console.log('Hearing screening submitted:', data);
-    setShowHearingModal(false);
-  };
-
   const handleNavigateBack = () => {
     navigate('/students');
+  };
+
+  const handleAddHearingScreening = () => {
+    navigate(`/screening/hearing/${studentId}`);
+  };
+
+  const handleAddSpeechScreening = () => {
+    navigate(`/screening/speech/${studentId}`);
   };
 
   if (loading) return <div className="flex justify-center p-8"><LoadingSpinner /></div>;
@@ -130,21 +125,8 @@ const StudentDetailContent = () => {
               <StudentScreeningHistory 
                 studentId={studentId} 
                 student={student}
-                onAddHearingScreening={() => setShowHearingModal(true)}
-              />
-
-              <SpeechScreeningModal 
-                isOpen={showSpeechModal}
-                onClose={() => setShowSpeechModal(false)}
-                onSubmit={handleSpeechScreeningSubmit}
-                existingStudent={student}
-              />
-              
-              <HearingScreeningModal 
-                isOpen={showHearingModal}
-                onClose={() => setShowHearingModal(false)}
-                onSubmit={handleHearingScreeningSubmit}
-                existingStudent={student}
+                onAddHearingScreening={handleAddHearingScreening}
+                onAddSpeechScreening={handleAddSpeechScreening}
               />
             </div>
           </main>

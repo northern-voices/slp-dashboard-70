@@ -26,6 +26,9 @@ import VerifyEmail from "./pages/auth/VerifyEmail";
 import AcceptInvitation from "./pages/auth/AcceptInvitation";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
+import SpeechScreening from "./pages/SpeechScreening";
+import HearingScreening from "./pages/HearingScreening";
+import Drafts from "./pages/Drafts";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +59,16 @@ const App = () => (
               <Route path="/students/:studentId/school-support" element={<SchoolSupportForm />} />
               <Route path="/students/:studentId/progress-check" element={<MonthlyProgressCheck />} />
               <Route path="/students/:studentId/goal-sheet" element={<GenerateGoalSheet />} />
+              
+              {/* Screening Routes */}
+              <Route path="/screening/speech" element={<SpeechScreening />} />
+              <Route path="/screening/speech/:studentId" element={<SpeechScreening />} />
+              <Route path="/screening/hearing" element={<HearingScreening />} />
+              <Route path="/screening/hearing/:studentId" element={<HearingScreening />} />
+              
+              {/* Drafts Route */}
+              <Route path="/drafts" element={<Drafts />} />
+              
               <Route path="/school-support" element={<SchoolSupport />} />
               <Route path="/school-support/create" element={<CreateSchoolSupportForm />} />
               <Route path="/reports" element={<Reports />} />
