@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -24,7 +23,7 @@ const SchoolSupport = () => {
   const [showTicketModal, setShowTicketModal] = useState(false);
 
   const handleCreateSupportForm = () => {
-    navigate('/students');
+    navigate('/school-support/create');
   };
 
   const handleViewTicketDetails = (ticket: SchoolSupportForm) => {
