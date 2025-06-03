@@ -1,9 +1,19 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { 
   User, 
   Calendar, 
@@ -13,20 +23,32 @@ import {
   Edit, 
   UserCheck,
   Save,
-  X
+  X,
+  Trash2,
+  TrendingUp
 } from 'lucide-react';
 import type { Student } from '@/types/database';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { useToast } from '@/hooks/use-toast';
 
 interface StudentInfoHeaderProps {
   student?: Student | null;
   onEdit?: () => void;
+  onDelete?: () => void;
+  onMoveUpGrade?: () => void;
   isLoading?: boolean;
 }
 
-const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHeaderProps) => {
+const StudentInfoHeader = ({ 
+  student, 
+  onEdit, 
+  onDelete, 
+  onMoveUpGrade, 
+  isLoading = false 
+}: StudentInfoHeaderProps) => {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [editedNotes, setEditedNotes] = useState('');
+  const { toast } = useToast();
 
   const getAgeFromBirthDate = (birthDate: string) => {
     const today = new Date();
@@ -73,11 +95,55 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
     // TODO: Implement save functionality
     console.log('Saving notes:', editedNotes);
     setIsEditingNotes(false);
+    toast({
+      title: "Notes updated",
+      description: "Student notes have been successfully updated.",
+    });
   };
 
   const handleCancelEdit = () => {
     setIsEditingNotes(false);
     setEditedNotes('');
+  };
+
+  const handleDeleteStudent = () => {
+    if (onDelete) {
+      onDelete();
+      toast({
+        title: "Student deleted",
+        description: "The student has been successfully deleted.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMoveUpGrade = () => {
+    if (onMoveUpGrade) {
+      onMoveUpGrade();
+      toast({
+        title: "Grade updated",
+        description: "Student has been moved up to the next grade.",
+      });
+    }
+  };
+
+  const getNextGrade = (currentGrade?: string) => {
+    const gradeMap: { [key: string]: string } = {
+      'Pre-K': 'K',
+      'K': '1st',
+      '1st': '2nd',
+      '2nd': '3rd',
+      '3rd': '4th',
+      '4th': '5th',
+      '5th': '6th',
+      '6th': '7th',
+      '7th': '8th',
+      '8th': '9th',
+      '9th': '10th',
+      '10th': '11th',
+      '11th': '12th',
+    };
+    return gradeMap[currentGrade || ''] || 'Next Grade';
   };
 
   if (isLoading) {
@@ -126,17 +192,72 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 flex-wrap gap-2">
                 <Badge variant={student.active ? "default" : "secondary"} className="flex items-center space-x-1">
                   <UserCheck className="w-3 h-3" />
                   <span>{student.active ? 'Active' : 'Inactive'}</span>
                 </Badge>
+                
+                {/* Move Up Grade Button */}
+                {student.grade !== '12th' && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <TrendingUp className="w-4 h-4 mr-2" />
+                        Move to {getNextGrade(student.grade)}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Move Student Up Grade</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to move {student.first_name} {student.last_name} from {student.grade} to {getNextGrade(student.grade)}? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleMoveUpGrade}>
+                          Move Up Grade
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+                
+                {/* Edit Button */}
                 {onEdit && (
                   <Button variant="outline" size="sm" onClick={onEdit}>
                     <Edit className="w-4 h-4 mr-2" />
                     Edit
                   </Button>
                 )}
+                
+                {/* Delete Button */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Student</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete {student.first_name} {student.last_name}? This action cannot be undone and will permanently remove all student data, including screening history and reports.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleDeleteStudent}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Delete Student
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Student } from '@/types/database';
@@ -13,6 +12,7 @@ import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationCo
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
+import { useToast } from '@/hooks/use-toast';
 
 const StudentDetailContent = () => {
   const { studentId } = useParams<{ studentId: string }>();
@@ -23,6 +23,7 @@ const StudentDetailContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { userProfile } = useOrganization();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchStudentsAndCurrent = async () => {
@@ -83,6 +84,66 @@ const StudentDetailContent = () => {
     navigate(`/screening/speech/${studentId}`);
   };
 
+  const handleDeleteStudent = async () => {
+    if (!student) return;
+    
+    try {
+      await StudentService.deleteStudent(student.id);
+      toast({
+        title: "Student deleted",
+        description: "The student has been successfully deleted.",
+        variant: "destructive",
+      });
+      navigate('/students');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete student. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMoveUpGrade = async () => {
+    if (!student) return;
+    
+    const gradeMap: { [key: string]: string } = {
+      'Pre-K': 'K',
+      'K': '1st',
+      '1st': '2nd',
+      '2nd': '3rd',
+      '3rd': '4th',
+      '4th': '5th',
+      '5th': '6th',
+      '6th': '7th',
+      '7th': '8th',
+      '8th': '9th',
+      '9th': '10th',
+      '10th': '11th',
+      '11th': '12th',
+    };
+    
+    const nextGrade = gradeMap[student.grade || ''];
+    if (!nextGrade) return;
+    
+    try {
+      const updatedStudent = await StudentService.updateStudent(student.id, {
+        grade: nextGrade
+      });
+      setStudent(updatedStudent);
+      toast({
+        title: "Grade updated",
+        description: `${student.first_name} has been moved to ${nextGrade}.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update student grade. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) return <div className="flex justify-center p-8"><LoadingSpinner /></div>;
   if (error) return <ErrorMessage message={error} />;
   if (!student) return <div className="p-8 text-center">Student not found</div>;
@@ -118,7 +179,12 @@ const StudentDetailContent = () => {
             />
             
             <div className="space-y-6">
-              <StudentInfoHeader student={student} />
+              <StudentInfoHeader 
+                student={student} 
+                isLoading={loading}
+                onDelete={handleDeleteStudent}
+                onMoveUpGrade={handleMoveUpGrade}
+              />
               
               <IndividualReports student={student} isLoading={loading} />
               
