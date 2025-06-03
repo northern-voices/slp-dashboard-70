@@ -1,21 +1,26 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { FileText, Volume2, Mail, CheckCircle, Target, User } from 'lucide-react';
 import { Student } from '@/types/database';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import IndividualReportEmailModal from './IndividualReportEmailModal';
+
 interface IndividualReportsProps {
   student: Student | null;
   isLoading?: boolean;
 }
+
 const IndividualReports = ({
   student,
   isLoading = false
 }: IndividualReportsProps) => {
   const navigate = useNavigate();
   const [showEmailModal, setShowEmailModal] = useState(false);
+
   const handleGenerateReport = (reportType: string) => {
     if (!student) {
       console.log('Cannot generate report: No student data available');
@@ -24,7 +29,9 @@ const IndividualReports = ({
     console.log(`Generating ${reportType} for student:`, student.id);
     // TODO: Implement individual report generation
   };
+
   const isDisabled = !student || isLoading;
+
   if (isLoading) {
     return <div className="flex items-center justify-center py-8">
         <div className="text-center">
@@ -33,11 +40,13 @@ const IndividualReports = ({
         </div>
       </div>;
   }
+
   if (!student) {
     return <div className="text-center py-8">
         <p className="text-gray-600 text-sm md:text-base">Student data not available</p>
       </div>;
   }
+
   return <>
       {/* Three Column Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -48,16 +57,44 @@ const IndividualReports = ({
               <User className="w-4 h-4 md:w-5 md:h-5" />
               Student Individual
             </CardTitle>
+            <p className="text-sm text-gray-600 mt-2">
+              Tools for tracking individual student progress and goal management
+            </p>
           </CardHeader>
           <CardContent className="space-y-3 p-4 md:p-6">
-            <Button onClick={() => navigate(`/students/${student.id}/progress-check`)} variant="outline" className="w-full h-11 text-sm px-4" disabled={isDisabled}>
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Monthly Progress Check
-            </Button>
-            <Button onClick={() => navigate(`/students/${student.id}/goal-sheet`)} variant="outline" className="w-full h-11 text-sm px-4" disabled={isDisabled}>
-              <Target className="w-4 h-4 mr-2" />
-              Generate Goal Sheet
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={() => navigate(`/students/${student.id}/progress-check`)} 
+                  variant="outline" 
+                  className="w-full h-11 text-sm px-4" 
+                  disabled={isDisabled}
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Monthly Progress Check
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Track and document student's monthly therapy progress and achievements</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={() => navigate(`/students/${student.id}/goal-sheet`)} 
+                  variant="outline" 
+                  className="w-full h-11 text-sm px-4" 
+                  disabled={isDisabled}
+                >
+                  <Target className="w-4 h-4 mr-2" />
+                  Generate Goal Sheet
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Create individualized therapy goals and objectives for this student</p>
+              </TooltipContent>
+            </Tooltip>
           </CardContent>
         </Card>
 
@@ -68,14 +105,42 @@ const IndividualReports = ({
               <FileText className="w-4 h-4 md:w-5 md:h-5" />
               Speech Reports
             </CardTitle>
+            <p className="text-sm text-gray-600 mt-2">
+              Generate comprehensive speech therapy screening and progress reports
+            </p>
           </CardHeader>
           <CardContent className="space-y-3 p-4 md:p-6">
-            <Button onClick={() => handleGenerateReport('speech-screen')} variant="outline" className="w-full h-11 text-sm px-4" disabled={isDisabled}>
-              Speech Screen Report
-            </Button>
-            <Button onClick={() => handleGenerateReport('progress-report')} variant="outline" className="w-full h-11 text-sm px-4" disabled={isDisabled}>
-              Progress Report
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={() => handleGenerateReport('speech-screen')} 
+                  variant="outline" 
+                  className="w-full h-11 text-sm px-4" 
+                  disabled={isDisabled}
+                >
+                  Speech Screen Report
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Generate a comprehensive speech screening assessment report</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={() => handleGenerateReport('progress-report')} 
+                  variant="outline" 
+                  className="w-full h-11 text-sm px-4" 
+                  disabled={isDisabled}
+                >
+                  Progress Report
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Create a detailed progress summary for speech therapy services</p>
+              </TooltipContent>
+            </Tooltip>
           </CardContent>
         </Card>
 
@@ -86,11 +151,26 @@ const IndividualReports = ({
               <Volume2 className="w-4 h-4 md:w-5 md:h-5" />
               Hearing Reports
             </CardTitle>
+            <p className="text-sm text-gray-600 mt-2">
+              Create detailed hearing assessment and screening documentation
+            </p>
           </CardHeader>
           <CardContent className="space-y-3 p-4 md:p-6">
-            <Button onClick={() => handleGenerateReport('hearing-screen')} variant="outline" className="w-full h-11 text-sm px-4" disabled={isDisabled}>
-              Generate Hearing Screen Report
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={() => handleGenerateReport('hearing-screen')} 
+                  variant="outline" 
+                  className="w-full h-11 text-sm px-4" 
+                  disabled={isDisabled}
+                >
+                  Generate Hearing Screen Report
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Generate a complete hearing screening assessment document</p>
+              </TooltipContent>
+            </Tooltip>
           </CardContent>
         </Card>
       </div>
@@ -101,4 +181,5 @@ const IndividualReports = ({
       {student && <IndividualReportEmailModal isOpen={showEmailModal} onClose={() => setShowEmailModal(false)} student={student} />}
     </>;
 };
+
 export default IndividualReports;
