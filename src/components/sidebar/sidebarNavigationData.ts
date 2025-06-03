@@ -35,16 +35,16 @@ export const getNavigationGroups = (location: Location, userRole: string, userPr
       isActive: location.pathname.startsWith("/students")
     },
     {
-      title: "School Support",
-      url: "/school-support",
-      icon: HandHeart,
-      isActive: location.pathname.startsWith("/school-support")
-    },
-    {
       title: "Reports",
       url: "/reports",
       icon: BarChart3,
       isActive: location.pathname === "/reports"
+    },
+    {
+      title: "School Support",
+      url: "/school-support",
+      icon: HandHeart,
+      isActive: location.pathname.startsWith("/school-support")
     },
     {
       title: "Management",
