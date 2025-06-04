@@ -12,6 +12,7 @@ import { SchoolSupportForm } from '@/types/student-enhancements';
 import SupportTicketFilters from '@/components/school-support/SupportTicketFilters';
 import SupportTicketsList from '@/components/school-support/SupportTicketsList';
 import SupportTicketModal from '@/components/school-support/SupportTicketModal';
+
 const SchoolSupport = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,9 +21,11 @@ const SchoolSupport = () => {
   const [schoolFilter, setSchoolFilter] = useState('all');
   const [selectedTicket, setSelectedTicket] = useState<SchoolSupportForm | null>(null);
   const [showTicketModal, setShowTicketModal] = useState(false);
+
   const handleCreateSupportForm = () => {
     navigate('/school-support/create');
   };
+
   const handleViewTicketDetails = (ticket: SchoolSupportForm) => {
     setSelectedTicket(ticket);
     setShowTicketModal(true);
@@ -42,7 +45,9 @@ const SchoolSupport = () => {
   const activeTickets = mockSchoolSupportTickets.filter(t => t.status === 'active').length;
   const uniqueSchools = new Set(mockSchoolSupportTickets.map(t => t.school_name)).size;
   const upcomingVisits = mockSchoolSupportTickets.filter(t => t.status === 'active' && t.support_types.some(type => type.startsWith('school_visit_'))).length;
-  return <OrganizationProvider>
+
+  return (
+    <OrganizationProvider>
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
           <AppSidebar />
@@ -98,22 +103,37 @@ const SchoolSupport = () => {
                   </Button>
                 </div>
 
-                <Card>
-                  <CardContent className="p-6 px-0 py-0 bg-transparent border-none\n">
-                    <div className="space-y-6">
-                      <SupportTicketFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} statusFilter={statusFilter} setStatusFilter={setStatusFilter} priorityFilter={priorityFilter} setPriorityFilter={setPriorityFilter} schoolFilter={schoolFilter} setSchoolFilter={setSchoolFilter} />
-                      
-                      <SupportTicketsList tickets={filteredTickets} hasFilters={hasFilters} onViewDetails={handleViewTicketDetails} />
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="space-y-6">
+                  <SupportTicketFilters
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    statusFilter={statusFilter}
+                    setStatusFilter={setStatusFilter}
+                    priorityFilter={priorityFilter}
+                    setPriorityFilter={setPriorityFilter}
+                    schoolFilter={schoolFilter}
+                    setSchoolFilter={setSchoolFilter}
+                  />
+                  
+                  <SupportTicketsList
+                    tickets={filteredTickets}
+                    hasFilters={hasFilters}
+                    onViewDetails={handleViewTicketDetails}
+                  />
+                </div>
               </div>
             </div>
           </SidebarInset>
         </div>
       </SidebarProvider>
 
-      <SupportTicketModal isOpen={showTicketModal} onClose={() => setShowTicketModal(false)} ticket={selectedTicket} />
-    </OrganizationProvider>;
+      <SupportTicketModal
+        isOpen={showTicketModal}
+        onClose={() => setShowTicketModal(false)}
+        ticket={selectedTicket}
+      />
+    </OrganizationProvider>
+  );
 };
+
 export default SchoolSupport;
