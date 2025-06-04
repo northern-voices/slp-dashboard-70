@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -43,7 +44,6 @@ const SchoolSupport = () => {
 
   // Calculate dynamic stats
   const activeTickets = mockSchoolSupportTickets.filter(t => t.status === 'active').length;
-  const uniqueSchools = new Set(mockSchoolSupportTickets.map(t => t.school_name)).size;
   const upcomingVisits = mockSchoolSupportTickets.filter(t => t.status === 'active' && t.support_types.some(type => type.startsWith('school_visit_'))).length;
 
   return (
@@ -60,7 +60,7 @@ const SchoolSupport = () => {
                   <p className="text-gray-600">Manage school support forms and coordination activities</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Active Support Forms</CardTitle>
@@ -69,17 +69,6 @@ const SchoolSupport = () => {
                     <CardContent>
                       <div className="text-2xl font-bold">{activeTickets}</div>
                       <p className="text-xs text-muted-foreground">Currently in progress</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Schools Supported</CardTitle>
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{uniqueSchools}</div>
-                      <p className="text-xs text-muted-foreground">Across district</p>
                     </CardContent>
                   </Card>
 
