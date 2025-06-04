@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,7 @@ import CreateSchoolSupportForm from "./pages/CreateSchoolSupportForm";
 import MonthlyProgressCheck from "./pages/student/MonthlyProgressCheck";
 import GenerateGoalSheet from "./pages/student/GenerateGoalSheet";
 import Reports from "./pages/Reports";
+import GenerateReport from "./pages/GenerateReport";
 import Management from "./pages/Management";
 import Profile from "./pages/Profile";
 import Notifications from "./pages/Notifications";
