@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, FileText, Volume2, Mic, Target, TrendingUp } from 'lucide-react';
+import { Download, FileText, Volume2, Mic, Target, TrendingUp, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface GeneratedReport {
   id: number;
@@ -17,6 +17,8 @@ interface GeneratedReport {
 }
 
 const GeneratedReportsList = () => {
+  const navigate = useNavigate();
+
   // Mock data for generated reports
   const reports: GeneratedReport[] = [
     {
@@ -98,6 +100,10 @@ const GeneratedReportsList = () => {
     });
   };
 
+  const handleViewReport = (reportId: number) => {
+    navigate(`/reports/${reportId}`);
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -111,7 +117,8 @@ const GeneratedReportsList = () => {
           {reports.map((report) => (
             <div 
               key={report.id} 
-              className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-4 border rounded-lg hover:bg-gray-50 space-y-3 lg:space-y-0"
+              className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-4 border rounded-lg hover:bg-gray-50 space-y-3 lg:space-y-0 cursor-pointer"
+              onClick={() => handleViewReport(report.id)}
             >
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0 mt-1">
@@ -132,12 +139,31 @@ const GeneratedReportsList = () => {
               </div>
               <div className="flex items-center justify-between lg:justify-end space-x-3 lg:flex-col lg:space-x-0 lg:space-y-2 xl:flex-row xl:space-y-0 xl:space-x-3">
                 {getStatusBadge(report.status)}
-                {report.status === 'completed' && (
-                  <Button variant="outline" size="sm" className="h-9">
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
+                <div className="flex space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-9"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewReport(report.id);
+                    }}
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    View
                   </Button>
-                )}
+                  {report.status === 'completed' && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-9"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
