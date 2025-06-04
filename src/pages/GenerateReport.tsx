@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import UnifiedReportForm from '@/components/reports/UnifiedReportForm';
+import ReportGenerationForm from '@/components/reports/ReportGenerationForm';
 
 const GenerateReportContent = () => {
   const { userProfile } = useOrganization();
@@ -62,7 +62,7 @@ const GenerateReportContent = () => {
 
               {/* Report Generation Form */}
               <div className="w-full max-w-full">
-                <UnifiedReportForm />
+                <ReportGenerationForm />
               </div>
             </div>
           </main>
