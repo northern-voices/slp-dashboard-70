@@ -98,9 +98,9 @@ const SchoolSupport = () => {
                   </Button>
                 </div>
 
-                <Card className="p-6 px-0 py-0 border-none bg-transparent">
+                <Card>
                   <CardContent className="p-6 px-0 py-0 bg-transparent border-none\n">
-                    <div className="p-6 px-0 py-0 bg-transparent border-none\n">
+                    <div className="space-y-6">
                       <SupportTicketFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} statusFilter={statusFilter} setStatusFilter={setStatusFilter} priorityFilter={priorityFilter} setPriorityFilter={setPriorityFilter} schoolFilter={schoolFilter} setSchoolFilter={setSchoolFilter} />
                       
                       <SupportTicketsList tickets={filteredTickets} hasFilters={hasFilters} onViewDetails={handleViewTicketDetails} />
