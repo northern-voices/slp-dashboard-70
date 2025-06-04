@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import Multiselect from '@/components/ui/multiselect';
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { reportService } from '@/services/reportService';
+import { ReportService } from '@/services/reportService';
 
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
@@ -83,10 +83,10 @@ const ReportGenerationForm = () => {
     try {
       console.log('Generating report with data:', data);
       
-      // Use the report service to generate the report
+      // Use the static method from ReportService
       const reportTitle = `${reportTypes.find(type => type.value === data.reportType)?.label} - ${data.academicYear}`;
       
-      await reportService.generateReport(data.reportType, {
+      await ReportService.generateReport(data.reportType, {
         title: reportTitle,
         academicYear: data.academicYear,
         grades: data.grades,
