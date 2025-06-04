@@ -35,7 +35,7 @@ const SupportTicketCard = ({ ticket, onViewDetails }: SupportTicketCardProps) =>
 
   return (
     <Card 
-      className="hover:shadow-md transition-shadow cursor-pointer" 
+      className="hover:shadow-md transition-shadow cursor-pointer border-0" 
       onClick={() => onViewDetails(ticket)}
     >
       <CardHeader className="pb-3">
