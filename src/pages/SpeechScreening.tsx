@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, FileText } from 'lucide-react';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
-import IndividualSpeechScreeningForm from '@/components/screening/speech/IndividualSpeechScreeningForm';
+import MultiStepSpeechScreeningForm from '@/components/screening/speech/MultiStepSpeechScreeningForm';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -165,7 +165,7 @@ const SpeechScreeningContent = () => {
             {/* Screening Form */}
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
               <div className="p-6">
-                <IndividualSpeechScreeningForm
+                <MultiStepSpeechScreeningForm
                   onSubmit={handleSubmit}
                   onCancel={handleCancel}
                   existingStudent={student}

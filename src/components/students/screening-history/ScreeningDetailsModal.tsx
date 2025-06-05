@@ -1,136 +1,155 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
-import IndividualReportEmailModal from '@/components/reports/IndividualReportEmailModal';
-import { Student } from '@/types/database';
-import ScreeningResultBadge from './ScreeningResultBadge';
-import ScreeningBasicInfo from './ScreeningBasicInfo';
-import ScreeningDetailedContent from './ScreeningDetailedContent';
-import ScreeningActions from './ScreeningActions';
-
-interface Screening {
-  id: string;
-  type: 'speech' | 'hearing' | 'progress';
-  date: string;
-  status: 'completed' | 'in_progress' | 'scheduled';
-  screener: string;
-  results?: string;
-  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
-}
+import { Button } from '@/components/ui/button';
+import { Calendar, User, FileText, X } from 'lucide-react';
+import { format } from 'date-fns';
+import { Screening } from '@/types/database';
 
 interface ScreeningDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   screening: Screening | null;
-  student?: Student;
 }
 
-const ScreeningDetailsModal = ({ isOpen, onClose, screening, student }: ScreeningDetailsModalProps) => {
-  const [showEmailModal, setShowEmailModal] = useState(false);
-
+const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsModalProps) => {
   if (!screening) return null;
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'speech':
-        return 'bg-purple-100 text-purple-800';
-      case 'hearing':
-        return 'bg-teal-100 text-teal-800';
-      case 'progress':
-        return 'bg-indigo-100 text-indigo-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'in_progress': return 'bg-yellow-100 text-yellow-800';
+      case 'scheduled': return 'bg-blue-100 text-blue-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusDisplay = (status: string) => {
-    const statusConfig = {
-      'completed': {
-        icon: CheckCircle,
-        text: 'Completed',
-        color: 'text-green-600'
-      },
-      'in_progress': {
-        icon: Clock,
-        text: 'In Progress',
-        color: 'text-yellow-600'
-      },
-      'scheduled': {
-        icon: AlertTriangle,
-        text: 'Scheduled',
-        color: 'text-blue-600'
-      }
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'speech': return 'bg-purple-100 text-purple-800';
+      case 'hearing': return 'bg-teal-100 text-teal-800';
+      case 'progress': return 'bg-indigo-100 text-indigo-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getResultBadge = (result?: string) => {
+    if (!result) return null;
+    
+    const resultConfig = {
+      'P': { label: 'Passed', color: 'bg-green-100 text-green-800' },
+      'M': { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800' },
+      'Q': { label: 'Qualified', color: 'bg-red-100 text-red-800' },
+      'NR': { label: 'No Response', color: 'bg-blue-100 text-blue-800' },
+      'NC': { label: 'No Consent', color: 'bg-orange-100 text-orange-800' },
+      'C': { label: 'Complex', color: 'bg-red-100 text-red-800' }
     };
-    
-    const config = statusConfig[status as keyof typeof statusConfig];
+
+    const config = resultConfig[result as keyof typeof resultConfig];
     if (!config) return null;
-    
-    const IconComponent = config.icon;
+
     return (
-      <div className="flex items-center gap-2">
-        <IconComponent className={`w-4 h-4 ${config.color}`} />
-        <span className={`text-sm font-medium ${config.color}`}>
-          {config.text}
-        </span>
-      </div>
+      <Badge className={`${config.color} font-medium`}>
+        {config.label}
+      </Badge>
     );
   };
 
-  const resultDisplay = ScreeningResultBadge({ result: screening.screening_result });
-
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Badge className={getTypeColor(screening.type)}>
-                  {screening.type.charAt(0).toUpperCase() + screening.type.slice(1)} Screening
-                </Badge>
-                {getStatusDisplay(screening.status)}
-              </div>
-              {resultDisplay && resultDisplay.badge}
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Screening Details
             </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            <ScreeningBasicInfo screening={screening} />
-
-            {resultDisplay && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Screening Result</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    {resultDisplay.badge}
-                  </div>
-                  <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
-                    {resultDisplay.description}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            <ScreeningDetailedContent screening={screening} />
-
-            <ScreeningActions onSendEmail={() => setShowEmailModal(true)} />
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="w-4 h-4" />
+            </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </DialogHeader>
 
-      {student && (
-        <IndividualReportEmailModal
-          isOpen={showEmailModal}
-          onClose={() => setShowEmailModal(false)}
-          student={student}
-        />
-      )}
-    </>
+        <div className="space-y-6">
+          {/* Header Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">Student Information</h3>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-gray-500" />
+                  <span className="font-medium">{screening.student_name}</span>
+                </div>
+                {screening.grade && (
+                  <p className="text-sm text-gray-600 ml-6">Grade {screening.grade}</p>
+                )}
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">Screening Information</h3>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm">{format(new Date(screening.date), 'MMMM d, yyyy')}</span>
+                </div>
+                <p className="text-sm text-gray-600 ml-6">Screener: {screening.screener}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Status and Type Badges */}
+          <div className="flex flex-wrap gap-2">
+            <Badge className={getTypeColor(screening.type)}>
+              {screening.type.charAt(0).toUpperCase() + screening.type.slice(1)} Screening
+            </Badge>
+            <Badge className={getStatusColor(screening.status)}>
+              {screening.status.replace('_', ' ').charAt(0).toUpperCase() + screening.status.replace('_', ' ').slice(1)}
+            </Badge>
+            {screening.screening_type && (
+              <Badge variant="outline">
+                {screening.screening_type.charAt(0).toUpperCase() + screening.screening_type.slice(1)}
+              </Badge>
+            )}
+            {getResultBadge(screening.result)}
+          </div>
+
+          {/* Results Section */}
+          {screening.results && (
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">Results</h3>
+              <p className="text-sm text-gray-700 p-3 bg-gray-50 rounded-md">
+                {screening.results}
+              </p>
+            </div>
+          )}
+
+          {/* Notes Section */}
+          {screening.notes && (
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">Notes</h3>
+              <p className="text-sm text-gray-700 p-3 bg-gray-50 rounded-md">
+                {screening.notes}
+              </p>
+            </div>
+          )}
+
+          {/* Metadata */}
+          <div className="pt-4 border-t border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-500">
+              <div>
+                <span className="font-medium">Created:</span> {format(new Date(screening.created_at), 'MMM d, yyyy h:mm a')}
+              </div>
+              <div>
+                <span className="font-medium">Last Updated:</span> {format(new Date(screening.updated_at), 'MMM d, yyyy h:mm a')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
