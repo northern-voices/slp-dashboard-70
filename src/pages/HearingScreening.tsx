@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Student } from '@/types/database';
@@ -14,16 +13,21 @@ import MultiStepHearingScreeningForm from '@/components/screening/hearing/MultiS
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-
 const HearingScreeningContent = () => {
-  const { studentId } = useParams<{ studentId: string }>();
+  const {
+    studentId
+  } = useParams<{
+    studentId: string;
+  }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { userProfile } = useOrganization();
-  
+  const {
+    toast
+  } = useToast();
+  const {
+    userProfile
+  } = useOrganization();
   const [student, setStudent] = React.useState<Student | null>(null);
   const [loading, setLoading] = React.useState(false);
-
   React.useEffect(() => {
     if (studentId) {
       const fetchStudent = async () => {
@@ -40,10 +44,8 @@ const HearingScreeningContent = () => {
       fetchStudent();
     }
   }, [studentId]);
-
   const handleSubmit = (screeningData: ScreeningFormData) => {
     console.log('Hearing screening submitted:', screeningData);
-    
     toast({
       title: "Hearing Screening completed",
       description: "Hearing screening has been recorded successfully."
@@ -56,7 +58,6 @@ const HearingScreeningContent = () => {
       navigate('/screenings');
     }
   };
-
   const handleCancel = () => {
     if (studentId) {
       navigate(`/students/${studentId}`);
@@ -64,17 +65,13 @@ const HearingScreeningContent = () => {
       navigate('/screenings');
     }
   };
-
   const handleViewDrafts = () => {
     navigate('/drafts');
   };
-
   const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Dr. Sarah Johnson';
   const userRole = userProfile?.role || 'slp';
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex w-full bg-gray-25">
+    return <div className="min-h-screen flex w-full bg-gray-25">
         <SidebarProvider>
           <AppSidebar userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
           <SidebarInset>
@@ -86,12 +83,9 @@ const HearingScreeningContent = () => {
             </main>
           </SidebarInset>
         </SidebarProvider>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen flex w-full bg-gray-25">
+  return <div className="min-h-screen flex w-full bg-gray-25">
       <SidebarProvider>
         <AppSidebar userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
         <SidebarInset>
@@ -100,40 +94,13 @@ const HearingScreeningContent = () => {
             {/* Breadcrumb Navigation */}
             <div className="mb-6">
               <div className="flex items-center gap-4 mb-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleCancel}
-                  className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2"
-                >
+                <Button variant="ghost" size="sm" onClick={handleCancel} className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2">
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Back
                 </Button>
                 
                 <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbLink href="/students">Students</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    {student && (
-                      <>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                          <BreadcrumbLink href={`/students/${studentId}`}>
-                            {student.first_name} {student.last_name}
-                          </BreadcrumbLink>
-                        </BreadcrumbItem>
-                      </>
-                    )}
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>Hearing Screening</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
+                  
                 </Breadcrumb>
               </div>
               
@@ -141,21 +108,12 @@ const HearingScreeningContent = () => {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <h1 className="text-2xl font-semibold text-gray-900">Hearing Screening</h1>
-                  {student ? (
-                    <p className="text-gray-600">
+                  {student ? <p className="text-gray-600">
                       Creating hearing screening for {student.first_name} {student.last_name}
-                    </p>
-                  ) : (
-                    <p className="text-gray-600">Creating new hearing screening</p>
-                  )}
+                    </p> : <p className="text-gray-600">Creating new hearing screening</p>}
                 </div>
 
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleViewDrafts}
-                  className="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-                >
+                <Button variant="outline" size="sm" onClick={handleViewDrafts} className="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50">
                   <FileText className="w-4 h-4" />
                   View Drafts
                 </Button>
@@ -165,26 +123,17 @@ const HearingScreeningContent = () => {
             {/* Screening Form */}
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
               <div className="p-6">
-                <MultiStepHearingScreeningForm
-                  onSubmit={handleSubmit}
-                  onCancel={handleCancel}
-                  existingStudent={student}
-                />
+                <MultiStepHearingScreeningForm onSubmit={handleSubmit} onCancel={handleCancel} existingStudent={student} />
               </div>
             </div>
           </main>
         </SidebarInset>
       </SidebarProvider>
-    </div>
-  );
+    </div>;
 };
-
 const HearingScreening = () => {
-  return (
-    <OrganizationProvider>
+  return <OrganizationProvider>
       <HearingScreeningContent />
-    </OrganizationProvider>
-  );
+    </OrganizationProvider>;
 };
-
 export default HearingScreening;
