@@ -17,6 +17,7 @@ export interface School {
 export interface Organization {
   id: string;
   name: string;
+  slug: string;
   address: string;
   city: string;
   state: string;
@@ -42,10 +43,16 @@ export interface SLPProfile {
   id: string;
   user_id: string;
   organization_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: 'admin' | 'slp' | 'supervisor';
   license_number?: string;
   specializations?: string[];
+  active: boolean;
   created_at: string;
   updated_at: string;
+  organization?: Organization;
 }
 
 export interface Student {
@@ -83,4 +90,16 @@ export interface Screening {
   notes?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface Report {
+  id: string;
+  screening_id: string;
+  title: string;
+  content: string;
+  recommendations?: string;
+  follow_up_required: boolean;
+  follow_up_date?: string;
+  status: 'draft' | 'final' | 'reviewed';
+  generated_at: string;
 }
