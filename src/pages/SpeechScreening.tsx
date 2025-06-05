@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Student } from '@/types/database';
 import { ScreeningFormData } from '@/types/screening';
 import { StudentService } from '@/services/studentService';
@@ -10,14 +11,12 @@ import { ChevronLeft, FileText } from 'lucide-react';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import IndividualSpeechScreeningForm from '@/components/screening/speech/IndividualSpeechScreeningForm';
-import ClassWideSpeechScreeningForm from '@/components/screening/speech/ClassWideSpeechScreeningForm';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const SpeechScreeningContent = () => {
   const { studentId } = useParams<{ studentId: string }>();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { userProfile } = useOrganization();
@@ -25,11 +24,8 @@ const SpeechScreeningContent = () => {
   const [student, setStudent] = React.useState<Student | null>(null);
   const [loading, setLoading] = React.useState(false);
 
-  const mode = searchParams.get('mode'); // 'classwide' or null (individual)
-  const isClassWide = mode === 'classwide';
-
   React.useEffect(() => {
-    if (studentId && !isClassWide) {
+    if (studentId) {
       const fetchStudent = async () => {
         setLoading(true);
         try {
@@ -43,25 +39,18 @@ const SpeechScreeningContent = () => {
       };
       fetchStudent();
     }
-  }, [studentId, isClassWide]);
+  }, [studentId]);
 
-  const handleSubmit = (screeningData: ScreeningFormData | any) => {
+  const handleSubmit = (screeningData: ScreeningFormData) => {
     console.log('Speech screening submitted:', screeningData);
     
-    if (isClassWide) {
-      toast({
-        title: "Class-wide Speech Screening completed",
-        description: `Speech screening completed for ${screeningData.students?.length || 0} students.`
-      });
-    } else {
-      toast({
-        title: "Speech Screening completed",
-        description: "Speech screening has been recorded successfully."
-      });
-    }
+    toast({
+      title: "Speech Screening completed",
+      description: "Speech screening has been recorded successfully."
+    });
     
     // Navigate back to appropriate page
-    if (studentId && !isClassWide) {
+    if (studentId) {
       navigate(`/students/${studentId}`);
     } else {
       navigate('/screenings');
@@ -69,7 +58,7 @@ const SpeechScreeningContent = () => {
   };
 
   const handleCancel = () => {
-    if (studentId && !isClassWide) {
+    if (studentId) {
       navigate(`/students/${studentId}`);
     } else {
       navigate('/screenings');
@@ -130,7 +119,7 @@ const SpeechScreeningContent = () => {
                     <BreadcrumbItem>
                       <BreadcrumbLink href="/students">Students</BreadcrumbLink>
                     </BreadcrumbItem>
-                    {student && !isClassWide && (
+                    {student && (
                       <>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
@@ -142,9 +131,7 @@ const SpeechScreeningContent = () => {
                     )}
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
-                      <BreadcrumbPage>
-                        {isClassWide ? 'Class-Wide Speech Screening' : 'Speech Screening'}
-                      </BreadcrumbPage>
+                      <BreadcrumbPage>Speech Screening</BreadcrumbPage>
                     </BreadcrumbItem>
                   </BreadcrumbList>
                 </Breadcrumb>
@@ -153,18 +140,14 @@ const SpeechScreeningContent = () => {
               {/* Title and View Drafts Button */}
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
-                  <h1 className="text-2xl font-semibold text-gray-900">
-                    {isClassWide ? 'Class-Wide Speech Screening' : 'Speech Screening'}
-                  </h1>
-                  {student && !isClassWide ? (
+                  <h1 className="text-2xl font-semibold text-gray-900">Speech Screening</h1>
+                  {student ? (
                     <p className="text-gray-600">
                       Creating speech screening for {student.first_name} {student.last_name}
                     </p>
-                  ) : isClassWide ? (
-                    <p className="text-gray-600">
-                      Creating speech screening for multiple students
-                    </p>
-                  ) : null}
+                  ) : (
+                    <p className="text-gray-600">Creating new speech screening</p>
+                  )}
                 </div>
 
                 <Button 
@@ -182,18 +165,11 @@ const SpeechScreeningContent = () => {
             {/* Screening Form */}
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
               <div className="p-6">
-                {isClassWide ? (
-                  <ClassWideSpeechScreeningForm
-                    onSubmit={handleSubmit}
-                    onCancel={handleCancel}
-                  />
-                ) : (
-                  <IndividualSpeechScreeningForm
-                    onSubmit={handleSubmit}
-                    onCancel={handleCancel}
-                    existingStudent={student}
-                  />
-                )}
+                <IndividualSpeechScreeningForm
+                  onSubmit={handleSubmit}
+                  onCancel={handleCancel}
+                  existingStudent={student}
+                />
               </div>
             </div>
           </main>
