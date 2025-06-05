@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
+
 interface ScreeningsFiltersProps {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
@@ -10,11 +12,10 @@ interface ScreeningsFiltersProps {
   setTypeFilter: (value: string) => void;
   statusFilter: string;
   setStatusFilter: (value: string) => void;
-  schoolFilter: string;
-  setSchoolFilter: (value: string) => void;
   dateRangeFilter: string;
   setDateRangeFilter: (value: string) => void;
 }
+
 const ScreeningsFilters = ({
   searchTerm,
   setSearchTerm,
@@ -22,18 +23,22 @@ const ScreeningsFilters = ({
   setTypeFilter,
   statusFilter,
   setStatusFilter,
-  schoolFilter,
-  setSchoolFilter,
   dateRangeFilter,
   setDateRangeFilter
 }: ScreeningsFiltersProps) => {
-  return <Card className="border-none shadow-none bg-transparent">
+  return (
+    <Card className="border-none shadow-none bg-transparent">
       <CardContent className="p-6 px-0 py-0 bg-transparent">
         <div className="flex flex-col lg:flex-row gap-4 bg-transparent">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input placeholder="Search by student name, screener, or school..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
+              <Input 
+                placeholder="Search by student name or screener..." 
+                value={searchTerm} 
+                onChange={e => setSearchTerm(e.target.value)} 
+                className="pl-10" 
+              />
             </div>
           </div>
           
@@ -63,18 +68,6 @@ const ScreeningsFilters = ({
               </SelectContent>
             </Select>
 
-            <Select value={schoolFilter} onValueChange={setSchoolFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="School" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Schools</SelectItem>
-                <SelectItem value="lincoln-elementary">Lincoln Elementary</SelectItem>
-                <SelectItem value="washington-middle">Washington Middle School</SelectItem>
-                <SelectItem value="jefferson-high">Jefferson High School</SelectItem>
-              </SelectContent>
-            </Select>
-
             <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Date Range" />
@@ -90,6 +83,8 @@ const ScreeningsFilters = ({
           </div>
         </div>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };
+
 export default ScreeningsFilters;

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ResponsiveTable, ResponsiveTableRow, TableHeader, TableHead, TableBody, TableCell } from '@/components/ui/responsive-table';
 import { format } from 'date-fns';
 import ScreeningBulkActions from './ScreeningBulkActions';
+import { School } from '@/types/database';
 
 interface Screening {
   id: string;
@@ -16,7 +16,6 @@ interface Screening {
   status: 'completed' | 'in_progress' | 'scheduled' | 'cancelled';
   date: string;
   screener: string;
-  school: string;
   result?: string;
   grade?: string;
 }
@@ -25,25 +24,25 @@ interface ScreeningsTableProps {
   searchTerm: string;
   typeFilter: string;
   statusFilter: string;
-  schoolFilter: string;
   dateRangeFilter: string;
   selectedScreenings: string[];
   setSelectedScreenings: (ids: string[]) => void;
   onBulkAction: (action: string) => void;
+  currentSchool: School | null;
 }
 
 const ScreeningsTable = ({
   searchTerm,
   typeFilter,
   statusFilter,
-  schoolFilter,
   dateRangeFilter,
   selectedScreenings,
   setSelectedScreenings,
-  onBulkAction
+  onBulkAction,
+  currentSchool
 }: ScreeningsTableProps) => {
-  // Mock data - replace with actual API calls
-  const mockScreenings: Screening[] = [
+  // Mock data filtered by current school
+  const mockScreenings: Screening[] = currentSchool ? [
     {
       id: '1',
       studentName: 'Emma Johnson',
@@ -51,7 +50,6 @@ const ScreeningsTable = ({
       status: 'completed',
       date: '2024-06-01',
       screener: 'Dr. Sarah Johnson',
-      school: 'Lincoln Elementary',
       result: 'P',
       grade: '3rd'
     },
@@ -62,7 +60,6 @@ const ScreeningsTable = ({
       status: 'completed',
       date: '2024-05-28',
       screener: 'Dr. Mike Wilson',
-      school: 'Washington Middle School',
       result: 'M',
       grade: '6th'
     },
@@ -73,7 +70,6 @@ const ScreeningsTable = ({
       status: 'in_progress',
       date: '2024-06-03',
       screener: 'Dr. Sarah Johnson',
-      school: 'Jefferson High School',
       grade: '9th'
     },
     {
@@ -83,20 +79,17 @@ const ScreeningsTable = ({
       status: 'scheduled',
       date: '2024-06-05',
       screener: 'Dr. Lisa Anderson',
-      school: 'Lincoln Elementary',
       grade: '2nd'
     },
-  ];
+  ] : [];
 
   const filteredScreenings = mockScreenings.filter(screening => {
     const matchesSearch = screening.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         screening.screener.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         screening.school.toLowerCase().includes(searchTerm.toLowerCase());
+                         screening.screener.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === 'all' || screening.type === typeFilter;
     const matchesStatus = statusFilter === 'all' || screening.status === statusFilter;
-    const matchesSchool = schoolFilter === 'all' || screening.school.toLowerCase().includes(schoolFilter.toLowerCase());
     
-    return matchesSearch && matchesType && matchesStatus && matchesSchool;
+    return matchesSearch && matchesType && matchesStatus;
   });
 
   const getTypeColor = (type: string) => {
@@ -159,11 +152,20 @@ const ScreeningsTable = ({
   const isAllSelected = filteredScreenings.length > 0 && selectedScreenings.length === filteredScreenings.length;
   const isSomeSelected = selectedScreenings.length > 0;
 
+  if (!currentSchool) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+        <p className="text-gray-500">Please select a school to view screenings.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {isSomeSelected && (
         <ScreeningBulkActions
           selectedCount={selectedScreenings.length}
+          selectedScreenings={selectedScreenings}
           onBulkAction={onBulkAction}
           onClearSelection={() => setSelectedScreenings([])}
         />
@@ -184,7 +186,6 @@ const ScreeningsTable = ({
               <TableHead>Status</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Screener</TableHead>
-              <TableHead>School</TableHead>
               <TableHead>Result</TableHead>
               <TableHead className="w-12"></TableHead>
             </tr>
@@ -219,7 +220,6 @@ const ScreeningsTable = ({
                     <div className="text-sm text-gray-600 space-y-1">
                       <p><span className="font-medium">Date:</span> {format(new Date(screening.date), 'MMM d, yyyy')}</p>
                       <p><span className="font-medium">Screener:</span> {screening.screener}</p>
-                      <p><span className="font-medium">School:</span> {screening.school}</p>
                     </div>
                   </div>
                 }
@@ -250,7 +250,6 @@ const ScreeningsTable = ({
                 </TableCell>
                 <TableCell>{format(new Date(screening.date), 'MMM d, yyyy')}</TableCell>
                 <TableCell>{screening.screener}</TableCell>
-                <TableCell>{screening.school}</TableCell>
                 <TableCell>{getResultBadge(screening.result)}</TableCell>
                 <TableCell>
                   <DropdownMenu>
