@@ -6,7 +6,6 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorMessage from '@/components/common/ErrorMessage';
 import StudentInfoHeader from '@/components/students/StudentInfoHeader';
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory';
-import IndividualReports from '@/components/students/IndividualReports';
 import StudentDetailPagination from '@/components/students/StudentDetailPagination';
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -185,8 +184,6 @@ const StudentDetailContent = () => {
                 onDelete={handleDeleteStudent}
                 onMoveUpGrade={handleMoveUpGrade}
               />
-              
-              <IndividualReports student={student} isLoading={loading} />
               
               <StudentScreeningHistory 
                 studentId={studentId} 

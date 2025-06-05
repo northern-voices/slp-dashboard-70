@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
-import { Mail, FileText } from 'lucide-react';
+import { Mail, FileText, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import ClassWideReportsModal from '@/components/students/ClassWideReportsModal';
 import GeneratedReportsList from '@/components/reports/GeneratedReportsList';
+import IndividualStudentReports from '@/components/reports/IndividualStudentReports';
 
 const ReportsPageContent = () => {
   const [showClassWideModal, setShowClassWideModal] = useState(false);
@@ -18,11 +19,11 @@ const ReportsPageContent = () => {
         <div className="flex flex-col gap-6 px-1 sm:px-0">
           <div className="space-y-1 sm:space-y-2">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900">Reports</h1>
-            <p className="text-sm sm:text-base text-gray-600">Generate class-wide reports for hearing and speech assessments</p>
+            <p className="text-sm sm:text-base text-gray-600">Generate class-wide reports and individual student reports for hearing and speech assessments</p>
           </div>
           
           {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Send Class-Wide Reports Button */}
             <Card 
               className="bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer"
@@ -56,6 +57,22 @@ const ReportsPageContent = () => {
                     <p className="text-sm text-gray-600">Create comprehensive reports for hearing and speech assessments across multiple students</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Individual Student Reports Button */}
+            <Card className="bg-white border border-gray-100 shadow-sm rounded-xl md:col-span-2 lg:col-span-1">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <User className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Individual Student Reports</h3>
+                    <p className="text-sm text-gray-600">Generate reports and tools for specific students</p>
+                  </div>
+                </div>
+                <IndividualStudentReports />
               </CardContent>
             </Card>
           </div>
