@@ -2,18 +2,9 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Calendar, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Eye, Calendar, CheckCircle, Clock, AlertTriangle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
-
-interface Screening {
-  id: string;
-  type: 'speech' | 'hearing' | 'progress';
-  date: string;
-  status: 'completed' | 'in_progress' | 'scheduled';
-  screener: string;
-  results?: string;
-  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
-}
+import { Screening } from '@/types/database';
 
 interface ScreeningCardProps {
   screening: Screening;
@@ -50,6 +41,11 @@ const ScreeningCard = ({ screening, onViewDetails }: ScreeningCardProps) => {
         icon: AlertTriangle,
         text: 'Scheduled',
         color: 'text-blue-600'
+      },
+      'cancelled': {
+        icon: XCircle,
+        text: 'Cancelled',
+        color: 'text-red-600'
       }
     };
     
