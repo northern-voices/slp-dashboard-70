@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { User, Settings as SettingsIcon, HandHeart, Menu } from 'lucide-react';
@@ -12,6 +11,7 @@ import NotificationDropdown from '@/components/notifications/NotificationDropdow
 import { ScreeningFormData } from '@/types/screening';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useOrganization } from '@/contexts/OrganizationContext';
 
 interface HeaderProps {
   userRole?: 'admin' | 'slp' | 'supervisor';
@@ -32,6 +32,7 @@ const Header = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const { currentSchool } = useOrganization();
   
   const initials = userName.split(' ').map(n => n[0]).join('');
 
@@ -84,7 +85,7 @@ const Header = ({
     <>
       <header className={`bg-white border-b border-gray-100 sticky top-0 z-40 ${className || ''}`}>
         <div className="flex items-center justify-between h-16 px-6">
-          {/* Left side - Mobile hamburger + Desktop sidebar trigger */}
+          {/* Left side - Mobile hamburger + Desktop sidebar trigger + School name */}
           <div className="flex items-center">
             {/* Mobile hamburger menu */}
             <Button
@@ -106,6 +107,15 @@ const Header = ({
               </div>
               <span className="font-semibold text-gray-900 hidden md:block">Dashboard</span>
             </div>
+
+            {/* School name display */}
+            {currentSchool && (
+              <div className="hidden md:flex items-center ml-4">
+                <span className="text-blue-600 font-semibold text-lg">
+                  {currentSchool.name}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Right side - User actions */}
