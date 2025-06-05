@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from 'lucide-react';
-import SpeechScreeningFields from '../SpeechScreeningFields';
+import EnhancedSpeechScreeningFields from '../EnhancedSpeechScreeningFields';
 
 interface SpeechScreeningStep2Props {
   form: UseFormReturn<any>;
@@ -49,7 +49,7 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
         </CardContent>
       </Card>
 
-      <SpeechScreeningFields form={form} />
+      <EnhancedSpeechScreeningFields form={form} />
     </div>
   );
 };
