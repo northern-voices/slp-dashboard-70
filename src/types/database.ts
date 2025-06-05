@@ -1,4 +1,20 @@
+
 export interface School {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  phone: string;
+  principal_name?: string;
+  principal_email?: string;
+  organization_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Organization {
   id: string;
   name: string;
   address: string;
@@ -17,6 +33,17 @@ export interface UserProfile {
   email: string;
   role: 'admin' | 'slp' | 'supervisor';
   school_id: string;
+  organization_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SLPProfile {
+  id: string;
+  user_id: string;
+  organization_id: string;
+  license_number?: string;
+  specializations?: string[];
   created_at: string;
   updated_at: string;
 }
@@ -25,8 +52,14 @@ export interface Student {
   id: string;
   first_name: string;
   last_name: string;
-  dob: string;
+  date_of_birth: string;
   grade: string;
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  student_id: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  notes?: string;
+  active: boolean;
   school_id: string;
   created_at: string;
   updated_at: string;
@@ -35,13 +68,19 @@ export interface Student {
 export interface Screening {
   id: string;
   student_id: string;
+  student_name?: string;
+  grade?: string;
   type: 'speech' | 'hearing' | 'progress';
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
   date: string;
+  screening_date?: string;
+  screening_type?: 'initial' | 'follow_up' | 'annual' | 'referral';
   screener: string;
+  slp_id?: string;
   results?: string;
+  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
+  result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
   notes?: string;
   created_at: string;
   updated_at: string;
-  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
 }

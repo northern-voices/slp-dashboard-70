@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,7 +40,7 @@ const ScreeningsTable = ({
   const schoolScreenings = currentSchool ? getScreeningsBySchool(currentSchool.id) : [];
 
   const filteredScreenings = schoolScreenings.filter(screening => {
-    const matchesSearch = screening.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = screening.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          screening.screener.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === 'all' || screening.type === typeFilter;
     const matchesStatus = statusFilter === 'all' || screening.status === statusFilter;
@@ -112,19 +113,19 @@ const ScreeningsTable = ({
   const handleExport = (screening: Screening) => {
     // Create a simple CSV export for the screening
     const csvContent = `Student,Type,Status,Date,Screener,Result
-${screening.studentName},${screening.type},${screening.status},${screening.date},${screening.screener},${screening.result || 'N/A'}`;
+${screening.student_name},${screening.type},${screening.status},${screening.date},${screening.screener},${screening.result || 'N/A'}`;
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `screening-${screening.studentName}-${screening.date}.csv`;
+    link.download = `screening-${screening.student_name}-${screening.date}.csv`;
     link.click();
     window.URL.revokeObjectURL(url);
   };
 
   const handleDelete = (screening: Screening) => {
-    if (window.confirm(`Are you sure you want to delete the ${screening.type} screening for ${screening.studentName}?`)) {
+    if (window.confirm(`Are you sure you want to delete the ${screening.type} screening for ${screening.student_name}?`)) {
       console.log('Deleting screening:', screening.id);
       // Here you would typically call an API to delete the screening
       // For now, we'll just log the action
@@ -177,7 +178,7 @@ ${screening.studentName},${screening.type},${screening.status},${screening.date}
                             checked={selectedScreenings.includes(screening.id)}
                             onCheckedChange={(checked) => handleSelectScreening(screening.id, checked as boolean)}
                           />
-                          <h3 className="font-medium">{screening.studentName}</h3>
+                          <h3 className="font-medium">{screening.student_name}</h3>
                         </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -228,7 +229,7 @@ ${screening.studentName},${screening.type},${screening.status},${screening.date}
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="font-medium">{screening.studentName}</div>
+                      <div className="font-medium">{screening.student_name}</div>
                       {screening.grade && (
                         <div className="text-sm text-gray-500">Grade {screening.grade}</div>
                       )}

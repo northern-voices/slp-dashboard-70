@@ -7,11 +7,17 @@ export interface Screening {
   type: 'speech' | 'hearing' | 'progress';
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
   date: string;
+  screening_date?: string;
+  screening_type?: 'initial' | 'follow_up' | 'annual' | 'referral';
   screener: string;
+  slp_id?: string;
   results?: string;
+  result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
+  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
   notes?: string;
   created_at: string;
   updated_at: string;
+  school_id?: string;
 }
 
 export const mockScreenings: Screening[] = [
@@ -23,11 +29,17 @@ export const mockScreenings: Screening[] = [
     type: 'speech',
     status: 'completed',
     date: '2024-05-15',
+    screening_date: '2024-05-15',
+    screening_type: 'initial',
     screener: 'Dr. Sarah Johnson',
+    slp_id: 'slp1',
     results: 'Within normal limits',
+    result: 'P',
+    screening_result: 'P',
     notes: 'Student showed good articulation skills',
     created_at: '2024-05-15T10:00:00Z',
-    updated_at: '2024-05-15T14:30:00Z'
+    updated_at: '2024-05-15T14:30:00Z',
+    school_id: 'school1'
   },
   {
     id: '2',
@@ -37,10 +49,16 @@ export const mockScreenings: Screening[] = [
     type: 'hearing',
     status: 'in_progress',
     date: '2024-05-16',
+    screening_date: '2024-05-16',
+    screening_type: 'initial',
     screener: 'Dr. Mike Wilson',
+    slp_id: 'slp2',
+    result: 'M',
+    screening_result: 'M',
     notes: 'Initial screening in progress',
     created_at: '2024-05-16T09:00:00Z',
-    updated_at: '2024-05-16T09:30:00Z'
+    updated_at: '2024-05-16T09:30:00Z',
+    school_id: 'school1'
   },
   {
     id: '3',
@@ -50,10 +68,14 @@ export const mockScreenings: Screening[] = [
     type: 'speech',
     status: 'scheduled',
     date: '2024-05-17',
+    screening_date: '2024-05-17',
+    screening_type: 'follow_up',
     screener: 'Dr. Sarah Johnson',
+    slp_id: 'slp1',
     notes: 'Follow-up screening scheduled',
     created_at: '2024-05-17T08:00:00Z',
-    updated_at: '2024-05-17T08:00:00Z'
+    updated_at: '2024-05-17T08:00:00Z',
+    school_id: 'school2'
   },
   {
     id: '4',
@@ -63,9 +85,17 @@ export const mockScreenings: Screening[] = [
     type: 'hearing',
     status: 'cancelled',
     date: '2024-05-18',
+    screening_date: '2024-05-18',
+    screening_type: 'annual',
     screener: 'Dr. Mike Wilson',
+    slp_id: 'slp2',
     notes: 'Cancelled due to student absence',
     created_at: '2024-05-18T07:00:00Z',
-    updated_at: '2024-05-18T11:00:00Z'
+    updated_at: '2024-05-18T11:00:00Z',
+    school_id: 'school1'
   }
 ];
+
+export const getScreeningsBySchool = (schoolId: string): Screening[] => {
+  return mockScreenings.filter(screening => screening.school_id === schoolId);
+};
