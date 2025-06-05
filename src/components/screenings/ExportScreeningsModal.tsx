@@ -88,7 +88,7 @@ const ExportScreeningsModal = ({ isOpen, onClose, selectedScreenings, onExport }
                 <Checkbox
                   id="details"
                   checked={includeDetails}
-                  onCheckedChange={setIncludeDetails}
+                  onCheckedChange={(checked) => setIncludeDetails(checked === true)}
                 />
                 <label htmlFor="details" className="text-sm">Student details and screening info</label>
               </div>
@@ -96,7 +96,7 @@ const ExportScreeningsModal = ({ isOpen, onClose, selectedScreenings, onExport }
                 <Checkbox
                   id="results"
                   checked={includeResults}
-                  onCheckedChange={setIncludeResults}
+                  onCheckedChange={(checked) => setIncludeResults(checked === true)}
                 />
                 <label htmlFor="results" className="text-sm">Screening results and outcomes</label>
               </div>
@@ -104,7 +104,7 @@ const ExportScreeningsModal = ({ isOpen, onClose, selectedScreenings, onExport }
                 <Checkbox
                   id="notes"
                   checked={includeNotes}
-                  onCheckedChange={setIncludeNotes}
+                  onCheckedChange={(checked) => setIncludeNotes(checked === true)}
                 />
                 <label htmlFor="notes" className="text-sm">Notes and recommendations</label>
               </div>

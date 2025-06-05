@@ -89,7 +89,7 @@ const DeleteScreeningsModal = ({
             <Checkbox
               id="confirm"
               checked={confirmDelete}
-              onCheckedChange={setConfirmDelete}
+              onCheckedChange={(checked) => setConfirmDelete(checked === true)}
             />
             <label htmlFor="confirm" className="text-sm">
               I understand this action is permanent and cannot be undone

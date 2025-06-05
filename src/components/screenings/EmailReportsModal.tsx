@@ -70,7 +70,7 @@ const EmailReportsModal = ({ isOpen, onClose, selectedScreenings, onSend }: Emai
                       id={option.key}
                       checked={recipients[option.key as keyof typeof recipients]}
                       onCheckedChange={(checked) =>
-                        setRecipients(prev => ({ ...prev, [option.key]: checked }))
+                        setRecipients(prev => ({ ...prev, [option.key]: checked === true }))
                       }
                     />
                     <div className="flex items-center gap-2">
@@ -125,7 +125,7 @@ const EmailReportsModal = ({ isOpen, onClose, selectedScreenings, onSend }: Emai
                 <Checkbox
                   id="individual"
                   checked={attachIndividualReports}
-                  onCheckedChange={setAttachIndividualReports}
+                  onCheckedChange={(checked) => setAttachIndividualReports(checked === true)}
                 />
                 <label htmlFor="individual" className="text-sm">Individual screening reports</label>
               </div>
@@ -133,7 +133,7 @@ const EmailReportsModal = ({ isOpen, onClose, selectedScreenings, onSend }: Emai
                 <Checkbox
                   id="summary"
                   checked={attachSummaryReport}
-                  onCheckedChange={setAttachSummaryReport}
+                  onCheckedChange={(checked) => setAttachSummaryReport(checked === true)}
                 />
                 <label htmlFor="summary" className="text-sm">Summary report</label>
               </div>
