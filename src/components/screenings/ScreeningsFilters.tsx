@@ -28,7 +28,7 @@ const ScreeningsFilters = ({
   setDateRangeFilter
 }: ScreeningsFiltersProps) => {
   return <Card className="border-none shadow-none">
-      <CardContent className="p-6 px-0 py-0">
+      <CardContent className="p-6 px-0 py-0 bg-transparent">
         <div className="flex flex-col lg:flex-row gap-4 bg-transparent">
           <div className="flex-1">
             <div className="relative">
