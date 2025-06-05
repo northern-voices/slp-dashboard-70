@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -10,23 +9,21 @@ import ScreeningStats from '@/components/screenings/ScreeningStats';
 import ScreeningsFilters from '@/components/screenings/ScreeningsFilters';
 import ScreeningsTable from '@/components/screenings/ScreeningsTable';
 import CreateScreeningModal from '@/components/screenings/CreateScreeningModal';
-
 const ScreeningsContent = () => {
-  const { currentSchool } = useOrganization();
+  const {
+    currentSchool
+  } = useOrganization();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateRangeFilter, setDateRangeFilter] = useState('all');
   const [selectedScreenings, setSelectedScreenings] = useState<string[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
-
   const handleBulkAction = (action: string) => {
     console.log(`Performing ${action} on selected screenings:`, selectedScreenings);
     // Implement bulk actions
   };
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset>
@@ -38,10 +35,7 @@ const ScreeningsContent = () => {
                   <div>
                     <h1 className="text-3xl font-semibold text-gray-900 mb-2">Screenings</h1>
                     <p className="text-gray-600">
-                      {currentSchool 
-                        ? <>Manage and track all speech and hearing screenings at <span className="font-bold text-blue-600">{currentSchool.name}</span></>
-                        : 'Manage and track all speech and hearing screenings'
-                      }
+                      {currentSchool ? <>Manage and track all speech and hearing screenings at <span className="text-blue-600 font-medium">{currentSchool.name}</span></> : 'Manage and track all speech and hearing screenings'}
                     </p>
                   </div>
                   <Button onClick={() => setShowCreateModal(true)} className="bg-blue-600 hover:bg-blue-700">
@@ -54,47 +48,21 @@ const ScreeningsContent = () => {
               </div>
 
               <div className="space-y-6">
-                <ScreeningsFilters
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm}
-                  typeFilter={typeFilter}
-                  setTypeFilter={setTypeFilter}
-                  statusFilter={statusFilter}
-                  setStatusFilter={setStatusFilter}
-                  dateRangeFilter={dateRangeFilter}
-                  setDateRangeFilter={setDateRangeFilter}
-                />
+                <ScreeningsFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} typeFilter={typeFilter} setTypeFilter={setTypeFilter} statusFilter={statusFilter} setStatusFilter={setStatusFilter} dateRangeFilter={dateRangeFilter} setDateRangeFilter={setDateRangeFilter} />
 
-                <ScreeningsTable
-                  searchTerm={searchTerm}
-                  typeFilter={typeFilter}
-                  statusFilter={statusFilter}
-                  dateRangeFilter={dateRangeFilter}
-                  selectedScreenings={selectedScreenings}
-                  setSelectedScreenings={setSelectedScreenings}
-                  onBulkAction={handleBulkAction}
-                  currentSchool={currentSchool}
-                />
+                <ScreeningsTable searchTerm={searchTerm} typeFilter={typeFilter} statusFilter={statusFilter} dateRangeFilter={dateRangeFilter} selectedScreenings={selectedScreenings} setSelectedScreenings={setSelectedScreenings} onBulkAction={handleBulkAction} currentSchool={currentSchool} />
               </div>
             </div>
           </div>
         </SidebarInset>
       </div>
 
-      <CreateScreeningModal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-      />
-    </SidebarProvider>
-  );
+      <CreateScreeningModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />
+    </SidebarProvider>;
 };
-
 const Screenings = () => {
-  return (
-    <OrganizationProvider>
+  return <OrganizationProvider>
       <ScreeningsContent />
-    </OrganizationProvider>
-  );
+    </OrganizationProvider>;
 };
-
 export default Screenings;
