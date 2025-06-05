@@ -4,7 +4,7 @@ import {
   BarChart3,
   Building2,
   GraduationCap,
-  HandHeart,
+  // HandHeart,
   Stethoscope
 } from 'lucide-react';
 import { Location } from 'react-router-dom';
@@ -47,12 +47,12 @@ export const getNavigationGroups = (location: Location, userRole: string, userPr
       icon: BarChart3,
       isActive: location.pathname === "/reports"
     },
-    {
-      title: "School Support",
-      url: "/school-support",
-      icon: HandHeart,
-      isActive: location.pathname.startsWith("/school-support")
-    },
+    // {
+    //   title: "School Support",
+    //   url: "/school-support",
+    //   icon: HandHeart,
+    //   isActive: location.pathname.startsWith("/school-support")
+    // },
     {
       title: "Management",
       url: "/management",

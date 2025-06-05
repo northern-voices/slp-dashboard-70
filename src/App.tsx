@@ -9,9 +9,9 @@ import { OrganizationProvider } from "@/contexts/OrganizationContext";
 import Index from "./pages/Index";
 import Students from "./pages/Students";
 import StudentDetail from "./pages/StudentDetail";
-import SchoolSupportForm from "./pages/student/SchoolSupportForm";
-import SchoolSupport from "./pages/SchoolSupport";
-import CreateSchoolSupportForm from "./pages/CreateSchoolSupportForm";
+// import SchoolSupportForm from "./pages/student/SchoolSupportForm";
+// import SchoolSupport from "./pages/SchoolSupport";
+// import CreateSchoolSupportForm from "./pages/CreateSchoolSupportForm";
 import MonthlyProgressCheck from "./pages/student/MonthlyProgressCheck";
 import GenerateGoalSheet from "./pages/student/GenerateGoalSheet";
 import Screenings from "./pages/Screenings";
@@ -60,7 +60,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/students" element={<Students />} />
               <Route path="/students/:studentId" element={<StudentDetail />} />
-              <Route path="/students/:studentId/school-support" element={<SchoolSupportForm />} />
+              {/* <Route path="/students/:studentId/school-support" element={<SchoolSupportForm />} /> */}
               <Route path="/students/:studentId/progress-check" element={<MonthlyProgressCheck />} />
               <Route path="/students/:studentId/goal-sheet" element={<GenerateGoalSheet />} />
               
@@ -74,8 +74,8 @@ const App = () => (
               {/* Drafts Route */}
               <Route path="/drafts" element={<Drafts />} />
               
-              <Route path="/school-support" element={<SchoolSupport />} />
-              <Route path="/school-support/create" element={<CreateSchoolSupportForm />} />
+              {/* <Route path="/school-support" element={<SchoolSupport />} />
+              <Route path="/school-support/create" element={<CreateSchoolSupportForm />} /> */}
               <Route path="/reports" element={<Reports />} />
               <Route path="/reports/generate" element={<GenerateReport />} />
               <Route path="/reports/individual" element={<IndividualReports />} />

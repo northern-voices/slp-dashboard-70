@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { User, Settings as SettingsIcon, HandHeart, Menu } from 'lucide-react';
+import { User, Settings as SettingsIcon, /* HandHeart, */ Menu } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -40,8 +41,8 @@ const Header = ({
   const studentId = location.pathname.match(/\/students\/([^\/]+)/)?.[1];
   
   // Check if user is on main dashboard pages where Submit Ticket button should be visible
-  const isDashboardPage = ['/', '/students', '/school-support', '/reports', '/management'].includes(location.pathname);
-  const shouldShowSubmitTicketButton = studentId || isDashboardPage;
+  // const isDashboardPage = ['/', '/students', '/school-support', '/reports', '/management'].includes(location.pathname);
+  // const shouldShowSubmitTicketButton = studentId || isDashboardPage;
 
   const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {
     switch (role) {
@@ -73,13 +74,13 @@ const Header = ({
     setShowHearingScreeningModal(false);
   };
 
-  const handleSubmitTicketClick = () => {
-    if (studentId) {
-      navigate(`/students/${studentId}/school-support`);
-    } else {
-      navigate('/school-support/create');
-    }
-  };
+  // const handleSubmitTicketClick = () => {
+  //   if (studentId) {
+  //     navigate(`/students/${studentId}/school-support`);
+  //   } else {
+  //     navigate('/school-support/create');
+  //   }
+  // };
 
   return (
     <>
@@ -120,7 +121,7 @@ const Header = ({
 
           {/* Right side - User actions */}
           <div className="flex items-center md:space-x-3 space-x-2">
-            {/* Submit Ticket Button - show on desktop only */}
+            {/* Submit Ticket Button - commented out for now
             {shouldShowSubmitTicketButton && (
               <Button 
                 variant="outline" 
@@ -131,7 +132,7 @@ const Header = ({
                 <HandHeart className="md:w-4 md:h-4 w-3.5 h-3.5 mr-2" />
                 Submit Ticket
               </Button>
-            )}
+            )} */}
 
             {/* Notifications */}
             <NotificationDropdown />
