@@ -39,7 +39,7 @@ const ScreeningsContent = () => {
                     <h1 className="text-3xl font-semibold text-gray-900 mb-2">Screenings</h1>
                     <p className="text-gray-600">
                       {currentSchool 
-                        ? `Manage and track all speech and hearing screenings at ${currentSchool.name}`
+                        ? <>Manage and track all speech and hearing screenings at <span className="font-bold text-blue-600">{currentSchool.name}</span></>
                         : 'Manage and track all speech and hearing screenings'
                       }
                     </p>
