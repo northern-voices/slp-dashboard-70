@@ -17,6 +17,7 @@ import GenerateGoalSheet from "./pages/student/GenerateGoalSheet";
 import Screenings from "./pages/Screenings";
 import Reports from "./pages/Reports";
 import GenerateReport from "./pages/GenerateReport";
+import IndividualReports from "./pages/IndividualReports";
 import ReportDetail from "./pages/ReportDetail";
 import Management from "./pages/Management";
 import Profile from "./pages/Profile";
@@ -77,6 +78,7 @@ const App = () => (
               <Route path="/school-support/create" element={<CreateSchoolSupportForm />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/reports/generate" element={<GenerateReport />} />
+              <Route path="/reports/individual" element={<IndividualReports />} />
               <Route path="/reports/:reportId" element={<ReportDetail />} />
               <Route path="/management" element={<Management />} />
               <Route path="/profile" element={<Profile />} />

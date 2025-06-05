@@ -4,7 +4,6 @@ import { FileText, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import GeneratedReportsList from '@/components/reports/GeneratedReportsList';
-import IndividualStudentReports from '@/components/reports/IndividualStudentReports';
 
 const ReportsPageContent = () => {
   const navigate = useNavigate();
@@ -40,9 +39,12 @@ const ReportsPageContent = () => {
             </Card>
 
             {/* Individual Student Reports Button */}
-            <Card className="bg-white border border-gray-100 shadow-sm rounded-xl">
+            <Card 
+              className="bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => navigate('/reports/individual')}
+            >
               <CardContent className="p-6">
-                <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <User className="w-6 h-6 text-purple-600" />
                   </div>
@@ -51,7 +53,6 @@ const ReportsPageContent = () => {
                     <p className="text-sm text-gray-600">Generate reports and tools for specific students</p>
                   </div>
                 </div>
-                <IndividualStudentReports />
               </CardContent>
             </Card>
           </div>
