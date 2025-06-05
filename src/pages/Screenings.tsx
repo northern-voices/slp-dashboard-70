@@ -9,6 +9,7 @@ import ScreeningStats from '@/components/screenings/ScreeningStats';
 import ScreeningsFilters from '@/components/screenings/ScreeningsFilters';
 import ScreeningsTable from '@/components/screenings/ScreeningsTable';
 import CreateScreeningModal from '@/components/screenings/CreateScreeningModal';
+
 const ScreeningsContent = () => {
   const {
     currentSchool
@@ -35,7 +36,7 @@ const ScreeningsContent = () => {
                   <div>
                     <h1 className="text-3xl font-semibold text-gray-900 mb-2">Screenings</h1>
                     <p className="text-gray-600">
-                      {currentSchool ? <>Manage and track all speech and hearing screenings at <span className="text-blue-600 font-medium">{currentSchool.name}</span></> : 'Manage and track all speech and hearing screenings'}
+                      Manage and track all speech and hearing screenings
                     </p>
                   </div>
                   <Button onClick={() => setShowCreateModal(true)} className="bg-blue-600 hover:bg-blue-700">
@@ -60,9 +61,11 @@ const ScreeningsContent = () => {
       <CreateScreeningModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />
     </SidebarProvider>;
 };
+
 const Screenings = () => {
   return <OrganizationProvider>
       <ScreeningsContent />
     </OrganizationProvider>;
 };
+
 export default Screenings;
