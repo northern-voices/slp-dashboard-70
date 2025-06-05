@@ -90,6 +90,7 @@ export interface Screening {
   notes?: string;
   created_at: string;
   updated_at: string;
+  school_id?: string;
 }
 
 export interface Report {

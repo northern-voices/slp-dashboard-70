@@ -1,24 +1,5 @@
 
-export interface Screening {
-  id: string;
-  student_id: string;
-  student_name: string;
-  grade: string;
-  type: 'speech' | 'hearing' | 'progress';
-  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
-  date: string;
-  screening_date?: string;
-  screening_type?: 'initial' | 'follow_up' | 'annual' | 'referral';
-  screener: string;
-  slp_id?: string;
-  results?: string;
-  result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
-  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C';
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-  school_id?: string;
-}
+import { Screening } from '@/types/database';
 
 export const mockScreenings: Screening[] = [
   {

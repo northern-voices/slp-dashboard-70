@@ -9,8 +9,8 @@ import { ResponsiveTable, ResponsiveTableRow, TableHeader, TableHead, TableBody,
 import { format } from 'date-fns';
 import ScreeningBulkActions from './ScreeningBulkActions';
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal';
-import { School } from '@/types/database';
-import { getScreeningsBySchool, Screening } from '@/data/mockScreenings';
+import { School, Screening } from '@/types/database';
+import { getScreeningsBySchool } from '@/data/mockScreenings';
 
 interface ScreeningsTableProps {
   searchTerm: string;
