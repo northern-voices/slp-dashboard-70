@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
-import { OrganizationProvider } from '@/contexts/OrganizationContext';
-import { SchoolProvider, useSchool } from '@/contexts/SchoolContext';
+import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import ScreeningStats from '@/components/screenings/ScreeningStats';
@@ -13,7 +12,7 @@ import ScreeningsTable from '@/components/screenings/ScreeningsTable';
 import CreateScreeningModal from '@/components/screenings/CreateScreeningModal';
 
 const ScreeningsContent = () => {
-  const { selectedSchool } = useSchool();
+  const { currentSchool } = useOrganization();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -39,8 +38,8 @@ const ScreeningsContent = () => {
                   <div>
                     <h1 className="text-3xl font-semibold text-gray-900 mb-2">Screenings</h1>
                     <p className="text-gray-600">
-                      {selectedSchool 
-                        ? `Manage and track all speech and hearing screenings at ${selectedSchool.name}`
+                      {currentSchool 
+                        ? `Manage and track all speech and hearing screenings at ${currentSchool.name}`
                         : 'Manage and track all speech and hearing screenings'
                       }
                     </p>
@@ -74,7 +73,7 @@ const ScreeningsContent = () => {
                   selectedScreenings={selectedScreenings}
                   setSelectedScreenings={setSelectedScreenings}
                   onBulkAction={handleBulkAction}
-                  currentSchool={selectedSchool}
+                  currentSchool={currentSchool}
                 />
               </div>
             </div>
@@ -93,9 +92,7 @@ const ScreeningsContent = () => {
 const Screenings = () => {
   return (
     <OrganizationProvider>
-      <SchoolProvider>
-        <ScreeningsContent />
-      </SchoolProvider>
+      <ScreeningsContent />
     </OrganizationProvider>
   );
 };

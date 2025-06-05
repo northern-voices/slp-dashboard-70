@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -103,14 +102,6 @@ const ScreeningsTable = ({
 
   const isAllSelected = filteredScreenings.length > 0 && selectedScreenings.length === filteredScreenings.length;
   const isSomeSelected = selectedScreenings.length > 0;
-
-  if (!currentSchool) {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-        <p className="text-gray-500">Please select a school to view screenings.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
