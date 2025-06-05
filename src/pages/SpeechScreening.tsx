@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Student } from '@/types/database';
@@ -65,7 +64,7 @@ const SpeechScreeningContent = () => {
     if (studentId && !isClassWide) {
       navigate(`/students/${studentId}`);
     } else {
-      navigate('/students');
+      navigate('/screenings');
     }
   };
 
@@ -73,7 +72,7 @@ const SpeechScreeningContent = () => {
     if (studentId && !isClassWide) {
       navigate(`/students/${studentId}`);
     } else {
-      navigate('/students');
+      navigate('/screenings');
     }
   };
 
