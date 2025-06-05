@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,17 +9,7 @@ import { ResponsiveTable, ResponsiveTableRow, TableHeader, TableHead, TableBody,
 import { format } from 'date-fns';
 import ScreeningBulkActions from './ScreeningBulkActions';
 import { School } from '@/types/database';
-
-interface Screening {
-  id: string;
-  studentName: string;
-  type: 'speech' | 'hearing' | 'progress';
-  status: 'completed' | 'in_progress' | 'scheduled' | 'cancelled';
-  date: string;
-  screener: string;
-  result?: string;
-  grade?: string;
-}
+import { getScreeningsBySchool, Screening } from '@/data/mockScreenings';
 
 interface ScreeningsTableProps {
   searchTerm: string;
@@ -41,49 +32,10 @@ const ScreeningsTable = ({
   onBulkAction,
   currentSchool
 }: ScreeningsTableProps) => {
-  // Mock data filtered by current school
-  const mockScreenings: Screening[] = currentSchool ? [
-    {
-      id: '1',
-      studentName: 'Emma Johnson',
-      type: 'speech',
-      status: 'completed',
-      date: '2024-06-01',
-      screener: 'Dr. Sarah Johnson',
-      result: 'P',
-      grade: '3rd'
-    },
-    {
-      id: '2',
-      studentName: 'Michael Chen',
-      type: 'hearing',
-      status: 'completed',
-      date: '2024-05-28',
-      screener: 'Dr. Mike Wilson',
-      result: 'M',
-      grade: '6th'
-    },
-    {
-      id: '3',
-      studentName: 'Sofia Rodriguez',
-      type: 'speech',
-      status: 'in_progress',
-      date: '2024-06-03',
-      screener: 'Dr. Sarah Johnson',
-      grade: '9th'
-    },
-    {
-      id: '4',
-      studentName: 'David Park',
-      type: 'progress',
-      status: 'scheduled',
-      date: '2024-06-05',
-      screener: 'Dr. Lisa Anderson',
-      grade: '2nd'
-    },
-  ] : [];
+  // Get screenings data based on selected school
+  const schoolScreenings = currentSchool ? getScreeningsBySchool(currentSchool.id) : [];
 
-  const filteredScreenings = mockScreenings.filter(screening => {
+  const filteredScreenings = schoolScreenings.filter(screening => {
     const matchesSearch = screening.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          screening.screener.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === 'all' || screening.type === typeFilter;
