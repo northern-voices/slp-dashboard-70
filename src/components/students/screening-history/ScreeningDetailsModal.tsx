@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
-import IndividualReportEmailModal from '../IndividualReportEmailModal';
+import IndividualReportEmailModal from '@/components/reports/IndividualReportEmailModal';
 import { Student } from '@/types/database';
 import ScreeningResultBadge from './ScreeningResultBadge';
 import ScreeningBasicInfo from './ScreeningBasicInfo';
