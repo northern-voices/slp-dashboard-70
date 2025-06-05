@@ -1,15 +1,12 @@
 
 import React, { useState } from 'react';
-import { Mail, FileText, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { FileText, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import ClassWideReportsModal from '@/components/students/ClassWideReportsModal';
 import GeneratedReportsList from '@/components/reports/GeneratedReportsList';
 import IndividualStudentReports from '@/components/reports/IndividualStudentReports';
 
 const ReportsPageContent = () => {
-  const [showClassWideModal, setShowClassWideModal] = useState(false);
   const navigate = useNavigate();
 
   return (
@@ -23,25 +20,7 @@ const ReportsPageContent = () => {
           </div>
           
           {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Send Class-Wide Reports Button */}
-            <Card 
-              className="bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => setShowClassWideModal(true)}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Send Class-Wide Reports</h3>
-                    <p className="text-sm text-gray-600">Email comprehensive reports to teachers, administrators, and parents for multiple students at once</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             {/* Generate Class-Wide Report Button */}
             <Card 
               className="bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer"
@@ -61,7 +40,7 @@ const ReportsPageContent = () => {
             </Card>
 
             {/* Individual Student Reports Button */}
-            <Card className="bg-white border border-gray-100 shadow-sm rounded-xl md:col-span-2 lg:col-span-1">
+            <Card className="bg-white border border-gray-100 shadow-sm rounded-xl">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -83,11 +62,6 @@ const ReportsPageContent = () => {
           <GeneratedReportsList />
         </div>
       </div>
-
-      <ClassWideReportsModal 
-        isOpen={showClassWideModal} 
-        onClose={() => setShowClassWideModal(false)} 
-      />
     </div>
   );
 };
