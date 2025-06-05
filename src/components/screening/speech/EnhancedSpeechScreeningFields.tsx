@@ -84,90 +84,90 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       {/* Articulation/Sound Production - Detailed Assessment */}
       {selectedConcerns.includes('Articulation/Sound Production') && (
         <Card>
-          <CardHeader>
-            <Collapsible open={articulationOpen} onOpenChange={setArticulationOpen}>
+          <Collapsible open={articulationOpen} onOpenChange={setArticulationOpen}>
+            <CardHeader>
               <CollapsibleTrigger className="flex items-center gap-2 w-full">
                 {articulationOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                 <CardTitle>Articulation/Sound Production Assessment</CardTitle>
               </CollapsibleTrigger>
-            </Collapsible>
-          </CardHeader>
-          <CollapsibleContent>
-            <CardContent className="space-y-6">
-              {/* Single Sounds */}
-              <div>
-                <Label className="text-base font-medium mb-3 block">Single Sounds in Error</Label>
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-4">
-                  {singleSounds.map((sound) => (
-                    <div key={sound} className="flex flex-col">
-                      <button
-                        type="button"
-                        onClick={() => handleSoundToggle(sound)}
-                        className={`p-2 text-center border rounded-md transition-colors ${
-                          selectedSounds.includes(sound)
-                            ? 'bg-blue-100 border-blue-500 text-blue-700'
-                            : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
-                        }`}
-                      >
-                        {sound}
-                      </button>
-                      {selectedSounds.includes(sound) && (
-                        <Textarea
-                          placeholder="Notes..."
-                          value={soundNotes[sound] || ''}
-                          onChange={(e) => handleSoundNoteChange(sound, e.target.value)}
-                          className="mt-2 text-xs"
-                          rows={2}
-                        />
-                      )}
-                    </div>
-                  ))}
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent className="space-y-6">
+                {/* Single Sounds */}
+                <div>
+                  <Label className="text-base font-medium mb-3 block">Single Sounds in Error</Label>
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-4">
+                    {singleSounds.map((sound) => (
+                      <div key={sound} className="flex flex-col">
+                        <button
+                          type="button"
+                          onClick={() => handleSoundToggle(sound)}
+                          className={`p-2 text-center border rounded-md transition-colors ${
+                            selectedSounds.includes(sound)
+                              ? 'bg-blue-100 border-blue-500 text-blue-700'
+                              : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          {sound}
+                        </button>
+                        {selectedSounds.includes(sound) && (
+                          <Textarea
+                            placeholder="Notes..."
+                            value={soundNotes[sound] || ''}
+                            onChange={(e) => handleSoundNoteChange(sound, e.target.value)}
+                            className="mt-2 text-xs"
+                            rows={2}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Blends and Clusters */}
-              <div>
-                <Label className="text-base font-medium mb-3 block">Blends/Clusters in Error</Label>
-                <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
-                  {blendsClusters.map((sound) => (
-                    <div key={sound} className="flex flex-col">
-                      <button
-                        type="button"
-                        onClick={() => handleSoundToggle(sound)}
-                        className={`p-2 text-center border rounded-md transition-colors ${
-                          selectedSounds.includes(sound)
-                            ? 'bg-blue-100 border-blue-500 text-blue-700'
-                            : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
-                        }`}
-                      >
-                        {sound}
-                      </button>
-                      {selectedSounds.includes(sound) && (
-                        <Textarea
-                          placeholder="Notes..."
-                          value={soundNotes[sound] || ''}
-                          onChange={(e) => handleSoundNoteChange(sound, e.target.value)}
-                          className="mt-2 text-xs"
-                          rows={2}
-                        />
-                      )}
-                    </div>
-                  ))}
+                {/* Blends and Clusters */}
+                <div>
+                  <Label className="text-base font-medium mb-3 block">Blends/Clusters in Error</Label>
+                  <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
+                    {blendsClusters.map((sound) => (
+                      <div key={sound} className="flex flex-col">
+                        <button
+                          type="button"
+                          onClick={() => handleSoundToggle(sound)}
+                          className={`p-2 text-center border rounded-md transition-colors ${
+                            selectedSounds.includes(sound)
+                              ? 'bg-blue-100 border-blue-500 text-blue-700'
+                              : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          {sound}
+                        </button>
+                        {selectedSounds.includes(sound) && (
+                          <Textarea
+                            placeholder="Notes..."
+                            value={soundNotes[sound] || ''}
+                            onChange={(e) => handleSoundNoteChange(sound, e.target.value)}
+                            className="mt-2 text-xs"
+                            rows={2}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* General Articulation Notes */}
-              <div>
-                <Label htmlFor="general_articulation_notes">General Articulation Notes</Label>
-                <Textarea
-                  {...form.register('general_articulation_notes')}
-                  placeholder="Overall patterns, stimulability, consistency..."
-                  rows={3}
-                  className="mt-1"
-                />
-              </div>
-            </CardContent>
-          </CollapsibleContent>
+                {/* General Articulation Notes */}
+                <div>
+                  <Label htmlFor="general_articulation_notes">General Articulation Notes</Label>
+                  <Textarea
+                    {...form.register('general_articulation_notes')}
+                    placeholder="Overall patterns, stimulability, consistency..."
+                    rows={3}
+                    className="mt-1"
+                  />
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
         </Card>
       )}
 
