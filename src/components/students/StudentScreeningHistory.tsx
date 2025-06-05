@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Volume2, Mic, Search } from 'lucide-react';
+import { Plus, Volume2, Mic } from 'lucide-react';
 import { Student } from '@/types/database';
 import ScreeningFilters from './screening-filters/ScreeningFilters';
 import ScreeningsList from './screening-filters/ScreeningsList';
@@ -24,6 +23,7 @@ const StudentScreeningHistory = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [dateRangeFilter, setDateRangeFilter] = useState('all');
 
   return (
     <Card>
@@ -62,6 +62,8 @@ const StudentScreeningHistory = ({
           setFilterType={setFilterType}
           filterStatus={filterStatus}
           setFilterStatus={setFilterStatus}
+          dateRangeFilter={dateRangeFilter}
+          setDateRangeFilter={setDateRangeFilter}
         />
         
         <ScreeningsList 
@@ -69,6 +71,7 @@ const StudentScreeningHistory = ({
           searchTerm={searchTerm}
           filterType={filterType}
           filterStatus={filterStatus}
+          dateRangeFilter={dateRangeFilter}
         />
       </CardContent>
     </Card>

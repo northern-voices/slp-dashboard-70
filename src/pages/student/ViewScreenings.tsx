@@ -14,6 +14,7 @@ const ViewScreenings = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [dateRangeFilter, setDateRangeFilter] = useState<string>('all');
 
   if (!studentId) {
     return <div>Student ID not found</div>;
@@ -36,12 +37,15 @@ const ViewScreenings = () => {
                   setFilterType={setFilterType}
                   filterStatus={filterStatus}
                   setFilterStatus={setFilterStatus}
+                  dateRangeFilter={dateRangeFilter}
+                  setDateRangeFilter={setDateRangeFilter}
                 />
                 <ScreeningsList
                   studentId={studentId}
                   searchTerm={searchTerm}
                   filterType={filterType}
                   filterStatus={filterStatus}
+                  dateRangeFilter={dateRangeFilter}
                 />
               </div>
             </div>

@@ -2,22 +2,22 @@
 import React, { useState } from 'react';
 import ScreeningCard from './ScreeningCard';
 import ScreeningDetailsModal from '../screening-history/ScreeningDetailsModal';
-import { Student, Screening } from '@/types/database';
+import { Screening } from '@/types/database';
 
 interface ScreeningsListProps {
   studentId?: string;
   searchTerm: string;
   filterType: string;
   filterStatus: string;
-  student?: Student;
+  dateRangeFilter: string;
 }
 
 const ScreeningsList = ({ 
   studentId, 
   searchTerm, 
   filterType, 
-  filterStatus, 
-  student 
+  filterStatus,
+  dateRangeFilter
 }: ScreeningsListProps) => {
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,15 +65,53 @@ const ScreeningsList = ({
       created_at: '2024-06-01T08:00:00Z',
       updated_at: '2024-06-01T10:30:00Z',
     },
+    {
+      id: '4',
+      student_id: 'student4',
+      type: 'hearing',
+      date: '2024-03-10',
+      screening_date: '2024-03-10',
+      status: 'cancelled',
+      screener: 'Dr. Mike Wilson',
+      results: 'Cancelled due to student absence',
+      screening_result: 'C',
+      result: 'C',
+      created_at: '2024-03-10T08:00:00Z',
+      updated_at: '2024-03-10T11:00:00Z',
+    },
   ];
+
+  const filterByDateRange = (screening: Screening) => {
+    if (dateRangeFilter === 'all') return true;
+    
+    const screeningDate = new Date(screening.screening_date || screening.date);
+    const now = new Date();
+    
+    switch (dateRangeFilter) {
+      case 'today':
+        return screeningDate.toDateString() === now.toDateString();
+      case 'week':
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return screeningDate >= weekAgo;
+      case 'month':
+        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        return screeningDate >= monthAgo;
+      case 'quarter':
+        const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        return screeningDate >= quarterAgo;
+      default:
+        return true;
+    }
+  };
 
   const filteredScreenings = mockScreenings.filter(screening => {
     const matchesSearch = screening.screener.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          screening.results?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'all' || screening.type === filterType;
     const matchesStatus = filterStatus === 'all' || screening.status === filterStatus;
+    const matchesDateRange = filterByDateRange(screening);
     
-    return matchesSearch && matchesType && matchesStatus;
+    return matchesSearch && matchesType && matchesStatus && matchesDateRange;
   });
 
   const handleViewDetails = (screening: Screening) => {
@@ -86,7 +124,7 @@ const ScreeningsList = ({
     setSelectedScreening(null);
   };
 
-  const hasFilters = Boolean(searchTerm) || filterType !== 'all' || filterStatus !== 'all';
+  const hasFilters = Boolean(searchTerm) || filterType !== 'all' || filterStatus !== 'all' || dateRangeFilter !== 'all';
 
   if (filteredScreenings.length === 0) {
     return (
