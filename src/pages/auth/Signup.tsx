@@ -74,7 +74,6 @@ const Signup = () => {
       })
       navigate('/auth/verify-email')
     } catch (error) {
-      console.log(error, 'error')
       const errorMessage = error instanceof Error ? error.message : String(error)
       toast({
         title: errorMessage,
