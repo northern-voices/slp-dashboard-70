@@ -61,7 +61,13 @@ const Signup = () => {
 
     setIsLoading(true)
     try {
-      await signup(formData.email, formData.password, formData.organizationName)
+      await signup(
+        formData.email,
+        formData.password,
+        formData.organizationName,
+        formData.firstName,
+        formData.lastName
+      )
       toast({
         title: 'Account created successfully',
         description: 'Please check your email to verify your account.',

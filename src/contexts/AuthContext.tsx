@@ -17,7 +17,13 @@ interface AuthContextType {
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
-  signup: (email: string, password: string, organizationName: string) => Promise<void>
+  signup: (
+    email: string,
+    password: string,
+    organizationName: string,
+    firstName: string,
+    lastName: string
+  ) => Promise<void>
   verifyEmail: (token: string) => Promise<void>
   resetPassword: (email: string) => Promise<void>
   updatePassword: (token: string, newPassword: string) => Promise<void>
@@ -144,7 +150,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signup = async (
     email: string,
     password: string,
-    organizationName: string
+    organizationName: string,
+    firstName: string,
+    lastName: string
   ): Promise<void> => {
     setIsLoading(true)
     try {
@@ -161,9 +169,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         options: {
           data: {
             organizationName,
-            first_name: 'User', // TODO: Required string - update your form
-            last_name: 'Name', // TODO: Required string - update your form
-            role: 'admin', // TODO: Required - maps to user_role enum
+            first_name: firstName,
+            last_name: lastName,
+            role: 'admin', // TODO: Required - maps to user_role enum - fix logic confirm with team
           },
         },
       })
