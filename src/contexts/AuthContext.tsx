@@ -22,6 +22,7 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<void>
   updatePassword: (token: string, newPassword: string) => Promise<void>
   acceptInvitation: (token: string, userData: any) => Promise<void>
+  checkUserExists: (email: string) => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -140,27 +141,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  const signup = async (email: string, password: string, organizationName: string) => {
+  const signup = async (
+    email: string,
+    password: string,
+    organizationName: string
+  ): Promise<void> => {
     setIsLoading(true)
     try {
-      console.log('Signup data being sent:', {
-        email,
-        organizationName, // Organization will be found/created by name
-        first_name: 'User', // Placeholder - update your form to collect this
-        last_name: 'Name', // Placeholder - update your form to collect this
-        role: 'admin',
-      })
+      // Check if user already exists before attempting signup
+      const userExists = await checkUserExists(email)
 
-      const { data, error } = await supabase.auth.signUp({
+      if (userExists) {
+        throw new Error('An account with this email already exists. Please try logging in instead.')
+      }
+
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            // Remove organization_id - let the database handle it
-            organizationName, // Database will find/create org by this name
-            first_name: 'User', // Required string - update your form
-            last_name: 'Name', // Required string - update your form
-            role: 'admin', // Required - maps to user_role enum
+            organizationName,
+            first_name: 'User', // TODO: Required string - update your form
+            last_name: 'Name', // TODO: Required string - update your form
+            role: 'admin', // TODO: Required - maps to user_role enum
           },
         },
       })
@@ -168,8 +171,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) {
         throw error
       }
-
-      console.log('Signup successful:', data)
     } catch (error) {
       console.error('Signup error:', error)
       throw error
@@ -266,6 +267,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  const checkUserExists = async (email: string) => {
+    try {
+      console.log('🔍 Checking if user exists:', email)
+
+      // Use the database function that bypasses RLS
+      const { data, error } = await supabase.rpc('check_email_exists', {
+        user_email: email,
+      })
+
+      if (error) {
+        console.error('❌ Error checking user with RPC:', error)
+        return false
+      }
+
+      console.log('📊 Email exists result:', data)
+      return data === true
+    } catch (error) {
+      console.error('💥 Error checking user existence:', error)
+      return false
+    }
+  }
+
   const value = {
     user,
     isLoading,
@@ -276,6 +299,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     resetPassword,
     updatePassword,
     acceptInvitation,
+    checkUserExists,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
