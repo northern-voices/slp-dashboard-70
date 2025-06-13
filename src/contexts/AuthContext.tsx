@@ -268,24 +268,101 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  const checkUserExists = async (email: string) => {
+  // Replace your checkUserExists function with this version
+  const checkUserExists = async (email: string): Promise<boolean> => {
     try {
       console.log('🔍 Checking if user exists:', email)
 
-      // Use the database function that bypasses RLS
-      const { data, error } = await supabase.rpc('check_email_exists', {
-        user_email: email,
-      })
-
-      if (error) {
-        console.error('❌ Error checking user with RPC:', error)
+      if (!email || typeof email !== 'string') {
+        console.log('❌ Invalid email input')
         return false
       }
 
-      console.log('📊 Email exists result:', data)
-      return data === true
+      const trimmedEmail = email.toLowerCase().trim()
+      console.log('📧 Checking normalized email:', trimmedEmail)
+
+      // Direct query to public.users table (bypass RPC function)
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, email')
+        .eq('email', trimmedEmail)
+        .limit(1)
+
+      console.log('🔧 Direct query result - data:', data)
+      console.log('🔧 Direct query result - error:', error)
+
+      if (error) {
+        console.error('❌ Error querying users table:', error)
+        // If we can't query the table, return false to allow signup
+        // Supabase will handle duplicate prevention at the auth level
+        return false
+      }
+
+      const exists = data && data.length > 0
+      console.log('📊 Email exists result:', exists)
+
+      if (exists) {
+        console.log('👤 Found user:', data[0])
+      }
+
+      return exists
     } catch (error) {
-      console.error('💥 Error checking user existence:', error)
+      console.error('💥 Error in checkUserExists:', error)
+      // In case of any error, return false to allow signup attempt
+      return false
+    }
+  }
+
+  // Alternative version with even more explicit debugging
+  const checkUserExistsVerbose = async (email: string): Promise<boolean> => {
+    console.log('=== START checkUserExists ===')
+    console.log('Input email:', email)
+
+    try {
+      if (!email) {
+        console.log('No email provided, returning false')
+        return false
+      }
+
+      const normalizedEmail = String(email).toLowerCase().trim()
+      console.log('Normalized email:', normalizedEmail)
+
+      // Method 1: Count query
+      const { count, error: countError } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .eq('email', normalizedEmail)
+
+      console.log('Count query - count:', count)
+      console.log('Count query - error:', countError)
+
+      if (!countError) {
+        const exists = (count || 0) > 0
+        console.log('Count method result:', exists)
+        console.log('=== END checkUserExists ===')
+        return exists
+      }
+
+      // Method 2: Fallback to select query
+      console.log('Count method failed, trying select method...')
+      const { data, error } = await supabase.from('users').select('id').eq('email', normalizedEmail)
+
+      console.log('Select query - data:', data)
+      console.log('Select query - error:', error)
+
+      if (error) {
+        console.error('Select method also failed:', error)
+        console.log('=== END checkUserExists (error) ===')
+        return false
+      }
+
+      const exists = Array.isArray(data) && data.length > 0
+      console.log('Select method result:', exists)
+      console.log('=== END checkUserExists ===')
+      return exists
+    } catch (error) {
+      console.error('Exception in checkUserExists:', error)
+      console.log('=== END checkUserExists (exception) ===')
       return false
     }
   }
