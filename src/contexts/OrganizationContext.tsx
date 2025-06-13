@@ -1,40 +1,39 @@
-
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Organization, School, SLPProfile } from '@/types/database';
+import React, { createContext, useContext, useState, useEffect } from 'react'
+import { Organization, School, SLPProfile } from '@/types/database'
 
 interface OrganizationContextType {
-  currentOrganization: Organization | null;
-  currentSchool: School | null;
-  userProfile: SLPProfile | null;
-  availableSchools: School[];
-  isLoading: boolean;
-  setCurrentSchool: (school: School | null) => void;
-  refreshData: () => Promise<void>;
+  currentOrganization: Organization | null
+  currentSchool: School | null
+  userProfile: SLPProfile | null
+  availableSchools: School[]
+  isLoading: boolean
+  setCurrentSchool: (school: School | null) => void
+  refreshData: () => Promise<void>
 }
 
-const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
+const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined)
 
 export const useOrganization = () => {
-  const context = useContext(OrganizationContext);
+  const context = useContext(OrganizationContext)
   if (context === undefined) {
-    throw new Error('useOrganization must be used within an OrganizationProvider');
+    throw new Error('useOrganization must be used within an OrganizationProvider')
   }
-  return context;
-};
+  return context
+}
 
 interface OrganizationProviderProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ children }) => {
-  const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null);
-  const [currentSchool, setCurrentSchool] = useState<School | null>(null);
-  const [userProfile, setUserProfile] = useState<SLPProfile | null>(null);
-  const [availableSchools, setAvailableSchools] = useState<School[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null)
+  const [currentSchool, setCurrentSchool] = useState<School | null>(null)
+  const [userProfile, setUserProfile] = useState<SLPProfile | null>(null)
+  const [availableSchools, setAvailableSchools] = useState<School[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   const refreshData = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       // TODO: Replace with actual Supabase calls when integration is ready
       // For now, using mock data
@@ -49,7 +48,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         phone: '(702) 555-0100',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      };
+      }
 
       const mockProfile: SLPProfile = {
         id: '1',
@@ -64,7 +63,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         organization: mockOrganization,
-      };
+      }
 
       const mockSchools: School[] = [
         {
@@ -136,27 +135,27 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
           phone: '(702) 555-0100',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        }
-      ];
+        },
+      ]
 
-      setCurrentOrganization(mockOrganization);
-      setUserProfile(mockProfile);
-      setAvailableSchools(mockSchools);
-      
+      setCurrentOrganization(mockOrganization)
+      setUserProfile(mockProfile)
+      setAvailableSchools(mockSchools)
+
       // Set the first school as default if none selected
       if (!currentSchool && mockSchools.length > 0) {
-        setCurrentSchool(mockSchools[0]);
+        setCurrentSchool(mockSchools[0])
       }
     } catch (error) {
-      console.error('Error loading organization data:', error);
+      console.error('Error loading organization data:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    refreshData();
-  }, []);
+    refreshData()
+  }, [])
 
   const value: OrganizationContextType = {
     currentOrganization,
@@ -166,11 +165,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
     isLoading,
     setCurrentSchool,
     refreshData,
-  };
+  }
 
-  return (
-    <OrganizationContext.Provider value={value}>
-      {children}
-    </OrganizationContext.Provider>
-  );
-};
+  return <OrganizationContext.Provider value={value}>{children}</OrganizationContext.Provider>
+}
