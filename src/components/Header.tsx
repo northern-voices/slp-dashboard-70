@@ -24,6 +24,7 @@ interface HeaderProps {
   userRole?: 'admin' | 'slp' | 'supervisor'
   userName?: string
   className?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   userProfile?: any
 }
 
