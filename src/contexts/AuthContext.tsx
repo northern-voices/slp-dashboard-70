@@ -210,7 +210,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const resetPassword = async (email: string) => {
     try {
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${window.location.origin}/auth/reset-password`,
       })
 
       if (error) {
@@ -226,28 +226,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const updatePassword = async (token: string, newPassword: string) => {
     try {
-      // First verify the reset token
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        token_hash: token,
-        type: 'recovery',
-      })
+      console.log('Attempting to update password with token:', token)
 
-      if (verifyError) {
-        throw verifyError
-      }
-
-      // Then update the password
+      // Update the password directly since we already have a valid session
       const { data: updateData, error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       })
 
       if (updateError) {
+        console.error('Password update error:', updateError)
         throw updateError
       }
 
       console.log('Password updated successfully:', updateData)
     } catch (error) {
-      console.error('Password update error:', error)
+      console.error('Password update process error:', error)
       throw error
     }
   }
