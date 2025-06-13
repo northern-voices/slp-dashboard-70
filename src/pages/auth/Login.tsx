@@ -1,10 +1,16 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import AuthLayout from '@/components/auth/AuthLayout'
 import AuthFormField from '@/components/auth/AuthFormField'
 import { useAuth } from '@/contexts/AuthContext'
+
+interface LocationState {
+  from: {
+    pathname: string
+  }
+}
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -15,6 +21,10 @@ const Login = () => {
   const { login } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Get the redirect path from location state or default to home
+  const from = (location.state as LocationState)?.from?.pathname || '/'
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {}
@@ -77,7 +87,8 @@ const Login = () => {
         title: 'Login successful',
         description: 'Welcome back!',
       })
-      navigate('/')
+      // Navigate to the originally requested page or home
+      navigate(from, { replace: true })
     } catch (error) {
       console.error('Login error:', error)
       const errorMessage = getErrorMessage(error)

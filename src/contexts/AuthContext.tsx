@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { supabase } from '@/integrations/supabase/client'
+import { supabase } from '@/lib/supabase'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 interface User {
@@ -77,8 +76,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(null)
         } else if (session?.user) {
           // You might want to fetch additional user data from your profiles table here
-          const transformedUser = transformUser(session.user)
-          setUser(transformedUser)
+          const loggedInUser = transformUser(session.user)
+          setUser(loggedInUser)
         } else {
           setUser(null)
         }
