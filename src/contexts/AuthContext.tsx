@@ -28,7 +28,16 @@ interface AuthContextType {
   resendVerificationEmail: (email: string) => Promise<void>
   resetPassword: (email: string) => Promise<void>
   updatePassword: (token: string, newPassword: string) => Promise<void>
-  acceptInvitation: (token: string, userData: any) => Promise<void>
+  acceptInvitation: (
+    token: string,
+    userData: {
+      email?: string
+      password?: string
+      organizationName?: string
+      firstName?: string
+      lastName?: string
+    }
+  ) => Promise<void>
   checkUserExists: (email: string) => Promise<boolean>
 }
 
@@ -46,12 +55,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Helper function to transform Supabase user to your User interface
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const transformUser = (supabaseUser: SupabaseUser, userMetadata?: any): User => {
     return {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
-      name: userMetadata?.name || supabaseUser.user_metadata?.name || '',
+      name:
+        userMetadata?.name ||
+        `${supabaseUser.user_metadata?.first_name || ''} ${
+          supabaseUser.user_metadata?.last_name || ''
+        }`.trim() ||
+        supabaseUser.user_metadata?.name ||
+        '',
       role: userMetadata?.role || supabaseUser.user_metadata?.role || 'slp',
       organizationId:
         userMetadata?.organizationId || supabaseUser.user_metadata?.organizationId || '1',
@@ -76,7 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.error('Error getting session:', error)
           setUser(null)
         } else if (session?.user) {
-          // You might want to fetch additional user data from your profiles table here
+          // TODO: fetch additional user data from your profiles table here
           const loggedInUser = transformUser(session.user)
           setUser(loggedInUser)
         } else {
@@ -99,7 +114,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Auth state changed:', event, session)
 
       if (session?.user) {
-        // You might want to fetch additional user data from your profiles table here
+        // TODO: fetch additional user data from your profiles table here
         const transformedUser = transformUser(session.user)
         setUser(transformedUser)
       } else {
@@ -163,7 +178,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('An account with this email already exists. Please try logging in instead.')
       }
 
-      // Try without explicit emailRedirectTo first
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -174,8 +188,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             last_name: lastName,
             role: 'admin',
           },
-          // Remove or comment out the emailRedirectTo for now
-          // emailRedirectTo: `${window.location.origin}/auth/verify-email`,
+          emailRedirectTo: `${window.location.origin}/auth/verify-email`,
         },
       })
 
@@ -201,14 +214,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  // Also update your resendVerificationEmail function
   const resendVerificationEmail = async (email: string) => {
     try {
       const { data, error } = await supabase.auth.resend({
         type: 'signup',
         email,
         options: {
-          // Fix: Make sure this matches your actual development port
+          // TODO: Make sure this matches your actual development port
           emailRedirectTo: `${window.location.origin}/auth/verify-email`,
         },
       })
@@ -228,7 +240,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
         token_hash: token,
-        type: 'signup', // Changed from 'email' to 'signup'
+        type: 'signup',
       })
 
       if (error) {
@@ -280,20 +292,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  const acceptInvitation = async (token: string, userData: any) => {
+  const acceptInvitation = async (
+    token: string,
+    userData: {
+      email?: string
+      password?: string
+      organizationName?: string
+      firstName?: string
+      lastName?: string
+    }
+  ) => {
     setIsLoading(true)
     try {
-      // This would typically involve verifying an invitation token
-      // and then either signing up the user or updating their profile
-      // The exact implementation depends on how you handle invitations
-
-      // For now, this is a placeholder - you'll need to implement
-      // your specific invitation logic here
-      console.log('Accepting invitation with token:', token, 'and data:', userData)
-
       // Example: If invitation includes signup
       if (userData.email && userData.password) {
-        await signup(userData.email, userData.password, userData.organizationName || '')
+        await signup(
+          userData.email,
+          userData.password,
+          userData.organizationName || '',
+          userData.firstName || '',
+          userData.lastName || ''
+        )
       }
     } catch (error) {
       console.error('Accept invitation error:', error)
@@ -303,7 +322,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  // Replace your checkUserExists function with this version
   const checkUserExists = async (email: string): Promise<boolean> => {
     try {
       console.log('🔍 Checking if user exists:', email)
@@ -323,13 +341,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('email', trimmedEmail)
         .limit(1)
 
-      console.log('🔧 Direct query result - data:', data)
-      console.log('🔧 Direct query result - error:', error)
-
       if (error) {
-        console.error('❌ Error querying users table:', error)
-        // If we can't query the table, return false to allow signup
-        // Supabase will handle duplicate prevention at the auth level
+        console.error('Error querying users table:', error)
         return false
       }
 
@@ -343,61 +356,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return exists
     } catch (error) {
       console.error('💥 Error in checkUserExists:', error)
-      // In case of any error, return false to allow signup attempt
-      return false
-    }
-  }
-
-  // Alternative version with even more explicit debugging
-  const checkUserExistsVerbose = async (email: string): Promise<boolean> => {
-    console.log('=== START checkUserExists ===')
-    console.log('Input email:', email)
-
-    try {
-      if (!email) {
-        console.log('No email provided, returning false')
-        return false
-      }
-
-      const normalizedEmail = String(email).toLowerCase().trim()
-      console.log('Normalized email:', normalizedEmail)
-
-      // Method 1: Count query
-      const { count, error: countError } = await supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true })
-        .eq('email', normalizedEmail)
-
-      console.log('Count query - count:', count)
-      console.log('Count query - error:', countError)
-
-      if (!countError) {
-        const exists = (count || 0) > 0
-        console.log('Count method result:', exists)
-        console.log('=== END checkUserExists ===')
-        return exists
-      }
-
-      // Method 2: Fallback to select query
-      console.log('Count method failed, trying select method...')
-      const { data, error } = await supabase.from('users').select('id').eq('email', normalizedEmail)
-
-      console.log('Select query - data:', data)
-      console.log('Select query - error:', error)
-
-      if (error) {
-        console.error('Select method also failed:', error)
-        console.log('=== END checkUserExists (error) ===')
-        return false
-      }
-
-      const exists = Array.isArray(data) && data.length > 0
-      console.log('Select method result:', exists)
-      console.log('=== END checkUserExists ===')
-      return exists
-    } catch (error) {
-      console.error('Exception in checkUserExists:', error)
-      console.log('=== END checkUserExists (exception) ===')
       return false
     }
   }
