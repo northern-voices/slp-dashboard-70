@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { OrganizationProvider } from '@/contexts/OrganizationContext'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import PublicRoute from '@/components/auth/PublicRoute'
 import Index from './pages/Index'
 import Students from './pages/Students'
 import StudentDetail from './pages/StudentDetail'
@@ -46,14 +47,70 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               {/* Auth Routes */}
-              <Route path='/auth/login' element={<Login />} />
-              <Route path='/auth/signup' element={<Signup />} />
-              <Route path='/auth/forgot-password' element={<ForgotPassword />} />
-              <Route path='/auth/reset-password/' element={<ResetPassword />} />
-              <Route path='/auth/verify-email' element={<VerifyEmail />} />
-              <Route path='/auth/verify-email/:token' element={<VerifyEmail />} />
-              <Route path='/auth/verify-email/pending' element={<VerifyEmail />} />
-              <Route path='/invite/:token' element={<AcceptInvitation />} />
+              <Route
+                path='/auth/login'
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path='/auth/signup'
+                element={
+                  <PublicRoute>
+                    <Signup />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path='/auth/forgot-password'
+                element={
+                  <PublicRoute>
+                    <ForgotPassword />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path='/auth/reset-password/'
+                element={
+                  <PublicRoute>
+                    <ResetPassword />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path='/auth/verify-email'
+                element={
+                  <PublicRoute>
+                    <VerifyEmail />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path='/auth/verify-email/:token'
+                element={
+                  <PublicRoute>
+                    <VerifyEmail />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path='/auth/verify-email/pending'
+                element={
+                  <PublicRoute>
+                    <VerifyEmail />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path='/invite/:token'
+                element={
+                  <PublicRoute>
+                    <AcceptInvitation />
+                  </PublicRoute>
+                }
+              />
 
               {/* Onboarding Route */}
               <Route path='/onboarding' element={<Onboarding />} />
