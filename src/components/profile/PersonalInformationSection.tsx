@@ -21,6 +21,7 @@ interface PersonalInfoFormData {
   firstName: string
   lastName: string
   email: string
+  phone: string
   licenseNumber: string
 }
 
@@ -29,11 +30,14 @@ const PersonalInformationSection = () => {
   const { userProfile } = useOrganization()
   const [isEditing, setIsEditing] = useState(false)
 
+  console.log(userProfile, 'userProfile')
+
   const form = useForm<PersonalInfoFormData>({
     defaultValues: {
       firstName: userProfile?.first_name || '',
       lastName: userProfile?.last_name || '',
       email: userProfile?.email || '',
+      phone: userProfile?.phone || '',
       licenseNumber: userProfile?.license_number || '',
     },
   })
@@ -45,6 +49,7 @@ const PersonalInformationSection = () => {
         firstName: userProfile.first_name || '',
         lastName: userProfile.last_name || '',
         email: userProfile.email || '',
+        phone: userProfile.phone || '',
         licenseNumber: userProfile.license_number || '',
       })
     }
@@ -141,19 +146,35 @@ const PersonalInformationSection = () => {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name='licenseNumber'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>License Number</FormLabel>
-                      <FormControl>
-                        <Input {...field} disabled={!isEditing} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <FormField
+                    control={form.control}
+                    name='phone'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number</FormLabel>
+                        <FormControl>
+                          <Input {...field} disabled={!isEditing} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='licenseNumber'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>License Number</FormLabel>
+                        <FormControl>
+                          <Input {...field} disabled={!isEditing} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 {isEditing && (
                   <div className='flex justify-end'>
