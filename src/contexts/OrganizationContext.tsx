@@ -36,6 +36,8 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
 
   const { user } = useAuth()
 
+  console.log(user, 'user')
+
   const refreshData = async () => {
     if (!user) {
       setIsLoading(false)
