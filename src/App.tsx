@@ -50,7 +50,9 @@ const App = () => (
               <Route path='/auth/signup' element={<Signup />} />
               <Route path='/auth/forgot-password' element={<ForgotPassword />} />
               <Route path='/auth/reset-password/' element={<ResetPassword />} />
+              <Route path='/auth/verify-email' element={<VerifyEmail />} />
               <Route path='/auth/verify-email/:token' element={<VerifyEmail />} />
+              <Route path='/auth/verify-email/pending' element={<VerifyEmail />} />
               <Route path='/invite/:token' element={<AcceptInvitation />} />
 
               {/* Onboarding Route */}

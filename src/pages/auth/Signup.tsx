@@ -68,17 +68,33 @@ const Signup = () => {
         formData.firstName,
         formData.lastName
       )
+
       toast({
         title: 'Account created successfully',
         description: 'Please check your email to verify your account.',
       })
-      navigate('/auth/verify-email')
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      toast({
-        title: errorMessage,
-        variant: 'destructive',
+
+      navigate(`/auth/verify-email/pending?email=${encodeURIComponent(formData.email)}`, {
+        replace: true,
       })
+    } catch (error) {
+      console.error('Signup error:', error)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+
+      if (errorMessage.includes('already exists')) {
+        toast({
+          title: 'Account already exists',
+          description: 'Please try logging in instead.',
+          variant: 'destructive',
+        })
+        navigate('/auth/login')
+      } else {
+        toast({
+          title: 'Signup failed',
+          description: errorMessage,
+          variant: 'destructive',
+        })
+      }
     } finally {
       setIsLoading(false)
     }

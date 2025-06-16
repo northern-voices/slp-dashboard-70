@@ -25,6 +25,7 @@ interface AuthContextType {
     lastName: string
   ) => Promise<void>
   verifyEmail: (token: string) => Promise<void>
+  resendVerificationEmail: (email: string) => Promise<void>
   resetPassword: (email: string) => Promise<void>
   updatePassword: (token: string, newPassword: string) => Promise<void>
   acceptInvitation: (token: string, userData: any) => Promise<void>
@@ -156,14 +157,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   ): Promise<void> => {
     setIsLoading(true)
     try {
-      // Check if user already exists before attempting signup
       const userExists = await checkUserExists(email)
 
       if (userExists) {
         throw new Error('An account with this email already exists. Please try logging in instead.')
       }
 
-      const { error } = await supabase.auth.signUp({
+      // Try without explicit emailRedirectTo first
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -171,14 +172,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             organizationName,
             first_name: firstName,
             last_name: lastName,
-            role: 'admin', // TODO: Required - maps to user_role enum - fix logic confirm with team
+            role: 'admin',
           },
+          // Remove or comment out the emailRedirectTo for now
+          // emailRedirectTo: `${window.location.origin}/auth/verify-email`,
         },
       })
 
       if (error) {
+        if (error.message.includes('User already registered')) {
+          throw new Error(
+            'An account with this email already exists. Please try logging in instead.'
+          )
+        }
         throw error
       }
+
+      if (!data.user) {
+        throw new Error('Failed to create account. Please try again.')
+      }
+
+      console.log('Signup successful:', data)
     } catch (error) {
       console.error('Signup error:', error)
       throw error
@@ -187,13 +201,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  // Also update your resendVerificationEmail function
+  const resendVerificationEmail = async (email: string) => {
+    try {
+      const { data, error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: {
+          // Fix: Make sure this matches your actual development port
+          emailRedirectTo: `${window.location.origin}/auth/verify-email`,
+        },
+      })
+
+      if (error) {
+        throw error
+      }
+
+      console.log('Verification email resent:', data)
+    } catch (error) {
+      console.error('Resend verification email error:', error)
+      throw error
+    }
+  }
+
   const verifyEmail = async (token: string) => {
     try {
-      // For email verification, you typically use the token from the URL
-      // This is usually handled by Supabase automatically when user clicks the link
       const { data, error } = await supabase.auth.verifyOtp({
         token_hash: token,
-        type: 'email',
+        type: 'signup', // Changed from 'email' to 'signup'
       })
 
       if (error) {
@@ -374,6 +409,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     logout,
     signup,
     verifyEmail,
+    resendVerificationEmail,
     resetPassword,
     updatePassword,
     acceptInvitation,
