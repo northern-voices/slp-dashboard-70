@@ -293,7 +293,7 @@ ${screening.student_name},${screening.type},${screening.status},${screening.date
         screening={selectedScreening}
       />
     </>
-  );
-};
+  )
+}
 
-export default ScreeningsTable;
+export default ScreeningsTable

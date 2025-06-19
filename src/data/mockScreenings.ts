@@ -56,7 +56,7 @@ export const mockScreenings: Screening[] = [
     notes: 'Follow-up screening scheduled',
     created_at: '2024-05-17T08:00:00Z',
     updated_at: '2024-05-17T08:00:00Z',
-    school_id: 'school2'
+    school_id: 'school2',
   },
   {
     id: '4',
@@ -73,10 +73,10 @@ export const mockScreenings: Screening[] = [
     notes: 'Cancelled due to student absence',
     created_at: '2024-05-18T07:00:00Z',
     updated_at: '2024-05-18T11:00:00Z',
-    school_id: 'school1'
-  }
-];
+    school_id: 'school1',
+  },
+]
 
 export const getScreeningsBySchool = (schoolId: string): Screening[] => {
-  return mockScreenings.filter(screening => screening.school_id === schoolId);
-};
+  return mockScreenings.filter(screening => screening.school_id === schoolId)
+}

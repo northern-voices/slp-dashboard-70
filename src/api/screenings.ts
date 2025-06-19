@@ -4,7 +4,7 @@ export interface SpeechScreenings {
   id: string
 }
 
-export const screeningsApi = {
+export const speechScreeningsApi = {
   getSpeechScreeningsList: async (): Promise<SpeechScreenings[]> => {
     const { data, error } = await supabase.from('speech_screenings').select('*')
 

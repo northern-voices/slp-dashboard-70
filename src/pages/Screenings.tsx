@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { useSpeechScreenings } from '@/hooks/use-speech-screenings'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -29,6 +30,8 @@ const ScreeningsContent = () => {
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
+
+  const { data, isLoading, error } = useSpeechScreenings()
 
   return (
     <SidebarProvider>
