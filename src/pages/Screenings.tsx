@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useSpeechScreenings } from '@/hooks/use-speech-screenings'
+import { useSchools } from '@/hooks/use-schools'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -32,6 +33,8 @@ const ScreeningsContent = () => {
     : 'Dr. Sarah Johnson'
 
   const { data, isLoading, error } = useSpeechScreenings()
+
+  const { data: schools, isLoading: schoolsLoading, error: schoolsError } = useSchools()
 
   return (
     <SidebarProvider>
