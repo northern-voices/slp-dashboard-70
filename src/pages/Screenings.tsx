@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { useSpeechScreenings } from '@/hooks/use-speech-screenings'
-import { useSchools } from '@/hooks/use-schools'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -20,6 +18,7 @@ const ScreeningsContent = () => {
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
   const [selectedScreenings, setSelectedScreenings] = useState<string[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
+
   const handleBulkAction = (action: string) => {
     console.log(`Performing ${action} on selected screenings:`, selectedScreenings)
     // Implement bulk actions
@@ -31,10 +30,6 @@ const ScreeningsContent = () => {
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
-
-  const { data, isLoading, error } = useSpeechScreenings()
-
-  const { data: schools, isLoading: schoolsLoading, error: schoolsError } = useSchools()
 
   return (
     <SidebarProvider>

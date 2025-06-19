@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Eye, Download, Trash2, MoreHorizontal } from 'lucide-react'
+import { Eye, Download, Trash2, MoreHorizontal, Loader2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +21,7 @@ import { format } from 'date-fns'
 import ScreeningBulkActions from './ScreeningBulkActions'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import { School, Screening } from '@/types/database'
-import { getScreeningsBySchool } from '@/data/mockScreenings'
+import { useScreenings } from '@/hooks/use-speech-screenings'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -47,17 +47,55 @@ const ScreeningsTable = ({
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
-  // Get screenings data based on selected school
-  const schoolScreenings = currentSchool ? getScreeningsBySchool(currentSchool.id) : []
+  // Use React Query to fetch screenings data
+  const { data: allScreenings, isLoading, error } = useScreenings()
 
+  // Filter screenings by current school
+  const schoolScreenings = currentSchool
+    ? (allScreenings || []).filter(screening => screening.school_id === currentSchool.id)
+    : allScreenings || []
+
+  console.log(allScreenings, 'allScreenings')
+  console.log(schoolScreenings, 'schoolScreenings')
+
+  // Apply all filters
   const filteredScreenings = schoolScreenings.filter(screening => {
     const matchesSearch =
-      screening.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      screening.screener.toLowerCase().includes(searchTerm.toLowerCase())
+      screening.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      screening.screener?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = typeFilter === 'all' || screening.type === typeFilter
     const matchesStatus = statusFilter === 'all' || screening.status === statusFilter
 
-    return matchesSearch && matchesType && matchesStatus
+    // Apply date range filter
+    let matchesDateRange = true
+    if (dateRangeFilter !== 'all') {
+      const screeningDate = new Date(screening.date)
+      const now = new Date()
+
+      switch (dateRangeFilter) {
+        case 'today': {
+          matchesDateRange = screeningDate.toDateString() === now.toDateString()
+          break
+        }
+        case 'week': {
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+          matchesDateRange = screeningDate >= weekAgo
+          break
+        }
+        case 'month': {
+          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+          matchesDateRange = screeningDate >= monthAgo
+          break
+        }
+        case 'quarter': {
+          const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+          matchesDateRange = screeningDate >= quarterAgo
+          break
+        }
+      }
+    }
+
+    return matchesSearch && matchesType && matchesStatus && matchesDateRange
   })
 
   const getTypeColor = (type: string) => {
@@ -158,6 +196,34 @@ ${screening.student_name},${screening.type},${screening.status},${screening.date
   const isAllSelected =
     filteredScreenings.length > 0 && selectedScreenings.length === filteredScreenings.length
   const isSomeSelected = selectedScreenings.length > 0
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className='space-y-4'>
+        <div className='bg-white rounded-lg border border-gray-200 p-8'>
+          <div className='flex items-center justify-center'>
+            <Loader2 className='w-8 h-8 animate-spin text-blue-600' />
+            <span className='ml-2 text-gray-600'>Loading screenings...</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className='space-y-4'>
+        <div className='bg-white rounded-lg border border-gray-200 p-8'>
+          <div className='text-center'>
+            <p className='text-red-600 mb-2'>Error loading screenings</p>
+            <p className='text-gray-500 text-sm'>{error.message}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
