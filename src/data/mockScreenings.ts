@@ -1,5 +1,4 @@
-
-import { Screening } from '@/types/database';
+import { Screening } from '@/types/database'
 
 export const mockScreenings: Screening[] = [
   {
@@ -20,7 +19,7 @@ export const mockScreenings: Screening[] = [
     notes: 'Student showed good articulation skills',
     created_at: '2024-05-15T10:00:00Z',
     updated_at: '2024-05-15T14:30:00Z',
-    school_id: 'school1'
+    school_id: 'school1',
   },
   {
     id: '2',
@@ -39,7 +38,7 @@ export const mockScreenings: Screening[] = [
     notes: 'Initial screening in progress',
     created_at: '2024-05-16T09:00:00Z',
     updated_at: '2024-05-16T09:30:00Z',
-    school_id: 'school1'
+    school_id: 'school1',
   },
   {
     id: '3',
