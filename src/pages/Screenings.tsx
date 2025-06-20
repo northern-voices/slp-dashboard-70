@@ -21,7 +21,32 @@ const ScreeningsContent = () => {
 
   const handleBulkAction = (action: string) => {
     console.log(`Performing ${action} on selected screenings:`, selectedScreenings)
-    // Implement bulk actions
+    // Implement bulk actions like:
+    // - Export selected screenings
+    // - Delete selected screenings
+    // - Mark as completed/in progress
+    // - Generate reports for selected screenings
+
+    switch (action) {
+      case 'export':
+        // Export logic here
+        break
+      case 'delete':
+        if (
+          window.confirm(`Are you sure you want to delete ${selectedScreenings.length} screenings?`)
+        ) {
+          // Delete logic here
+          console.log('Deleting screenings:', selectedScreenings)
+          // Reset selection after deletion
+          setSelectedScreenings([])
+        }
+        break
+      case 'mark_completed':
+        // Mark as completed logic here
+        break
+      default:
+        console.log('Unknown bulk action:', action)
+    }
   }
 
   const { userProfile } = useOrganization()
@@ -45,6 +70,7 @@ const ScreeningsContent = () => {
                     <h1 className='text-3xl font-semibold text-gray-900 mb-2'>Screenings</h1>
                     <p className='text-gray-600'>
                       Manage and track all speech and hearing screenings
+                      {currentSchool && ` for ${currentSchool.name}`}
                     </p>
                   </div>
                   <Button

@@ -55,9 +55,6 @@ const ScreeningsTable = ({
     ? (allScreenings || []).filter(screening => screening.school_id === currentSchool.id)
     : allScreenings || []
 
-  console.log(allScreenings, 'allScreenings')
-  console.log(schoolScreenings, 'schoolScreenings')
-
   // Apply all filters
   const filteredScreenings = schoolScreenings.filter(screening => {
     const matchesSearch =
@@ -310,6 +307,11 @@ ${screening.student_name},${screening.type},${screening.status},${screening.date
                         <p>
                           <span className='font-medium'>Screener:</span> {screening.screener}
                         </p>
+                        {screening.grade && (
+                          <p>
+                            <span className='font-medium'>Grade:</span> {screening.grade}
+                          </p>
+                        )}
                       </div>
                     </div>
                   }>
