@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, CheckCircle, Clock, FileText, Loader2 } from 'lucide-react'
-import { useScreenings } from '@/hooks/use-screenings'
+import { useScreenings } from '@/hooks/screenings/use-screenings'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
 const ScreeningStats = () => {

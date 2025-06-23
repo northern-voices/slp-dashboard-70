@@ -21,7 +21,7 @@ import { format } from 'date-fns'
 import ScreeningBulkActions from './ScreeningBulkActions'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import { School, Screening } from '@/types/database'
-import { useScreenings } from '@/hooks/use-screenings'
+import { useScreenings } from '@/hooks/screenings/use-screenings'
 
 interface ScreeningsTableProps {
   searchTerm: string

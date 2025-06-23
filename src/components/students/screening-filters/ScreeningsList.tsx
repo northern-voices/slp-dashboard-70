@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import ScreeningCard from './ScreeningCard'
 import ScreeningDetailsModal from '../screening-history/ScreeningDetailsModal'
 import { Screening } from '@/types/database'
-import { useScreenings } from '@/hooks/use-screenings'
+import { useScreenings } from '@/hooks/screenings/use-screenings'
 import { Loader2 } from 'lucide-react'
 
 interface ScreeningsListProps {
