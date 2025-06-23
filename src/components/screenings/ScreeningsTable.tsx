@@ -338,7 +338,7 @@ ${screening.student_name},${screening.type},${screening.status},${screening.date
                   </TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(screening.status)}>
-                      {screening.status.replace('_', ' ')}
+                      {screening.status.replace('_', ' ').toUpperCase()}
                     </Badge>
                   </TableCell>
                   <TableCell>{format(new Date(screening.date), 'MMM d, yyyy')}</TableCell>

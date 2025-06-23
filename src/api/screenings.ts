@@ -103,14 +103,38 @@ const getHearingResult = (screening: RawHearingScreening): 'P' | 'M' | 'Q' | 'NR
   return 'P' // Passed
 }
 
+// Helper function to get user's organization schools
+const getUserOrganizationSchools = async (organizationId: string): Promise<string[]> => {
+  try {
+    const { data: schools, error } = await supabase
+      .from('schools')
+      .select('id')
+      .eq('organization_id', organizationId)
+
+    if (error) throw error
+    return schools?.map(school => school.id) || []
+  } catch (error) {
+    console.error('Error fetching organization schools:', error)
+    return []
+  }
+}
+
 export const screeningsApi = {
-  getScreeningsList: async (): Promise<Screening[]> => {
+  getScreeningsList: async (
+    currentUserId?: string,
+    userRole?: 'admin' | 'slp',
+    organizationId?: string
+  ): Promise<Screening[]> => {
     try {
-      // Fetch speech screenings
-      const { data: speechData, error: speechError } = await supabase
-        .from('speech_screenings')
-        .select(
-          `
+      // Get organization schools if organizationId is provided
+      let organizationSchoolIds: string[] = []
+      if (organizationId) {
+        organizationSchoolIds = await getUserOrganizationSchools(organizationId)
+      }
+
+      // Build base query for speech screenings
+      let speechQuery = supabase.from('speech_screenings').select(
+        `
           *,
           students (
             id,
@@ -129,37 +153,46 @@ export const screeningsApi = {
             last_name
           )
         `
-        )
-        .order('created_at', { ascending: false })
+      )
 
+      // Build base query for hearing screenings
+      let hearingQuery = supabase.from('hearing_screenings').select(
+        `
+          *,
+          students (
+            id,
+            first_name,
+            last_name,
+            school_id
+          ),
+          school_grades (
+            id,
+            grade_level,
+            academic_year
+          ),
+          users (
+            id,
+            first_name,
+            last_name
+          )
+        `
+      )
+
+      // Apply filters based on user role
+      if (userRole === 'slp' && currentUserId) {
+        // SLPs can only see their own screenings within their organization
+        speechQuery = speechQuery.eq('screener_id', currentUserId)
+        hearingQuery = hearingQuery.eq('screener_id', currentUserId)
+      }
+
+      const { data: speechData, error: speechError } = await speechQuery.order('created_at', {
+        ascending: false,
+      })
       if (speechError) throw speechError
 
-      // Fetch hearing screenings
-      const { data: hearingData, error: hearingError } = await supabase
-        .from('hearing_screenings')
-        .select(
-          `
-          *,
-          students (
-            id,
-            first_name,
-            last_name,
-            school_id
-          ),
-          school_grades (
-            id,
-            grade_level,
-            academic_year
-          ),
-          users (
-            id,
-            first_name,
-            last_name
-          )
-        `
-        )
-        .order('created_at', { ascending: false })
-
+      const { data: hearingData, error: hearingError } = await hearingQuery.order('created_at', {
+        ascending: false,
+      })
       if (hearingError) throw hearingError
 
       // Transform speech screenings
@@ -233,8 +266,18 @@ export const screeningsApi = {
         })
       )
 
-      // Combine and sort by date
-      const allScreenings = [...speechScreenings, ...hearingScreenings].sort(
+      // Combine all screenings
+      let allScreenings = [...speechScreenings, ...hearingScreenings]
+
+      // Filter by organization schools if provided
+      if (organizationSchoolIds.length > 0) {
+        allScreenings = allScreenings.filter(screening =>
+          organizationSchoolIds.includes(screening.school_id)
+        )
+      }
+
+      // Sort by date
+      allScreenings.sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )
 
@@ -245,12 +288,21 @@ export const screeningsApi = {
     }
   },
 
-  getSpeechScreeningsList: async (): Promise<Screening[]> => {
+  getSpeechScreeningsList: async (
+    currentUserId?: string,
+    userRole?: 'admin' | 'slp' | 'supervisor',
+    organizationId?: string
+  ): Promise<Screening[]> => {
     try {
-      const { data, error } = await supabase
-        .from('speech_screenings')
-        .select(
-          `
+      // Get organization schools if organizationId is provided
+      let organizationSchoolIds: string[] = []
+      if (organizationId) {
+        organizationSchoolIds = await getUserOrganizationSchools(organizationId)
+      }
+
+      // Build base query
+      let query = supabase.from('speech_screenings').select(
+        `
           *,
           students (
             id,
@@ -269,8 +321,15 @@ export const screeningsApi = {
             last_name
           )
         `
-        )
-        .order('created_at', { ascending: false })
+      )
+
+      // Apply filters based on user role
+      if (userRole === 'slp' && currentUserId) {
+        // SLPs can only see their own screenings within their organization
+        query = query.eq('screener_id', currentUserId)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) throw error
 
@@ -304,6 +363,13 @@ export const screeningsApi = {
         screener_id: screening.screener_id,
       }))
 
+      // Filter by organization schools if provided
+      if (organizationSchoolIds.length > 0) {
+        return transformedData.filter(screening =>
+          organizationSchoolIds.includes(screening.school_id)
+        )
+      }
+
       return transformedData
     } catch (error) {
       console.error('Error fetching speech screenings:', error)
@@ -311,12 +377,21 @@ export const screeningsApi = {
     }
   },
 
-  getHearingScreeningsList: async (): Promise<Screening[]> => {
+  getHearingScreeningsList: async (
+    currentUserId?: string,
+    userRole?: 'admin' | 'slp' | 'supervisor',
+    organizationId?: string
+  ): Promise<Screening[]> => {
     try {
-      const { data, error } = await supabase
-        .from('hearing_screenings')
-        .select(
-          `
+      // Get organization schools if organizationId is provided
+      let organizationSchoolIds: string[] = []
+      if (organizationId) {
+        organizationSchoolIds = await getUserOrganizationSchools(organizationId)
+      }
+
+      // Build base query
+      let query = supabase.from('hearing_screenings').select(
+        `
           *,
           students (
             id,
@@ -335,8 +410,15 @@ export const screeningsApi = {
             last_name
           )
         `
-        )
-        .order('created_at', { ascending: false })
+      )
+
+      // Apply filters based on user role
+      if (userRole === 'slp' && currentUserId) {
+        // SLPs can only see their own screenings within their organization
+        query = query.eq('screener_id', currentUserId)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) throw error
 
@@ -373,6 +455,13 @@ export const screeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
       }))
+
+      // Filter by organization schools if provided
+      if (organizationSchoolIds.length > 0) {
+        return transformedData.filter(screening =>
+          organizationSchoolIds.includes(screening.school_id)
+        )
+      }
 
       return transformedData
     } catch (error) {
