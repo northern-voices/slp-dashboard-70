@@ -29,10 +29,12 @@ const MultiStepSpeechScreeningForm = ({
   const createScreening = useCreateSpeechScreening()
 
   const form = useForm({
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
     defaultValues: {
       screening_type: 'initial',
       screening_date: new Date().toISOString().split('T')[0],
-      speech_screen_result: '',
+      // speech_screen_result: '',
       vocabulary_support: false,
       suspected_cas: false,
       clinical_notes: '',
@@ -67,62 +69,37 @@ const MultiStepSpeechScreeningForm = ({
     // TODO: Implement draft saving functionality
   }
 
-  // Add this debugging version to your MultiStepSpeechScreeningForm handleSubmit function
-
   const handleSubmit = (data: any) => {
-    console.log('=== FORM SUBMISSION DEBUG ===')
-    console.log('Form data:', data)
-    console.log('Selected student:', selectedStudent)
-    console.log('Selected grade ID:', selectedGradeId)
-    console.log('User:', user)
-
-    // Check for required data
-    if (!selectedStudent) {
-      console.error('❌ Missing selectedStudent')
+    // Add this check to prevent submission on wrong step
+    if (currentStep !== 3) {
       return
     }
 
-    if (!selectedGradeId) {
-      console.error('❌ Missing selectedGradeId')
-      return
-    }
-
-    if (!user?.id) {
-      console.error('❌ Missing user.id')
-      return
-    }
-
-    // Validate UUIDs
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-    if (!uuidRegex.test(selectedStudent.id)) {
-      console.error('❌ Invalid student.id format:', selectedStudent.id)
-      return
-    }
-
-    if (!uuidRegex.test(selectedGradeId)) {
-      console.error('❌ Invalid selectedGradeId format:', selectedGradeId)
-      return
-    }
-
-    if (!uuidRegex.test(user.id)) {
-      console.error('❌ Invalid user.id format:', user.id)
-      return
-    }
-
-    console.log('✅ All UUIDs are valid')
-
-    // Map form result to database result format
-    const mapResult = (result: string): 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C' | null => {
+    // Map form result to database enum values
+    const mapResult = (
+      result: string
+    ):
+      | 'absent'
+      | 'passed'
+      | 'mild_moderate'
+      | 'severe_profound'
+      | 'non_registered_no_consent'
+      | 'complex_needs'
+      | null => {
+      // The form now directly uses the database enum values, so no mapping needed
       switch (result) {
         case 'absent':
-          return 'P' // Pass
-        case 'present':
-          return 'Q' // Qualified for further evaluation
-        case 'inconclusive':
-          return 'M' // Mixed/Inconclusive
-        case 'refused':
-          return 'NR' // No Response
+          return 'absent'
+        case 'passed':
+          return 'passed'
+        case 'mild_moderate':
+          return 'mild_moderate'
+        case 'severe_profound':
+          return 'severe_profound'
+        case 'complex_needs':
+          return 'complex_needs'
+        case 'non_registered_no_consent':
+          return 'non_registered_no_consent'
         default:
           return null
       }
@@ -150,20 +127,14 @@ const MultiStepSpeechScreeningForm = ({
       referral_notes: data.referral_notes || null,
     }
 
-    console.log('Final mutation data:', mutationData)
-    console.log('=== END DEBUG ===')
-
     createScreening.mutate(mutationData, {
       onSuccess: newScreening => {
-        console.log('✅ Speech screening created successfully:', newScreening)
         if (onSubmit) {
           onSubmit(newScreening)
         }
       },
       onError: error => {
-        console.error('❌ Failed to create speech screening:', error)
-        // Log the full error for debugging
-        console.error('Full error object:', JSON.stringify(error, null, 2))
+        console.error('Failed to create speech screening:', error)
       },
     })
   }
@@ -204,7 +175,14 @@ const MultiStepSpeechScreeningForm = ({
     <div className='space-y-6'>
       <ProgressIndicator currentStep={currentStep} totalSteps={3} stepTitles={stepTitles} />
 
-      <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-6'>
+      <form
+        onSubmit={e => {
+          // ALWAYS prevent the default form submission behavior
+          e.preventDefault()
+          e.stopPropagation()
+          return false
+        }}
+        className='space-y-6'>
         {renderCurrentStep()}
 
         {/* Action Buttons */}
@@ -235,7 +213,19 @@ const MultiStepSpeechScreeningForm = ({
               </Button>
             ) : (
               <Button
-                type='submit'
+                type='button' // Change from 'submit' to 'button'
+                onClick={() => {
+                  // Get form data and validate
+                  const formData = form.getValues()
+                  const formErrors = Object.keys(form.formState.errors)
+
+                  if (formErrors.length > 0) {
+                    return
+                  }
+
+                  // Manually call handleSubmit with form data
+                  handleSubmit(formData)
+                }}
                 disabled={createScreening.isPending}
                 className='bg-primary hover:bg-primary/90 text-primary-foreground'>
                 {createScreening.isPending ? 'Creating...' : 'Submit Screening'}

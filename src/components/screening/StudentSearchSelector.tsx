@@ -38,14 +38,7 @@ const StudentSearchSelector = ({
   const studentsToShow = searchValue.length >= 2 ? searchResults : studentsByGrade
   const isLoading = searchValue.length >= 2 ? loadingSearch : loadingByGrade
 
-  console.log('🔍 StudentSearchSelector Debug:')
-  console.log('Grade filter:', gradeFilter)
-  console.log('Search value:', searchValue)
-  console.log('Students to show:', studentsToShow)
-  console.log('Loading:', isLoading)
-
   const handleStudentSelect = (student: Student) => {
-    console.log('✅ Selected student (real data):', student)
     onStudentSelect(student)
     setOpen(false)
     setSearchValue('')

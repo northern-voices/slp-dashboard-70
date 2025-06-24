@@ -28,13 +28,20 @@ const SpeechScreeningStep3 = ({ form }: SpeechScreeningStep3Props) => {
 
   const [selectedSupport, setSelectedSupport] = React.useState<string[]>([])
 
+  const vocabularySupport = form.watch('vocabulary_support')
+  const suspectedCas = form.watch('suspected_cas')
+
+  // ✅ FIX: Update selectedSupport whenever the form values change
   React.useEffect(() => {
     const currentSupport = []
-    if (form.watch('vocabulary_support'))
+    if (vocabularySupport) {
       currentSupport.push('Vocabulary Support (Language Ladder)')
-    if (form.watch('suspected_cas')) currentSupport.push('Suspected CAS')
+    }
+    if (suspectedCas) {
+      currentSupport.push('Suspected CAS')
+    }
     setSelectedSupport(currentSupport)
-  }, [form.watch('vocabulary_support'), form.watch('suspected_cas')])
+  }, [vocabularySupport, suspectedCas]) // ✅ Use the watched values, not form.watch() directly
 
   const handleSupportChange = (selected: string[]) => {
     setSelectedSupport(selected)
@@ -43,7 +50,13 @@ const SpeechScreeningStep3 = ({ form }: SpeechScreeningStep3Props) => {
   }
 
   return (
-    <div className='space-y-6'>
+    <div
+      className='space-y-6'
+      onKeyDown={e => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+        }
+      }}>
       <Card>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
@@ -56,19 +69,27 @@ const SpeechScreeningStep3 = ({ form }: SpeechScreeningStep3Props) => {
             <Label htmlFor='speech_screen_result'>Speech Screen Result *</Label>
             <Select
               value={form.watch('speech_screen_result')}
-              onValueChange={value => form.setValue('speech_screen_result', value)}>
+              onValueChange={value => {
+                form.setValue('speech_screen_result', value)
+              }}>
               <SelectTrigger>
                 <SelectValue placeholder='Select result' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='absent'>Absent (Pass)</SelectItem>
-                <SelectItem value='present'>Present (Needs Further Evaluation)</SelectItem>
-                <SelectItem value='inconclusive'>Inconclusive</SelectItem>
-                <SelectItem value='refused'>Refused/No Response</SelectItem>
+                <SelectItem value='absent'>Absent (No speech concerns)</SelectItem>
+                <SelectItem value='passed'>Passed (Within normal limits)</SelectItem>
+                <SelectItem value='mild_moderate'>Mild/Moderate (Some concerns present)</SelectItem>
+                <SelectItem value='severe_profound'>
+                  Severe/Profound (Significant concerns)
+                </SelectItem>
+                <SelectItem value='complex_needs'>
+                  Complex Needs (Requires specialized assessment)
+                </SelectItem>
+                <SelectItem value='non_registered_no_consent'>Non-Registered/No Consent</SelectItem>
               </SelectContent>
             </Select>
             <p className='text-xs text-gray-500 mt-1'>
-              This maps to database values: Absent=P, Present=Q, Inconclusive=M, Refused=NR
+              Select the appropriate result category based on the screening findings
             </p>
           </div>
 
@@ -92,6 +113,15 @@ const SpeechScreeningStep3 = ({ form }: SpeechScreeningStep3Props) => {
               placeholder='Enter private clinical observations and notes...'
               rows={4}
               className='mt-1'
+              onKeyDown={e => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  // Allow Ctrl+Enter for new lines
+                  return
+                }
+                if (e.key === 'Enter') {
+                  e.stopPropagation() // Prevent form submission
+                }
+              }}
             />
           </div>
 
@@ -102,6 +132,15 @@ const SpeechScreeningStep3 = ({ form }: SpeechScreeningStep3Props) => {
               placeholder='Enter referral information and recommendations...'
               rows={4}
               className='mt-1'
+              onKeyDown={e => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  // Allow Ctrl+Enter for new lines
+                  return
+                }
+                if (e.key === 'Enter') {
+                  e.stopPropagation() // Prevent form submission
+                }
+              }}
             />
           </div>
 
@@ -112,6 +151,15 @@ const SpeechScreeningStep3 = ({ form }: SpeechScreeningStep3Props) => {
               placeholder='Enter attendance information...'
               rows={3}
               className='mt-1'
+              onKeyDown={e => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  // Allow Ctrl+Enter for new lines
+                  return
+                }
+                if (e.key === 'Enter') {
+                  e.stopPropagation() // Prevent form submission
+                }
+              }}
             />
           </div>
         </CardContent>

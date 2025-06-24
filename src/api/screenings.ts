@@ -1,6 +1,14 @@
 import { supabase } from '@/lib/supabase'
 import { Screening } from '@/types/database'
 
+type SpeechScreeningResult =
+  | 'absent'
+  | 'passed'
+  | 'mild_moderate'
+  | 'severe_profound'
+  | 'non_registered_no_consent'
+  | 'complex_needs'
+
 interface RawSpeechScreening {
   id: string
   student_id: string
@@ -214,8 +222,8 @@ export const screeningsApi = {
             : 'Unknown Screener',
           slp_id: screening.screener_id,
           results: screening.clinical_notes || screening.referral_notes || '',
-          result: (screening.result as 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C') || undefined,
-          screening_result: (screening.result as 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C') || undefined,
+          result: (screening.result as SpeechScreeningResult) || undefined,
+          screening_result: (screening.result as SpeechScreeningResult) || undefined,
           notes: screening.clinical_notes || '',
           referral_notes: screening.referral_notes || '',
           vocabulary_support: screening.vocabulary_support,
@@ -350,8 +358,8 @@ export const screeningsApi = {
           : 'Unknown Screener',
         slp_id: screening.screener_id,
         results: screening.clinical_notes || screening.referral_notes || '',
-        result: (screening.result as 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C') || undefined,
-        screening_result: (screening.result as 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C') || undefined,
+        result: (screening.result as SpeechScreeningResult) || undefined,
+        screening_result: (screening.result as SpeechScreeningResult) || undefined,
         notes: screening.clinical_notes || '',
         referral_notes: screening.referral_notes || '',
         vocabulary_support: screening.vocabulary_support,
@@ -474,32 +482,18 @@ export const screeningsApi = {
     student_id: string
     screener_id: string
     grade_id: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error_patterns?: any
-    result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C' | null
+    result?: SpeechScreeningResult | null
     vocabulary_support?: boolean
     suspected_cas?: boolean
     clinical_notes?: string | null
     referral_notes?: string | null
   }): Promise<Screening> => {
     try {
-      console.log('🚀 Creating speech screening with data:', data)
-
       // Validate required fields
       if (!data.student_id || !data.screener_id || !data.grade_id) {
         throw new Error('Missing required fields: student_id, screener_id, or grade_id')
-      }
-
-      // Validate UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-      if (!uuidRegex.test(data.student_id)) {
-        throw new Error(`Invalid student_id UUID format: ${data.student_id}`)
-      }
-      if (!uuidRegex.test(data.screener_id)) {
-        throw new Error(`Invalid screener_id UUID format: ${data.screener_id}`)
-      }
-      if (!uuidRegex.test(data.grade_id)) {
-        throw new Error(`Invalid grade_id UUID format: ${data.grade_id}`)
       }
 
       const insertData = {
@@ -513,8 +507,6 @@ export const screeningsApi = {
         clinical_notes: data.clinical_notes || null,
         referral_notes: data.referral_notes || null,
       }
-
-      console.log('📝 Insert data:', insertData)
 
       const { data: newScreening, error } = await supabase
         .from('speech_screenings')
@@ -543,15 +535,13 @@ export const screeningsApi = {
         .single()
 
       if (error) {
-        console.error('💥 Supabase error:', error)
+        console.error('Supabase error:', error)
         throw error
       }
 
       if (!newScreening) {
         throw new Error('No data returned from insert operation')
       }
-
-      console.log('✅ Raw screening data from database:', newScreening)
 
       // Safely access nested objects with null checks
       const studentName = newScreening.students
@@ -580,8 +570,8 @@ export const screeningsApi = {
         screener: screenerName,
         slp_id: newScreening.screener_id,
         results: newScreening.clinical_notes || newScreening.referral_notes || '',
-        result: (newScreening.result as 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C') || undefined,
-        screening_result: (newScreening.result as 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C') || undefined,
+        result: newScreening.result,
+        screening_result: newScreening.result,
         notes: newScreening.clinical_notes || '',
         referral_notes: newScreening.referral_notes || '',
         vocabulary_support: newScreening.vocabulary_support,
@@ -593,10 +583,110 @@ export const screeningsApi = {
         screener_id: newScreening.screener_id,
       }
 
-      console.log('🎉 Transformed screening:', transformedScreening)
       return transformedScreening
     } catch (error) {
-      console.error('💥 Error creating speech screening:', error)
+      console.error('Error creating speech screening:', error)
+      throw error
+    }
+  },
+
+  // You can add more mutation functions here
+  updateSpeechScreening: async (
+    id: string,
+    data: Partial<{
+      student_id: string
+      screener_id: string
+      grade_id: string
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error_patterns: any
+      result: SpeechScreeningResult | null
+      vocabulary_support: boolean
+      suspected_cas: boolean
+      clinical_notes: string | null
+      referral_notes: string | null
+    }>
+  ): Promise<Screening> => {
+    try {
+      const { data: updatedScreening, error } = await supabase
+        .from('speech_screenings')
+        .update(data)
+        .eq('id', id)
+        .select(
+          `
+        *,
+        students (
+          id,
+          first_name,
+          last_name,
+          school_id
+        ),
+        school_grades (
+          id,
+          grade_level,
+          academic_year
+        ),
+        users (
+          id,
+          first_name,
+          last_name
+        )
+      `
+        )
+        .single()
+
+      if (error) throw error
+
+      // Transform similar to createSpeechScreening
+      const studentName = updatedScreening.students
+        ? `${updatedScreening.students.first_name} ${updatedScreening.students.last_name}`
+        : 'Unknown Student'
+
+      const gradeLevel = updatedScreening.school_grades?.grade_level || ''
+      const screenerName = updatedScreening.users
+        ? `${updatedScreening.users.first_name} ${updatedScreening.users.last_name}`
+        : 'Unknown Screener'
+      const schoolId = updatedScreening.students?.school_id || ''
+
+      const transformedScreening: Screening = {
+        id: updatedScreening.id,
+        student_id: updatedScreening.student_id,
+        student_name: studentName,
+        grade: gradeLevel,
+        type: 'speech' as const,
+        status: getScreeningStatus(updatedScreening),
+        date: updatedScreening.created_at?.split('T')[0] || '',
+        screening_date: updatedScreening.created_at?.split('T')[0] || '',
+        screening_type: 'initial',
+        screener: screenerName,
+        slp_id: updatedScreening.screener_id,
+        results: updatedScreening.clinical_notes || updatedScreening.referral_notes || '',
+        result: updatedScreening.result || undefined,
+        screening_result: updatedScreening.result || undefined,
+        notes: updatedScreening.clinical_notes || '',
+        referral_notes: updatedScreening.referral_notes || '',
+        vocabulary_support: updatedScreening.vocabulary_support,
+        suspected_cas: updatedScreening.suspected_cas,
+        created_at: updatedScreening.created_at,
+        updated_at: updatedScreening.updated_at,
+        school_id: schoolId,
+        grade_id: updatedScreening.grade_id,
+        screener_id: updatedScreening.screener_id,
+      }
+
+      return transformedScreening
+    } catch (error) {
+      console.error('Error updating speech screening:', error)
+      throw error
+    }
+  },
+
+  deleteSpeechScreening: async (id: string): Promise<void> => {
+    try {
+      const { error } = await supabase.from('speech_screenings').delete().eq('id', id)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error deleting speech screening:', error)
       throw error
     }
   },
