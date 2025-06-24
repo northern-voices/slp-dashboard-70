@@ -470,11 +470,11 @@ export const screeningsApi = {
     }
   },
 
-  // Add this to your screeningsApi object in /api/screenings.ts
   createSpeechScreening: async (data: {
     student_id: string
     screener_id: string
     grade_id: string
+    error_patterns?: any
     result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C' | null
     vocabulary_support?: boolean
     suspected_cas?: boolean
