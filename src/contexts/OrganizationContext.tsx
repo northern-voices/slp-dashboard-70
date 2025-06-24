@@ -36,7 +36,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
 
   const { user } = useAuth()
 
-  console.log(user, 'user')
+  // console.log(user, 'user')
 
   const refreshData = async () => {
     if (!user) {
@@ -68,7 +68,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         return
       }
 
-      console.log(userData, 'userData')
+      // console.log(userData, 'userData')
 
       // Transform the user data to match your SLPProfile interface
       // TODO: Adjust this mapping based on your actual SLPProfile type

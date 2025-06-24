@@ -2,14 +2,15 @@ import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Student } from '@/types/database'
-import { ScreeningFormData } from '@/types/screening'
+import { useCreateSpeechScreening } from '@/hooks/screenings'
+import { useAuth } from '@/contexts/AuthContext'
 import ProgressIndicator from '../shared/ProgressIndicator'
 import SpeechScreeningStep1 from './steps/SpeechScreeningStep1'
 import SpeechScreeningStep2 from './steps/SpeechScreeningStep2'
 import SpeechScreeningStep3 from './steps/SpeechScreeningStep3'
 
 interface MultiStepSpeechScreeningFormProps {
-  onSubmit: (data: ScreeningFormData) => void
+  onSubmit?: (data: any) => void
   onCancel: () => void
   existingStudent?: Student | null
 }
@@ -21,7 +22,11 @@ const MultiStepSpeechScreeningForm = ({
 }: MultiStepSpeechScreeningFormProps) => {
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null)
-  const [selectedGrade, setSelectedGrade] = useState<string>(existingStudent?.grade || '')
+  const [selectedGrade, setSelectedGrade] = useState<string>('')
+  const [selectedGradeId, setSelectedGradeId] = useState<string>('')
+
+  const { user } = useAuth()
+  const createScreening = useCreateSpeechScreening()
 
   const form = useForm({
     defaultValues: {
@@ -31,35 +36,17 @@ const MultiStepSpeechScreeningForm = ({
       vocabulary_support: false,
       suspected_cas: false,
       clinical_notes: '',
-      recommendations_referrals: '',
+      referral_notes: '',
       attendance: '',
-      // Speech screening fields
+      // Speech screening fields (for error_patterns)
       sound_errors: [],
       articulation_notes: '',
       language_concerns: '',
       voice_quality: '',
       fluency_notes: '',
       overall_observations: '',
-      general_notes: '',
-      recommendations: '',
-      follow_up_required: false,
-      follow_up_date: '',
     },
   })
-
-  // TODO: Handle the create speech screening mutation here
-  // const createScreening = useCreateSpeechScreening()
-
-  // const handleSubmit = () => {
-  //   createScreening.mutate({
-  //     student_id: "123",
-  //     screener_id: "456",
-  //     grade_id: "789",
-  //     result: "P",
-  //     vocabulary_support: true,
-  //     clinical_notes: "Student performed well"
-  //   })
-  // }
 
   const stepTitles = ['Student Info', 'Screening Details', 'Results & Notes']
 
@@ -80,34 +67,110 @@ const MultiStepSpeechScreeningForm = ({
     // TODO: Implement draft saving functionality
   }
 
-  const handleSubmit = (data: any) => {
-    console.log('Speech screening submitted:', data)
+  // Add this debugging version to your MultiStepSpeechScreeningForm handleSubmit function
 
-    const screeningData: ScreeningFormData = {
-      screening_type: data.screening_type || 'initial',
-      student_id: selectedStudent?.id || '',
-      screening_date: data.screening_date || new Date().toISOString().split('T')[0],
-      form_type: 'speech',
-      speech_data: {
-        sound_errors: data.sound_errors || [],
-        articulation_notes: data.articulation_notes || '',
-        language_concerns: data.language_concerns || '',
-        voice_quality: data.voice_quality || '',
-        fluency_notes: data.fluency_notes || '',
-        overall_observations: data.overall_observations || '',
-      },
-      general_notes: data.general_notes || '',
-      recommendations: data.recommendations || '',
-      follow_up_required: data.follow_up_required || false,
-      follow_up_date: data.follow_up_date,
+  const handleSubmit = (data: any) => {
+    console.log('=== FORM SUBMISSION DEBUG ===')
+    console.log('Form data:', data)
+    console.log('Selected student:', selectedStudent)
+    console.log('Selected grade ID:', selectedGradeId)
+    console.log('User:', user)
+
+    // Check for required data
+    if (!selectedStudent) {
+      console.error('❌ Missing selectedStudent')
+      return
     }
 
-    onSubmit(screeningData)
+    if (!selectedGradeId) {
+      console.error('❌ Missing selectedGradeId')
+      return
+    }
+
+    if (!user?.id) {
+      console.error('❌ Missing user.id')
+      return
+    }
+
+    // Validate UUIDs
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+    if (!uuidRegex.test(selectedStudent.id)) {
+      console.error('❌ Invalid student.id format:', selectedStudent.id)
+      return
+    }
+
+    if (!uuidRegex.test(selectedGradeId)) {
+      console.error('❌ Invalid selectedGradeId format:', selectedGradeId)
+      return
+    }
+
+    if (!uuidRegex.test(user.id)) {
+      console.error('❌ Invalid user.id format:', user.id)
+      return
+    }
+
+    console.log('✅ All UUIDs are valid')
+
+    // Map form result to database result format
+    const mapResult = (result: string): 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C' | null => {
+      switch (result) {
+        case 'absent':
+          return 'P' // Pass
+        case 'present':
+          return 'Q' // Qualified for further evaluation
+        case 'inconclusive':
+          return 'M' // Mixed/Inconclusive
+        case 'refused':
+          return 'NR' // No Response
+        default:
+          return null
+      }
+    }
+
+    // Build error_patterns object from speech screening data
+    const errorPatterns = {
+      sound_errors: data.sound_errors || [],
+      articulation_notes: data.articulation_notes || '',
+      language_concerns: data.language_concerns || '',
+      voice_quality: data.voice_quality || '',
+      fluency_notes: data.fluency_notes || '',
+      overall_observations: data.overall_observations || '',
+    }
+
+    const mutationData = {
+      student_id: selectedStudent.id,
+      screener_id: user.id,
+      grade_id: selectedGradeId,
+      error_patterns: errorPatterns,
+      result: mapResult(data.speech_screen_result),
+      vocabulary_support: data.vocabulary_support || false,
+      suspected_cas: data.suspected_cas || false,
+      clinical_notes: data.clinical_notes || null,
+      referral_notes: data.referral_notes || null,
+    }
+
+    console.log('Final mutation data:', mutationData)
+    console.log('=== END DEBUG ===')
+
+    createScreening.mutate(mutationData, {
+      onSuccess: newScreening => {
+        console.log('✅ Speech screening created successfully:', newScreening)
+        if (onSubmit) {
+          onSubmit(newScreening)
+        }
+      },
+      onError: error => {
+        console.error('❌ Failed to create speech screening:', error)
+        // Log the full error for debugging
+        console.error('Full error object:', JSON.stringify(error, null, 2))
+      },
+    })
   }
 
   const canProceedToNext = () => {
     if (currentStep === 1) {
-      return selectedGrade && selectedStudent
+      return selectedGrade && selectedStudent && selectedGradeId
     }
     if (currentStep === 2) {
       return form.watch('screening_type') && form.watch('screening_date')
@@ -125,6 +188,7 @@ const MultiStepSpeechScreeningForm = ({
             selectedGrade={selectedGrade}
             onStudentSelect={setSelectedStudent}
             onGradeChange={setSelectedGrade}
+            onGradeIdChange={setSelectedGradeId}
           />
         )
       case 2:
@@ -172,8 +236,9 @@ const MultiStepSpeechScreeningForm = ({
             ) : (
               <Button
                 type='submit'
+                disabled={createScreening.isPending}
                 className='bg-primary hover:bg-primary/90 text-primary-foreground'>
-                Submit Screening
+                {createScreening.isPending ? 'Creating...' : 'Submit Screening'}
               </Button>
             )}
           </div>
