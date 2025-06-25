@@ -14,7 +14,7 @@ import { Calendar } from 'lucide-react'
 import EnhancedSpeechScreeningFields from '../EnhancedSpeechScreeningFields'
 
 interface SpeechScreeningStep2Props {
-  form: UseFormReturn<any>
+  form: UseFormReturn
 }
 
 const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
