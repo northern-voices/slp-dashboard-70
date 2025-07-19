@@ -12,7 +12,7 @@ import {
 import { User } from 'lucide-react'
 import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
-import { useSchoolGrades } from '@/hooks/use-school-grades' // You'll need this hook
+import { useSchoolGrades } from '@/hooks/use-school-grades'
 
 interface SpeechScreeningStep1Props {
   form: UseFormReturn<any>
@@ -20,7 +20,7 @@ interface SpeechScreeningStep1Props {
   selectedGrade: string
   onStudentSelect: (student: Student | null) => void
   onGradeChange: (grade: string) => void
-  onGradeIdChange: (gradeId: string) => void // Add this prop
+  onGradeIdChange: (gradeId: string) => void
 }
 
 const gradeOptions = [
@@ -51,8 +51,24 @@ const SpeechScreeningStep1 = ({
   // Fetch available school grades for the current organization
   const { data: schoolGrades } = useSchoolGrades()
 
-  // Filter grades based on selected grade level
-  const availableGradeIds = schoolGrades?.filter(grade => grade.grade_level === selectedGrade) || []
+  // Filter grades based on selected grade level and get unique academic years
+  const availableGradeIds = React.useMemo(() => {
+    if (!schoolGrades || !selectedGrade) return []
+
+    const filteredGrades = schoolGrades.filter(grade => grade.grade_level === selectedGrade)
+
+    // Remove duplicates based on academic_year
+    const uniqueGrades = filteredGrades.reduce((acc, current) => {
+      const existing = acc.find(item => item.academic_year === current.academic_year)
+      if (!existing) {
+        acc.push(current)
+      }
+      return acc
+    }, [] as typeof filteredGrades)
+
+    // Sort by academic year (most recent first)
+    return uniqueGrades.sort((a, b) => b.academic_year.localeCompare(a.academic_year))
+  }, [schoolGrades, selectedGrade])
 
   const handleGradeChange = (grade: string) => {
     onGradeChange(grade)
