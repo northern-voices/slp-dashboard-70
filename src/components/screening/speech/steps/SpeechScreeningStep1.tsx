@@ -23,21 +23,34 @@ interface SpeechScreeningStep1Props {
   onGradeIdChange: (gradeId: string) => void
 }
 
-const gradeOptions = [
-  'Pre-K',
-  'K',
-  '1st',
-  '2nd',
-  '3rd',
-  '4th',
-  '5th',
-  '6th',
-  '7th',
-  '8th',
-  '9th',
-  '10th',
-  '11th',
-  '12th',
+// Map display names to database values (all as strings to match database)
+const gradeMapping = [
+  { display: 'Pre-K', value: 'Pre-' },
+  { display: 'Nursery', value: 'Nursery' },
+  { display: 'Headstart', value: 'Headstart' },
+  { display: 'K4', value: 'K4' },
+  { display: 'K5', value: 'K5' },
+  { display: 'Kindergarten', value: 'K' },
+  { display: 'Kindergarten (Full)', value: 'Kindergarten' },
+  { display: '1st Grade', value: '1' },
+  { display: '1A', value: '1A' },
+  { display: '1B', value: '1B' },
+  { display: '1/2 Grade', value: '1/2' },
+  { display: '2nd Grade', value: '2' },
+  { display: '2/3 Grade', value: '2/3' },
+  { display: '3rd Grade', value: '3' },
+  { display: '4th Grade', value: '4' },
+  { display: '5th Grade', value: '5' },
+  { display: '5/6 Grade', value: '5/6' },
+  { display: '6th Grade', value: '6' },
+  { display: '6/7 Grade', value: '6/7' },
+  { display: '7th Grade', value: '7' },
+  { display: '7/8 Grade', value: '7/8' },
+  { display: '8th Grade', value: '8' },
+  { display: '9th Grade', value: '9' },
+  { display: '10th Grade', value: '10' },
+  { display: '11th Grade', value: '11' },
+  { display: '12th Grade', value: '12' },
 ]
 
 const SpeechScreeningStep1 = ({
@@ -55,7 +68,13 @@ const SpeechScreeningStep1 = ({
   const availableGradeIds = React.useMemo(() => {
     if (!schoolGrades || !selectedGrade) return []
 
-    const filteredGrades = schoolGrades.filter(grade => grade.grade_level === selectedGrade)
+    // Since all grade_levels in the database are strings, keep selectedGrade as string
+    const gradeValue = selectedGrade
+
+    const filteredGrades = schoolGrades.filter(grade => {
+      const match = grade.grade_level === gradeValue
+      return match
+    })
 
     // Remove duplicates based on academic_year
     const uniqueGrades = filteredGrades.reduce((acc, current) => {
@@ -97,9 +116,9 @@ const SpeechScreeningStep1 = ({
                 <SelectValue placeholder='Select grade' />
               </SelectTrigger>
               <SelectContent>
-                {gradeOptions.map(grade => (
-                  <SelectItem key={grade} value={grade}>
-                    {grade}
+                {gradeMapping.map(grade => (
+                  <SelectItem key={grade.value} value={grade.value}>
+                    {grade.display}
                   </SelectItem>
                 ))}
               </SelectContent>
