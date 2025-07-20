@@ -57,37 +57,41 @@ const SchoolSelector = () => {
           <CommandList>
             <CommandEmpty>No schools found.</CommandEmpty>
             <CommandGroup>
-              {availableSchools.map(school => (
-                <CommandItem
-                  key={school.id}
-                  value={school.name}
-                  onSelect={() => {
-                    setCurrentSchool(school.id === currentSchool?.id ? null : school)
-                    setOpen(false)
-                  }}>
-                  <Check
-                    className={cn(
-                      'mr-2 h-4 w-4',
-                      currentSchool?.id === school.id ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
-                  <div className='flex items-center space-x-2'>
-                    <div className='w-4 h-4 rounded flex items-center justify-center overflow-hidden flex-shrink-0'>
-                      <img
-                        src='/lovable-uploads/bc930c0b-cb09-4e70-9ac0-a44c74d79d80.png'
-                        alt='School Logo'
-                        className='w-full h-full object-contain'
-                      />
-                    </div>
-                    <div className='flex flex-col'>
-                      <span>{school.name}</span>
-                      {school.address && (
-                        <span className='text-xs text-gray-500'>{school.address}</span>
+              {availableSchools.map(school => {
+                console.log(school, 'school')
+
+                return (
+                  <CommandItem
+                    key={school.id}
+                    value={school.name}
+                    onSelect={() => {
+                      setCurrentSchool(school.id === currentSchool?.id ? null : school)
+                      setOpen(false)
+                    }}>
+                    <Check
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        currentSchool?.id === school.id ? 'opacity-100' : 'opacity-0'
                       )}
+                    />
+                    <div className='flex items-center space-x-2'>
+                      <div className='w-4 h-4 rounded flex items-center justify-center overflow-hidden flex-shrink-0'>
+                        <img
+                          src='/lovable-uploads/bc930c0b-cb09-4e70-9ac0-a44c74d79d80.png'
+                          alt='School Logo'
+                          className='w-full h-full object-contain'
+                        />
+                      </div>
+                      <div className='flex flex-col'>
+                        <span>{school.name}</span>
+                        {school.city && (
+                          <span className='text-xs text-gray-500'>{school.city}</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CommandItem>
-              ))}
+                  </CommandItem>
+                )
+              })}
             </CommandGroup>
           </CommandList>
         </Command>
