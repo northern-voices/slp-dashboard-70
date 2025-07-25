@@ -60,6 +60,7 @@ const SpeechScreeningContent = () => {
       navigate('/screenings')
     }
   }
+
   const handleCancel = () => {
     if (studentId) {
       navigate(`/students/${studentId}`)
@@ -67,13 +68,16 @@ const SpeechScreeningContent = () => {
       navigate('/screenings')
     }
   }
+
   const handleViewDrafts = () => {
     navigate('/drafts')
   }
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
+
   const userRole = userProfile?.role || 'slp'
+
   if (loading) {
     return (
       <div className='min-h-screen flex w-full bg-gray-25'>
@@ -91,6 +95,7 @@ const SpeechScreeningContent = () => {
       </div>
     )
   }
+
   return (
     <div className='min-h-screen flex w-full bg-gray-25'>
       <SidebarProvider>
@@ -153,6 +158,7 @@ const SpeechScreeningContent = () => {
     </div>
   )
 }
+
 const SpeechScreening = () => {
   return (
     <OrganizationProvider>

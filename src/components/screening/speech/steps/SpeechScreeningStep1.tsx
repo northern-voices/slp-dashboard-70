@@ -75,12 +75,8 @@ const SpeechScreeningStep1 = ({
     // Get current academic year and generate range (1 year before, current, 4 years ahead)
     const currentYear = new Date().getFullYear()
     const academicYears = []
-
-    // Add one year before
     academicYears.push(`${currentYear - 1}-${currentYear}`)
-    // Add current year
     academicYears.push(`${currentYear}-${currentYear + 1}`)
-    // Add 4 years ahead
     for (let i = 1; i <= 4; i++) {
       academicYears.push(`${currentYear + i}-${currentYear + i + 1}`)
     }
@@ -104,7 +100,6 @@ const SpeechScreeningStep1 = ({
       return acc
     }, [] as typeof filteredGrades)
 
-    // Sort by academic year (most recent first)
     const sortedGrades = uniqueGrades.sort((a, b) => b.academic_year.localeCompare(a.academic_year))
 
     // Add placeholder entries for academic years that don't exist in backend
@@ -122,7 +117,6 @@ const SpeechScreeningStep1 = ({
       }
     })
 
-    // Sort again to ensure proper order (oldest first)
     return sortedGrades.sort((a, b) => a.academic_year.localeCompare(b.academic_year))
   }, [schoolGrades, selectedGrade])
 
