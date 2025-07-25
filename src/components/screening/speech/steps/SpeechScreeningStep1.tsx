@@ -70,14 +70,30 @@ const SpeechScreeningStep1 = ({
 
   // Filter grades based on selected grade level and get unique academic years
   const availableGradeIds = React.useMemo(() => {
-    if (!schoolGrades || !selectedGrade) return []
+    if (!selectedGrade) return []
 
-    const gradeValue = selectedGrade
+    // Get current academic year and generate range (1 year before, current, 4 years ahead)
+    const currentYear = new Date().getFullYear()
+    const academicYears = []
 
-    const filteredGrades = schoolGrades.filter(grade => {
-      const match = grade.grade_level === gradeValue
-      return match
-    })
+    // Add one year before
+    academicYears.push(`${currentYear - 1}-${currentYear}`)
+    // Add current year
+    academicYears.push(`${currentYear}-${currentYear + 1}`)
+    // Add 4 years ahead
+    for (let i = 1; i <= 4; i++) {
+      academicYears.push(`${currentYear + i}-${currentYear + i + 1}`)
+    }
+
+    let filteredGrades: typeof schoolGrades = []
+
+    if (schoolGrades) {
+      const gradeValue = selectedGrade
+      filteredGrades = schoolGrades.filter(grade => {
+        const match = grade.grade_level === gradeValue
+        return match
+      })
+    }
 
     // Remove duplicates based on academic_year
     const uniqueGrades = filteredGrades.reduce((acc, current) => {
@@ -89,7 +105,25 @@ const SpeechScreeningStep1 = ({
     }, [] as typeof filteredGrades)
 
     // Sort by academic year (most recent first)
-    return uniqueGrades.sort((a, b) => b.academic_year.localeCompare(a.academic_year))
+    const sortedGrades = uniqueGrades.sort((a, b) => b.academic_year.localeCompare(a.academic_year))
+
+    // Add placeholder entries for academic years that don't exist in backend
+    academicYears.forEach(academicYear => {
+      const hasYear = sortedGrades.some(grade => grade.academic_year === academicYear)
+      if (!hasYear) {
+        sortedGrades.unshift({
+          id: `placeholder-${academicYear}`,
+          school_id: '',
+          grade_level: selectedGrade,
+          academic_year: academicYear,
+          created_at: '',
+          updated_at: '',
+        })
+      }
+    })
+
+    // Sort again to ensure proper order (oldest first)
+    return sortedGrades.sort((a, b) => a.academic_year.localeCompare(b.academic_year))
   }, [schoolGrades, selectedGrade])
 
   // Reset student selection and grade ID when grade level changes
@@ -105,14 +139,16 @@ const SpeechScreeningStep1 = ({
       onGradeIdChange('')
       return
     }
+
     // Try to find an existing grade_id
     const existingGrade = availableGradeIds.find(
       grade => grade.academic_year === academicYear && grade.grade_level === selectedGrade
     )
-    if (existingGrade) {
+
+    if (existingGrade && !existingGrade.id.startsWith('placeholder-')) {
       onGradeIdChange(existingGrade.id)
     } else {
-      // Create new grade if it doesn't exist
+      // Create new grade if it doesn't exist or if it's a placeholder
       try {
         const newGrade = await schoolGradesApi.createSchoolGrade({
           school_id: selectedSchool.id,
@@ -155,7 +191,7 @@ const SpeechScreeningStep1 = ({
             </Select>
           </div>
 
-          {selectedGrade && availableGradeIds.length > 0 && (
+          {selectedGrade && (
             <div>
               <Label className='mb-3 block text-sm font-medium text-gray-700'>
                 Academic Year *
