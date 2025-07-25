@@ -13,6 +13,8 @@ import { User } from 'lucide-react'
 import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
 import { useSchoolGrades } from '@/hooks/use-school-grades'
+import { useSchool } from '@/contexts/SchoolContext'
+import { schoolGradesApi } from '@/api/schoolGrades'
 
 interface SpeechScreeningStep1Props {
   form: UseFormReturn<Record<string, unknown>>
@@ -64,6 +66,7 @@ const SpeechScreeningStep1 = ({
 }: SpeechScreeningStep1Props) => {
   // Fetch available school grades for the current organization
   const { data: schoolGrades } = useSchoolGrades()
+  const { selectedSchool } = useSchool()
 
   // Filter grades based on selected grade level and get unique academic years
   const availableGradeIds = React.useMemo(() => {
@@ -94,6 +97,34 @@ const SpeechScreeningStep1 = ({
     onGradeChange(grade)
     onStudentSelect(null)
     onGradeIdChange('')
+  }
+
+  // Add handler for academic year selection
+  const handleAcademicYearChange = async (academicYear: string) => {
+    if (!selectedSchool) {
+      onGradeIdChange('')
+      return
+    }
+    // Try to find an existing grade_id
+    const existingGrade = availableGradeIds.find(
+      grade => grade.academic_year === academicYear && grade.grade_level === selectedGrade
+    )
+    if (existingGrade) {
+      onGradeIdChange(existingGrade.id)
+    } else {
+      // Create new grade if it doesn't exist
+      try {
+        const newGrade = await schoolGradesApi.createSchoolGrade({
+          school_id: selectedSchool.id,
+          grade_level: selectedGrade,
+          academic_year: academicYear,
+        })
+        onGradeIdChange(newGrade.id)
+      } catch (error) {
+        console.error('Failed to create new school grade:', error)
+        onGradeIdChange('')
+      }
+    }
   }
 
   return (
@@ -129,13 +160,13 @@ const SpeechScreeningStep1 = ({
               <Label className='mb-3 block text-sm font-medium text-gray-700'>
                 Academic Year *
               </Label>
-              <Select onValueChange={onGradeIdChange}>
+              <Select onValueChange={handleAcademicYearChange}>
                 <SelectTrigger>
                   <SelectValue placeholder='Select academic year' />
                 </SelectTrigger>
                 <SelectContent>
                   {availableGradeIds.map(grade => (
-                    <SelectItem key={grade.id} value={grade.id}>
+                    <SelectItem key={grade.academic_year} value={grade.academic_year}>
                       {grade.academic_year}
                     </SelectItem>
                   ))}
