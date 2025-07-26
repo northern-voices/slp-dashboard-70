@@ -124,7 +124,20 @@ const SpeechScreeningStep1 = ({
   const handleGradeChange = (grade: string) => {
     onGradeChange(grade)
     onStudentSelect(null)
-    onGradeIdChange('')
+
+    const currentYear = new Date().getFullYear()
+    const currentAcademicYear = `${currentYear}-${currentYear + 1}`
+
+    const currentYearGrade = schoolGrades?.find(
+      gradeItem =>
+        gradeItem.grade_level === grade && gradeItem.academic_year === currentAcademicYear
+    )
+
+    if (currentYearGrade) {
+      onGradeIdChange(currentYearGrade.id)
+    } else {
+      onGradeIdChange('')
+    }
   }
 
   // Add handler for academic year selection
@@ -190,7 +203,13 @@ const SpeechScreeningStep1 = ({
               <Label className='mb-3 block text-sm font-medium text-gray-700'>
                 Academic Year *
               </Label>
-              <Select onValueChange={handleAcademicYearChange}>
+              <Select
+                value={(() => {
+                  const currentYear = new Date().getFullYear()
+                  const currentAcademicYear = `${currentYear}-${currentYear + 1}`
+                  return currentAcademicYear
+                })()}
+                onValueChange={handleAcademicYearChange}>
                 <SelectTrigger>
                   <SelectValue placeholder='Select academic year' />
                 </SelectTrigger>
