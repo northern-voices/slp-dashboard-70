@@ -7,7 +7,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import ProgressIndicator from '../shared/ProgressIndicator'
 import SpeechScreeningStep1 from './steps/SpeechScreeningStep1'
 import SpeechScreeningStep2 from './steps/SpeechScreeningStep2'
-import SpeechScreeningStep3 from './steps/SpeechScreeningStep3'
 
 interface MultiStepSpeechScreeningFormProps {
   onSubmit?: (data: any) => void
@@ -67,10 +66,10 @@ const MultiStepSpeechScreeningForm = ({
     },
   })
 
-  const stepTitles = ['Student Info', 'Screening Details', 'Results & Notes']
+  const stepTitles = ['Student Info', 'Screening Details & Results']
 
   const handleNext = () => {
-    if (currentStep < 3) {
+    if (currentStep < 2) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -88,7 +87,7 @@ const MultiStepSpeechScreeningForm = ({
 
   const handleSubmit = (data: any) => {
     // Add this check to prevent submission on wrong step
-    if (currentStep !== 3) {
+    if (currentStep !== 2) {
       return
     }
 
@@ -103,7 +102,6 @@ const MultiStepSpeechScreeningForm = ({
       | 'non_registered_no_consent'
       | 'complex_needs'
       | null => {
-      // The form now directly uses the database enum values, so no mapping needed
       switch (result) {
         case 'absent':
           return 'absent'
@@ -122,8 +120,17 @@ const MultiStepSpeechScreeningForm = ({
       }
     }
 
-    // Build error_patterns object from speech screening data
-    const errorPatterns = {
+    const screeningData = {
+      student_id: selectedStudent?.id || '',
+      grade_id: selectedGradeId,
+      screener_id: user?.id || '',
+      result: mapResult(data.speech_screen_result),
+      vocabulary_support: data.vocabulary_support || false,
+      suspected_cas: data.suspected_cas || false,
+      clinical_notes: data.clinical_notes || '',
+      referral_notes: data.referral_notes || '',
+      attendance: data.attendance || '',
+      // Add speech-specific fields
       sound_errors: data.sound_errors || [],
       articulation_notes: data.articulation_notes || '',
       language_concerns: data.language_concerns || '',
@@ -132,33 +139,17 @@ const MultiStepSpeechScreeningForm = ({
       overall_observations: data.overall_observations || '',
     }
 
-    const mutationData = {
-      student_id: selectedStudent.id,
-      screener_id: user.id,
-      grade_id: selectedGradeId,
-      error_patterns: errorPatterns,
-      result: mapResult(data.speech_screen_result),
-      vocabulary_support: data.vocabulary_support || false,
-      suspected_cas: data.suspected_cas || false,
-      clinical_notes: data.clinical_notes || null,
-      referral_notes: data.referral_notes || null,
-    }
-
-    createScreening.mutate(mutationData, {
-      onSuccess: newScreening => {
+    createScreening.mutate(screeningData, {
+      onSuccess: () => {
         if (onSubmit) {
-          onSubmit(newScreening)
+          onSubmit(screeningData)
         }
-      },
-      onError: error => {
-        console.error('Failed to create speech screening:', error)
       },
     })
   }
 
   const canProceedToNext = () => {
     if (currentStep === 1) {
-      // For step 1, we only need grade and student selected
       // The grade ID will be resolved when the form is submitted
       return selectedGrade && selectedStudent
     }
@@ -183,8 +174,6 @@ const MultiStepSpeechScreeningForm = ({
         )
       case 2:
         return <SpeechScreeningStep2 form={form} />
-      case 3:
-        return <SpeechScreeningStep3 form={form} />
       default:
         return null
     }
@@ -192,7 +181,7 @@ const MultiStepSpeechScreeningForm = ({
 
   return (
     <div className='space-y-6'>
-      <ProgressIndicator currentStep={currentStep} totalSteps={3} stepTitles={stepTitles} />
+      <ProgressIndicator currentStep={currentStep} totalSteps={2} stepTitles={stepTitles} />
 
       <form
         onSubmit={e => {
@@ -222,7 +211,7 @@ const MultiStepSpeechScreeningForm = ({
               Save Draft
             </Button>
 
-            {currentStep < 3 ? (
+            {currentStep < 2 ? (
               <Button
                 type='button'
                 onClick={handleNext}
