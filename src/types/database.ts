@@ -44,15 +44,9 @@ export interface Student {
   id: string
   first_name: string
   last_name: string
-  date_of_birth: string
-  grade: string
-  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say'
   student_id: string
-  emergency_contact_name?: string
-  emergency_contact_phone?: string
-  notes?: string
-  active: boolean
   school_id: string
+  qualifies_for_program?: boolean
   created_at: string
   updated_at: string
 }

@@ -15,26 +15,26 @@ export const useStudents = () => {
 }
 
 export const useSearchStudents = (searchTerm: string) => {
-  const { currentOrganization } = useOrganization()
+  const { currentSchool } = useOrganization()
 
   return useQuery({
-    queryKey: ['students', 'search', searchTerm, currentOrganization?.id],
-    queryFn: () => studentsApi.searchStudents(searchTerm, currentOrganization?.id),
+    queryKey: ['students', 'search', searchTerm, currentSchool?.id],
+    queryFn: () => studentsApi.searchStudents(searchTerm, currentSchool?.id),
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
-    enabled: !!searchTerm && searchTerm.length >= 2 && !!currentOrganization?.id,
+    enabled: !!searchTerm && searchTerm.length >= 2 && !!currentSchool?.id,
   })
 }
 
 export const useStudentsByGrade = (gradeLevel: string) => {
-  const { currentOrganization } = useOrganization()
+  const { currentSchool } = useOrganization()
 
   return useQuery({
-    queryKey: ['students', 'by-grade', gradeLevel, currentOrganization?.id],
-    queryFn: () => studentsApi.getStudentsByGrade(gradeLevel, currentOrganization?.id),
+    queryKey: ['students', 'by-grade', gradeLevel, currentSchool?.id],
+    queryFn: () => studentsApi.getStudentsByGrade(gradeLevel, currentSchool?.id),
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
-    enabled: !!gradeLevel && !!currentOrganization?.id,
+    enabled: !!gradeLevel && !!currentSchool?.id,
   })
 }
 

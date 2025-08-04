@@ -58,8 +58,6 @@ const SchoolSelector = () => {
             <CommandEmpty>No schools found.</CommandEmpty>
             <CommandGroup>
               {availableSchools.map(school => {
-                console.log(school, 'school')
-
                 return (
                   <CommandItem
                     key={school.id}
