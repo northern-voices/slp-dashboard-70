@@ -198,6 +198,23 @@ const StudentSearchSelector = ({
         </div>
       )}
 
+      {currentSchool && (
+        <div className='flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-md'>
+          <div className='flex items-center space-x-2'>
+            <UserPlus className='w-5 h-5 text-green-600' />
+            <span className='text-sm font-medium text-green-800'>Need to add a new student?</span>
+          </div>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={handleShowNewStudentForm}
+            className='border-green-300 text-green-700 hover:bg-green-100 hover:text-green-800'>
+            <UserPlus className='w-4 h-4 mr-2' />
+            Create New Student
+          </Button>
+        </div>
+      )}
+
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
