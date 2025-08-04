@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import { Check, ChevronsUpDown, Plus, UserPlus } from 'lucide-react'
+import { Check, ChevronsUpDown, Plus, UserPlus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Student } from '@/types/database'
 import { useStudentsByGrade, useSearchStudents } from '@/hooks/students'
@@ -177,24 +177,10 @@ const StudentSearchSelector = ({
 
   return (
     <div className='space-y-2'>
-      {/* Show warning if no school is selected */}
-      {!currentSchool && (
-        <div className='p-4 border border-orange-200 bg-orange-50 rounded-md'>
-          <div className='flex items-center space-x-2'>
-            <div className='w-2 h-2 bg-orange-500 rounded-full'></div>
-            <span className='text-sm font-medium text-orange-800'>
-              Please select a school first to search for students
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* Show current school info when selected */}
       {currentSchool && (
-        <div className='p-2 bg-blue-50 border border-blue-200 rounded-md'>
-          <span className='text-sm text-blue-700'>
-            Searching students in: <strong>{currentSchool.name}</strong>
-          </span>
+        <div className='py-5 px-3 bg-blue-50 border border-blue-200 rounded-md'>
+          Current School: <strong>{currentSchool.name}</strong>
         </div>
       )}
 
@@ -215,6 +201,18 @@ const StudentSearchSelector = ({
         </div>
       )}
 
+      {/* Show warning if no school is selected */}
+      {!currentSchool && (
+        <div className='p-4 border border-orange-200 bg-orange-50 rounded-md'>
+          <div className='flex items-center space-x-2'>
+            <div className='w-2 h-2 bg-orange-500 rounded-full'></div>
+            <span className='text-sm font-medium text-orange-800'>
+              Please select a school first to search for students
+            </span>
+          </div>
+        </div>
+      )}
+
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -223,18 +221,36 @@ const StudentSearchSelector = ({
             aria-expanded={open}
             disabled={!currentSchool}
             className='w-full justify-between text-left'>
-            {selectedStudent
-              ? `${selectedStudent.first_name} ${selectedStudent.last_name} (${selectedStudent.student_id})`
-              : currentSchool
-              ? 'Select student...'
-              : 'Select a school first...'}
-            <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+            <span className='truncate'>
+              {selectedStudent
+                ? `${selectedStudent.first_name} ${selectedStudent.last_name} (${selectedStudent.student_id})`
+                : currentSchool
+                ? 'Select student...'
+                : 'Select a school first...'}
+            </span>
+            <div className='flex items-center gap-1'>
+              {selectedStudent && (
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='sm'
+                  onClick={e => {
+                    e.stopPropagation()
+                    handleClearSelection()
+                  }}
+                  className='h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded-full'>
+                  <X className='h-3 w-3' />
+                </Button>
+              )}
+              <ChevronsUpDown className='h-4 w-4 shrink-0 opacity-50' />
+            </div>
           </Button>
         </PopoverTrigger>
+
         <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0' align='start'>
           <Command shouldFilter={false}>
             <CommandInput
-              placeholder='Search students...'
+              placeholder={`Searching students in: ${currentSchool.name}`}
               value={searchValue}
               onValueChange={setSearchValue}
             />
@@ -298,24 +314,6 @@ const StudentSearchSelector = ({
           </Command>
         </PopoverContent>
       </Popover>
-
-      {selectedStudent && (
-        <div className='flex items-center justify-between p-2 bg-muted rounded-md'>
-          <div className='flex flex-col'>
-            <span className='text-sm text-muted-foreground'>
-              Selected: {selectedStudent.first_name} {selectedStudent.last_name}
-            </span>
-            <span className='text-xs text-muted-foreground'>DB ID: {selectedStudent.id}</span>
-          </div>
-          <Button
-            variant='ghost'
-            size='sm'
-            onClick={handleClearSelection}
-            className='h-auto p-1 text-muted-foreground hover:text-foreground'>
-            Clear
-          </Button>
-        </div>
-      )}
 
       {/* New Student Creation Dialog */}
       <Dialog open={showNewStudentForm} onOpenChange={handleCloseNewStudentForm}>

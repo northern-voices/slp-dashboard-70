@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Student } from '@/types/database'
@@ -27,6 +27,23 @@ const MultiStepSpeechScreeningForm = ({
 
   const { user } = useAuth()
   const createScreening = useCreateSpeechScreening()
+
+  // Set default grade ID when component mounts
+  useEffect(() => {
+    const setDefaultGradeId = async () => {
+      if (selectedGrade) {
+        const currentYear = new Date().getFullYear()
+        const currentAcademicYear = `${currentYear}-${currentYear + 1}`
+
+        // Try to find the grade ID for the current academic year
+        // This will be handled by the SpeechScreeningStep1 component
+        // For now, we'll set a placeholder that will be updated when the step loads
+        setSelectedGradeId(`default-${currentAcademicYear}`)
+      }
+    }
+
+    setDefaultGradeId()
+  }, [selectedGrade])
 
   const form = useForm({
     mode: 'onSubmit',
@@ -141,7 +158,9 @@ const MultiStepSpeechScreeningForm = ({
 
   const canProceedToNext = () => {
     if (currentStep === 1) {
-      return selectedGrade && selectedStudent && selectedGradeId
+      // For step 1, we only need grade and student selected
+      // The grade ID will be resolved when the form is submitted
+      return selectedGrade && selectedStudent
     }
     if (currentStep === 2) {
       return form.watch('screening_type') && form.watch('screening_date')

@@ -243,8 +243,7 @@ const SpeechScreeningStep1 = ({
             <div className='mt-6 p-4 bg-blue-50 rounded-lg'>
               <h4 className='text-sm font-semibold text-blue-900 mb-2'>Selected Student</h4>
               <p className='text-sm text-blue-800 font-medium'>
-                {selectedStudent.first_name} {selectedStudent.last_name} - Grade{' '}
-                {selectedStudent.grade || selectedGrade}
+                {selectedStudent.first_name} {selectedStudent.last_name} - Grade {selectedGrade}
               </p>
               <p className='text-xs text-blue-600 mt-1'>Student ID: {selectedStudent.student_id}</p>
             </div>
