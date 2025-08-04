@@ -1,6 +1,5 @@
-
-export const APP_NAME = 'Speech Screening System';
-export const APP_VERSION = '1.0.0';
+export const APP_NAME = 'Speech Screening System'
+export const APP_VERSION = '1.0.0'
 
 export const ROUTES = {
   HOME: '/',
@@ -8,57 +7,55 @@ export const ROUTES = {
   STUDENT_DETAIL: '/students/:studentId',
   REPORTS: '/reports',
   MANAGEMENT: '/management',
-} as const;
+} as const
 
 export const USER_ROLES = {
   SLP: 'slp',
   ADMIN: 'admin',
   SUPERVISOR: 'supervisor',
-} as const;
+} as const
 
 export const SCREENING_TYPES = {
   INITIAL: 'initial',
-  FOLLOW_UP: 'follow_up',
-  ANNUAL: 'annual',
-  REFERRAL: 'referral',
-} as const;
+  PROGRESS: 'progress',
+} as const
 
 export const SCREENING_STATUS = {
   SCHEDULED: 'scheduled',
   IN_PROGRESS: 'in_progress',
   COMPLETED: 'completed',
   CANCELLED: 'cancelled',
-} as const;
+} as const
 
 export const REPORT_STATUS = {
   DRAFT: 'draft',
   FINAL: 'final',
   REVIEWED: 'reviewed',
-} as const;
+} as const
 
 export const FORM_TYPES = {
   SPEECH: 'speech',
   HEARING: 'hearing',
   PROGRESS: 'progress',
-} as const;
+} as const
 
 export const GENDERS = {
   MALE: 'male',
   FEMALE: 'female',
   OTHER: 'other',
   PREFER_NOT_TO_SAY: 'prefer_not_to_say',
-} as const;
+} as const
 
 export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 10,
   PAGE_SIZE_OPTIONS: [5, 10, 20, 50],
-} as const;
+} as const
 
 export const DATE_FORMATS = {
   DISPLAY: 'MMMM dd, yyyy',
   INPUT: 'yyyy-MM-dd',
   FULL: 'MMMM dd, yyyy hh:mm a',
-} as const;
+} as const
 
 export const VALIDATION_MESSAGES = {
   REQUIRED: 'This field is required',
@@ -67,4 +64,4 @@ export const VALIDATION_MESSAGES = {
   INVALID_DATE: 'Please enter a valid date',
   MIN_LENGTH: (min: number) => `Must be at least ${min} characters`,
   MAX_LENGTH: (max: number) => `Must be no more than ${max} characters`,
-} as const;
+} as const

@@ -12,9 +12,7 @@ export const getStatusColor = (status: string) => {
 export const getTypeDisplay = (type: string) => {
   switch (type) {
     case 'initial': return 'Initial';
-    case 'follow_up': return 'Follow-up';
-    case 'annual': return 'Annual';
-    case 'referral': return 'Referral';
+    case 'progress': return 'Progress';
     default: return type;
   }
 };

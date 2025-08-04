@@ -1,78 +1,82 @@
-
-import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Volume2 } from 'lucide-react';
+import React from 'react'
+import { UseFormReturn } from 'react-hook-form'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Volume2 } from 'lucide-react'
 
 interface HearingScreeningStep2Props {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<any>
 }
 
-const frequencies = ['250', '500', '1000', '2000', '4000'];
+const frequencies = ['250', '500', '1000', '2000', '4000']
 
 const HearingScreeningStep2 = ({ form }: HearingScreeningStep2Props) => {
   return (
-    <div className="space-y-6">
-      <Card className="border-0 rounded-none shadow-none">
-        <CardHeader className="px-0 pt-0 pb-0 mb-6">
-          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-            <Volume2 className="w-5 h-5" />
+    <div className='space-y-6'>
+      <Card className='border-0 rounded-none shadow-none'>
+        <CardHeader className='px-0 pt-0 pb-0 mb-6'>
+          <CardTitle className='flex items-center gap-2 text-lg font-semibold text-gray-900'>
+            <Volume2 className='w-5 h-5' />
             Screening Details
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6 p-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <CardContent className='space-y-6 p-0'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div>
-              <Label htmlFor="screening_type" className="mb-3 block text-sm font-medium text-gray-700">
+              <Label
+                htmlFor='screening_type'
+                className='mb-3 block text-sm font-medium text-gray-700'>
                 Screening Type *
               </Label>
               <Select {...form.register('screening_type')}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select screening type" />
+                  <SelectValue placeholder='Select screening type' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="initial">Initial Screening</SelectItem>
-                  <SelectItem value="follow_up">Follow-up</SelectItem>
-                  <SelectItem value="annual">Annual Screening</SelectItem>
-                  <SelectItem value="referral">Referral</SelectItem>
+                  <SelectItem value='initial'>Initial</SelectItem>
+                  <SelectItem value='progress'>Progress</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="screening_date" className="mb-3 block text-sm font-medium text-gray-700">
+              <Label
+                htmlFor='screening_date'
+                className='mb-3 block text-sm font-medium text-gray-700'>
                 Screening Date *
               </Label>
-              <Input
-                type="date"
-                {...form.register('screening_date')}
-              />
+              <Input type='date' {...form.register('screening_date')} />
             </div>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Pure Tone Screening Results</CardTitle>
-              <p className="text-sm text-gray-600">Record hearing threshold levels in dB HL</p>
+              <CardTitle className='text-lg'>Pure Tone Screening Results</CardTitle>
+              <p className='text-sm text-gray-600'>Record hearing threshold levels in dB HL</p>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                 <div>
-                  <h4 className="font-medium mb-3">Right Ear</h4>
-                  <div className="space-y-3">
+                  <h4 className='font-medium mb-3'>Right Ear</h4>
+                  <div className='space-y-3'>
                     {frequencies.map(freq => (
-                      <div key={`right-${freq}`} className="flex items-center gap-3">
-                        <Label className="w-16">{freq} Hz</Label>
+                      <div key={`right-${freq}`} className='flex items-center gap-3'>
+                        <Label className='w-16'>{freq} Hz</Label>
                         <Input
-                          type="number"
-                          placeholder="dB HL"
-                          className="w-24"
-                          min="0"
-                          max="120"
+                          type='number'
+                          placeholder='dB HL'
+                          className='w-24'
+                          min='0'
+                          max='120'
                           {...form.register(`right_ear_${freq}`)}
                         />
                       </div>
@@ -81,17 +85,17 @@ const HearingScreeningStep2 = ({ form }: HearingScreeningStep2Props) => {
                 </div>
 
                 <div>
-                  <h4 className="font-medium mb-3">Left Ear</h4>
-                  <div className="space-y-3">
+                  <h4 className='font-medium mb-3'>Left Ear</h4>
+                  <div className='space-y-3'>
                     {frequencies.map(freq => (
-                      <div key={`left-${freq}`} className="flex items-center gap-3">
-                        <Label className="w-16">{freq} Hz</Label>
+                      <div key={`left-${freq}`} className='flex items-center gap-3'>
+                        <Label className='w-16'>{freq} Hz</Label>
                         <Input
-                          type="number"
-                          placeholder="dB HL"
-                          className="w-24"
-                          min="0"
-                          max="120"
+                          type='number'
+                          placeholder='dB HL'
+                          className='w-24'
+                          min='0'
+                          max='120'
                           {...form.register(`left_ear_${freq}`)}
                         />
                       </div>
@@ -104,12 +108,12 @@ const HearingScreeningStep2 = ({ form }: HearingScreeningStep2Props) => {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Tympanometry Results</CardTitle>
+              <CardTitle className='text-lg'>Tympanometry Results</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 <Textarea
-                  placeholder="Note tympanometry findings, ear canal volume, acoustic reflex results..."
+                  placeholder='Note tympanometry findings, ear canal volume, acoustic reflex results...'
                   rows={3}
                   {...form.register('tympanometry_results')}
                 />
@@ -119,11 +123,11 @@ const HearingScreeningStep2 = ({ form }: HearingScreeningStep2Props) => {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Otoscopic Examination</CardTitle>
+              <CardTitle className='text-lg'>Otoscopic Examination</CardTitle>
             </CardHeader>
             <CardContent>
               <Textarea
-                placeholder="Describe ear canal and eardrum appearance for both ears..."
+                placeholder='Describe ear canal and eardrum appearance for both ears...'
                 rows={3}
                 {...form.register('otoscopic_findings')}
               />
@@ -132,7 +136,7 @@ const HearingScreeningStep2 = ({ form }: HearingScreeningStep2Props) => {
         </CardContent>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default HearingScreeningStep2;
+export default HearingScreeningStep2

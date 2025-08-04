@@ -41,9 +41,7 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='initial'>Initial</SelectItem>
-                  <SelectItem value='follow_up'>Follow-up</SelectItem>
-                  <SelectItem value='annual'>Annual</SelectItem>
-                  <SelectItem value='referral'>Referral</SelectItem>
+                  <SelectItem value='progress'>Progress</SelectItem>
                 </SelectContent>
               </Select>
             </div>
