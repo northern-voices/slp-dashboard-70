@@ -11,59 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  articulationSounds,
+  soundErrorPatterns,
+  areasOfConcern,
+} from './EnhancedSpeechScreeningFieldData'
 
 interface EnhancedSpeechScreeningFieldsProps {
   form: UseFormReturn<any>
 }
-
-const areasOfConcern = [
-  'Language Comprehension',
-  'Language Expression',
-  'Social Communication',
-  'Voice',
-  'Fluency',
-  'Stuttering',
-  'Suspected CAS',
-  'Literacy',
-  'Reluctant Speaking',
-  'Cleft Lip / Pallet',
-  'Diagnoses',
-]
-
-const articulationSounds = [
-  'St ~',
-  'Sp ~',
-  'Sm ~',
-  'Sn ~',
-  'Sk ~',
-  'Final -ts',
-  'Final -ps',
-  'Final -ks',
-  'S',
-  'Z',
-  'SH',
-  'ZH',
-  'Ch',
-  'J',
-  'P',
-  'B',
-  'T',
-  'D',
-  'K',
-  'G',
-  'Final ~t',
-  'Final ~k',
-  'Final ~p',
-]
-
-const errorPatterns = [
-  'Consonant Cluster Reduction',
-  'Frontal Lisp',
-  'Lateral Lisp',
-  'Backing',
-  'Nasal',
-  'Other',
-]
 
 const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsProps) => {
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([])
@@ -181,7 +137,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                     <>
                       {/* Error Patterns for this sound */}
                       <div className='mt-2 space-y-1'>
-                        {errorPatterns.map(pattern => (
+                        {soundErrorPatterns[sound]?.patterns.map(pattern => (
                           <div key={pattern} className='flex items-center space-x-2'>
                             <Checkbox
                               id={`${sound}-${pattern}`}
@@ -195,6 +151,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             </Label>
                           </div>
                         ))}
+                      </div>
+                      {/* Word example */}
+                      <div className='mt-1 text-xs text-gray-600'>
+                        Word: {soundErrorPatterns[sound]?.word}
                       </div>
                       {/* Notes for this sound */}
                       <Textarea
