@@ -224,13 +224,12 @@ export const soundErrorPatterns = {
 export const areasOfConcern = [
   'Language Comprehension',
   'Language Expression',
-  'Social Communication',
-  'Voice',
+  'Pragmatics/Social Communication',
   'Fluency',
-  'Stuttering',
   'Suspected CAS',
-  'Literacy',
   'Reluctant Speaking',
-  'Cleft Lip / Pallet',
-  'Diagnoses',
+  'Voice',
+  'Literacy',
+  'Cleft Lip / Palate',
+  'Known / Pending Diagnoses',
 ]

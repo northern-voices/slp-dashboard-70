@@ -176,7 +176,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
           {/* General Articulation Notes */}
           <div>
-            <Label htmlFor='general_articulation_notes'>General Articulation Notes</Label>
+            <Label htmlFor='general_articulation_notes'>General Articulation Notes (Private)</Label>
             <Textarea
               {...form.register('general_articulation_notes')}
               placeholder='Overall patterns, stimulability, consistency...'
@@ -227,16 +227,6 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                 Qualifies for Speech Program
               </Label>
             </div>
-
-            <div>
-              <Label htmlFor='overall_notes'>Overall Assessment Notes</Label>
-              <Textarea
-                {...form.register('overall_notes')}
-                placeholder='Summary of findings, recommendations, next steps...'
-                rows={4}
-                className='mt-1'
-              />
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -244,7 +234,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       {/* Areas of Concern */}
       <Card>
         <CardHeader>
-          <CardTitle>Areas of Concern</CardTitle>
+          <CardTitle>Areas of Concern (Private)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -280,7 +270,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   language_expression: e.target.value,
                 })
               }}
-              placeholder='Vocabulary, grammar, sentence structure, word finding...'
+              placeholder='Details...'
               rows={3}
             />
           </CardContent>
@@ -302,7 +292,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   language_comprehension: e.target.value,
                 })
               }}
-              placeholder='Following directions, understanding questions, comprehension of complex language...'
+              placeholder='Details...'
               rows={3}
             />
           </CardContent>
@@ -324,7 +314,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   voice: e.target.value,
                 })
               }}
-              placeholder='Hoarseness, breathiness, loudness, pitch concerns...'
+              placeholder='Details...'
               rows={3}
             />
           </CardContent>
@@ -346,51 +336,29 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   fluency: e.target.value,
                 })
               }}
-              placeholder='Repetitions, prolongations, blocks, secondary behaviors...'
+              placeholder='Details...'
               rows={3}
             />
           </CardContent>
         </Card>
       )}
 
-      {selectedConcerns.includes('Stuttering') && (
+      {selectedConcerns.includes('Pragmatics/Social Communication') && (
         <Card>
           <CardHeader>
-            <CardTitle>Stuttering</CardTitle>
+            <CardTitle>Pragmatics/Social Communication</CardTitle>
           </CardHeader>
           <CardContent>
             <Textarea
-              value={form.watch('areasOfConcern')?.stuttering || ''}
+              value={form.watch('areasOfConcern')?.pragmatics_social_communication || ''}
               onChange={e => {
                 const current = form.watch('areasOfConcern') || {}
                 form.setValue('areasOfConcern', {
                   ...current,
-                  stuttering: e.target.value,
+                  pragmatics_social_communication: e.target.value,
                 })
               }}
-              placeholder='Specific stuttering patterns, severity, impact...'
-              rows={3}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedConcerns.includes('Social Communication') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Social Communication</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.watch('areasOfConcern')?.social_communication || ''}
-              onChange={e => {
-                const current = form.watch('areasOfConcern') || {}
-                form.setValue('areasOfConcern', {
-                  ...current,
-                  social_communication: e.target.value,
-                })
-              }}
-              placeholder='Eye contact, turn-taking, pragmatic language use...'
+              placeholder='Details...'
               rows={3}
             />
           </CardContent>
@@ -412,7 +380,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   suspected_cas: e.target.value,
                 })
               }}
-              placeholder='Inconsistent errors, groping, difficulty with multisyllabic words...'
+              placeholder='Details...'
               rows={3}
             />
           </CardContent>
@@ -434,7 +402,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   literacy: e.target.value,
                 })
               }}
-              placeholder='Reading difficulties, writing concerns, phonological awareness...'
+              placeholder='Details...'
               rows={3}
             />
           </CardContent>
@@ -456,51 +424,51 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   reluctant_speaking: e.target.value,
                 })
               }}
-              placeholder='Selective mutism, anxiety, refusal to speak in certain situations...'
+              placeholder='Details...'
               rows={3}
             />
           </CardContent>
         </Card>
       )}
 
-      {selectedConcerns.includes('Cleft Lip / Pallet') && (
+      {selectedConcerns.includes('Cleft Lip / Palate') && (
         <Card>
           <CardHeader>
             <CardTitle>Cleft Lip / Palate</CardTitle>
           </CardHeader>
           <CardContent>
             <Textarea
-              value={form.watch('areasOfConcern')?.cleft_lip_pallet || ''}
+              value={form.watch('areasOfConcern')?.cleft_lip_palate || ''}
               onChange={e => {
                 const current = form.watch('areasOfConcern') || {}
                 form.setValue('areasOfConcern', {
                   ...current,
-                  cleft_lip_pallet: e.target.value,
+                  cleft_lip_palate: e.target.value,
                 })
               }}
-              placeholder='Speech characteristics, resonance issues, articulation patterns...'
+              placeholder='Details...'
               rows={3}
             />
           </CardContent>
         </Card>
       )}
 
-      {selectedConcerns.includes('Diagnoses') && (
+      {selectedConcerns.includes('Known / Pending Diagnoses') && (
         <Card>
           <CardHeader>
-            <CardTitle>Diagnoses</CardTitle>
+            <CardTitle>Known / Pending Diagnoses</CardTitle>
           </CardHeader>
           <CardContent>
             <Textarea
-              value={form.watch('areasOfConcern')?.diagnoses || ''}
+              value={form.watch('areasOfConcern')?.known_pending_diagnoses || ''}
               onChange={e => {
                 const current = form.watch('areasOfConcern') || {}
                 form.setValue('areasOfConcern', {
                   ...current,
-                  diagnoses: e.target.value,
+                  known_pending_diagnoses: e.target.value,
                 })
               }}
-              placeholder='Medical diagnoses, developmental conditions, impact on communication...'
+              placeholder='Details...'
               rows={3}
             />
           </CardContent>

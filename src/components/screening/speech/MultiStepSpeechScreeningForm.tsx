@@ -81,7 +81,6 @@ const MultiStepSpeechScreeningForm = ({
       overall_observations: '',
 
       general_articulation_notes: '',
-      overall_notes: '',
       other_notes: '',
       qualifies_for_speech_program: false,
       absent: {
