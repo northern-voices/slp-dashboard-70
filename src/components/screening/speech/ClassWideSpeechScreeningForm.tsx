@@ -68,12 +68,18 @@ const ClassWideSpeechScreeningForm = ({
   ]
 
   const speechConcerns = [
-    'Articulation/Sound Production',
-    'Language Expression',
     'Language Comprehension',
-    'Voice Quality',
-    'Fluency/Stuttering',
+    'Language Expression',
     'Social Communication',
+    'Voice',
+    'Fluency',
+    'Stuttering',
+    'Articulation',
+    'Suspected CAS',
+    'Literacy',
+    'Reluctant Speaking',
+    'Cleft lip / pallet',
+    'Diagnoses',
   ]
 
   const commonSounds = [

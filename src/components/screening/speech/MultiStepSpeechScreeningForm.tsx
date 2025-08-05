@@ -58,11 +58,22 @@ const MultiStepSpeechScreeningForm = ({
       attendance: '',
       // Speech screening fields (for error_patterns)
       sound_errors: [],
-      articulation_notes: '',
       language_concerns: '',
       voice_quality: '',
       fluency_notes: '',
       overall_observations: '',
+      language_expression_notes: '',
+      language_comprehension_notes: '',
+      voice_quality_notes: '',
+      stuttering_notes: '',
+      social_communication_notes: '',
+      suspected_cas_notes: '',
+      literacy_notes: '',
+      reluctant_speaking_notes: '',
+      cleft_notes: '',
+      diagnoses_notes: '',
+      general_articulation_notes: '',
+      overall_notes: '',
     },
   })
 
