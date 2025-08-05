@@ -95,6 +95,31 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     }
   }
 
+  // Create areas of concern object structure
+  React.useEffect(() => {
+    const areasOfConcernData = {}
+    areasOfConcern.forEach(concern => {
+      const key = concern
+        .toLowerCase()
+        .replace(/\s+|\/|-/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/_$/, '')
+        .replace(/_pallet/, '_pallet')
+      areasOfConcernData[key] = null
+    })
+    selectedConcerns.forEach(concern => {
+      const key = concern
+        .toLowerCase()
+        .replace(/\s+|\/|-/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/_$/, '')
+        .replace(/_pallet/, '_pallet')
+      const notes = form.watch(`areasOfConcern.${key}`) || ''
+      areasOfConcernData[key] = notes || null
+    })
+    form.setValue('areasOfConcern', areasOfConcernData)
+  }, [selectedConcerns, form])
+
   const handleSoundToggle = (sound: string) => {
     if (selectedSounds.includes(sound)) {
       setSelectedSounds(selectedSounds.filter(s => s !== sound))
@@ -284,7 +309,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardHeader>
           <CardContent>
             <Textarea
-              {...form.register('language_expression_notes')}
+              value={form.watch('areasOfConcern')?.language_expression || ''}
+              onChange={e => {
+                const current = form.watch('areasOfConcern') || {}
+                form.setValue('areasOfConcern', {
+                  ...current,
+                  language_expression: e.target.value,
+                })
+              }}
               placeholder='Vocabulary, grammar, sentence structure, word finding...'
               rows={3}
             />
@@ -299,7 +331,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardHeader>
           <CardContent>
             <Textarea
-              {...form.register('language_comprehension_notes')}
+              value={form.watch('areasOfConcern')?.language_comprehension || ''}
+              onChange={e => {
+                const current = form.watch('areasOfConcern') || {}
+                form.setValue('areasOfConcern', {
+                  ...current,
+                  language_comprehension: e.target.value,
+                })
+              }}
               placeholder='Following directions, understanding questions, comprehension of complex language...'
               rows={3}
             />
@@ -314,7 +353,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardHeader>
           <CardContent>
             <Textarea
-              {...form.register('voice_quality_notes')}
+              value={form.watch('areasOfConcern')?.voice || ''}
+              onChange={e => {
+                const current = form.watch('areasOfConcern') || {}
+                form.setValue('areasOfConcern', {
+                  ...current,
+                  voice: e.target.value,
+                })
+              }}
               placeholder='Hoarseness, breathiness, loudness, pitch concerns...'
               rows={3}
             />
@@ -329,7 +375,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardHeader>
           <CardContent>
             <Textarea
-              {...form.register('fluency_notes')}
+              value={form.watch('areasOfConcern')?.fluency || ''}
+              onChange={e => {
+                const current = form.watch('areasOfConcern') || {}
+                form.setValue('areasOfConcern', {
+                  ...current,
+                  fluency: e.target.value,
+                })
+              }}
               placeholder='Repetitions, prolongations, blocks, secondary behaviors...'
               rows={3}
             />
@@ -344,7 +397,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardHeader>
           <CardContent>
             <Textarea
-              {...form.register('stuttering_notes')}
+              value={form.watch('areasOfConcern')?.stuttering || ''}
+              onChange={e => {
+                const current = form.watch('areasOfConcern') || {}
+                form.setValue('areasOfConcern', {
+                  ...current,
+                  stuttering: e.target.value,
+                })
+              }}
               placeholder='Specific stuttering patterns, severity, impact...'
               rows={3}
             />
@@ -359,7 +419,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardHeader>
           <CardContent>
             <Textarea
-              {...form.register('social_communication_notes')}
+              value={form.watch('areasOfConcern')?.social_communication || ''}
+              onChange={e => {
+                const current = form.watch('areasOfConcern') || {}
+                form.setValue('areasOfConcern', {
+                  ...current,
+                  social_communication: e.target.value,
+                })
+              }}
               placeholder='Eye contact, turn-taking, pragmatic language use...'
               rows={3}
             />
@@ -374,7 +441,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardHeader>
           <CardContent>
             <Textarea
-              {...form.register('suspected_cas_notes')}
+              value={form.watch('areasOfConcern')?.suspected_cas || ''}
+              onChange={e => {
+                const current = form.watch('areasOfConcern') || {}
+                form.setValue('areasOfConcern', {
+                  ...current,
+                  suspected_cas: e.target.value,
+                })
+              }}
               placeholder='Inconsistent errors, groping, difficulty with multisyllabic words...'
               rows={3}
             />
@@ -389,7 +463,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardHeader>
           <CardContent>
             <Textarea
-              {...form.register('literacy_notes')}
+              value={form.watch('areasOfConcern')?.literacy || ''}
+              onChange={e => {
+                const current = form.watch('areasOfConcern') || {}
+                form.setValue('areasOfConcern', {
+                  ...current,
+                  literacy: e.target.value,
+                })
+              }}
               placeholder='Reading difficulties, writing concerns, phonological awareness...'
               rows={3}
             />
@@ -404,7 +485,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardHeader>
           <CardContent>
             <Textarea
-              {...form.register('reluctant_speaking_notes')}
+              value={form.watch('areasOfConcern')?.reluctant_speaking || ''}
+              onChange={e => {
+                const current = form.watch('areasOfConcern') || {}
+                form.setValue('areasOfConcern', {
+                  ...current,
+                  reluctant_speaking: e.target.value,
+                })
+              }}
               placeholder='Selective mutism, anxiety, refusal to speak in certain situations...'
               rows={3}
             />
@@ -419,7 +507,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardHeader>
           <CardContent>
             <Textarea
-              {...form.register('cleft_notes')}
+              value={form.watch('areasOfConcern')?.cleft_lip_pallet || ''}
+              onChange={e => {
+                const current = form.watch('areasOfConcern') || {}
+                form.setValue('areasOfConcern', {
+                  ...current,
+                  cleft_lip_pallet: e.target.value,
+                })
+              }}
               placeholder='Speech characteristics, resonance issues, articulation patterns...'
               rows={3}
             />
@@ -434,7 +529,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardHeader>
           <CardContent>
             <Textarea
-              {...form.register('diagnoses_notes')}
+              value={form.watch('areasOfConcern')?.diagnoses || ''}
+              onChange={e => {
+                const current = form.watch('areasOfConcern') || {}
+                form.setValue('areasOfConcern', {
+                  ...current,
+                  diagnoses: e.target.value,
+                })
+              }}
               placeholder='Medical diagnoses, developmental conditions, impact on communication...'
               rows={3}
             />
