@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -25,6 +25,7 @@ interface SpeechScreeningStep1Props {
   onStudentSelect: (student: Student | null) => void
   onGradeChange: (grade: string) => void
   onGradeIdChange: (gradeId: string) => void
+  onAbsentChange?: (isAbsent: boolean) => void
 }
 
 const gradeMapping = [
@@ -65,13 +66,42 @@ const SpeechScreeningStep1 = ({
   onStudentSelect,
   onGradeChange,
   onGradeIdChange,
+  onAbsentChange,
 }: SpeechScreeningStep1Props) => {
   // Fetch available school grades for the current organization
   const { data: schoolGrades } = useSchoolGrades()
   const { selectedSchool } = useSchool()
 
-  // Track absent checkbox state for conditional rendering
-  const [isAbsent, setIsAbsent] = useState(false)
+  // Use local state for immediate UI response, sync with form
+  const [localAbsentValue, setLocalAbsentValue] = useState<boolean>(
+    () => (form.getValues('absent.isAbsent') as boolean) || false
+  )
+
+  // Memoized handler for absent checkbox to prevent unnecessary re-renders
+  const handleAbsentChange = useCallback(
+    (checked: boolean) => {
+      // Update local state immediately for responsive UI
+      setLocalAbsentValue(checked)
+
+      // Update form state and trigger re-render
+      form.setValue('absent', {
+        isAbsent: checked,
+        notes: form.getValues('absent.notes') || '',
+      })
+
+      // Notify parent component of the change
+      onAbsentChange?.(checked)
+    },
+    [form, onAbsentChange]
+  )
+
+  // Sync local state with form state on mount
+  useEffect(() => {
+    const formAbsentValue = form.getValues('absent.isAbsent')
+    if (formAbsentValue !== localAbsentValue) {
+      setLocalAbsentValue(formAbsentValue || false)
+    }
+  }, [form, localAbsentValue])
 
   // Filter grades based on selected grade level and get unique academic years
   const availableGradeIds = React.useMemo(() => {
@@ -260,30 +290,27 @@ const SpeechScreeningStep1 = ({
               <div className='flex items-center space-x-2'>
                 <Checkbox
                   id='absent'
-                  checked={isAbsent}
-                  onCheckedChange={checked => {
-                    setIsAbsent(checked as boolean)
-                    form.setValue('absent', checked as boolean)
-                  }}
+                  checked={localAbsentValue}
+                  onCheckedChange={handleAbsentChange}
                 />
                 <Label htmlFor='absent' className='text-sm font-medium'>
                   Absent
                 </Label>
               </div>
-              {isAbsent && (
+              {localAbsentValue && (
                 <div>
                   <Label htmlFor='absent_notes' className='text-sm font-medium'>
                     Absent Notes
                   </Label>
                   <Textarea
-                    {...form.register('absent_notes')}
+                    {...form.register('absent.notes')}
                     placeholder='Enter notes about absence...'
                     rows={2}
                     className='mt-1'
                   />
                 </div>
               )}
-              {isAbsent && (
+              {localAbsentValue && (
                 <div className='flex items-center space-x-2'>
                   <Checkbox id='priority_re_screen' {...form.register('priority_re_screen')} />
                   <Label htmlFor='priority_re_screen' className='text-sm font-medium'>
