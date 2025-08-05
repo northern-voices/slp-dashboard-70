@@ -57,7 +57,10 @@ const MultiStepSpeechScreeningForm = ({
       referral_notes: '',
       attendance: '',
       // Speech screening fields (for error_patterns)
-      sound_errors: [],
+      articulation: {
+        soundErrors: [],
+        articulationNotes: '',
+      },
       language_concerns: '',
       voice_quality: '',
       fluency_notes: '',
@@ -127,8 +130,7 @@ const MultiStepSpeechScreeningForm = ({
       referral_notes: data.referral_notes || '',
       attendance: data.attendance || '',
       // Add speech-specific fields
-      sound_errors: data.sound_errors || [],
-      articulation_notes: data.articulation_notes || '',
+      articulation: data.articulation || { soundErrors: [], articulationNotes: '' },
       language_concerns: data.language_concerns || '',
       voice_quality: data.voice_quality || '',
       fluency_notes: data.fluency_notes || '',
@@ -139,6 +141,20 @@ const MultiStepSpeechScreeningForm = ({
       absent_notes: data.absent_notes || '',
       priority_re_screen: data.priority_re_screen || false,
     }
+
+    // Console log the complete form data
+    console.log('=== COMPLETE FORM DATA ===')
+    console.log('Raw form data:', data)
+    console.log('Selected student:', selectedStudent)
+    console.log('Selected grade:', selectedGrade)
+    console.log('Selected grade ID:', selectedGradeId)
+    console.log('Current user:', user)
+    console.log('=== END FORM DATA ===')
+
+    // Console log the final screening data that will be submitted
+    console.log('=== FINAL SCREENING DATA TO SUBMIT ===')
+    console.log('Screening data:', screeningData)
+    console.log('=== END SCREENING DATA ===')
 
     createScreening.mutate(screeningData, {
       onSuccess: () => {

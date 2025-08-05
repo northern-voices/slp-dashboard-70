@@ -71,6 +71,22 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [soundNotes, setSoundNotes] = useState<Record<string, string>>({})
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
 
+  // Create nested structure for articulation data
+  React.useEffect(() => {
+    const soundErrorsData = selectedSounds.map(sound => ({
+      sound: sound,
+      errorPatterns: selectedErrorPatterns[sound] || [],
+      notes: soundNotes[sound] || '',
+    }))
+
+    const articulationData = {
+      soundErrors: soundErrorsData,
+      articulationNotes: form.watch('general_articulation_notes') || '',
+    }
+
+    form.setValue('articulation', articulationData)
+  }, [selectedSounds, selectedErrorPatterns, soundNotes, form])
+
   const handleConcernChange = (concern: string, checked: boolean) => {
     if (checked) {
       setSelectedConcerns([...selectedConcerns, concern])
