@@ -11,8 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { ChevronDown, ChevronRight } from 'lucide-react'
 
 interface EnhancedSpeechScreeningFieldsProps {
   form: UseFormReturn<any>
@@ -25,7 +23,6 @@ const areasOfConcern = [
   'Voice',
   'Fluency',
   'Stuttering',
-  'Articulation',
   'Suspected CAS',
   'Literacy',
   'Reluctant Speaking',
@@ -33,49 +30,36 @@ const areasOfConcern = [
   'Diagnoses',
 ]
 
-const singleSounds = [
-  '/r/',
-  '/s/',
-  '/z/',
-  '/th/',
-  '/l/',
-  '/k/',
-  '/g/',
-  '/f/',
-  '/v/',
-  '/sh/',
-  '/ch/',
-  '/j/',
-]
-const blendsClusters = [
-  '/bl/',
-  '/br/',
-  '/cl/',
-  '/cr/',
-  '/dr/',
-  '/fl/',
-  '/fr/',
-  '/gl/',
-  '/gr/',
-  '/pl/',
-  '/pr/',
-  '/sc/',
-  '/sk/',
-  '/sl/',
-  '/sm/',
-  '/sn/',
-  '/sp/',
-  '/st/',
-  '/sw/',
-  '/tr/',
-  '/tw/',
+const articulationSounds = [
+  'St ~',
+  'Sp ~',
+  'Sm ~',
+  'Sn ~',
+  'Sk ~',
+  'Final -ts',
+  'Final -ps',
+  'Final -ks',
+  'S',
+  'Z',
+  'SH',
+  'ZH',
+  'Ch',
+  'J',
+  'P',
+  'B',
+  'T',
+  'D',
+  'K',
+  'G',
+  'Final ~t',
+  'Final ~k',
+  'Final ~p',
 ]
 
 const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsProps) => {
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([])
   const [selectedSounds, setSelectedSounds] = useState<string[]>([])
   const [soundNotes, setSoundNotes] = useState<Record<string, string>>({})
-  const [articulationOpen, setArticulationOpen] = useState(false)
 
   const handleConcernChange = (concern: string, checked: boolean) => {
     if (checked) {
@@ -105,6 +89,55 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
   return (
     <div className='space-y-6'>
+      {/* Articulation/Sound Production - Always Visible */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Articulation</CardTitle>
+        </CardHeader>
+        <CardContent className='space-y-6'>
+          {/* Articulation Sounds */}
+          <div>
+            <Label className='text-base font-medium mb-3 block'>Sounds in Error</Label>
+            <div className='grid grid-cols-3 md:grid-cols-6 gap-3'>
+              {articulationSounds.map(sound => (
+                <div key={sound} className='flex flex-col'>
+                  <button
+                    type='button'
+                    onClick={() => handleSoundToggle(sound)}
+                    className={`p-2 text-center border rounded-md transition-colors ${
+                      selectedSounds.includes(sound)
+                        ? 'bg-blue-100 border-blue-500 text-blue-700'
+                        : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
+                    }`}>
+                    {sound}
+                  </button>
+                  {selectedSounds.includes(sound) && (
+                    <Textarea
+                      placeholder='Notes...'
+                      value={soundNotes[sound] || ''}
+                      onChange={e => handleSoundNoteChange(sound, e.target.value)}
+                      className='mt-2 text-xs'
+                      rows={2}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* General Articulation Notes */}
+          <div>
+            <Label htmlFor='general_articulation_notes'>General Articulation Notes</Label>
+            <Textarea
+              {...form.register('general_articulation_notes')}
+              placeholder='Overall patterns, stimulability, consistency...'
+              rows={3}
+              className='mt-1'
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Areas of Concern */}
       <Card>
         <CardHeader>
@@ -127,100 +160,6 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </div>
         </CardContent>
       </Card>
-
-      {/* Articulation/Sound Production - Detailed Assessment */}
-      {selectedConcerns.includes('Articulation') && (
-        <Card>
-          <Collapsible open={articulationOpen} onOpenChange={setArticulationOpen}>
-            <CardHeader>
-              <CollapsibleTrigger className='flex items-center gap-2 w-full'>
-                {articulationOpen ? (
-                  <ChevronDown className='w-4 h-4' />
-                ) : (
-                  <ChevronRight className='w-4 h-4' />
-                )}
-                <CardTitle>Articulation/Sound Production Assessment</CardTitle>
-              </CollapsibleTrigger>
-            </CardHeader>
-            <CollapsibleContent>
-              <CardContent className='space-y-6'>
-                {/* Single Sounds */}
-                <div>
-                  <Label className='text-base font-medium mb-3 block'>Single Sounds in Error</Label>
-                  <div className='grid grid-cols-3 md:grid-cols-6 gap-3 mb-4'>
-                    {singleSounds.map(sound => (
-                      <div key={sound} className='flex flex-col'>
-                        <button
-                          type='button'
-                          onClick={() => handleSoundToggle(sound)}
-                          className={`p-2 text-center border rounded-md transition-colors ${
-                            selectedSounds.includes(sound)
-                              ? 'bg-blue-100 border-blue-500 text-blue-700'
-                              : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
-                          }`}>
-                          {sound}
-                        </button>
-                        {selectedSounds.includes(sound) && (
-                          <Textarea
-                            placeholder='Notes...'
-                            value={soundNotes[sound] || ''}
-                            onChange={e => handleSoundNoteChange(sound, e.target.value)}
-                            className='mt-2 text-xs'
-                            rows={2}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Blends and Clusters */}
-                <div>
-                  <Label className='text-base font-medium mb-3 block'>
-                    Blends/Clusters in Error
-                  </Label>
-                  <div className='grid grid-cols-3 md:grid-cols-7 gap-3'>
-                    {blendsClusters.map(sound => (
-                      <div key={sound} className='flex flex-col'>
-                        <button
-                          type='button'
-                          onClick={() => handleSoundToggle(sound)}
-                          className={`p-2 text-center border rounded-md transition-colors ${
-                            selectedSounds.includes(sound)
-                              ? 'bg-blue-100 border-blue-500 text-blue-700'
-                              : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
-                          }`}>
-                          {sound}
-                        </button>
-                        {selectedSounds.includes(sound) && (
-                          <Textarea
-                            placeholder='Notes...'
-                            value={soundNotes[sound] || ''}
-                            onChange={e => handleSoundNoteChange(sound, e.target.value)}
-                            className='mt-2 text-xs'
-                            rows={2}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* General Articulation Notes */}
-                <div>
-                  <Label htmlFor='general_articulation_notes'>General Articulation Notes</Label>
-                  <Textarea
-                    {...form.register('general_articulation_notes')}
-                    placeholder='Overall patterns, stimulability, consistency...'
-                    rows={3}
-                    className='mt-1'
-                  />
-                </div>
-              </CardContent>
-            </CollapsibleContent>
-          </Collapsible>
-        </Card>
-      )}
 
       {/* Other Areas Assessments */}
       {selectedConcerns.includes('Language Expression') && (
