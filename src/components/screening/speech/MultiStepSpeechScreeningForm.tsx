@@ -83,8 +83,10 @@ const MultiStepSpeechScreeningForm = ({
       overall_notes: '',
       other_notes: '',
       qualifies_for_speech_program: false,
-      absent: false,
-      absent_notes: '',
+      absent: {
+        isAbsent: false,
+        notes: '',
+      },
       priority_re_screen: false,
     },
   })
@@ -110,10 +112,10 @@ const MultiStepSpeechScreeningForm = ({
 
   const handleSubmit = (data: any) => {
     // Allow submission from step 1 if absent is checked, otherwise require step 2
-    if (currentStep === 1 && !data.absent) {
+    if (currentStep === 1 && !data.absent?.isAbsent) {
       return
     }
-    if (currentStep === 2 && data.absent) {
+    if (currentStep === 2 && data.absent?.isAbsent) {
       // If we're on step 2 but absent is checked, we should have submitted from step 1
       return
     }
@@ -142,8 +144,7 @@ const MultiStepSpeechScreeningForm = ({
       overall_observations: data.overall_observations || '',
       other_notes: data.other_notes || '',
       qualifies_for_speech_program: data.qualifies_for_speech_program || false,
-      absent: data.absent || false,
-      absent_notes: data.absent_notes || '',
+      absent: data.absent || { isAbsent: false, notes: '' },
       priority_re_screen: data.priority_re_screen || false,
     }
 
@@ -183,7 +184,7 @@ const MultiStepSpeechScreeningForm = ({
 
   const canSubmitFromStep1 = () => {
     // Can submit from step 1 if absent is checked and we have required fields
-    return form.watch('absent') && selectedGrade && selectedStudent
+    return form.watch('absent.isAbsent') && selectedGrade && selectedStudent
   }
 
   const renderCurrentStep = () => {
@@ -240,7 +241,7 @@ const MultiStepSpeechScreeningForm = ({
 
             {currentStep === 1 ? (
               // Step 1: Show Submit if absent, Next if not absent
-              form.watch('absent') ? (
+              form.watch('absent.isAbsent') ? (
                 <Button
                   type='button'
                   onClick={() => {
