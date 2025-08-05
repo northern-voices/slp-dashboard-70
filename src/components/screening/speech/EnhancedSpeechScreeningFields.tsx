@@ -156,14 +156,17 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                       <div className='mt-1 text-xs text-gray-600'>
                         Word: {soundErrorPatterns[sound]?.word}
                       </div>
-                      {/* Notes for this sound */}
-                      <Textarea
-                        placeholder='Notes...'
-                        value={soundNotes[sound] || ''}
-                        onChange={e => handleSoundNoteChange(sound, e.target.value)}
-                        className='mt-2 text-xs'
-                        rows={2}
-                      />
+
+                      {/* Notes for this sound - only show when "Other" is checked */}
+                      {(selectedErrorPatterns[sound] || []).includes('Other') && (
+                        <Textarea
+                          placeholder='Specify other error pattern...'
+                          value={soundNotes[sound] || ''}
+                          onChange={e => handleSoundNoteChange(sound, e.target.value)}
+                          className='mt-2 text-xs'
+                          rows={2}
+                        />
+                      )}
                     </>
                   )}
                 </div>
