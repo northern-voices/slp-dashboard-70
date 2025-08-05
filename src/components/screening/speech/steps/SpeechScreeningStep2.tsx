@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Calendar, FileText } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import EnhancedSpeechScreeningFields from '../EnhancedSpeechScreeningFields'
 import Multiselect from '@/components/ui/multiselect'
 
@@ -82,7 +82,12 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
               <Label htmlFor='screening_date' className='mb-2 block'>
                 Screening Date *
               </Label>
-              <Input type='date' {...form.register('screening_date')} />
+              <Input
+                type='text'
+                value={form.watch('screening_date')}
+                readOnly
+                className='bg-gray-50 cursor-not-allowed'
+              />
             </div>
           </div>
         </CardContent>
@@ -93,7 +98,6 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
       <Card>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
-            <FileText className='w-5 h-5' />
             Screening Results & Final Details
           </CardTitle>
         </CardHeader>
@@ -183,6 +187,32 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
               {...form.register('attendance')}
               placeholder='Enter attendance information...'
               rows={3}
+              className='mt-1'
+              onKeyDown={e => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  // Allow Ctrl+Enter for new lines
+                  return
+                }
+                if (e.key === 'Enter') {
+                  e.stopPropagation() // Prevent form submission
+                }
+              }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Other</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div>
+            <Label htmlFor='other_notes'>Additional Notes</Label>
+            <Textarea
+              {...form.register('other_notes')}
+              placeholder='Enter any additional notes or observations...'
+              rows={4}
               className='mt-1'
               onKeyDown={e => {
                 if (e.key === 'Enter' && e.ctrlKey) {

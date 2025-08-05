@@ -74,6 +74,7 @@ const MultiStepSpeechScreeningForm = ({
       diagnoses_notes: '',
       general_articulation_notes: '',
       overall_notes: '',
+      other_notes: '',
     },
   })
 
@@ -148,6 +149,7 @@ const MultiStepSpeechScreeningForm = ({
       voice_quality: data.voice_quality || '',
       fluency_notes: data.fluency_notes || '',
       overall_observations: data.overall_observations || '',
+      other_notes: data.other_notes || '',
     }
 
     createScreening.mutate(screeningData, {
