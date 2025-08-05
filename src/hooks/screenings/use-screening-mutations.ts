@@ -10,7 +10,7 @@ type CreateSpeechScreeningInput = {
   screener_id: string
   grade_id: string
   error_patterns?: any
-  result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C' | null
+  result?: string | null
   vocabulary_support?: boolean
   suspected_cas?: boolean
   clinical_notes?: string | null

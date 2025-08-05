@@ -103,28 +103,9 @@ const MultiStepSpeechScreeningForm = ({
       return
     }
 
-    // Map form result to database enum values
-    const mapResult = (result: string): 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C' | null => {
-      switch (result) {
-        case 'age_appropriate':
-          return 'P'
-        case 'monitor':
-          return 'P'
-        case 'mild':
-          return 'M'
-        case 'moderate':
-          return 'M'
-        case 'severe':
-          return 'Q'
-        case 'profound':
-          return 'Q'
-        case 'complex_needs':
-          return 'C'
-        case 'unable_to_screen':
-          return 'NR'
-        default:
-          return null
-      }
+    // Return the result as-is
+    const mapResult = (result: string): string | null => {
+      return result || null
     }
 
     const screeningData = {

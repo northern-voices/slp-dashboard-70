@@ -1,13 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { Screening } from '@/types/database'
 
-type SpeechScreeningResult =
-  | 'absent'
-  | 'passed'
-  | 'mild_moderate'
-  | 'severe_profound'
-  | 'non_registered_no_consent'
-  | 'complex_needs'
+type SpeechScreeningResult = string
 
 interface RawSpeechScreening {
   id: string

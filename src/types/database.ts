@@ -65,8 +65,8 @@ export interface Screening {
   screener: string
   slp_id: string
   results: string
-  result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C'
-  screening_result?: 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C'
+  result?: string
+  screening_result?: string
   notes: string
   referral_notes?: string
   created_at: string

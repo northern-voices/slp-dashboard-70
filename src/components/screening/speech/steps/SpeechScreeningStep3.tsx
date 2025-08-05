@@ -17,6 +17,8 @@ interface SpeechScreeningStep3Props {
   form: UseFormReturn<any>
 }
 
+// !! This page has been deprecated
+
 const SpeechScreeningStep3 = ({ form }: SpeechScreeningStep3Props) => {
   const supportOptions = [
     'Vocabulary Support (Language Ladder)',

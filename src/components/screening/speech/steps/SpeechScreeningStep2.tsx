@@ -13,44 +13,12 @@ import {
 } from '@/components/ui/select'
 import { Calendar } from 'lucide-react'
 import EnhancedSpeechScreeningFields from '../EnhancedSpeechScreeningFields'
-import Multiselect from '@/components/ui/multiselect'
 
 interface SpeechScreeningStep2Props {
   form: UseFormReturn
 }
 
 const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
-  const supportOptions = [
-    'Vocabulary Support (Language Ladder)',
-    'Suspected CAS',
-    'Additional Speech Support',
-    'Language Intervention',
-    'Articulation Therapy',
-  ]
-
-  const [selectedSupport, setSelectedSupport] = React.useState<string[]>([])
-
-  const vocabularySupport = form.watch('vocabulary_support')
-  const suspectedCas = form.watch('suspected_cas')
-
-  // Update selectedSupport whenever the form values change
-  React.useEffect(() => {
-    const currentSupport = []
-    if (vocabularySupport) {
-      currentSupport.push('Vocabulary Support (Language Ladder)')
-    }
-    if (suspectedCas) {
-      currentSupport.push('Suspected CAS')
-    }
-    setSelectedSupport(currentSupport)
-  }, [vocabularySupport, suspectedCas])
-
-  const handleSupportChange = (selected: string[]) => {
-    setSelectedSupport(selected)
-    form.setValue('vocabulary_support', selected.includes('Vocabulary Support (Language Ladder)'))
-    form.setValue('suspected_cas', selected.includes('Suspected CAS'))
-  }
-
   return (
     <div className='space-y-6'>
       <Card>
@@ -97,24 +65,9 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
 
       <Card>
         <CardHeader>
-          <CardTitle className='flex items-center gap-2'>
-            Screening Results & Final Details
-          </CardTitle>
+          <CardTitle className='flex items-center gap-2'>Final Details</CardTitle>
         </CardHeader>
         <CardContent className='space-y-6'>
-          <div className='space-y-3'>
-            <Label>Support Options</Label>
-            <Multiselect
-              options={supportOptions}
-              selected={selectedSupport}
-              onChange={handleSupportChange}
-              placeholder='Select support options...'
-              searchPlaceholder='Search support options...'
-              emptyMessage='No support options found.'
-              showSelectAll={false}
-            />
-          </div>
-
           <div>
             <Label htmlFor='clinical_notes'>Clinical Notes (Private)</Label>
             <Textarea
