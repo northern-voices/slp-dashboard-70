@@ -214,6 +214,16 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
               </Select>
             </div>
 
+            <div className='flex items-center space-x-2'>
+              <Checkbox
+                id='qualifies_for_speech_program'
+                {...form.register('qualifies_for_speech_program')}
+              />
+              <Label htmlFor='qualifies_for_speech_program' className='text-sm font-medium'>
+                Qualifies for Speech Program
+              </Label>
+            </div>
+
             <div>
               <Label htmlFor='overall_notes'>Overall Assessment Notes</Label>
               <Textarea

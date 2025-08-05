@@ -75,6 +75,10 @@ const MultiStepSpeechScreeningForm = ({
       general_articulation_notes: '',
       overall_notes: '',
       other_notes: '',
+      qualifies_for_speech_program: false,
+      absent: false,
+      absent_notes: '',
+      priority_re_screen: false,
     },
   })
 
@@ -98,8 +102,12 @@ const MultiStepSpeechScreeningForm = ({
   }
 
   const handleSubmit = (data: any) => {
-    // Add this check to prevent submission on wrong step
-    if (currentStep !== 2) {
+    // Allow submission from step 1 if absent is checked, otherwise require step 2
+    if (currentStep === 1 && !data.absent) {
+      return
+    }
+    if (currentStep === 2 && data.absent) {
+      // If we're on step 2 but absent is checked, we should have submitted from step 1
       return
     }
 
@@ -126,6 +134,10 @@ const MultiStepSpeechScreeningForm = ({
       fluency_notes: data.fluency_notes || '',
       overall_observations: data.overall_observations || '',
       other_notes: data.other_notes || '',
+      qualifies_for_speech_program: data.qualifies_for_speech_program || false,
+      absent: data.absent || false,
+      absent_notes: data.absent_notes || '',
+      priority_re_screen: data.priority_re_screen || false,
     }
 
     createScreening.mutate(screeningData, {
@@ -146,6 +158,11 @@ const MultiStepSpeechScreeningForm = ({
       return form.watch('screening_type') && form.watch('screening_date')
     }
     return true
+  }
+
+  const canSubmitFromStep1 = () => {
+    // Can submit from step 1 if absent is checked and we have required fields
+    return form.watch('absent') && selectedGrade && selectedStudent
   }
 
   const renderCurrentStep = () => {
@@ -185,34 +202,54 @@ const MultiStepSpeechScreeningForm = ({
         {/* Action Buttons */}
         <div className='flex justify-between items-center pt-6 border-t'>
           <div className='flex space-x-3'>
-            <Button type='button' variant='outline' onClick={onCancel}>
+            <Button type='button' variant='destructive' onClick={onCancel}>
               Cancel
             </Button>
             {currentStep > 1 && (
-              <Button type='button' variant='outline' onClick={handlePrevious}>
+              <Button type='button' variant='default' onClick={handlePrevious}>
                 Previous
               </Button>
             )}
           </div>
 
           <div className='flex space-x-3'>
-            <Button type='button' variant='outline' onClick={handleSaveDraft}>
+            <Button type='button' variant='secondary' onClick={handleSaveDraft}>
               Save Draft
             </Button>
 
-            {currentStep < 2 ? (
+            {currentStep === 1 ? (
+              // Step 1: Show Submit if absent, Next if not absent
+              form.watch('absent') ? (
+                <Button
+                  type='button'
+                  onClick={() => {
+                    const formData = form.getValues()
+                    const formErrors = Object.keys(form.formState.errors)
+
+                    if (formErrors.length > 0) {
+                      return
+                    }
+
+                    handleSubmit(formData)
+                  }}
+                  disabled={createScreening.isPending || !canSubmitFromStep1()}
+                  className='bg-primary hover:bg-primary/90 text-primary-foreground'>
+                  {createScreening.isPending ? 'Creating...' : 'Submit Absent Screening'}
+                </Button>
+              ) : (
+                <Button
+                  type='button'
+                  onClick={handleNext}
+                  disabled={!canProceedToNext()}
+                  className='bg-primary hover:bg-primary/90 text-primary-foreground'>
+                  Next
+                </Button>
+              )
+            ) : (
+              // Step 2: Always show Submit
               <Button
                 type='button'
-                onClick={handleNext}
-                disabled={!canProceedToNext()}
-                className='bg-primary hover:bg-primary/90 text-primary-foreground'>
-                Next
-              </Button>
-            ) : (
-              <Button
-                type='button' // Change from 'submit' to 'button'
                 onClick={() => {
-                  // Get form data and validate
                   const formData = form.getValues()
                   const formErrors = Object.keys(form.formState.errors)
 
@@ -220,7 +257,6 @@ const MultiStepSpeechScreeningForm = ({
                     return
                   }
 
-                  // Manually call handleSubmit with form data
                   handleSubmit(formData)
                 }}
                 disabled={createScreening.isPending}

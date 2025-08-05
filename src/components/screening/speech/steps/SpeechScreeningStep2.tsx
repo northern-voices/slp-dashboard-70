@@ -88,7 +88,7 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
           </div>
 
           <div>
-            <Label htmlFor='referral_notes'>Referral Notes</Label>
+            <Label htmlFor='referral_notes'>Recommendations and referrals (Reports)</Label>
             <Textarea
               {...form.register('referral_notes')}
               placeholder='Enter referral information and recommendations...'
@@ -107,7 +107,7 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
           </div>
 
           <div>
-            <Label htmlFor='attendance'>Attendance (for progress reports)</Label>
+            <Label htmlFor='attendance'>Attendance (Reports)</Label>
             <Textarea
               {...form.register('attendance')}
               placeholder='Enter attendance information...'

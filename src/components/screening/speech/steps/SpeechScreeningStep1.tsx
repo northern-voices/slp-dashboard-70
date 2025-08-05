@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -67,6 +69,9 @@ const SpeechScreeningStep1 = ({
   // Fetch available school grades for the current organization
   const { data: schoolGrades } = useSchoolGrades()
   const { selectedSchool } = useSchool()
+
+  // Track absent checkbox state for conditional rendering
+  const [isAbsent, setIsAbsent] = useState(false)
 
   // Filter grades based on selected grade level and get unique academic years
   const availableGradeIds = React.useMemo(() => {
@@ -246,6 +251,46 @@ const SpeechScreeningStep1 = ({
                 {selectedStudent.first_name} {selectedStudent.last_name} - Grade {selectedGrade}
               </p>
               <p className='text-xs text-blue-600 mt-1'>Student ID: {selectedStudent.student_id}</p>
+            </div>
+          )}
+
+          {/* Screening Status Checkboxes - Only show after grade is selected */}
+          {selectedGrade && (
+            <div className='space-y-3'>
+              <div className='flex items-center space-x-2'>
+                <Checkbox
+                  id='absent'
+                  checked={isAbsent}
+                  onCheckedChange={checked => {
+                    setIsAbsent(checked as boolean)
+                    form.setValue('absent', checked as boolean)
+                  }}
+                />
+                <Label htmlFor='absent' className='text-sm font-medium'>
+                  Absent
+                </Label>
+              </div>
+              {isAbsent && (
+                <div>
+                  <Label htmlFor='absent_notes' className='text-sm font-medium'>
+                    Absent Notes
+                  </Label>
+                  <Textarea
+                    {...form.register('absent_notes')}
+                    placeholder='Enter notes about absence...'
+                    rows={2}
+                    className='mt-1'
+                  />
+                </div>
+              )}
+              {isAbsent && (
+                <div className='flex items-center space-x-2'>
+                  <Checkbox id='priority_re_screen' {...form.register('priority_re_screen')} />
+                  <Label htmlFor='priority_re_screen' className='text-sm font-medium'>
+                    Priority re-screen
+                  </Label>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
