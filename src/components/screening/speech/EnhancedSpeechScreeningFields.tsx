@@ -26,7 +26,7 @@ const areasOfConcern = [
   'Suspected CAS',
   'Literacy',
   'Reluctant Speaking',
-  'Cleft lip / pallet',
+  'Cleft Lip / Pallet',
   'Diagnoses',
 ]
 
@@ -56,10 +56,20 @@ const articulationSounds = [
   'Final ~p',
 ]
 
+const errorPatterns = [
+  'Consonant Cluster Reduction',
+  'Frontal Lisp',
+  'Lateral Lisp',
+  'Backing',
+  'Nasal',
+  'Other',
+]
+
 const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsProps) => {
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([])
   const [selectedSounds, setSelectedSounds] = useState<string[]>([])
   const [soundNotes, setSoundNotes] = useState<Record<string, string>>({})
+  const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
 
   const handleConcernChange = (concern: string, checked: boolean) => {
     if (checked) {
@@ -87,6 +97,21 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     })
   }
 
+  const handleErrorPatternChange = (sound: string, pattern: string, checked: boolean) => {
+    const currentPatterns = selectedErrorPatterns[sound] || []
+    if (checked) {
+      setSelectedErrorPatterns({
+        ...selectedErrorPatterns,
+        [sound]: [...currentPatterns, pattern],
+      })
+    } else {
+      setSelectedErrorPatterns({
+        ...selectedErrorPatterns,
+        [sound]: currentPatterns.filter(p => p !== pattern),
+      })
+    }
+  }
+
   return (
     <div className='space-y-6'>
       {/* Articulation/Sound Production - Always Visible */}
@@ -112,13 +137,33 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                     {sound}
                   </button>
                   {selectedSounds.includes(sound) && (
-                    <Textarea
-                      placeholder='Notes...'
-                      value={soundNotes[sound] || ''}
-                      onChange={e => handleSoundNoteChange(sound, e.target.value)}
-                      className='mt-2 text-xs'
-                      rows={2}
-                    />
+                    <>
+                      {/* Error Patterns for this sound */}
+                      <div className='mt-2 space-y-1'>
+                        {errorPatterns.map(pattern => (
+                          <div key={pattern} className='flex items-center space-x-2'>
+                            <Checkbox
+                              id={`${sound}-${pattern}`}
+                              checked={(selectedErrorPatterns[sound] || []).includes(pattern)}
+                              onCheckedChange={checked =>
+                                handleErrorPatternChange(sound, pattern, checked as boolean)
+                              }
+                            />
+                            <Label htmlFor={`${sound}-${pattern}`} className='text-xs font-medium'>
+                              {pattern}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Notes for this sound */}
+                      <Textarea
+                        placeholder='Notes...'
+                        value={soundNotes[sound] || ''}
+                        onChange={e => handleSoundNoteChange(sound, e.target.value)}
+                        className='mt-2 text-xs'
+                        rows={2}
+                      />
+                    </>
                   )}
                 </div>
               ))}
@@ -297,7 +342,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         </Card>
       )}
 
-      {selectedConcerns.includes('Cleft lip / pallet') && (
+      {selectedConcerns.includes('Cleft Lip / Pallet') && (
         <Card>
           <CardHeader>
             <CardTitle>Cleft Lip / Palate</CardTitle>
