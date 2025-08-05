@@ -68,28 +68,61 @@ export const soundErrorPatterns = {
     word: 'Book',
   },
   'St-': {
-    patterns: ['Consonant Cluster Reduction', 'Frontal Lisp', 'Lateral Lisp', 'Backing', 'Other'],
+    patterns: [
+      'Consonant cluster reduction (Omits S)',
+      'Consonant cluster reduction (Omits T)',
+      'Frontal Lisp',
+      'Lateral Lisp',
+      'Backing',
+      'Other',
+    ],
     word: 'Star',
   },
   'Sp-': {
-    patterns: ['Consonant Cluster Reduction', 'Frontal Lisp', 'Lateral Lisp', 'Other'],
+    patterns: [
+      'Consonant cluster reduction (Omits S)',
+      'Consonant cluster reduction (Omits P)',
+      'Frontal Lisp',
+      'Lateral Lisp',
+      'Other',
+    ],
     word: 'Spoon',
   },
   'Sm-': {
-    patterns: ['Consonant Cluster Reduction', 'Frontal Lisp', 'Lateral Lisp', 'Other'],
+    patterns: [
+      'Consonant cluster reduction (Omits S)',
+      'Consonant cluster reduction (Omits M)',
+      'Frontal Lisp',
+      'Lateral Lisp',
+      'Other',
+    ],
     word: 'Smoke',
   },
   'Sn-': {
-    patterns: ['Consonant Cluster Reduction', 'Frontal Lisp', 'Lateral Lisp', 'Other'],
+    patterns: [
+      'Consonant cluster reduction (Omits S)',
+      'Consonant cluster reduction (Omits N)',
+      'Frontal Lisp',
+      'Lateral Lisp',
+      'Other',
+    ],
     word: 'Snow',
   },
   'Sk-': {
-    patterns: ['Consonant Cluster Reduction', 'Frontal Lisp', 'Lateral Lisp', 'Fronting', 'Other'],
+    patterns: [
+      'Consonant cluster reduction (Omits S)',
+      'Consonant cluster reduction (Omits K)',
+      'Frontal Lisp',
+      'Lateral Lisp',
+      'Fronting',
+      'Other',
+    ],
     word: 'Sky',
   },
   'Final -ts': {
     patterns: [
-      'Final Consonant Cluster Reduction',
+      'Consonant cluster reduction (Omits T)',
+      'Consonant cluster reduction (Omits S)',
       'Frontal Lisp',
       'Lateral Lisp',
       'Backing',
@@ -98,12 +131,19 @@ export const soundErrorPatterns = {
     word: 'Boots',
   },
   'Final -ps': {
-    patterns: ['Final Consonant Cluster Reduction', 'Frontal Lisp', 'Lateral Lisp', 'Other'],
+    patterns: [
+      'Consonant cluster reduction (Omits P)',
+      'Consonant cluster reduction (Omits S)',
+      'Frontal Lisp',
+      'Lateral Lisp',
+      'Other',
+    ],
     word: 'Chips',
   },
   'Final -ks': {
     patterns: [
-      'Final Consonant Cluster Reduction',
+      'Consonant cluster reduction (Omits K)',
+      'Consonant cluster reduction (Omits S)',
       'Frontal Lisp',
       'Lateral Lisp',
       'Fronting',
