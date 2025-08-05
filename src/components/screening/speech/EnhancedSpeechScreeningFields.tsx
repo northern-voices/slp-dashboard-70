@@ -183,6 +183,50 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         </CardContent>
       </Card>
 
+      {/* Speech Screen Result */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Speech Screen Result</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className='space-y-4'>
+            <div>
+              <Label htmlFor='speech_screen_result'>Result *</Label>
+              <Select
+                value={form.watch('speech_screen_result') || ''}
+                onValueChange={value => {
+                  form.setValue('speech_screen_result', value)
+                  form.trigger('speech_screen_result')
+                }}>
+                <SelectTrigger>
+                  <SelectValue placeholder='Select result' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='age_appropriate'>Age Appropriate</SelectItem>
+                  <SelectItem value='monitor'>Monitor (Age Appropriate)</SelectItem>
+                  <SelectItem value='mild'>Mild</SelectItem>
+                  <SelectItem value='moderate'>Moderate</SelectItem>
+                  <SelectItem value='severe'>Severe</SelectItem>
+                  <SelectItem value='profound'>Profound</SelectItem>
+                  <SelectItem value='complex_needs'>Complex needs</SelectItem>
+                  <SelectItem value='unable_to_screen'>Unable to screen (Compliance)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor='overall_notes'>Overall Assessment Notes</Label>
+              <Textarea
+                {...form.register('overall_notes')}
+                placeholder='Summary of findings, recommendations, next steps...'
+                rows={4}
+                className='mt-1'
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Areas of Concern */}
       <Card>
         <CardHeader>
@@ -371,45 +415,6 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           </CardContent>
         </Card>
       )}
-
-      {/* Speech Screen Result */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Speech Screen Result</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='space-y-4'>
-            <div>
-              <Label htmlFor='speech_screen_result'>Result *</Label>
-              <Select
-                value={form.watch('speech_screen_result')}
-                onValueChange={value => form.setValue('speech_screen_result', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder='Select result' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='absent'>Absent</SelectItem>
-                  <SelectItem value='passed'>Passed</SelectItem>
-                  <SelectItem value='mild_moderate'>Mild/Moderate</SelectItem>
-                  <SelectItem value='profound'>Profound</SelectItem>
-                  <SelectItem value='non_registered'>Non-registered</SelectItem>
-                  <SelectItem value='complex_needs'>Complex Needs</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor='overall_notes'>Overall Assessment Notes</Label>
-              <Textarea
-                {...form.register('overall_notes')}
-                placeholder='Summary of findings, recommendations, next steps...'
-                rows={4}
-                className='mt-1'
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

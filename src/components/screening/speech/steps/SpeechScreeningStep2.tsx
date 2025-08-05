@@ -102,34 +102,6 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
           </CardTitle>
         </CardHeader>
         <CardContent className='space-y-6'>
-          <div>
-            <Label htmlFor='speech_screen_result'>Speech Screen Result *</Label>
-            <Select
-              value={form.watch('speech_screen_result')}
-              onValueChange={value => {
-                form.setValue('speech_screen_result', value)
-              }}>
-              <SelectTrigger>
-                <SelectValue placeholder='Select result' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='absent'>Absent (No speech concerns)</SelectItem>
-                <SelectItem value='passed'>Passed (Within normal limits)</SelectItem>
-                <SelectItem value='mild_moderate'>Mild/Moderate (Some concerns present)</SelectItem>
-                <SelectItem value='severe_profound'>
-                  Severe/Profound (Significant concerns)
-                </SelectItem>
-                <SelectItem value='complex_needs'>
-                  Complex Needs (Requires specialized assessment)
-                </SelectItem>
-                <SelectItem value='non_registered_no_consent'>Non-Registered/No Consent</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className='text-xs text-gray-500 mt-1'>
-              Select the appropriate result category based on the screening findings
-            </p>
-          </div>
-
           <div className='space-y-3'>
             <Label>Support Options</Label>
             <Multiselect

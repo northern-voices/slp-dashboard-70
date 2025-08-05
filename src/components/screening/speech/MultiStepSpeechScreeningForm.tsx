@@ -50,7 +50,7 @@ const MultiStepSpeechScreeningForm = ({
     defaultValues: {
       screening_type: 'initial',
       screening_date: new Date().toISOString().split('T')[0],
-      // speech_screen_result: '',
+      speech_screen_result: '',
       vocabulary_support: false,
       suspected_cas: false,
       clinical_notes: '',
@@ -104,29 +104,24 @@ const MultiStepSpeechScreeningForm = ({
     }
 
     // Map form result to database enum values
-    const mapResult = (
-      result: string
-    ):
-      | 'absent'
-      | 'passed'
-      | 'mild_moderate'
-      | 'severe_profound'
-      | 'non_registered_no_consent'
-      | 'complex_needs'
-      | null => {
+    const mapResult = (result: string): 'P' | 'M' | 'Q' | 'NR' | 'NC' | 'C' | null => {
       switch (result) {
-        case 'absent':
-          return 'absent'
-        case 'passed':
-          return 'passed'
-        case 'mild_moderate':
-          return 'mild_moderate'
-        case 'severe_profound':
-          return 'severe_profound'
+        case 'age_appropriate':
+          return 'P'
+        case 'monitor':
+          return 'P'
+        case 'mild':
+          return 'M'
+        case 'moderate':
+          return 'M'
+        case 'severe':
+          return 'Q'
+        case 'profound':
+          return 'Q'
         case 'complex_needs':
-          return 'complex_needs'
-        case 'non_registered_no_consent':
-          return 'non_registered_no_consent'
+          return 'C'
+        case 'unable_to_screen':
+          return 'NR'
         default:
           return null
       }
