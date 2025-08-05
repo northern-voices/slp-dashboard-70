@@ -244,7 +244,7 @@ const StudentSearchSelector = ({
               {selectedStudent
                 ? `${selectedStudent.first_name} ${selectedStudent.last_name} (${selectedStudent.student_id})`
                 : currentSchool
-                ? 'Select student...'
+                ? 'Student Name'
                 : 'Select a school first...'}
             </span>
             <div className='flex items-center gap-1'>
@@ -273,63 +273,74 @@ const StudentSearchSelector = ({
               value={searchValue}
               onValueChange={setSearchValue}
             />
-            <CommandList>
-              <CommandEmpty>
-                {isLoading ? (
-                  'Loading students...'
-                ) : shouldShowAddNew ? (
-                  <div className='p-2'>
-                    <p className='text-sm text-muted-foreground mb-2'>No student found.</p>
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      onClick={handleShowNewStudentForm}
-                      className='w-full'>
-                      <UserPlus className='w-4 h-4 mr-2' />
-                      Add New Student
-                    </Button>
-                  </div>
-                ) : (
-                  'No student found.'
-                )}
-              </CommandEmpty>
-              <CommandGroup>
-                {studentsToShow.map(student => (
-                  <CommandItem
-                    key={student.id}
-                    value={`${student.first_name} ${student.last_name} ${student.student_id}`}
-                    onSelect={() => handleStudentSelect(student)}
-                    className='cursor-pointer'>
-                    <Check
-                      className={cn(
-                        'mr-2 h-4 w-4',
-                        selectedStudent?.id === student.id ? 'opacity-100' : 'opacity-0'
-                      )}
-                    />
-                    <div className='flex flex-col'>
-                      <span className='font-medium'>
-                        {student.first_name} {student.last_name}
-                      </span>
-                      <span className='text-sm text-muted-foreground'>
-                        ID: {student.student_id}
-                      </span>
-                      <span className='text-xs text-muted-foreground'>
-                        UUID: {student.id.substring(0, 8)}... (Real DB data ✅)
-                      </span>
+            <div className='relative max-h-[300px] flex flex-col'>
+              <CommandList className='flex-1 overflow-y-auto'>
+                <CommandEmpty>
+                  {isLoading ? (
+                    'Loading students...'
+                  ) : shouldShowAddNew ? (
+                    <div className='p-2'>
+                      <p className='text-sm text-muted-foreground mb-2'>No student found.</p>
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        onClick={handleShowNewStudentForm}
+                        className='w-full'>
+                        <UserPlus className='w-4 h-4 mr-2' />
+                        Add New Student
+                      </Button>
                     </div>
-                  </CommandItem>
-                ))}
-                {shouldShowAddNew && (
-                  <CommandItem
-                    value='add-new-student'
-                    onSelect={handleShowNewStudentForm}
-                    className='cursor-pointer border-t'>
-                    <Plus className='mr-2 h-4 w-4' />
-                    <span className='font-medium'>Add New Student</span>
-                  </CommandItem>
-                )}
-              </CommandGroup>
-            </CommandList>
+                  ) : (
+                    'No student found.'
+                  )}
+                </CommandEmpty>
+                <CommandGroup>
+                  {studentsToShow.map(student => (
+                    <CommandItem
+                      key={student.id}
+                      value={`${student.first_name} ${student.last_name} ${student.student_id}`}
+                      onSelect={() => handleStudentSelect(student)}
+                      className='cursor-pointer'>
+                      <Check
+                        className={cn(
+                          'mr-2 h-4 w-4',
+                          selectedStudent?.id === student.id ? 'opacity-100' : 'opacity-0'
+                        )}
+                      />
+                      <div className='flex flex-col'>
+                        <span className='font-medium'>
+                          {student.first_name} {student.last_name}
+                        </span>
+                        <span className='text-sm text-muted-foreground'>
+                          ID: {student.student_id}
+                        </span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                  {shouldShowAddNew && (
+                    <CommandItem
+                      value='add-new-student'
+                      onSelect={handleShowNewStudentForm}
+                      className='cursor-pointer border-t'>
+                      <Plus className='mr-2 h-4 w-4' />
+                      <span className='font-medium'>Add New Student</span>
+                    </CommandItem>
+                  )}
+                </CommandGroup>
+              </CommandList>
+
+              {/* Sticky Create New Student button at bottom */}
+              <div className='border-t bg-background sticky bottom-0 p-2'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={handleShowNewStudentForm}
+                  className='w-full justify-start text-sm'>
+                  <Plus className='mr-2 h-4 w-4' />
+                  Create New Student
+                </Button>
+              </div>
+            </div>
           </Command>
         </PopoverContent>
       </Popover>
