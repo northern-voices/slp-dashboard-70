@@ -49,44 +49,41 @@ const MultiStepSpeechScreeningForm = ({
     mode: 'onSubmit',
     reValidateMode: 'onSubmit',
     defaultValues: {
-      screening_type: 'initial',
-      screening_date: new Date().toISOString().split('T')[0],
-      speech_screen_result: '',
-      vocabulary_support: false,
-      suspected_cas: false,
-      clinical_notes: '',
-      referral_notes: '',
-      // Speech screening fields (for error_patterns)
-      articulation: {
-        soundErrors: [],
-        articulationNotes: '',
-      },
-      areasOfConcern: {
-        language_expression: null,
-        language_comprehension: null,
-        social_communication: null,
-        voice: null,
-        fluency: null,
-        stuttering: null,
-        suspected_cas: null,
-        literacy: null,
-        reluctant_speaking: null,
-        cleft_lip_pallet: null,
-        diagnoses: null,
-      },
-      language_concerns: '',
-      voice_quality: '',
-      fluency_notes: '',
-      overall_observations: '',
-
-      general_articulation_notes: '',
-      other_notes: '',
-      qualifies_for_speech_program: false,
+      // Step 1 fields
       absent: {
         isAbsent: false,
         notes: '',
       },
       priority_re_screen: false,
+
+      // Step 2 fields
+      screening_type: 'initial',
+      screening_date: new Date().toISOString().split('T')[0],
+      speech_screen_result: '',
+      vocabulary_support_recommended: false,
+      qualifies_for_speech_program: false,
+      general_articulation_notes: '',
+      clinical_notes: '',
+      referral_notes: '',
+      other_notes: '',
+
+      // Enhanced Speech Screening Fields
+      articulation: {
+        soundErrors: [],
+        articulationNotes: '',
+      },
+      areasOfConcern: {
+        language_comprehension: null,
+        language_expression: null,
+        pragmatics_social_communication: null,
+        fluency: null,
+        suspected_cas: null,
+        reluctant_speaking: null,
+        voice: null,
+        literacy: null,
+        cleft_lip_palate: null,
+        known_pending_diagnoses: null,
+      },
     },
   })
 
@@ -125,25 +122,29 @@ const MultiStepSpeechScreeningForm = ({
     }
 
     const screeningData = {
+      // Basic screening info
       student_id: selectedStudent?.id || '',
       grade_id: selectedGradeId,
       screener_id: user?.id || '',
-      result: mapResult(data.speech_screen_result),
-      vocabulary_support: data.vocabulary_support || false,
-      suspected_cas: data.suspected_cas || false,
-      clinical_notes: data.clinical_notes || '',
-      referral_notes: data.referral_notes || '',
-      // Add speech-specific fields
-      articulation: data.articulation || { soundErrors: [], articulationNotes: '' },
-      areasOfConcern: data.areasOfConcern || {},
-      language_concerns: data.language_concerns || '',
-      voice_quality: data.voice_quality || '',
-      fluency_notes: data.fluency_notes || '',
-      overall_observations: data.overall_observations || '',
-      other_notes: data.other_notes || '',
-      qualifies_for_speech_program: data.qualifies_for_speech_program || false,
+
+      // Step 1 data
       absent: data.absent || { isAbsent: false, notes: '' },
       priority_re_screen: data.priority_re_screen || false,
+
+      // Step 2 data
+      screening_type: data.screening_type || 'initial',
+      screening_date: data.screening_date || new Date().toISOString().split('T')[0],
+      speech_screen_result: mapResult(data.speech_screen_result),
+      vocabulary_support_recommended: data.vocabulary_support_recommended || false,
+      qualifies_for_speech_program: data.qualifies_for_speech_program || false,
+      general_articulation_notes: data.general_articulation_notes || '',
+      clinical_notes: data.clinical_notes || '',
+      referral_notes: data.referral_notes || '',
+      other_notes: data.other_notes || '',
+
+      // JSONB data for Supabase
+      articulation: data.articulation || { soundErrors: [], articulationNotes: '' },
+      areasOfConcern: data.areasOfConcern || {},
     }
 
     // Console log the complete form data

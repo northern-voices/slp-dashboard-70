@@ -237,8 +237,24 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
             <div className='flex items-center space-x-2'>
               <Checkbox
+                id='vocabulary_support_recommended'
+                checked={form.watch('vocabulary_support_recommended') || false}
+                onCheckedChange={checked => {
+                  form.setValue('vocabulary_support_recommended', checked as boolean)
+                }}
+              />
+              <Label htmlFor='vocabulary_support_recommended' className='text-sm font-medium'>
+                Vocabulary Support Recommended (Language Ladder)
+              </Label>
+            </div>
+
+            <div className='flex items-center space-x-2'>
+              <Checkbox
                 id='qualifies_for_speech_program'
-                {...form.register('qualifies_for_speech_program')}
+                checked={form.watch('qualifies_for_speech_program') || false}
+                onCheckedChange={checked => {
+                  form.setValue('qualifies_for_speech_program', checked as boolean)
+                }}
               />
               <Label htmlFor='qualifies_for_speech_program' className='text-sm font-medium'>
                 Qualifies for Speech Program
