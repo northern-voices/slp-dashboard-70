@@ -50,6 +50,10 @@ const MultiStepSpeechScreeningForm = ({
     reValidateMode: 'onSubmit',
     defaultValues: {
       // Step 1 fields
+      academic_year: (() => {
+        const currentYear = new Date().getFullYear()
+        return `${currentYear}-${currentYear + 1}`
+      })(),
       absent: {
         isAbsent: false,
         notes: '',
@@ -116,35 +120,65 @@ const MultiStepSpeechScreeningForm = ({
       return
     }
 
-    // Return the result as-is
-    const mapResult = (result: string): string | null => {
-      return result || null
-    }
-
     const screeningData = {
-      // Basic screening info
+      // Direct column matches
       student_id: selectedStudent?.id || '',
-      grade_id: selectedGradeId,
+      grade_id: selectedGradeId, // TODO: This needs to be changed it's not right
       screener_id: user?.id || '',
-
-      // Step 1 data
-      absent: data.absent || { isAbsent: false, notes: '' },
-      priority_re_screen: data.priority_re_screen || false,
-
-      // Step 2 data
+      academic_year:
+        data.academic_year ||
+        (() => {
+          const currentYear = new Date().getFullYear()
+          return `${currentYear}-${currentYear + 1}`
+        })(),
       screening_type: data.screening_type || 'initial',
-      screening_date: data.screening_date || new Date().toISOString().split('T')[0],
-      speech_screen_result: mapResult(data.speech_screen_result),
-      vocabulary_support_recommended: data.vocabulary_support_recommended || false,
-      qualifies_for_speech_program: data.qualifies_for_speech_program || false,
-      general_articulation_notes: data.general_articulation_notes || '',
+      result: data.speech_screen_result || '',
+      vocabulary_support: data.vocabulary_support_recommended || false,
+      suspected_cas: data.areasOfConcern?.suspected_cas || false,
       clinical_notes: data.clinical_notes || '',
       referral_notes: data.referral_notes || '',
-      other_notes: data.other_notes || '',
 
-      // JSONB data for Supabase
-      articulation: data.articulation || { soundErrors: [], articulationNotes: '' },
-      areasOfConcern: data.areasOfConcern || {},
+      // Structured error_patterns to match existing format + your new data
+      error_patterns: {
+        // === EXISTING FORMAT (maintain compatibility) ===
+        sound_errors: data.articulation?.soundErrors || [],
+        articulation_notes:
+          data.articulation?.articulationNotes || data.general_articulation_notes || '',
+        fluency_notes: data.areasOfConcern?.fluency || '',
+        voice_quality: data.areasOfConcern?.voice || '',
+        language_comprehension: data.areasOfConcern?.language_comprehension || '',
+        language_expression: data.areasOfConcern?.language_expression || '',
+        pragmatics_social_communication: data.areasOfConcern?.pragmatics_social_communication || '',
+        overall_observations: data.other_notes || '',
+
+        // === YOUR ADDITIONAL DATA (organized in logical groups) ===
+        articulation: data.articulation || { soundErrors: [], articulationNotes: '' },
+
+        attendance: {
+          absent: data.absent?.isAbsent || false,
+          absence_notes: data.absent?.notes || '',
+          priority_re_screen: data.priority_re_screen || false,
+        },
+
+        screening_metadata: {
+          screening_date: data.screening_date || new Date().toISOString().split('T')[0],
+          qualifies_for_speech_program: data.qualifies_for_speech_program || false,
+        },
+
+        add_areas_of_concern: {
+          language_comprehension: data.areasOfConcern?.language_comprehension || null,
+          language_expression: data.areasOfConcern?.language_expression || null,
+          pragmatics_social_communication:
+            data.areasOfConcern?.pragmatics_social_communication || null,
+          fluency: data.areasOfConcern?.fluency || null,
+          suspected_cas: data.areasOfConcern?.suspected_cas || null,
+          reluctant_speaking: data.areasOfConcern?.reluctant_speaking || null,
+          voice: data.areasOfConcern?.voice || null,
+          literacy: data.areasOfConcern?.literacy || null,
+          cleft_lip_palate: data.areasOfConcern?.cleft_lip_palate || null,
+          known_pending_diagnoses: data.areasOfConcern?.known_pending_diagnoses || null,
+        },
+      },
     }
 
     // Console log the complete form data
