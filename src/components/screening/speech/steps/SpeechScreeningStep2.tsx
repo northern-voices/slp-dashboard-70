@@ -65,65 +65,47 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
 
       <Card>
         <CardHeader>
-          <CardTitle className='flex items-center gap-2'>Final Details</CardTitle>
+          <CardTitle>Clinical Notes (Private)</CardTitle>
         </CardHeader>
-        <CardContent className='space-y-6'>
-          <div>
-            <Label htmlFor='clinical_notes'>Clinical Notes (Private)</Label>
-            <Textarea
-              {...form.register('clinical_notes')}
-              placeholder='Enter private clinical observations and notes...'
-              rows={4}
-              className='mt-1'
-              onKeyDown={e => {
-                if (e.key === 'Enter' && e.ctrlKey) {
-                  // Allow Ctrl+Enter for new lines
-                  return
-                }
-                if (e.key === 'Enter') {
-                  e.stopPropagation() // Prevent form submission
-                }
-              }}
-            />
-          </div>
+        <CardContent>
+          <Textarea
+            {...form.register('clinical_notes')}
+            placeholder='Enter clinical observations and notes...'
+            rows={4}
+            className='-mt-2'
+            onKeyDown={e => {
+              if (e.key === 'Enter' && e.ctrlKey) {
+                // Allow Ctrl+Enter for new lines
+                return
+              }
+              if (e.key === 'Enter') {
+                e.stopPropagation() // Prevent form submission
+              }
+            }}
+          />
+        </CardContent>
+      </Card>
 
-          <div>
-            <Label htmlFor='referral_notes'>Recommendations and referrals (Reports)</Label>
-            <Textarea
-              {...form.register('referral_notes')}
-              placeholder='Enter referral information and recommendations...'
-              rows={4}
-              className='mt-1'
-              onKeyDown={e => {
-                if (e.key === 'Enter' && e.ctrlKey) {
-                  // Allow Ctrl+Enter for new lines
-                  return
-                }
-                if (e.key === 'Enter') {
-                  e.stopPropagation() // Prevent form submission
-                }
-              }}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor='attendance'>Attendance (Reports)</Label>
-            <Textarea
-              {...form.register('attendance')}
-              placeholder='Enter attendance information...'
-              rows={3}
-              className='mt-1'
-              onKeyDown={e => {
-                if (e.key === 'Enter' && e.ctrlKey) {
-                  // Allow Ctrl+Enter for new lines
-                  return
-                }
-                if (e.key === 'Enter') {
-                  e.stopPropagation() // Prevent form submission
-                }
-              }}
-            />
-          </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recommendations and referrals (Reports)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            {...form.register('referral_notes')}
+            placeholder='Enter recommendations and referrals...'
+            rows={4}
+            className='-mt-2'
+            onKeyDown={e => {
+              if (e.key === 'Enter' && e.ctrlKey) {
+                // Allow Ctrl+Enter for new lines
+                return
+              }
+              if (e.key === 'Enter') {
+                e.stopPropagation() // Prevent form submission
+              }
+            }}
+          />
         </CardContent>
       </Card>
 
@@ -131,14 +113,14 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
         <CardHeader>
           <CardTitle>Other</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className='-mt-2'>
           <div>
             <Label htmlFor='other_notes'>Additional Notes</Label>
             <Textarea
               {...form.register('other_notes')}
               placeholder='Enter any additional notes or observations...'
               rows={4}
-              className='mt-1'
+              className='mt-2'
               onKeyDown={e => {
                 if (e.key === 'Enter' && e.ctrlKey) {
                   // Allow Ctrl+Enter for new lines

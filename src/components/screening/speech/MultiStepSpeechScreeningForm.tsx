@@ -56,7 +56,6 @@ const MultiStepSpeechScreeningForm = ({
       suspected_cas: false,
       clinical_notes: '',
       referral_notes: '',
-      attendance: '',
       // Speech screening fields (for error_patterns)
       articulation: {
         soundErrors: [],
@@ -134,7 +133,6 @@ const MultiStepSpeechScreeningForm = ({
       suspected_cas: data.suspected_cas || false,
       clinical_notes: data.clinical_notes || '',
       referral_notes: data.referral_notes || '',
-      attendance: data.attendance || '',
       // Add speech-specific fields
       articulation: data.articulation || { soundErrors: [], articulationNotes: '' },
       areasOfConcern: data.areasOfConcern || {},

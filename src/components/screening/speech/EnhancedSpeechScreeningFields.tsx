@@ -27,6 +27,23 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [soundNotes, setSoundNotes] = useState<Record<string, string>>({})
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
 
+  // Helper function to convert concern names to field names
+  const getFieldName = (concern: string): string => {
+    const fieldNameMap: Record<string, string> = {
+      'Language Comprehension': 'language_comprehension',
+      'Language Expression': 'language_expression',
+      'Pragmatics/Social Communication': 'pragmatics_social_communication',
+      Fluency: 'fluency',
+      'Suspected CAS': 'suspected_cas',
+      'Reluctant Speaking': 'reluctant_speaking',
+      Voice: 'voice',
+      Literacy: 'literacy',
+      'Cleft Lip / Palate': 'cleft_lip_palate',
+      'Known / Pending Diagnoses': 'known_pending_diagnoses',
+    }
+    return fieldNameMap[concern] || concern.toLowerCase().replace(/\s+/g, '_')
+  }
+
   // Create nested structure for articulation data
   React.useEffect(() => {
     const soundErrorsData = selectedSounds.map(sound => ({
@@ -234,246 +251,45 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       {/* Areas of Concern */}
       <Card>
         <CardHeader>
-          <CardTitle>Areas of Concern (Private)</CardTitle>
+          <CardTitle>Additional Areas of Concern (Private)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className='space-y-6'>
             {areasOfConcern.map(concern => (
-              <div key={concern} className='flex items-center space-x-2'>
-                <Checkbox
-                  id={concern}
-                  checked={selectedConcerns.includes(concern)}
-                  onCheckedChange={checked => handleConcernChange(concern, checked as boolean)}
-                />
-                <Label htmlFor={concern} className='text-sm font-medium'>
-                  {concern}
-                </Label>
+              <div key={concern} className='space-y-3'>
+                <div className='flex items-center space-x-2'>
+                  <Checkbox
+                    id={concern}
+                    checked={selectedConcerns.includes(concern)}
+                    onCheckedChange={checked => handleConcernChange(concern, checked as boolean)}
+                  />
+                  <Label htmlFor={concern} className='text-sm font-medium'>
+                    {concern}
+                  </Label>
+                </div>
+
+                {selectedConcerns.includes(concern) && (
+                  <div className='ml-6'>
+                    <Textarea
+                      value={form.watch('areasOfConcern')?.[getFieldName(concern)] || ''}
+                      onChange={e => {
+                        const current = form.watch('areasOfConcern') || {}
+                        form.setValue('areasOfConcern', {
+                          ...current,
+                          [getFieldName(concern)]: e.target.value,
+                        })
+                      }}
+                      placeholder='Details...'
+                      rows={3}
+                      className='w-full'
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
-
-      {/* Other Areas Assessments */}
-      {selectedConcerns.includes('Language Expression') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Language Expression</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.watch('areasOfConcern')?.language_expression || ''}
-              onChange={e => {
-                const current = form.watch('areasOfConcern') || {}
-                form.setValue('areasOfConcern', {
-                  ...current,
-                  language_expression: e.target.value,
-                })
-              }}
-              placeholder='Details...'
-              rows={3}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedConcerns.includes('Language Comprehension') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Language Comprehension</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.watch('areasOfConcern')?.language_comprehension || ''}
-              onChange={e => {
-                const current = form.watch('areasOfConcern') || {}
-                form.setValue('areasOfConcern', {
-                  ...current,
-                  language_comprehension: e.target.value,
-                })
-              }}
-              placeholder='Details...'
-              rows={3}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedConcerns.includes('Voice') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Voice</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.watch('areasOfConcern')?.voice || ''}
-              onChange={e => {
-                const current = form.watch('areasOfConcern') || {}
-                form.setValue('areasOfConcern', {
-                  ...current,
-                  voice: e.target.value,
-                })
-              }}
-              placeholder='Details...'
-              rows={3}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedConcerns.includes('Fluency') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Fluency</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.watch('areasOfConcern')?.fluency || ''}
-              onChange={e => {
-                const current = form.watch('areasOfConcern') || {}
-                form.setValue('areasOfConcern', {
-                  ...current,
-                  fluency: e.target.value,
-                })
-              }}
-              placeholder='Details...'
-              rows={3}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedConcerns.includes('Pragmatics/Social Communication') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Pragmatics/Social Communication</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.watch('areasOfConcern')?.pragmatics_social_communication || ''}
-              onChange={e => {
-                const current = form.watch('areasOfConcern') || {}
-                form.setValue('areasOfConcern', {
-                  ...current,
-                  pragmatics_social_communication: e.target.value,
-                })
-              }}
-              placeholder='Details...'
-              rows={3}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedConcerns.includes('Suspected CAS') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Suspected CAS</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.watch('areasOfConcern')?.suspected_cas || ''}
-              onChange={e => {
-                const current = form.watch('areasOfConcern') || {}
-                form.setValue('areasOfConcern', {
-                  ...current,
-                  suspected_cas: e.target.value,
-                })
-              }}
-              placeholder='Details...'
-              rows={3}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedConcerns.includes('Literacy') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Literacy</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.watch('areasOfConcern')?.literacy || ''}
-              onChange={e => {
-                const current = form.watch('areasOfConcern') || {}
-                form.setValue('areasOfConcern', {
-                  ...current,
-                  literacy: e.target.value,
-                })
-              }}
-              placeholder='Details...'
-              rows={3}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedConcerns.includes('Reluctant Speaking') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Reluctant Speaking</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.watch('areasOfConcern')?.reluctant_speaking || ''}
-              onChange={e => {
-                const current = form.watch('areasOfConcern') || {}
-                form.setValue('areasOfConcern', {
-                  ...current,
-                  reluctant_speaking: e.target.value,
-                })
-              }}
-              placeholder='Details...'
-              rows={3}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedConcerns.includes('Cleft Lip / Palate') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Cleft Lip / Palate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.watch('areasOfConcern')?.cleft_lip_palate || ''}
-              onChange={e => {
-                const current = form.watch('areasOfConcern') || {}
-                form.setValue('areasOfConcern', {
-                  ...current,
-                  cleft_lip_palate: e.target.value,
-                })
-              }}
-              placeholder='Details...'
-              rows={3}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedConcerns.includes('Known / Pending Diagnoses') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Known / Pending Diagnoses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={form.watch('areasOfConcern')?.known_pending_diagnoses || ''}
-              onChange={e => {
-                const current = form.watch('areasOfConcern') || {}
-                form.setValue('areasOfConcern', {
-                  ...current,
-                  known_pending_diagnoses: e.target.value,
-                })
-              }}
-              placeholder='Details...'
-              rows={3}
-            />
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }
