@@ -216,6 +216,61 @@ export const schoolGradesApi = {
     }
   },
 
+  // Check if a specific grade level exists for a school and academic year
+  checkGradeAvailability: async (
+    schoolId: string,
+    gradeLevel: string,
+    academicYear: string
+  ): Promise<{ exists: boolean; grade?: SchoolGrade }> => {
+    console.log(academicYear, 'academicYear you are looking for')
+    try {
+      const { data, error } = await supabase
+        .from('school_grades')
+        .select(
+          `
+          *,
+          schools (
+            id,
+            name,
+            organization_id
+          )
+        `
+        )
+        .eq('school_id', schoolId)
+        .eq('grade_level', gradeLevel)
+        .eq('academic_year', academicYear)
+        .maybeSingle()
+
+      if (error) throw error
+
+      if (!data) {
+        return { exists: false }
+      }
+
+      return {
+        exists: true,
+        grade: {
+          id: data.id,
+          school_id: data.school_id,
+          grade_level: data.grade_level,
+          academic_year: data.academic_year,
+          created_at: data.created_at,
+          updated_at: data.updated_at,
+          school: data.schools
+            ? {
+                id: data.schools.id,
+                name: data.schools.name,
+                organization_id: data.schools.organization_id,
+              }
+            : undefined,
+        },
+      }
+    } catch (error) {
+      console.error('Error checking grade availability:', error)
+      throw error
+    }
+  },
+
   // Create a new school grade
   createSchoolGrade: async (data: {
     school_id: string

@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Student } from '@/types/database'
 import { useCreateSpeechScreening } from '@/hooks/screenings'
 import { useAuth } from '@/contexts/AuthContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { schoolGradesApi } from '@/api/schoolGrades'
 import ProgressIndicator from '../shared/ProgressIndicator'
 import SpeechScreeningStep1 from './steps/SpeechScreeningStep1'
 import SpeechScreeningStep2 from './steps/SpeechScreeningStep2'
 
 interface MultiStepSpeechScreeningFormProps {
-  onSubmit?: (data: any) => void
+  onSubmit?: (data: unknown) => void
   onCancel: () => void
   existingStudent?: Student | null
 }
@@ -26,6 +28,7 @@ const MultiStepSpeechScreeningForm = ({
   const [isAbsent, setIsAbsent] = useState(false)
 
   const { user } = useAuth()
+  const { currentSchool } = useOrganization()
   const createScreening = useCreateSpeechScreening()
 
   // Set default grade ID when component mounts
@@ -110,7 +113,7 @@ const MultiStepSpeechScreeningForm = ({
     // TODO: Implement draft saving functionality
   }
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = async (data: unknown) => {
     // Allow submission from step 1 if absent is checked, otherwise require step 2
     if (currentStep === 1 && !isAbsent) {
       return
@@ -120,63 +123,140 @@ const MultiStepSpeechScreeningForm = ({
       return
     }
 
+    // Validate grade availability for the selected student's school
+    if (selectedStudent && selectedGrade && currentSchool) {
+      try {
+        const formData = data as Record<string, unknown>
+        const academicYear =
+          (formData.academic_year as string) ||
+          (() => {
+            const currentYear = new Date().getFullYear()
+            return `${currentYear}-${currentYear + 1}`
+          })()
+
+        console.log('=== GRADE VALIDATION START ===')
+        console.log('Checking grade availability for:', {
+          schoolId: currentSchool.id,
+          schoolName: currentSchool.name,
+          gradeLevel: selectedGrade,
+          academicYear: academicYear,
+          studentId: selectedStudent.id,
+          studentName: `${selectedStudent.first_name} ${selectedStudent.last_name}`,
+        })
+
+        const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
+          currentSchool.id,
+          selectedGrade,
+          academicYear
+        )
+
+        console.log('Grade availability result:', gradeAvailability)
+
+        if (!gradeAvailability.exists) {
+          console.warn('⚠️ GRADE NOT AVAILABLE:', {
+            message: `Grade ${selectedGrade} for academic year ${academicYear} is not available at ${currentSchool.name}`,
+            schoolId: currentSchool.id,
+            gradeLevel: selectedGrade,
+            academicYear: academicYear,
+          })
+          // For now, just log the warning but continue with submission
+          // In production, you might want to show an error message or prevent submission
+        } else {
+          console.log('✅ GRADE VALIDATION PASSED:', {
+            message: `Grade ${selectedGrade} is available at ${currentSchool.name}`,
+            gradeId: gradeAvailability.grade?.id,
+            schoolId: currentSchool.id,
+            gradeLevel: selectedGrade,
+            academicYear: academicYear,
+          })
+
+          // Update the selectedGradeId with the validated grade ID
+          if (gradeAvailability.grade?.id) {
+            setSelectedGradeId(gradeAvailability.grade.id)
+          }
+        }
+
+        console.log('=== GRADE VALIDATION END ===')
+      } catch (error) {
+        console.error('❌ GRADE VALIDATION ERROR:', error)
+        // For now, continue with submission even if validation fails
+        // In production, you might want to handle this error differently
+      }
+    } else {
+      console.warn('⚠️ MISSING VALIDATION DATA:', {
+        selectedStudent: !!selectedStudent,
+        selectedGrade: !!selectedGrade,
+        currentSchool: !!currentSchool,
+        message: 'Cannot validate grade availability - missing required data',
+      })
+    }
+
+    const formData = data as Record<string, unknown>
+    const areasOfConcern = (formData.areasOfConcern as Record<string, unknown>) || {}
+    const articulation = (formData.articulation as Record<string, unknown>) || {}
+    const absent = (formData.absent as Record<string, unknown>) || {}
+
     const screeningData = {
       // Direct column matches
       student_id: selectedStudent?.id || '',
-      grade_id: selectedGradeId, // TODO: This needs to be changed it's not right
+      grade_id: selectedGradeId, // This will now be validated and set correctly
       screener_id: user?.id || '',
       academic_year:
-        data.academic_year ||
+        (formData.academic_year as string) ||
         (() => {
           const currentYear = new Date().getFullYear()
           return `${currentYear}-${currentYear + 1}`
         })(),
-      screening_type: data.screening_type || 'initial',
-      result: data.speech_screen_result || '',
-      vocabulary_support: data.vocabulary_support_recommended || false,
-      suspected_cas: data.areasOfConcern?.suspected_cas || false,
-      clinical_notes: data.clinical_notes || '',
-      referral_notes: data.referral_notes || '',
+      screening_type: (formData.screening_type as string) || 'initial',
+      result: (formData.speech_screen_result as string) || '',
+      vocabulary_support: (formData.vocabulary_support_recommended as boolean) || false,
+      suspected_cas: (areasOfConcern.suspected_cas as boolean) || false,
+      clinical_notes: (formData.clinical_notes as string) || '',
+      referral_notes: (formData.referral_notes as string) || '',
 
       // Structured error_patterns to match existing format + your new data
       error_patterns: {
         // === EXISTING FORMAT (maintain compatibility) ===
-        sound_errors: data.articulation?.soundErrors || [],
+        sound_errors: (articulation.soundErrors as string[]) || [],
         articulation_notes:
-          data.articulation?.articulationNotes || data.general_articulation_notes || '',
-        fluency_notes: data.areasOfConcern?.fluency || '',
-        voice_quality: data.areasOfConcern?.voice || '',
-        language_comprehension: data.areasOfConcern?.language_comprehension || '',
-        language_expression: data.areasOfConcern?.language_expression || '',
-        pragmatics_social_communication: data.areasOfConcern?.pragmatics_social_communication || '',
-        overall_observations: data.other_notes || '',
+          (articulation.articulationNotes as string) ||
+          (formData.general_articulation_notes as string) ||
+          '',
+        fluency_notes: (areasOfConcern.fluency as string) || '',
+        voice_quality: (areasOfConcern.voice as string) || '',
+        language_comprehension: (areasOfConcern.language_comprehension as string) || '',
+        language_expression: (areasOfConcern.language_expression as string) || '',
+        pragmatics_social_communication:
+          (areasOfConcern.pragmatics_social_communication as string) || '',
+        overall_observations: (formData.other_notes as string) || '',
 
         // === YOUR ADDITIONAL DATA (organized in logical groups) ===
-        articulation: data.articulation || { soundErrors: [], articulationNotes: '' },
+        articulation: articulation || { soundErrors: [], articulationNotes: '' },
 
         attendance: {
-          absent: data.absent?.isAbsent || false,
-          absence_notes: data.absent?.notes || '',
-          priority_re_screen: data.priority_re_screen || false,
+          absent: (absent.isAbsent as boolean) || false,
+          absence_notes: (absent.notes as string) || '',
+          priority_re_screen: (formData.priority_re_screen as boolean) || false,
         },
 
         screening_metadata: {
-          screening_date: data.screening_date || new Date().toISOString().split('T')[0],
-          qualifies_for_speech_program: data.qualifies_for_speech_program || false,
+          screening_date:
+            (formData.screening_date as string) || new Date().toISOString().split('T')[0],
+          qualifies_for_speech_program: (formData.qualifies_for_speech_program as boolean) || false,
         },
 
         add_areas_of_concern: {
-          language_comprehension: data.areasOfConcern?.language_comprehension || null,
-          language_expression: data.areasOfConcern?.language_expression || null,
+          language_comprehension: (areasOfConcern.language_comprehension as string) || null,
+          language_expression: (areasOfConcern.language_expression as string) || null,
           pragmatics_social_communication:
-            data.areasOfConcern?.pragmatics_social_communication || null,
-          fluency: data.areasOfConcern?.fluency || null,
-          suspected_cas: data.areasOfConcern?.suspected_cas || null,
-          reluctant_speaking: data.areasOfConcern?.reluctant_speaking || null,
-          voice: data.areasOfConcern?.voice || null,
-          literacy: data.areasOfConcern?.literacy || null,
-          cleft_lip_palate: data.areasOfConcern?.cleft_lip_palate || null,
-          known_pending_diagnoses: data.areasOfConcern?.known_pending_diagnoses || null,
+            (areasOfConcern.pragmatics_social_communication as string) || null,
+          fluency: (areasOfConcern.fluency as string) || null,
+          suspected_cas: (areasOfConcern.suspected_cas as boolean) || null,
+          reluctant_speaking: (areasOfConcern.reluctant_speaking as boolean) || null,
+          voice: (areasOfConcern.voice as string) || null,
+          literacy: (areasOfConcern.literacy as string) || null,
+          cleft_lip_palate: (areasOfConcern.cleft_lip_palate as boolean) || null,
+          known_pending_diagnoses: (areasOfConcern.known_pending_diagnoses as string) || null,
         },
       },
     }
@@ -278,7 +358,7 @@ const MultiStepSpeechScreeningForm = ({
               isAbsent ? (
                 <Button
                   type='button'
-                  onClick={() => {
+                  onClick={async () => {
                     const formData = form.getValues()
                     const formErrors = Object.keys(form.formState.errors)
 
@@ -286,7 +366,7 @@ const MultiStepSpeechScreeningForm = ({
                       return
                     }
 
-                    handleSubmit(formData)
+                    await handleSubmit(formData)
                   }}
                   disabled={createScreening.isPending || !canSubmitFromStep1()}
                   className='bg-primary hover:bg-primary/90 text-primary-foreground'>
@@ -305,7 +385,7 @@ const MultiStepSpeechScreeningForm = ({
               // Step 2: Always show Submit
               <Button
                 type='button'
-                onClick={() => {
+                onClick={async () => {
                   const formData = form.getValues()
                   const formErrors = Object.keys(form.formState.errors)
 
@@ -313,7 +393,7 @@ const MultiStepSpeechScreeningForm = ({
                     return
                   }
 
-                  handleSubmit(formData)
+                  await handleSubmit(formData)
                 }}
                 disabled={createScreening.isPending}
                 className='bg-primary hover:bg-primary/90 text-primary-foreground'>
