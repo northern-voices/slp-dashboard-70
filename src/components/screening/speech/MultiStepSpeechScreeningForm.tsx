@@ -124,47 +124,19 @@ const MultiStepSpeechScreeningForm = ({
             return `${currentYear}-${currentYear + 1}`
           })()
 
-        console.log('=== GRADE VALIDATION START ===')
-        console.log('Checking grade availability for:', {
-          schoolId: currentSchool.id,
-          schoolName: currentSchool.name,
-          gradeLevel: selectedGrade,
-          academicYear: academicYear,
-          studentId: selectedStudent.id,
-          studentName: `${selectedStudent.first_name} ${selectedStudent.last_name}`,
-        })
-
         const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
           currentSchool.id,
           selectedGrade,
           academicYear
         )
 
-        console.log('Grade availability result:', gradeAvailability)
-
         if (!gradeAvailability.exists) {
-          console.warn('⚠️ GRADE NOT AVAILABLE - CREATING NEW GRADE:', {
-            message: `Grade ${selectedGrade} for academic year ${academicYear} is not available at ${currentSchool.name}. Creating new grade...`,
-            schoolId: currentSchool.id,
-            gradeLevel: selectedGrade,
-            academicYear: academicYear,
-          })
-
           try {
             // Create new school grade since it doesn't exist
             const newGrade = await schoolGradesApi.createSchoolGrade({
               school_id: currentSchool.id,
               grade_level: selectedGrade,
               academic_year: academicYear,
-            })
-
-            console.log('✅ NEW GRADE CREATED SUCCESSFULLY:', {
-              message: `Successfully created grade ${selectedGrade} for ${currentSchool.name}`,
-              newGradeId: newGrade.id,
-              schoolId: newGrade.school_id,
-              gradeLevel: selectedGrade,
-              academicYear: academicYear,
-              gradeData: newGrade,
             })
 
             // Use the validated grade ID directly for this submission
@@ -174,33 +146,12 @@ const MultiStepSpeechScreeningForm = ({
             // Also update state for future submissions
             setSelectedGradeId(newGrade.id)
             setGradeSchoolId(newGrade.school_id)
-
-            console.log('📝 NEW GRADE IDs SET:', {
-              validatedGradeId: newGrade.id,
-              validatedSchoolId: newGrade.school_id,
-              message: 'Grade ID and School ID have been validated for immediate use',
-            })
           } catch (createError) {
-            console.error('❌ FAILED TO CREATE NEW GRADE:', {
-              error: createError,
-              schoolId: currentSchool.id,
-              gradeLevel: selectedGrade,
-              academicYear: academicYear,
-              message: 'Could not create new grade. Submission may fail.',
-            })
+            console.error('Failed to create new grade:', createError)
             // Continue with submission even if grade creation fails
             // The backend should handle this gracefully
           }
         } else {
-          console.log('✅ EXISTING GRADE FOUND:', {
-            message: `Grade ${selectedGrade} is available at ${currentSchool.name}`,
-            existingGradeId: gradeAvailability.grade?.id,
-            schoolId: gradeAvailability.grade?.school_id,
-            gradeLevel: selectedGrade,
-            academicYear: academicYear,
-            gradeData: gradeAvailability.grade,
-          })
-
           // Use the validated grade ID directly for this submission
           if (gradeAvailability.grade?.id && gradeAvailability.grade?.school_id) {
             validatedGradeId = gradeAvailability.grade.id
@@ -209,28 +160,12 @@ const MultiStepSpeechScreeningForm = ({
             // Also update state for future submissions
             setSelectedGradeId(gradeAvailability.grade.id)
             setGradeSchoolId(gradeAvailability.grade.school_id)
-
-            console.log('📝 EXISTING GRADE IDs SET:', {
-              validatedGradeId: gradeAvailability.grade.id,
-              validatedSchoolId: gradeAvailability.grade.school_id,
-              message: 'Grade ID and School ID have been validated for immediate use',
-            })
           }
         }
-
-        console.log('=== GRADE VALIDATION END ===')
       } catch (error) {
-        console.error('❌ GRADE VALIDATION ERROR:', error)
-        // For now, continue with submission even if validation fails
-        // In production, you might want to handle this error differently
+        console.error('Grade validation error:', error)
+        // Continue with submission even if validation fails
       }
-    } else {
-      console.warn('⚠️ MISSING VALIDATION DATA:', {
-        selectedStudent: !!selectedStudent,
-        selectedGrade: !!selectedGrade,
-        currentSchool: !!currentSchool,
-        message: 'Cannot validate grade availability - missing required data',
-      })
     }
 
     const formData = data as Record<string, unknown>
@@ -305,29 +240,6 @@ const MultiStepSpeechScreeningForm = ({
         },
       },
     }
-
-    // Console log the complete form data
-    console.log('=== COMPLETE FORM DATA ===')
-    console.log('Raw form data:', data)
-    console.log('Selected student:', selectedStudent)
-    console.log('Selected grade:', selectedGrade)
-    console.log('Selected grade ID:', selectedGradeId)
-    console.log('Current user:', user)
-    console.log('=== END FORM DATA ===')
-
-    // Console log the final screening data that will be submitted
-    console.log('=== FINAL SCREENING DATA TO SUBMIT ===')
-    console.log('Screening data:', screeningData)
-    console.log('Grade-School relationship:', {
-      validatedGradeId: validatedGradeId,
-      validatedSchoolId: validatedSchoolId,
-      selectedGradeId: selectedGradeId, // State variable for reference
-      gradeSchoolId: gradeSchoolId, // State variable for reference
-      message:
-        'The grade_id in screening data references school_grades table which contains school_id',
-      note: 'School information is derived through: speech_screenings.grade_id -> school_grades.id -> school_grades.school_id',
-    })
-    console.log('=== END SCREENING DATA ===')
 
     createScreening.mutate(screeningData, {
       onSuccess: () => {

@@ -169,11 +169,6 @@ const SpeechScreeningStep1 = ({
   const handleAcademicYearChange = async (academicYear: string) => {
     // Clear grade ID - it will be validated and set during form submission
     onGradeIdChange('')
-    console.log(
-      'Academic year selected:',
-      academicYear,
-      '- Grade ID will be validated during form submission'
-    )
   }
 
   return (

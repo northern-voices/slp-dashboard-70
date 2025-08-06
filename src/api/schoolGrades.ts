@@ -222,7 +222,6 @@ export const schoolGradesApi = {
     gradeLevel: string,
     academicYear: string
   ): Promise<{ exists: boolean; grade?: SchoolGrade }> => {
-    console.log(academicYear, 'academicYear you are looking for')
     try {
       const { data, error } = await supabase
         .from('school_grades')
