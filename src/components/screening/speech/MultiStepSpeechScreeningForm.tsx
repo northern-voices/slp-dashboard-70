@@ -5,6 +5,7 @@ import { Student } from '@/types/database'
 import { useCreateSpeechScreening } from '@/hooks/screenings'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useToast } from '@/hooks/use-toast'
 import { schoolGradesApi } from '@/api/schoolGrades'
 import ProgressIndicator from '../shared/ProgressIndicator'
 import SpeechScreeningStep1 from './steps/SpeechScreeningStep1'
@@ -30,6 +31,7 @@ const MultiStepSpeechScreeningForm = ({
 
   const { user } = useAuth()
   const { currentSchool } = useOrganization()
+  const { toast } = useToast()
   const createScreening = useCreateSpeechScreening()
 
   // Grade ID will be set through backend validation in handleSubmit
@@ -100,6 +102,27 @@ const MultiStepSpeechScreeningForm = ({
     // TODO: Implement draft saving functionality
   }
 
+  const validateRequiredFields = (formData: Record<string, unknown>): string[] => {
+    const errors: string[] = []
+
+    // Only validate these fields if we're on step 2 (not absent submission)
+    if (currentStep === 2 && !isAbsent) {
+      if (!formData.screening_type || formData.screening_type === '') {
+        errors.push('Screening type is required')
+      }
+
+      if (!formData.screening_date || formData.screening_date === '') {
+        errors.push('Screening date is required')
+      }
+
+      if (!formData.speech_screen_result || formData.speech_screen_result === '') {
+        errors.push('Speech screen result is required')
+      }
+    }
+
+    return errors
+  }
+
   const handleSubmit = async (data: unknown) => {
     // Allow submission from step 1 if absent is checked, otherwise require step 2
     if (currentStep === 1 && !isAbsent) {
@@ -110,13 +133,26 @@ const MultiStepSpeechScreeningForm = ({
       return
     }
 
+    const formData = data as Record<string, unknown>
+
+    // Validate required fields
+    const validationErrors = validateRequiredFields(formData)
+    if (validationErrors.length > 0) {
+      console.error('Validation errors:', validationErrors)
+      toast({
+        title: 'Required Fields Missing',
+        description: validationErrors.join(', '),
+        variant: 'destructive',
+      })
+      return
+    }
+
     // Validate grade availability for the selected student's school
     let validatedGradeId = selectedGradeId // Use existing grade ID if available
     let validatedSchoolId = gradeSchoolId // Use existing school ID if available
 
     if (selectedStudent && selectedGrade && currentSchool) {
       try {
-        const formData = data as Record<string, unknown>
         const academicYear =
           (formData.academic_year as string) ||
           (() => {
@@ -168,7 +204,6 @@ const MultiStepSpeechScreeningForm = ({
       }
     }
 
-    const formData = data as Record<string, unknown>
     const areasOfConcern = (formData.areasOfConcern as Record<string, unknown>) || {}
     const articulation = (formData.articulation as Record<string, unknown>) || {}
     const absent = (formData.absent as Record<string, unknown>) || {}
@@ -191,7 +226,7 @@ const MultiStepSpeechScreeningForm = ({
       clinical_notes: (formData.clinical_notes as string) || '',
       referral_notes: (formData.referral_notes as string) || '',
 
-      // Structured error_patterns to match existing format + your new data
+      // Structured error_patterns to match existing format + new data
       error_patterns: {
         // === EXISTING FORMAT (maintain compatibility) ===
         articulation_notes:
@@ -206,9 +241,8 @@ const MultiStepSpeechScreeningForm = ({
           (areasOfConcern.pragmatics_social_communication as string) || '',
         overall_observations: (formData.other_notes as string) || '',
 
-        // === YOUR ADDITIONAL DATA (organized in logical groups) ===
+        // === ADDITIONAL DATA (organized in logical groups) ===
         articulation: {
-          // Sound errors are now inside articulation object
           soundErrors: (articulation.soundErrors as string[]) || [],
           articulationNotes: (articulation.articulationNotes as string) || '',
         },
@@ -264,6 +298,18 @@ const MultiStepSpeechScreeningForm = ({
   const canSubmitFromStep1 = () => {
     // Can submit from step 1 if absent is checked and we have required fields
     return isAbsent && selectedGrade && selectedStudent
+  }
+
+  const canSubmitFromStep2 = () => {
+    // Can submit from step 2 if we have all required fields
+    const formValues = form.getValues()
+    return (
+      selectedGrade &&
+      selectedStudent &&
+      formValues.screening_type &&
+      formValues.screening_date &&
+      formValues.speech_screen_result
+    )
   }
 
   const renderCurrentStep = () => {
@@ -361,7 +407,7 @@ const MultiStepSpeechScreeningForm = ({
 
                   await handleSubmit(formData)
                 }}
-                disabled={createScreening.isPending}
+                disabled={createScreening.isPending || !canSubmitFromStep2()}
                 className='bg-primary hover:bg-primary/90 text-primary-foreground'>
                 {createScreening.isPending ? 'Creating...' : 'Submit Screening'}
               </Button>
