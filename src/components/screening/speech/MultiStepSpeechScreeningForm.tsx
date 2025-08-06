@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, UseFormReturn } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Student } from '@/types/database'
 import { useCreateSpeechScreening } from '@/hooks/screenings'
@@ -317,7 +317,7 @@ const MultiStepSpeechScreeningForm = ({
       case 1:
         return (
           <SpeechScreeningStep1
-            form={form}
+            form={form as unknown as UseFormReturn<Record<string, unknown>>}
             selectedStudent={selectedStudent}
             selectedGrade={selectedGrade}
             onStudentSelect={setSelectedStudent}
@@ -327,7 +327,7 @@ const MultiStepSpeechScreeningForm = ({
           />
         )
       case 2:
-        return <SpeechScreeningStep2 form={form} />
+        return <SpeechScreeningStep2 form={form as unknown as UseFormReturn} />
       default:
         return null
     }
