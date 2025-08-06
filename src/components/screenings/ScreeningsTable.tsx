@@ -25,8 +25,7 @@ import { useScreenings } from '@/hooks/screenings/use-screenings'
 
 interface ScreeningsTableProps {
   searchTerm: string
-  typeFilter: string
-  statusFilter: string
+  resultFilter: string
   dateRangeFilter: string
   selectedScreenings: string[]
   setSelectedScreenings: (ids: string[]) => void
@@ -36,8 +35,7 @@ interface ScreeningsTableProps {
 
 const ScreeningsTable = ({
   searchTerm,
-  typeFilter,
-  statusFilter,
+  resultFilter,
   dateRangeFilter,
   selectedScreenings,
   setSelectedScreenings,
@@ -55,13 +53,17 @@ const ScreeningsTable = ({
     ? (allScreenings || []).filter(screening => screening.school_id === currentSchool.id)
     : allScreenings || []
 
+  console.log(schoolScreenings, 'schoolscreenings')
+
   // Apply all filters
   const filteredScreenings = schoolScreenings.filter(screening => {
     const matchesSearch =
       screening.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       screening.screener?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = typeFilter === 'all' || screening.type === typeFilter
-    const matchesStatus = statusFilter === 'all' || screening.status === statusFilter
+    const matchesResult =
+      resultFilter === 'all' ||
+      screening.result === resultFilter ||
+      screening.screening_result === resultFilter
 
     // Apply date range filter
     let matchesDateRange = true
@@ -92,47 +94,29 @@ const ScreeningsTable = ({
       }
     }
 
-    return matchesSearch && matchesType && matchesStatus && matchesDateRange
+    return matchesSearch && matchesResult && matchesDateRange
   })
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'speech':
-        return 'bg-purple-100 text-purple-800'
-      case 'hearing':
-        return 'bg-teal-100 text-teal-800'
-      case 'progress':
-        return 'bg-indigo-100 text-indigo-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800'
-      case 'in_progress':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'scheduled':
-        return 'bg-blue-100 text-blue-800'
-      case 'cancelled':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
 
   const getResultBadge = (result?: string) => {
     if (!result) return null
 
     const resultConfig = {
-      P: { label: 'Passed', color: 'bg-green-100 text-green-800' },
-      M: { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800' },
-      Q: { label: 'Qualified', color: 'bg-red-100 text-red-800' },
-      NR: { label: 'No Response', color: 'bg-blue-100 text-blue-800' },
-      NC: { label: 'No Consent', color: 'bg-orange-100 text-orange-800' },
-      C: { label: 'Complex', color: 'bg-red-100 text-red-800' },
+      absent: { label: 'Absent', color: 'bg-gray-100 text-gray-800' },
+      age_appropriate: { label: 'Age Appropriate', color: 'bg-green-100 text-green-800' },
+      complex_needs: { label: 'Complex Needs', color: 'bg-purple-100 text-purple-800' },
+      mild: { label: 'Mild', color: 'bg-yellow-100 text-yellow-800' },
+      mild_moderate: { label: 'Mild Moderate', color: 'bg-yellow-100 text-yellow-800' },
+      moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800' },
+      monitor: { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800' },
+      non_registered_no_consent: {
+        label: 'Non Registered/No Consent',
+        color: 'bg-blue-100 text-blue-800',
+      },
+      passed: { label: 'Passed', color: 'bg-green-100 text-green-800' },
+      profound: { label: 'Profound', color: 'bg-red-100 text-red-800' },
+      severe: { label: 'Severe', color: 'bg-red-100 text-red-800' },
+      severe_profound: { label: 'Severe Profound', color: 'bg-red-100 text-red-800' },
+      unable_to_screen: { label: 'Unable to Screen', color: 'bg-gray-100 text-gray-800' },
     }
 
     const config = resultConfig[result as keyof typeof resultConfig]
@@ -164,10 +148,8 @@ const ScreeningsTable = ({
 
   const handleExport = (screening: Screening) => {
     // Create a simple CSV export for the screening
-    const csvContent = `Student,Type,Status,Date,Screener,Result
-${screening.student_name},${screening.type},${screening.status},${screening.date},${
-      screening.screener
-    },${screening.result || 'N/A'}`
+    const csvContent = `Student,Date,Screener,Result
+${screening.student_name},${screening.date},${screening.screener},${screening.result || 'N/A'}`
 
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
@@ -180,9 +162,7 @@ ${screening.student_name},${screening.type},${screening.status},${screening.date
 
   const handleDelete = (screening: Screening) => {
     if (
-      window.confirm(
-        `Are you sure you want to delete the ${screening.type} screening for ${screening.student_name}?`
-      )
+      window.confirm(`Are you sure you want to delete the screening for ${screening.student_name}?`)
     ) {
       console.log('Deleting screening:', screening.id)
       // Here you would typically call an API to delete the screening
@@ -242,11 +222,9 @@ ${screening.student_name},${screening.type},${screening.status},${screening.date
                   <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
                 </TableHead>
                 <TableHead>Student</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Result</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Screener</TableHead>
-                <TableHead>Result</TableHead>
                 <TableHead className='w-12'></TableHead>
               </tr>
             </TableHeader>
@@ -291,12 +269,6 @@ ${screening.student_name},${screening.type},${screening.status},${screening.date
                         </DropdownMenu>
                       </div>
                       <div className='flex items-center gap-2'>
-                        <Badge className={getTypeColor(screening.type)}>
-                          {screening.type.charAt(0).toUpperCase() + screening.type.slice(1)}
-                        </Badge>
-                        <Badge className={getStatusColor(screening.status)}>
-                          {screening.status.replace('_', ' ')}
-                        </Badge>
                         {getResultBadge(screening.result)}
                       </div>
                       <div className='text-sm text-gray-600 space-y-1'>
@@ -331,19 +303,9 @@ ${screening.student_name},${screening.type},${screening.status},${screening.date
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <Badge className={getTypeColor(screening.type)}>
-                      {screening.type.charAt(0).toUpperCase() + screening.type.slice(1)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(screening.status)}>
-                      {screening.status.replace('_', ' ').toUpperCase()}
-                    </Badge>
-                  </TableCell>
+                  <TableCell>{getResultBadge(screening.result)}</TableCell>
                   <TableCell>{format(new Date(screening.date), 'MMM d, yyyy')}</TableCell>
                   <TableCell>{screening.screener}</TableCell>
-                  <TableCell>{getResultBadge(screening.result)}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

@@ -13,8 +13,8 @@ import CreateScreeningModal from '@/components/screenings/CreateScreeningModal'
 const ScreeningsContent = () => {
   const { currentSchool } = useOrganization()
   const [searchTerm, setSearchTerm] = useState('')
-  const [typeFilter, setTypeFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
+
+  const [resultFilter, setResultFilter] = useState('all')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
   const [selectedScreenings, setSelectedScreenings] = useState<string[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -56,6 +56,8 @@ const ScreeningsContent = () => {
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
 
+  console.log('currentSchool', currentSchool)
+
   return (
     <SidebarProvider>
       <div className='min-h-screen flex w-full'>
@@ -88,18 +90,15 @@ const ScreeningsContent = () => {
                 <ScreeningsFilters
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
-                  typeFilter={typeFilter}
-                  setTypeFilter={setTypeFilter}
-                  statusFilter={statusFilter}
-                  setStatusFilter={setStatusFilter}
+                  resultFilter={resultFilter}
+                  setResultFilter={setResultFilter}
                   dateRangeFilter={dateRangeFilter}
                   setDateRangeFilter={setDateRangeFilter}
                 />
 
                 <ScreeningsTable
                   searchTerm={searchTerm}
-                  typeFilter={typeFilter}
-                  statusFilter={statusFilter}
+                  resultFilter={resultFilter}
                   dateRangeFilter={dateRangeFilter}
                   selectedScreenings={selectedScreenings}
                   setSelectedScreenings={setSelectedScreenings}
