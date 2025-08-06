@@ -153,26 +153,60 @@ const MultiStepSpeechScreeningForm = ({
         console.log('Grade availability result:', gradeAvailability)
 
         if (!gradeAvailability.exists) {
-          console.warn('⚠️ GRADE NOT AVAILABLE:', {
-            message: `Grade ${selectedGrade} for academic year ${academicYear} is not available at ${currentSchool.name}`,
-            schoolId: currentSchool.id,
-            gradeLevel: selectedGrade,
-            academicYear: academicYear,
-          })
-          // For now, just log the warning but continue with submission
-          // In production, you might want to show an error message or prevent submission
-        } else {
-          console.log('✅ GRADE VALIDATION PASSED:', {
-            message: `Grade ${selectedGrade} is available at ${currentSchool.name}`,
-            gradeId: gradeAvailability.grade?.id,
+          console.warn('⚠️ GRADE NOT AVAILABLE - CREATING NEW GRADE:', {
+            message: `Grade ${selectedGrade} for academic year ${academicYear} is not available at ${currentSchool.name}. Creating new grade...`,
             schoolId: currentSchool.id,
             gradeLevel: selectedGrade,
             academicYear: academicYear,
           })
 
-          // Update the selectedGradeId with the validated grade ID
+          try {
+            // Create new school grade since it doesn't exist
+            const newGrade = await schoolGradesApi.createSchoolGrade({
+              school_id: currentSchool.id,
+              grade_level: selectedGrade,
+              academic_year: academicYear,
+            })
+
+            console.log('✅ NEW GRADE CREATED SUCCESSFULLY:', {
+              message: `Successfully created grade ${selectedGrade} for ${currentSchool.name}`,
+              newGradeId: newGrade.id,
+              schoolId: currentSchool.id,
+              gradeLevel: selectedGrade,
+              academicYear: academicYear,
+              gradeData: newGrade,
+            })
+
+            // Update the selectedGradeId with the newly created grade ID
+            setSelectedGradeId(newGrade.id)
+          } catch (createError) {
+            console.error('❌ FAILED TO CREATE NEW GRADE:', {
+              error: createError,
+              schoolId: currentSchool.id,
+              gradeLevel: selectedGrade,
+              academicYear: academicYear,
+              message: 'Could not create new grade. Submission may fail.',
+            })
+            // Continue with submission even if grade creation fails
+            // The backend should handle this gracefully
+          }
+        } else {
+          console.log('✅ EXISTING GRADE FOUND:', {
+            message: `Grade ${selectedGrade} is available at ${currentSchool.name}`,
+            existingGradeId: gradeAvailability.grade?.id,
+            schoolId: currentSchool.id,
+            gradeLevel: selectedGrade,
+            academicYear: academicYear,
+            gradeData: gradeAvailability.grade,
+          })
+
+          // Update the selectedGradeId with the existing validated grade ID
           if (gradeAvailability.grade?.id) {
             setSelectedGradeId(gradeAvailability.grade.id)
+            console.log('📝 GRADE ID SET:', {
+              selectedGradeId: gradeAvailability.grade.id,
+              message: 'Grade ID has been set for form submission',
+            })
           }
         }
 
