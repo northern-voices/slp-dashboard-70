@@ -155,54 +155,25 @@ const SpeechScreeningStep1 = ({
     return sortedGrades.sort((a, b) => a.academic_year.localeCompare(b.academic_year))
   }, [schoolGrades, selectedGrade])
 
-  // Reset student selection and grade ID when grade level changes
+  // Reset student selection when grade level changes
+  // Grade ID will be set during form submission through backend validation
   const handleGradeChange = (grade: string) => {
     onGradeChange(grade)
     onStudentSelect(null)
-
-    const currentYear = new Date().getFullYear()
-    const currentAcademicYear = `${currentYear}-${currentYear + 1}`
-
-    const currentYearGrade = schoolGrades?.find(
-      gradeItem =>
-        gradeItem.grade_level === grade && gradeItem.academic_year === currentAcademicYear
-    )
-
-    if (currentYearGrade) {
-      onGradeIdChange(currentYearGrade.id)
-    } else {
-      onGradeIdChange('')
-    }
+    // Clear grade ID - it will be set during form submission validation
+    onGradeIdChange('')
   }
 
-  // Add handler for academic year selection
+  // Handler for academic year selection
+  // Grade ID validation and creation will be handled during form submission
   const handleAcademicYearChange = async (academicYear: string) => {
-    if (!selectedSchool) {
-      onGradeIdChange('')
-      return
-    }
-
-    // Try to find an existing grade_id
-    const existingGrade = availableGradeIds.find(
-      grade => grade.academic_year === academicYear && grade.grade_level === selectedGrade
+    // Clear grade ID - it will be validated and set during form submission
+    onGradeIdChange('')
+    console.log(
+      'Academic year selected:',
+      academicYear,
+      '- Grade ID will be validated during form submission'
     )
-
-    if (existingGrade && !existingGrade.id.startsWith('placeholder-')) {
-      onGradeIdChange(existingGrade.id)
-    } else {
-      // Create new grade if it doesn't exist or if it's a placeholder
-      try {
-        const newGrade = await schoolGradesApi.createSchoolGrade({
-          school_id: selectedSchool.id,
-          grade_level: selectedGrade,
-          academic_year: academicYear,
-        })
-        onGradeIdChange(newGrade.id)
-      } catch (error) {
-        console.error('Failed to create new school grade:', error)
-        onGradeIdChange('')
-      }
-    }
   }
 
   return (
