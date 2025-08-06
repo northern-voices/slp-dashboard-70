@@ -4,6 +4,7 @@ import ScreeningDetailsModal from '../screening-history/ScreeningDetailsModal'
 import { Screening } from '@/types/database'
 import { useScreenings } from '@/hooks/screenings/use-screenings'
 import { Loader2 } from 'lucide-react'
+import { parseDateSafely } from '@/utils/dateUtils'
 
 interface ScreeningsListProps {
   studentId?: string
@@ -29,7 +30,7 @@ const ScreeningsList = ({
   const filterByDateRange = (screening: Screening) => {
     if (dateRangeFilter === 'all') return true
 
-    const screeningDate = new Date(screening.screening_date || screening.date)
+    const screeningDate = parseDateSafely(screening.screening_date || screening.date)
     const now = new Date()
 
     switch (dateRangeFilter) {

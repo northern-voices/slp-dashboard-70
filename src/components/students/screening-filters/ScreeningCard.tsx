@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Eye, Calendar, CheckCircle, Clock, AlertTriangle, XCircle } from 'lucide-react'
 import { format } from 'date-fns'
+import { parseDateSafely } from '@/utils/dateUtils'
 import { Screening } from '@/types/database'
 
 interface ScreeningCardProps {
@@ -126,7 +127,7 @@ const ScreeningCard = ({ screening, onViewDetails }: ScreeningCardProps) => {
           <div className='flex items-center gap-2 text-gray-600'>
             <Calendar className='w-4 h-4' />
             <span className='text-sm font-medium'>
-              {format(new Date(screening.date), 'MMM dd, yyyy')}
+              {format(parseDateSafely(screening.date), 'MMM dd, yyyy')}
             </span>
           </div>
         </div>

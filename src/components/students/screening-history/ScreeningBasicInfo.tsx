@@ -2,6 +2,7 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, User, FileText } from 'lucide-react'
 import { format } from 'date-fns'
+import { parseDateSafely } from '@/utils/dateUtils'
 
 interface Screening {
   id: string
@@ -41,7 +42,7 @@ const ScreeningBasicInfo = ({ screening }: ScreeningBasicInfoProps) => {
           <Calendar className='w-4 h-4 text-gray-500' />
           <span className='text-sm font-medium'>Date:</span>
           <span className='text-sm text-gray-600'>
-            {format(new Date(screening.date), 'MMMM dd, yyyy')}
+            {format(parseDateSafely(screening.date), 'MMMM dd, yyyy')}
           </span>
         </div>
         <div className='flex items-center gap-2'>

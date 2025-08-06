@@ -18,6 +18,7 @@ import {
   TableCell,
 } from '@/components/ui/responsive-table'
 import { format } from 'date-fns'
+import { parseDateSafely } from '@/utils/dateUtils'
 import ScreeningBulkActions from './ScreeningBulkActions'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import { School, Screening } from '@/types/database'
@@ -53,7 +54,7 @@ const ScreeningsTable = ({
     ? (allScreenings || []).filter(screening => screening.school_id === currentSchool.id)
     : allScreenings || []
 
-  console.log(schoolScreenings, 'schoolscreenings')
+  console.log(schoolScreenings, 'schoolscreenings') // TODO: Temp remove after
 
   // Apply all filters
   const filteredScreenings = schoolScreenings.filter(screening => {
@@ -68,7 +69,7 @@ const ScreeningsTable = ({
     // Apply date range filter
     let matchesDateRange = true
     if (dateRangeFilter !== 'all') {
-      const screeningDate = new Date(screening.date)
+      const screeningDate = parseDateSafely(screening.date)
       const now = new Date()
 
       switch (dateRangeFilter) {
@@ -274,7 +275,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                       <div className='text-sm text-gray-600 space-y-1'>
                         <p>
                           <span className='font-medium'>Date:</span>{' '}
-                          {format(new Date(screening.date), 'MMM d, yyyy')}
+                          {format(parseDateSafely(screening.date), 'MMM d, yyyy')}
                         </p>
                         <p>
                           <span className='font-medium'>Screener:</span> {screening.screener}
@@ -304,7 +305,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                     </div>
                   </TableCell>
                   <TableCell>{getResultBadge(screening.result)}</TableCell>
-                  <TableCell>{format(new Date(screening.date), 'MMM d, yyyy')}</TableCell>
+                  <TableCell>{format(parseDateSafely(screening.date), 'MMM d, yyyy')}</TableCell>
                   <TableCell>{screening.screener}</TableCell>
                   <TableCell>
                     <DropdownMenu>

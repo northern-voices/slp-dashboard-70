@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, User, FileText, X } from 'lucide-react'
 import { format } from 'date-fns'
+import { parseDateSafely } from '@/utils/dateUtils'
 import { Screening } from '@/types/database'
 
 interface ScreeningDetailsModalProps {
@@ -108,7 +109,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                 <div className='flex items-center gap-2'>
                   <Calendar className='w-4 h-4 text-gray-500' />
                   <span className='text-sm'>
-                    {format(new Date(screening.date), 'MMMM d, yyyy')}
+                    {format(parseDateSafely(screening.date), 'MMMM d, yyyy')}
                   </span>
                 </div>
                 <p className='text-sm text-gray-600 ml-6'>Screener: {screening.screener}</p>

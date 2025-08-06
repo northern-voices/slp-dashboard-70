@@ -56,7 +56,7 @@ const ScreeningsContent = () => {
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
 
-  console.log('currentSchool', currentSchool)
+  console.log('currentSchool', currentSchool) // TODO: Remove
 
   return (
     <SidebarProvider>
