@@ -1,3 +1,5 @@
+import { ErrorPatterns } from './screening-form'
+
 export interface Organization {
   id: string
   name: string
@@ -78,6 +80,7 @@ export interface Screening {
   // Speech-specific fields
   vocabulary_support?: boolean
   suspected_cas?: boolean
+  error_patterns?: ErrorPatterns
 
   // Hearing-specific fields
   right_volume_db?: number | null

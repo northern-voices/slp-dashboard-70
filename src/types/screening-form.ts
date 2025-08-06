@@ -48,3 +48,43 @@ export const createScreeningFormSchema = (isCreatingNewStudent: boolean) => {
 export type ScreeningFormSchemaType<T extends boolean> = z.infer<
   ReturnType<typeof createScreeningFormSchema>
 >
+
+// Error patterns structure for speech screenings
+export interface ErrorPatterns {
+  attendance: {
+    absent: boolean
+    absence_notes: string
+    priority_re_screen: boolean
+  }
+  articulation: {
+    soundErrors: Array<{
+      notes: string
+      sound: string
+      errorPatterns: string[]
+    }>
+    articulationNotes: string
+  }
+  fluency_notes: string
+  voice_quality: string
+  articulation_notes: string
+  screening_metadata: {
+    screening_date: string
+    qualifies_for_speech_program: boolean
+  }
+  language_expression: string
+  add_areas_of_concern: {
+    voice: boolean | null
+    fluency: boolean | null
+    literacy: boolean | null
+    suspected_cas: boolean | null
+    cleft_lip_palate: boolean | null
+    reluctant_speaking: boolean | null
+    language_expression: boolean | null
+    language_comprehension: boolean | null
+    known_pending_diagnoses: boolean | null
+    pragmatics_social_communication: boolean | null
+  }
+  overall_observations: string
+  language_comprehension: string
+  pragmatics_social_communication: string
+}

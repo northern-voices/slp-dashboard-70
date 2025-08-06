@@ -3,13 +3,14 @@ import { screeningsApi } from '@/api/screenings'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Screening } from '@/types/database'
+import { ErrorPatterns } from '@/types/screening-form'
 
 // Type for the create speech screening input
 type CreateSpeechScreeningInput = {
   student_id: string
   screener_id: string
   grade_id: string
-  error_patterns?: any
+  error_patterns?: ErrorPatterns
   result?: string | null
   vocabulary_support?: boolean
   suspected_cas?: boolean

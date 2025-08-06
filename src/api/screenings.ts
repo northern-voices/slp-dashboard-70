@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Screening } from '@/types/database'
+import { ErrorPatterns } from '@/types/screening-form'
 
 type SpeechScreeningResult = string
 
@@ -13,6 +14,7 @@ interface RawSpeechScreening {
   suspected_cas: boolean
   clinical_notes: string | null
   referral_notes: string | null
+  error_patterns: ErrorPatterns | null
   created_at: string
   updated_at: string
   students: {
@@ -248,6 +250,7 @@ export const screeningsApi = {
           referral_notes: screening.referral_notes || '',
           vocabulary_support: screening.vocabulary_support,
           suspected_cas: screening.suspected_cas,
+          error_patterns: screening.error_patterns,
           created_at: screening.created_at,
           updated_at: screening.updated_at,
           school_id: screening.students?.school_id || '',
@@ -384,6 +387,7 @@ export const screeningsApi = {
         referral_notes: screening.referral_notes || '',
         vocabulary_support: screening.vocabulary_support,
         suspected_cas: screening.suspected_cas,
+        error_patterns: screening.error_patterns,
         created_at: screening.created_at,
         updated_at: screening.updated_at,
         school_id: screening.students?.school_id || '',
@@ -502,8 +506,7 @@ export const screeningsApi = {
     student_id: string
     screener_id: string
     grade_id: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    error_patterns?: any
+    error_patterns?: ErrorPatterns
     result?: SpeechScreeningResult | null
     vocabulary_support?: boolean
     suspected_cas?: boolean
@@ -596,6 +599,7 @@ export const screeningsApi = {
         referral_notes: newScreening.referral_notes || '',
         vocabulary_support: newScreening.vocabulary_support,
         suspected_cas: newScreening.suspected_cas,
+        error_patterns: newScreening.error_patterns,
         created_at: newScreening.created_at,
         updated_at: newScreening.updated_at,
         school_id: schoolId,
@@ -617,8 +621,7 @@ export const screeningsApi = {
       student_id: string
       screener_id: string
       grade_id: string
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error_patterns: any
+      error_patterns: ErrorPatterns
       result: SpeechScreeningResult | null
       vocabulary_support: boolean
       suspected_cas: boolean
@@ -686,6 +689,7 @@ export const screeningsApi = {
         referral_notes: updatedScreening.referral_notes || '',
         vocabulary_support: updatedScreening.vocabulary_support,
         suspected_cas: updatedScreening.suspected_cas,
+        error_patterns: updatedScreening.error_patterns,
         created_at: updatedScreening.created_at,
         updated_at: updatedScreening.updated_at,
         school_id: schoolId,
