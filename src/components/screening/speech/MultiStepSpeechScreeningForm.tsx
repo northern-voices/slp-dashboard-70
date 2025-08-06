@@ -111,6 +111,9 @@ const MultiStepSpeechScreeningForm = ({
     }
 
     // Validate grade availability for the selected student's school
+    let validatedGradeId = selectedGradeId // Use existing grade ID if available
+    let validatedSchoolId = gradeSchoolId // Use existing school ID if available
+
     if (selectedStudent && selectedGrade && currentSchool) {
       try {
         const formData = data as Record<string, unknown>
@@ -164,14 +167,18 @@ const MultiStepSpeechScreeningForm = ({
               gradeData: newGrade,
             })
 
-            // Update the selectedGradeId and gradeSchoolId with the newly created grade data
+            // Use the validated grade ID directly for this submission
+            validatedGradeId = newGrade.id
+            validatedSchoolId = newGrade.school_id
+
+            // Also update state for future submissions
             setSelectedGradeId(newGrade.id)
             setGradeSchoolId(newGrade.school_id)
 
             console.log('📝 NEW GRADE IDs SET:', {
-              selectedGradeId: newGrade.id,
-              gradeSchoolId: newGrade.school_id,
-              message: 'Grade ID and School ID have been set from newly created grade',
+              validatedGradeId: newGrade.id,
+              validatedSchoolId: newGrade.school_id,
+              message: 'Grade ID and School ID have been validated for immediate use',
             })
           } catch (createError) {
             console.error('❌ FAILED TO CREATE NEW GRADE:', {
@@ -194,14 +201,19 @@ const MultiStepSpeechScreeningForm = ({
             gradeData: gradeAvailability.grade,
           })
 
-          // Update the selectedGradeId and gradeSchoolId with the existing validated grade data
+          // Use the validated grade ID directly for this submission
           if (gradeAvailability.grade?.id && gradeAvailability.grade?.school_id) {
+            validatedGradeId = gradeAvailability.grade.id
+            validatedSchoolId = gradeAvailability.grade.school_id
+
+            // Also update state for future submissions
             setSelectedGradeId(gradeAvailability.grade.id)
             setGradeSchoolId(gradeAvailability.grade.school_id)
+
             console.log('📝 EXISTING GRADE IDs SET:', {
-              selectedGradeId: gradeAvailability.grade.id,
-              gradeSchoolId: gradeAvailability.grade.school_id,
-              message: 'Grade ID and School ID have been set from existing grade',
+              validatedGradeId: gradeAvailability.grade.id,
+              validatedSchoolId: gradeAvailability.grade.school_id,
+              message: 'Grade ID and School ID have been validated for immediate use',
             })
           }
         }
@@ -229,7 +241,7 @@ const MultiStepSpeechScreeningForm = ({
     const screeningData = {
       // Direct column matches
       student_id: selectedStudent?.id || '',
-      grade_id: selectedGradeId, // This will now be validated and set correctly (references school via school_grades table)
+      grade_id: validatedGradeId, // Use the validated grade ID from the validation process
       screener_id: user?.id || '',
       academic_year:
         (formData.academic_year as string) ||
@@ -307,8 +319,10 @@ const MultiStepSpeechScreeningForm = ({
     console.log('=== FINAL SCREENING DATA TO SUBMIT ===')
     console.log('Screening data:', screeningData)
     console.log('Grade-School relationship:', {
-      selectedGradeId: selectedGradeId,
-      gradeSchoolId: gradeSchoolId,
+      validatedGradeId: validatedGradeId,
+      validatedSchoolId: validatedSchoolId,
+      selectedGradeId: selectedGradeId, // State variable for reference
+      gradeSchoolId: gradeSchoolId, // State variable for reference
       message:
         'The grade_id in screening data references school_grades table which contains school_id',
       note: 'School information is derived through: speech_screenings.grade_id -> school_grades.id -> school_grades.school_id',
