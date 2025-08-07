@@ -66,23 +66,22 @@ export interface ErrorPatterns {
   }
   fluency_notes: string
   voice_quality: string
-  articulation_notes: string
   screening_metadata: {
     screening_date: string
     qualifies_for_speech_program: boolean
   }
   language_expression: string
   add_areas_of_concern: {
-    voice: boolean | null
-    fluency: boolean | null
-    literacy: boolean | null
+    voice: string | null
+    fluency: string | null
+    literacy: string | null
     suspected_cas: boolean | null
     cleft_lip_palate: boolean | null
     reluctant_speaking: boolean | null
-    language_expression: boolean | null
-    language_comprehension: boolean | null
-    known_pending_diagnoses: boolean | null
-    pragmatics_social_communication: boolean | null
+    language_expression: string | null
+    language_comprehension: string | null
+    known_pending_diagnoses: string | null
+    pragmatics_social_communication: string | null
   }
   overall_observations: string
   language_comprehension: string

@@ -229,10 +229,6 @@ const MultiStepSpeechScreeningForm = ({
       // Structured error_patterns to match existing format + new data
       error_patterns: {
         // === EXISTING FORMAT (maintain compatibility) ===
-        articulation_notes:
-          (articulation.articulationNotes as string) ||
-          (formData.general_articulation_notes as string) ||
-          '',
         fluency_notes: (areasOfConcern.fluency as string) || '',
         voice_quality: (areasOfConcern.voice as string) || '',
         language_comprehension: (areasOfConcern.language_comprehension as string) || '',
@@ -243,8 +239,16 @@ const MultiStepSpeechScreeningForm = ({
 
         // === ADDITIONAL DATA (organized in logical groups) ===
         articulation: {
-          soundErrors: (articulation.soundErrors as string[]) || [],
-          articulationNotes: (articulation.articulationNotes as string) || '',
+          soundErrors:
+            (articulation.soundErrors as Array<{
+              notes: string
+              sound: string
+              errorPatterns: string[]
+            }>) || [],
+          articulationNotes:
+            (articulation.articulationNotes as string) ||
+            (formData.general_articulation_notes as string) ||
+            '',
         },
 
         attendance: {
