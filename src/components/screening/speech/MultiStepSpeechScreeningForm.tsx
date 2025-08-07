@@ -255,6 +255,8 @@ const MultiStepSpeechScreeningForm = ({
           screening_date:
             (formData.screening_date as string) || new Date().toISOString().split('T')[0],
           qualifies_for_speech_program: (formData.qualifies_for_speech_program as boolean) || false,
+          vocabulary_support_recommended:
+            (formData.vocabulary_support_recommended as boolean) || false,
         },
 
         add_areas_of_concern: {

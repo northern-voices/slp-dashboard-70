@@ -59,17 +59,13 @@ export interface Screening {
   student_id: string
   student_name: string
   grade: string
-  type: 'speech' | 'hearing'
-  status: 'completed' | 'in_progress' | 'scheduled' | 'cancelled'
   date: string
   screening_date: string
   screening_type: string
   screener: string
   slp_id: string
-  results: string
   result?: string
   screening_result?: string
-  notes: string
   referral_notes?: string
   created_at: string
   updated_at: string
@@ -81,6 +77,7 @@ export interface Screening {
   vocabulary_support?: boolean
   suspected_cas?: boolean
   error_patterns?: ErrorPatterns
+  clinical_notes?: string
 
   // Hearing-specific fields
   right_volume_db?: number | null

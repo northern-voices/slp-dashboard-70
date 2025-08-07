@@ -67,6 +67,7 @@ export interface ErrorPatterns {
   screening_metadata: {
     screening_date: string
     qualifies_for_speech_program: boolean
+    vocabulary_support_recommended: boolean
   }
   add_areas_of_concern: {
     voice: string | null
