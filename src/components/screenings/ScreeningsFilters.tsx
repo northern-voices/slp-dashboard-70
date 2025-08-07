@@ -134,11 +134,11 @@ const ScreeningsFilters = ({
   return (
     <Card className='border border-gray-200 shadow-sm'>
       <Collapsible open={isFiltersExpanded} onOpenChange={setIsFiltersExpanded}>
-        <CardHeader className='pb-4'>
+        <CardHeader className='px-5 py-2'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-3'>
-              <Filter className='w-5 h-5 text-gray-600' />
-              <CardTitle className='text-lg font-semibold'>Filters</CardTitle>
+              <Filter className='w-4 h-4 text-gray-600' />
+              <CardTitle className='text-base font-semibold'>Filters</CardTitle>
               {hasActiveFilters && (
                 <Badge variant='secondary' className='bg-blue-100 text-blue-700'>
                   {getActiveFilterCount()} active
