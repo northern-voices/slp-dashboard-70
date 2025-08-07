@@ -18,6 +18,7 @@ interface RawSpeechScreening {
   created_at: string
   updated_at: string
   students: {
+    schools: string
     id: string
     first_name: string
     last_name: string
@@ -77,7 +78,11 @@ export const speechScreeningsApi = {
             first_name,
             last_name,
             school_id,
-            student_id
+            student_id,
+            schools (
+              id,
+              name
+            )
           ),
           school_grades (
             id,
@@ -128,6 +133,7 @@ export const speechScreeningsApi = {
         created_at: screening.created_at,
         updated_at: screening.updated_at,
         school_id: screening.students?.school_id || '',
+        school_name: screening.students?.schools?.name || 'Unknown School',
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',

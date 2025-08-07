@@ -262,10 +262,9 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                     Academic Year: {screening.academic_year}
                   </p>
                 )}
-                <p className='text-sm text-gray-600 ml-6'>School: {screening.school_name}</p>
-
-                {/* TODO: Add school name when available in screening data */}
-                {/* School: Would be fetched using screening.school_id */}
+                <p className='text-sm text-gray-600 ml-6'>
+                  School: {screening.school_name || 'Unknown School'}
+                </p>
               </div>
             </div>
 

@@ -70,6 +70,7 @@ export interface Screening {
   created_at: string
   updated_at: string
   school_id: string
+  school_name?: string
   grade_id: string
   screener_id: string
   academic_year?: string
