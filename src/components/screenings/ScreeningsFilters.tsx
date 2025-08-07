@@ -17,6 +17,8 @@ interface ScreeningsFiltersProps {
   setResultFilter: (value: string) => void
   dateRangeFilter: string
   setDateRangeFilter: (value: string) => void
+  qualifiesForSpeechProgramFilter: string
+  setQualifiesForSpeechProgramFilter: (value: string) => void
 }
 
 const ScreeningsFilters = ({
@@ -26,6 +28,8 @@ const ScreeningsFilters = ({
   setResultFilter,
   dateRangeFilter,
   setDateRangeFilter,
+  qualifiesForSpeechProgramFilter,
+  setQualifiesForSpeechProgramFilter,
 }: ScreeningsFiltersProps) => {
   return (
     <Card className='border-none shadow-none bg-transparent'>
@@ -78,6 +82,19 @@ const ScreeningsFilters = ({
                 <SelectItem value='week'>This Week</SelectItem>
                 <SelectItem value='month'>This Month</SelectItem>
                 <SelectItem value='quarter'>This Quarter</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={qualifiesForSpeechProgramFilter}
+              onValueChange={setQualifiesForSpeechProgramFilter}>
+              <SelectTrigger className='w-48'>
+                <SelectValue placeholder='Speech Program' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>All Students</SelectItem>
+                <SelectItem value='true'>Qualifies for Speech Program</SelectItem>
+                <SelectItem value='false'>Does Not Qualify</SelectItem>
               </SelectContent>
             </Select>
           </div>

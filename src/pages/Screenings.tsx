@@ -16,6 +16,7 @@ const ScreeningsContent = () => {
 
   const [resultFilter, setResultFilter] = useState('all')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
+  const [qualifiesForSpeechProgramFilter, setQualifiesForSpeechProgramFilter] = useState('all')
   const [selectedScreenings, setSelectedScreenings] = useState<string[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
 
@@ -94,12 +95,15 @@ const ScreeningsContent = () => {
                   setResultFilter={setResultFilter}
                   dateRangeFilter={dateRangeFilter}
                   setDateRangeFilter={setDateRangeFilter}
+                  qualifiesForSpeechProgramFilter={qualifiesForSpeechProgramFilter}
+                  setQualifiesForSpeechProgramFilter={setQualifiesForSpeechProgramFilter}
                 />
 
                 <ScreeningsTable
                   searchTerm={searchTerm}
                   resultFilter={resultFilter}
                   dateRangeFilter={dateRangeFilter}
+                  qualifiesForSpeechProgramFilter={qualifiesForSpeechProgramFilter}
                   selectedScreenings={selectedScreenings}
                   setSelectedScreenings={setSelectedScreenings}
                   onBulkAction={handleBulkAction}

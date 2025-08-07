@@ -28,6 +28,7 @@ interface ScreeningsTableProps {
   searchTerm: string
   resultFilter: string
   dateRangeFilter: string
+  qualifiesForSpeechProgramFilter: string
   selectedScreenings: string[]
   setSelectedScreenings: (ids: string[]) => void
   onBulkAction: (action: string) => void
@@ -38,6 +39,7 @@ const ScreeningsTable = ({
   searchTerm,
   resultFilter,
   dateRangeFilter,
+  qualifiesForSpeechProgramFilter,
   selectedScreenings,
   setSelectedScreenings,
   onBulkAction,
@@ -95,7 +97,14 @@ const ScreeningsTable = ({
       }
     }
 
-    return matchesSearch && matchesResult && matchesDateRange
+    // Apply qualifies for speech program filter
+    let matchesQualifiesForSpeechProgram = true
+    if (qualifiesForSpeechProgramFilter !== 'all' && screening.error_patterns?.screening_metadata) {
+      const qualifies = screening.error_patterns.screening_metadata.qualifies_for_speech_program
+      matchesQualifiesForSpeechProgram = qualifies === (qualifiesForSpeechProgramFilter === 'true')
+    }
+
+    return matchesSearch && matchesResult && matchesDateRange && matchesQualifiesForSpeechProgram
   })
 
   const getResultBadge = (result?: string) => {
@@ -124,6 +133,20 @@ const ScreeningsTable = ({
     if (!config) return null
 
     return <Badge className={`${config.color} font-medium`}>{config.label}</Badge>
+  }
+
+  const getQualificationBadge = (screening: Screening) => {
+    const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
+
+    if (qualifies === undefined || qualifies === null) {
+      return <Badge className='bg-gray-100 text-gray-800 font-medium'>Not Set</Badge>
+    }
+
+    if (qualifies) {
+      return <Badge className='bg-green-100 text-green-800 font-medium'>Qualifies</Badge>
+    } else {
+      return <Badge className='bg-red-100 text-red-800 font-medium'>Does Not Qualify</Badge>
+    }
   }
 
   const handleSelectAll = (checked: boolean) => {
@@ -215,17 +238,18 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
           />
         )}
 
-        <div className='bg-white rounded-lg border border-gray-200'>
-          <ResponsiveTable>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <ResponsiveTable className='w-full'>
             <TableHeader>
               <tr>
                 <TableHead className='w-12'>
                   <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
                 </TableHead>
-                <TableHead>Student</TableHead>
-                <TableHead>Result</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Screener</TableHead>
+                <TableHead className='w-1/4 min-w-[200px]'>Student</TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>Qualifies</TableHead>
+                <TableHead className='w-1/6 min-w-[100px]'>Date</TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
                 <TableHead className='w-12'></TableHead>
               </tr>
             </TableHeader>
@@ -272,6 +296,9 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                       <div className='flex items-center gap-2'>
                         {getResultBadge(screening.result)}
                       </div>
+                      <div className='flex items-center gap-2'>
+                        {getQualificationBadge(screening)}
+                      </div>
                       <div className='text-sm text-gray-600 space-y-1'>
                         <p>
                           <span className='font-medium'>Date:</span>{' '}
@@ -296,17 +323,36 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                       }
                     />
                   </TableCell>
-                  <TableCell>
-                    <div>
-                      <div className='font-medium'>{screening.student_name}</div>
+                  <TableCell className='max-w-0'>
+                    <div className='truncate'>
+                      <div className='font-medium truncate' title={screening.student_name}>
+                        {screening.student_name}
+                      </div>
                       {screening.grade && (
-                        <div className='text-sm text-gray-500'>Grade {screening.grade}</div>
+                        <div className='text-sm text-gray-500 truncate'>
+                          Grade {screening.grade}
+                        </div>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>{getResultBadge(screening.result)}</TableCell>
-                  <TableCell>{format(parseDateSafely(screening.date), 'MMM d, yyyy')}</TableCell>
-                  <TableCell>{screening.screener}</TableCell>
+                  <TableCell className='max-w-0'>
+                    <div className='truncate'>{getResultBadge(screening.result)}</div>
+                  </TableCell>
+                  <TableCell className='max-w-0'>
+                    <div className='truncate'>{getQualificationBadge(screening)}</div>
+                  </TableCell>
+                  <TableCell className='max-w-0'>
+                    <div
+                      className='truncate'
+                      title={format(parseDateSafely(screening.date), 'MMM d, yyyy')}>
+                      {format(parseDateSafely(screening.date), 'MMM d, yyyy')}
+                    </div>
+                  </TableCell>
+                  <TableCell className='max-w-0'>
+                    <div className='truncate' title={screening.screener}>
+                      {screening.screener}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
