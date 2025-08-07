@@ -96,7 +96,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
     return (
       <Badge className={`${config.color} font-medium flex items-center gap-1`}>
         <IconComponent className='w-3 h-3' />
-        {config.label}
+        Result: {config.label}
       </Badge>
     )
   }
@@ -170,7 +170,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
 
     return (
       <div className='space-y-4'>
-        <h4 className='font-medium text-gray-900'>Areas of Concern</h4>
+        <h4 className='font-medium text-gray-900'>Additional Areas of Concern</h4>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           {areasWithData.map(([key, value]) => (
             <div key={key} className='p-3 bg-yellow-50 rounded-md border border-yellow-200'>
@@ -236,7 +236,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
 
     return (
       <div className='space-y-4'>
-        <h4 className='font-medium text-gray-900'>Screening Details</h4>
+        <h4 className='font-medium text-gray-900'>Speech Screening Details</h4>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           {metadata.qualifies_for_speech_program && (
             <div className='p-3 bg-green-50 rounded-md border border-green-200'>
@@ -286,62 +286,43 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                   <span className='font-medium'>{screening.student_name}</span>
                 </div>
                 <p className='text-sm text-gray-600 ml-6'>Grade {screening.grade}</p>
-                <p className='text-sm text-gray-600 ml-6'>ID {screening.student_id}</p>
+                <p className='text-sm text-gray-600 ml-6'>ID: {screening.student_id}</p>
               </div>
             </div>
 
             <div>
               <h3 className='font-medium text-gray-900 mb-2'>Screening Information</h3>
               <div className='space-y-1'>
-                <div className='flex items-center gap-2'>
-                  <Calendar className='w-4 h-4 text-gray-500' />
-                  <span className='text-sm'>
-                    {format(parseDateSafely(screening.date), 'MMMM d, yyyy')}
-                  </span>
-                </div>
-                <p className='text-sm text-gray-600 ml-6'>Screener: {screening.screener}</p>
+                <p className='text-sm text-gray-600 ml-2'>Screener: {screening.screener}</p>
                 {screening.screening_type && (
-                  <p className='text-sm text-gray-600 ml-6'>
-                    Type:{' '}
+                  <p className='text-sm text-gray-600 ml-2'>
+                    Screening Type:{' '}
                     {screening.screening_type.charAt(0).toUpperCase() +
                       screening.screening_type.slice(1)}
                   </p>
                 )}
+                <p className='text-sm text-gray-600 ml-2'>
+                  Screening Date: {format(new Date(screening.created_at), 'MMM d, yyyy h:mm a')}
+                </p>
+                <p className='text-sm text-gray-600 ml-2'>
+                  Updated: {format(new Date(screening.updated_at), 'MMM d, yyyy h:mm a')}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Status and Type Badges */}
-          <div className='flex flex-wrap gap-2'>
-            <Badge className={getTypeColor(screening)}>{getTypeLabel(screening)}</Badge>
-            {screening.screening_type && (
-              <Badge variant='outline'>
-                {screening.screening_type.charAt(0).toUpperCase() +
-                  screening.screening_type.slice(1)}
-              </Badge>
+          {/* Speech-specific flags - Only show if not absent */}
+          {(screening.vocabulary_support || screening.suspected_cas) &&
+            !screening.error_patterns?.attendance?.absent && (
+              <div className='flex flex-wrap gap-2'>
+                {screening.vocabulary_support && (
+                  <Badge className='bg-blue-100 text-blue-800'>Vocabulary Support</Badge>
+                )}
+                {screening.suspected_cas && (
+                  <Badge className='bg-purple-100 text-purple-800'>Suspected CAS</Badge>
+                )}
+              </div>
             )}
-            {getResultBadge(screening.result)}
-          </div>
-
-          {/* Speech-specific flags */}
-          {(screening.vocabulary_support || screening.suspected_cas) && (
-            <div className='flex flex-wrap gap-2'>
-              {screening.vocabulary_support && (
-                <Badge className='bg-blue-100 text-blue-800'>Vocabulary Support</Badge>
-              )}
-              {screening.suspected_cas && (
-                <Badge className='bg-purple-100 text-purple-800'>Suspected CAS</Badge>
-              )}
-            </div>
-          )}
-
-          {/* Results Section */}
-          {screening.result && (
-            <div>
-              <h3 className='font-medium text-gray-900 mb-2'>Results</h3>
-              <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>{screening.result}</p>
-            </div>
-          )}
 
           {/* Enhanced Backend Details for Speech Screenings */}
           {screening.error_patterns && (
@@ -349,29 +330,24 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
               {/* Attendance Information */}
               {renderAttendanceInfo()}
 
-              {/* Screening Metadata */}
-              {renderScreeningMetadata()}
+              {/* Only show other details if student is not absent */}
+              {!screening.error_patterns.attendance?.absent && (
+                <>
+                  {/* Screening Metadata */}
+                  {renderScreeningMetadata()}
 
-              {/* Articulation Data */}
-              {renderArticulationData()}
+                  {/* Articulation Data */}
+                  {renderArticulationData()}
 
-              {/* Areas of Concern */}
-              {renderAreasOfConcern()}
-
-              {/* Additional Observations */}
-              {screening.error_patterns.additional_observations && (
-                <div>
-                  <h4 className='font-medium text-gray-900 mb-2'>Additional Observations</h4>
-                  <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
-                    {screening.error_patterns.additional_observations}
-                  </p>
-                </div>
+                  {/* Areas of Concern */}
+                  {renderAreasOfConcern()}
+                </>
               )}
             </div>
           )}
 
-          {/* Notes Section */}
-          {screening.clinical_notes && (
+          {/* Notes Section - Only show if not absent */}
+          {screening.clinical_notes && !screening.error_patterns?.attendance?.absent && (
             <div>
               <h3 className='font-medium text-gray-900 mb-2'>Clinical Notes</h3>
               <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
@@ -380,8 +356,8 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
             </div>
           )}
 
-          {/* Referral Notes Section */}
-          {screening.referral_notes && (
+          {/* Referral Notes Section - Only show if not absent */}
+          {screening.referral_notes && !screening.error_patterns?.attendance?.absent && (
             <div>
               <h3 className='font-medium text-gray-900 mb-2'>Referral Notes</h3>
               <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
@@ -390,19 +366,16 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
             </div>
           )}
 
-          {/* Metadata */}
-          <div className='pt-4 border-t border-gray-200'>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-500'>
+          {/* Additional Observations - Only show if not absent */}
+          {screening.error_patterns?.additional_observations &&
+            !screening.error_patterns?.attendance?.absent && (
               <div>
-                <span className='font-medium'>Created:</span>{' '}
-                {format(new Date(screening.created_at), 'MMM d, yyyy h:mm a')}
+                <h4 className='font-medium text-gray-900 mb-2'>Additional Observations</h4>
+                <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
+                  {screening.error_patterns.additional_observations}
+                </p>
               </div>
-              <div>
-                <span className='font-medium'>Last Updated:</span>{' '}
-                {format(new Date(screening.updated_at), 'MMM d, yyyy h:mm a')}
-              </div>
-            </div>
-          </div>
+            )}
         </div>
       </DialogContent>
     </Dialog>
