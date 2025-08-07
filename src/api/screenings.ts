@@ -22,6 +22,7 @@ interface RawSpeechScreening {
     first_name: string
     last_name: string
     school_id: string
+    student_id: string
   } | null
   school_grades: {
     id: string
@@ -55,6 +56,7 @@ interface RawHearingScreening {
     first_name: string
     last_name: string
     school_id: string
+    student_id: string
   } | null
   school_grades: {
     id: string
@@ -170,7 +172,8 @@ export const screeningsApi = {
             id,
             first_name,
             last_name,
-            school_id
+            school_id,
+            student_id
           ),
           school_grades (
             id,
@@ -193,7 +196,8 @@ export const screeningsApi = {
             id,
             first_name,
             last_name,
-            school_id
+            school_id,
+            student_id
           ),
           school_grades (
             id,
@@ -229,13 +233,11 @@ export const screeningsApi = {
       const speechScreenings: Screening[] = (speechData || []).map(
         (screening: RawSpeechScreening) => ({
           id: screening.id,
-          student_id: screening.student_id,
+          student_id: screening.students?.student_id || '',
           student_name: screening.students
             ? `${screening.students.first_name} ${screening.students.last_name}`
             : 'Unknown Student',
           grade: screening.school_grades?.grade_level || '',
-          type: 'speech' as const,
-          status: getScreeningStatus(screening),
           date: screening.created_at?.split('T')[0] || '',
           screening_date: screening.created_at?.split('T')[0] || '',
           screening_type: 'initial',
@@ -262,13 +264,11 @@ export const screeningsApi = {
       const hearingScreenings: Screening[] = (hearingData || []).map(
         (screening: RawHearingScreening) => ({
           id: screening.id,
-          student_id: screening.student_id,
+          student_id: screening.students?.student_id || '',
           student_name: screening.students
             ? `${screening.students.first_name} ${screening.students.last_name}`
             : 'Unknown Student',
           grade: screening.school_grades?.grade_level || '',
-          type: 'hearing' as const,
-          status: getScreeningStatus(screening),
           date: screening.created_at?.split('T')[0] || '',
           screening_date: screening.created_at?.split('T')[0] || '',
           screening_type: 'initial',
@@ -337,7 +337,8 @@ export const screeningsApi = {
             id,
             first_name,
             last_name,
-            school_id
+            school_id,
+            student_id
           ),
           school_grades (
             id,
@@ -364,13 +365,11 @@ export const screeningsApi = {
 
       const transformedData: Screening[] = (data || []).map((screening: RawSpeechScreening) => ({
         id: screening.id,
-        student_id: screening.student_id,
+        student_id: screening.students?.student_id || '',
         student_name: screening.students
           ? `${screening.students.first_name} ${screening.students.last_name}`
           : 'Unknown Student',
         grade: screening.school_grades?.grade_level || '',
-        type: 'speech' as const,
-        status: getScreeningStatus(screening),
         date: screening.created_at?.split('T')[0] || '',
         screening_date: screening.created_at?.split('T')[0] || '',
         screening_type: 'initial',
@@ -426,7 +425,8 @@ export const screeningsApi = {
             id,
             first_name,
             last_name,
-            school_id
+            school_id,
+            student_id
           ),
           school_grades (
             id,
@@ -453,13 +453,11 @@ export const screeningsApi = {
 
       const transformedData: Screening[] = (data || []).map((screening: RawHearingScreening) => ({
         id: screening.id,
-        student_id: screening.student_id,
+        student_id: screening.students?.student_id || '',
         student_name: screening.students
           ? `${screening.students.first_name} ${screening.students.last_name}`
           : 'Unknown Student',
         grade: screening.school_grades?.grade_level || '',
-        type: 'hearing' as const,
-        status: getScreeningStatus(screening),
         date: screening.created_at?.split('T')[0] || '',
         screening_date: screening.created_at?.split('T')[0] || '',
         screening_type: 'initial',
@@ -538,7 +536,8 @@ export const screeningsApi = {
           id,
           first_name,
           last_name,
-          school_id
+          school_id,
+          student_id
         ),
         school_grades (
           id,
@@ -579,11 +578,9 @@ export const screeningsApi = {
       // Transform the raw data to match your Screening type
       const transformedScreening: Screening = {
         id: newScreening.id,
-        student_id: newScreening.student_id,
+        student_id: newScreening.students?.student_id || '',
         student_name: studentName,
         grade: gradeLevel,
-        type: 'speech' as const,
-        status: getScreeningStatus(newScreening),
         date: newScreening.created_at?.split('T')[0] || '',
         screening_date: newScreening.created_at?.split('T')[0] || '',
         screening_type: 'initial',
@@ -637,7 +634,8 @@ export const screeningsApi = {
           id,
           first_name,
           last_name,
-          school_id
+          school_id,
+          student_id
         ),
         school_grades (
           id,
@@ -668,11 +666,9 @@ export const screeningsApi = {
 
       const transformedScreening: Screening = {
         id: updatedScreening.id,
-        student_id: updatedScreening.student_id,
+        student_id: updatedScreening.students?.student_id || '',
         student_name: studentName,
         grade: gradeLevel,
-        type: 'speech' as const,
-        status: getScreeningStatus(updatedScreening),
         date: updatedScreening.created_at?.split('T')[0] || '',
         screening_date: updatedScreening.created_at?.split('T')[0] || '',
         screening_type: 'initial',

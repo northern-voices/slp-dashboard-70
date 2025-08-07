@@ -2,7 +2,15 @@ import React, { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Eye, Download, Trash2, MoreHorizontal, Loader2 } from 'lucide-react'
+import {
+  Eye,
+  Download,
+  Trash2,
+  MoreHorizontal,
+  Loader2,
+  ChevronUp,
+  ChevronDown,
+} from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,6 +69,8 @@ const ScreeningsTable = ({
 }: ScreeningsTableProps) => {
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [sortField, setSortField] = useState<'date' | 'name' | 'grade' | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
 
   // Use React Query to fetch screenings data
   const { data: allScreenings, isLoading, error } = useScreenings()
@@ -218,6 +228,58 @@ const ScreeningsTable = ({
     )
   })
 
+  // Sort screenings by field
+  const sortedScreenings = [...filteredScreenings].sort((a, b) => {
+    if (!sortOrder || !sortField) return 0
+
+    let comparison = 0
+
+    switch (sortField) {
+      case 'date': {
+        const dateA = new Date(a.created_at).getTime()
+        const dateB = new Date(b.created_at).getTime()
+        comparison = dateA - dateB
+        break
+      }
+      case 'name': {
+        comparison = (a.student_name || '').localeCompare(b.student_name || '')
+        break
+      }
+      case 'grade': {
+        const gradeA = a.grade || ''
+        const gradeB = b.grade || ''
+        comparison = gradeA.localeCompare(gradeB)
+        break
+      }
+    }
+
+    return sortOrder === 'asc' ? comparison : -comparison
+  })
+
+  const handleSort = (field: 'date' | 'name' | 'grade') => {
+    if (sortField !== field) {
+      setSortField(field)
+      setSortOrder('desc')
+    } else if (sortOrder === 'desc') {
+      setSortOrder('asc')
+    } else if (sortOrder === 'asc') {
+      setSortField(null)
+      setSortOrder(null)
+    }
+  }
+
+  const getSortIcon = (field: 'date' | 'name' | 'grade') => {
+    if (sortField !== field) {
+      return <ChevronUp className='w-4 h-4 opacity-30' />
+    }
+    if (sortOrder === 'asc') {
+      return <ChevronUp className='w-4 h-4' />
+    } else if (sortOrder === 'desc') {
+      return <ChevronDown className='w-4 h-4' />
+    }
+    return <ChevronUp className='w-4 h-4 opacity-30' />
+  }
+
   const getResultBadge = (result?: string) => {
     if (!result) return null
 
@@ -356,16 +418,41 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                 <TableHead className='w-12'>
                   <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
                 </TableHead>
-                <TableHead className='w-1/4 min-w-[200px]'>Student</TableHead>
+                <TableHead className='w-1/4 min-w-[200px]'>
+                  <Button
+                    variant='ghost'
+                    onClick={() => handleSort('name')}
+                    className='h-auto p-0 font-medium hover:bg-transparent'>
+                    Student
+                    <span className='ml-1'>{getSortIcon('name')}</span>
+                  </Button>
+                </TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Qualifies</TableHead>
-                <TableHead className='w-1/6 min-w-[100px]'>Date</TableHead>
+                <TableHead className='w-1/6 min-w-[80px]'>
+                  <Button
+                    variant='ghost'
+                    onClick={() => handleSort('grade')}
+                    className='h-auto p-0 font-medium hover:bg-transparent'>
+                    Grade
+                    <span className='ml-1'>{getSortIcon('grade')}</span>
+                  </Button>
+                </TableHead>
+                <TableHead className='w-1/6 min-w-[100px]'>
+                  <Button
+                    variant='ghost'
+                    onClick={() => handleSort('date')}
+                    className='h-auto p-0 font-medium hover:bg-transparent'>
+                    Date
+                    <span className='ml-1'>{getSortIcon('date')}</span>
+                  </Button>
+                </TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
                 <TableHead className='w-12'></TableHead>
               </tr>
             </TableHeader>
             <TableBody>
-              {filteredScreenings.map(screening => (
+              {sortedScreenings.map(screening => (
                 <ResponsiveTableRow
                   key={screening.id}
                   mobileCardContent={
@@ -422,6 +509,9 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                         <p>
                           <span className='font-medium'>Screener:</span> {screening.screener}
                         </p>
+                        <p>
+                          <span className='font-medium'>Student ID:</span> {screening.student_id}
+                        </p>
                         {screening.grade && (
                           <p>
                             <span className='font-medium'>Grade:</span> {screening.grade}
@@ -443,11 +533,9 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                       <div className='font-medium truncate' title={screening.student_name}>
                         {screening.student_name}
                       </div>
-                      {screening.grade && (
-                        <div className='text-sm text-gray-500 truncate'>
-                          Grade {screening.grade}
-                        </div>
-                      )}
+                      <div className='text-sm text-gray-500 truncate'>
+                        ID: {screening.student_id}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell className='max-w-0'>
@@ -455,6 +543,11 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                   </TableCell>
                   <TableCell className='max-w-0'>
                     <div className='truncate'>{getQualificationBadge(screening)}</div>
+                  </TableCell>
+                  <TableCell className='max-w-0'>
+                    <div className='truncate' title={screening.grade || 'No grade'}>
+                      {screening.grade || '-'}
+                    </div>
                   </TableCell>
                   <TableCell className='max-w-0'>
                     <div
