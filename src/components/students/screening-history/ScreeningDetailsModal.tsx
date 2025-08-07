@@ -16,32 +16,34 @@ interface ScreeningDetailsModalProps {
 const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsModalProps) => {
   if (!screening) return null
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800'
-      case 'in_progress':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'scheduled':
-        return 'bg-blue-100 text-blue-800'
-      case 'cancelled':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
+  const getTypeColor = (screening: Screening) => {
+    // Determine type based on available fields
+    if (
+      screening.vocabulary_support !== undefined ||
+      screening.suspected_cas !== undefined ||
+      screening.error_patterns
+    ) {
+      return 'bg-purple-100 text-purple-800'
     }
+    if (screening.right_volume_db !== undefined || screening.left_volume_db !== undefined) {
+      return 'bg-teal-100 text-teal-800'
+    }
+    return 'bg-gray-100 text-gray-800'
   }
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'speech':
-        return 'bg-purple-100 text-purple-800'
-      case 'hearing':
-        return 'bg-teal-100 text-teal-800'
-      case 'progress':
-        return 'bg-indigo-100 text-indigo-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
+  const getTypeLabel = (screening: Screening) => {
+    // Determine type based on available fields
+    if (
+      screening.vocabulary_support !== undefined ||
+      screening.suspected_cas !== undefined ||
+      screening.error_patterns
+    ) {
+      return 'Speech Screening'
     }
+    if (screening.right_volume_db !== undefined || screening.left_volume_db !== undefined) {
+      return 'Hearing Screening'
+    }
+    return 'Screening'
   }
 
   const getResultBadge = (result?: string) => {
@@ -119,13 +121,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
 
           {/* Status and Type Badges */}
           <div className='flex flex-wrap gap-2'>
-            <Badge className={getTypeColor(screening.type)}>
-              {screening.type.charAt(0).toUpperCase() + screening.type.slice(1)} Screening
-            </Badge>
-            <Badge className={getStatusColor(screening.status)}>
-              {screening.status.replace('_', ' ').charAt(0).toUpperCase() +
-                screening.status.replace('_', ' ').slice(1)}
-            </Badge>
+            <Badge className={getTypeColor(screening)}>{getTypeLabel(screening)}</Badge>
             {screening.screening_type && (
               <Badge variant='outline'>
                 {screening.screening_type.charAt(0).toUpperCase() +
@@ -136,18 +132,30 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
           </div>
 
           {/* Results Section */}
-          {screening.results && (
+          {screening.result && (
             <div>
               <h3 className='font-medium text-gray-900 mb-2'>Results</h3>
-              <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>{screening.results}</p>
+              <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>{screening.result}</p>
             </div>
           )}
 
           {/* Notes Section */}
-          {screening.notes && (
+          {screening.clinical_notes && (
             <div>
-              <h3 className='font-medium text-gray-900 mb-2'>Notes</h3>
-              <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>{screening.notes}</p>
+              <h3 className='font-medium text-gray-900 mb-2'>Clinical Notes</h3>
+              <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
+                {screening.clinical_notes}
+              </p>
+            </div>
+          )}
+
+          {/* Referral Notes Section */}
+          {screening.referral_notes && (
+            <div>
+              <h3 className='font-medium text-gray-900 mb-2'>Referral Notes</h3>
+              <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
+                {screening.referral_notes}
+              </p>
             </div>
           )}
 
