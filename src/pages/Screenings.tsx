@@ -14,9 +14,22 @@ const ScreeningsContent = () => {
   const { currentSchool } = useOrganization()
   const [searchTerm, setSearchTerm] = useState('')
 
+  // Basic filters
   const [resultFilter, setResultFilter] = useState('all')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
+  const [gradeFilter, setGradeFilter] = useState('all')
+
+  // Speech program filters
   const [qualifiesForSpeechProgramFilter, setQualifiesForSpeechProgramFilter] = useState('all')
+  const [vocabularySupportFilter, setVocabularySupportFilter] = useState('all')
+  const [casFilter, setCasFilter] = useState('all')
+  const [languageComprehensionFilter, setLanguageComprehensionFilter] = useState('all')
+  const [priorityRescreenFilter, setPriorityRescreenFilter] = useState('all')
+
+  // Notes and recommendations filters
+  const [recommendationsFilter, setRecommendationsFilter] = useState('all')
+  const [clinicalNotesFilter, setClinicalNotesFilter] = useState('all')
+
   const [selectedScreenings, setSelectedScreenings] = useState<string[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
 
@@ -97,6 +110,20 @@ const ScreeningsContent = () => {
                   setDateRangeFilter={setDateRangeFilter}
                   qualifiesForSpeechProgramFilter={qualifiesForSpeechProgramFilter}
                   setQualifiesForSpeechProgramFilter={setQualifiesForSpeechProgramFilter}
+                  vocabularySupportFilter={vocabularySupportFilter}
+                  setVocabularySupportFilter={setVocabularySupportFilter}
+                  casFilter={casFilter}
+                  setCasFilter={setCasFilter}
+                  gradeFilter={gradeFilter}
+                  setGradeFilter={setGradeFilter}
+                  recommendationsFilter={recommendationsFilter}
+                  setRecommendationsFilter={setRecommendationsFilter}
+                  clinicalNotesFilter={clinicalNotesFilter}
+                  setClinicalNotesFilter={setClinicalNotesFilter}
+                  languageComprehensionFilter={languageComprehensionFilter}
+                  setLanguageComprehensionFilter={setLanguageComprehensionFilter}
+                  priorityRescreenFilter={priorityRescreenFilter}
+                  setPriorityRescreenFilter={setPriorityRescreenFilter}
                 />
 
                 <ScreeningsTable
@@ -104,6 +131,13 @@ const ScreeningsContent = () => {
                   resultFilter={resultFilter}
                   dateRangeFilter={dateRangeFilter}
                   qualifiesForSpeechProgramFilter={qualifiesForSpeechProgramFilter}
+                  vocabularySupportFilter={vocabularySupportFilter}
+                  casFilter={casFilter}
+                  gradeFilter={gradeFilter}
+                  recommendationsFilter={recommendationsFilter}
+                  clinicalNotesFilter={clinicalNotesFilter}
+                  languageComprehensionFilter={languageComprehensionFilter}
+                  priorityRescreenFilter={priorityRescreenFilter}
                   selectedScreenings={selectedScreenings}
                   setSelectedScreenings={setSelectedScreenings}
                   onBulkAction={handleBulkAction}

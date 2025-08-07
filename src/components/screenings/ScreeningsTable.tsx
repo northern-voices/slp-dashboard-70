@@ -29,6 +29,13 @@ interface ScreeningsTableProps {
   resultFilter: string
   dateRangeFilter: string
   qualifiesForSpeechProgramFilter: string
+  vocabularySupportFilter: string
+  casFilter: string
+  gradeFilter: string
+  recommendationsFilter: string
+  clinicalNotesFilter: string
+  languageComprehensionFilter: string
+  priorityRescreenFilter: string
   selectedScreenings: string[]
   setSelectedScreenings: (ids: string[]) => void
   onBulkAction: (action: string) => void
@@ -40,6 +47,13 @@ const ScreeningsTable = ({
   resultFilter,
   dateRangeFilter,
   qualifiesForSpeechProgramFilter,
+  vocabularySupportFilter,
+  casFilter,
+  gradeFilter,
+  recommendationsFilter,
+  clinicalNotesFilter,
+  languageComprehensionFilter,
+  priorityRescreenFilter,
   selectedScreenings,
   setSelectedScreenings,
   onBulkAction,
@@ -104,7 +118,86 @@ const ScreeningsTable = ({
       matchesQualifiesForSpeechProgram = qualifies === (qualifiesForSpeechProgramFilter === 'true')
     }
 
-    return matchesSearch && matchesResult && matchesDateRange && matchesQualifiesForSpeechProgram
+    // Apply grade filter
+    let matchesGrade = true
+    if (gradeFilter !== 'all') {
+      matchesGrade = screening.grade === gradeFilter
+    }
+
+    // Apply vocabulary support filter
+    let matchesVocabularySupport = true
+    if (vocabularySupportFilter !== 'all' && screening.error_patterns?.screening_metadata) {
+      const vocabularySupport =
+        screening.error_patterns.screening_metadata.vocabulary_support_recommended
+      matchesVocabularySupport = vocabularySupport === (vocabularySupportFilter === 'true')
+    }
+
+    // Apply CAS filter
+    let matchesCAS = true
+    if (casFilter !== 'all') {
+      const suspectedCAS = screening.suspected_cas
+      matchesCAS = suspectedCAS === (casFilter === 'true')
+    }
+
+    // Apply language comprehension filter
+    let matchesLanguageComprehension = true
+    if (languageComprehensionFilter !== 'all' && screening.error_patterns?.add_areas_of_concern) {
+      const languageComprehension =
+        screening.error_patterns.add_areas_of_concern.language_comprehension
+      if (languageComprehensionFilter === 'concern') {
+        matchesLanguageComprehension =
+          languageComprehension !== null && languageComprehension !== ''
+      } else if (languageComprehensionFilter === 'no_concern') {
+        matchesLanguageComprehension = !languageComprehension || languageComprehension === ''
+      }
+    }
+
+    // Apply priority rescreen filter
+    let matchesPriorityRescreen = true
+    if (priorityRescreenFilter !== 'all' && screening.error_patterns?.attendance) {
+      const priorityRescreen = screening.error_patterns.attendance.priority_re_screen
+      matchesPriorityRescreen = priorityRescreen === (priorityRescreenFilter === 'true')
+    }
+
+    // Apply recommendations filter
+    let matchesRecommendations = true
+    if (recommendationsFilter !== 'all') {
+      const hasReferralNotes = screening.referral_notes && screening.referral_notes.trim() !== ''
+      const hasClinicalNotes = screening.clinical_notes && screening.clinical_notes.trim() !== ''
+
+      if (recommendationsFilter === 'has_recommendations') {
+        matchesRecommendations = hasReferralNotes || hasClinicalNotes
+      } else if (recommendationsFilter === 'has_referrals') {
+        matchesRecommendations = hasReferralNotes
+      } else if (recommendationsFilter === 'none') {
+        matchesRecommendations = !hasReferralNotes && !hasClinicalNotes
+      }
+    }
+
+    // Apply clinical notes filter
+    let matchesClinicalNotes = true
+    if (clinicalNotesFilter !== 'all') {
+      const hasClinicalNotes = screening.clinical_notes && screening.clinical_notes.trim() !== ''
+      if (clinicalNotesFilter === 'has_notes') {
+        matchesClinicalNotes = hasClinicalNotes
+      } else if (clinicalNotesFilter === 'no_notes') {
+        matchesClinicalNotes = !hasClinicalNotes
+      }
+    }
+
+    return (
+      matchesSearch &&
+      matchesResult &&
+      matchesDateRange &&
+      matchesQualifiesForSpeechProgram &&
+      matchesGrade &&
+      matchesVocabularySupport &&
+      matchesCAS &&
+      matchesLanguageComprehension &&
+      matchesPriorityRescreen &&
+      matchesRecommendations &&
+      matchesClinicalNotes
+    )
   })
 
   const getResultBadge = (result?: string) => {
