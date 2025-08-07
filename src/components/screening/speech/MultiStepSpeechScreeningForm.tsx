@@ -220,7 +220,9 @@ const MultiStepSpeechScreeningForm = ({
           return `${currentYear}-${currentYear + 1}`
         })(),
       screening_type: (formData.screening_type as string) || 'initial',
-      result: (formData.speech_screen_result as string) || '',
+      result: (absent.isAbsent as boolean)
+        ? 'absent'
+        : (formData.speech_screen_result as string) || '',
       vocabulary_support: (formData.vocabulary_support_recommended as boolean) || false,
       suspected_cas: (areasOfConcern.suspected_cas as boolean) || false,
       clinical_notes: (formData.clinical_notes as string) || '',
@@ -265,7 +267,7 @@ const MultiStepSpeechScreeningForm = ({
           pragmatics_social_communication:
             (areasOfConcern.pragmatics_social_communication as string) || null,
           fluency: (areasOfConcern.fluency as string) || null,
-          suspected_cas: (areasOfConcern.suspected_cas as boolean) || null,
+          suspected_cas: (areasOfConcern.suspected_cas as string) || null,
           reluctant_speaking: (areasOfConcern.reluctant_speaking as boolean) || null,
           voice: (areasOfConcern.voice as string) || null,
           literacy: (areasOfConcern.literacy as string) || null,
