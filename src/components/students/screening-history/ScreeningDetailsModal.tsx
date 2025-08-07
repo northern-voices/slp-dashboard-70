@@ -16,36 +16,6 @@ interface ScreeningDetailsModalProps {
 const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsModalProps) => {
   if (!screening) return null
 
-  const getTypeColor = (screening: Screening) => {
-    // Determine type based on available fields
-    if (
-      screening.vocabulary_support !== undefined ||
-      screening.suspected_cas !== undefined ||
-      screening.error_patterns
-    ) {
-      return 'bg-purple-100 text-purple-800'
-    }
-    if (screening.right_volume_db !== undefined || screening.left_volume_db !== undefined) {
-      return 'bg-teal-100 text-teal-800'
-    }
-    return 'bg-gray-100 text-gray-800'
-  }
-
-  const getTypeLabel = (screening: Screening) => {
-    // Determine type based on available fields
-    if (
-      screening.vocabulary_support !== undefined ||
-      screening.suspected_cas !== undefined ||
-      screening.error_patterns
-    ) {
-      return 'Speech Screening'
-    }
-    if (screening.right_volume_db !== undefined || screening.left_volume_db !== undefined) {
-      return 'Hearing Screening'
-    }
-    return 'Screening'
-  }
-
   const getResultBadge = (result?: string) => {
     if (!result) return null
 
@@ -287,6 +257,15 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                 </div>
                 <p className='text-sm text-gray-600 ml-6'>Grade {screening.grade}</p>
                 <p className='text-sm text-gray-600 ml-6'>ID: {screening.student_id}</p>
+                {screening.academic_year && (
+                  <p className='text-sm text-gray-600 ml-6'>
+                    Academic Year: {screening.academic_year}
+                  </p>
+                )}
+                <p className='text-sm text-gray-600 ml-6'>School: {screening.school_name}</p>
+
+                {/* TODO: Add school name when available in screening data */}
+                {/* School: Would be fetched using screening.school_id */}
               </div>
             </div>
 
@@ -312,17 +291,17 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
           </div>
 
           {/* Speech-specific flags - Only show if not absent */}
-          {(screening.vocabulary_support || screening.suspected_cas) &&
-            !screening.error_patterns?.attendance?.absent && (
-              <div className='flex flex-wrap gap-2'>
-                {screening.vocabulary_support && (
-                  <Badge className='bg-blue-100 text-blue-800'>Vocabulary Support</Badge>
-                )}
-                {screening.suspected_cas && (
-                  <Badge className='bg-purple-100 text-purple-800'>Suspected CAS</Badge>
-                )}
-              </div>
-            )}
+          {!screening.error_patterns?.attendance?.absent && (
+            <div className='flex flex-wrap gap-2'>
+              {getResultBadge(screening.result)}
+              {screening.vocabulary_support && (
+                <Badge className='bg-blue-100 text-blue-800'>Vocabulary Support</Badge>
+              )}
+              {screening.suspected_cas && (
+                <Badge className='bg-purple-100 text-purple-800'>Suspected CAS</Badge>
+              )}
+            </div>
+          )}
 
           {/* Enhanced Backend Details for Speech Screenings */}
           {screening.error_patterns && (
