@@ -36,20 +36,6 @@ interface RawSpeechScreening {
   } | null
 }
 
-// Helper function to determine screening status
-const getScreeningStatus = (
-  screening: RawSpeechScreening
-): 'completed' | 'in_progress' | 'scheduled' => {
-  // Since status isn't in the schema, we'll determine it based on available data
-  if (screening.result) {
-    return 'completed'
-  }
-  if (screening.clinical_notes || screening.referral_notes) {
-    return 'completed'
-  }
-  return 'in_progress'
-}
-
 // Helper function to get user's organization schools
 const getUserOrganizationSchools = async (organizationId: string): Promise<string[]> => {
   try {
@@ -59,9 +45,11 @@ const getUserOrganizationSchools = async (organizationId: string): Promise<strin
       .eq('organization_id', organizationId)
 
     if (error) throw error
+
     return schools?.map(school => school.id) || []
   } catch (error) {
     console.error('Error fetching organization schools:', error)
+
     return []
   }
 }
@@ -75,6 +63,7 @@ export const speechScreeningsApi = {
     try {
       // Get organization schools if organizationId is provided
       let organizationSchoolIds: string[] = []
+
       if (organizationId) {
         organizationSchoolIds = await getUserOrganizationSchools(organizationId)
       }
