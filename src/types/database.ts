@@ -72,6 +72,7 @@ export interface Screening {
   school_id: string
   grade_id: string
   screener_id: string
+  academic_year?: string
 
   // Speech-specific fields
   vocabulary_support?: boolean
