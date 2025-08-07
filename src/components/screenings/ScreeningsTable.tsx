@@ -126,29 +126,42 @@ const ScreeningsTable = ({
 
     // Apply vocabulary support filter
     let matchesVocabularySupport = true
-    if (vocabularySupportFilter !== 'all' && screening.error_patterns?.screening_metadata) {
-      const vocabularySupport =
-        screening.error_patterns.screening_metadata.vocabulary_support_recommended
+    if (vocabularySupportFilter !== 'all') {
+      const vocabularySupport = screening.vocabulary_support
       matchesVocabularySupport = vocabularySupport === (vocabularySupportFilter === 'true')
     }
 
     // Apply CAS filter
     let matchesCAS = true
     if (casFilter !== 'all') {
-      const suspectedCAS = screening.suspected_cas
-      matchesCAS = suspectedCAS === (casFilter === 'true')
+      const suspectedCAS = screening.error_patterns?.add_areas_of_concern?.suspected_cas
+      if (casFilter === 'has_text') {
+        matchesCAS = suspectedCAS !== null && suspectedCAS !== undefined && suspectedCAS !== ''
+      } else if (casFilter === 'no_text') {
+        matchesCAS =
+          !suspectedCAS ||
+          suspectedCAS === null ||
+          suspectedCAS === undefined ||
+          suspectedCAS === ''
+      }
     }
 
     // Apply language comprehension filter
     let matchesLanguageComprehension = true
-    if (languageComprehensionFilter !== 'all' && screening.error_patterns?.add_areas_of_concern) {
+    if (languageComprehensionFilter !== 'all') {
       const languageComprehension =
-        screening.error_patterns.add_areas_of_concern.language_comprehension
+        screening.error_patterns?.add_areas_of_concern?.language_comprehension
       if (languageComprehensionFilter === 'concern') {
         matchesLanguageComprehension =
-          languageComprehension !== null && languageComprehension !== ''
+          languageComprehension !== null &&
+          languageComprehension !== undefined &&
+          languageComprehension !== ''
       } else if (languageComprehensionFilter === 'no_concern') {
-        matchesLanguageComprehension = !languageComprehension || languageComprehension === ''
+        matchesLanguageComprehension =
+          !languageComprehension ||
+          languageComprehension === null ||
+          languageComprehension === undefined ||
+          languageComprehension === ''
       }
     }
 

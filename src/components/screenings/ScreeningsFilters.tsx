@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Search, Filter, ChevronDown, ChevronUp, X, RefreshCw, Zap } from 'lucide-react'
+import { Search, Filter, ChevronDown, ChevronUp, X, RefreshCw } from 'lucide-react'
 
 interface ScreeningsFiltersProps {
   searchTerm: string
@@ -111,26 +111,6 @@ const ScreeningsFilters = ({
     return count
   }
 
-  // Quick filter presets
-  const applyQuickFilter = (preset: string) => {
-    clearAllFilters()
-    switch (preset) {
-      case 'qualified':
-        setQualifiesForSpeechProgramFilter('true')
-        break
-      case 'needs_attention':
-        setResultFilter('moderate')
-        setPriorityRescreenFilter('true')
-        break
-      case 'recent':
-        setDateRangeFilter('week')
-        break
-      case 'no_notes':
-        setClinicalNotesFilter('no_notes')
-        break
-    }
-  }
-
   return (
     <Card className='border border-gray-200 shadow-sm'>
       <Collapsible open={isFiltersExpanded} onOpenChange={setIsFiltersExpanded}>
@@ -181,44 +161,6 @@ const ScreeningsFilters = ({
                   onChange={e => setSearchTerm(e.target.value)}
                   className='pl-10'
                 />
-              </div>
-            </div>
-
-            {/* Quick Filters */}
-            <div className='mb-6'>
-              <div className='flex items-center gap-2 mb-3'>
-                <Zap className='w-4 h-4 text-yellow-500' />
-                <span className='text-sm font-medium text-gray-700'>Quick Filters</span>
-              </div>
-              <div className='flex flex-wrap gap-2'>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={() => applyQuickFilter('qualified')}
-                  className='text-xs'>
-                  Qualified Students
-                </Button>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={() => applyQuickFilter('needs_attention')}
-                  className='text-xs'>
-                  Needs Attention
-                </Button>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={() => applyQuickFilter('recent')}
-                  className='text-xs'>
-                  Recent Screenings
-                </Button>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={() => applyQuickFilter('no_notes')}
-                  className='text-xs'>
-                  Missing Notes
-                </Button>
               </div>
             </div>
 
@@ -276,19 +218,34 @@ const ScreeningsFilters = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='all'>All Grades</SelectItem>
-                    <SelectItem value='K'>Kindergarten</SelectItem>
-                    <SelectItem value='1'>1st Grade</SelectItem>
-                    <SelectItem value='2'>2nd Grade</SelectItem>
-                    <SelectItem value='3'>3rd Grade</SelectItem>
-                    <SelectItem value='4'>4th Grade</SelectItem>
-                    <SelectItem value='5'>5th Grade</SelectItem>
-                    <SelectItem value='6'>6th Grade</SelectItem>
-                    <SelectItem value='7'>7th Grade</SelectItem>
-                    <SelectItem value='8'>8th Grade</SelectItem>
-                    <SelectItem value='9'>9th Grade</SelectItem>
-                    <SelectItem value='10'>10th Grade</SelectItem>
-                    <SelectItem value='11'>11th Grade</SelectItem>
-                    <SelectItem value='12'>12th Grade</SelectItem>
+                    <SelectItem value='Nursery'>Nursery</SelectItem>
+                    <SelectItem value='Pre-K'>Pre-K</SelectItem>
+                    <SelectItem value='K4'>K4</SelectItem>
+                    <SelectItem value='K5'>K5</SelectItem>
+                    <SelectItem value='Kindergarten'>Kindergarten</SelectItem>
+                    <SelectItem value='1'>1</SelectItem>
+                    <SelectItem value='2'>2</SelectItem>
+                    <SelectItem value='3'>3</SelectItem>
+                    <SelectItem value='4'>4</SelectItem>
+                    <SelectItem value='5'>5</SelectItem>
+                    <SelectItem value='6'>6</SelectItem>
+                    <SelectItem value='7'>7</SelectItem>
+                    <SelectItem value='8'>8</SelectItem>
+                    <SelectItem value='9'>9</SelectItem>
+                    <SelectItem value='10'>10</SelectItem>
+                    <SelectItem value='11'>11</SelectItem>
+                    <SelectItem value='12'>12</SelectItem>
+                    <SelectItem value='K/1'>K/1</SelectItem>
+                    <SelectItem value='1/2'>1/2</SelectItem>
+                    <SelectItem value='2/3'>2/3</SelectItem>
+                    <SelectItem value='3/4'>3/4</SelectItem>
+                    <SelectItem value='4/5'>4/5</SelectItem>
+                    <SelectItem value='6/7'>6/7</SelectItem>
+                    <SelectItem value='7/8'>7/8</SelectItem>
+                    <SelectItem value='8/9'>8/9</SelectItem>
+                    <SelectItem value='9/10'>9/10</SelectItem>
+                    <SelectItem value='10/11'>10/11</SelectItem>
+                    <SelectItem value='11/12'>11/12</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -302,10 +259,10 @@ const ScreeningsFilters = ({
                   value={qualifiesForSpeechProgramFilter}
                   onValueChange={setQualifiesForSpeechProgramFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder='Show All Students' />
+                    <SelectValue placeholder='All Students' />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='all'>Show All Students</SelectItem>
+                    <SelectItem value='all'>All Students</SelectItem>
                     <SelectItem value='true'>Qualified for Speech Program</SelectItem>
                     <SelectItem value='false'>Not Qualified for Speech Program</SelectItem>
                   </SelectContent>
@@ -334,8 +291,8 @@ const ScreeningsFilters = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='all'>All Students</SelectItem>
-                    <SelectItem value='true'>Suspected CAS</SelectItem>
-                    <SelectItem value='false'>No CAS Suspected</SelectItem>
+                    <SelectItem value='has_text'>Has CAS Notes</SelectItem>
+                    <SelectItem value='no_text'>No CAS Notes</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

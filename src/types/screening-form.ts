@@ -73,7 +73,7 @@ export interface ErrorPatterns {
     voice: string | null
     fluency: string | null
     literacy: string | null
-    suspected_cas: boolean | null
+    suspected_cas: string | null
     cleft_lip_palate: boolean | null
     reluctant_speaking: boolean | null
     language_expression: string | null
