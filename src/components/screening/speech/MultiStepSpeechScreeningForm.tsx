@@ -229,13 +229,7 @@ const MultiStepSpeechScreeningForm = ({
       // Structured error_patterns to match existing format + new data
       error_patterns: {
         // === EXISTING FORMAT (maintain compatibility) ===
-        fluency_notes: (areasOfConcern.fluency as string) || '',
-        voice_quality: (areasOfConcern.voice as string) || '',
-        language_comprehension: (areasOfConcern.language_comprehension as string) || '',
-        language_expression: (areasOfConcern.language_expression as string) || '',
-        pragmatics_social_communication:
-          (areasOfConcern.pragmatics_social_communication as string) || '',
-        overall_observations: (formData.other_notes as string) || '',
+        additional_observations: (formData.other_notes as string) || '',
 
         // === ADDITIONAL DATA (organized in logical groups) ===
         articulation: {

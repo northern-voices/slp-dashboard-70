@@ -64,13 +64,10 @@ export interface ErrorPatterns {
     }>
     articulationNotes: string
   }
-  fluency_notes: string
-  voice_quality: string
   screening_metadata: {
     screening_date: string
     qualifies_for_speech_program: boolean
   }
-  language_expression: string
   add_areas_of_concern: {
     voice: string | null
     fluency: string | null
@@ -83,7 +80,5 @@ export interface ErrorPatterns {
     known_pending_diagnoses: string | null
     pragmatics_social_communication: string | null
   }
-  overall_observations: string
-  language_comprehension: string
-  pragmatics_social_communication: string
+  additional_observations: string
 }

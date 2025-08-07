@@ -196,7 +196,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
             <Label htmlFor='general_articulation_notes'>General Articulation Notes (Private)</Label>
             <Textarea
               {...form.register('general_articulation_notes')}
-              placeholder='Overall patterns, stimulability, consistency...'
+              placeholder='Add general articulation notes...'
               rows={3}
               className='mt-1'
             />
