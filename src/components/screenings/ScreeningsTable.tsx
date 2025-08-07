@@ -167,9 +167,14 @@ const ScreeningsTable = ({
 
     // Apply priority rescreen filter
     let matchesPriorityRescreen = true
-    if (priorityRescreenFilter !== 'all' && screening.error_patterns?.attendance) {
-      const priorityRescreen = screening.error_patterns.attendance.priority_re_screen
-      matchesPriorityRescreen = priorityRescreen === (priorityRescreenFilter === 'true')
+    if (priorityRescreenFilter !== 'all') {
+      const priorityRescreen = screening.error_patterns?.attendance?.priority_re_screen
+      if (priorityRescreenFilter === 'true') {
+        matchesPriorityRescreen = priorityRescreen === true
+      } else if (priorityRescreenFilter === 'false') {
+        matchesPriorityRescreen =
+          priorityRescreen === false || priorityRescreen === null || priorityRescreen === undefined
+      }
     }
 
     // Apply recommendations filter

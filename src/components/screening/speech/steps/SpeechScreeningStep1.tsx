@@ -278,7 +278,13 @@ const SpeechScreeningStep1 = ({
               )}
               {localAbsentValue && (
                 <div className='flex items-center space-x-2'>
-                  <Checkbox id='priority_re_screen' {...form.register('priority_re_screen')} />
+                  <Checkbox
+                    id='priority_re_screen'
+                    checked={Boolean(form.watch('priority_re_screen'))}
+                    onCheckedChange={checked => {
+                      form.setValue('priority_re_screen', Boolean(checked))
+                    }}
+                  />
                   <Label htmlFor='priority_re_screen' className='text-sm font-medium'>
                     Priority re-screen
                   </Label>
