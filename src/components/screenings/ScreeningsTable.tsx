@@ -85,12 +85,15 @@ const ScreeningsTable = ({
     // Apply date range filter
     let matchesDateRange = true
     if (dateRangeFilter !== 'all') {
-      const screeningDate = parseDateSafely(screening.date)
+      const screeningDate = new Date(screening.created_at)
       const now = new Date()
 
       switch (dateRangeFilter) {
         case 'today': {
-          matchesDateRange = screeningDate.toDateString() === now.toDateString()
+          // Compare local dates
+          const screeningLocalDate = screeningDate.toLocaleDateString()
+          const nowLocalDate = now.toLocaleDateString()
+          matchesDateRange = screeningLocalDate === nowLocalDate
           break
         }
         case 'week': {
@@ -181,14 +184,11 @@ const ScreeningsTable = ({
     let matchesRecommendations = true
     if (recommendationsFilter !== 'all') {
       const hasReferralNotes = screening.referral_notes && screening.referral_notes.trim() !== ''
-      const hasClinicalNotes = screening.clinical_notes && screening.clinical_notes.trim() !== ''
 
-      if (recommendationsFilter === 'has_recommendations') {
-        matchesRecommendations = hasReferralNotes || hasClinicalNotes
-      } else if (recommendationsFilter === 'has_referrals') {
+      if (recommendationsFilter === 'has_referral_notes') {
         matchesRecommendations = hasReferralNotes
-      } else if (recommendationsFilter === 'none') {
-        matchesRecommendations = !hasReferralNotes && !hasClinicalNotes
+      } else if (recommendationsFilter === 'no_referral_notes') {
+        matchesRecommendations = !hasReferralNotes
       }
     }
 
@@ -413,7 +413,11 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                       <div className='text-sm text-gray-600 space-y-1'>
                         <p>
                           <span className='font-medium'>Date:</span>{' '}
-                          {format(parseDateSafely(screening.date), 'MMM d, yyyy')}
+                          {new Date(screening.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
                         </p>
                         <p>
                           <span className='font-medium'>Screener:</span> {screening.screener}

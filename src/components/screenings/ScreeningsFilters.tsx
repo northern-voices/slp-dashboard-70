@@ -328,18 +328,15 @@ const ScreeningsFilters = ({
               </div>
 
               <div className='space-y-2'>
-                <label className='text-sm font-medium text-gray-700'>
-                  Recommendations & Referrals
-                </label>
+                <label className='text-sm font-medium text-gray-700'>Referral Notes</label>
                 <Select value={recommendationsFilter} onValueChange={setRecommendationsFilter}>
                   <SelectTrigger>
                     <SelectValue placeholder='All Students' />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='all'>All Students</SelectItem>
-                    <SelectItem value='has_recommendations'>Has Recommendations</SelectItem>
-                    <SelectItem value='has_referrals'>Has Referrals</SelectItem>
-                    <SelectItem value='none'>No Recommendations/Referrals</SelectItem>
+                    <SelectItem value='has_referral_notes'>Has Referral Notes</SelectItem>
+                    <SelectItem value='no_referral_notes'>No Referral Notes</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

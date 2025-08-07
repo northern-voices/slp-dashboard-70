@@ -54,7 +54,7 @@ const MultiStepSpeechScreeningForm = ({
 
       // Step 2 fields
       screening_type: 'initial',
-      screening_date: new Date().toISOString().split('T')[0],
+      screening_date: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format in local timezone
       speech_screen_result: '',
       vocabulary_support_recommended: false,
       qualifies_for_speech_program: false,
