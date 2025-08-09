@@ -71,7 +71,6 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
     )
   }
 
-  // Helper function to render articulation data
   const renderArticulationData = () => {
     if (!screening.error_patterns?.articulation) return null
 
@@ -127,7 +126,6 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
     )
   }
 
-  // Helper function to render areas of concern
   const renderAreasOfConcern = () => {
     if (!screening.error_patterns?.add_areas_of_concern) return null
 
@@ -161,7 +159,6 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
     )
   }
 
-  // Helper function to render attendance information
   const renderAttendanceInfo = () => {
     if (!screening.error_patterns?.attendance) return null
 
@@ -198,7 +195,6 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
     )
   }
 
-  // Helper function to render screening metadata
   const renderScreeningMetadata = () => {
     if (!screening.error_patterns?.screening_metadata) return null
 
