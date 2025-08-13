@@ -41,6 +41,44 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [soundNotes, setSoundNotes] = useState<Record<string, string>>({})
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
 
+  // Helper function to validate St- combinations
+  const isValidStCombination = (patterns: string[]): boolean => {
+    if (patterns.length === 0) return true
+    if (patterns.length === 1) return true
+
+    // Valid combinations for St-:
+    // 1. Cluster Reduction (Omits S) & Backing
+    // 2. Frontal Lisp & Backing
+    // 3. Lateral Lisp & Backing
+    // 4. Cluster Reduction (Omits S) & Nasalization
+    // 5. Cluster Reduction (Omits T) & Frontal Lisp
+    // 6. Cluster Reduction (Omits T) & Lateral Lisp
+    // 7. Cluster Reduction (Omits T) & Nasalization
+
+    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
+    const hasClusterReductionT = patterns.includes('Cluster Reduction (Omits T)')
+    const hasFrontalLisp = patterns.includes('Frontal Lisp')
+    const hasLateralLisp = patterns.includes('Lateral Lisp')
+    const hasNasalization = patterns.includes('Nasalization')
+    const hasBacking = patterns.includes('Backing')
+
+    // Check if it's a valid 2-pattern combination
+    if (patterns.length === 2) {
+      return (
+        (hasClusterReductionS && hasBacking) ||
+        (hasFrontalLisp && hasBacking) ||
+        (hasLateralLisp && hasBacking) ||
+        (hasClusterReductionS && hasNasalization) ||
+        (hasClusterReductionT && hasFrontalLisp) ||
+        (hasClusterReductionT && hasLateralLisp) ||
+        (hasClusterReductionT && hasNasalization)
+      )
+    }
+
+    // No combinations of 3 or more patterns are allowed
+    return false
+  }
+
   // Helper function to convert concern names to field names
   const getFieldName = (concern: string): string => {
     const fieldNameMap: Record<string, string> = {
@@ -242,6 +280,24 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           })
         }
       }
+    } else if (sound === 'St-') {
+      // For St-: Allow specific combinations only
+      if (checked) {
+        // Check if this combination is valid
+        const newPatterns = [...currentPatterns, pattern]
+        if (isValidStCombination(newPatterns)) {
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: newPatterns,
+          })
+        }
+      } else {
+        // When unchecking, just remove the pattern
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: currentPatterns.filter(p => p !== pattern),
+        })
+      }
     } else {
       // For other sounds, use the original logic but ensure Other is exclusive
       if (checked) {
@@ -331,13 +387,22 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                               !currentPatterns.includes('Omission')) ||
                               (pattern !== 'Omission' && isFinalTKOmissionSelected))
 
+                          // For St-: Disable invalid combinations
+                          const isStSound = sound === 'St-'
+                          const isStDisabled =
+                            isStSound &&
+                            currentPatterns.length > 0 &&
+                            !currentPatterns.includes(pattern) &&
+                            !isValidStCombination([...currentPatterns, pattern])
+
                           const isDisabled =
                             isOtherDisabled ||
                             isOtherCheckboxDisabled ||
                             isSyllableDisabled ||
                             isPBDisabled ||
                             isMDisabled ||
-                            isFinalTKDisabled
+                            isFinalTKDisabled ||
+                            isStDisabled
 
                           return (
                             <div key={pattern} className='flex items-center space-x-2'>
@@ -365,7 +430,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         Word: {soundErrorPatterns[sound]?.word}
                       </div>
 
-                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected */}
+                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected OR when St- patterns are selected */}
                       {((selectedErrorPatterns[sound] || []).includes('Other') ||
                         ((sound === '2 syllables' || sound === '3 syllables') &&
                           (selectedErrorPatterns[sound] || []).length > 0) ||
@@ -373,7 +438,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                           (selectedErrorPatterns[sound] || []).length > 0) ||
                         (sound === 'M' && (selectedErrorPatterns[sound] || []).length > 0) ||
                         ((sound === 'Final T' || sound === 'Final K') &&
-                          (selectedErrorPatterns[sound] || []).length > 0)) && (
+                          (selectedErrorPatterns[sound] || []).length > 0) ||
+                        (sound === 'St-' && (selectedErrorPatterns[sound] || []).length > 0)) && (
                         <Textarea
                           placeholder={
                             sound === '2 syllables' || sound === '3 syllables'
@@ -383,6 +449,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                               : sound === 'M'
                               ? 'Notes...'
                               : sound === 'Final T' || sound === 'Final K'
+                              ? 'Notes...'
+                              : sound === 'St-'
                               ? 'Notes...'
                               : 'Specify other error pattern...'
                           }
