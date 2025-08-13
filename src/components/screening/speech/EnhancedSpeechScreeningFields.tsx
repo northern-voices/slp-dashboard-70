@@ -234,6 +234,28 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     return false
   }
 
+  // Helper function to validate Final -ps combinations
+  const isValidFinalPsCombination = (patterns: string[]): boolean => {
+    if (patterns.length === 0) return true
+    if (patterns.length === 1) return true
+
+    // Valid combinations for Final -ps:
+    // 1. Cluster Reduction (Omits P) & Frontal Lisp
+    // 2. Cluster Reduction (Omits P) & Lateral Lisp
+
+    const hasClusterReductionP = patterns.includes('Cluster Reduction (Omits P)')
+    const hasFrontalLisp = patterns.includes('Frontal Lisp')
+    const hasLateralLisp = patterns.includes('Lateral Lisp')
+
+    // Check if it's a valid 2-pattern combination
+    if (patterns.length === 2) {
+      return (hasClusterReductionP && hasFrontalLisp) || (hasClusterReductionP && hasLateralLisp)
+    }
+
+    // No combinations of 3 or more patterns are allowed
+    return false
+  }
+
   // Helper function to convert concern names to field names
   const getFieldName = (concern: string): string => {
     const fieldNameMap: Record<string, string> = {
@@ -543,6 +565,24 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           [sound]: currentPatterns.filter(p => p !== pattern),
         })
       }
+    } else if (sound === 'Final -ps') {
+      // For Final -ps: Allow specific combinations only
+      if (checked) {
+        // Check if this combination is valid
+        const newPatterns = [...currentPatterns, pattern]
+        if (isValidFinalPsCombination(newPatterns)) {
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: newPatterns,
+          })
+        }
+      } else {
+        // When unchecking, just remove the pattern
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: currentPatterns.filter(p => p !== pattern),
+        })
+      }
     } else {
       // For other sounds, use the original logic but ensure Other is exclusive
       if (checked) {
@@ -680,6 +720,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             !currentPatterns.includes(pattern) &&
                             !isValidFinalTsCombination([...currentPatterns, pattern])
 
+                          // For Final -ps: Disable invalid combinations
+                          const isFinalPsSound = sound === 'Final -ps'
+                          const isFinalPsDisabled =
+                            isFinalPsSound &&
+                            currentPatterns.length > 0 &&
+                            !currentPatterns.includes(pattern) &&
+                            !isValidFinalPsCombination([...currentPatterns, pattern])
+
                           const isDisabled =
                             isOtherDisabled ||
                             isOtherCheckboxDisabled ||
@@ -692,7 +740,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             isSnDisabled ||
                             isSmDisabled ||
                             isSkDisabled ||
-                            isFinalTsDisabled
+                            isFinalTsDisabled ||
+                            isFinalPsDisabled
 
                           return (
                             <div key={pattern} className='flex items-center space-x-2'>
@@ -720,7 +769,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         Word: {soundErrorPatterns[sound]?.word}
                       </div>
 
-                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected OR when St- patterns are selected OR when Sp- patterns are selected OR when Sn- patterns are selected OR when Sm- patterns are selected OR when Sk- patterns are selected OR when Final -ts patterns are selected */}
+                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected OR when St- patterns are selected OR when Sp- patterns are selected OR when Sn- patterns are selected OR when Sm- patterns are selected OR when Sk- patterns are selected OR when Final -ts patterns are selected OR when Final -ps patterns are selected */}
                       {((selectedErrorPatterns[sound] || []).includes('Other') ||
                         ((sound === '2 syllables' || sound === '3 syllables') &&
                           (selectedErrorPatterns[sound] || []).length > 0) ||
@@ -735,6 +784,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         (sound === 'Sm-' && (selectedErrorPatterns[sound] || []).length > 0) ||
                         (sound === 'Sk-' && (selectedErrorPatterns[sound] || []).length > 0) ||
                         (sound === 'Final -ts' &&
+                          (selectedErrorPatterns[sound] || []).length > 0) ||
+                        (sound === 'Final -ps' &&
                           (selectedErrorPatterns[sound] || []).length > 0)) && (
                         <Textarea
                           placeholder={
@@ -757,6 +808,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                               : sound === 'Sk-'
                               ? 'Notes...'
                               : sound === 'Final -ts'
+                              ? 'Notes...'
+                              : sound === 'Final -ps'
                               ? 'Notes...'
                               : 'Specify other error pattern...'
                           }

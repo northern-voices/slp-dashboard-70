@@ -138,8 +138,8 @@ export const soundErrorPatterns = {
   },
   'Final -ps': {
     patterns: [
-      'Cluster Reduction (Omits P)',
       'Cluster Reduction (Omits S)',
+      'Cluster Reduction (Omits P)',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
