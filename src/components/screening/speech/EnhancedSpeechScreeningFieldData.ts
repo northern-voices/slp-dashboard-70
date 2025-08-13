@@ -60,11 +60,11 @@ export const soundErrorPatterns = {
     word: 'Soap',
   },
   'Final T': {
-    patterns: ['Omission', 'Backing', 'Other'],
+    patterns: ['Omission', 'Backing', 'Nasalization', 'Other'],
     word: 'Hat',
   },
   'Final K': {
-    patterns: ['Omission', 'Fronting', 'Other'],
+    patterns: ['Omission', 'Backing', 'Nasalization', 'Other'],
     word: 'Book',
   },
   'St-': {

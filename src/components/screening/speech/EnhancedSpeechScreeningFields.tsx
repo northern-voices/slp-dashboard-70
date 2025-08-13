@@ -128,6 +128,24 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const handleErrorPatternChange = (sound: string, pattern: string, checked: boolean) => {
     const currentPatterns = selectedErrorPatterns[sound] || []
 
+    // Global rule: "Other" is always exclusive - when selected, it disables all other patterns
+    if (pattern === 'Other') {
+      if (checked) {
+        // When selecting Other, clear all other patterns
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: ['Other'],
+        })
+      } else {
+        // When unchecking Other, clear it
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: [],
+        })
+      }
+      return // Exit early since Other handling is complete
+    }
+
     // For 2 syllables and 3 syllables, implement mutual exclusion
     if (sound === '2 syllables' || sound === '3 syllables') {
       if (checked) {
@@ -144,7 +162,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         })
       }
     } else if (sound === 'P' || sound === 'B' || sound === 'Final P') {
-      // For P, B, and Final P sounds: Omission is exclusive, Nasalization and Other can be combined
+      // For P, B, and Final P sounds: Omission is exclusive, Nasalization can be combined with other non-Omission patterns
       if (pattern === 'Omission') {
         if (checked) {
           // When selecting Omission, clear all other patterns
@@ -160,7 +178,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           })
         }
       } else {
-        // For Nasalization and Other patterns
+        // For Nasalization pattern (Other is handled above)
         if (checked) {
           // If Omission is already selected, clear it first
           const patternsWithoutOmission = currentPatterns.filter(p => p !== 'Omission')
@@ -177,7 +195,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         }
       }
     } else if (sound === 'M') {
-      // For M sound: Omission and Other cannot coexist (mutual exclusion)
+      // For M sound: Omission is exclusive (Other is handled above)
       if (checked) {
         // When selecting a pattern, clear all others for this sound
         setSelectedErrorPatterns({
@@ -191,8 +209,41 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           [sound]: [],
         })
       }
+    } else if (sound === 'Final T' || sound === 'Final K') {
+      // For Final T and Final K: Omission is exclusive, Backing/Nasalization can be combined
+      if (pattern === 'Omission') {
+        if (checked) {
+          // When selecting Omission, clear all other patterns
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: ['Omission'],
+          })
+        } else {
+          // When unchecking Omission, clear it
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: currentPatterns.filter(p => p !== 'Omission'),
+          })
+        }
+      } else {
+        // For Backing and Nasalization patterns (Other is handled above)
+        if (checked) {
+          // If Omission is already selected, clear it first
+          const patternsWithoutOmission = currentPatterns.filter(p => p !== 'Omission')
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: [...patternsWithoutOmission, pattern],
+          })
+        } else {
+          // When unchecking, just remove the pattern
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: currentPatterns.filter(p => p !== pattern),
+          })
+        }
+      }
     } else {
-      // For other sounds, use the original logic
+      // For other sounds, use the original logic but ensure Other is exclusive
       if (checked) {
         setSelectedErrorPatterns({
           ...selectedErrorPatterns,
@@ -238,6 +289,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         {soundErrorPatterns[sound]?.patterns.map(pattern => {
                           const currentPatterns = selectedErrorPatterns[sound] || []
 
+                          // Global rule: "Other" disables all other patterns when selected, and other patterns disable "Other"
+                          const isOtherSelected = currentPatterns.includes('Other')
+                          const isOtherPattern = pattern === 'Other'
+                          const hasOtherPatterns = currentPatterns.some(p => p !== 'Other')
+                          const isOtherDisabled = isOtherSelected && !isOtherPattern
+                          const isOtherCheckboxDisabled = hasOtherPatterns && isOtherPattern
+
                           // For 2 syllables and 3 syllables, implement mutual exclusion
                           const isSyllableSound = sound === '2 syllables' || sound === '3 syllables'
                           const isSyllableDisabled =
@@ -245,7 +303,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             currentPatterns.length > 0 &&
                             !currentPatterns.includes(pattern)
 
-                          // For P, B, and Final P sounds: Omission disables others, Nasalization/Other can be combined
+                          // For P, B, and Final P sounds: Omission disables others, Nasalization can be combined
                           const isPBFinalPSound =
                             sound === 'P' || sound === 'B' || sound === 'Final P'
                           const isOmissionSelected = currentPatterns.includes('Omission')
@@ -256,14 +314,30 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                               !currentPatterns.includes('Omission')) ||
                               (pattern !== 'Omission' && isOmissionSelected))
 
-                          // For M sound: Omission and Other cannot coexist (mutual exclusion)
+                          // For M sound: Omission is exclusive
                           const isMSound = sound === 'M'
                           const isMDisabled =
                             isMSound &&
                             currentPatterns.length > 0 &&
                             !currentPatterns.includes(pattern)
 
-                          const isDisabled = isSyllableDisabled || isPBDisabled || isMDisabled
+                          // For Final T and Final K: Omission disables others, Backing/Nasalization can be combined
+                          const isFinalTKSound = sound === 'Final T' || sound === 'Final K'
+                          const isFinalTKOmissionSelected = currentPatterns.includes('Omission')
+                          const isFinalTKDisabled =
+                            isFinalTKSound &&
+                            ((pattern === 'Omission' &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes('Omission')) ||
+                              (pattern !== 'Omission' && isFinalTKOmissionSelected))
+
+                          const isDisabled =
+                            isOtherDisabled ||
+                            isOtherCheckboxDisabled ||
+                            isSyllableDisabled ||
+                            isPBDisabled ||
+                            isMDisabled ||
+                            isFinalTKDisabled
 
                           return (
                             <div key={pattern} className='flex items-center space-x-2'>
@@ -291,13 +365,15 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         Word: {soundErrorPatterns[sound]?.word}
                       </div>
 
-                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected */}
+                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected */}
                       {((selectedErrorPatterns[sound] || []).includes('Other') ||
                         ((sound === '2 syllables' || sound === '3 syllables') &&
                           (selectedErrorPatterns[sound] || []).length > 0) ||
                         ((sound === 'P' || sound === 'B' || sound === 'Final P') &&
                           (selectedErrorPatterns[sound] || []).length > 0) ||
-                        (sound === 'M' && (selectedErrorPatterns[sound] || []).length > 0)) && (
+                        (sound === 'M' && (selectedErrorPatterns[sound] || []).length > 0) ||
+                        ((sound === 'Final T' || sound === 'Final K') &&
+                          (selectedErrorPatterns[sound] || []).length > 0)) && (
                         <Textarea
                           placeholder={
                             sound === '2 syllables' || sound === '3 syllables'
@@ -305,6 +381,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                               : sound === 'P' || sound === 'B' || sound === 'Final P'
                               ? 'Notes...'
                               : sound === 'M'
+                              ? 'Notes...'
+                              : sound === 'Final T' || sound === 'Final K'
                               ? 'Notes...'
                               : 'Specify other error pattern...'
                           }
