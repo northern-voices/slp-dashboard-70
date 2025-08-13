@@ -143,6 +143,54 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           [sound]: [],
         })
       }
+    } else if (sound === 'P' || sound === 'B' || sound === 'Final P') {
+      // For P, B, and Final P sounds: Omission is exclusive, Nasalization and Other can be combined
+      if (pattern === 'Omission') {
+        if (checked) {
+          // When selecting Omission, clear all other patterns
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: ['Omission'],
+          })
+        } else {
+          // When unchecking Omission, clear it
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: currentPatterns.filter(p => p !== 'Omission'),
+          })
+        }
+      } else {
+        // For Nasalization and Other patterns
+        if (checked) {
+          // If Omission is already selected, clear it first
+          const patternsWithoutOmission = currentPatterns.filter(p => p !== 'Omission')
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: [...patternsWithoutOmission, pattern],
+          })
+        } else {
+          // When unchecking, just remove the pattern
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: currentPatterns.filter(p => p !== pattern),
+          })
+        }
+      }
+    } else if (sound === 'M') {
+      // For M sound: Omission and Other cannot coexist (mutual exclusion)
+      if (checked) {
+        // When selecting a pattern, clear all others for this sound
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: [pattern],
+        })
+      } else {
+        // When unchecking, clear the pattern
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: [],
+        })
+      }
     } else {
       // For other sounds, use the original logic
       if (checked) {
@@ -188,13 +236,34 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                       {/* Error Patterns for this sound */}
                       <div className='mt-2 space-y-1'>
                         {soundErrorPatterns[sound]?.patterns.map(pattern => {
+                          const currentPatterns = selectedErrorPatterns[sound] || []
+
                           // For 2 syllables and 3 syllables, implement mutual exclusion
                           const isSyllableSound = sound === '2 syllables' || sound === '3 syllables'
-                          const currentPatterns = selectedErrorPatterns[sound] || []
-                          const isDisabled =
+                          const isSyllableDisabled =
                             isSyllableSound &&
                             currentPatterns.length > 0 &&
                             !currentPatterns.includes(pattern)
+
+                          // For P, B, and Final P sounds: Omission disables others, Nasalization/Other can be combined
+                          const isPBFinalPSound =
+                            sound === 'P' || sound === 'B' || sound === 'Final P'
+                          const isOmissionSelected = currentPatterns.includes('Omission')
+                          const isPBDisabled =
+                            isPBFinalPSound &&
+                            ((pattern === 'Omission' &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes('Omission')) ||
+                              (pattern !== 'Omission' && isOmissionSelected))
+
+                          // For M sound: Omission and Other cannot coexist (mutual exclusion)
+                          const isMSound = sound === 'M'
+                          const isMDisabled =
+                            isMSound &&
+                            currentPatterns.length > 0 &&
+                            !currentPatterns.includes(pattern)
+
+                          const isDisabled = isSyllableDisabled || isPBDisabled || isMDisabled
 
                           return (
                             <div key={pattern} className='flex items-center space-x-2'>
@@ -222,13 +291,20 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         Word: {soundErrorPatterns[sound]?.word}
                       </div>
 
-                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected */}
+                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected */}
                       {((selectedErrorPatterns[sound] || []).includes('Other') ||
                         ((sound === '2 syllables' || sound === '3 syllables') &&
-                          (selectedErrorPatterns[sound] || []).length > 0)) && (
+                          (selectedErrorPatterns[sound] || []).length > 0) ||
+                        ((sound === 'P' || sound === 'B' || sound === 'Final P') &&
+                          (selectedErrorPatterns[sound] || []).length > 0) ||
+                        (sound === 'M' && (selectedErrorPatterns[sound] || []).length > 0)) && (
                         <Textarea
                           placeholder={
                             sound === '2 syllables' || sound === '3 syllables'
+                              ? 'Notes...'
+                              : sound === 'P' || sound === 'B' || sound === 'Final P'
+                              ? 'Notes...'
+                              : sound === 'M'
                               ? 'Notes...'
                               : 'Specify other error pattern...'
                           }

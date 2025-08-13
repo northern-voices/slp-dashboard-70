@@ -44,11 +44,11 @@ export const soundErrorPatterns = {
     word: 'Butterfly',
   },
   P: {
-    patterns: ['Omission', 'Other'],
+    patterns: ['Omission', 'Nasalization', 'Other'],
     word: 'Pig',
   },
   B: {
-    patterns: ['Omission', 'Other'],
+    patterns: ['Omission', 'Nasalization', 'Other'],
     word: 'Bear',
   },
   M: {
@@ -56,7 +56,7 @@ export const soundErrorPatterns = {
     word: 'Moon',
   },
   'Final P': {
-    patterns: ['Omission', 'Other'],
+    patterns: ['Omission', 'Nasalization', 'Other'],
     word: 'Soap',
   },
   'Final T': {
