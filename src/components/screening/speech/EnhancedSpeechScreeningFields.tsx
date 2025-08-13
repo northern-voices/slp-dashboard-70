@@ -18,7 +18,21 @@ import {
 } from './EnhancedSpeechScreeningFieldData'
 
 interface EnhancedSpeechScreeningFieldsProps {
-  form: UseFormReturn<any>
+  form: UseFormReturn<{
+    articulation?: {
+      soundErrors: Array<{
+        sound: string
+        errorPatterns: string[]
+        notes: string
+      }>
+      articulationNotes: string
+    }
+    general_articulation_notes?: string
+    speech_screen_result?: string
+    vocabulary_support_recommended?: boolean
+    qualifies_for_speech_program?: boolean
+    areasOfConcern?: Record<string, string | null>
+  }>
 }
 
 const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsProps) => {
@@ -113,16 +127,35 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
   const handleErrorPatternChange = (sound: string, pattern: string, checked: boolean) => {
     const currentPatterns = selectedErrorPatterns[sound] || []
-    if (checked) {
-      setSelectedErrorPatterns({
-        ...selectedErrorPatterns,
-        [sound]: [...currentPatterns, pattern],
-      })
+
+    // For 2 syllables and 3 syllables, implement mutual exclusion
+    if (sound === '2 syllables' || sound === '3 syllables') {
+      if (checked) {
+        // When selecting a pattern, clear all others for this sound
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: [pattern],
+        })
+      } else {
+        // When unchecking, clear the pattern
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: [],
+        })
+      }
     } else {
-      setSelectedErrorPatterns({
-        ...selectedErrorPatterns,
-        [sound]: currentPatterns.filter(p => p !== pattern),
-      })
+      // For other sounds, use the original logic
+      if (checked) {
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: [...currentPatterns, pattern],
+        })
+      } else {
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: currentPatterns.filter(p => p !== pattern),
+        })
+      }
     }
   }
 
@@ -154,30 +187,51 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                     <>
                       {/* Error Patterns for this sound */}
                       <div className='mt-2 space-y-1'>
-                        {soundErrorPatterns[sound]?.patterns.map(pattern => (
-                          <div key={pattern} className='flex items-center space-x-2'>
-                            <Checkbox
-                              id={`${sound}-${pattern}`}
-                              checked={(selectedErrorPatterns[sound] || []).includes(pattern)}
-                              onCheckedChange={checked =>
-                                handleErrorPatternChange(sound, pattern, checked as boolean)
-                              }
-                            />
-                            <Label htmlFor={`${sound}-${pattern}`} className='text-xs font-medium'>
-                              {pattern}
-                            </Label>
-                          </div>
-                        ))}
+                        {soundErrorPatterns[sound]?.patterns.map(pattern => {
+                          // For 2 syllables and 3 syllables, implement mutual exclusion
+                          const isSyllableSound = sound === '2 syllables' || sound === '3 syllables'
+                          const currentPatterns = selectedErrorPatterns[sound] || []
+                          const isDisabled =
+                            isSyllableSound &&
+                            currentPatterns.length > 0 &&
+                            !currentPatterns.includes(pattern)
+
+                          return (
+                            <div key={pattern} className='flex items-center space-x-2'>
+                              <Checkbox
+                                id={`${sound}-${pattern}`}
+                                checked={currentPatterns.includes(pattern)}
+                                onCheckedChange={checked =>
+                                  handleErrorPatternChange(sound, pattern, checked as boolean)
+                                }
+                                disabled={isDisabled}
+                              />
+                              <Label
+                                htmlFor={`${sound}-${pattern}`}
+                                className={`text-xs font-medium ${
+                                  isDisabled ? 'text-gray-400' : ''
+                                }`}>
+                                {pattern}
+                              </Label>
+                            </div>
+                          )
+                        })}
                       </div>
                       {/* Word example */}
                       <div className='mt-1 text-xs text-gray-600'>
                         Word: {soundErrorPatterns[sound]?.word}
                       </div>
 
-                      {/* Notes for this sound - only show when "Other" is checked */}
-                      {(selectedErrorPatterns[sound] || []).includes('Other') && (
+                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected */}
+                      {((selectedErrorPatterns[sound] || []).includes('Other') ||
+                        ((sound === '2 syllables' || sound === '3 syllables') &&
+                          (selectedErrorPatterns[sound] || []).length > 0)) && (
                         <Textarea
-                          placeholder='Specify other error pattern...'
+                          placeholder={
+                            sound === '2 syllables' || sound === '3 syllables'
+                              ? 'Notes...'
+                              : 'Specify other error pattern...'
+                          }
                           value={soundNotes[sound] || ''}
                           onChange={e => handleSoundNoteChange(sound, e.target.value)}
                           className='mt-2 text-xs'

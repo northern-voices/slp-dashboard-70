@@ -36,11 +36,11 @@ export const articulationSounds = [
 
 export const soundErrorPatterns = {
   '2 syllables': {
-    patterns: ['Weak Syllable Deletion', 'Syllable Addition', 'Other'],
+    patterns: ['Weak Syllable Deletion', 'Syllable Addition'],
     word: 'Apple',
   },
   '3 syllables': {
-    patterns: ['Weak Syllable Deletion', 'Syllable Addition', 'Other'],
+    patterns: ['Weak Syllable Deletion', 'Syllable Addition'],
     word: 'Butterfly',
   },
   P: {
