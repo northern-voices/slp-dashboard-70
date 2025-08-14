@@ -85,49 +85,53 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
           <div className='space-y-3'>
             <h5 className='text-sm font-medium text-gray-700'>Sounds in Error:</h5>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-              {soundErrors.map((soundError, index) => (
-                <div key={index} className='p-3 bg-gray-50 rounded-md'>
-                  <div className='flex items-center justify-between mb-2'>
-                    <span className='font-medium text-gray-900'>{soundError.sound}</span>
+              {soundErrors
+                .filter(
+                  soundError => soundError.errorPatterns && soundError.errorPatterns.length > 0
+                )
+                .map((soundError, index) => (
+                  <div key={index} className='p-3 bg-gray-50 rounded-md'>
+                    <div className='flex items-center justify-between mb-2'>
+                      <span className='font-medium text-gray-900'>{soundError.sound}</span>
+                    </div>
+                    {soundError.errorPatterns && soundError.errorPatterns.length > 0 && (
+                      <div className='mb-2'>
+                        <span className='text-xs text-gray-600'>Error Patterns:</span>
+                        <div className='flex flex-wrap gap-1 mt-1'>
+                          {soundError.errorPatterns.map((pattern, patternIndex) => (
+                            <Badge key={patternIndex} variant='outline' className='text-xs'>
+                              {pattern}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Display Stopping Sounds */}
+                    {soundError.stoppingSounds && soundError.stoppingSounds.length > 0 && (
+                      <div className='mb-2'>
+                        <span className='text-xs text-gray-600'>Stopping to:</span>
+                        <div className='flex flex-wrap gap-1 mt-1'>
+                          {soundError.stoppingSounds.map((stoppingSound, stoppingIndex) => (
+                            <Badge
+                              key={stoppingIndex}
+                              variant='secondary'
+                              className='text-xs bg-blue-100 text-blue-800'>
+                              {stoppingSound}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {soundError.notes && (
+                      <div className='text-sm text-gray-700'>
+                        <span className='text-xs text-gray-600'>Notes:</span>
+                        <p className='mt-1'>{soundError.notes}</p>
+                      </div>
+                    )}
                   </div>
-                  {soundError.errorPatterns && soundError.errorPatterns.length > 0 && (
-                    <div className='mb-2'>
-                      <span className='text-xs text-gray-600'>Error Patterns:</span>
-                      <div className='flex flex-wrap gap-1 mt-1'>
-                        {soundError.errorPatterns.map((pattern, patternIndex) => (
-                          <Badge key={patternIndex} variant='outline' className='text-xs'>
-                            {pattern}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Display Stopping Sounds */}
-                  {soundError.stoppingSounds && soundError.stoppingSounds.length > 0 && (
-                    <div className='mb-2'>
-                      <span className='text-xs text-gray-600'>Stopping to:</span>
-                      <div className='flex flex-wrap gap-1 mt-1'>
-                        {soundError.stoppingSounds.map((stoppingSound, stoppingIndex) => (
-                          <Badge
-                            key={stoppingIndex}
-                            variant='secondary'
-                            className='text-xs bg-blue-100 text-blue-800'>
-                            {stoppingSound}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {soundError.notes && (
-                    <div className='text-sm text-gray-700'>
-                      <span className='text-xs text-gray-600'>Notes:</span>
-                      <p className='mt-1'>{soundError.notes}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}
