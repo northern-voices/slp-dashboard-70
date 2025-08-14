@@ -9,6 +9,7 @@ import ScreeningStats from '@/components/screenings/ScreeningStats'
 import ScreeningsFilters from '@/components/screenings/ScreeningsFilters'
 import ScreeningsTable from '@/components/screenings/ScreeningsTable'
 import CreateScreeningModal from '@/components/screenings/CreateScreeningModal'
+import { Screening } from '@/types/database'
 
 const ScreeningsContent = () => {
   const { currentSchool } = useOrganization()
@@ -30,7 +31,7 @@ const ScreeningsContent = () => {
   const [recommendationsFilter, setRecommendationsFilter] = useState('all')
   const [clinicalNotesFilter, setClinicalNotesFilter] = useState('all')
 
-  const [selectedScreenings, setSelectedScreenings] = useState<string[]>([])
+  const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
 
   const handleBulkAction = (action: string) => {
@@ -46,14 +47,8 @@ const ScreeningsContent = () => {
         // Export logic here
         break
       case 'delete':
-        if (
-          window.confirm(`Are you sure you want to delete ${selectedScreenings.length} screenings?`)
-        ) {
-          // Delete logic here
-          console.log('Deleting screenings:', selectedScreenings)
-          // Reset selection after deletion
-          setSelectedScreenings([])
-        }
+        // Delete logic is now handled by the DeleteScreeningsModal
+        // The modal will handle the actual deletion and reset the selection
         break
       case 'mark_completed':
         // Mark as completed logic here

@@ -43,8 +43,11 @@ export const screeningsApi = {
         hearingScreeningsApi.getHearingScreeningsList(currentUserId, userRole, organizationId),
       ])
 
-      // Combine all screenings
-      let allScreenings = [...speechScreenings, ...hearingScreenings]
+      // Combine all screenings and add source table information
+      let allScreenings = [
+        ...speechScreenings.map(screening => ({ ...screening, source_table: 'speech' as const })),
+        ...hearingScreenings.map(screening => ({ ...screening, source_table: 'hearing' as const })),
+      ]
 
       // Filter by organization schools if provided
       if (organizationSchoolIds.length > 0) {

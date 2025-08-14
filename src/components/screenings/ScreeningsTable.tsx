@@ -25,12 +25,24 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { format } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
 import ScreeningBulkActions from './ScreeningBulkActions'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import { School, Screening } from '@/types/database'
 import { useScreenings } from '@/hooks/screenings/use-screenings'
+import { useDeleteScreening } from '@/hooks/screenings/use-screening-mutations'
+import { useToast } from '@/hooks/use-toast'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -44,8 +56,8 @@ interface ScreeningsTableProps {
   clinicalNotesFilter: string
   languageComprehensionFilter: string
   priorityRescreenFilter: string
-  selectedScreenings: string[]
-  setSelectedScreenings: (ids: string[]) => void
+  selectedScreenings: Screening[]
+  setSelectedScreenings: (screenings: Screening[]) => void
   onBulkAction: (action: string) => void
   currentSchool: School | null
 }
@@ -71,6 +83,8 @@ const ScreeningsTable = ({
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [sortField, setSortField] = useState<'date' | 'name' | 'grade' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
+  const [screeningToDelete, setScreeningToDelete] = useState<Screening | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   // Use React Query to fetch screenings data
   const { data: allScreenings, isLoading, error } = useScreenings()
@@ -324,17 +338,17 @@ const ScreeningsTable = ({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedScreenings(filteredScreenings.map(s => s.id))
+      setSelectedScreenings(filteredScreenings)
     } else {
       setSelectedScreenings([])
     }
   }
 
-  const handleSelectScreening = (screeningId: string, checked: boolean) => {
+  const handleSelectScreening = (screening: Screening, checked: boolean) => {
     if (checked) {
-      setSelectedScreenings([...selectedScreenings, screeningId])
+      setSelectedScreenings([...selectedScreenings, screening])
     } else {
-      setSelectedScreenings(selectedScreenings.filter(id => id !== screeningId))
+      setSelectedScreenings(selectedScreenings.filter(s => s.id !== screening.id))
     }
   }
 
@@ -357,14 +371,57 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
     window.URL.revokeObjectURL(url)
   }
 
+  const {
+    mutate: deleteScreening,
+    isPending: isDeleting,
+    error: deleteError,
+  } = useDeleteScreening()
+
+  const { toast } = useToast()
+
   const handleDelete = (screening: Screening) => {
-    if (
-      window.confirm(`Are you sure you want to delete the screening for ${screening.student_name}?`)
-    ) {
-      console.log('Deleting screening:', screening.id)
-      // Here you would typically call an API to delete the screening
-      // For now, we'll just log the action
+    setScreeningToDelete(screening)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = () => {
+    if (screeningToDelete && screeningToDelete.source_table) {
+      deleteScreening(
+        {
+          id: screeningToDelete.id,
+          sourceTable: screeningToDelete.source_table,
+        },
+        {
+          onSuccess: () => {
+            toast({
+              title: 'Screening deleted',
+              description: `Successfully deleted screening for ${screeningToDelete.student_name}`,
+              variant: 'default',
+            })
+            setIsDeleteDialogOpen(false)
+            setScreeningToDelete(null)
+          },
+          onError: error => {
+            toast({
+              title: 'Error deleting screening',
+              description: error.message || 'Failed to delete screening',
+              variant: 'destructive',
+            })
+          },
+        }
+      )
+    } else {
+      toast({
+        title: 'Error',
+        description: 'Cannot delete screening: source table not specified',
+        variant: 'destructive',
+      })
     }
+  }
+
+  const cancelDelete = () => {
+    setIsDeleteDialogOpen(false)
+    setScreeningToDelete(null)
   }
 
   const isAllSelected =
@@ -460,9 +517,9 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                       <div className='flex items-center justify-between'>
                         <div className='flex items-center gap-2'>
                           <Checkbox
-                            checked={selectedScreenings.includes(screening.id)}
+                            checked={selectedScreenings.some(s => s.id === screening.id)}
                             onCheckedChange={checked =>
-                              handleSelectScreening(screening.id, checked as boolean)
+                              handleSelectScreening(screening, checked as boolean)
                             }
                           />
                           <h3 className='font-medium'>{screening.student_name}</h3>
@@ -484,9 +541,14 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className='text-red-600'
-                              onClick={() => handleDelete(screening)}>
-                              <Trash2 className='w-4 h-4 mr-2' />
-                              Delete
+                              onClick={() => handleDelete(screening)}
+                              disabled={isDeleting}>
+                              {isDeleting ? (
+                                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                              ) : (
+                                <Trash2 className='w-4 h-4 mr-2' />
+                              )}
+                              {isDeleting ? 'Deleting...' : 'Delete'}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -522,9 +584,9 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                   }>
                   <TableCell>
                     <Checkbox
-                      checked={selectedScreenings.includes(screening.id)}
+                      checked={selectedScreenings.some(s => s.id === screening.id)}
                       onCheckedChange={checked =>
-                        handleSelectScreening(screening.id, checked as boolean)
+                        handleSelectScreening(screening, checked as boolean)
                       }
                     />
                   </TableCell>
@@ -579,9 +641,14 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className='text-red-600'
-                          onClick={() => handleDelete(screening)}>
-                          <Trash2 className='w-4 h-4 mr-2' />
-                          Delete
+                          onClick={() => handleDelete(screening)}
+                          disabled={isDeleting}>
+                          {isDeleting ? (
+                            <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                          ) : (
+                            <Trash2 className='w-4 h-4 mr-2' />
+                          )}
+                          {isDeleting ? 'Deleting...' : 'Delete'}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -604,6 +671,29 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
         onClose={() => setIsDetailsModalOpen(false)}
         screening={selectedScreening}
       />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={open => !open && cancelDelete()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your screening for{' '}
+              {screeningToDelete?.student_name}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelDelete}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} disabled={isDeleting}>
+              {isDeleting ? (
+                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+              ) : (
+                <Trash2 className='w-4 h-4 mr-2' />
+              )}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
