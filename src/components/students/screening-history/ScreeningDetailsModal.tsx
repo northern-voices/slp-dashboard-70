@@ -102,6 +102,24 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                       </div>
                     </div>
                   )}
+
+                  {/* Display Stopping Sounds */}
+                  {soundError.stoppingSounds && soundError.stoppingSounds.length > 0 && (
+                    <div className='mb-2'>
+                      <span className='text-xs text-gray-600'>Stopping to:</span>
+                      <div className='flex flex-wrap gap-1 mt-1'>
+                        {soundError.stoppingSounds.map((stoppingSound, stoppingIndex) => (
+                          <Badge
+                            key={stoppingIndex}
+                            variant='secondary'
+                            className='text-xs bg-blue-100 text-blue-800'>
+                            {stoppingSound}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {soundError.notes && (
                     <div className='text-sm text-gray-700'>
                       <span className='text-xs text-gray-600'>Notes:</span>

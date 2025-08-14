@@ -61,6 +61,7 @@ export interface ErrorPatterns {
       notes: string
       sound: string
       errorPatterns: string[]
+      stoppingSounds?: string[]
     }>
     articulationNotes: string
   }
