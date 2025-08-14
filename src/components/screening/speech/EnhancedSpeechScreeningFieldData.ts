@@ -176,11 +176,11 @@ export const soundErrorPatterns = {
     word: 'Dance',
   },
   L: {
-    patterns: ["Gliding 'w'", "Gliding 'y'", 'Nasalization', 'Other'],
+    patterns: ["Gliding 'w'", "Gliding 'y'", 'Other'],
     word: 'Light',
   },
   R: {
-    patterns: ["Gliding 'w'", "Gliding 'y'", 'Nasalization', 'Other'],
+    patterns: ["Gliding 'w'", "Gliding 'y'", 'Other'],
     word: 'Rain',
   },
   S: {
