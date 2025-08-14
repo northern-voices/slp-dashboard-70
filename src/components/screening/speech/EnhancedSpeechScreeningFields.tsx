@@ -15,6 +15,7 @@ import {
   articulationSounds,
   soundErrorPatterns,
   areasOfConcern,
+  stoppingSoundOptions,
 } from './EnhancedSpeechScreeningFieldData'
 
 interface EnhancedSpeechScreeningFieldsProps {
@@ -23,6 +24,7 @@ interface EnhancedSpeechScreeningFieldsProps {
       soundErrors: Array<{
         sound: string
         errorPatterns: string[]
+        stoppingSounds?: string[]
         notes: string
       }>
       articulationNotes: string
@@ -40,6 +42,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [selectedSounds, setSelectedSounds] = useState<string[]>([])
   const [soundNotes, setSoundNotes] = useState<Record<string, string>>({})
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
+  const [selectedStoppingSounds, setSelectedStoppingSounds] = useState<Record<string, string[]>>({})
 
   // Helper function to validate St- combinations
   const isValidStCombination = (patterns: string[]): boolean => {
@@ -396,6 +399,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     const soundErrorsData = selectedSounds.map(sound => ({
       sound: sound,
       errorPatterns: selectedErrorPatterns[sound] || [],
+      stoppingSounds: selectedStoppingSounds[sound] || [],
       notes: soundNotes[sound] || '',
     }))
 
@@ -405,7 +409,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     }
 
     form.setValue('articulation', articulationData)
-  }, [selectedSounds, selectedErrorPatterns, soundNotes, form])
+  }, [selectedSounds, selectedErrorPatterns, selectedStoppingSounds, soundNotes, form])
 
   const handleConcernChange = (concern: string, checked: boolean) => {
     if (checked) {
@@ -446,6 +450,11 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       const newNotes = { ...soundNotes }
       delete newNotes[sound]
       setSoundNotes(newNotes)
+
+      // Clear stopping sounds for this sound
+      const newStoppingSounds = { ...selectedStoppingSounds }
+      delete newStoppingSounds[sound]
+      setSelectedStoppingSounds(newStoppingSounds)
     } else {
       setSelectedSounds([...selectedSounds, sound])
     }
@@ -456,6 +465,22 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       ...soundNotes,
       [sound]: note,
     })
+  }
+
+  const handleStoppingSoundChange = (sound: string, stoppingSound: string, checked: boolean) => {
+    const currentStoppingSounds = selectedStoppingSounds[sound] || []
+
+    if (checked) {
+      setSelectedStoppingSounds({
+        ...selectedStoppingSounds,
+        [sound]: [...currentStoppingSounds, stoppingSound],
+      })
+    } else {
+      setSelectedStoppingSounds({
+        ...selectedStoppingSounds,
+        [sound]: currentStoppingSounds.filter(s => s !== stoppingSound),
+      })
+    }
   }
 
   const handleErrorPatternChange = (sound: string, pattern: string, checked: boolean) => {
@@ -477,6 +502,16 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         })
       }
       return // Exit early since Other handling is complete
+    }
+
+    // Handle Stopping pattern - clear stopping sounds when unchecked
+    if (pattern === 'Stopping') {
+      if (!checked) {
+        // When unchecking Stopping, clear the stopping sounds
+        const newStoppingSounds = { ...selectedStoppingSounds }
+        delete newStoppingSounds[sound]
+        setSelectedStoppingSounds(newStoppingSounds)
+      }
     }
 
     // For 2 syllables and 3 syllables, implement mutual exclusion
@@ -993,26 +1028,66 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             isSZDisabled
 
                           return (
-                            <div key={pattern} className='flex items-center space-x-2'>
-                              <Checkbox
-                                id={`${sound}-${pattern}`}
-                                checked={currentPatterns.includes(pattern)}
-                                onCheckedChange={checked =>
-                                  handleErrorPatternChange(sound, pattern, checked as boolean)
-                                }
-                                disabled={isDisabled}
-                              />
-                              <Label
-                                htmlFor={`${sound}-${pattern}`}
-                                className={`text-xs font-medium ${
-                                  isDisabled ? 'text-gray-400' : ''
-                                }`}>
-                                {pattern}
-                              </Label>
+                            <div key={pattern} className='space-y-2'>
+                              <div className='flex items-center space-x-2'>
+                                <Checkbox
+                                  id={`${sound}-${pattern}`}
+                                  checked={currentPatterns.includes(pattern)}
+                                  onCheckedChange={checked =>
+                                    handleErrorPatternChange(sound, pattern, checked as boolean)
+                                  }
+                                  disabled={isDisabled}
+                                />
+                                <Label
+                                  htmlFor={`${sound}-${pattern}`}
+                                  className={`text-xs font-medium ${
+                                    isDisabled ? 'text-gray-400' : ''
+                                  }`}>
+                                  {pattern}
+                                </Label>
+                              </div>
+
+                              {/* Stopping Sound Options - show when Stopping is selected */}
+                              {pattern === 'Stopping' && currentPatterns.includes('Stopping') && (
+                                <div className='ml-6 space-y-1'>
+                                  <div className='text-xs font-medium text-gray-700'>
+                                    Stopping to:
+                                  </div>
+                                  <div className='grid grid-cols-3 gap-2'>
+                                    {stoppingSoundOptions.map(stoppingSound => {
+                                      const currentStoppingSounds =
+                                        selectedStoppingSounds[sound] || []
+                                      return (
+                                        <div
+                                          key={stoppingSound}
+                                          className='flex items-center space-x-2'>
+                                          <Checkbox
+                                            id={`${sound}-stopping-${stoppingSound}`}
+                                            checked={currentStoppingSounds.includes(stoppingSound)}
+                                            onCheckedChange={checked =>
+                                              handleStoppingSoundChange(
+                                                sound,
+                                                stoppingSound,
+                                                checked as boolean
+                                              )
+                                            }
+                                          />
+                                          <Label
+                                            htmlFor={`${sound}-stopping-${stoppingSound}`}
+                                            className='text-xs font-medium'>
+                                            {stoppingSound}
+                                          </Label>
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )
                         })}
                       </div>
+
                       {/* Word example */}
                       <div className='mt-1 text-xs text-gray-600'>
                         Word: {soundErrorPatterns[sound]?.word}

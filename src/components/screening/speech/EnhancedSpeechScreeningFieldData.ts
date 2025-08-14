@@ -235,6 +235,9 @@ export const soundErrorPatterns = {
   },
 }
 
+// Stopping sound options for sounds that have "Stopping" pattern
+export const stoppingSoundOptions = ['P', 'B', 'T', 'D', 'K', 'G']
+
 export const areasOfConcern = [
   'Language Comprehension',
   'Language Expression',
