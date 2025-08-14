@@ -321,12 +321,29 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
           )}
 
           {/* Notes Section - Only show if not absent */}
-          {screening.clinical_notes && !screening.error_patterns?.attendance?.absent && (
-            <div>
-              <h3 className='font-medium text-gray-900 mb-2'>Clinical Notes</h3>
-              <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
-                {screening.clinical_notes}
-              </p>
+          {!screening.error_patterns?.attendance?.absent && (
+            <div className='space-y-4'>
+              <h3 className='font-medium text-gray-900'>Clinical Notes</h3>
+
+              {screening.clinical_notes && (
+                <div>
+                  <h4 className='text-sm font-medium text-gray-700 mb-2'>Clinical Observations</h4>
+                  <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
+                    {screening.clinical_notes}
+                  </p>
+                </div>
+              )}
+
+              {screening.error_patterns?.additional_observations && (
+                <div>
+                  <h4 className='text-sm font-medium text-gray-700 mb-2'>
+                    Additional Observations
+                  </h4>
+                  <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
+                    {screening.error_patterns.additional_observations}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -339,17 +356,6 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
               </p>
             </div>
           )}
-
-          {/* Additional Observations - Only show if not absent */}
-          {screening.error_patterns?.additional_observations &&
-            !screening.error_patterns?.attendance?.absent && (
-              <div>
-                <h4 className='font-medium text-gray-900 mb-2'>Additional Observations</h4>
-                <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
-                  {screening.error_patterns.additional_observations}
-                </p>
-              </div>
-            )}
         </div>
       </DialogContent>
     </Dialog>
