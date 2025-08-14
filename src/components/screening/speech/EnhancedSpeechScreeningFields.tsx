@@ -285,6 +285,28 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     return false
   }
 
+  // Helper function to validate K and G combinations
+  const isValidKGCombination = (patterns: string[]): boolean => {
+    if (patterns.length === 0) return true
+    if (patterns.length === 1) return true
+
+    // Valid combinations for K and G:
+    // 1. Fronting & Nasalization can happen together
+    // 2. Omission will be on its own (exclusive)
+
+    const hasFronting = patterns.includes('Fronting')
+    const hasNasalization = patterns.includes('Nasalization')
+    const hasOmission = patterns.includes('Omission')
+
+    // Check if it's a valid 2-pattern combination
+    if (patterns.length === 2) {
+      return hasFronting && hasNasalization
+    }
+
+    // No combinations of 3 or more patterns are allowed
+    return false
+  }
+
   // Helper function to convert concern names to field names
   const getFieldName = (concern: string): string => {
     const fieldNameMap: Record<string, string> = {
@@ -630,6 +652,24 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           [sound]: currentPatterns.filter(p => p !== pattern),
         })
       }
+    } else if (sound === 'K' || sound === 'G') {
+      // For K and G: Allow specific combinations only
+      if (checked) {
+        // Check if this combination is valid
+        const newPatterns = [...currentPatterns, pattern]
+        if (isValidKGCombination(newPatterns)) {
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: newPatterns,
+          })
+        }
+      } else {
+        // When unchecking, just remove the pattern
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: currentPatterns.filter(p => p !== pattern),
+        })
+      }
     } else {
       // For other sounds, use the original logic but ensure Other is exclusive
       if (checked) {
@@ -783,6 +823,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             !currentPatterns.includes(pattern) &&
                             !isValidFinalKsCombination([...currentPatterns, pattern])
 
+                          // For K and G: Disable invalid combinations
+                          const isKGSound = sound === 'K' || sound === 'G'
+                          const isKGDisabled =
+                            isKGSound &&
+                            currentPatterns.length > 0 &&
+                            !currentPatterns.includes(pattern) &&
+                            !isValidKGCombination([...currentPatterns, pattern])
+
                           const isDisabled =
                             isOtherDisabled ||
                             isOtherCheckboxDisabled ||
@@ -797,7 +845,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             isSkDisabled ||
                             isFinalTsDisabled ||
                             isFinalPsDisabled ||
-                            isFinalKsDisabled
+                            isFinalKsDisabled ||
+                            isKGDisabled
 
                           return (
                             <div key={pattern} className='flex items-center space-x-2'>
@@ -825,7 +874,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         Word: {soundErrorPatterns[sound]?.word}
                       </div>
 
-                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected OR when St- patterns are selected OR when Sp- patterns are selected OR when Sn- patterns are selected OR when Sm- patterns are selected OR when Sk- patterns are selected OR when Final -ts patterns are selected OR when Final -ps patterns are selected OR when Final -ks patterns are selected */}
+                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected OR when St- patterns are selected OR when Sp- patterns are selected OR when Sn- patterns are selected OR when Sm- patterns are selected OR when Sk- patterns are selected OR when Final -ts patterns are selected OR when Final -ps patterns are selected OR when Final -ks patterns are selected OR when K/G patterns are selected */}
                       {((selectedErrorPatterns[sound] || []).includes('Other') ||
                         ((sound === '2 syllables' || sound === '3 syllables') &&
                           (selectedErrorPatterns[sound] || []).length > 0) ||
@@ -844,6 +893,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         (sound === 'Final -ps' &&
                           (selectedErrorPatterns[sound] || []).length > 0) ||
                         (sound === 'Final -ks' &&
+                          (selectedErrorPatterns[sound] || []).length > 0) ||
+                        ((sound === 'K' || sound === 'G') &&
                           (selectedErrorPatterns[sound] || []).length > 0)) && (
                         <Textarea
                           placeholder={
@@ -870,6 +921,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                               : sound === 'Final -ps'
                               ? 'Notes...'
                               : sound === 'Final -ks'
+                              ? 'Notes...'
+                              : sound === 'K' || sound === 'G'
                               ? 'Notes...'
                               : 'Specify other error pattern...'
                           }
