@@ -67,22 +67,43 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
         <CardHeader>
           <CardTitle>Clinical Notes (Private)</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Textarea
-            {...form.register('clinical_notes')}
-            placeholder='Enter clinical observations and notes...'
-            rows={4}
-            className='-mt-2'
-            onKeyDown={e => {
-              if (e.key === 'Enter' && e.ctrlKey) {
-                // Allow Ctrl+Enter for new lines
-                return
-              }
-              if (e.key === 'Enter') {
-                e.stopPropagation() // Prevent form submission
-              }
-            }}
-          />
+        <CardContent className='space-y-4'>
+          <div>
+            <Label htmlFor='clinical_notes'>Clinical Observations</Label>
+            <Textarea
+              {...form.register('clinical_notes')}
+              placeholder='Enter clinical observations and notes...'
+              rows={4}
+              className='mt-2'
+              onKeyDown={e => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  // Allow Ctrl+Enter for new lines
+                  return
+                }
+                if (e.key === 'Enter') {
+                  e.stopPropagation() // Prevent form submission
+                }
+              }}
+            />
+          </div>
+          <div>
+            <Label htmlFor='other_notes'>Additional Notes</Label>
+            <Textarea
+              {...form.register('other_notes')}
+              placeholder='Enter any additional notes or observations...'
+              rows={4}
+              className='mt-2'
+              onKeyDown={e => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  // Allow Ctrl+Enter for new lines
+                  return
+                }
+                if (e.key === 'Enter') {
+                  e.stopPropagation() // Prevent form submission
+                }
+              }}
+            />
+          </div>
         </CardContent>
       </Card>
 
@@ -106,32 +127,6 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
               }
             }}
           />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Other</CardTitle>
-        </CardHeader>
-        <CardContent className='-mt-2'>
-          <div>
-            <Label htmlFor='other_notes'>Additional Notes</Label>
-            <Textarea
-              {...form.register('other_notes')}
-              placeholder='Enter any additional notes or observations...'
-              rows={4}
-              className='mt-2'
-              onKeyDown={e => {
-                if (e.key === 'Enter' && e.ctrlKey) {
-                  // Allow Ctrl+Enter for new lines
-                  return
-                }
-                if (e.key === 'Enter') {
-                  e.stopPropagation() // Prevent form submission
-                }
-              }}
-            />
-          </div>
         </CardContent>
       </Card>
     </div>
