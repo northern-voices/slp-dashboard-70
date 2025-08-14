@@ -216,7 +216,7 @@ export const soundErrorPatterns = {
     word: 'Flower',
   },
   '-ar': {
-    patterns: ['Vowelization', 'Other'],
+    patterns: ['Vowelization “w”', 'Vowelization “y”', 'Other'],
     word: 'Car',
   },
   '-or': {
@@ -224,7 +224,13 @@ export const soundErrorPatterns = {
     word: 'Door',
   },
   th: {
-    patterns: ['Stopping', 'Sibilant error (s, f)', 'Omission', 'Other'],
+    patterns: [
+      'Stopping',
+      'Sibilant Substitution (S)',
+      'Sibilant Substitution (F)',
+      'Omission',
+      'Other',
+    ],
     word: 'Thumb',
   },
 }
