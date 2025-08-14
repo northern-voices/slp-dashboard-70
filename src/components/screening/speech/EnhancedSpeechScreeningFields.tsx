@@ -353,28 +353,29 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     return false
   }
 
-  // Helper function to validate S and Z combinations
+  // Helper function to validate S, Z, Ch, Sh, J, F, V, th combinations
   const isValidSZCombination = (patterns: string[]): boolean => {
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for S and Z:
-    // 1. Stopping & Nasalization can go together
-    // 2. Other patterns are exclusive
+    // Valid combinations for S, Z, Ch, Sh, J, F, V, th:
+    // Any patterns can be combined EXCEPT 'Other' which is exclusive
+    // This allows multiple patterns to be selected together
 
-    const hasStopping = patterns.includes('Stopping')
-    const hasNasalization = patterns.includes('Nasalization')
-    const hasFrontalLisp = patterns.includes('Frontal Lisp')
-    const hasLateralLisp = patterns.includes('Lateral Lisp')
-    const hasOmission = patterns.includes('Omission')
+    // Check if it's a valid combination (any length is allowed except 'Other' exclusivity)
+    if (patterns.length >= 2) {
+      // Only restriction: 'Other' cannot be combined with other patterns
+      const hasOther = patterns.includes('Other')
+      const hasOtherPatterns = patterns.some(p => p !== 'Other')
 
-    // Check if it's a valid 2-pattern combination
-    if (patterns.length === 2) {
-      return hasStopping && hasNasalization
+      if (hasOther && hasOtherPatterns) {
+        return false // 'Other' is exclusive
+      }
+
+      return true // All other combinations are valid
     }
 
-    // No combinations of 3 or more patterns are allowed
-    return false
+    return true
   }
 
   // Helper function to convert concern names to field names
@@ -805,8 +806,17 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           [sound]: [],
         })
       }
-    } else if (sound === 'S' || sound === 'Z') {
-      // For S and Z: Allow specific combinations only
+    } else if (
+      sound === 'S' ||
+      sound === 'Z' ||
+      sound === 'Ch' ||
+      sound === 'Sh' ||
+      sound === 'J' ||
+      sound === 'F' ||
+      sound === 'V' ||
+      sound === 'th'
+    ) {
+      // For S, Z, Ch, Sh, J, F, V, th: Allow any combinations except 'Other' exclusivity
       if (checked) {
         // Check if this combination is valid
         const newPatterns = [...currentPatterns, pattern]
@@ -999,13 +1009,20 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             currentPatterns.length > 0 &&
                             !currentPatterns.includes(pattern)
 
-                          // For S and Z: Disable invalid combinations
-                          const isSZSound = sound === 'S' || sound === 'Z'
+                          // For S, Z, Ch, Sh, J, F, V, th: Disable only 'Other' exclusivity
+                          const isSZSound =
+                            sound === 'S' ||
+                            sound === 'Z' ||
+                            sound === 'Ch' ||
+                            sound === 'Sh' ||
+                            sound === 'J' ||
+                            sound === 'F' ||
+                            sound === 'V' ||
+                            sound === 'th'
                           const isSZDisabled =
                             isSZSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidSZCombination([...currentPatterns, pattern])
+                            pattern === 'Other' &&
+                            currentPatterns.some(p => p !== 'Other') // Disable 'Other' if other patterns are selected
 
                           const isDisabled =
                             isOtherDisabled ||
@@ -1093,7 +1110,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         Word: {soundErrorPatterns[sound]?.word}
                       </div>
 
-                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected OR when St- patterns are selected OR when Sp- patterns are selected OR when Sn- patterns are selected OR when Sm- patterns are selected OR when Sk- patterns are selected OR when Final -ts patterns are selected OR when Final -ps patterns are selected OR when Final -ks patterns are selected OR when K/G patterns are selected OR when T/D patterns are selected OR when L/R patterns are selected OR when S/Z patterns are selected */}
+                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected OR when St- patterns are selected OR when Sp- patterns are selected OR when Sn- patterns are selected OR when Sm- patterns are selected OR when Sk- patterns are selected OR when Final -ts patterns are selected OR when Final -ps patterns are selected OR when Final -ks patterns are selected OR when K/G patterns are selected OR when T/D patterns are selected OR when L/R patterns are selected OR when S/Z/Ch/Sh/J/F/V/th patterns are selected */}
                       {((selectedErrorPatterns[sound] || []).includes('Other') ||
                         ((sound === '2 syllables' || sound === '3 syllables') &&
                           (selectedErrorPatterns[sound] || []).length > 0) ||
@@ -1119,7 +1136,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                           (selectedErrorPatterns[sound] || []).length > 0) ||
                         ((sound === 'L' || sound === 'R') &&
                           (selectedErrorPatterns[sound] || []).length > 0) ||
-                        ((sound === 'S' || sound === 'Z') &&
+                        ((sound === 'S' ||
+                          sound === 'Z' ||
+                          sound === 'Ch' ||
+                          sound === 'Sh' ||
+                          sound === 'J' ||
+                          sound === 'F' ||
+                          sound === 'V' ||
+                          sound === 'th') &&
                           (selectedErrorPatterns[sound] || []).length > 0)) && (
                         <Textarea
                           placeholder={
@@ -1153,7 +1177,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                               ? 'Notes...'
                               : sound === 'L' || sound === 'R'
                               ? 'Notes...'
-                              : sound === 'S' || sound === 'Z'
+                              : sound === 'S' ||
+                                sound === 'Z' ||
+                                sound === 'Ch' ||
+                                sound === 'Sh' ||
+                                sound === 'J' ||
+                                sound === 'F' ||
+                                sound === 'V' ||
+                                sound === 'th'
                               ? 'Notes...'
                               : 'Specify other error pattern...'
                           }

@@ -220,7 +220,7 @@ export const soundErrorPatterns = {
     word: 'Car',
   },
   '-or': {
-    patterns: ['Vowelization', 'Other'],
+    patterns: ['Vowelization “oh/w"', 'Vowelization “y”', 'Other'],
     word: 'Door',
   },
   th: {
