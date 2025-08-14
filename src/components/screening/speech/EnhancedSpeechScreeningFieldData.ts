@@ -160,47 +160,47 @@ export const soundErrorPatterns = {
     word: 'Bikes',
   },
   K: {
-    patterns: ['Fronting', 'Omission', 'Other'],
+    patterns: ['Fronting', 'Omission', 'Nasalization', 'Other'],
     word: 'Cookie',
   },
   G: {
-    patterns: ['Fronting', 'Omission', 'Other'],
+    patterns: ['Fronting', 'Omission', 'Nasalization', 'Other'],
     word: 'Girl',
   },
   T: {
-    patterns: ['Backing', 'Omission', 'Other'],
+    patterns: ['Backing', 'Omission', 'Nasalization', 'Other'],
     word: 'Two',
   },
   D: {
-    patterns: ['Backing', 'Omission', 'Other'],
+    patterns: ['Backing', 'Omission', 'Nasalization', 'Other'],
     word: 'Dance',
   },
   L: {
-    patterns: ["Gliding 'w'", "Gliding 'y'", 'Other'],
+    patterns: ["Gliding 'w'", "Gliding 'y'", 'Nasalization', 'Other'],
     word: 'Light',
   },
   R: {
-    patterns: ["Gliding 'w'", "Gliding 'y'", 'Other'],
+    patterns: ["Gliding 'w'", "Gliding 'y'", 'Nasalization', 'Other'],
     word: 'Rain',
   },
   S: {
-    patterns: ['Stopping', 'Frontal Lisp', 'Lateral Lisp', 'Omission', 'Other'],
+    patterns: ['Stopping', 'Frontal Lisp', 'Lateral Lisp', 'Omission', 'Nasalization', 'Other'],
     word: 'Sad',
   },
   Z: {
-    patterns: ['Stopping', 'Frontal Lisp', 'Lateral Lisp', 'Omission', 'Other'],
+    patterns: ['Stopping', 'Frontal Lisp', 'Lateral Lisp', 'Omission', 'Nasalization', 'Other'],
     word: 'Zombie',
   },
   Ch: {
-    patterns: ['Stopping', 'Lateral Lisp', 'Omission', 'Other'],
+    patterns: ['Stopping', 'Lateral Lisp', 'Omission', 'Nasalization', 'Other'],
     word: 'Chicken',
   },
   Sh: {
-    patterns: ['Stopping', 'Lateral Lisp', 'Omission', 'Other'],
+    patterns: ['Stopping', 'Lateral Lisp', 'Omission', 'Nasalization', 'Other'],
     word: 'Shoe',
   },
   J: {
-    patterns: ['Stopping', 'Lateral Lisp', 'Omission', 'Other'],
+    patterns: ['Stopping', 'Lateral Lisp', 'Omission', 'Nasalization', 'Other'],
     word: 'Juice',
   },
   F: {
