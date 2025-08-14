@@ -329,6 +329,51 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     return false
   }
 
+  // Helper function to validate L and R combinations
+  const isValidLRCombination = (patterns: string[]): boolean => {
+    if (patterns.length === 0) return true
+    if (patterns.length === 1) return true
+
+    // Valid combinations for L and R:
+    // 1. W or Y is one or the other (mutually exclusive)
+    // 2. No other combinations allowed
+
+    const hasGlidingW = patterns.includes("Gliding 'w'")
+    const hasGlidingY = patterns.includes("Gliding 'y'")
+
+    // Check if it's a valid 2-pattern combination
+    if (patterns.length === 2) {
+      return false // No 2-pattern combinations allowed for L and R
+    }
+
+    // No combinations of 3 or more patterns are allowed
+    return false
+  }
+
+  // Helper function to validate S and Z combinations
+  const isValidSZCombination = (patterns: string[]): boolean => {
+    if (patterns.length === 0) return true
+    if (patterns.length === 1) return true
+
+    // Valid combinations for S and Z:
+    // 1. Stopping & Nasalization can go together
+    // 2. Other patterns are exclusive
+
+    const hasStopping = patterns.includes('Stopping')
+    const hasNasalization = patterns.includes('Nasalization')
+    const hasFrontalLisp = patterns.includes('Frontal Lisp')
+    const hasLateralLisp = patterns.includes('Lateral Lisp')
+    const hasOmission = patterns.includes('Omission')
+
+    // Check if it's a valid 2-pattern combination
+    if (patterns.length === 2) {
+      return hasStopping && hasNasalization
+    }
+
+    // No combinations of 3 or more patterns are allowed
+    return false
+  }
+
   // Helper function to convert concern names to field names
   const getFieldName = (concern: string): string => {
     const fieldNameMap: Record<string, string> = {
@@ -710,6 +755,39 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           [sound]: currentPatterns.filter(p => p !== pattern),
         })
       }
+    } else if (sound === 'L' || sound === 'R') {
+      // For L and R: Allow only one pattern at a time (mutually exclusive)
+      if (checked) {
+        // When selecting a pattern, clear all others for this sound
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: [pattern],
+        })
+      } else {
+        // When unchecking, clear the pattern
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: [],
+        })
+      }
+    } else if (sound === 'S' || sound === 'Z') {
+      // For S and Z: Allow specific combinations only
+      if (checked) {
+        // Check if this combination is valid
+        const newPatterns = [...currentPatterns, pattern]
+        if (isValidSZCombination(newPatterns)) {
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: newPatterns,
+          })
+        }
+      } else {
+        // When unchecking, just remove the pattern
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: currentPatterns.filter(p => p !== pattern),
+        })
+      }
     } else {
       // For other sounds, use the original logic but ensure Other is exclusive
       if (checked) {
@@ -879,6 +957,21 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             !currentPatterns.includes(pattern) &&
                             !isValidTDCombination([...currentPatterns, pattern])
 
+                          // For L and R: Disable other patterns when one is selected
+                          const isLRSound = sound === 'L' || sound === 'R'
+                          const isLRDisabled =
+                            isLRSound &&
+                            currentPatterns.length > 0 &&
+                            !currentPatterns.includes(pattern)
+
+                          // For S and Z: Disable invalid combinations
+                          const isSZSound = sound === 'S' || sound === 'Z'
+                          const isSZDisabled =
+                            isSZSound &&
+                            currentPatterns.length > 0 &&
+                            !currentPatterns.includes(pattern) &&
+                            !isValidSZCombination([...currentPatterns, pattern])
+
                           const isDisabled =
                             isOtherDisabled ||
                             isOtherCheckboxDisabled ||
@@ -895,7 +988,9 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             isFinalPsDisabled ||
                             isFinalKsDisabled ||
                             isKGDisabled ||
-                            isTDDisabled
+                            isTDDisabled ||
+                            isLRDisabled ||
+                            isSZDisabled
 
                           return (
                             <div key={pattern} className='flex items-center space-x-2'>
@@ -923,7 +1018,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         Word: {soundErrorPatterns[sound]?.word}
                       </div>
 
-                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected OR when St- patterns are selected OR when Sp- patterns are selected OR when Sn- patterns are selected OR when Sm- patterns are selected OR when Sk- patterns are selected OR when Final -ts patterns are selected OR when Final -ps patterns are selected OR when Final -ks patterns are selected OR when K/G patterns are selected OR when T/D patterns are selected */}
+                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected OR when St- patterns are selected OR when Sp- patterns are selected OR when Sn- patterns are selected OR when Sm- patterns are selected OR when Sk- patterns are selected OR when Final -ts patterns are selected OR when Final -ps patterns are selected OR when Final -ks patterns are selected OR when K/G patterns are selected OR when T/D patterns are selected OR when L/R patterns are selected OR when S/Z patterns are selected */}
                       {((selectedErrorPatterns[sound] || []).includes('Other') ||
                         ((sound === '2 syllables' || sound === '3 syllables') &&
                           (selectedErrorPatterns[sound] || []).length > 0) ||
@@ -946,6 +1041,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         ((sound === 'K' || sound === 'G') &&
                           (selectedErrorPatterns[sound] || []).length > 0) ||
                         ((sound === 'T' || sound === 'D') &&
+                          (selectedErrorPatterns[sound] || []).length > 0) ||
+                        ((sound === 'L' || sound === 'R') &&
+                          (selectedErrorPatterns[sound] || []).length > 0) ||
+                        ((sound === 'S' || sound === 'Z') &&
                           (selectedErrorPatterns[sound] || []).length > 0)) && (
                         <Textarea
                           placeholder={
@@ -976,6 +1075,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                               : sound === 'K' || sound === 'G'
                               ? 'Notes...'
                               : sound === 'T' || sound === 'D'
+                              ? 'Notes...'
+                              : sound === 'L' || sound === 'R'
+                              ? 'Notes...'
+                              : sound === 'S' || sound === 'Z'
                               ? 'Notes...'
                               : 'Specify other error pattern...'
                           }
