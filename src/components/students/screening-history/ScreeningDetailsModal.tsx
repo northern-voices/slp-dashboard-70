@@ -79,7 +79,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
 
     return (
       <div className='space-y-4'>
-        <h4 className='font-medium text-gray-900'>Articulation Assessment</h4>
+        <h4 className='font-medium text-gray-900'>Articulation Assessment:</h4>
 
         {soundErrors.length > 0 && (
           <div className='space-y-3'>
@@ -188,7 +188,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
 
     return (
       <div className='space-y-4'>
-        <h4 className='font-medium text-gray-900'>Attendance Information</h4>
+        <h4 className='font-medium text-gray-900'>Attendance Information:</h4>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='p-3 bg-gray-50 rounded-md'>
             <h5 className='text-sm font-medium text-gray-700 mb-2'>Absent:</h5>
@@ -224,7 +224,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
 
     return (
       <div className='space-y-4'>
-        <h4 className='font-medium text-gray-900'>Speech Screening Details</h4>
+        <h4 className='font-medium text-gray-900'>Speech Screening Details:</h4>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           {metadata.qualifies_for_speech_program && (
             <div className='p-3 bg-green-50 rounded-md border border-green-200'>
@@ -345,7 +345,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
           {/* Notes Section - Only show if not absent */}
           {!screening.error_patterns?.attendance?.absent && (
             <div className='space-y-4'>
-              <h3 className='font-medium text-gray-900'>Clinical Notes</h3>
+              <h3 className='font-medium text-gray-900'>Clinical Notes:</h3>
 
               {screening.clinical_notes && (
                 <div>
