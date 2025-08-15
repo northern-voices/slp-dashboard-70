@@ -17,11 +17,12 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { RefreshCw, CheckCircle, Clock, Calendar, XCircle } from 'lucide-react'
+import { Screening } from '@/types/database'
 
 interface StatusUpdateModalProps {
   isOpen: boolean
   onClose: () => void
-  selectedScreenings: string[]
+  selectedScreenings: Screening[]
   onUpdate: (action: string) => void
 }
 
