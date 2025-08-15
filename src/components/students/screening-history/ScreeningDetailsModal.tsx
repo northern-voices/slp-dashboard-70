@@ -307,6 +307,25 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
             </div>
           </div>
 
+          {/* Sound Errors Summary as badges */}
+          {screening.error_patterns?.articulation?.soundErrors &&
+            screening.error_patterns.articulation.soundErrors.length > 0 && (
+              <div className='flex flex-wrap gap-2'>
+                {screening.error_patterns.articulation.soundErrors
+                  .filter(
+                    soundError => soundError.errorPatterns && soundError.errorPatterns.length > 0
+                  )
+                  .map((soundError, index) => (
+                    <Badge
+                      key={index}
+                      className='bg-green-100 text-gray-700 font-medium flex items-center gap-1'>
+                      <CheckCircle className='w-3 h-3' />
+                      {soundError.sound}
+                    </Badge>
+                  ))}
+              </div>
+            )}
+
           {/* Speech-specific flags - Only show if not absent */}
           {!screening.error_patterns?.attendance?.absent && (
             <div className='flex flex-wrap gap-2'>
