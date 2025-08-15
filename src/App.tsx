@@ -2,11 +2,12 @@ import { Toaster } from '@/components/ui/toaster'
 import { Toaster as SonnerToaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { OrganizationProvider } from '@/contexts/OrganizationContext'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import PublicRoute from '@/components/auth/PublicRoute'
+import SchoolRouter from '@/components/SchoolRouter'
 import Index from './pages/Index'
 import Students from './pages/Students'
 import StudentDetail from './pages/StudentDetail'
@@ -115,156 +116,201 @@ const App = () => (
               {/* Onboarding Route */}
               <Route path='/onboarding' element={<Onboarding />} />
 
-              {/* Protected Routes */}
+              {/* Protected Routes - All wrapped under school selection */}
               <Route
                 path='/'
                 element={
                   <ProtectedRoute>
-                    <Index />
+                    <SchoolRouter>
+                      <Index />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* School-based routes */}
+              <Route
+                path='/school/:schoolId'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <Index />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/students'
+                path='/school/:schoolId/students'
                 element={
                   <ProtectedRoute>
-                    <Students />
+                    <SchoolRouter>
+                      <Students />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/students/:studentId'
+                path='/school/:schoolId/students/:studentId'
                 element={
                   <ProtectedRoute>
-                    <StudentDetail />
-                  </ProtectedRoute>
-                }
-              />
-              {/* <Route path="/students/:studentId/school-support" element={<SchoolSupportForm />} /> */}
-              <Route
-                path='/students/:studentId/progress-check'
-                element={
-                  <ProtectedRoute>
-                    <MonthlyProgressCheck />
+                    <SchoolRouter>
+                      <StudentDetail />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/students/:studentId/goal-sheet'
+                path='/school/:schoolId/students/:studentId/progress-check'
                 element={
                   <ProtectedRoute>
-                    <GenerateGoalSheet />
+                    <SchoolRouter>
+                      <MonthlyProgressCheck />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/school/:schoolId/students/:studentId/goal-sheet'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <GenerateGoalSheet />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
 
               {/* Screening Routes */}
               <Route
-                path='/screenings'
+                path='/school/:schoolId/screenings'
                 element={
                   <ProtectedRoute>
-                    <Screenings />
+                    <SchoolRouter>
+                      <Screenings />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/screening/speech'
+                path='/school/:schoolId/screening/speech'
                 element={
                   <ProtectedRoute>
-                    <SpeechScreening />
+                    <SchoolRouter>
+                      <SpeechScreening />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/screening/speech/:studentId'
+                path='/school/:schoolId/screening/speech/:studentId'
                 element={
                   <ProtectedRoute>
-                    <SpeechScreening />
+                    <SchoolRouter>
+                      <SpeechScreening />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/screening/hearing'
+                path='/school/:schoolId/screening/hearing'
                 element={
                   <ProtectedRoute>
-                    <HearingScreening />
+                    <SchoolRouter>
+                      <HearingScreening />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/screening/hearing/:studentId'
+                path='/school/:schoolId/screening/hearing/:studentId'
                 element={
                   <ProtectedRoute>
-                    <HearingScreening />
+                    <SchoolRouter>
+                      <HearingScreening />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
 
               {/* Drafts Route */}
               <Route
-                path='/drafts'
+                path='/school/:schoolId/drafts'
                 element={
                   <ProtectedRoute>
-                    <Drafts />
+                    <SchoolRouter>
+                      <Drafts />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
 
-              {/* <Route path="/school-support" element={<SchoolSupport />} />
-              <Route path="/school-support/create" element={<CreateSchoolSupportForm />} /> */}
               <Route
-                path='/reports'
+                path='/school/:schoolId/reports'
                 element={
                   <ProtectedRoute>
-                    <Reports />
+                    <SchoolRouter>
+                      <Reports />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/reports/generate'
+                path='/school/:schoolId/reports/generate'
                 element={
                   <ProtectedRoute>
-                    <GenerateReport />
+                    <SchoolRouter>
+                      <GenerateReport />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/reports/individual'
+                path='/school/:schoolId/reports/individual'
                 element={
                   <ProtectedRoute>
-                    <IndividualReports />
+                    <SchoolRouter>
+                      <IndividualReports />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/reports/:reportId'
+                path='/school/:schoolId/reports/:reportId'
                 element={
                   <ProtectedRoute>
-                    <ReportDetail />
+                    <SchoolRouter>
+                      <ReportDetail />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/management'
+                path='/school/:schoolId/management'
                 element={
                   <ProtectedRoute>
-                    <Management />
+                    <SchoolRouter>
+                      <Management />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/profile'
+                path='/school/:schoolId/profile'
                 element={
                   <ProtectedRoute>
-                    <Profile />
+                    <SchoolRouter>
+                      <Profile />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/notifications'
+                path='/school/:schoolId/notifications'
                 element={
                   <ProtectedRoute>
-                    <Notifications />
+                    <SchoolRouter>
+                      <Notifications />
+                    </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
