@@ -72,3 +72,96 @@ export const useCreateSpeechScreening = () => {
 //     },
 //   })
 // }
+
+export const useDeleteScreening = () => {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const { userProfile, currentOrganization } = useOrganization()
+
+  return useMutation<void, Error, { id: string; sourceTable: 'speech' | 'hearing' }>({
+    mutationFn: ({ id, sourceTable }) => {
+      if (sourceTable === 'speech') {
+        return screeningsApi.deleteSpeechScreening(id)
+      } else {
+        return screeningsApi.deleteHearingScreening(id)
+      }
+    },
+
+    onSuccess: () => {
+      // Invalidate and refetch all screening-related queries
+      queryClient.invalidateQueries({
+        queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['speech-screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['hearing-screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+    },
+
+    onError: error => {
+      console.error('Failed to delete screening:', error)
+      // You could add toast notifications here
+    },
+  })
+}
+
+export const useBulkDeleteScreenings = () => {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const { userProfile, currentOrganization } = useOrganization()
+
+  return useMutation<
+    void,
+    Error,
+    { screenings: Array<{ id: string; sourceTable: 'speech' | 'hearing' }> }
+  >({
+    mutationFn: async ({ screenings }) => {
+      // Delete screenings in parallel, grouped by type
+      const speechScreenings = screenings.filter(s => s.sourceTable === 'speech')
+      const hearingScreenings = screenings.filter(s => s.sourceTable === 'hearing')
+
+      const deletePromises: Promise<void>[] = []
+
+      // Add speech screening deletions
+      if (speechScreenings.length > 0) {
+        deletePromises.push(
+          Promise.all(
+            speechScreenings.map(screening => screeningsApi.deleteSpeechScreening(screening.id))
+          ).then(() => {})
+        )
+      }
+
+      // Add hearing screening deletions
+      if (hearingScreenings.length > 0) {
+        deletePromises.push(
+          Promise.all(
+            hearingScreenings.map(screening => screeningsApi.deleteHearingScreening(screening.id))
+          ).then(() => {})
+        )
+      }
+
+      // Wait for all deletions to complete
+      await Promise.all(deletePromises)
+    },
+
+    onSuccess: () => {
+      // Invalidate and refetch all screening-related queries
+      queryClient.invalidateQueries({
+        queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['speech-screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['hearing-screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+    },
+
+    onError: error => {
+      console.error('Failed to delete screenings:', error)
+      // You could add toast notifications here
+    },
+  })
+}

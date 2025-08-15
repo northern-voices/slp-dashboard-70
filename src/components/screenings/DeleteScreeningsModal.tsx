@@ -8,12 +8,15 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { AlertTriangle, Trash2 } from 'lucide-react'
+import { AlertTriangle, Trash2, Loader2 } from 'lucide-react'
+import { Screening } from '@/types/database'
+import { useBulkDeleteScreenings } from '@/hooks/screenings/use-screening-mutations'
+import { useToast } from '@/hooks/use-toast'
 
 interface DeleteScreeningsModalProps {
   isOpen: boolean
   onClose: () => void
-  selectedScreenings: string[]
+  selectedScreenings: Screening[]
   selectedCount: number
   onDelete: (action: string) => void
 }
@@ -27,16 +30,52 @@ const DeleteScreeningsModal = ({
 }: DeleteScreeningsModalProps) => {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleteReason, setDeleteReason] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const { mutate: deleteScreenings, isPending: isLoading } = useBulkDeleteScreenings()
+  const { toast } = useToast()
 
   const handleDelete = () => {
-    console.log('Deleting screenings:', {
-      selectedScreenings,
-      deleteReason,
-    })
+    if (!confirmDelete || !deleteReason) {
+      toast({
+        title: 'Please fill in all required fields',
+        description: 'You must confirm and provide a reason for deletion.',
+        variant: 'destructive',
+      })
+      return
+    }
 
-    // In a real implementation, this would soft delete the records
-    onDelete('delete')
-    onClose()
+    setIsDeleting(true)
+    deleteScreenings(
+      {
+        screenings: selectedScreenings.map(s => ({
+          id: s.id,
+          sourceTable: s.source_table || 'speech', // Default to speech if not specified
+        })),
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Screenings deleted',
+            description: `Successfully deleted ${selectedCount} screening${
+              selectedCount > 1 ? 's' : ''
+            }.`,
+          })
+          onDelete('delete')
+          onClose()
+        },
+        onError: (error: Error) => {
+          toast({
+            title: 'Error deleting screenings',
+            description: error.message || 'Failed to delete screenings.',
+            variant: 'destructive',
+          })
+        },
+        onSettled: () => {
+          setIsDeleting(false)
+        },
+      }
+    )
   }
 
   return (
@@ -108,9 +147,15 @@ const DeleteScreeningsModal = ({
             <Button
               variant='destructive'
               onClick={handleDelete}
-              disabled={!confirmDelete || !deleteReason}>
-              <Trash2 className='w-4 h-4 mr-2' />
-              Delete {selectedCount} Screening{selectedCount > 1 ? 's' : ''}
+              disabled={!confirmDelete || !deleteReason || isLoading}>
+              {isLoading ? (
+                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+              ) : (
+                <Trash2 className='w-4 h-4 mr-2' />
+              )}
+              {isLoading
+                ? 'Deleting...'
+                : `Delete ${selectedCount} Screening${selectedCount > 1 ? 's' : ''}`}
             </Button>
           </div>
         </div>
