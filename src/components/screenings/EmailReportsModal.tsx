@@ -11,11 +11,12 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Mail, Users, UserCheck, Building } from 'lucide-react'
+import { Screening } from '@/types/database'
 
 interface EmailReportsModalProps {
   isOpen: boolean
   onClose: () => void
-  selectedScreenings: string[]
+  selectedScreenings: Screening[]
   onSend: (action: string) => void
 }
 

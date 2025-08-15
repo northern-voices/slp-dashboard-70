@@ -88,6 +88,9 @@ export interface Screening {
   left_volume_db?: number | null
   left_pressure?: number | null
   left_compliance?: number | null
+
+  // Source table information for deletion
+  source_table?: 'speech' | 'hearing'
 }
 
 export interface School {

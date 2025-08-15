@@ -16,11 +16,12 @@ import {
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Download, FileText, Table, FileImage } from 'lucide-react'
+import { Screening } from '@/types/database'
 
 interface ExportScreeningsModalProps {
   isOpen: boolean
   onClose: () => void
-  selectedScreenings: string[]
+  selectedScreenings: Screening[]
   onExport: (action: string) => void
 }
 
