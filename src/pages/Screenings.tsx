@@ -50,9 +50,6 @@ const ScreeningsContent = () => {
         // Delete logic is now handled by the DeleteScreeningsModal
         // The modal will handle the actual deletion and reset the selection
         break
-      case 'mark_completed':
-        // Mark as completed logic here
-        break
       default:
         console.log('Unknown bulk action:', action)
     }
@@ -64,8 +61,6 @@ const ScreeningsContent = () => {
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
-
-  console.log('currentSchool', currentSchool) // TODO: Remove
 
   return (
     <SidebarProvider>
