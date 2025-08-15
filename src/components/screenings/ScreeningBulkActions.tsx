@@ -46,12 +46,23 @@ const ScreeningBulkActions = ({
   const handleActionComplete = (action: string) => {
     onBulkAction(action)
     onClearSelection()
-    toast({
-      title: 'Action Completed',
-      description: `${action} completed successfully for ${selectedCount} screening${
-        selectedCount > 1 ? 's' : ''
-      }`,
-    })
+
+    if (action === 'delete') {
+      toast({
+        title: 'Screenings deleted',
+        description: `Successfully deleted ${selectedCount} screening${
+          selectedCount > 1 ? 's' : ''
+        }`,
+        variant: 'default',
+      })
+    } else {
+      toast({
+        title: 'Action Completed',
+        description: `${action} completed successfully for ${selectedCount} screening${
+          selectedCount > 1 ? 's' : ''
+        }`,
+      })
+    }
   }
 
   return (
