@@ -469,17 +469,17 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   }
 
   const handleStoppingSoundChange = (sound: string, stoppingSound: string, checked: boolean) => {
-    const currentStoppingSounds = selectedStoppingSounds[sound] || []
-
     if (checked) {
+      // When selecting a stopping sound, only allow one at a time
       setSelectedStoppingSounds({
         ...selectedStoppingSounds,
-        [sound]: [...currentStoppingSounds, stoppingSound],
+        [sound]: [stoppingSound],
       })
     } else {
+      // When unchecking, clear the stopping sound
       setSelectedStoppingSounds({
         ...selectedStoppingSounds,
-        [sound]: currentStoppingSounds.filter(s => s !== stoppingSound),
+        [sound]: [],
       })
     }
   }
@@ -1074,13 +1074,18 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                                     {stoppingSoundOptions.map(stoppingSound => {
                                       const currentStoppingSounds =
                                         selectedStoppingSounds[sound] || []
+                                      const isSelected =
+                                        currentStoppingSounds.includes(stoppingSound)
+                                      const isDisabled =
+                                        currentStoppingSounds.length > 0 && !isSelected
+
                                       return (
                                         <div
                                           key={stoppingSound}
                                           className='flex items-center space-x-2'>
                                           <Checkbox
                                             id={`${sound}-stopping-${stoppingSound}`}
-                                            checked={currentStoppingSounds.includes(stoppingSound)}
+                                            checked={isSelected}
                                             onCheckedChange={checked =>
                                               handleStoppingSoundChange(
                                                 sound,
@@ -1088,10 +1093,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                                                 checked as boolean
                                               )
                                             }
+                                            disabled={isDisabled}
                                           />
                                           <Label
                                             htmlFor={`${sound}-stopping-${stoppingSound}`}
-                                            className='text-xs font-medium'>
+                                            className={`text-xs font-medium ${
+                                              isDisabled ? 'text-gray-400' : ''
+                                            }`}>
                                             {stoppingSound}
                                           </Label>
                                         </div>
