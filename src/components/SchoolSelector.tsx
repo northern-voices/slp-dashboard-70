@@ -12,10 +12,34 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { School } from '@/types/database'
 
 const SchoolSelector = () => {
   const [open, setOpen] = React.useState(false)
   const { currentSchool, availableSchools, setCurrentSchool, isLoading } = useOrganization()
+  const navigate = useNavigate()
+  const { schoolId } = useParams<{ schoolId: string }>()
+  const location = useLocation()
+
+  // Function to navigate to school-based route
+  const navigateToSchool = (school: School) => {
+    const currentPath = location.pathname
+
+    // Update the school context first
+    setCurrentSchool(school)
+    setOpen(false)
+
+    // If we're on a school route, replace the schoolId
+    if (currentPath.startsWith('/school/')) {
+      const newPath = currentPath.replace(/^\/school\/[^/]+/, `/school/${school.id}`)
+      navigate(newPath, { replace: true })
+    } else {
+      // If we're on a non-school route, navigate to the school dashboard
+      const newPath = `/school/${school.id}`
+      navigate(newPath)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -63,8 +87,9 @@ const SchoolSelector = () => {
                     key={school.id}
                     value={school.name}
                     onSelect={() => {
-                      setCurrentSchool(school.id === currentSchool?.id ? null : school)
-                      setOpen(false)
+                      // console.log('SchoolSelector - onSelect triggered for school:', school.name)
+                      // console.log('Current school before change:', currentSchool?.name)
+                      navigateToSchool(school)
                     }}>
                     <Check
                       className={cn(

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 import { Organization, School, SLPProfile } from '@/types/database'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
 
 interface OrganizationContextType {
   currentOrganization: Organization | null
@@ -10,6 +11,7 @@ interface OrganizationContextType {
   availableSchools: School[]
   isLoading: boolean
   setCurrentSchool: (school: School | null) => void
+  clearCurrentSchool: () => void
   refreshData: () => Promise<void>
 }
 
@@ -29,14 +31,29 @@ interface OrganizationProviderProps {
 
 export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ children }) => {
   const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null)
-  const [currentSchool, setCurrentSchool] = useState<School | null>(null)
   const [userProfile, setUserProfile] = useState<SLPProfile | null>(null)
   const [availableSchools, setAvailableSchools] = useState<School[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Use localStorage to persist the selected school
+  const [currentSchool, setCurrentSchoolState] = useLocalStorage<School | null>(
+    'selectedSchool',
+    null
+  )
 
   const { user } = useAuth()
 
   // console.log(user, 'user')
+
+  // Wrapper function to update both state and localStorage
+  const setCurrentSchool = (school: School | null) => {
+    setCurrentSchoolState(school)
+  }
+
+  const clearCurrentSchool = () => {
+    setCurrentSchoolState(null)
+  }
 
   const refreshData = async () => {
     if (!user) {
@@ -134,17 +151,29 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
 
       setAvailableSchools(transformedSchools)
 
-      // Set the first school as default if none selected and schools exist
-      if (!currentSchool && transformedSchools.length > 0) {
-        setCurrentSchool(transformedSchools[0])
+      // Validate and restore persisted school if it exists
+      if (currentSchool) {
+        const isValidSchool = transformedSchools.find(s => s.id === currentSchool.id)
+        if (!isValidSchool) {
+          // Persisted school is no longer valid, clear it
+          console.log('Persisted school no longer valid, clearing selection')
+          clearCurrentSchool()
+        }
       }
+
+      // Mark as initialized after schools are loaded
+      setIsInitialized(true)
+
+      // Don't automatically set the first school - let SchoolRouter handle this based on URL
+      // The SchoolRouter will set the appropriate school based on the current route
     } catch (error) {
       console.error('Error loading organization data:', error)
       // Reset states on error
       setCurrentOrganization(null)
       setUserProfile(null)
       setAvailableSchools([])
-      setCurrentSchool(null)
+      clearCurrentSchool()
+      setIsInitialized(true)
     } finally {
       setIsLoading(false)
     }
@@ -155,24 +184,39 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
     refreshData()
   }, [user?.id])
 
+  // Handle initial localStorage loading
+  useEffect(() => {
+    if (user && !isLoading && availableSchools.length > 0) {
+      // If we have a persisted school, validate it
+      if (currentSchool) {
+        const isValidSchool = availableSchools.find(s => s.id === currentSchool.id)
+        if (!isValidSchool) {
+          console.log('Persisted school no longer valid, clearing selection')
+          clearCurrentSchool()
+        }
+      }
+    }
+  }, [user, isLoading, availableSchools, currentSchool, clearCurrentSchool])
+
   // Reset data when user logs out
   useEffect(() => {
     if (!user) {
       setCurrentOrganization(null)
       setUserProfile(null)
       setAvailableSchools([])
-      setCurrentSchool(null)
+      clearCurrentSchool()
       setIsLoading(false)
     }
-  }, [user])
+  }, [user, clearCurrentSchool])
 
   const value: OrganizationContextType = {
     currentOrganization,
     currentSchool,
     userProfile,
     availableSchools,
-    isLoading,
+    isLoading: isLoading || !isInitialized,
     setCurrentSchool,
+    clearCurrentSchool,
     refreshData,
   }
 
