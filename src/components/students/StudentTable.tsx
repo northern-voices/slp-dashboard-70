@@ -163,7 +163,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
       </div>
 
       {/* Search and Filters */}
-      <div className='flex flex-col sm:flex-row gap-4'>
+      {/* // TODO: Add filters for students table */}
+      {/* <div className='flex flex-col sm:flex-row gap-4'>
         <div className='relative flex-1'>
           <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
           <Input
@@ -177,7 +178,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
           <Filter className='w-4 h-4' />
           Filter
         </Button>
-      </div>
+      </div> */}
 
       {/* Students Table */}
       <Card>
