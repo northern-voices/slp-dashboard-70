@@ -21,7 +21,12 @@ const AppSidebar = ({
   const { userProfile, currentSchool } = useOrganization()
   const location = useLocation()
 
-  const navigationGroups = getNavigationGroups(location, userRole, userProfile, currentSchool)
+  const navigationGroups = getNavigationGroups(
+    location,
+    userRole,
+    userProfile as unknown as Record<string, unknown>,
+    currentSchool
+  )
 
   return (
     <div className={`hidden md:block ${className || ''}`}>
