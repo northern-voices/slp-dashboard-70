@@ -23,17 +23,12 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
       if (targetSchool) {
         // Set the current school if it's different
         if (!currentSchool || currentSchool.id !== targetSchool.id) {
-          console.log('SchoolRouter: Setting current school to:', targetSchool.name)
           setCurrentSchool(targetSchool)
         }
         setIsInitializing(false)
         return
       } else {
         // School doesn't exist, redirect to first available school
-        console.log(
-          'SchoolRouter: Invalid school ID, redirecting to first school:',
-          availableSchools[0].name
-        )
         navigate(`/school/${availableSchools[0].id}`, { replace: true })
         return
       }
@@ -44,7 +39,6 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
       // Check if we have a persisted school selection
       if (currentSchool && availableSchools.find(s => s.id === currentSchool.id)) {
         // Navigate to the persisted school
-        console.log('SchoolRouter: Redirecting to persisted school:', currentSchool.name)
         navigate(`/school/${currentSchool.id}`, { replace: true })
         return
       } else {
@@ -56,16 +50,11 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
 
         if (testSchool) {
           // Set test school as current and navigate to it
-          console.log('SchoolRouter: Setting test school as default:', testSchool.name)
           setCurrentSchool(testSchool)
           navigate(`/school/${testSchool.id}`, { replace: true })
           return
         } else {
           // Fall back to first available school
-          console.log(
-            'SchoolRouter: No test school found, redirecting to first school:',
-            availableSchools[0].name
-          )
           navigate(`/school/${availableSchools[0].id}`, { replace: true })
           return
         }
@@ -80,64 +69,36 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
         // Check if we're on a route that should redirect to school-specific path
         const routePath = location.pathname
         if (routePath === '/screenings') {
-          console.log(
-            'SchoolRouter: Redirecting /screenings to school screenings:',
-            currentSchool.name
-          )
           navigate(`/school/${currentSchool.id}/screenings`, { replace: true })
           return
         } else if (routePath === '/screening/speech') {
-          console.log(
-            'SchoolRouter: Redirecting /screening/speech to school screening/speech:',
-            currentSchool.name
-          )
           navigate(`/school/${currentSchool.id}/screening/speech`, { replace: true })
           return
         } else if (routePath === '/screening/hearing') {
-          console.log(
-            'SchoolRouter: Redirecting /screening/hearing to school screening/hearing:',
-            currentSchool.name
-          )
           navigate(`/school/${currentSchool.id}/screening/hearing`, { replace: true })
           return
         } else if (routePath === '/students') {
-          console.log('SchoolRouter: Redirecting /students to school students:', currentSchool.name)
           navigate(`/school/${currentSchool.id}/students`, { replace: true })
           return
         } else if (routePath === '/reports') {
-          console.log('SchoolRouter: Redirecting /reports to school reports:', currentSchool.name)
           navigate(`/school/${currentSchool.id}/reports`, { replace: true })
           return
         } else if (routePath === '/management') {
-          console.log(
-            'SchoolRouter: Redirecting /management to school management:',
-            currentSchool.name
-          )
           navigate(`/school/${currentSchool.id}/management`, { replace: true })
           return
         } else if (routePath === '/profile') {
-          console.log('SchoolRouter: Redirecting /profile to school profile:', currentSchool.name)
           navigate(`/school/${currentSchool.id}/profile`, { replace: true })
           return
         } else if (routePath === '/notifications') {
-          console.log(
-            'SchoolRouter: Redirecting /notifications to school notifications:',
-            currentSchool.name
-          )
           navigate(`/school/${currentSchool.id}/notifications`, { replace: true })
           return
         }
 
         // For other routes, navigate to the current school
-        console.log('SchoolRouter: Navigating to current school:', currentSchool.name)
         navigate(`/school/${currentSchool.id}`, { replace: true })
         return
       } else {
         // Current school is no longer valid, redirect to first available
-        console.log(
-          'SchoolRouter: Current school no longer valid, redirecting to first school:',
-          availableSchools[0].name
-        )
         navigate(`/school/${availableSchools[0].id}`, { replace: true })
         return
       }
@@ -147,7 +108,6 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
     if (!currentSchool && schoolId && availableSchools.length > 0) {
       const targetSchool = availableSchools.find(school => school.id === schoolId)
       if (targetSchool) {
-        console.log('SchoolRouter: Restoring school from URL:', targetSchool.name)
         setCurrentSchool(targetSchool)
         setIsInitializing(false)
         return

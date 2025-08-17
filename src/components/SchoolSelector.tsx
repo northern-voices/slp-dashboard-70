@@ -22,16 +22,6 @@ const SchoolSelector = () => {
   const { schoolId } = useParams<{ schoolId: string }>()
   const location = useLocation()
 
-  // Debug logging
-  React.useEffect(() => {
-    // Debug logging removed for cleaner code
-  }, [currentSchool])
-
-  // Monitor URL changes
-  React.useEffect(() => {
-    // URL change monitoring removed for cleaner code
-  }, [location.pathname, schoolId, currentSchool])
-
   // Function to navigate to school-based route
   const navigateToSchool = (school: School) => {
     const currentPath = location.pathname
