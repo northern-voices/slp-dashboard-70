@@ -131,14 +131,15 @@ const SpeechScreeningContent = () => {
                   )}
                 </div>
 
-                <Button
+                {/* //TODO: Work on view drafts functionality */}
+                {/* <Button
                   variant='outline'
                   size='sm'
                   onClick={handleViewDrafts}
                   className='flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50'>
                   <FileText className='w-4 h-4' />
                   View Drafts
-                </Button>
+                </Button> */}
               </div>
             </div>
 
