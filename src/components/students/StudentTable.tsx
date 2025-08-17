@@ -75,12 +75,20 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
   )
 
   const handleRowClick = (studentId: string) => {
-    navigate(`/students/${studentId}`)
+    if (activeSchool) {
+      navigate(`/school/${activeSchool.id}/students/${studentId}`)
+    } else {
+      navigate(`/students/${studentId}`)
+    }
   }
 
   const handleViewClick = (e: React.MouseEvent, studentId: string) => {
     e.stopPropagation()
-    navigate(`/students/${studentId}`)
+    if (activeSchool) {
+      navigate(`/school/${activeSchool.id}/students/${studentId}`)
+    } else {
+      navigate(`/students/${studentId}`)
+    }
   }
 
   const handleAddStudent = async (data: NewStudentFormData) => {

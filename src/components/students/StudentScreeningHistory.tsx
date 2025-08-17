@@ -28,7 +28,7 @@ const StudentScreeningHistory = ({
     <Card>
       <CardHeader>
         <div className='flex items-center justify-between'>
-          <CardTitle className='text-lg font-semibold'>Screening History asdf</CardTitle>
+          <CardTitle className='text-lg font-semibold'>Screening History</CardTitle>
           <div className='flex gap-2'>
             {onAddSpeechScreening && (
               <Button
