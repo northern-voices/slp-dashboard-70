@@ -110,12 +110,13 @@ export const studentsApi = {
       const query = supabase
         .from('students')
         .select('*')
+        .eq('school_id', schoolId)
         .order('last_name', { ascending: true })
         .order('first_name', { ascending: true })
 
       // Try to filter by school_id if the field exists
       try {
-        const { data, error } = await query.eq('school_id', schoolId)
+        const { data, error } = await query
         if (!error && data) {
           return data
         }
@@ -125,7 +126,12 @@ export const studentsApi = {
 
       // Fallback: if school_id filter fails, return all students
       // This handles the case where the database schema doesn't have school_id
-      const { data, error } = await query
+      const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .order('last_name', { ascending: true })
+        .order('first_name', { ascending: true })
+
       if (error) throw error
 
       return data || []
