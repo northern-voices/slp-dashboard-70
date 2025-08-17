@@ -35,6 +35,7 @@ import NotFound from './pages/NotFound'
 import SpeechScreening from './pages/SpeechScreening'
 import HearingScreening from './pages/HearingScreening'
 import Drafts from './pages/Drafts'
+import Logout from './components/auth/Logout'
 
 const queryClient = new QueryClient()
 
@@ -115,6 +116,9 @@ const App = () => (
 
               {/* Onboarding Route */}
               <Route path='/onboarding' element={<Onboarding />} />
+
+              {/* Logout Route */}
+              <Route path='/logout' element={<Logout />} />
 
               {/* Redirect Routes - Auto-redirect to current school */}
               <Route
