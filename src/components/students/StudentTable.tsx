@@ -102,6 +102,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
       setShowAddModal(false)
       newStudentForm.reset()
 
+      // TODO: Change window reload to revalidate data instead
       // Refresh the page to show the new student
       window.location.reload()
     } catch (error) {
@@ -164,9 +165,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
                 <thead>
                   <tr className='border-b'>
                     <th className='text-left p-4 font-medium'>Name</th>
-                    <th className='text-left p-4 font-medium'>Student ID</th>
                     <th className='text-left p-4 font-medium'>Grade</th>
-                    <th className='text-left p-4 font-medium'>Date of Birth</th>
+                    {/* // TODO: Add date of birth (ask Lisa) */}
+                    {/* <th className='text-left p-4 font-medium'>Date of Birth</th> */}
                     <th className='text-left p-4 font-medium'>Actions</th>
                   </tr>
                 </thead>
@@ -183,8 +184,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
                           </div>
                         </div>
                       </td>
-                      <td className='p-4'>{student.student_id}</td>
-                      <td className='p-4'>N/A</td>
+                      {/* // TODO: Add date of birth (ask Lisa) */}
+                      {/* <td className='p-4'>N/A</td> */}
                       <td className='p-4'>N/A</td>
                       <td className='p-4'>
                         <Button
