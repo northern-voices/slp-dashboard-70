@@ -48,13 +48,27 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
         navigate(`/school/${currentSchool.id}`, { replace: true })
         return
       } else {
-        // Redirect to the first available school
-        console.log(
-          'SchoolRouter: Redirecting from root to first school:',
-          availableSchools[0].name
+        // !TEMPORARY: Default to test school for now
+        // Look for test school first, then fall back to first available school
+        const testSchool = availableSchools.find(school =>
+          school.name.toLowerCase().includes('test')
         )
-        navigate(`/school/${availableSchools[0].id}`, { replace: true })
-        return
+
+        if (testSchool) {
+          // Set test school as current and navigate to it
+          console.log('SchoolRouter: Setting test school as default:', testSchool.name)
+          setCurrentSchool(testSchool)
+          navigate(`/school/${testSchool.id}`, { replace: true })
+          return
+        } else {
+          // Fall back to first available school
+          console.log(
+            'SchoolRouter: No test school found, redirecting to first school:',
+            availableSchools[0].name
+          )
+          navigate(`/school/${availableSchools[0].id}`, { replace: true })
+          return
+        }
       }
     }
 
@@ -71,6 +85,20 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
             currentSchool.name
           )
           navigate(`/school/${currentSchool.id}/screenings`, { replace: true })
+          return
+        } else if (routePath === '/screening/speech') {
+          console.log(
+            'SchoolRouter: Redirecting /screening/speech to school screening/speech:',
+            currentSchool.name
+          )
+          navigate(`/school/${currentSchool.id}/screening/speech`, { replace: true })
+          return
+        } else if (routePath === '/screening/hearing') {
+          console.log(
+            'SchoolRouter: Redirecting /screening/hearing to school screening/hearing:',
+            currentSchool.name
+          )
+          navigate(`/school/${currentSchool.id}/screening/hearing`, { replace: true })
           return
         } else if (routePath === '/students') {
           console.log('SchoolRouter: Redirecting /students to school students:', currentSchool.name)

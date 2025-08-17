@@ -128,6 +128,26 @@ const App = () => (
                 }
               />
               <Route
+                path='/screening/speech'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <SpeechScreening />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/screening/hearing'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <HearingScreening />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path='/students'
                 element={
                   <ProtectedRoute>

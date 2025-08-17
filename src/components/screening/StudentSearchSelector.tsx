@@ -89,14 +89,25 @@ const StudentSearchSelector = ({
   )
 
   // Use React Query hooks instead of StudentService
+  // Only fetch students if a school is selected
   const { data: studentsByGrade = [], isLoading: loadingByGrade } = useStudentsByGrade(
-    gradeFilter || ''
+    currentSchool && gradeFilter ? gradeFilter : ''
   )
-  const { data: searchResults = [], isLoading: loadingSearch } = useSearchStudents(searchValue)
+  const { data: searchResults = [], isLoading: loadingSearch } = useSearchStudents(
+    currentSchool && searchValue ? searchValue : ''
+  )
 
   // Determine which students to show
-  const studentsToShow = searchValue.length >= 2 ? searchResults : studentsByGrade
-  const isLoading = searchValue.length >= 2 ? loadingSearch : loadingByGrade
+  const studentsToShow = currentSchool
+    ? searchValue.length >= 2
+      ? searchResults
+      : studentsByGrade
+    : []
+  const isLoading = currentSchool
+    ? searchValue.length >= 2
+      ? loadingSearch
+      : loadingByGrade
+    : false
 
   // New student form
   const newStudentForm = useForm<NewStudentFormData>({
@@ -199,7 +210,9 @@ const StudentSearchSelector = ({
               </div>
               <div>
                 <p className='text-sm font-medium text-gray-900'>Current School</p>
-                <p className='text-lg font-semibold text-blue-700'>{currentSchool.name}</p>
+                <p className='text-lg font-semibold text-blue-700'>
+                  {currentSchool?.name || 'No school selected'}
+                </p>
               </div>
             </div>
 
@@ -269,7 +282,7 @@ const StudentSearchSelector = ({
         <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0' align='start'>
           <Command shouldFilter={false}>
             <CommandInput
-              placeholder={`Searching students in: ${currentSchool.name}`}
+              placeholder={`Searching students in: ${currentSchool?.name || 'school'}`}
               value={searchValue}
               onValueChange={setSearchValue}
             />
