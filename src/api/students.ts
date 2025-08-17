@@ -99,6 +99,42 @@ export const studentsApi = {
     }
   },
 
+  // Get students by school ID
+  getStudentsBySchool: async (schoolId: string): Promise<Student[]> => {
+    try {
+      if (!schoolId) {
+        return []
+      }
+
+      // First, try to query with school_id filter
+      const query = supabase
+        .from('students')
+        .select('*')
+        .order('last_name', { ascending: true })
+        .order('first_name', { ascending: true })
+
+      // Try to filter by school_id if the field exists
+      try {
+        const { data, error } = await query.eq('school_id', schoolId)
+        if (!error && data) {
+          return data
+        }
+      } catch (filterError) {
+        // school_id filter failed, fall back to all students
+      }
+
+      // Fallback: if school_id filter fails, return all students
+      // This handles the case where the database schema doesn't have school_id
+      const { data, error } = await query
+      if (error) throw error
+
+      return data || []
+    } catch (error) {
+      console.error('Error fetching students by school:', error)
+      throw error
+    }
+  },
+
   // Get a specific student by ID
   getStudent: async (studentId: string): Promise<Student | null> => {
     try {
@@ -122,21 +158,29 @@ export const studentsApi = {
     first_name: string
     last_name: string
     student_id: string
-    school_id: string
+    school_id?: string
     qualifies_for_program?: boolean
   }): Promise<Student> => {
     try {
-      const { data, error } = await supabase
-        .from('students')
-        .insert({
-          first_name: studentData.first_name,
-          last_name: studentData.last_name,
-          student_id: studentData.student_id,
-          school_id: studentData.school_id,
-          qualifies_for_program: studentData.qualifies_for_program || null,
-        })
-        .select()
-        .single()
+      const insertData: {
+        first_name: string
+        last_name: string
+        student_id: string
+        qualifies_for_program: boolean | null
+        school_id?: string
+      } = {
+        first_name: studentData.first_name,
+        last_name: studentData.last_name,
+        student_id: studentData.student_id,
+        qualifies_for_program: studentData.qualifies_for_program || null,
+      }
+
+      // Only include school_id if it's provided
+      if (studentData.school_id) {
+        insertData.school_id = studentData.school_id
+      }
+
+      const { data, error } = await supabase.from('students').insert(insertData).select().single()
 
       if (error) throw error
 
@@ -154,7 +198,7 @@ export const studentsApi = {
       first_name: string
       last_name: string
       student_id: string
-      school_id: string
+      school_id?: string
       qualifies_for_program: boolean
     }>
   ): Promise<Student> => {

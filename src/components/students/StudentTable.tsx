@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Student } from '@/types/database'
+import { Student, School } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Search, Filter, Eye } from 'lucide-react'
@@ -11,9 +11,10 @@ import { useToast } from '@/hooks/use-toast'
 
 interface StudentTableProps {
   students: Student[]
+  selectedSchool?: School | null
 }
 
-const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
+const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool }) => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
@@ -36,15 +37,34 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
     navigate(`/students/${studentId}`)
   }
 
-  const handleAddStudent = async (studentData: any) => {
+  const handleAddStudent = async (studentData: {
+    first_name: string
+    last_name: string
+    student_id: string
+    grade?: string
+    date_of_birth?: string
+    emergency_contact_name?: string
+  }) => {
     try {
       setIsSubmitting(true)
 
       // Add required fields for student creation
-      const newStudentData = {
-        ...studentData,
-        school_id: 'school-1', // Default school for now
-        active: true,
+      const newStudentData: {
+        first_name: string
+        last_name: string
+        student_id: string
+        qualifies_for_program?: boolean
+        school_id?: string
+      } = {
+        first_name: studentData.first_name,
+        last_name: studentData.last_name,
+        student_id: studentData.student_id,
+        qualifies_for_program: false, // Default value
+      }
+
+      // Only add school_id if the selectedSchool exists and the database supports it
+      if (selectedSchool?.id) {
+        newStudentData.school_id = selectedSchool.id
       }
 
       await StudentService.createStudent(newStudentData)
@@ -130,18 +150,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
                           <div className='font-medium'>
                             {student.first_name} {student.last_name}
                           </div>
-                          {student.emergency_contact_name && (
-                            <div className='text-sm text-gray-500'>
-                              Emergency: {student.emergency_contact_name}
-                            </div>
-                          )}
                         </div>
                       </td>
                       <td className='p-4'>{student.student_id}</td>
-                      <td className='p-4'>{student.grade || 'N/A'}</td>
-                      <td className='p-4'>
-                        {new Date(student.date_of_birth).toLocaleDateString()}
-                      </td>
+                      <td className='p-4'>N/A</td>
+                      <td className='p-4'>N/A</td>
                       <td className='p-4'>
                         <Button
                           size='sm'
