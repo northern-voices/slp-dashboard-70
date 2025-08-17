@@ -106,10 +106,30 @@ export const studentsApi = {
         return []
       }
 
-      // First, try to query with school_id filter
+      // First, try to query with school_id filter and join with screenings to get grade info
       const query = supabase
         .from('students')
-        .select('*')
+        .select(
+          `
+          *,
+          speech_screenings!left(
+            id,
+            grade_id,
+            created_at,
+            school_grades!left(
+              grade_level
+            )
+          ),
+          hearing_screenings!left(
+            id,
+            grade_id,
+            created_at,
+            school_grades!left(
+              grade_level
+            )
+          )
+        `
+        )
         .eq('school_id', schoolId)
         .order('last_name', { ascending: true })
         .order('first_name', { ascending: true })
@@ -118,7 +138,29 @@ export const studentsApi = {
       try {
         const { data, error } = await query
         if (!error && data) {
-          return data
+          // Transform the data to include grade information from most recent screening
+          const transformedStudents = data.map(student => {
+            // Get the most recent screening (speech or hearing) to determine grade
+            const speechScreenings = student.speech_screenings || []
+            const hearingScreenings = student.hearing_screenings || []
+
+            // Combine and sort by creation date to find most recent
+            const allScreenings = [
+              ...speechScreenings.map(s => ({ ...s, type: 'speech' })),
+              ...hearingScreenings.map(s => ({ ...s, type: 'hearing' })),
+            ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+            // Get grade from most recent screening
+            const mostRecentScreening = allScreenings[0]
+            const grade = mostRecentScreening?.school_grades?.grade_level || null
+
+            return {
+              ...student,
+              grade,
+            }
+          })
+
+          return transformedStudents
         }
       } catch (filterError) {
         // school_id filter failed, fall back to all students
@@ -165,6 +207,7 @@ export const studentsApi = {
     last_name: string
     student_id: string
     school_id?: string
+    grade?: string
     qualifies_for_program?: boolean
   }): Promise<Student> => {
     try {
@@ -174,6 +217,7 @@ export const studentsApi = {
         student_id: string
         qualifies_for_program: boolean | null
         school_id?: string
+        grade?: string
       } = {
         first_name: studentData.first_name,
         last_name: studentData.last_name,
@@ -184,6 +228,11 @@ export const studentsApi = {
       // Only include school_id if it's provided
       if (studentData.school_id) {
         insertData.school_id = studentData.school_id
+      }
+
+      // Only include grade if it's provided
+      if (studentData.grade) {
+        insertData.grade = studentData.grade
       }
 
       const { data, error } = await supabase.from('students').insert(insertData).select().single()

@@ -19,6 +19,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { StudentService } from '@/services/studentService'
 import { useToast } from '@/hooks/use-toast'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface StudentTableProps {
   students: Student[]
@@ -40,6 +41,12 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
   const [showAddModal, setShowAddModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Get current school context
+  const { currentSchool } = useOrganization()
+
+  // Use the selectedSchool prop or fall back to currentSchool from context
+  const activeSchool = selectedSchool || currentSchool
+
   // New student form
   const newStudentForm = useForm<NewStudentFormData>({
     resolver: zodResolver(newStudentSchema),
@@ -48,6 +55,17 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
       last_name: '',
     },
   })
+
+  // Helper function to get grade level for a student
+  const getStudentGrade = (student: Student): string => {
+    // If the student has a grade field (from screenings), use it
+    if (student.grade) {
+      return student.grade
+    }
+
+    // Otherwise, show N/A
+    return 'N/A'
+  }
 
   const filteredStudents = students.filter(
     student =>
@@ -87,9 +105,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
         qualifies_for_program: false, // Default value
       }
 
-      // Only add school_id if the selectedSchool exists and the database supports it
-      if (selectedSchool?.id) {
-        newStudentData.school_id = selectedSchool.id
+      // Only add school_id if the activeSchool exists and the database supports it
+      if (activeSchool?.id) {
+        newStudentData.school_id = activeSchool.id
       }
 
       await StudentService.createStudent(newStudentData)
@@ -186,7 +204,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
                       </td>
                       {/* // TODO: Add date of birth (ask Lisa) */}
                       {/* <td className='p-4'>N/A</td> */}
-                      <td className='p-4'>N/A</td>
+                      <td className='p-4'>{getStudentGrade(student)}</td>
                       <td className='p-4'>
                         <Button
                           size='sm'
