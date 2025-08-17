@@ -116,6 +116,68 @@ const App = () => (
               {/* Onboarding Route */}
               <Route path='/onboarding' element={<Onboarding />} />
 
+              {/* Redirect Routes - Auto-redirect to current school */}
+              <Route
+                path='/screenings'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <Screenings />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/students'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <Students />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/reports'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <Reports />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/management'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <Management />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/profile'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <Profile />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/notifications'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <Notifications />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Protected Routes - All wrapped under school selection */}
               <Route
                 path='/'

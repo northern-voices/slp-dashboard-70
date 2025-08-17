@@ -1,36 +1,36 @@
-
-import React from 'react';
-import {
-  Sidebar,
-  SidebarContent,
-} from '@/components/ui/sidebar';
-import { useOrganization } from '@/contexts/OrganizationContext';
-import { useLocation } from 'react-router-dom';
-import SidebarHeader from './sidebar/SidebarHeader';
-import SidebarFooter from './sidebar/SidebarFooter';
-import SidebarNavigationGroup from './sidebar/SidebarNavigationGroup';
-import { getNavigationGroups } from './sidebar/sidebarNavigationData';
+import React from 'react'
+import { Sidebar, SidebarContent } from '@/components/ui/sidebar'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useLocation } from 'react-router-dom'
+import SidebarHeader from './sidebar/SidebarHeader'
+import SidebarFooter from './sidebar/SidebarFooter'
+import SidebarNavigationGroup from './sidebar/SidebarNavigationGroup'
+import { getNavigationGroups } from './sidebar/sidebarNavigationData'
 
 interface AppSidebarProps {
-  userRole?: 'admin' | 'slp' | 'supervisor';
-  userName?: string;
-  className?: string;
+  userRole?: 'admin' | 'slp' | 'supervisor'
+  userName?: string
+  className?: string
 }
 
-const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', className }: AppSidebarProps) => {
-  const { userProfile } = useOrganization();
-  const location = useLocation();
+const AppSidebar = ({
+  userRole = 'slp',
+  userName = 'Dr. Sarah Johnson',
+  className,
+}: AppSidebarProps) => {
+  const { userProfile, currentSchool } = useOrganization()
+  const location = useLocation()
 
-  const navigationGroups = getNavigationGroups(location, userRole, userProfile);
+  const navigationGroups = getNavigationGroups(location, userRole, userProfile, currentSchool)
 
   return (
     <div className={`hidden md:block ${className || ''}`}>
-      <Sidebar className="border-r border-gray-100 bg-white">
+      <Sidebar className='border-r border-gray-100 bg-white'>
         <SidebarHeader />
-        
-        <SidebarContent className="px-3 py-2">
-          <div className="space-y-8">
-            {navigationGroups.map((group) => (
+
+        <SidebarContent className='px-3 py-2'>
+          <div className='space-y-8'>
+            {navigationGroups.map(group => (
               <SidebarNavigationGroup key={group.label} group={group} />
             ))}
           </div>
@@ -39,7 +39,7 @@ const AppSidebar = ({ userRole = 'slp', userName = 'Dr. Sarah Johnson', classNam
         <SidebarFooter />
       </Sidebar>
     </div>
-  );
-};
+  )
+}
 
-export default AppSidebar;
+export default AppSidebar
