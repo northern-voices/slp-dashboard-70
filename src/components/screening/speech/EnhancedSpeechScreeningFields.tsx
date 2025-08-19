@@ -26,6 +26,7 @@ interface EnhancedSpeechScreeningFieldsProps {
         errorPatterns: string[]
         stoppingSounds?: string[]
         notes: string
+        extraNotes?: string
       }>
       articulationNotes: string
     }
@@ -41,6 +42,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([])
   const [selectedSounds, setSelectedSounds] = useState<string[]>([])
   const [soundNotes, setSoundNotes] = useState<Record<string, string>>({})
+  const [extraSoundNotes, setExtraSoundNotes] = useState<Record<string, string>>({})
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
   const [selectedStoppingSounds, setSelectedStoppingSounds] = useState<Record<string, string[]>>({})
 
@@ -402,6 +404,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       errorPatterns: selectedErrorPatterns[sound] || [],
       stoppingSounds: selectedStoppingSounds[sound] || [],
       notes: soundNotes[sound] || '',
+      extraNotes: extraSoundNotes[sound] || '',
     }))
 
     const articulationData = {
@@ -410,7 +413,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     }
 
     form.setValue('articulation', articulationData)
-  }, [selectedSounds, selectedErrorPatterns, selectedStoppingSounds, soundNotes, form])
+  }, [
+    selectedSounds,
+    selectedErrorPatterns,
+    selectedStoppingSounds,
+    soundNotes,
+    extraSoundNotes,
+    form,
+  ])
 
   const handleConcernChange = (concern: string, checked: boolean) => {
     if (checked) {
@@ -451,6 +461,9 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       const newNotes = { ...soundNotes }
       delete newNotes[sound]
       setSoundNotes(newNotes)
+      const newExtraNotes = { ...extraSoundNotes }
+      delete newExtraNotes[sound]
+      setExtraSoundNotes(newExtraNotes)
 
       // Clear stopping sounds for this sound
       const newStoppingSounds = { ...selectedStoppingSounds }
@@ -464,6 +477,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const handleSoundNoteChange = (sound: string, note: string) => {
     setSoundNotes({
       ...soundNotes,
+      [sound]: note,
+    })
+  }
+
+  const handleExtraSoundNoteChange = (sound: string, note: string) => {
+    setExtraSoundNotes({
+      ...extraSoundNotes,
       [sound]: note,
     })
   }
@@ -1046,6 +1066,25 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
                           return (
                             <div key={pattern} className='space-y-2'>
+                              {/* Extra Notes textbox - show above "Other" pattern when any non-Other pattern is selected */}
+                              {pattern === 'Other' &&
+                                (selectedErrorPatterns[sound] || []).some(p => p !== 'Other') && (
+                                  <div className='mb-2'>
+                                    <Label className='text-xs font-medium text-gray-700 block mb-1'>
+                                      Notes:
+                                    </Label>
+                                    <Textarea
+                                      placeholder='Notes for this sound...'
+                                      value={extraSoundNotes[sound] || ''}
+                                      onChange={e =>
+                                        handleExtraSoundNoteChange(sound, e.target.value)
+                                      }
+                                      className='text-xs'
+                                      rows={2}
+                                    />
+                                  </div>
+                                )}
+
                               <div className='flex items-center space-x-2'>
                                 <Checkbox
                                   id={`${sound}-${pattern}`}
@@ -1118,84 +1157,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         Word: {soundErrorPatterns[sound]?.word}
                       </div>
 
-                      {/* Notes for this sound - show when "Other" is checked OR when syllable patterns are selected OR when P/B/Final P patterns are selected OR when M patterns are selected OR when Final T/Final K patterns are selected OR when St- patterns are selected OR when Sp- patterns are selected OR when Sn- patterns are selected OR when Sm- patterns are selected OR when Sk- patterns are selected OR when Final -ts patterns are selected OR when Final -ps patterns are selected OR when Final -ks patterns are selected OR when K/G patterns are selected OR when T/D patterns are selected OR when L/R patterns are selected OR when S/Z/Ch/Sh/J/F/V/th patterns are selected */}
-                      {((selectedErrorPatterns[sound] || []).includes('Other') ||
-                        ((sound === '2 syllables' || sound === '3 syllables') &&
-                          (selectedErrorPatterns[sound] || []).length > 0) ||
-                        ((sound === 'P' || sound === 'B' || sound === 'Final P') &&
-                          (selectedErrorPatterns[sound] || []).length > 0) ||
-                        (sound === 'M' && (selectedErrorPatterns[sound] || []).length > 0) ||
-                        ((sound === 'Final T' || sound === 'Final K') &&
-                          (selectedErrorPatterns[sound] || []).length > 0) ||
-                        (sound === 'St-' && (selectedErrorPatterns[sound] || []).length > 0) ||
-                        (sound === 'Sp-' && (selectedErrorPatterns[sound] || []).length > 0) ||
-                        (sound === 'Sn-' && (selectedErrorPatterns[sound] || []).length > 0) ||
-                        (sound === 'Sm-' && (selectedErrorPatterns[sound] || []).length > 0) ||
-                        (sound === 'Sk-' && (selectedErrorPatterns[sound] || []).length > 0) ||
-                        (sound === 'Final -ts' &&
-                          (selectedErrorPatterns[sound] || []).length > 0) ||
-                        (sound === 'Final -ps' &&
-                          (selectedErrorPatterns[sound] || []).length > 0) ||
-                        (sound === 'Final -ks' &&
-                          (selectedErrorPatterns[sound] || []).length > 0) ||
-                        ((sound === 'K' || sound === 'G') &&
-                          (selectedErrorPatterns[sound] || []).length > 0) ||
-                        ((sound === 'T' || sound === 'D') &&
-                          (selectedErrorPatterns[sound] || []).length > 0) ||
-                        ((sound === 'L' || sound === 'R') &&
-                          (selectedErrorPatterns[sound] || []).length > 0) ||
-                        ((sound === 'S' ||
-                          sound === 'Z' ||
-                          sound === 'Ch' ||
-                          sound === 'Sh' ||
-                          sound === 'J' ||
-                          sound === 'F' ||
-                          sound === 'V' ||
-                          sound === 'th') &&
-                          (selectedErrorPatterns[sound] || []).length > 0)) && (
+                      {/* Notes for this sound - show ONLY when "Other" is checked */}
+                      {(selectedErrorPatterns[sound] || []).includes('Other') && (
                         <Textarea
-                          placeholder={
-                            sound === '2 syllables' || sound === '3 syllables'
-                              ? 'Notes...'
-                              : sound === 'P' || sound === 'B' || sound === 'Final P'
-                              ? 'Notes...'
-                              : sound === 'M'
-                              ? 'Notes...'
-                              : sound === 'Final T' || sound === 'Final K'
-                              ? 'Notes...'
-                              : sound === 'St-'
-                              ? 'Notes...'
-                              : sound === 'Sp-'
-                              ? 'Notes...'
-                              : sound === 'Sn-'
-                              ? 'Notes...'
-                              : sound === 'Sm-'
-                              ? 'Notes...'
-                              : sound === 'Sk-'
-                              ? 'Notes...'
-                              : sound === 'Final -ts'
-                              ? 'Notes...'
-                              : sound === 'Final -ps'
-                              ? 'Notes...'
-                              : sound === 'Final -ks'
-                              ? 'Notes...'
-                              : sound === 'K' || sound === 'G'
-                              ? 'Notes...'
-                              : sound === 'T' || sound === 'D'
-                              ? 'Notes...'
-                              : sound === 'L' || sound === 'R'
-                              ? 'Notes...'
-                              : sound === 'S' ||
-                                sound === 'Z' ||
-                                sound === 'Ch' ||
-                                sound === 'Sh' ||
-                                sound === 'J' ||
-                                sound === 'F' ||
-                                sound === 'V' ||
-                                sound === 'th'
-                              ? 'Notes...'
-                              : 'Specify other error pattern...'
-                          }
+                          placeholder='Specify other error pattern...'
                           value={soundNotes[sound] || ''}
                           onChange={e => handleSoundNoteChange(sound, e.target.value)}
                           className='mt-2 text-xs'

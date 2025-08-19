@@ -86,24 +86,6 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
               }}
             />
           </div>
-          <div>
-            <Label htmlFor='other_notes'>Additional Notes</Label>
-            <Textarea
-              {...form.register('other_notes')}
-              placeholder='Enter any additional notes or observations...'
-              rows={4}
-              className='mt-2'
-              onKeyDown={e => {
-                if (e.key === 'Enter' && e.ctrlKey) {
-                  // Allow Ctrl+Enter for new lines
-                  return
-                }
-                if (e.key === 'Enter') {
-                  e.stopPropagation() // Prevent form submission
-                }
-              }}
-            />
-          </div>
         </CardContent>
       </Card>
 
