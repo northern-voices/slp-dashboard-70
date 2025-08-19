@@ -56,3 +56,63 @@ export const useHearingScreenings = () => {
     enabled: !!user && !!userProfile && !!currentOrganization,
   })
 }
+
+export const useRecentScreeningsBySchool = (schoolId?: string, days: number = 7) => {
+  const { user } = useAuth()
+  const { userProfile } = useOrganization()
+
+  return useQuery({
+    queryKey: ['recent-screenings', schoolId, days, user?.id, userProfile?.role],
+    queryFn: async () => {
+      // Get both speech and hearing screenings for the school
+      const [speechScreenings, hearingScreenings] = await Promise.all([
+        screeningsApi.getSpeechScreeningsList(user?.id, userProfile?.role as 'admin' | 'slp'),
+        screeningsApi.getHearingScreeningsList(user?.id, userProfile?.role as 'admin' | 'slp'),
+      ])
+
+      // Filter by school and recent date
+      const cutoffDate = new Date()
+      cutoffDate.setDate(cutoffDate.getDate() - days)
+
+      const recentSpeech = speechScreenings.filter(
+        screening =>
+          screening.school_id === schoolId && new Date(screening.created_at) >= cutoffDate
+      )
+
+      const recentHearing = hearingScreenings.filter(
+        screening =>
+          screening.school_id === schoolId && new Date(screening.created_at) >= cutoffDate
+      )
+
+      return recentSpeech.length + recentHearing.length
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes for recent data
+    gcTime: 10 * 60 * 1000,
+    enabled: !!schoolId && !!user && !!userProfile,
+  })
+}
+
+export const useScreeningsBySchool = (schoolId?: string) => {
+  const { user } = useAuth()
+  const { userProfile } = useOrganization()
+
+  return useQuery({
+    queryKey: ['screenings', 'by-school', schoolId, user?.id, userProfile?.role],
+    queryFn: async () => {
+      // Get both speech and hearing screenings for the school
+      const [speechScreenings, hearingScreenings] = await Promise.all([
+        screeningsApi.getSpeechScreeningsList(user?.id, userProfile?.role as 'admin' | 'slp'),
+        screeningsApi.getHearingScreeningsList(user?.id, userProfile?.role as 'admin' | 'slp'),
+      ])
+
+      // Filter by school
+      const schoolSpeech = speechScreenings.filter(screening => screening.school_id === schoolId)
+      const schoolHearing = hearingScreenings.filter(screening => screening.school_id === schoolId)
+
+      return schoolSpeech.length + schoolHearing.length
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    enabled: !!schoolId && !!user && !!userProfile,
+  })
+}
