@@ -73,9 +73,9 @@ const ScreeningsContent = () => {
               <div className='mb-8'>
                 <div className='flex items-center justify-between mb-6'>
                   <div>
-                    <h1 className='text-3xl font-semibold text-gray-900 mb-2'>Screenings</h1>
+                    <h1 className='text-3xl font-semibold text-gray-900 mb-2'>Speech Screenings</h1>
                     <p className='text-gray-600'>
-                      Manage and track all speech and hearing screenings
+                      Manage and track all speech screenings
                       {currentSchool && ` for ${currentSchool.name}`}
                     </p>
                   </div>

@@ -23,7 +23,7 @@ const SchoolsFilterSection = ({ selected, onChange }: SchoolsFilterSectionProps)
       options={mockSchools}
       selected={selected}
       onChange={onChange}
-      placeholder='Select schools... asfasf'
+      placeholder='Select schools...'
       searchPlaceholder='Search schools...'
       emptyMessage='No schools found.'
     />

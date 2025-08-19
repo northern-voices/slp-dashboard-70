@@ -274,7 +274,6 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                   <span className='font-medium'>{screening.student_name}</span>
                 </div>
                 <p className='text-sm text-gray-600 ml-6'>Grade {screening.grade}</p>
-                <p className='text-sm text-gray-600 ml-6'>ID: {screening.student_id}</p>
                 {screening.academic_year && (
                   <p className='text-sm text-gray-600 ml-6'>
                     Academic Year: {screening.academic_year}

@@ -1,24 +1,71 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Student } from '@/types/database'
+import { Student, School } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Search, Filter, Eye } from 'lucide-react'
+import { Plus, UserPlus, Search, Filter, Eye } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import StudentForm from './StudentForm'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { StudentService } from '@/services/studentService'
 import { useToast } from '@/hooks/use-toast'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface StudentTableProps {
   students: Student[]
+  selectedSchool?: School | null
 }
 
-const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
+// Simplified student creation schema
+const newStudentSchema = z.object({
+  first_name: z.string().min(1, 'First name is required'),
+  last_name: z.string().min(1, 'Last name is required'),
+})
+
+type NewStudentFormData = z.infer<typeof newStudentSchema>
+
+const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool }) => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Get current school context
+  const { currentSchool } = useOrganization()
+
+  // Use the selectedSchool prop or fall back to currentSchool from context
+  const activeSchool = selectedSchool || currentSchool
+
+  // New student form
+  const newStudentForm = useForm<NewStudentFormData>({
+    resolver: zodResolver(newStudentSchema),
+    defaultValues: {
+      first_name: '',
+      last_name: '',
+    },
+  })
+
+  // Helper function to get grade level for a student
+  const getStudentGrade = (student: Student): string => {
+    // If the student has a grade field (from screenings), use it
+    if (student.grade) {
+      return student.grade
+    }
+
+    // Otherwise, show N/A
+    return 'N/A'
+  }
 
   const filteredStudents = students.filter(
     student =>
@@ -28,23 +75,47 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
   )
 
   const handleRowClick = (studentId: string) => {
-    navigate(`/students/${studentId}`)
+    if (activeSchool) {
+      navigate(`/school/${activeSchool.id}/students/${studentId}`)
+    } else {
+      navigate(`/students/${studentId}`)
+    }
   }
 
   const handleViewClick = (e: React.MouseEvent, studentId: string) => {
     e.stopPropagation()
-    navigate(`/students/${studentId}`)
+    if (activeSchool) {
+      navigate(`/school/${activeSchool.id}/students/${studentId}`)
+    } else {
+      navigate(`/students/${studentId}`)
+    }
   }
 
-  const handleAddStudent = async (studentData: any) => {
+  const handleAddStudent = async (data: NewStudentFormData) => {
     try {
       setIsSubmitting(true)
 
-      // Add required fields for student creation
-      const newStudentData = {
-        ...studentData,
-        school_id: 'school-1', // Default school for now
-        active: true,
+      // Generate a unique student ID based on name and timestamp
+      const timestamp = Date.now().toString(36)
+      const initials = `${data.first_name.charAt(0)}${data.last_name.charAt(0)}`.toUpperCase()
+      const generatedStudentId = `${initials}-${timestamp}`
+
+      const newStudentData: {
+        first_name: string
+        last_name: string
+        student_id: string
+        qualifies_for_program: boolean
+        school_id?: string
+      } = {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        student_id: generatedStudentId,
+        qualifies_for_program: false, // Default value
+      }
+
+      // Only add school_id if the activeSchool exists and the database supports it
+      if (activeSchool?.id) {
+        newStudentData.school_id = activeSchool.id
       }
 
       await StudentService.createStudent(newStudentData)
@@ -55,7 +126,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
       })
 
       setShowAddModal(false)
+      newStudentForm.reset()
 
+      // TODO: Change window reload to revalidate data instead
       // Refresh the page to show the new student
       window.location.reload()
     } catch (error) {
@@ -68,6 +141,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleCloseNewStudentForm = () => {
+    setShowAddModal(false)
+    newStudentForm.reset()
   }
 
   return (
@@ -85,7 +163,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
       </div>
 
       {/* Search and Filters */}
-      <div className='flex flex-col sm:flex-row gap-4'>
+      {/* // TODO: Add filters for students table */}
+      {/* <div className='flex flex-col sm:flex-row gap-4'>
         <div className='relative flex-1'>
           <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
           <Input
@@ -99,7 +178,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
           <Filter className='w-4 h-4' />
           Filter
         </Button>
-      </div>
+      </div> */}
 
       {/* Students Table */}
       <Card>
@@ -113,9 +192,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
                 <thead>
                   <tr className='border-b'>
                     <th className='text-left p-4 font-medium'>Name</th>
-                    <th className='text-left p-4 font-medium'>Student ID</th>
                     <th className='text-left p-4 font-medium'>Grade</th>
-                    <th className='text-left p-4 font-medium'>Date of Birth</th>
+                    {/* // TODO: Add date of birth (ask Lisa) */}
+                    {/* <th className='text-left p-4 font-medium'>Date of Birth</th> */}
                     <th className='text-left p-4 font-medium'>Actions</th>
                   </tr>
                 </thead>
@@ -130,18 +209,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
                           <div className='font-medium'>
                             {student.first_name} {student.last_name}
                           </div>
-                          {student.emergency_contact_name && (
-                            <div className='text-sm text-gray-500'>
-                              Emergency: {student.emergency_contact_name}
-                            </div>
-                          )}
                         </div>
                       </td>
-                      <td className='p-4'>{student.student_id}</td>
-                      <td className='p-4'>{student.grade || 'N/A'}</td>
-                      <td className='p-4'>
-                        {new Date(student.date_of_birth).toLocaleDateString()}
-                      </td>
+                      {/* // TODO: Add date of birth (ask Lisa) */}
+                      {/* <td className='p-4'>N/A</td> */}
+                      <td className='p-4'>{getStudentGrade(student)}</td>
                       <td className='p-4'>
                         <Button
                           size='sm'
@@ -168,13 +240,59 @@ const StudentTable: React.FC<StudentTableProps> = ({ students }) => {
       </Card>
 
       {/* Add Student Modal */}
-      <StudentForm
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSubmit={handleAddStudent}
-        student={null}
-        title='Add New Student'
-      />
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto'>
+          <DialogHeader>
+            <DialogTitle className='flex items-center gap-2'>
+              <UserPlus className='w-4 h-4 mr-2' />
+              Add New Student
+            </DialogTitle>
+          </DialogHeader>
+
+          <Form {...newStudentForm}>
+            <form onSubmit={newStudentForm.handleSubmit(handleAddStudent)} className='space-y-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <FormField
+                  control={newStudentForm.control}
+                  name='first_name'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name *</FormLabel>
+                      <FormControl>
+                        <Input placeholder='Emma' {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={newStudentForm.control}
+                  name='last_name'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name *</FormLabel>
+                      <FormControl>
+                        <Input placeholder='Johnson' {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className='flex justify-end space-x-2 pt-4'>
+                <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>
+                  Cancel
+                </Button>
+                <Button type='submit' disabled={isSubmitting}>
+                  {isSubmitting ? 'Adding...' : 'Add Student'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -48,7 +48,7 @@ export const getNavigationGroups = (
         (useSchoolRoutes && location.pathname.startsWith(`/school/${currentSchool.id}/students`)),
     },
     {
-      title: 'Screenings',
+      title: 'Speech Screenings',
       url: useSchoolRoutes ? `/school/${currentSchool.id}/screenings` : '/screenings',
       icon: Stethoscope,
       isActive:

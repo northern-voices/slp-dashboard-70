@@ -18,7 +18,16 @@ import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
 // Type adapter to convert API Student to database Student
-const adaptStudent = (apiStudent: any): Student => ({
+const adaptStudent = (apiStudent: {
+  id: string
+  first_name: string
+  last_name: string
+  student_id: string
+  school_id?: string
+  qualifies_for_program?: boolean
+  created_at?: string
+  updated_at?: string
+}): Student => ({
   id: apiStudent.id,
   first_name: apiStudent.first_name,
   last_name: apiStudent.last_name,
@@ -59,7 +68,6 @@ interface StudentSearchSelectorProps {
 const newStudentSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   last_name: z.string().min(1, 'Last name is required'),
-  student_id: z.string().min(1, 'Student ID is required'),
 })
 
 type NewStudentFormData = z.infer<typeof newStudentSchema>
@@ -115,7 +123,6 @@ const StudentSearchSelector = ({
     defaultValues: {
       first_name: '',
       last_name: '',
-      student_id: '',
     },
   })
 
@@ -142,10 +149,15 @@ const StudentSearchSelector = ({
 
     setIsCreatingStudent(true)
     try {
+      // Generate a unique student ID based on name and timestamp
+      const timestamp = Date.now().toString(36)
+      const initials = `${data.first_name.charAt(0)}${data.last_name.charAt(0)}`.toUpperCase()
+      const generatedStudentId = `${initials}-${timestamp}`
+
       const newStudent = await StudentService.createStudent({
         first_name: data.first_name,
         last_name: data.last_name,
-        student_id: data.student_id,
+        student_id: generatedStudentId,
         school_id: currentSchool.id,
         qualifies_for_program: true,
       })
@@ -324,9 +336,7 @@ const StudentSearchSelector = ({
                         <span className='font-medium'>
                           {student.first_name} {student.last_name}
                         </span>
-                        <span className='text-sm text-muted-foreground'>
-                          ID: {student.student_id}
-                        </span>
+                        <span className='text-sm text-muted-foreground'></span>
                       </div>
                     </CommandItem>
                   ))}
@@ -395,22 +405,6 @@ const StudentSearchSelector = ({
                       <FormLabel>Last Name *</FormLabel>
                       <FormControl>
                         <Input placeholder='Johnson' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <FormField
-                  control={newStudentForm.control}
-                  name='student_id'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Student ID *</FormLabel>
-                      <FormControl>
-                        <Input placeholder='ABCD-EFG-1234' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
