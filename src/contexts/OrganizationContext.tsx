@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { Organization, School, SLPProfile } from '@/types/database'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -44,18 +44,19 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
 
   const { user } = useAuth()
 
-  // console.log(user, 'user')
-
   // Wrapper function to update both state and localStorage
-  const setCurrentSchool = (school: School | null) => {
-    setCurrentSchoolState(school)
-  }
+  const setCurrentSchool = useCallback(
+    (school: School | null) => {
+      setCurrentSchoolState(school)
+    },
+    [currentSchool]
+  )
 
-  const clearCurrentSchool = () => {
+  const clearCurrentSchool = useCallback(() => {
     setCurrentSchoolState(null)
-  }
+  }, [])
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     if (!user) {
       setIsLoading(false)
       return
@@ -85,10 +86,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         return
       }
 
-      // console.log(userData, 'userData')
-
       // Transform the user data to match your SLPProfile interface
-      // TODO: Adjust this mapping based on your actual SLPProfile type
       const transformedProfile: SLPProfile = {
         id: userData.id,
         user_id: userData.id,
@@ -98,27 +96,44 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         email: userData.email,
         license_number: '', // TODO: This field doesn't exist in schema, add it or remove from type
         role: userData.role,
-        active: userData.is_active,
+        active: true,
         created_at: userData.created_at,
         updated_at: userData.updated_at,
-        organization: userData.organization,
+      }
+
+      setUserProfile(transformedProfile)
+
+      // Fetch organization data
+      const { data: organizationData, error: organizationError } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', userData.organization_id)
+        .single()
+
+      if (organizationError) {
+        console.error('Error fetching organization data:', organizationError)
+        throw organizationError
+      }
+
+      if (!organizationData) {
+        console.error('No organization data found')
+        return
       }
 
       // Transform organization data to match your Organization interface
       const transformedOrganization: Organization = {
-        id: userData.organization.id,
-        name: userData.organization.name,
-        slug: '', // TODO: This field doesn't exist in schema
-        address: '', // TODO: These fields don't exist in schema
-        city: '',
-        state: '',
-        zip: '',
-        phone: '',
-        created_at: userData.organization.created_at,
-        updated_at: userData.organization.updated_at,
+        id: organizationData.id,
+        name: organizationData.name,
+        slug: organizationData.slug || '',
+        address: organizationData.street_address || '',
+        city: organizationData.city || '',
+        state: organizationData.region || '',
+        zip: organizationData.postal_code || '',
+        phone: organizationData.phone || '',
+        created_at: organizationData.created_at,
+        updated_at: organizationData.updated_at,
       }
 
-      setUserProfile(transformedProfile)
       setCurrentOrganization(transformedOrganization)
 
       // Fetch available schools for the organization
@@ -156,7 +171,6 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         const isValidSchool = transformedSchools.find(s => s.id === currentSchool.id)
         if (!isValidSchool) {
           // Persisted school is no longer valid, clear it
-          console.log('Persisted school no longer valid, clearing selection')
           clearCurrentSchool()
         }
       }
@@ -177,12 +191,12 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [user, currentSchool])
 
   // Refresh data when user changes
   useEffect(() => {
     refreshData()
-  }, [user?.id])
+  }, [user?.id, refreshData])
 
   // Handle initial localStorage loading
   useEffect(() => {
@@ -191,7 +205,6 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
       if (currentSchool) {
         const isValidSchool = availableSchools.find(s => s.id === currentSchool.id)
         if (!isValidSchool) {
-          console.log('Persisted school no longer valid, clearing selection')
           clearCurrentSchool()
         }
       }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react'
 import { School } from '@/types/database'
 import { useOrganization } from './OrganizationContext'
 
@@ -24,28 +24,62 @@ interface SchoolProviderProps {
 }
 
 export const SchoolProvider: React.FC<SchoolProviderProps> = ({ children }) => {
-  const { userProfile, availableSchools, isLoading: orgLoading } = useOrganization()
+  const {
+    userProfile,
+    availableSchools,
+    currentSchool,
+    isLoading: orgLoading,
+    setCurrentSchool,
+  } = useOrganization()
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null)
   const [userAssignedSchools, setUserAssignedSchools] = useState<School[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const hasInitialized = useRef(false)
 
   useEffect(() => {
     if (!orgLoading && userProfile && availableSchools) {
       // For all users, assign them to available schools
       setUserAssignedSchools(availableSchools)
 
-      // Set a default selected school for all users if none is selected
-      if (availableSchools.length > 0 && !selectedSchool) {
-        setSelectedSchool(availableSchools[0])
+      // Only set a default school if this is the first initialization and no school is selected
+      if (
+        !hasInitialized.current &&
+        availableSchools.length > 0 &&
+        !selectedSchool &&
+        !currentSchool
+      ) {
+        const defaultSchool = availableSchools[0]
+        setSelectedSchool(defaultSchool)
+        setCurrentSchool(defaultSchool)
+        hasInitialized.current = true
+      } else if (currentSchool && !selectedSchool) {
+        // If OrganizationContext has a currentSchool but SchoolContext doesn't, sync them
+        setSelectedSchool(currentSchool)
+        hasInitialized.current = true
+      } else if (selectedSchool && !currentSchool) {
+        // If SchoolContext has a selectedSchool but OrganizationContext doesn't, sync them
+        setCurrentSchool(selectedSchool)
+        hasInitialized.current = true
+      } else if (hasInitialized.current) {
+        // If we've already initialized, don't change anything unless explicitly requested
+      } else {
+        hasInitialized.current = true
       }
 
       setIsLoading(false)
     }
-  }, [orgLoading, userProfile, availableSchools])
+  }, [orgLoading, userProfile, availableSchools, setCurrentSchool, selectedSchool, currentSchool])
+
+  // Custom setter that updates both contexts
+  const handleSetSelectedSchool = (school: School | null) => {
+    setSelectedSchool(school)
+    // Also update the OrganizationContext's currentSchool
+    setCurrentSchool(school)
+  }
 
   const value: SchoolContextType = {
     selectedSchool,
-    setSelectedSchool,
+    setSelectedSchool: handleSetSelectedSchool,
     userAssignedSchools,
     isLoading,
   }
