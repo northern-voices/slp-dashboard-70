@@ -172,9 +172,7 @@ const RecentActivity = () => {
                       <p className='text-sm font-medium text-gray-900'>
                         {student.first_name} {student.last_name}
                       </p>
-                      <p className='text-xs text-gray-500'>
-                        {student.student_id} • {student.grade || 'N/A'}
-                      </p>
+                      <p className='text-xs text-gray-500'>{student.grade || 'N/A'}</p>
                     </div>
                   </div>
                   <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
