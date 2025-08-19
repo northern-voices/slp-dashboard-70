@@ -47,3 +47,26 @@ export const useStudent = (studentId?: string) => {
     enabled: !!studentId,
   })
 }
+
+export const useStudentsBySchool = (schoolId?: string) => {
+  return useQuery({
+    queryKey: ['students', 'by-school', schoolId],
+    queryFn: () => studentsApi.getStudentsBySchool(schoolId!),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    enabled: !!schoolId,
+  })
+}
+
+export const useStudentCountBySchool = (schoolId?: string) => {
+  return useQuery({
+    queryKey: ['students', 'count', schoolId],
+    queryFn: async () => {
+      const students = await studentsApi.getStudentsBySchool(schoolId!)
+      return students.length
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    enabled: !!schoolId,
+  })
+}
