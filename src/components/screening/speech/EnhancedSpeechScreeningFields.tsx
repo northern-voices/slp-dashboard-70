@@ -1066,21 +1066,21 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
                           return (
                             <div key={pattern} className='space-y-2'>
-                              {/* Extra Notes textbox - show above "Other" pattern when any non-Other pattern is selected */}
+                              {/* Extra Notes input - show above "Other" pattern when any non-Other pattern is selected */}
                               {pattern === 'Other' &&
                                 (selectedErrorPatterns[sound] || []).some(p => p !== 'Other') && (
                                   <div className='mb-2'>
                                     <Label className='text-xs font-medium text-gray-700 block mb-1'>
                                       Notes:
                                     </Label>
-                                    <Textarea
+                                    <input
+                                      type='text'
                                       placeholder='Notes for this sound...'
                                       value={extraSoundNotes[sound] || ''}
                                       onChange={e =>
                                         handleExtraSoundNoteChange(sound, e.target.value)
                                       }
-                                      className='text-xs'
-                                      rows={2}
+                                      className='text-xs px-3 py-2 border border-gray-300 rounded-sm w-full'
                                     />
                                   </div>
                                 )}
