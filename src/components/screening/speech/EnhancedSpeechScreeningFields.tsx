@@ -404,7 +404,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       errorPatterns: selectedErrorPatterns[sound] || [],
       stoppingSounds: selectedStoppingSounds[sound] || [],
       notes: notes[sound] || '',
-      otherNotes: soundNotes[sound] || '',
+      otherNotes: soundNotes[sound] ? `"${soundNotes[sound]}" for ${sound}` : '',
     }))
 
     const articulationData = {
@@ -468,6 +468,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   }
 
   const handleSoundNoteChange = (sound: string, note: string) => {
+    // Store just the user input, format it when displaying
     setSoundNotes({
       ...soundNotes,
       [sound]: note,
@@ -1167,13 +1168,22 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
                       {/* Other Notes for this sound - show ONLY when "Other" is checked */}
                       {(selectedErrorPatterns[sound] || []).includes('Other') && (
-                        <Textarea
-                          placeholder='Specify other error pattern...'
-                          value={soundNotes[sound] || ''}
-                          onChange={e => handleSoundNoteChange(sound, e.target.value)}
-                          className='mt-2 text-xs'
-                          rows={2}
-                        />
+                        <div className='mt-2'>
+                          <Label className='text-xs font-medium text-gray-700 block mb-1'>
+                            Other Error Pattern:
+                          </Label>
+                          <div className='flex items-center gap-2 text-xs'>
+                            <span className='text-gray-600'>"</span>
+                            <input
+                              type='text'
+                              // placeholder='______'
+                              value={soundNotes[sound] || ''}
+                              onChange={e => handleSoundNoteChange(sound, e.target.value)}
+                              className='px-2 py-1 border border-gray-300 rounded-sm text-xs w-16'
+                            />
+                            <span className='text-gray-600'>" for {sound}</span>
+                          </div>
+                        </div>
                       )}
                     </>
                   )}
