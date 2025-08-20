@@ -186,6 +186,22 @@ const StudentSearchSelector = ({
   }
 
   const handleShowNewStudentForm = () => {
+    // Parse search input to extract first and last names
+    if (searchValue.trim()) {
+      const nameParts = searchValue.trim().split(/\s+/)
+      if (nameParts.length >= 1) {
+        // Set first name (first part)
+        newStudentForm.setValue('first_name', nameParts[0])
+
+        // Set last name (remaining parts joined, or empty if only one part)
+        if (nameParts.length >= 2) {
+          newStudentForm.setValue('last_name', nameParts.slice(1).join(' '))
+        } else {
+          newStudentForm.setValue('last_name', '')
+        }
+      }
+    }
+
     setShowNewStudentForm(true)
     setOpen(false)
   }
@@ -193,6 +209,7 @@ const StudentSearchSelector = ({
   const handleCloseNewStudentForm = () => {
     setShowNewStudentForm(false)
     newStudentForm.reset()
+    setSearchValue('') // Clear search input when closing modal
   }
 
   // Check if we should show "Add New Student" option
