@@ -291,15 +291,20 @@ const StudentSearchSelector = ({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0' align='start'>
-          <Command shouldFilter={false}>
+        <PopoverContent
+          className='w-[var(--radix-popover-trigger-width)] p-0'
+          align='start'
+          side='bottom'
+          sideOffset={4}
+          avoidCollisions={false}>
+          <Command shouldFilter={false} className='max-h-[300px]'>
             <CommandInput
               placeholder={`Searching students in: ${currentSchool?.name || 'school'}`}
               value={searchValue}
               onValueChange={setSearchValue}
             />
-            <div className='relative max-h-[300px] flex flex-col'>
-              <CommandList className='flex-1 overflow-y-auto'>
+            <div className='relative flex flex-col'>
+              <CommandList className='flex-1 overflow-y-auto max-h-[150px] overflow-y-scroll'>
                 <CommandEmpty>
                   {isLoading ? (
                     'Loading students...'

@@ -202,6 +202,31 @@ const SpeechScreeningStep1 = ({
           {selectedGrade && (
             <div>
               <Label className='mb-3 block text-sm font-medium text-gray-700'>
+                Select Student *
+              </Label>
+              <div>
+                <StudentSearchSelector
+                  selectedStudent={selectedStudent}
+                  onStudentSelect={onStudentSelect}
+                  gradeFilter={selectedGrade}
+                />
+              </div>
+            </div>
+          )}
+
+          {selectedStudent && (
+            <div className='mt-6 p-4 bg-blue-50 rounded-lg'>
+              <h4 className='text-sm font-semibold text-blue-900 mb-2'>Selected Student</h4>
+              <p className='text-sm text-blue-800 font-medium'>
+                {selectedStudent.first_name} {selectedStudent.last_name}
+              </p>
+              <p className='text-xs text-blue-600 mt-1'>Grade: {selectedGrade}</p>
+            </div>
+          )}
+
+          {selectedGrade && (
+            <div>
+              <Label className='mb-3 block text-sm font-medium text-gray-700'>
                 Academic Year *
               </Label>
               <Select
@@ -222,31 +247,6 @@ const SpeechScreeningStep1 = ({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          )}
-
-          {selectedGrade && (
-            <div>
-              <Label className='mb-3 block text-sm font-medium text-gray-700'>
-                Select Student *
-              </Label>
-              <div>
-                <StudentSearchSelector
-                  selectedStudent={selectedStudent}
-                  onStudentSelect={onStudentSelect}
-                  gradeFilter={selectedGrade}
-                />
-              </div>
-            </div>
-          )}
-
-          {selectedStudent && (
-            <div className='mt-6 p-4 bg-blue-50 rounded-lg'>
-              <h4 className='text-sm font-semibold text-blue-900 mb-2'>Selected Student</h4>
-              <p className='text-sm text-blue-800 font-medium'>
-                {selectedStudent.first_name} {selectedStudent.last_name}
-              </p>
-              <p className='text-xs text-blue-600 mt-1'>Grade: {selectedGrade}</p>
             </div>
           )}
 
