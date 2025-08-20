@@ -592,12 +592,14 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                   </TableCell>
                   <TableCell className='max-w-0'>
                     <div className='truncate'>
-                      <div className='font-medium truncate' title={screening.student_name}>
+                      <div
+                        className='font-medium text-base truncate'
+                        title={screening.student_name}>
                         {screening.student_name}
                       </div>
-                      <div className='text-sm text-gray-500 truncate'>
+                      {/* <div className='text-sm text-gray-500 truncate'>
                         ID: {screening.student_id}
-                      </div>
+                      </div> */}
                     </div>
                   </TableCell>
                   <TableCell className='max-w-0'>
