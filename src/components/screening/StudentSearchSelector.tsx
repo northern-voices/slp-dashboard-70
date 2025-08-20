@@ -149,17 +149,32 @@ const StudentSearchSelector = ({
 
     setIsCreatingStudent(true)
     try {
-      // Generate a unique student ID based on name and timestamp
-      const timestamp = Date.now().toString(36)
-      const initials = `${data.first_name.charAt(0)}${data.last_name.charAt(0)}`.toUpperCase()
-      const generatedStudentId = `${initials}-${timestamp}`
+      // Generate school abbreviation from school name
+      const schoolAbbreviation = currentSchool.name
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 3) // Limit to 3 characters max
 
+      // Generate a temporary unique ID using timestamp to avoid conflicts
+      const timestamp = Date.now().toString(36)
+      const tempStudentId = `${schoolAbbreviation}-TEMP-${timestamp}`
+
+      // Create student with temporary ID
       const newStudent = await StudentService.createStudent({
         first_name: data.first_name,
         last_name: data.last_name,
-        student_id: generatedStudentId,
+        student_id: tempStudentId,
         school_id: currentSchool.id,
         qualifies_for_program: true,
+      })
+
+      // Generate the final student ID with school abbreviation and UUID
+      const formattedStudentId = `${schoolAbbreviation}-${newStudent.id}`
+
+      // Update the student with the formatted ID
+      const updatedStudent = await StudentService.updateStudent(newStudent.id, {
+        student_id: formattedStudentId,
       })
 
       toast({
@@ -168,7 +183,7 @@ const StudentSearchSelector = ({
       })
 
       // Select the newly created student
-      onStudentSelect(newStudent as Student)
+      onStudentSelect(updatedStudent as Student)
       setShowNewStudentForm(false)
       setOpen(false)
       setSearchValue('')
