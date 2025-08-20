@@ -96,7 +96,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                     </div>
                     {soundError.errorPatterns && soundError.errorPatterns.length > 0 && (
                       <div className='mb-2'>
-                        <span className='text-xs text-gray-600'>Error Patterns:</span>
+                        <span className='text-xs font-semibold text-gray-600'>Error Patterns:</span>
                         <div className='flex flex-wrap gap-1 mt-1'>
                           {soundError.errorPatterns.map((pattern, patternIndex) => (
                             <Badge key={patternIndex} variant='outline' className='text-xs'>
@@ -127,7 +127,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                     {/* Display Notes (from input field) */}
                     {soundError.notes && (
                       <div className='text-sm text-gray-700'>
-                        <span className='text-xs text-gray-600'>Notes:</span>
+                        <span className='text-xs font-semibold text-gray-600'>Notes:</span>
                         <p className='mt-1'>{soundError.notes}</p>
                       </div>
                     )}
