@@ -267,7 +267,7 @@ const StudentSearchSelector = ({
             className='w-full justify-between text-left'>
             <span className='truncate'>
               {selectedStudent
-                ? `${selectedStudent.first_name} ${selectedStudent.last_name} (${selectedStudent.student_id})`
+                ? `${selectedStudent.first_name} ${selectedStudent.last_name}`
                 : currentSchool
                 ? 'Student Name'
                 : 'Select a school first...'}
