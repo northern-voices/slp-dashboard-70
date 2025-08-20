@@ -124,10 +124,19 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                       </div>
                     )}
 
+                    {/* Display Notes (from input field) */}
                     {soundError.notes && (
                       <div className='text-sm text-gray-700'>
                         <span className='text-xs text-gray-600'>Notes:</span>
                         <p className='mt-1'>{soundError.notes}</p>
+                      </div>
+                    )}
+
+                    {/* Display Other Notes (from "Other" textarea) */}
+                    {soundError.otherNotes && (
+                      <div className='text-sm text-gray-700'>
+                        <span className='text-xs text-gray-600'>Other Notes:</span>
+                        <p className='mt-1'>{soundError.otherNotes}</p>
                       </div>
                     )}
                   </div>

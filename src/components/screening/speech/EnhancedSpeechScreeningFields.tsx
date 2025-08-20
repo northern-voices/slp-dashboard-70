@@ -26,7 +26,7 @@ interface EnhancedSpeechScreeningFieldsProps {
         errorPatterns: string[]
         stoppingSounds?: string[]
         notes: string
-        extraNotes?: string
+        otherNotes?: string
       }>
       articulationNotes: string
     }
@@ -42,7 +42,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([])
   const [selectedSounds, setSelectedSounds] = useState<string[]>([])
   const [soundNotes, setSoundNotes] = useState<Record<string, string>>({})
-  const [extraSoundNotes, setExtraSoundNotes] = useState<Record<string, string>>({})
+  const [notes, setNotes] = useState<Record<string, string>>({})
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
   const [selectedStoppingSounds, setSelectedStoppingSounds] = useState<Record<string, string[]>>({})
 
@@ -403,8 +403,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       sound: sound,
       errorPatterns: selectedErrorPatterns[sound] || [],
       stoppingSounds: selectedStoppingSounds[sound] || [],
-      notes: soundNotes[sound] || '',
-      extraNotes: extraSoundNotes[sound] || '',
+      notes: notes[sound] || '',
+      otherNotes: soundNotes[sound] || '',
     }))
 
     const articulationData = {
@@ -413,14 +413,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     }
 
     form.setValue('articulation', articulationData)
-  }, [
-    selectedSounds,
-    selectedErrorPatterns,
-    selectedStoppingSounds,
-    soundNotes,
-    extraSoundNotes,
-    form,
-  ])
+  }, [selectedSounds, selectedErrorPatterns, selectedStoppingSounds, soundNotes, notes, form])
 
   const handleConcernChange = (concern: string, checked: boolean) => {
     if (checked) {
@@ -461,9 +454,9 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       const newNotes = { ...soundNotes }
       delete newNotes[sound]
       setSoundNotes(newNotes)
-      const newExtraNotes = { ...extraSoundNotes }
-      delete newExtraNotes[sound]
-      setExtraSoundNotes(newExtraNotes)
+      const newSoundNotes = { ...notes }
+      delete newSoundNotes[sound]
+      setNotes(newSoundNotes)
 
       // Clear stopping sounds for this sound
       const newStoppingSounds = { ...selectedStoppingSounds }
@@ -481,9 +474,9 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     })
   }
 
-  const handleExtraSoundNoteChange = (sound: string, note: string) => {
-    setExtraSoundNotes({
-      ...extraSoundNotes,
+  const handleNoteChange = (sound: string, note: string) => {
+    setNotes({
+      ...notes,
       [sound]: note,
     })
   }
@@ -1066,7 +1059,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
                           return (
                             <div key={pattern} className='space-y-2'>
-                              {/* Extra Notes input - show above "Other" pattern when any non-Other pattern is selected */}
+                              {/* Notes input - show above "Other" pattern when any non-Other pattern is selected */}
                               {pattern === 'Other' &&
                                 (selectedErrorPatterns[sound] || []).some(p => p !== 'Other') && (
                                   <div className='mb-2'>
@@ -1076,10 +1069,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                                     <input
                                       type='text'
                                       placeholder='Notes for this sound...'
-                                      value={extraSoundNotes[sound] || ''}
-                                      onChange={e =>
-                                        handleExtraSoundNoteChange(sound, e.target.value)
-                                      }
+                                      value={notes[sound] || ''}
+                                      onChange={e => handleNoteChange(sound, e.target.value)}
                                       className='text-xs px-3 py-2 border border-gray-300 rounded-sm w-full'
                                     />
                                   </div>
@@ -1157,7 +1148,24 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         Word: {soundErrorPatterns[sound]?.word}
                       </div>
 
-                      {/* Notes for this sound - show ONLY when "Other" is checked */}
+                      {/* Notes for 2 syllables and 3 syllables - show when any pattern is selected */}
+                      {(sound === '2 syllables' || sound === '3 syllables') &&
+                        (selectedErrorPatterns[sound] || []).length > 0 && (
+                          <div className='mt-2'>
+                            <Label className='text-xs font-medium text-gray-700 block mb-1'>
+                              Notes:
+                            </Label>
+                            <input
+                              type='text'
+                              placeholder='Notes for this sound...'
+                              value={notes[sound] || ''}
+                              onChange={e => handleNoteChange(sound, e.target.value)}
+                              className='text-xs px-3 py-2 border border-gray-300 rounded-sm w-full'
+                            />
+                          </div>
+                        )}
+
+                      {/* Other Notes for this sound - show ONLY when "Other" is checked */}
                       {(selectedErrorPatterns[sound] || []).includes('Other') && (
                         <Textarea
                           placeholder='Specify other error pattern...'
