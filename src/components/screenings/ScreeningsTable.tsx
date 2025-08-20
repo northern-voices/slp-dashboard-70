@@ -584,6 +584,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                   }>
                   <TableCell>
                     <Checkbox
+                      className='mt-1.5'
                       checked={selectedScreenings.some(s => s.id === screening.id)}
                       onCheckedChange={checked =>
                         handleSelectScreening(screening, checked as boolean)
