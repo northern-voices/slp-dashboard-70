@@ -306,8 +306,8 @@ const ScreeningsTable = ({
       moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800' },
       monitor: { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800' },
       non_registered_no_consent: {
-        label: 'Non Registered/No Consent',
-        color: 'bg-blue-100 text-blue-800',
+        label: 'No Consent',
+        color: 'bg-red-100 text-red-800',
       },
       passed: { label: 'Passed', color: 'bg-green-100 text-green-800' },
       profound: { label: 'Profound', color: 'bg-red-100 text-red-800' },
@@ -332,7 +332,7 @@ const ScreeningsTable = ({
     if (qualifies) {
       return <Badge className='bg-green-100 text-green-800 font-medium'>Qualifies</Badge>
     } else {
-      return <Badge className='bg-red-100 text-red-800 font-medium'>Does Not Qualify</Badge>
+      return <Badge className='bg-red-100 text-red-800 font-medium'>Not In Program</Badge>
     }
   }
 

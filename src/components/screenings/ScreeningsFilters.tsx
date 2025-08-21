@@ -182,9 +182,7 @@ const ScreeningsFilters = ({
                     <SelectItem value='mild_moderate'>Mild Moderate</SelectItem>
                     <SelectItem value='moderate'>Moderate</SelectItem>
                     <SelectItem value='monitor'>Monitor</SelectItem>
-                    <SelectItem value='non_registered_no_consent'>
-                      Non Registered/No Consent
-                    </SelectItem>
+                    <SelectItem value='non_registered_no_consent'>No Consent</SelectItem>
                     <SelectItem value='passed'>Passed</SelectItem>
                     <SelectItem value='profound'>Profound</SelectItem>
                     <SelectItem value='severe'>Severe</SelectItem>

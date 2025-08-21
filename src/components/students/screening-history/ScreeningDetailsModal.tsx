@@ -40,8 +40,8 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
       moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800', icon: AlertCircle },
       monitor: { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
       non_registered_no_consent: {
-        label: 'Non Registered/No Consent',
-        color: 'bg-blue-100 text-blue-800',
+        label: 'No Consent',
+        color: 'bg-red-100 text-red-800',
         icon: AlertCircle,
       },
       passed: { label: 'Passed', color: 'bg-green-100 text-green-800', icon: CheckCircle },
@@ -55,6 +55,11 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
       unable_to_screen: {
         label: 'Unable to Screen',
         color: 'bg-gray-100 text-gray-800',
+        icon: AlertCircle,
+      },
+      no_consent: {
+        label: 'No Consent',
+        color: 'bg-red-100 text-red-800',
         icon: AlertCircle,
       },
     }
