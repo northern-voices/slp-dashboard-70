@@ -363,9 +363,10 @@ const MultiStepSpeechScreeningForm = ({
           </div>
 
           <div className='flex space-x-3'>
-            <Button type='button' variant='secondary' onClick={handleSaveDraft}>
+            {/* // TODO: Fix draft functionality */}
+            {/* <Button type='button' variant='secondary' onClick={handleSaveDraft}>
               Save Draft
-            </Button>
+            </Button> */}
 
             {currentStep === 1 ? (
               // Step 1: Show Submit if absent, Next if not absent

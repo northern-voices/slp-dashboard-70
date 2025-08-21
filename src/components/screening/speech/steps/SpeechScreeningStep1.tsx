@@ -34,29 +34,30 @@ const gradeMapping = [
   { display: 'K4', value: 'K4' },
   { display: 'K5', value: 'K5' },
   { display: 'Kindergarten', value: 'Kindergarten' },
-  { display: '1', value: '1' },
-  { display: '2', value: '2' },
-  { display: '3', value: '3' },
-  { display: '4', value: '4' },
-  { display: '5', value: '5' },
-  { display: '6', value: '6' },
-  { display: '7', value: '7' },
-  { display: '8', value: '8' },
-  { display: '9', value: '9' },
-  { display: '10', value: '10' },
-  { display: '11', value: '11' },
-  { display: '12', value: '12' },
   { display: 'K/1', value: 'K/1' },
+  { display: '1', value: '1' },
   { display: '1/2', value: '1/2' },
+  { display: '2', value: '2' },
   { display: '2/3', value: '2/3' },
+  { display: '3', value: '3' },
   { display: '3/4', value: '3/4' },
+  { display: '4', value: '4' },
   { display: '4/5', value: '4/5' },
+  { display: '5', value: '5' },
+  { display: '5/6', value: '5/6' },
+  { display: '6', value: '6' },
   { display: '6/7', value: '6/7' },
+  { display: '7', value: '7' },
   { display: '7/8', value: '7/8' },
+  { display: '8', value: '8' },
   { display: '8/9', value: '8/9' },
+  { display: '9', value: '9' },
   { display: '9/10', value: '9/10' },
+  { display: '10', value: '10' },
   { display: '10/11', value: '10/11' },
+  { display: '11', value: '11' },
   { display: '11/12', value: '11/12' },
+  { display: '12', value: '12' },
 ]
 
 const SpeechScreeningStep1 = ({
@@ -202,6 +203,31 @@ const SpeechScreeningStep1 = ({
           {selectedGrade && (
             <div>
               <Label className='mb-3 block text-sm font-medium text-gray-700'>
+                Select Student *
+              </Label>
+              <div>
+                <StudentSearchSelector
+                  selectedStudent={selectedStudent}
+                  onStudentSelect={onStudentSelect}
+                  gradeFilter={selectedGrade}
+                />
+              </div>
+            </div>
+          )}
+
+          {selectedStudent && (
+            <div className='mt-6 p-4 bg-blue-50 rounded-lg'>
+              <h4 className='text-sm font-semibold text-blue-900 mb-2'>Selected Student</h4>
+              <p className='text-sm text-blue-800 font-medium'>
+                {selectedStudent.first_name} {selectedStudent.last_name}
+              </p>
+              <p className='text-xs text-blue-600 mt-1'>Grade: {selectedGrade}</p>
+            </div>
+          )}
+
+          {selectedGrade && (
+            <div>
+              <Label className='mb-3 block text-sm font-medium text-gray-700'>
                 Academic Year *
               </Label>
               <Select
@@ -222,31 +248,6 @@ const SpeechScreeningStep1 = ({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          )}
-
-          {selectedGrade && (
-            <div>
-              <Label className='mb-3 block text-sm font-medium text-gray-700'>
-                Select Student *
-              </Label>
-              <div>
-                <StudentSearchSelector
-                  selectedStudent={selectedStudent}
-                  onStudentSelect={onStudentSelect}
-                  gradeFilter={selectedGrade}
-                />
-              </div>
-            </div>
-          )}
-
-          {selectedStudent && (
-            <div className='mt-6 p-4 bg-blue-50 rounded-lg'>
-              <h4 className='text-sm font-semibold text-blue-900 mb-2'>Selected Student</h4>
-              <p className='text-sm text-blue-800 font-medium'>
-                {selectedStudent.first_name} {selectedStudent.last_name}
-              </p>
-              <p className='text-xs text-blue-600 mt-1'>Grade: {selectedGrade}</p>
             </div>
           )}
 

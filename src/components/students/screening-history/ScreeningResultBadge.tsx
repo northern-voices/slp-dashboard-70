@@ -46,10 +46,9 @@ const ScreeningResultBadge = ({ result }: ScreeningResultBadgeProps) => {
       description: 'Student requires ongoing monitoring and assessment.',
     },
     non_registered_no_consent: {
-      label: 'Non Registered/No Consent',
-      color: 'bg-blue-100 text-blue-800',
-      description:
-        'Student was not registered or parent/guardian did not provide consent for screening.',
+      label: 'No Consent',
+      color: 'bg-red-100 text-red-800',
+      description: 'Parent/guardian did not provide consent for the screening.',
     },
     passed: {
       label: 'Passed',

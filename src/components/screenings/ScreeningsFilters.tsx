@@ -182,9 +182,7 @@ const ScreeningsFilters = ({
                     <SelectItem value='mild_moderate'>Mild Moderate</SelectItem>
                     <SelectItem value='moderate'>Moderate</SelectItem>
                     <SelectItem value='monitor'>Monitor</SelectItem>
-                    <SelectItem value='non_registered_no_consent'>
-                      Non Registered/No Consent
-                    </SelectItem>
+                    <SelectItem value='non_registered_no_consent'>No Consent</SelectItem>
                     <SelectItem value='passed'>Passed</SelectItem>
                     <SelectItem value='profound'>Profound</SelectItem>
                     <SelectItem value='severe'>Severe</SelectItem>
@@ -223,29 +221,30 @@ const ScreeningsFilters = ({
                     <SelectItem value='K4'>K4</SelectItem>
                     <SelectItem value='K5'>K5</SelectItem>
                     <SelectItem value='Kindergarten'>Kindergarten</SelectItem>
-                    <SelectItem value='1'>1</SelectItem>
-                    <SelectItem value='2'>2</SelectItem>
-                    <SelectItem value='3'>3</SelectItem>
-                    <SelectItem value='4'>4</SelectItem>
-                    <SelectItem value='5'>5</SelectItem>
-                    <SelectItem value='6'>6</SelectItem>
-                    <SelectItem value='7'>7</SelectItem>
-                    <SelectItem value='8'>8</SelectItem>
-                    <SelectItem value='9'>9</SelectItem>
-                    <SelectItem value='10'>10</SelectItem>
-                    <SelectItem value='11'>11</SelectItem>
-                    <SelectItem value='12'>12</SelectItem>
                     <SelectItem value='K/1'>K/1</SelectItem>
+                    <SelectItem value='1'>1</SelectItem>
                     <SelectItem value='1/2'>1/2</SelectItem>
+                    <SelectItem value='2'>2</SelectItem>
                     <SelectItem value='2/3'>2/3</SelectItem>
+                    <SelectItem value='3'>3</SelectItem>
                     <SelectItem value='3/4'>3/4</SelectItem>
+                    <SelectItem value='4'>4</SelectItem>
                     <SelectItem value='4/5'>4/5</SelectItem>
+                    <SelectItem value='5'>5</SelectItem>
+                    <SelectItem value='5/6'>5/6</SelectItem>
+                    <SelectItem value='6'>6</SelectItem>
                     <SelectItem value='6/7'>6/7</SelectItem>
+                    <SelectItem value='7'>7</SelectItem>
                     <SelectItem value='7/8'>7/8</SelectItem>
+                    <SelectItem value='8'>8</SelectItem>
                     <SelectItem value='8/9'>8/9</SelectItem>
+                    <SelectItem value='9'>9</SelectItem>
                     <SelectItem value='9/10'>9/10</SelectItem>
+                    <SelectItem value='10'>10</SelectItem>
                     <SelectItem value='10/11'>10/11</SelectItem>
+                    <SelectItem value='11'>11</SelectItem>
                     <SelectItem value='11/12'>11/12</SelectItem>
+                    <SelectItem value='12'>12</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -149,17 +149,32 @@ const StudentSearchSelector = ({
 
     setIsCreatingStudent(true)
     try {
-      // Generate a unique student ID based on name and timestamp
-      const timestamp = Date.now().toString(36)
-      const initials = `${data.first_name.charAt(0)}${data.last_name.charAt(0)}`.toUpperCase()
-      const generatedStudentId = `${initials}-${timestamp}`
+      // Generate school abbreviation from school name
+      const schoolAbbreviation = currentSchool.name
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 3) // Limit to 3 characters max
 
+      // Generate a temporary unique ID using timestamp to avoid conflicts
+      const timestamp = Date.now().toString(36)
+      const tempStudentId = `${schoolAbbreviation}-TEMP-${timestamp}`
+
+      // Create student with temporary ID
       const newStudent = await StudentService.createStudent({
         first_name: data.first_name,
         last_name: data.last_name,
-        student_id: generatedStudentId,
+        student_id: tempStudentId,
         school_id: currentSchool.id,
         qualifies_for_program: true,
+      })
+
+      // Generate the final student ID with school abbreviation and UUID
+      const formattedStudentId = `${schoolAbbreviation}-${newStudent.id}`
+
+      // Update the student with the formatted ID
+      const updatedStudent = await StudentService.updateStudent(newStudent.id, {
+        student_id: formattedStudentId,
       })
 
       toast({
@@ -168,7 +183,7 @@ const StudentSearchSelector = ({
       })
 
       // Select the newly created student
-      onStudentSelect(newStudent as Student)
+      onStudentSelect(updatedStudent as Student)
       setShowNewStudentForm(false)
       setOpen(false)
       setSearchValue('')
@@ -186,6 +201,22 @@ const StudentSearchSelector = ({
   }
 
   const handleShowNewStudentForm = () => {
+    // Parse search input to extract first and last names
+    if (searchValue.trim()) {
+      const nameParts = searchValue.trim().split(/\s+/)
+      if (nameParts.length >= 1) {
+        // Set first name (first part)
+        newStudentForm.setValue('first_name', nameParts[0])
+
+        // Set last name (remaining parts joined, or empty if only one part)
+        if (nameParts.length >= 2) {
+          newStudentForm.setValue('last_name', nameParts.slice(1).join(' '))
+        } else {
+          newStudentForm.setValue('last_name', '')
+        }
+      }
+    }
+
     setShowNewStudentForm(true)
     setOpen(false)
   }
@@ -193,6 +224,7 @@ const StudentSearchSelector = ({
   const handleCloseNewStudentForm = () => {
     setShowNewStudentForm(false)
     newStudentForm.reset()
+    setSearchValue('') // Clear search input when closing modal
   }
 
   // Check if we should show "Add New Student" option
@@ -267,7 +299,7 @@ const StudentSearchSelector = ({
             className='w-full justify-between text-left'>
             <span className='truncate'>
               {selectedStudent
-                ? `${selectedStudent.first_name} ${selectedStudent.last_name} (${selectedStudent.student_id})`
+                ? `${selectedStudent.first_name} ${selectedStudent.last_name}`
                 : currentSchool
                 ? 'Student Name'
                 : 'Select a school first...'}
@@ -291,15 +323,20 @@ const StudentSearchSelector = ({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0' align='start'>
-          <Command shouldFilter={false}>
+        <PopoverContent
+          className='w-[var(--radix-popover-trigger-width)] p-0'
+          align='start'
+          side='bottom'
+          sideOffset={4}
+          avoidCollisions={false}>
+          <Command shouldFilter={false} className='max-h-[300px]'>
             <CommandInput
               placeholder={`Searching students in: ${currentSchool?.name || 'school'}`}
               value={searchValue}
               onValueChange={setSearchValue}
             />
-            <div className='relative max-h-[300px] flex flex-col'>
-              <CommandList className='flex-1 overflow-y-auto'>
+            <div className='relative flex flex-col'>
+              <CommandList className='flex-1 overflow-y-auto max-h-[150px] overflow-y-scroll'>
                 <CommandEmpty>
                   {isLoading ? (
                     'Loading students...'

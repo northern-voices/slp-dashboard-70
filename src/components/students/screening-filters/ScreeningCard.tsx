@@ -82,8 +82,8 @@ const ScreeningCard = ({ screening, onViewDetails }: ScreeningCardProps) => {
       moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800 border-orange-200' },
       monitor: { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
       non_registered_no_consent: {
-        label: 'Non Registered/No Consent',
-        color: 'bg-blue-100 text-blue-800 border-blue-200',
+        label: 'No Consent',
+        color: 'bg-red-100 text-red-800 border-red-200',
       },
       passed: { label: 'Passed', color: 'bg-green-100 text-green-800 border-green-200' },
       profound: { label: 'Profound', color: 'bg-red-100 text-red-800 border-red-200' },
