@@ -23,6 +23,7 @@ interface EnhancedSpeechScreeningFieldsProps {
     articulation?: {
       soundErrors: Array<{
         sound: string
+        word: string
         errorPatterns: string[]
         stoppingSounds?: string[]
         notes: string
@@ -400,13 +401,25 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
   // Create nested structure for articulation data
   React.useEffect(() => {
-    const soundErrorsData = selectedSounds.map(sound => ({
-      sound: sound,
-      errorPatterns: selectedErrorPatterns[sound] || [],
-      stoppingSounds: selectedStoppingSounds[sound] || [],
-      notes: notes[sound] || '',
-      otherNotes: soundNotes[sound] ? `"${soundNotes[sound]}" for ${sound}` : '',
-    }))
+    const soundErrorsData = selectedSounds.map(sound => {
+      const word = soundErrorPatterns[sound]?.word || ''
+      const hasOtherPattern = selectedErrorPatterns[sound]?.includes('Other')
+
+      let otherNotes = ''
+      if (hasOtherPattern && soundNotes[sound]) {
+        // Format: "Hear for Bear" when "Other" is selected
+        otherNotes = `${soundNotes[sound]} for ${word}`
+      }
+
+      return {
+        sound: sound,
+        word: word,
+        errorPatterns: selectedErrorPatterns[sound] || [],
+        stoppingSounds: selectedStoppingSounds[sound] || [],
+        notes: notes[sound] || '',
+        otherNotes: otherNotes,
+      }
+    })
 
     const articulationData = {
       soundErrors: soundErrorsData,
@@ -1162,12 +1175,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                                     <span className='text-gray-600'>"</span>
                                     <input
                                       type='text'
-                                      // placeholder='______'
                                       value={soundNotes[sound] || ''}
                                       onChange={e => handleSoundNoteChange(sound, e.target.value)}
-                                      className='px-2 py-1 border border-gray-300 rounded-sm text-xs w-16'
+                                      className='px-2 py-1 border border-gray-300 rounded-sm text-xs w-20'
                                     />
-                                    <span className='text-gray-600'>" for {sound}</span>
+                                    <span className='text-gray-600'>
+                                      " for {soundErrorPatterns[sound]?.word || sound}
+                                    </span>
                                   </div>
                                 </div>
                               )}
@@ -1208,6 +1222,11 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                       {/* Word example - now appears last, below Notes */}
                       <div className='mt-1 text-xs text-gray-600'>
                         Word: {soundErrorPatterns[sound]?.word}
+                        {selectedErrorPatterns[sound]?.includes('Other') && soundNotes[sound] && (
+                          <span className='ml-2 text-blue-600 font-medium'>
+                            → "{soundNotes[sound]} for {soundErrorPatterns[sound]?.word}"
+                          </span>
+                        )}
                       </div>
                     </>
                   )}
