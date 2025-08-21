@@ -43,6 +43,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [selectedSounds, setSelectedSounds] = useState<string[]>([])
   const [soundNotes, setSoundNotes] = useState<Record<string, string>>({})
   const [notes, setNotes] = useState<Record<string, string>>({})
+  const [notesEnabled, setNotesEnabled] = useState<Record<string, boolean>>({})
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
   const [selectedStoppingSounds, setSelectedStoppingSounds] = useState<Record<string, string[]>>({})
 
@@ -457,6 +458,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       const newSoundNotes = { ...notes }
       delete newSoundNotes[sound]
       setNotes(newSoundNotes)
+      setNotesEnabled({ ...notesEnabled, [sound]: false })
 
       // Clear stopping sounds for this sound
       const newStoppingSounds = { ...selectedStoppingSounds }
@@ -464,15 +466,36 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       setSelectedStoppingSounds(newStoppingSounds)
     } else {
       setSelectedSounds([...selectedSounds, sound])
+      // Notes are always available for every sound, but unchecked by default
+      setNotesEnabled({ ...notesEnabled, [sound]: false })
     }
   }
 
-  const handleSoundNoteChange = (sound: string, note: string) => {
-    // Store just the user input, format it when displaying
+  const handleSoundNoteChange = (sound: string, value: string) => {
     setSoundNotes({
       ...soundNotes,
-      [sound]: note,
+      [sound]: value,
     })
+  }
+
+  const handleNotesToggle = (sound: string, enabled: boolean) => {
+    setNotesEnabled({
+      ...notesEnabled,
+      [sound]: enabled,
+    })
+    // Clear notes when disabling
+    if (!enabled) {
+      const newNotes = { ...notes }
+      delete newNotes[sound]
+      setNotes(newNotes)
+    }
+  }
+
+  const clearNotesForSound = (sound: string) => {
+    const newNotes = { ...notes }
+    delete newNotes[sound]
+    setNotes(newNotes)
+    setNotesEnabled({ ...notesEnabled, [sound]: false })
   }
 
   const handleNoteChange = (sound: string, note: string) => {
@@ -515,6 +538,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           ...selectedErrorPatterns,
           [sound]: [],
         })
+        // Clear notes when no patterns remain
+        clearNotesForSound(sound)
       }
       return // Exit early since Other handling is complete
     }
@@ -543,6 +568,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           ...selectedErrorPatterns,
           [sound]: [],
         })
+        // Clear notes when no patterns remain
+        clearNotesForSound(sound)
       }
     } else if (sound === 'P' || sound === 'B' || sound === 'Final P') {
       // For P, B, and Final P sounds: Omission is exclusive, Nasalization can be combined with other non-Omission patterns
@@ -591,6 +618,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           ...selectedErrorPatterns,
           [sound]: [],
         })
+        // Clear notes when no patterns remain
+        clearNotesForSound(sound)
       }
     } else if (sound === 'Final T' || sound === 'Final K') {
       // For Final T and Final K: Omission is exclusive, Backing/Nasalization can be combined
@@ -1060,23 +1089,6 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
                           return (
                             <div key={pattern} className='space-y-2'>
-                              {/* Notes input - show above "Other" pattern when any non-Other pattern is selected */}
-                              {pattern === 'Other' &&
-                                (selectedErrorPatterns[sound] || []).some(p => p !== 'Other') && (
-                                  <div className='mb-2'>
-                                    <Label className='text-xs font-medium text-gray-700 block mb-1'>
-                                      Notes:
-                                    </Label>
-                                    <input
-                                      type='text'
-                                      placeholder='Notes for this sound...'
-                                      value={notes[sound] || ''}
-                                      onChange={e => handleNoteChange(sound, e.target.value)}
-                                      className='text-xs px-3 py-2 border border-gray-300 rounded-sm w-full'
-                                    />
-                                  </div>
-                                )}
-
                               <div className='flex items-center space-x-2'>
                                 <Checkbox
                                   id={`${sound}-${pattern}`}
@@ -1139,23 +1151,49 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                                   </div>
                                 </div>
                               )}
+
+                              {/* Other Error Pattern input - show when "Other" is selected */}
+                              {pattern === 'Other' && currentPatterns.includes('Other') && (
+                                <div className='mt-2'>
+                                  <Label className='text-xs font-medium text-gray-700 block mb-1'>
+                                    Other Error Pattern:
+                                  </Label>
+                                  <div className='flex items-center gap-2 text-xs'>
+                                    <span className='text-gray-600'>"</span>
+                                    <input
+                                      type='text'
+                                      // placeholder='______'
+                                      value={soundNotes[sound] || ''}
+                                      onChange={e => handleSoundNoteChange(sound, e.target.value)}
+                                      className='px-2 py-1 border border-gray-300 rounded-sm text-xs w-16'
+                                    />
+                                    <span className='text-gray-600'>" for {sound}</span>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )
                         })}
                       </div>
 
-                      {/* Word example */}
-                      <div className='mt-1 text-xs text-gray-600'>
-                        Word: {soundErrorPatterns[sound]?.word}
-                      </div>
-
-                      {/* Notes for 2 syllables and 3 syllables - show when any pattern is selected */}
-                      {(sound === '2 syllables' || sound === '3 syllables') &&
-                        (selectedErrorPatterns[sound] || []).length > 0 && (
-                          <div className='mt-2'>
-                            <Label className='text-xs font-medium text-gray-700 block mb-1'>
-                              Notes:
-                            </Label>
+                      {/* Notes checkbox - always visible for every sound */}
+                      <div className='mt-1 space-y-2'>
+                        <div className='flex items-center space-x-2'>
+                          <Checkbox
+                            id={`${sound}-notes`}
+                            checked={notesEnabled[sound] || false}
+                            onCheckedChange={checked =>
+                              handleNotesToggle(sound, checked as boolean)
+                            }
+                          />
+                          <Label
+                            htmlFor={`${sound}-notes`}
+                            className='text-xs font-medium text-gray-700'>
+                            Notes (Private)
+                          </Label>
+                        </div>
+                        {notesEnabled[sound] && (
+                          <div>
                             <input
                               type='text'
                               placeholder='Notes for this sound...'
@@ -1165,26 +1203,12 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             />
                           </div>
                         )}
+                      </div>
 
-                      {/* Other Notes for this sound - show ONLY when "Other" is checked */}
-                      {(selectedErrorPatterns[sound] || []).includes('Other') && (
-                        <div className='mt-2'>
-                          <Label className='text-xs font-medium text-gray-700 block mb-1'>
-                            Other Error Pattern:
-                          </Label>
-                          <div className='flex items-center gap-2 text-xs'>
-                            <span className='text-gray-600'>"</span>
-                            <input
-                              type='text'
-                              // placeholder='______'
-                              value={soundNotes[sound] || ''}
-                              onChange={e => handleSoundNoteChange(sound, e.target.value)}
-                              className='px-2 py-1 border border-gray-300 rounded-sm text-xs w-16'
-                            />
-                            <span className='text-gray-600'>" for {sound}</span>
-                          </div>
-                        </div>
-                      )}
+                      {/* Word example - now appears last, below Notes */}
+                      <div className='mt-1 text-xs text-gray-600'>
+                        Word: {soundErrorPatterns[sound]?.word}
+                      </div>
                     </>
                   )}
                 </div>
