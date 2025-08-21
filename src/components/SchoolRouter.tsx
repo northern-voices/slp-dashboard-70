@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -13,13 +13,33 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
   const { schoolId } = useParams<{ schoolId: string }>()
   const { currentSchool, availableSchools, setCurrentSchool, isLoading } = useOrganization()
   const [isInitializing, setIsInitializing] = useState(true)
+  const [lastNavigationCheck, setLastNavigationCheck] = useState<number>(0)
+
+  // Memoize the navigation logic to prevent unnecessary recalculations
+  const shouldNavigate = useCallback(
+    (targetPath: string) => {
+      const now = Date.now()
+      // Prevent excessive navigation checks - only check every 2 seconds
+      if (now - lastNavigationCheck < 2000) {
+        return false
+      }
+      setLastNavigationCheck(now)
+      return true
+    },
+    [lastNavigationCheck]
+  )
+
+  // Memoize the target school to prevent unnecessary lookups
+  const targetSchool = useMemo(() => {
+    if (!schoolId || availableSchools.length === 0) return null
+    return availableSchools.find(school => school.id === schoolId) || null
+  }, [schoolId, availableSchools])
 
   useEffect(() => {
     if (isLoading) return
 
     // If we're on a school route and have a schoolId
     if (schoolId && availableSchools.length > 0) {
-      const targetSchool = availableSchools.find(school => school.id === schoolId)
       if (targetSchool) {
         // Set the current school if it's different
         if (!currentSchool || currentSchool.id !== targetSchool.id) {
@@ -29,7 +49,9 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
         return
       } else {
         // School doesn't exist, redirect to first available school
-        navigate(`/school/${availableSchools[0].id}`, { replace: true })
+        if (shouldNavigate(`/school/${availableSchools[0].id}`)) {
+          navigate(`/school/${availableSchools[0].id}`, { replace: true })
+        }
         return
       }
     }
@@ -39,7 +61,9 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
       // Check if we have a persisted school selection
       if (currentSchool && availableSchools.find(s => s.id === currentSchool.id)) {
         // Navigate to the persisted school
-        navigate(`/school/${currentSchool.id}`, { replace: true })
+        if (shouldNavigate(`/school/${currentSchool.id}`)) {
+          navigate(`/school/${currentSchool.id}`, { replace: true })
+        }
         return
       } else {
         // !TEMPORARY: Default to test school for now
@@ -51,11 +75,15 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
         if (testSchool) {
           // Set test school as current and navigate to it
           setCurrentSchool(testSchool)
-          navigate(`/school/${testSchool.id}`, { replace: true })
+          if (shouldNavigate(`/school/${testSchool.id}`)) {
+            navigate(`/school/${testSchool.id}`, { replace: true })
+          }
           return
         } else {
           // Fall back to first available school
-          navigate(`/school/${availableSchools[0].id}`, { replace: true })
+          if (shouldNavigate(`/school/${availableSchools[0].id}`)) {
+            navigate(`/school/${availableSchools[0].id}`, { replace: true })
+          }
           return
         }
       }
@@ -68,45 +96,43 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
       if (isValidSchool) {
         // Check if we're on a route that should redirect to school-specific path
         const routePath = location.pathname
+        let targetPath = ''
+
         if (routePath === '/screenings') {
-          navigate(`/school/${currentSchool.id}/screenings`, { replace: true })
-          return
+          targetPath = `/school/${currentSchool.id}/screenings`
         } else if (routePath === '/screening/speech') {
-          navigate(`/school/${currentSchool.id}/screening/speech`, { replace: true })
-          return
+          targetPath = `/school/${currentSchool.id}/screening/speech`
         } else if (routePath === '/screening/hearing') {
-          navigate(`/school/${currentSchool.id}/screening/hearing`, { replace: true })
-          return
+          targetPath = `/school/${currentSchool.id}/screening/hearing`
         } else if (routePath === '/students') {
-          navigate(`/school/${currentSchool.id}/students`, { replace: true })
-          return
+          targetPath = `/school/${currentSchool.id}/students`
         } else if (routePath === '/reports') {
-          navigate(`/school/${currentSchool.id}/reports`, { replace: true })
-          return
+          targetPath = `/school/${currentSchool.id}/reports`
         } else if (routePath === '/management') {
-          navigate(`/school/${currentSchool.id}/management`, { replace: true })
-          return
+          targetPath = `/school/${currentSchool.id}/management`
         } else if (routePath === '/profile') {
-          navigate(`/school/${currentSchool.id}/profile`, { replace: true })
-          return
+          targetPath = `/school/${currentSchool.id}/profile`
         } else if (routePath === '/notifications') {
-          navigate(`/school/${currentSchool.id}/notifications`, { replace: true })
-          return
+          targetPath = `/school/${currentSchool.id}/notifications`
+        } else {
+          targetPath = `/school/${currentSchool.id}`
         }
 
-        // For other routes, navigate to the current school
-        navigate(`/school/${currentSchool.id}`, { replace: true })
+        if (targetPath && shouldNavigate(targetPath)) {
+          navigate(targetPath, { replace: true })
+        }
         return
       } else {
         // Current school is no longer valid, redirect to first available
-        navigate(`/school/${availableSchools[0].id}`, { replace: true })
+        if (shouldNavigate(`/school/${availableSchools[0].id}`)) {
+          navigate(`/school/${availableSchools[0].id}`, { replace: true })
+        }
         return
       }
     }
 
     // If we have no current school but we're on a school route, try to restore from localStorage
     if (!currentSchool && schoolId && availableSchools.length > 0) {
-      const targetSchool = availableSchools.find(school => school.id === schoolId)
       if (targetSchool) {
         setCurrentSchool(targetSchool)
         setIsInitializing(false)
@@ -123,6 +149,8 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
     navigate,
     location.pathname,
     setCurrentSchool,
+    targetSchool,
+    shouldNavigate,
   ])
 
   // Show loading while initializing

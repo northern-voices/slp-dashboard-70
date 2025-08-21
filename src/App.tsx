@@ -37,7 +37,17 @@ import HearingScreening from './pages/HearingScreening'
 import Drafts from './pages/Drafts'
 import Logout from './components/auth/Logout'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // Prevents refetch on tab focus
+      refetchOnMount: false, // Prevents refetch on component mount
+      refetchOnReconnect: false, // Prevents refetch on network reconnect
+      staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
+      gcTime: 10 * 60 * 1000, // Cache data for 10 minutes
+    },
+  },
+})
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
