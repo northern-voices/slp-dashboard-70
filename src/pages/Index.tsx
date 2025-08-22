@@ -8,11 +8,10 @@ import SLPDashboardStats from '@/components/slp/SLPDashboardStats'
 import SLPQuickActions from '@/components/slp/SLPQuickActions'
 import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector'
 import RecentActivity from '@/components/RecentActivity'
-import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
-import { SchoolProvider, useSchool } from '@/contexts/SchoolContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 const DashboardContent = () => {
-  const { userProfile, currentOrganization, currentSchool, isLoading } = useOrganization()
+  const { userProfile, currentSchool, isLoading } = useOrganization()
 
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
@@ -98,13 +97,7 @@ const DashboardContent = () => {
 }
 
 const Index = () => {
-  return (
-    <OrganizationProvider>
-      <SchoolProvider>
-        <DashboardContent />
-      </SchoolProvider>
-    </OrganizationProvider>
-  )
+  return <DashboardContent />
 }
 
 export default Index

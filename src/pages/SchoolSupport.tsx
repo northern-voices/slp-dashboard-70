@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import { OrganizationProvider } from '@/contexts/OrganizationContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Users, Calendar, FileText, HandHeart } from 'lucide-react'
@@ -56,87 +55,89 @@ const SchoolSupportContent = () => {
   ).length
 
   return (
-    <OrganizationProvider>
-      <SidebarProvider>
-        <div className='min-h-screen flex w-full'>
-          <AppSidebar />
-          <SidebarInset>
-            <Header />
-            <div className='flex-1 bg-gray-25 p-4 md:p-6 lg:p-8'>
-              <div className='max-w-6xl mx-auto'>
-                <div className='mb-8'>
-                  <h1 className='text-3xl font-semibold text-gray-900 mb-2'>School Support</h1>
-                  <p className='text-gray-600'>
-                    Manage school support forms and coordination activities
-                  </p>
-                </div>
+    <SidebarProvider>
+      <div className='min-h-screen flex w-full bg-gray-25'>
+        <AppSidebar />
 
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-8'>
-                  <Card>
-                    <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                      <CardTitle className='text-sm font-medium'>Active Support Forms</CardTitle>
-                      <FileText className='h-4 w-4 text-muted-foreground' />
-                    </CardHeader>
-                    <CardContent>
-                      <div className='text-2xl font-bold'>{activeTickets}</div>
-                      <p className='text-xs text-muted-foreground'>Currently in progress</p>
-                    </CardContent>
-                  </Card>
+        <SidebarInset className='flex-1'>
+          <Header />
 
-                  <Card>
-                    <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                      <CardTitle className='text-sm font-medium'>Upcoming Visits</CardTitle>
-                      <Calendar className='h-4 w-4 text-muted-foreground' />
-                    </CardHeader>
-                    <CardContent>
-                      <div className='text-2xl font-bold'>{upcomingVisits}</div>
-                      <p className='text-xs text-muted-foreground'>School visits scheduled</p>
-                    </CardContent>
-                  </Card>
-                </div>
+          <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
+            <div className='max-w-7xl mx-auto'>
+              <div className='mb-6 md:mb-8'>
+                <h1 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2'>
+                  School Support
+                </h1>
+                <p className='text-gray-600 text-sm md:text-base'>
+                  Manage school support forms and coordination activities
+                </p>
+              </div>
 
-                <div className='flex justify-between items-center mb-6'>
-                  <h2 className='text-xl font-semibold text-gray-900'>Support Tickets</h2>
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    onClick={handleCreateSupportForm}
-                    className='text-gray-700 hover:text-gray-900 hover:bg-gray-50'>
-                    <HandHeart className='w-4 h-4 mr-2' />
-                    Submit Ticket
-                  </Button>
-                </div>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-8'>
+                <Card>
+                  <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                    <CardTitle className='text-sm font-medium'>Active Support Forms</CardTitle>
+                    <FileText className='h-4 w-4 text-muted-foreground' />
+                  </CardHeader>
+                  <CardContent>
+                    <div className='text-2xl font-bold'>{activeTickets}</div>
+                    <p className='text-xs text-muted-foreground'>Currently in progress</p>
+                  </CardContent>
+                </Card>
 
-                <div className='space-y-6'>
-                  <SupportTicketFilters
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    statusFilter={statusFilter}
-                    setStatusFilter={setStatusFilter}
-                    priorityFilter={priorityFilter}
-                    setPriorityFilter={setPriorityFilter}
-                    schoolFilter={schoolFilter}
-                    setSchoolFilter={setSchoolFilter}
-                  />
+                <Card>
+                  <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                    <CardTitle className='text-sm font-medium'>Upcoming Visits</CardTitle>
+                    <Calendar className='h-4 w-4 text-muted-foreground' />
+                  </CardHeader>
+                  <CardContent>
+                    <div className='text-2xl font-bold'>{upcomingVisits}</div>
+                    <p className='text-xs text-muted-foreground'>School visits scheduled</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-                  <SupportTicketsList
-                    tickets={filteredTickets}
-                    hasFilters={hasFilters}
-                    onViewDetails={handleViewTicketDetails}
-                  />
-                </div>
+              <div className='flex justify-between items-center mb-6'>
+                <h2 className='text-xl font-semibold text-gray-900'>Support Tickets</h2>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={handleCreateSupportForm}
+                  className='text-gray-700 hover:text-gray-900 hover:bg-gray-50'>
+                  <HandHeart className='h-4 w-4 mr-2' />
+                  Submit Ticket
+                </Button>
+              </div>
+
+              <div className='space-y-6'>
+                <SupportTicketFilters
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  statusFilter={statusFilter}
+                  setStatusFilter={setStatusFilter}
+                  priorityFilter={priorityFilter}
+                  setPriorityFilter={setPriorityFilter}
+                  schoolFilter={schoolFilter}
+                  setSchoolFilter={setSchoolFilter}
+                />
+
+                <SupportTicketsList
+                  tickets={filteredTickets}
+                  hasFilters={hasFilters}
+                  onViewDetails={handleViewTicketDetails}
+                />
               </div>
             </div>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
+          </main>
+        </SidebarInset>
+      </div>
 
       <SupportTicketModal
         isOpen={showTicketModal}
         onClose={() => setShowTicketModal(false)}
         ticket={selectedTicket}
       />
-    </OrganizationProvider>
+    </SidebarProvider>
   )
 }
 

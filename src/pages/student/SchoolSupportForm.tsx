@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import { OrganizationProvider } from '@/contexts/OrganizationContext'
 import SchoolSupportHeader from '@/components/students/school-support/SchoolSupportHeader'
 import SchoolSupportForm from '@/components/students/school-support/SchoolSupportForm'
 import { useToast } from '@/hooks/use-toast'
@@ -44,26 +43,24 @@ const SchoolSupportFormPage = () => {
   }
 
   return (
-    <OrganizationProvider>
-      <SidebarProvider>
-        <div className='min-h-screen flex w-full'>
-          <AppSidebar />
-          <SidebarInset>
-            <Header />
-            <div className='flex-1 bg-gray-25 p-4 md:p-6 lg:p-8'>
-              <div className='max-w-4xl mx-auto'>
-                <SchoolSupportHeader studentId={studentId} />
-                <SchoolSupportForm
-                  onSubmit={handleSubmit}
-                  onCancel={handleCancel}
-                  isSubmitting={isSubmitting}
-                />
-              </div>
+    <SidebarProvider>
+      <div className='min-h-screen flex w-full'>
+        <AppSidebar />
+        <SidebarInset>
+          <Header />
+          <div className='flex-1 bg-gray-25 p-4 md:p-6 lg:p-8'>
+            <div className='max-w-4xl mx-auto'>
+              <SchoolSupportHeader studentId={studentId} />
+              <SchoolSupportForm
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+                isSubmitting={isSubmitting}
+              />
             </div>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
-    </OrganizationProvider>
+          </div>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   )
 }
 
