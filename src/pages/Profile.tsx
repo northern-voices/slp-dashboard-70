@@ -83,11 +83,7 @@ const ProfileContent = () => {
 }
 
 const Profile = () => {
-  return (
-    <OrganizationProvider>
-      <ProfileContent />
-    </OrganizationProvider>
-  )
+  return <ProfileContent />
 }
 
 export default Profile

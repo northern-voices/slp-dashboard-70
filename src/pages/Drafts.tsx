@@ -170,10 +170,6 @@ const DraftsContent = () => {
   )
 }
 const Drafts = () => {
-  return (
-    <OrganizationProvider>
-      <DraftsContent />
-    </OrganizationProvider>
-  )
+  return <DraftsContent />
 }
 export default Drafts

@@ -15,7 +15,7 @@ import { User } from 'lucide-react'
 import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
 import { useSchoolGrades } from '@/hooks/use-school-grades'
-import { useSchool } from '@/contexts/SchoolContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { schoolGradesApi } from '@/api/schoolGrades'
 
 interface SpeechScreeningStep1Props {
@@ -69,9 +69,10 @@ const SpeechScreeningStep1 = ({
   onGradeIdChange,
   onAbsentChange,
 }: SpeechScreeningStep1Props) => {
+  const { currentSchool } = useOrganization()
+
   // Fetch available school grades for the current organization
   const { data: schoolGrades } = useSchoolGrades()
-  const { selectedSchool } = useSchool()
 
   // Use local state for immediate UI response, sync with form
   const [localAbsentValue, setLocalAbsentValue] = useState<boolean>(

@@ -102,11 +102,7 @@ const StudentsContent = () => {
 }
 
 const Students = () => {
-  return (
-    <OrganizationProvider>
-      <StudentsContent />
-    </OrganizationProvider>
-  )
+  return <StudentsContent />
 }
 
 export default Students

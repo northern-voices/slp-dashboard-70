@@ -11,11 +11,11 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { useSchool } from '@/contexts/SchoolContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 const SLPSchoolSelector = () => {
   const [open, setOpen] = React.useState(false)
-  const { selectedSchool, setSelectedSchool, userAssignedSchools, isLoading } = useSchool()
+  const { currentSchool, setCurrentSchool, availableSchools, isLoading } = useOrganization()
 
   if (isLoading) {
     return (
@@ -39,7 +39,7 @@ const SLPSchoolSelector = () => {
           <div className='flex items-center space-x-2 min-w-0'>
             <Building2 className='w-4 h-4 flex-shrink-0' />
             <span className='truncate'>
-              {selectedSchool ? selectedSchool.name : 'Select school...'}
+              {currentSchool ? currentSchool.name : 'Select school...'}
             </span>
           </div>
           <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
@@ -51,18 +51,18 @@ const SLPSchoolSelector = () => {
           <CommandList>
             <CommandEmpty>No schools found.</CommandEmpty>
             <CommandGroup>
-              {userAssignedSchools.map(school => (
+              {availableSchools.map(school => (
                 <CommandItem
                   key={school.id}
                   value={school.name}
                   onSelect={() => {
-                    setSelectedSchool(school.id === selectedSchool?.id ? null : school)
+                    setCurrentSchool(school.id === currentSchool?.id ? null : school)
                     setOpen(false)
                   }}>
                   <Check
                     className={cn(
                       'mr-2 h-4 w-4',
-                      selectedSchool?.id === school.id ? 'opacity-100' : 'opacity-0'
+                      currentSchool?.id === school.id ? 'opacity-100' : 'opacity-0'
                     )}
                   />
                   <div className='flex flex-col'>

@@ -1,21 +1,21 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileText, ArrowUp, GraduationCap } from 'lucide-react'
-import { useSchool } from '@/contexts/SchoolContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { Users, FileText, Activity, Target, ArrowUp } from 'lucide-react'
 import { useStudentCountBySchool } from '@/hooks/students'
 import { useRecentScreeningsBySchool } from '@/hooks/screenings'
 
 const SLPDashboardStats = () => {
-  const { selectedSchool, isLoading: schoolLoading } = useSchool()
+  const { currentSchool, isLoading: schoolLoading } = useOrganization()
 
   // Fetch real data based on selected school
   const { data: studentCount = 0, isLoading: studentsLoading } = useStudentCountBySchool(
-    selectedSchool?.id
+    currentSchool?.id
   )
 
   const { data: recentScreeningsCount = 0, isLoading: screeningsLoading } =
     useRecentScreeningsBySchool(
-      selectedSchool?.id,
+      currentSchool?.id,
       7 // Last 7 days
     )
 
@@ -32,9 +32,9 @@ const SLPDashboardStats = () => {
     {
       title: 'Students',
       value: studentCount.toString(),
-      change: selectedSchool ? `at ${selectedSchool.name}` : 'No school selected',
+      change: currentSchool ? `at ${currentSchool.name}` : 'No school selected',
       percentage: getPercentageChange(studentCount, Math.floor(studentCount * 0.95)), // Mock previous value
-      icon: GraduationCap,
+      icon: Users,
       color: 'text-brand',
       bgColor: 'bg-blue-50',
     },
@@ -78,13 +78,13 @@ const SLPDashboardStats = () => {
     )
   }
 
-  if (!selectedSchool) {
+  if (!currentSchool) {
     return (
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
         <Card className='bg-white border border-gray-100 shadow-sm rounded-xl'>
           <CardContent className='p-6'>
             <div className='text-center'>
-              <GraduationCap className='w-12 h-12 text-gray-400 mx-auto mb-4' />
+              <Users className='w-12 h-12 text-gray-400 mx-auto mb-4' />
               <h3 className='text-lg font-medium text-gray-900 mb-2'>Select a School</h3>
               <p className='text-gray-600 text-sm'>
                 Choose a school from the dropdown above to view statistics and manage students.

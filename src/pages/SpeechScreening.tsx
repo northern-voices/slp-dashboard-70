@@ -18,7 +18,6 @@ import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
 import MultiStepSpeechScreeningForm from '@/components/screening/speech/MultiStepSpeechScreeningForm'
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
-import { SchoolProvider } from '@/contexts/SchoolContext'
 import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 const SpeechScreeningContent = () => {
@@ -162,11 +161,10 @@ const SpeechScreeningContent = () => {
 
 const SpeechScreening = () => {
   return (
-    <OrganizationProvider>
-      <SchoolProvider>
-        <SpeechScreeningContent />
-      </SchoolProvider>
-    </OrganizationProvider>
+    <div className='min-h-screen bg-gray-50'>
+      <SpeechScreeningContent />
+    </div>
   )
 }
+
 export default SpeechScreening

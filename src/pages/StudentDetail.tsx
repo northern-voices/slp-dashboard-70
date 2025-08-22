@@ -229,11 +229,7 @@ const StudentDetailContent = () => {
 }
 
 const StudentDetail = () => {
-  return (
-    <OrganizationProvider>
-      <StudentDetailContent />
-    </OrganizationProvider>
-  )
+  return <StudentDetailContent />
 }
 
 export default StudentDetail

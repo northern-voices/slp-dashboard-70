@@ -145,11 +145,7 @@ const ScreeningsContent = () => {
 }
 
 const Screenings = () => {
-  return (
-    <OrganizationProvider>
-      <ScreeningsContent />
-    </OrganizationProvider>
-  )
+  return <ScreeningsContent />
 }
 
 export default Screenings
