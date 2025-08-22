@@ -1,38 +1,30 @@
-import React from 'react'
-import { X } from 'lucide-react'
+import React, { useState } from 'react'
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { useLocation, Link } from 'react-router-dom'
+import { Menu, X, Home, Users, FileText, Settings, Building2 } from 'lucide-react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import SchoolSelector from '@/components/SchoolSelector'
 import { getNavigationGroups } from '@/components/sidebar/sidebarNavigationData'
 import { cn } from '@/lib/utils'
 import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector'
-import SchoolSelector from '@/components/SchoolSelector'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { useSchool } from '@/contexts/SchoolContext'
-import { useAuth } from '@/contexts/AuthContext'
+import { SLPProfile } from '@/types/database'
 
 interface MobileNavMenuProps {
   isOpen: boolean
   onClose: () => void
   userRole?: 'admin' | 'slp' | 'supervisor'
   userName?: string
-  userProfile?: any
+  userProfile?: SLPProfile
 }
 
 // Helper component to safely render school selector
 const SafeSchoolSelector = ({ userRole }: { userRole: 'admin' | 'slp' | 'supervisor' }) => {
-  try {
-    if (userRole === 'slp') {
-      // Try to use SchoolProvider context
-      const schoolContext = useSchool()
-      return <SLPSchoolSelector />
-    } else {
-      return <SchoolSelector />
-    }
-  } catch (error) {
-    // If SchoolProvider is not available, fall back to regular SchoolSelector
-    console.log('SchoolProvider not available, using fallback')
+  if (userRole === 'slp') {
+    return <SLPSchoolSelector />
+  } else {
     return <SchoolSelector />
   }
 }
@@ -44,17 +36,22 @@ const MobileNavMenu = ({
   userName = 'Dr. Sarah Johnson',
   userProfile,
 }: MobileNavMenuProps) => {
+  const navigate = useNavigate()
   const location = useLocation()
-  const { userProfile: orgUserProfile, currentOrganization } = useOrganization()
   const { logout } = useAuth()
-  const navigationGroups = getNavigationGroups(location, userRole, userProfile)
+  const { currentSchool } = useOrganization()
+  const navigationGroups = getNavigationGroups(
+    location,
+    userRole,
+    userProfile as unknown as Record<string, unknown>
+  )
   const initials = userName
     .split(' ')
     .map(n => n[0])
     .join('')
   const orgInitials =
-    currentOrganization?.name
-      .split(' ')
+    currentSchool?.name
+      ?.split(' ')
       .map(n => n[0])
       .join('') || 'ORG'
 
@@ -143,7 +140,7 @@ const MobileNavMenu = ({
                 </AvatarFallback>
               </Avatar>
               <div className='flex flex-col'>
-                <span className='font-medium'>{currentOrganization?.name || 'Organization'}</span>
+                <span className='font-medium'>{currentSchool?.name || 'Organization'}</span>
                 <span className='text-xs text-gray-500'>Organization Info</span>
               </div>
             </div>

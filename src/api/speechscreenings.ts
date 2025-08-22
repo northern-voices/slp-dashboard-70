@@ -107,8 +107,6 @@ export const speechScreeningsApi = {
 
       if (error) throw error
 
-      console.log(data, 'data from the screenings')
-
       const transformedData: Screening[] = (data || []).map((screening: RawSpeechScreening) => ({
         id: screening.id,
         student_id: screening.students?.student_id || '',
