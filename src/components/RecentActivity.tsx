@@ -59,7 +59,7 @@ const RecentActivity = () => {
 
   const getScreeningTypeIcon = (screening: Screening) => {
     // Check if it's a speech or hearing screening based on available fields
-    if (screening.vocabulary_support !== undefined || screening.suspected_cas !== undefined) {
+    if (screening.vocabulary_support !== undefined || screening.error_patterns?.articulation) {
       return '🗣️'
     } else if (screening.right_volume_db !== undefined || screening.left_volume_db !== undefined) {
       return '👂'
@@ -69,7 +69,7 @@ const RecentActivity = () => {
 
   const getScreeningTypeLabel = (screening: Screening) => {
     // Check if it's a speech or hearing screening based on available fields
-    if (screening.vocabulary_support !== undefined || screening.suspected_cas !== undefined) {
+    if (screening.vocabulary_support !== undefined || screening.error_patterns?.articulation) {
       return 'Speech'
     } else if (screening.right_volume_db !== undefined || screening.left_volume_db !== undefined) {
       return 'Hearing'

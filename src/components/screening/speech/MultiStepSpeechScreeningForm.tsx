@@ -224,7 +224,6 @@ const MultiStepSpeechScreeningForm = ({
         ? 'absent'
         : (formData.speech_screen_result as string) || '',
       vocabulary_support: (formData.vocabulary_support_recommended as boolean) || false,
-      suspected_cas: (areasOfConcern.suspected_cas as boolean) || false,
       clinical_notes: (formData.clinical_notes as string) || '',
       referral_notes: (formData.referral_notes as string) || '',
 

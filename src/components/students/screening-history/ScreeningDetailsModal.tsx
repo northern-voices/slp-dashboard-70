@@ -346,7 +346,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
               {screening.vocabulary_support && (
                 <Badge className='bg-blue-100 text-blue-800'>Vocabulary Support</Badge>
               )}
-              {screening.suspected_cas && (
+              {screening.error_patterns?.add_areas_of_concern?.suspected_cas && (
                 <Badge className='bg-purple-100 text-purple-800'>Suspected CAS</Badge>
               )}
             </div>

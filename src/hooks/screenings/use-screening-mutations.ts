@@ -13,7 +13,6 @@ type CreateSpeechScreeningInput = {
   error_patterns?: ErrorPatterns
   result?: string | null
   vocabulary_support?: boolean
-  suspected_cas?: boolean
   clinical_notes?: string | null
   referral_notes?: string | null
 }
