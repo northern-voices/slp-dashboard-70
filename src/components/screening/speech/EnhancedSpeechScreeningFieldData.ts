@@ -64,7 +64,7 @@ export const soundErrorPatterns = {
     word: 'Hat',
   },
   'Final K': {
-    patterns: ['Omission', 'Backing', 'Nasalization', 'Other'],
+    patterns: ['Omission', 'Fronting', 'Nasalization', 'Other'],
     word: 'Book',
   },
   'St-': {
@@ -216,11 +216,11 @@ export const soundErrorPatterns = {
     word: 'Flower',
   },
   '-ar': {
-    patterns: ['Vowelization “w”', 'Vowelization “y”', 'Other'],
+    patterns: ['Vowelization w', 'Vowelization y', 'Other'],
     word: 'Car',
   },
   '-or': {
-    patterns: ['Vowelization “oh/w"', 'Vowelization “y”', 'Other'],
+    patterns: ['Vowelization oh/w', 'Vowelization y', 'Other'],
     word: 'Door',
   },
   th: {
