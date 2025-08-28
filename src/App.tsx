@@ -41,7 +41,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false, // Prevents refetch on tab focus
-      refetchOnMount: false, // Prevents refetch on component mount
+      refetchOnMount: true, // Allow refetch on component mount (needed for invalidation to work)
       refetchOnReconnect: false, // Prevents refetch on network reconnect
       staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
       gcTime: 10 * 60 * 1000, // Cache data for 10 minutes

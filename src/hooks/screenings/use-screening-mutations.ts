@@ -27,17 +27,38 @@ export const useCreateSpeechScreening = () => {
 
     onSuccess: newScreening => {
       // Invalidate and refetch all screening-related queries
+      // Use exact matching for the main queries to ensure proper invalidation
       queryClient.invalidateQueries({
         queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
       })
       queryClient.invalidateQueries({
         queryKey: ['speech-screenings', user?.id, userProfile?.role, currentOrganization?.id],
       })
+      queryClient.invalidateQueries({
+        queryKey: ['hearing-screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
 
-      // Optional: You could also optimistically update the cache
-      // queryClient.setQueryData(['screenings', ...], (old) => {
-      //   return old ? [...old, newScreening] : [newScreening]
-      // })
+      // Also invalidate partial matches to catch any other variations
+      queryClient.invalidateQueries({
+        queryKey: ['screenings'],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['speech-screenings'],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['hearing-screenings'],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['recent-screenings'],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['screenings', 'by-school'],
+      })
+
+      // Force refetch of the main screenings query to ensure immediate update
+      queryClient.refetchQueries({
+        queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
     },
 
     onError: error => {
@@ -97,6 +118,11 @@ export const useDeleteScreening = () => {
       queryClient.invalidateQueries({
         queryKey: ['hearing-screenings', user?.id, userProfile?.role, currentOrganization?.id],
       })
+
+      // Force refetch of the main screenings query to ensure immediate update
+      queryClient.refetchQueries({
+        queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
     },
 
     onError: error => {
@@ -155,6 +181,11 @@ export const useBulkDeleteScreenings = () => {
       })
       queryClient.invalidateQueries({
         queryKey: ['hearing-screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+
+      // Force refetch of the main screenings query to ensure immediate update
+      queryClient.refetchQueries({
+        queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
       })
     },
 
