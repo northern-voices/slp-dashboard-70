@@ -84,70 +84,74 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
 
     return (
       <div className='space-y-4'>
-        <h4 className='font-medium text-gray-900'>Articulation Assessment:</h4>
-
         {soundErrors.length > 0 && (
-          <div className='space-y-3'>
-            <h5 className='text-sm font-medium text-gray-700'>Sounds in Error:</h5>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-              {soundErrors
-                .filter(
-                  soundError => soundError.errorPatterns && soundError.errorPatterns.length > 0
-                )
-                .map((soundError, index) => (
-                  <div key={index} className='p-3 bg-gray-50 rounded-md'>
-                    <div className='flex items-center justify-between mb-2'>
-                      <span className='font-medium text-gray-900'>{soundError.sound}</span>
+          <>
+            <h4 className='font-medium text-gray-900'>Articulation Assessment:</h4>
+
+            <div className='space-y-3'>
+              <h5 className='text-sm font-medium text-gray-700'>Sounds in Error:</h5>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                {soundErrors
+                  .filter(
+                    soundError => soundError.errorPatterns && soundError.errorPatterns.length > 0
+                  )
+                  .map((soundError, index) => (
+                    <div key={index} className='p-3 bg-gray-50 rounded-md'>
+                      <div className='flex items-center justify-between mb-2'>
+                        <span className='font-medium text-gray-900'>{soundError.sound}</span>
+                      </div>
+                      {soundError.errorPatterns && soundError.errorPatterns.length > 0 && (
+                        <div className='mb-2'>
+                          <span className='text-xs font-semibold text-gray-600'>
+                            Error Patterns:
+                          </span>
+                          <div className='flex flex-wrap gap-1 mt-1'>
+                            {soundError.errorPatterns.map((pattern, patternIndex) => (
+                              <Badge key={patternIndex} variant='outline' className='text-xs'>
+                                {pattern}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Display Stopping Sounds */}
+                      {soundError.stoppingSounds && soundError.stoppingSounds.length > 0 && (
+                        <div className='mb-2'>
+                          <span className='text-xs text-gray-600'>Stopping to:</span>
+                          <div className='flex flex-wrap gap-1 mt-1'>
+                            {soundError.stoppingSounds.map((stoppingSound, stoppingIndex) => (
+                              <Badge
+                                key={stoppingIndex}
+                                variant='secondary'
+                                className='text-xs bg-blue-100 text-blue-800'>
+                                {stoppingSound}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Display Notes (from input field) */}
+                      {soundError.notes && (
+                        <div className='text-sm text-gray-700'>
+                          <span className='text-xs font-semibold text-gray-600'>Notes:</span>
+                          <p className='mt-1'>{soundError.notes}</p>
+                        </div>
+                      )}
+
+                      {/* Display Other Notes (from "Other" textarea) */}
+                      {soundError.otherNotes && (
+                        <div className='text-sm text-gray-700'>
+                          <span className='text-xs font-semibold text-gray-600'>Other Notes:</span>
+                          <p className='mt-1'>{soundError.otherNotes}</p>
+                        </div>
+                      )}
                     </div>
-                    {soundError.errorPatterns && soundError.errorPatterns.length > 0 && (
-                      <div className='mb-2'>
-                        <span className='text-xs font-semibold text-gray-600'>Error Patterns:</span>
-                        <div className='flex flex-wrap gap-1 mt-1'>
-                          {soundError.errorPatterns.map((pattern, patternIndex) => (
-                            <Badge key={patternIndex} variant='outline' className='text-xs'>
-                              {pattern}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Display Stopping Sounds */}
-                    {soundError.stoppingSounds && soundError.stoppingSounds.length > 0 && (
-                      <div className='mb-2'>
-                        <span className='text-xs text-gray-600'>Stopping to:</span>
-                        <div className='flex flex-wrap gap-1 mt-1'>
-                          {soundError.stoppingSounds.map((stoppingSound, stoppingIndex) => (
-                            <Badge
-                              key={stoppingIndex}
-                              variant='secondary'
-                              className='text-xs bg-blue-100 text-blue-800'>
-                              {stoppingSound}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Display Notes (from input field) */}
-                    {soundError.notes && (
-                      <div className='text-sm text-gray-700'>
-                        <span className='text-xs font-semibold text-gray-600'>Notes:</span>
-                        <p className='mt-1'>{soundError.notes}</p>
-                      </div>
-                    )}
-
-                    {/* Display Other Notes (from "Other" textarea) */}
-                    {soundError.otherNotes && (
-                      <div className='text-sm text-gray-700'>
-                        <span className='text-xs font-semibold text-gray-600'>Other Notes:</span>
-                        <p className='mt-1'>{soundError.otherNotes}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  ))}
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {articulation.articulationNotes && (
@@ -240,12 +244,27 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
       <div className='space-y-4'>
         <h4 className='font-medium text-gray-900'>Speech Screening Details:</h4>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {metadata.qualifies_for_speech_program && (
-            <div className='p-3 bg-green-50 rounded-md border border-green-200'>
-              <h5 className='text-sm font-medium text-green-800 mb-2'>
+          {metadata.qualifies_for_speech_program !== undefined && (
+            <div
+              className={`p-3 rounded-md border ${
+                metadata.qualifies_for_speech_program
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-red-50 border-red-200'
+              }`}>
+              <h5
+                className={`text-sm font-medium mb-2 ${
+                  metadata.qualifies_for_speech_program ? 'text-green-800' : 'text-red-800'
+                }`}>
                 Qualifies for Speech Program:
               </h5>
-              <Badge className='bg-green-100 text-green-800'>Yes</Badge>
+              <Badge
+                className={
+                  metadata.qualifies_for_speech_program
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+                }>
+                {metadata.qualifies_for_speech_program ? 'Yes' : 'No'}
+              </Badge>
             </div>
           )}
 
@@ -323,32 +342,37 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
           {/* Sound Errors Summary as badges */}
           {screening.error_patterns?.articulation?.soundErrors &&
             screening.error_patterns.articulation.soundErrors.length > 0 && (
-              <div className='flex flex-wrap gap-2'>
-                {screening.error_patterns.articulation.soundErrors
-                  .filter(
-                    soundError => soundError.errorPatterns && soundError.errorPatterns.length > 0
-                  )
-                  .map((soundError, index) => (
-                    <Badge
-                      key={index}
-                      className='bg-green-100 text-gray-700 font-medium flex items-center gap-1'>
-                      <CheckCircle className='w-3 h-3' />
-                      {soundError.sound}
-                    </Badge>
-                  ))}
+              <div className='flex flex-col gap-2'>
+                <h4 className='font-medium text-gray-900'>Error Sounds:</h4>
+                <div className='flex flex-wrap gap-2'>
+                  {screening.error_patterns.articulation.soundErrors
+                    .filter(
+                      soundError => soundError.errorPatterns && soundError.errorPatterns.length > 0
+                    )
+                    .map((soundError, index) => (
+                      <Badge
+                        key={index}
+                        className='bg-red-100 text-gray-700 font-medium flex items-center gap-1'>
+                        {soundError.sound}
+                      </Badge>
+                    ))}
+                </div>
               </div>
             )}
 
           {/* Speech-specific flags - Only show if not absent */}
           {!screening.error_patterns?.attendance?.absent && (
-            <div className='flex flex-wrap gap-2'>
-              {getResultBadge(screening.result)}
-              {screening.vocabulary_support && (
-                <Badge className='bg-blue-100 text-blue-800'>Vocabulary Support</Badge>
-              )}
-              {screening.error_patterns?.add_areas_of_concern?.suspected_cas && (
-                <Badge className='bg-purple-100 text-purple-800'>Suspected CAS</Badge>
-              )}
+            <div className='flex flex-col gap-2'>
+              <h4 className='font-medium text-gray-900'>Result:</h4>
+              <div className='flex flex-wrap gap-2'>
+                {getResultBadge(screening.result)}
+                {screening.vocabulary_support && (
+                  <Badge className='bg-blue-100 text-blue-800'>Vocabulary Support</Badge>
+                )}
+                {screening.error_patterns?.add_areas_of_concern?.suspected_cas && (
+                  <Badge className='bg-purple-100 text-purple-800'>Suspected CAS</Badge>
+                )}
+              </div>
             </div>
           )}
 
@@ -377,15 +401,19 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
           {/* Notes Section - Only show if not absent */}
           {!screening.error_patterns?.attendance?.absent && (
             <div className='space-y-4'>
-              <h3 className='font-medium text-gray-900'>Clinical Notes:</h3>
-
               {screening.clinical_notes && (
-                <div>
-                  <h4 className='text-sm font-medium text-gray-700 mb-2'>Clinical Observations</h4>
-                  <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
-                    {screening.clinical_notes}
-                  </p>
-                </div>
+                <>
+                  <h3 className='font-medium text-gray-900'>Clinical Notes:</h3>
+
+                  <div>
+                    <h4 className='text-sm font-medium text-gray-700 mb-2'>
+                      Clinical Observations
+                    </h4>
+                    <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
+                      {screening.clinical_notes}
+                    </p>
+                  </div>
+                </>
               )}
 
               {screening.error_patterns?.additional_observations && (
