@@ -11,9 +11,9 @@ import SchoolRouter from '@/components/SchoolRouter'
 import Index from './pages/Index'
 import Students from './pages/Students'
 import StudentDetail from './pages/StudentDetail'
-// import SchoolSupportForm from "./pages/student/SchoolSupportForm";
-// import SchoolSupport from "./pages/SchoolSupport";
-// import CreateSchoolSupportForm from "./pages/CreateSchoolSupportForm";
+import SchoolSupportForm from './pages/student/SchoolSupportForm'
+import SchoolSupport from './pages/SchoolSupport'
+import CreateSchoolSupportForm from './pages/CreateSchoolSupportForm'
 import MonthlyProgressCheck from './pages/student/MonthlyProgressCheck'
 import GenerateGoalSheet from './pages/student/GenerateGoalSheet'
 import Screenings from './pages/Screenings'
@@ -406,6 +406,48 @@ const App = () => (
                   <ProtectedRoute>
                     <SchoolRouter>
                       <Notifications />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* School Support Routes */}
+              <Route
+                path='/school-support'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <SchoolSupport />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/school-support/create'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <CreateSchoolSupportForm />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/school/:schoolId/school-support'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <SchoolSupport />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/school/:schoolId/school-support/create'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <CreateSchoolSupportForm />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }

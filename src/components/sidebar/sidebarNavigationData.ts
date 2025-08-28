@@ -1,11 +1,4 @@
-import {
-  Home,
-  BarChart3,
-  Building2,
-  GraduationCap,
-  // HandHeart,
-  Stethoscope,
-} from 'lucide-react'
+import { Home, BarChart3, Building2, GraduationCap, HandHeart, Stethoscope } from 'lucide-react'
 import { Location } from 'react-router-dom'
 import { LucideIcon } from 'lucide-react'
 
@@ -55,19 +48,22 @@ export const getNavigationGroups = (
         location.pathname === '/screenings' ||
         (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screenings`),
     },
+    {
+      title: 'Reports',
+      url: useSchoolRoutes ? `/school/${currentSchool.id}/reports` : '/reports',
+      icon: BarChart3,
+      isActive:
+        location.pathname === '/reports' ||
+        (useSchoolRoutes && location.pathname.startsWith(`/school/${currentSchool.id}/reports`)),
+    },
     // {
-    //   title: 'Reports',
-    //   url: useSchoolRoutes ? `/school/${currentSchool.id}/reports` : '/reports',
-    //   icon: BarChart3,
-    //   isActive:
-    //     location.pathname === '/reports' ||
-    //     (useSchoolRoutes && location.pathname.startsWith(`/school/${currentSchool.id}/reports`)),
-    // },
-    // {
-    //   title: "School Support",
-    //   url: "/school-support",
+    //   title: 'School Support',
+    //   url: useSchoolRoutes ? `/school/${currentSchool.id}/school-support` : '/school-support',
     //   icon: HandHeart,
-    //   isActive: location.pathname.startsWith("/school-support")
+    //   isActive:
+    //     location.pathname.startsWith('/school-support') ||
+    //     (useSchoolRoutes &&
+    //       location.pathname.startsWith(`/school/${currentSchool.id}/school-support`)),
     // },
     // {
     //   title: 'Management',
