@@ -37,7 +37,7 @@ const GenerateReportContent = () => {
                 <Button
                   variant='outline'
                   size='sm'
-                  onClick={() => navigate('/reports')}
+                  onClick={() => navigate('/speech-screening-reports')}
                   className='flex items-center gap-2'>
                   <ArrowLeft className='w-4 h-4' />
                   Back to Reports

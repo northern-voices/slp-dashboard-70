@@ -49,12 +49,15 @@ export const getNavigationGroups = (
         (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screenings`),
     },
     {
-      title: 'Reports',
-      url: useSchoolRoutes ? `/school/${currentSchool.id}/reports` : '/reports',
+      title: 'Speech Screening Reports',
+      url: useSchoolRoutes
+        ? `/school/${currentSchool.id}/speech-screening-reports`
+        : '/speech-screening-reports',
       icon: BarChart3,
       isActive:
-        location.pathname === '/reports' ||
-        (useSchoolRoutes && location.pathname.startsWith(`/school/${currentSchool.id}/reports`)),
+        location.pathname === '/speech-screening-reports' ||
+        (useSchoolRoutes &&
+          location.pathname.startsWith(`/school/${currentSchool.id}/speech-screening-reports`)),
     },
     // {
     //   title: 'School Support',

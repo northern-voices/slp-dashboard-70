@@ -172,11 +172,41 @@ const App = () => (
                 }
               />
               <Route
-                path='/reports'
+                path='/speech-screening-reports'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
                       <Reports />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/speech-screening-reports/generate'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <GenerateReport />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/speech-screening-reports/individual'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <IndividualReports />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/speech-screening-reports/:reportId'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <ReportDetail />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
@@ -341,7 +371,7 @@ const App = () => (
               />
 
               <Route
-                path='/school/:schoolId/reports'
+                path='/school/:schoolId/speech-screening-reports'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
@@ -351,7 +381,7 @@ const App = () => (
                 }
               />
               <Route
-                path='/school/:schoolId/reports/generate'
+                path='/school/:schoolId/speech-screening-reports/generate'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
@@ -361,7 +391,7 @@ const App = () => (
                 }
               />
               <Route
-                path='/school/:schoolId/reports/individual'
+                path='/school/:schoolId/speech-screening-reports/individual'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
@@ -371,7 +401,7 @@ const App = () => (
                 }
               />
               <Route
-                path='/school/:schoolId/reports/:reportId'
+                path='/school/:schoolId/speech-screening-reports/:reportId'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
