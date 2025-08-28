@@ -330,7 +330,7 @@ const ScreeningsTable = ({
     }
 
     if (qualifies) {
-      return <Badge className='bg-green-100 text-green-800 font-medium'>Qualifies</Badge>
+      return <Badge className='bg-green-100 text-green-800 font-medium'>Program</Badge>
     } else {
       return <Badge className='bg-red-100 text-red-800 font-medium'>Not In Program</Badge>
     }
@@ -485,7 +485,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                   </Button>
                 </TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>Qualifies</TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
                 <TableHead className='w-1/6 min-w-[80px]'>
                   <Button
                     variant='ghost'
