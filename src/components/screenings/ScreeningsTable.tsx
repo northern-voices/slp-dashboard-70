@@ -94,8 +94,6 @@ const ScreeningsTable = ({
     ? (allScreenings || []).filter(screening => screening.school_id === currentSchool.id)
     : allScreenings || []
 
-  console.log(schoolScreenings, 'schoolscreenings') // TODO: Temp remove after
-
   // Apply all filters
   const filteredScreenings = schoolScreenings.filter(screening => {
     const matchesSearch =
