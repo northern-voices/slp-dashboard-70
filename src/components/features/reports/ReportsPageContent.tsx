@@ -20,7 +20,7 @@ const ReportsPageContent = () => {
             {/* Generate Class-Wide Report Button */}
             <Card
               className='bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer'
-              onClick={() => navigate('/speech-screening-reports/individual')}>
+              onClick={() => navigate('individual')}>
               <CardContent className='px-6 py-3'>
                 <div className='flex items-center gap-4'>
                   <div className='w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0'>
@@ -38,7 +38,7 @@ const ReportsPageContent = () => {
 
             <Card
               className='bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer'
-              onClick={() => navigate('/speech-screening-reports/generate')}>
+              onClick={() => navigate('generate')}>
               <CardContent className='px-6 py-3'>
                 <div className='flex items-center gap-4'>
                   <div className='w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0'>
