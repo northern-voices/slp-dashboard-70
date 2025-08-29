@@ -10,11 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { FileText, Volume2, CheckCircle, Target, Mail, User } from 'lucide-react'
+import { FileText, Volume2, CheckCircle, Target, Mail, User, Send } from 'lucide-react'
 import { Student } from '@/types/database'
 import { StudentService } from '@/services/studentService'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import IndividualReportEmailModal from './IndividualReportEmailModal'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import Multiselect from '@/components/ui/multiselect'
 
 const IndividualStudentReports = () => {
   const navigate = useNavigate()
@@ -22,7 +25,10 @@ const IndividualStudentReports = () => {
   const [students, setStudents] = useState<Student[]>([])
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [loading, setLoading] = useState(true)
-  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [selectedReports, setSelectedReports] = useState<string[]>([])
+  const [recipientEmail, setRecipientEmail] = useState('')
+  const [customMessage, setCustomMessage] = useState('')
+  const [isEmailLoading, setIsEmailLoading] = useState(false)
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -60,6 +66,43 @@ const IndividualStudentReports = () => {
       return `/school/${currentSchool.id}/students/${selectedStudent?.id}/${subPath}`
     }
     return `/students/${selectedStudent?.id}/${subPath}`
+  }
+
+  const availableReports = [
+    'Hearing Screen Report',
+    'Speech Screen Report',
+    'Goal Sheet',
+    'Progress Report',
+  ]
+
+  const handleSendEmail = async () => {
+    if (!recipientEmail || selectedReports.length === 0) {
+      return
+    }
+
+    setIsEmailLoading(true)
+
+    try {
+      // Simulate email sending
+      console.log('Sending individual reports email:', {
+        student: selectedStudent,
+        recipient: recipientEmail,
+        reports: selectedReports,
+        message: customMessage,
+      })
+
+      // TODO: Implement actual email sending logic
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // Reset form
+      setSelectedReports([])
+      setRecipientEmail('')
+      setCustomMessage('')
+    } catch (error) {
+      console.error('Error sending email:', error)
+    } finally {
+      setIsEmailLoading(false)
+    }
   }
 
   const handleStudentSelect = (studentId: string) => {
@@ -215,24 +258,89 @@ const IndividualStudentReports = () => {
           {/* Send Reports */}
           <div className='pt-2 border-t border-gray-200'>
             <Button
-              onClick={() => setShowEmailModal(true)}
+              onClick={() => handleSendEmail()}
               variant='default'
               size='sm'
               className='w-full h-9 bg-purple-600 hover:bg-purple-700 text-white'
-              disabled={!selectedStudent}>
-              <Mail className='w-4 h-4 mr-2' />
-              Send Reports via Email
+              disabled={
+                !selectedStudent ||
+                !recipientEmail ||
+                selectedReports.length === 0 ||
+                isEmailLoading
+              }>
+              <Send className='w-4 h-4 mr-2' />
+              {isEmailLoading ? 'Sending...' : 'Send Reports via Email'}
             </Button>
           </div>
         </div>
       </div>
 
+      {/* Email Section */}
       {selectedStudent && (
-        <IndividualReportEmailModal
-          isOpen={showEmailModal}
-          onClose={() => setShowEmailModal(false)}
-          student={selectedStudent}
-        />
+        <div className='mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200'>
+          <h4 className='text-sm font-medium text-gray-700 mb-4 flex items-center gap-2'>
+            <Mail className='w-4 h-4' />
+            Send {selectedStudent.first_name}'s Reports
+          </h4>
+
+          <div className='space-y-4'>
+            {/* Report Selection */}
+            <div className='space-y-2'>
+              <Label className='text-sm font-medium'>Select Reports to Send</Label>
+              <Multiselect
+                options={availableReports}
+                selected={selectedReports}
+                onChange={setSelectedReports}
+                placeholder='Select reports to send...'
+                searchPlaceholder='Search reports...'
+                emptyMessage='No reports found.'
+              />
+            </div>
+
+            {/* Email Details */}
+            <div className='space-y-3'>
+              <div className='space-y-1'>
+                <Label htmlFor='recipient' className='text-sm font-medium'>
+                  Recipient Email
+                </Label>
+                <Input
+                  id='recipient'
+                  type='email'
+                  placeholder='Enter recipient email address'
+                  value={recipientEmail}
+                  onChange={e => setRecipientEmail(e.target.value)}
+                  className='h-9'
+                />
+              </div>
+
+              <div className='space-y-1'>
+                <Label htmlFor='subject' className='text-sm font-medium'>
+                  Subject
+                </Label>
+                <Input
+                  id='subject'
+                  value={`Reports for ${selectedStudent.first_name} ${selectedStudent.last_name}`}
+                  disabled
+                  className='bg-gray-50 h-9'
+                />
+              </div>
+
+              <div className='space-y-1'>
+                <Label htmlFor='message' className='text-sm font-medium'>
+                  Custom Message (Optional)
+                </Label>
+                <Textarea
+                  id='message'
+                  placeholder='Add a personal message to include with the reports...'
+                  value={customMessage}
+                  onChange={e => setCustomMessage(e.target.value)}
+                  rows={3}
+                  className='text-sm'
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   )
