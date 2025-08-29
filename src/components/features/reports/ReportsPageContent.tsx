@@ -12,54 +12,40 @@ const ReportsPageContent = () => {
       <div className='space-y-6 sm:space-y-8 pb-8'>
         {/* Page Header */}
         <div className='flex flex-col gap-6 px-1 sm:px-0'>
-          <div className='space-y-1 sm:space-y-2'>
-            <h1 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900'>Reports</h1>
-            <p className='text-sm sm:text-base text-gray-600'>
-              Generate class-wide reports and individual student reports for hearing and speech
-              assessments
-            </p>
-          </div>
+          <h1 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900'>Reports</h1>
 
+          <h2 className='text-md sm:text-lg text-gray-700'>Generate Reports</h2>
           {/* Action Buttons */}
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6'>
             {/* Generate Class-Wide Report Button */}
             <Card
               className='bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer'
-              onClick={() => navigate('/speech-screening-reports/generate')}>
-              <CardContent className='p-6'>
-                <div className='flex items-center gap-4'>
-                  <div className='w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0'>
-                    <FileText className='w-6 h-6 text-green-600' />
-                  </div>
-                  <div className='flex-1'>
-                    <h3 className='text-lg font-semibold text-gray-900 mb-1'>
-                      Generate Class-Wide Report
-                    </h3>
-                    <p className='text-sm text-gray-600'>
-                      Create comprehensive reports for hearing and speech assessments across
-                      multiple students
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Individual Student Reports Button */}
-            <Card
-              className='bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer'
               onClick={() => navigate('/speech-screening-reports/individual')}>
-              <CardContent className='p-6'>
+              <CardContent className='px-6 py-3'>
                 <div className='flex items-center gap-4'>
                   <div className='w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0'>
                     <User className='w-6 h-6 text-purple-600' />
                   </div>
                   <div className='flex-1'>
-                    <h3 className='text-lg font-semibold text-gray-900 mb-1'>
-                      Individual Student Reports
+                    <h3 className='text-lg font-semibold text-gray-900 mb'>
+                      Individual Speech Reports
                     </h3>
-                    <p className='text-sm text-gray-600'>
-                      Generate reports and tools for specific students
-                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            {/* Individual Student Reports Button */}
+
+            <Card
+              className='bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer'
+              onClick={() => navigate('/speech-screening-reports/generate')}>
+              <CardContent className='px-6 py-3'>
+                <div className='flex items-center gap-4'>
+                  <div className='w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0'>
+                    <FileText className='w-6 h-6 text-green-600' />
+                  </div>
+                  <div className='flex-1'>
+                    <h3 className='text-lg font-semibold text-gray-900'>Class-Wide Report</h3>
                   </div>
                 </div>
               </CardContent>
