@@ -254,24 +254,6 @@ const IndividualStudentReports = () => {
               </Tooltip>
             </div>
           </div>
-
-          {/* Send Reports */}
-          <div className='pt-2 border-t border-gray-200'>
-            <Button
-              onClick={() => handleSendEmail()}
-              variant='default'
-              size='sm'
-              className='w-full h-9 bg-purple-600 hover:bg-purple-700 text-white'
-              disabled={
-                !selectedStudent ||
-                !recipientEmail ||
-                selectedReports.length === 0 ||
-                isEmailLoading
-              }>
-              <Send className='w-4 h-4 mr-2' />
-              {isEmailLoading ? 'Sending...' : 'Send Reports via Email'}
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -339,6 +321,24 @@ const IndividualStudentReports = () => {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Send Reports */}
+          <div className='pt-2 border-t border-gray-200'>
+            <Button
+              onClick={() => handleSendEmail()}
+              variant='default'
+              size='sm'
+              className='w-full h-9 bg-purple-600 hover:bg-purple-700 text-white'
+              disabled={
+                !selectedStudent ||
+                !recipientEmail ||
+                selectedReports.length === 0 ||
+                isEmailLoading
+              }>
+              <Send className='w-4 h-4 mr-2' />
+              {isEmailLoading ? 'Sending...' : 'Send Reports via Email'}
+            </Button>
           </div>
         </div>
       )}
