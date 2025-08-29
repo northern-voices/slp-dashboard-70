@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ import IndividualReportEmailModal from './IndividualReportEmailModal'
 
 const IndividualStudentReports = () => {
   const navigate = useNavigate()
+  const { currentSchool } = useOrganization()
   const [students, setStudents] = useState<Student[]>([])
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [loading, setLoading] = useState(true)
@@ -25,8 +27,15 @@ const IndividualStudentReports = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const studentsData = await StudentService.getStudents()
-        setStudents(studentsData)
+        setLoading(true)
+
+        if (currentSchool) {
+          const studentsData = await StudentService.getStudentsBySchool(currentSchool.id)
+          setStudents(studentsData)
+        } else {
+          // if no school selected, show empty students
+          setStudents([])
+        }
       } catch (error) {
         console.error('Error fetching students:', error)
       } finally {
@@ -44,6 +53,13 @@ const IndividualStudentReports = () => {
     }
     console.log(`Generating ${reportType} for student:`, selectedStudent.id)
     // TODO: Implement individual report generation
+  }
+
+  const getStudentRoute = (subPath: string) => {
+    if (currentSchool) {
+      return `/school/${currentSchool.id}/students/${selectedStudent?.id}/${subPath}`
+    }
+    return `/students/${selectedStudent?.id}/${subPath}`
   }
 
   const handleStudentSelect = (studentId: string) => {
@@ -101,21 +117,23 @@ const IndividualStudentReports = () => {
         {/* Report Options */}
         <div className='space-y-3'>
           {/* Student Individual Tools */}
-          <div className='space-y-2'>
+          {/* s<div className='space-y-2'>
             <h4 className='text-sm font-medium text-gray-700'>Student Tools</h4>
             <div className='grid grid-cols-1 gap-2'>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={() =>
-                      selectedStudent && navigate(`/students/${selectedStudent.id}/progress-check`)
-                    }
+                    onClick={() => {
+                      if (selectedStudent) {
+                        navigate(getStudentRoute('progress-check'))
+                      }
+                    }}
                     variant='outline'
                     size='sm'
                     className='w-full justify-start h-9 text-sm'
                     disabled={!selectedStudent}>
                     <CheckCircle className='w-4 h-4 mr-2' />
-                    Monthly Progress Check
+                    Generate Progress Report
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -126,9 +144,11 @@ const IndividualStudentReports = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={() =>
-                      selectedStudent && navigate(`/students/${selectedStudent.id}/goal-sheet`)
-                    }
+                    onClick={() => {
+                      if (selectedStudent) {
+                        navigate(getStudentRoute('goal-sheet'))
+                      }
+                    }}
                     variant='outline'
                     size='sm'
                     className='w-full justify-start h-9 text-sm'
@@ -142,7 +162,7 @@ const IndividualStudentReports = () => {
                 </TooltipContent>
               </Tooltip>
             </div>
-          </div>
+          </div> */}
 
           {/* Speech Reports */}
           <div className='space-y-2'>
@@ -160,9 +180,6 @@ const IndividualStudentReports = () => {
                     Speech Screen Report
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Generate a comprehensive speech screening assessment report</p>
-                </TooltipContent>
               </Tooltip>
 
               <Tooltip>
@@ -177,32 +194,22 @@ const IndividualStudentReports = () => {
                     Progress Report
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Create a detailed progress summary for speech therapy services</p>
-                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => handleGenerateReport('goal-sheet')}
+                    variant='outline'
+                    size='sm'
+                    className='w-full justify-start h-9 text-sm'
+                    disabled={!selectedStudent}>
+                    <FileText className='w-4 h-4 mr-2' />
+                    Student Goal Sheet
+                  </Button>
+                </TooltipTrigger>
               </Tooltip>
             </div>
-          </div>
-
-          {/* Hearing Reports */}
-          <div className='space-y-2'>
-            <h4 className='text-sm font-medium text-gray-700'>Hearing Reports</h4>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => handleGenerateReport('hearing-screen')}
-                  variant='outline'
-                  size='sm'
-                  className='w-full justify-start h-9 text-sm'
-                  disabled={!selectedStudent}>
-                  <Volume2 className='w-4 h-4 mr-2' />
-                  Hearing Screen Report
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Generate a complete hearing screening assessment document</p>
-              </TooltipContent>
-            </Tooltip>
           </div>
 
           {/* Send Reports */}

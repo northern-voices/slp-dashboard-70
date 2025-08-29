@@ -12,13 +12,16 @@ const IndividualReportsContent = () => {
       <div className='space-y-6 sm:space-y-8 pb-8'>
         {/* Back Button and Header */}
         <div className='flex flex-col gap-6 px-1 sm:px-0'>
-          <Button
-            variant='ghost'
-            onClick={() => navigate('/speech-screening-reports')}
-            className='w-fit px-0 text-gray-600 hover:text-gray-900'>
-            <ArrowLeft className='w-4 h-4 mr-2' />
-            Back to Reports
-          </Button>
+          <div className='flex items-center gap-4'>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => navigate(-1)}
+              className='flex items-center gap-2'>
+              <ArrowLeft className='w-4 h-4' />
+              Back
+            </Button>
+          </div>
 
           <div className='space-y-1 sm:space-y-2'>
             <h1 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900'>

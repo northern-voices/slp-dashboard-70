@@ -172,6 +172,36 @@ const App = () => (
                 }
               />
               <Route
+                path='/students/:studentId'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <StudentDetail />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/students/:studentId/progress-check'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <MonthlyProgressCheck />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/students/:studentId/goal-sheet'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <GenerateGoalSheet />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path='/speech-screening-reports'
                 element={
                   <ProtectedRoute>
