@@ -17,7 +17,7 @@ const ReportsPageContent = () => {
           <h2 className='text-md sm:text-lg text-gray-700'>Generate Reports</h2>
           {/* Action Buttons */}
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6'>
-            {/* Generate Class-Wide Report Button */}
+            {/* Individual Student Reports Button */}
             <Card
               className='bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer'
               onClick={() => navigate('individual')}>
@@ -34,11 +34,11 @@ const ReportsPageContent = () => {
                 </div>
               </CardContent>
             </Card>
-            {/* Individual Student Reports Button */}
 
+            {/* Generate Class-Wide Report Button */}
             <Card
               className='bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer'
-              onClick={() => navigate('generate')}>
+              onClick={() => navigate('class-wide')}>
               <CardContent className='px-6 py-3'>
                 <div className='flex items-center gap-4'>
                   <div className='w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0'>
