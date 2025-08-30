@@ -23,6 +23,7 @@ import { Screening } from '@/types/database'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const IndividualStudentReports = () => {
   const navigate = useNavigate()
@@ -31,6 +32,7 @@ const IndividualStudentReports = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedReports, setSelectedReports] = useState<string[]>([])
+  const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
   const [recipientEmail, setRecipientEmail] = useState('')
   const [customMessage, setCustomMessage] = useState('')
   const [isEmailLoading, setIsEmailLoading] = useState(false)
@@ -73,12 +75,24 @@ const IndividualStudentReports = () => {
     return `/students/${selectedStudent?.id}/${subPath}`
   }
 
-  const availableReports = [
-    'Hearing Screen Report',
-    'Speech Screen Report',
-    'Goal Sheet',
-    'Progress Report',
-  ]
+  const getAvailableReports = () => {
+    const baseReports = ['Goal Sheet', 'Progress Report']
+
+    if (selectedScreenings.length > 0) {
+      // Add screening-specific reports based on selected screenings
+      const hasSpeechScreenings = selectedScreenings.some(
+        s => s.screening_type === 'speech' || s.source_table === 'speech'
+      )
+      const hasHearingScreenings = selectedScreenings.some(
+        s => s.screening_type === 'hearing' || s.source_table === 'hearing'
+      )
+
+      if (hasSpeechScreenings) baseReports.unshift('Speech Screen Report')
+      if (hasHearingScreenings) baseReports.unshift('Hearing Screen Report')
+    }
+
+    return baseReports
+  }
 
   const handleSendEmail = async () => {
     if (!recipientEmail || selectedReports.length === 0) {
@@ -93,6 +107,11 @@ const IndividualStudentReports = () => {
         student: selectedStudent,
         recipient: recipientEmail,
         reports: selectedReports,
+        selectedScreenings: selectedScreenings.map(s => ({
+          id: s.id,
+          date: s.created_at,
+          type: s.screening_type,
+        })),
         message: customMessage,
       })
 
@@ -113,6 +132,24 @@ const IndividualStudentReports = () => {
   const handleStudentSelect = (studentId: string) => {
     const student = students.find(s => s.id === studentId)
     setSelectedStudent(student || null)
+    setSelectedScreenings([]) // Clear selected screenings when student changes
+  }
+
+  const handleSelectScreening = (screening: Screening, checked: boolean) => {
+    if (checked) {
+      setSelectedScreenings(prev => [...prev, screening])
+    } else {
+      setSelectedScreenings(prev => prev.filter(s => s.id !== screening.id))
+    }
+  }
+
+  const handleSelectAllScreenings = (checked: boolean) => {
+    if (checked) {
+      // We'll need to get the screenings data from the hook
+      // For now, this will be handled by passing the screenings data down
+    } else {
+      setSelectedScreenings([])
+    }
   }
 
   if (loading) {
@@ -129,7 +166,7 @@ const IndividualStudentReports = () => {
       <div className='space-y-4'>
         {/* Student Selector */}
         <div className='space-y-2'>
-          <label className='text-sm font-medium text-gray-700'>Select Student</label>
+          <label className='text-xl font-medium text-gray-700'>Select Student</label>
           <Select onValueChange={handleStudentSelect}>
             <SelectTrigger className='w-full'>
               <SelectValue placeholder='Choose a student...' />
@@ -162,61 +199,35 @@ const IndividualStudentReports = () => {
           </div>
         )}
 
-        {/* Report Options */}
+        {/* Speech Screens Table */}
         <div className='space-y-3'>
-          {/* Student Individual Tools */}
-          {/* s<div className='space-y-2'>
-            <h4 className='text-sm font-medium text-gray-700'>Student Tools</h4>
-            <div className='grid grid-cols-1 gap-2'>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => {
-                      if (selectedStudent) {
-                        navigate(getStudentRoute('progress-check'))
-                      }
-                    }}
-                    variant='outline'
-                    size='sm'
-                    className='w-full justify-start h-9 text-sm'
-                    disabled={!selectedStudent}>
-                    <CheckCircle className='w-4 h-4 mr-2' />
-                    Generate Progress Report
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Track and document student's monthly therapy progress</p>
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => {
-                      if (selectedStudent) {
-                        navigate(getStudentRoute('goal-sheet'))
-                      }
-                    }}
-                    variant='outline'
-                    size='sm'
-                    className='w-full justify-start h-9 text-sm'
-                    disabled={!selectedStudent}>
-                    <Target className='w-4 h-4 mr-2' />
-                    Generate Goal Sheet
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Create individualized therapy goals and objectives</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </div> */}
-
-          {/* Speech Screens Table */}
           {selectedStudent && (
             <div className='space-y-3'>
-              <h4 className='text-sm font-medium text-gray-700'>Speech Screening History</h4>
-              <SpeechScreeningsTable studentId={selectedStudent.id} />
+              <div className='flex items-center justify-between'>
+                <h3 className='text-xl font-medium text-gray-700'>Screenings</h3>
+                {selectedScreenings.length > 0 && (
+                  <div className='flex items-center gap-2'>
+                    <span className='text-sm text-gray-600'>
+                      {selectedScreenings.length} screening
+                      {selectedScreenings.length !== 1 ? 's' : ''} selected
+                    </span>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => setSelectedScreenings([])}
+                      className='h-7 text-xs'>
+                      Clear Selection
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <SpeechScreeningsTable
+                studentId={selectedStudent.id}
+                selectedScreenings={selectedScreenings}
+                onSelectScreening={handleSelectScreening}
+                onSelectAll={handleSelectAllScreenings}
+                setSelectedScreenings={setSelectedScreenings}
+              />
             </div>
           )}
         </div>
@@ -228,6 +239,12 @@ const IndividualStudentReports = () => {
           <h4 className='text-sm font-medium text-gray-700 mb-4 flex items-center gap-2'>
             <Mail className='w-4 h-4' />
             Send {selectedStudent.first_name}'s Reports
+            {selectedScreenings.length > 0 && (
+              <Badge variant='secondary' className='ml-2'>
+                {selectedScreenings.length} screening{selectedScreenings.length !== 1 ? 's' : ''}{' '}
+                selected
+              </Badge>
+            )}
           </h4>
 
           <div className='space-y-4'>
@@ -235,7 +252,7 @@ const IndividualStudentReports = () => {
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Select Reports to Send</Label>
               <Multiselect
-                options={availableReports}
+                options={getAvailableReports()}
                 selected={selectedReports}
                 onChange={setSelectedReports}
                 placeholder='Select reports to send...'
@@ -312,7 +329,19 @@ const IndividualStudentReports = () => {
 }
 
 // Speech Screenings Table Component
-const SpeechScreeningsTable = ({ studentId }: { studentId: string }) => {
+const SpeechScreeningsTable = ({
+  studentId,
+  selectedScreenings,
+  onSelectScreening,
+  onSelectAll,
+  setSelectedScreenings,
+}: {
+  studentId: string
+  selectedScreenings: Screening[]
+  onSelectScreening: (screening: Screening, checked: boolean) => void
+  onSelectAll: (checked: boolean) => void
+  setSelectedScreenings: React.Dispatch<React.SetStateAction<Screening[]>>
+}) => {
   const { data: screeningsData, isLoading, error } = useSpeechScreeningsByStudent(studentId)
 
   console.log(screeningsData, 'screeningsData')
@@ -355,14 +384,34 @@ const SpeechScreeningsTable = ({ studentId }: { studentId: string }) => {
     }
   }
 
+  const isAllSelected =
+    studentScreenings.length > 0 && selectedScreenings.length === studentScreenings.length
+  const isSomeSelected = selectedScreenings.length > 0
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedScreenings([...studentScreenings])
+    } else {
+      setSelectedScreenings([])
+    }
+  }
+
   return (
     <Card>
       <CardHeader className='pb-3'>
         <div className='flex items-center justify-between'>
-          <CardTitle className='text-sm font-medium'>Speech Screening History</CardTitle>
-          <Badge variant='outline' className='text-xs'>
-            {studentScreenings.length} total
-          </Badge>
+          <div className='flex items-center gap-3'>
+            <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} className='mt-1' />
+            <CardTitle className='text-sm font-medium'>Choose screenings</CardTitle>
+          </div>
+          <div className='flex items-center gap-2'>
+            <Badge variant='outline' className='text-xs'>
+              {selectedScreenings.length} selected
+            </Badge>
+            <Badge variant='outline' className='text-xs'>
+              {studentScreenings.length} total
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -370,7 +419,12 @@ const SpeechScreeningsTable = ({ studentId }: { studentId: string }) => {
           {studentScreenings.map(screening => (
             <div
               key={screening.id}
-              className='flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors'>
+              className='flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors'>
+              <Checkbox
+                checked={selectedScreenings.some(s => s.id === screening.id)}
+                onCheckedChange={checked => onSelectScreening(screening, checked as boolean)}
+                className='mt-1'
+              />
               <div className='flex-1'>
                 <div className='flex items-center gap-3 flex-wrap'>
                   <div className='text-sm font-medium text-gray-900'>
@@ -380,7 +434,7 @@ const SpeechScreeningsTable = ({ studentId }: { studentId: string }) => {
                   <div className='text-sm text-gray-600'>Screener: {screening.screener}</div>
                   {screening.grade && (
                     <div className='text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded'>
-                      Grade {screening.grade}
+                      {screening.grade}
                     </div>
                   )}
                 </div>

@@ -28,8 +28,7 @@ const IndividualReportsContent = () => {
               Individual Student Reports
             </h1>
             <p className='text-sm sm:text-base text-gray-600'>
-              Generate reports and tools for specific students including progress checks, goal
-              sheets, and assessment reports
+              Generate screening reports for specific students
             </p>
           </div>
         </div>
