@@ -219,24 +219,7 @@ const IndividualStudentReports = () => {
         <div className='space-y-3'>
           {selectedStudent && (
             <div className='space-y-3'>
-              <div className='flex items-center justify-between'>
-                <h3 className='text-xl font-medium text-gray-700'>Screenings</h3>
-                {selectedScreenings.length > 0 && (
-                  <div className='flex items-center gap-2'>
-                    <span className='text-sm text-gray-600'>
-                      {selectedScreenings.length} screening
-                      {selectedScreenings.length !== 1 ? 's' : ''} selected
-                    </span>
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      onClick={() => setSelectedScreenings([])}
-                      className='h-7 text-xs'>
-                      Clear Selection
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <h3 className='text-xl font-medium text-gray-700'>Screenings</h3>
               <SpeechScreeningsTable
                 studentId={selectedStudent.id}
                 selectedScreenings={selectedScreenings}
@@ -459,13 +442,32 @@ const SpeechScreeningsTable = ({
           <div className='flex items-center gap-3'>
             <span className='text-sm font-medium text-gray-900'>Select Screenings</span>
           </div>
-          <div className='flex items-center gap-2'>
-            <Badge variant='outline' className='text-xs'>
-              {selectedScreenings.length} selected
-            </Badge>
-            <Badge variant='outline' className='text-xs'>
-              {studentScreenings.length} total
-            </Badge>
+          <div className='flex items-center gap-3'>
+            <div className='flex items-center gap-2'>
+              <span className='text-sm text-gray-600'>Selected:</span>
+              <Badge
+                variant='secondary'
+                className='bg-blue-100 text-blue-800 border-blue-200 font-medium w-9 text-center flex items-center justify-center'>
+                {selectedScreenings.length}
+              </Badge>
+            </div>
+            <div className='flex items-center gap-2'>
+              <span className='text-sm text-gray-600'>Total:</span>
+              <Badge
+                variant='outline'
+                className='bg-gray-50 text-gray-700 border-gray-300 font-medium w-9 text-center flex items-center justify-center'>
+                {studentScreenings.length}
+              </Badge>
+            </div>
+
+            <Button
+              variant='outline'
+              size='sm'
+              disabled={selectedScreenings.length === 0}
+              onClick={() => setSelectedScreenings([])}
+              className='h-7 text-xs ml-2'>
+              Clear Selection
+            </Button>
           </div>
         </div>
       </div>
@@ -559,7 +561,7 @@ const SpeechScreeningsTable = ({
                 <TableCell className='max-w-0'>
                   <div className='truncate' title={screening.grade || 'No grade'}>
                     {screening.grade ? (
-                      <div className='text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded inline-block'>
+                      <div className='text-xs text-gray-500 bg-gray-200 px-3 py-1 rounded-lg inline-block'>
                         {screening.grade}
                       </div>
                     ) : (
