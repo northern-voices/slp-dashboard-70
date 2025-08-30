@@ -18,6 +18,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import Multiselect from '@/components/ui/multiselect'
+import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
+import { Screening } from '@/types/database'
+import { format } from 'date-fns'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const IndividualStudentReports = () => {
   const navigate = useNavigate()
@@ -207,53 +212,13 @@ const IndividualStudentReports = () => {
             </div>
           </div> */}
 
-          {/* Speech Reports */}
-          <div className='space-y-2'>
-            <h4 className='text-sm font-medium text-gray-700'>Speech Reports</h4>
-            <div className='grid grid-cols-1 gap-2'>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => handleGenerateReport('speech-screen')}
-                    variant='outline'
-                    size='sm'
-                    className='w-full justify-start h-9 text-sm'
-                    disabled={!selectedStudent}>
-                    <FileText className='w-4 h-4 mr-2' />
-                    Speech Screen Report
-                  </Button>
-                </TooltipTrigger>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => handleGenerateReport('progress-report')}
-                    variant='outline'
-                    size='sm'
-                    className='w-full justify-start h-9 text-sm'
-                    disabled={!selectedStudent}>
-                    <FileText className='w-4 h-4 mr-2' />
-                    Progress Report
-                  </Button>
-                </TooltipTrigger>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => handleGenerateReport('goal-sheet')}
-                    variant='outline'
-                    size='sm'
-                    className='w-full justify-start h-9 text-sm'
-                    disabled={!selectedStudent}>
-                    <FileText className='w-4 h-4 mr-2' />
-                    Student Goal Sheet
-                  </Button>
-                </TooltipTrigger>
-              </Tooltip>
+          {/* Speech Screens Table */}
+          {selectedStudent && (
+            <div className='space-y-3'>
+              <h4 className='text-sm font-medium text-gray-700'>Speech Screening History</h4>
+              <SpeechScreeningsTable studentId={selectedStudent.id} />
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -291,11 +256,11 @@ const IndividualStudentReports = () => {
                   placeholder='Enter recipient email address'
                   value={recipientEmail}
                   onChange={e => setRecipientEmail(e.target.value)}
-                  className='h-9'
+                  className='h-12'
                 />
               </div>
 
-              <div className='space-y-1'>
+              {/* <div className='space-y-1'>
                 <Label htmlFor='subject' className='text-sm font-medium'>
                   Subject
                 </Label>
@@ -319,12 +284,12 @@ const IndividualStudentReports = () => {
                   rows={3}
                   className='text-sm'
                 />
-              </div>
+              </div> */}
             </div>
           </div>
 
           {/* Send Reports */}
-          <div className='pt-2 border-t border-gray-200'>
+          <div className='mt-6'>
             <Button
               onClick={() => handleSendEmail()}
               variant='default'
@@ -343,6 +308,99 @@ const IndividualStudentReports = () => {
         </div>
       )}
     </>
+  )
+}
+
+// Speech Screenings Table Component
+const SpeechScreeningsTable = ({ studentId }: { studentId: string }) => {
+  const { data: screeningsData, isLoading, error } = useSpeechScreeningsByStudent(studentId)
+
+  console.log(screeningsData, 'screeningsData')
+
+  // Get speech screenings for the student
+  const studentScreenings = screeningsData || []
+
+  if (isLoading) {
+    return (
+      <div className='flex items-center justify-center py-4'>
+        <span className='text-sm text-gray-600'>Loading screenings...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return <div className='text-sm text-red-600'>Error loading screenings. Please try again.</div>
+  }
+
+  if (studentScreenings.length === 0) {
+    return (
+      <div className='text-sm text-gray-500 text-center py-4'>
+        No speech screenings found for this student.
+      </div>
+    )
+  }
+
+  const getResultBadge = (result: string | undefined) => {
+    if (!result) return <Badge variant='secondary'>No Result</Badge>
+
+    switch (result.toLowerCase()) {
+      case 'pass':
+        return <Badge className='bg-green-100 text-green-800'>Pass</Badge>
+      case 'fail':
+        return <Badge className='bg-red-100 text-red-800'>Fail</Badge>
+      case 'refer':
+        return <Badge className='bg-yellow-100 text-yellow-800'>Refer</Badge>
+      default:
+        return <Badge variant='secondary'>{result}</Badge>
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader className='pb-3'>
+        <div className='flex items-center justify-between'>
+          <CardTitle className='text-sm font-medium'>Speech Screening History</CardTitle>
+          <Badge variant='outline' className='text-xs'>
+            {studentScreenings.length} total
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className='max-h-96 overflow-y-auto space-y-3 pr-2'>
+          {studentScreenings.map(screening => (
+            <div
+              key={screening.id}
+              className='flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors'>
+              <div className='flex-1'>
+                <div className='flex items-center gap-3 flex-wrap'>
+                  <div className='text-sm font-medium text-gray-900'>
+                    {format(new Date(screening.created_at), 'MMM dd, yyyy')}
+                  </div>
+                  {getResultBadge(screening.result || screening.screening_result)}
+                  <div className='text-sm text-gray-600'>Screener: {screening.screener}</div>
+                  {screening.grade && (
+                    <div className='text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded'>
+                      Grade {screening.grade}
+                    </div>
+                  )}
+                </div>
+                {screening.clinical_notes && (
+                  <div className='text-xs text-gray-500 mt-2 line-clamp-2'>
+                    {screening.clinical_notes}
+                  </div>
+                )}
+                {screening.vocabulary_support && (
+                  <div className='text-xs text-blue-600 mt-1 flex items-center gap-1'>
+                    <CheckCircle className='w-3 h-3' />
+                    Vocabulary support provided
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 

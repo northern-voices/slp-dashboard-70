@@ -49,7 +49,7 @@ export const getNavigationGroups = (
         (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screenings`),
     },
     {
-      title: 'Speech Screening Reports',
+      title: 'Speech Reports',
       url: useSchoolRoutes
         ? `/school/${currentSchool.id}/speech-screening-reports`
         : '/speech-screening-reports',
