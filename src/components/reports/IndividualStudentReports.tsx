@@ -94,12 +94,8 @@ const IndividualStudentReports = () => {
       const hasSpeechScreenings = selectedScreenings.some(
         s => s.screening_type === 'speech' || s.source_table === 'speech'
       )
-      const hasHearingScreenings = selectedScreenings.some(
-        s => s.screening_type === 'hearing' || s.source_table === 'hearing'
-      )
 
       if (hasSpeechScreenings) baseReports.unshift('Speech Screen Report')
-      if (hasHearingScreenings) baseReports.unshift('Hearing Screen Report')
     }
 
     return baseReports
@@ -249,16 +245,28 @@ const IndividualStudentReports = () => {
 
           <div className='space-y-4'>
             {/* Report Selection */}
-            <div className='space-y-2'>
-              <Label className='text-sm font-medium'>Select Reports to Send</Label>
-              <Multiselect
-                options={getAvailableReports()}
-                selected={selectedReports}
-                onChange={setSelectedReports}
-                placeholder='Select reports to send...'
-                searchPlaceholder='Search reports...'
-                emptyMessage='No reports found.'
-              />
+            <div className='space-y-3'>
+              <Label className='text-sm font-medium'>Select Type of Report</Label>
+              <div className='space-y-4'>
+                {getAvailableReports().map(report => (
+                  <div key={report} className='flex items-center space-x-2'>
+                    <Checkbox
+                      id={report}
+                      checked={selectedReports.includes(report)}
+                      onCheckedChange={checked => {
+                        if (checked) {
+                          setSelectedReports([...selectedReports, report])
+                        } else {
+                          setSelectedReports(selectedReports.filter(r => r !== report))
+                        }
+                      }}
+                    />
+                    <Label htmlFor={report} className='text-sm text-gray-700 cursor-pointer'>
+                      {report}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Email Details */}
