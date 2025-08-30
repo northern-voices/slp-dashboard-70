@@ -10,7 +10,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { FileText, Volume2, CheckCircle, Target, Mail, User, Send, Eye } from 'lucide-react'
+import {
+  FileText,
+  Volume2,
+  CheckCircle,
+  Target,
+  Mail,
+  User,
+  Send,
+  Eye,
+  TrendingUp,
+  BookOpen,
+} from 'lucide-react'
 import { Student } from '@/types/database'
 import { StudentService } from '@/services/studentService'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -37,6 +48,34 @@ import {
 const IndividualStudentReports = () => {
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
+
+  // Custom CSS to remove the blue outline from the select component
+  React.useEffect(() => {
+    const style = document.createElement('style')
+    style.textContent = `
+      .no-select-outline {
+        outline: none !important;
+        box-shadow: none !important;
+      }
+      .no-select-outline:focus {
+        outline: none !important;
+        box-shadow: none !important;
+      }
+      .no-select-outline[data-state="open"] {
+        outline: none !important;
+        box-shadow: none !important;
+      }
+      .no-select-outline[data-state="closed"] {
+        outline: none !important;
+        box-shadow: none !important;
+      }
+    `
+    document.head.appendChild(style)
+
+    return () => {
+      document.head.removeChild(style)
+    }
+  }, [])
   const [students, setStudents] = useState<Student[]>([])
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [loading, setLoading] = useState(true)
@@ -80,7 +119,27 @@ const IndividualStudentReports = () => {
   }
 
   const getAvailableReports = () => {
-    return ['Goal Sheet', 'Progress Report', 'Student Report']
+    return [
+      {
+        value: 'goal-sheet',
+        label: 'Goal Sheet',
+        description:
+          'Individualized goal tracking sheet with specific objectives and progress metrics',
+        icon: Target,
+      },
+      {
+        value: 'progress-report',
+        label: 'Progress Report',
+        description: 'Comprehensive progress summary showing achievements and therapy outcomes',
+        icon: TrendingUp,
+      },
+      {
+        value: 'student-report',
+        label: 'Student Report',
+        description: 'Detailed student assessment and performance overview',
+        icon: BookOpen,
+      },
+    ]
   }
 
   const handleSendEmail = async () => {
@@ -162,7 +221,7 @@ const IndividualStudentReports = () => {
         <div className='space-y-2'>
           <label className='text-xl font-medium text-gray-700'>Select Student</label>
           <Select onValueChange={handleStudentSelect}>
-            <SelectTrigger className='w-full'>
+            <SelectTrigger className='w-full no-select-outline'>
               <SelectValue placeholder='Choose a student...' />
             </SelectTrigger>
             <SelectContent className='bg-white'>
@@ -229,25 +288,61 @@ const IndividualStudentReports = () => {
             {/* Report Selection */}
             <div className='space-y-3'>
               <Label className='text-sm font-medium'>Select Type of Report</Label>
-              <div className='space-y-4'>
-                {getAvailableReports().map(report => (
-                  <div key={report} className='flex items-center space-x-2'>
-                    <Checkbox
-                      id={report}
-                      checked={selectedReports.includes(report)}
-                      onCheckedChange={checked => {
-                        if (checked) {
-                          setSelectedReports([...selectedReports, report])
+              <div className='grid grid-cols-1 lg:grid-cols-3 gap-3'>
+                {getAvailableReports().map(report => {
+                  const Icon = report.icon
+                  const isSelected = selectedReports.includes(report.value)
+                  return (
+                    <div
+                      key={report.value}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedReports(selectedReports.filter(r => r !== report.value))
                         } else {
-                          setSelectedReports(selectedReports.filter(r => r !== report))
+                          setSelectedReports([...selectedReports, report.value])
                         }
                       }}
-                    />
-                    <Label htmlFor={report} className='text-sm text-gray-700 cursor-pointer'>
-                      {report}
-                    </Label>
-                  </div>
-                ))}
+                      className={`
+                        relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full
+                        ${
+                          isSelected
+                            ? 'border-blue-600 bg-blue-50 shadow-sm'
+                            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                        }
+                      `}>
+                      <div className='flex items-start space-x-3 w-full'>
+                        <div
+                          className={`
+                          flex-shrink-0 p-2 rounded-lg
+                          ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}
+                        `}>
+                          <Icon className='w-4 h-4' />
+                        </div>
+                        <div className='flex-1 min-w-0 overflow-hidden'>
+                          <h3
+                            className={`
+                            text-sm font-medium leading-tight truncate
+                            ${isSelected ? 'text-blue-900' : 'text-gray-900'}
+                          `}>
+                            {report.label}
+                          </h3>
+                          <p
+                            className={`
+                            text-xs mt-1 leading-tight
+                            ${isSelected ? 'text-blue-700' : 'text-gray-500'}
+                          `}>
+                            {report.description}
+                          </p>
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <div className='absolute top-2 right-2'>
+                          <div className='w-2 h-2 bg-blue-600 rounded-full'></div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
