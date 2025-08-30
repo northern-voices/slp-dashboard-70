@@ -79,26 +79,8 @@ const IndividualStudentReports = () => {
     // TODO: Implement individual report generation
   }
 
-  const getStudentRoute = (subPath: string) => {
-    if (currentSchool) {
-      return `/school/${currentSchool.id}/students/${selectedStudent?.id}/${subPath}`
-    }
-    return `/students/${selectedStudent?.id}/${subPath}`
-  }
-
   const getAvailableReports = () => {
-    const baseReports = ['Goal Sheet', 'Progress Report']
-
-    if (selectedScreenings.length > 0) {
-      // Add screening-specific reports based on selected screenings
-      const hasSpeechScreenings = selectedScreenings.some(
-        s => s.screening_type === 'speech' || s.source_table === 'speech'
-      )
-
-      if (hasSpeechScreenings) baseReports.unshift('Speech Screen Report')
-    }
-
-    return baseReports
+    return ['Goal Sheet', 'Progress Report', 'Student Report']
   }
 
   const handleSendEmail = async () => {
@@ -232,8 +214,8 @@ const IndividualStudentReports = () => {
       {/* Email Section */}
       {selectedStudent && (
         <div className='mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200'>
-          <h4 className='text-sm font-medium text-gray-700 mb-4 flex items-center gap-2'>
-            <Mail className='w-4 h-4' />
+          <h4 className='text-xl font-medium text-gray-700 mb-4 flex items-center gap-2'>
+            <Mail className='w-5 h-5' />
             Send {selectedStudent.first_name}'s Reports
             {selectedScreenings.length > 0 && (
               <Badge variant='secondary' className='ml-2'>
@@ -324,10 +306,11 @@ const IndividualStudentReports = () => {
                 !selectedStudent ||
                 !recipientEmail ||
                 selectedReports.length === 0 ||
-                isEmailLoading
+                isEmailLoading ||
+                selectedScreenings.length === 0
               }>
               <Send className='w-4 h-4 mr-2' />
-              {isEmailLoading ? 'Sending...' : 'Send Reports via Email'}
+              {isEmailLoading ? 'Sending...' : 'Send Reports'}
             </Button>
           </div>
         </div>
@@ -359,8 +342,6 @@ const SpeechScreeningsTable = ({
   onViewDetails: (screening: Screening) => void
 }) => {
   const { data: screeningsData, isLoading, error } = useSpeechScreeningsByStudent(studentId)
-
-  console.log(screeningsData, 'screeningsData')
 
   // Get speech screenings for the student
   const studentScreenings = screeningsData || []
