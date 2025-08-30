@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { FileText, Volume2, CheckCircle, Target, Mail, User, Send } from 'lucide-react'
+import { FileText, Volume2, CheckCircle, Target, Mail, User, Send, Eye } from 'lucide-react'
 import { Student } from '@/types/database'
 import { StudentService } from '@/services/studentService'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -24,6 +24,15 @@ import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
+import {
+  ResponsiveTable,
+  ResponsiveTableRow,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableCell,
+} from '@/components/ui/responsive-table'
 
 const IndividualStudentReports = () => {
   const navigate = useNavigate()
@@ -36,6 +45,8 @@ const IndividualStudentReports = () => {
   const [recipientEmail, setRecipientEmail] = useState('')
   const [customMessage, setCustomMessage] = useState('')
   const [isEmailLoading, setIsEmailLoading] = useState(false)
+  const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -152,6 +163,11 @@ const IndividualStudentReports = () => {
     }
   }
 
+  const handleViewDetails = (screening: Screening) => {
+    setSelectedScreening(screening)
+    setIsDetailsModalOpen(true)
+  }
+
   if (loading) {
     return (
       <div className='flex items-center justify-center py-4'>
@@ -227,6 +243,7 @@ const IndividualStudentReports = () => {
                 onSelectScreening={handleSelectScreening}
                 onSelectAll={handleSelectAllScreenings}
                 setSelectedScreenings={setSelectedScreenings}
+                onViewDetails={handleViewDetails}
               />
             </div>
           )}
@@ -324,6 +341,12 @@ const IndividualStudentReports = () => {
           </div>
         </div>
       )}
+
+      <ScreeningDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        screening={selectedScreening}
+      />
     </>
   )
 }
@@ -335,12 +358,14 @@ const SpeechScreeningsTable = ({
   onSelectScreening,
   onSelectAll,
   setSelectedScreenings,
+  onViewDetails,
 }: {
   studentId: string
   selectedScreenings: Screening[]
   onSelectScreening: (screening: Screening, checked: boolean) => void
   onSelectAll: (checked: boolean) => void
   setSelectedScreenings: React.Dispatch<React.SetStateAction<Screening[]>>
+  onViewDetails: (screening: Screening) => void
 }) => {
   const { data: screeningsData, isLoading, error } = useSpeechScreeningsByStudent(studentId)
 
@@ -372,15 +397,45 @@ const SpeechScreeningsTable = ({
   const getResultBadge = (result: string | undefined) => {
     if (!result) return <Badge variant='secondary'>No Result</Badge>
 
-    switch (result.toLowerCase()) {
-      case 'pass':
-        return <Badge className='bg-green-100 text-green-800'>Pass</Badge>
-      case 'fail':
-        return <Badge className='bg-red-100 text-red-800'>Fail</Badge>
-      case 'refer':
-        return <Badge className='bg-yellow-100 text-yellow-800'>Refer</Badge>
-      default:
-        return <Badge variant='secondary'>{result}</Badge>
+    const resultConfig = {
+      absent: { label: 'Absent', color: 'bg-gray-100 text-gray-800' },
+      age_appropriate: { label: 'Age Appropriate', color: 'bg-green-100 text-green-800' },
+      complex_needs: { label: 'Complex Needs', color: 'bg-purple-100 text-purple-800' },
+      mild: { label: 'Mild', color: 'bg-yellow-100 text-yellow-800' },
+      mild_moderate: { label: 'Mild Moderate', color: 'bg-yellow-100 text-yellow-800' },
+      moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800' },
+      monitor: { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800' },
+      non_registered_no_consent: {
+        label: 'No Consent',
+        color: 'bg-red-100 text-red-800',
+      },
+      passed: { label: 'Passed', color: 'bg-green-100 text-green-800' },
+      pass: { label: 'Pass', color: 'bg-green-100 text-green-800' },
+      fail: { label: 'Fail', color: 'bg-red-100 text-red-800' },
+      refer: { label: 'Refer', color: 'bg-yellow-100 text-yellow-800' },
+      profound: { label: 'Profound', color: 'bg-red-100 text-red-800' },
+      severe: { label: 'Severe', color: 'bg-red-100 text-red-800' },
+      severe_profound: { label: 'Severe Profound', color: 'bg-red-100 text-red-800' },
+      unable_to_screen: { label: 'Unable to Screen', color: 'bg-gray-100 text-gray-800' },
+    }
+
+    const config = resultConfig[result.toLowerCase() as keyof typeof resultConfig]
+    if (!config) return <Badge variant='secondary'>{result}</Badge>
+
+    return <Badge className={`${config.color} font-medium`}>{config.label}</Badge>
+  }
+
+  const getQualificationBadge = (screening: Screening) => {
+    const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
+
+    if (qualifies === undefined || qualifies === null) {
+      return <Badge className='bg-gray-100 text-gray-800 font-medium'>Not Set</Badge>
+    }
+
+    if (qualifies) {
+      return <Badge className='bg-green-100 text-green-800 font-medium'>Program</Badge>
+    } else {
+      return <Badge className='bg-red-100 text-red-800 font-medium'>Not In Program</Badge>
     }
   }
 
@@ -397,12 +452,12 @@ const SpeechScreeningsTable = ({
   }
 
   return (
-    <Card>
-      <CardHeader className='pb-3'>
+    <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+      {/* Table Header */}
+      <div className='bg-gray-50 border-b border-gray-200 px-6 py-3'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-3'>
-            <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} className='mt-1' />
-            <CardTitle className='text-sm font-medium'>Choose screenings</CardTitle>
+            <span className='text-sm font-medium text-gray-900'>Select Screenings</span>
           </div>
           <div className='flex items-center gap-2'>
             <Badge variant='outline' className='text-xs'>
@@ -413,48 +468,120 @@ const SpeechScreeningsTable = ({
             </Badge>
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className='max-h-96 overflow-y-auto space-y-3 pr-2'>
-          {studentScreenings.map(screening => (
-            <div
-              key={screening.id}
-              className='flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors'>
-              <Checkbox
-                checked={selectedScreenings.some(s => s.id === screening.id)}
-                onCheckedChange={checked => onSelectScreening(screening, checked as boolean)}
-                className='mt-1'
-              />
-              <div className='flex-1'>
-                <div className='flex items-center gap-3 flex-wrap'>
-                  <div className='text-sm font-medium text-gray-900'>
-                    {format(new Date(screening.created_at), 'MMM dd, yyyy')}
-                  </div>
-                  {getResultBadge(screening.result || screening.screening_result)}
-                  <div className='text-sm text-gray-600'>Screener: {screening.screener}</div>
-                  {screening.grade && (
-                    <div className='text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded'>
-                      {screening.grade}
+      </div>
+
+      <div className='max-h-96 overflow-y-auto'>
+        <ResponsiveTable className='w-full'>
+          <TableHeader>
+            <tr>
+              <TableHead className='w-12'>
+                <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
+              </TableHead>
+              <TableHead className='w-1/6 min-w-[100px]'>Date</TableHead>
+              <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
+              <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
+              <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
+              <TableHead className='w-1/6 min-w-[80px]'>Grade</TableHead>
+              <TableHead className='w-12'></TableHead>
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {studentScreenings.map(screening => (
+              <ResponsiveTableRow
+                key={screening.id}
+                mobileCardContent={
+                  <div className='space-y-3'>
+                    <div className='flex items-center justify-between'>
+                      <div className='flex items-center gap-2'>
+                        <Checkbox
+                          checked={selectedScreenings.some(s => s.id === screening.id)}
+                          onCheckedChange={checked =>
+                            onSelectScreening(screening, checked as boolean)
+                          }
+                        />
+                        <h3 className='font-medium'>
+                          {format(new Date(screening.created_at), 'MMM dd, yyyy')}
+                        </h3>
+                      </div>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        onClick={() => onViewDetails(screening)}
+                        className='h-8 w-8 p-0 hover:bg-gray-100'>
+                        <Eye className='w-4 h-4' />
+                      </Button>
                     </div>
-                  )}
-                </div>
-                {screening.clinical_notes && (
-                  <div className='text-xs text-gray-500 mt-2 line-clamp-2'>
-                    {screening.clinical_notes}
+                    <div className='flex items-center gap-2'>
+                      {getResultBadge(screening.result || screening.screening_result)}
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      {getQualificationBadge(screening)}
+                    </div>
+                    <div className='text-sm text-gray-600 space-y-1'>
+                      <p>
+                        <span className='font-medium'>Screener:</span> {screening.screener}
+                      </p>
+                      {screening.grade && (
+                        <p>
+                          <span className='font-medium'>Grade:</span> {screening.grade}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                )}
-                {screening.vocabulary_support && (
-                  <div className='text-xs text-blue-600 mt-1 flex items-center gap-1'>
-                    <CheckCircle className='w-3 h-3' />
-                    Vocabulary support provided
+                }>
+                <TableCell>
+                  <Checkbox
+                    className='mt-1.5'
+                    checked={selectedScreenings.some(s => s.id === screening.id)}
+                    onCheckedChange={checked => onSelectScreening(screening, checked as boolean)}
+                  />
+                </TableCell>
+                <TableCell className='max-w-0'>
+                  <div className='truncate'>
+                    <div className='text-sm font-medium text-gray-900'>
+                      {format(new Date(screening.created_at), 'MMM dd, yyyy')}
+                    </div>
                   </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+                </TableCell>
+                <TableCell className='max-w-0'>
+                  <div className='truncate'>
+                    {getResultBadge(screening.result || screening.screening_result)}
+                  </div>
+                </TableCell>
+                <TableCell className='max-w-0'>
+                  <div className='truncate'>{getQualificationBadge(screening)}</div>
+                </TableCell>
+                <TableCell className='max-w-0'>
+                  <div className='truncate' title={screening.screener}>
+                    {screening.screener}
+                  </div>
+                </TableCell>
+                <TableCell className='max-w-0'>
+                  <div className='truncate' title={screening.grade || 'No grade'}>
+                    {screening.grade ? (
+                      <div className='text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded inline-block'>
+                        {screening.grade}
+                      </div>
+                    ) : (
+                      '-'
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={() => onViewDetails(screening)}
+                    className='h-8 w-8 p-0 hover:bg-gray-100'>
+                    <Eye className='w-4 h-4' />
+                  </Button>
+                </TableCell>
+              </ResponsiveTableRow>
+            ))}
+          </TableBody>
+        </ResponsiveTable>
+      </div>
+    </div>
   )
 }
 
