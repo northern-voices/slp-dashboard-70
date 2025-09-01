@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
 import {
   FileText,
   Volume2,
@@ -23,7 +24,6 @@ import {
   BookOpen,
 } from 'lucide-react'
 import { Student } from '@/types/database'
-import { StudentService } from '@/services/studentService'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -76,9 +76,7 @@ const IndividualStudentReports = () => {
       document.head.removeChild(style)
     }
   }, [])
-  const [students, setStudents] = useState<Student[]>([])
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [loading, setLoading] = useState(true)
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
   const [recipientEmail, setRecipientEmail] = useState('')
@@ -86,28 +84,6 @@ const IndividualStudentReports = () => {
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
-
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        setLoading(true)
-
-        if (currentSchool) {
-          const studentsData = await StudentService.getStudentsBySchool(currentSchool.id)
-          setStudents(studentsData)
-        } else {
-          // if no school selected, show empty students
-          setStudents([])
-        }
-      } catch (error) {
-        console.error('Error fetching students:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchStudents()
-  }, [])
 
   const handleGenerateReport = (reportType: string) => {
     if (!selectedStudent) {
@@ -177,9 +153,8 @@ const IndividualStudentReports = () => {
     }
   }
 
-  const handleStudentSelect = (studentId: string) => {
-    const student = students.find(s => s.id === studentId)
-    setSelectedStudent(student || null)
+  const handleStudentSelect = (student: Student | null) => {
+    setSelectedStudent(student)
     setSelectedScreenings([]) // Clear selected screenings when student changes
   }
 
@@ -205,38 +180,17 @@ const IndividualStudentReports = () => {
     setIsDetailsModalOpen(true)
   }
 
-  if (loading) {
-    return (
-      <div className='flex items-center justify-center py-4'>
-        <LoadingSpinner size='sm' className='mr-2' />
-        <span className='text-sm text-gray-600'>Loading students...</span>
-      </div>
-    )
-  }
-
   return (
     <>
       <div className='space-y-4'>
         {/* Student Selector */}
         <div className='space-y-2'>
           <label className='text-xl font-medium text-gray-700'>Select Student</label>
-          <Select onValueChange={handleStudentSelect}>
-            <SelectTrigger className='w-full no-select-outline'>
-              <SelectValue placeholder='Choose a student...' />
-            </SelectTrigger>
-            <SelectContent className='bg-white'>
-              {students.map(student => (
-                <SelectItem key={student.id} value={student.id}>
-                  <div className='flex items-center justify-between w-full'>
-                    <span>
-                      {student.first_name} {student.last_name}
-                    </span>
-                    <span className='text-sm text-gray-500 ml-2'>Grade {student.grade}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <StudentSearchSelector
+            selectedStudent={selectedStudent}
+            onStudentSelect={handleStudentSelect}
+            isStudentCreatable={false}
+          />
         </div>
 
         {/* Selected Student Info */}
