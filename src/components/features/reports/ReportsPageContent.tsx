@@ -45,7 +45,7 @@ const ReportsPageContent = () => {
                     <FileText className='w-6 h-6 text-green-600' />
                   </div>
                   <div className='flex-1'>
-                    <h3 className='text-lg font-semibold text-gray-900'>Class-Wide Report</h3>
+                    <h3 className='text-lg font-semibold text-gray-900'>School-Wide Reports</h3>
                   </div>
                 </div>
               </CardContent>
@@ -54,9 +54,10 @@ const ReportsPageContent = () => {
         </div>
 
         {/* Generated Reports Section */}
-        <div className='w-full max-w-full'>
+        {/* //TODO: Brainstorm with team what can be placed here instead */}
+        {/* <div className='w-full max-w-full'>
           <GeneratedReportsList />
-        </div>
+        </div> */}
       </div>
     </div>
   )

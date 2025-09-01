@@ -118,6 +118,7 @@ const StudentSearchSelector = ({
       ? studentsByGrade
       : studentsBySchool
     : []
+
   const isLoading = currentSchool
     ? searchValue.length >= 2
       ? loadingSearch
