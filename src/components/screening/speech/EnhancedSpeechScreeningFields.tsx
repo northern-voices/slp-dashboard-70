@@ -1299,11 +1299,17 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
               <Checkbox
                 id='qualifies_for_speech_program'
                 checked={form.watch('qualifies_for_speech_program') || false}
+                disabled={form.watch('sub') || false}
                 onCheckedChange={checked => {
                   form.setValue('qualifies_for_speech_program', checked as boolean)
+                  if (checked) {
+                    form.setValue('sub', false)
+                  }
                 }}
               />
-              <Label htmlFor='qualifies_for_speech_program' className='text-sm font-medium'>
+              <Label
+                htmlFor='qualifies_for_speech_program'
+                className={`text-sm font-medium ${form.watch('sub') ? 'text-gray-400' : ''}`}>
                 Qualifies for Speech Program
               </Label>
             </div>
@@ -1312,11 +1318,19 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
               <Checkbox
                 id='sub'
                 checked={form.watch('sub') || false}
+                disabled={form.watch('qualifies_for_speech_program') || false}
                 onCheckedChange={checked => {
                   form.setValue('sub', checked as boolean)
+                  if (checked) {
+                    form.setValue('qualifies_for_speech_program', false)
+                  }
                 }}
               />
-              <Label htmlFor='sub' className='text-sm font-medium'>
+              <Label
+                htmlFor='sub'
+                className={`text-sm font-medium ${
+                  form.watch('qualifies_for_speech_program') ? 'text-gray-400' : ''
+                }`}>
                 Sub
               </Label>
             </div>
