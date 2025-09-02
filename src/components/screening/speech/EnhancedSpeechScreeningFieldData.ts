@@ -69,8 +69,9 @@ export const soundErrorPatterns = {
   },
   'St-': {
     patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits T)',
+      'Omits ST',
+      'Omits S',
+      'Omits T',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -81,8 +82,9 @@ export const soundErrorPatterns = {
   },
   'Sp-': {
     patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits P)',
+      'Omits SP',
+      'Omits S',
+      'Omits P',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -92,8 +94,9 @@ export const soundErrorPatterns = {
   },
   'Sm-': {
     patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits M)',
+      'Omits SM',
+      'Omits S',
+      'Omits M',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -103,8 +106,9 @@ export const soundErrorPatterns = {
   },
   'Sn-': {
     patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits N)',
+      'Omits SN',
+      'Omits S',
+      'Omits N',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -114,8 +118,9 @@ export const soundErrorPatterns = {
   },
   'Sk-': {
     patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits K)',
+      'Omits SK',
+      'Omits S',
+      'Omits K',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -126,8 +131,9 @@ export const soundErrorPatterns = {
   },
   'Final -ts': {
     patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits T)',
+      'Omits TS',
+      'Omits S',
+      'Omits T',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -138,8 +144,9 @@ export const soundErrorPatterns = {
   },
   'Final -ps': {
     patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits P)',
+      'Omits PS',
+      'Omits S',
+      'Omits P',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -149,8 +156,9 @@ export const soundErrorPatterns = {
   },
   'Final -ks': {
     patterns: [
-      'Cluster Reduction (Omits K)',
-      'Cluster Reduction (Omits S)',
+      'Omits KS',
+      'Omits K',
+      'Omits S',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',

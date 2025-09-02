@@ -26,6 +26,7 @@ interface SpeechScreeningStep1Props {
   onGradeChange: (grade: string) => void
   onGradeIdChange: (gradeId: string) => void
   onAbsentChange?: (isAbsent: boolean) => void
+  onNoConsentChange?: (isNoConsent: boolean) => void
 }
 
 const gradeMapping = [
@@ -68,6 +69,7 @@ const SpeechScreeningStep1 = ({
   onGradeChange,
   onGradeIdChange,
   onAbsentChange,
+  onNoConsentChange,
 }: SpeechScreeningStep1Props) => {
   const { currentSchool } = useOrganization()
 
@@ -78,12 +80,29 @@ const SpeechScreeningStep1 = ({
   const [localAbsentValue, setLocalAbsentValue] = useState<boolean>(
     () => (form.getValues('absent.isAbsent') as boolean) || false
   )
+  const [localNoConsentValue, setLocalNoConsentValue] = useState<boolean>(
+    () => (form.getValues('no_consent.isNoConsent') as boolean) || false
+  )
 
   // Memoized handler for absent checkbox to prevent unnecessary re-renders
   const handleAbsentChange = useCallback(
     (checked: boolean) => {
+      // Don't allow checking absent if no consent is already checked
+      if (checked && localNoConsentValue) {
+        return
+      }
+
       // Update local state immediately for responsive UI
       setLocalAbsentValue(checked)
+
+      // If absent is checked, uncheck no consent
+      if (checked) {
+        setLocalNoConsentValue(false)
+        form.setValue('no_consent', {
+          isNoConsent: false,
+          notes: '',
+        })
+      }
 
       // Update form state and trigger re-render
       form.setValue('absent', {
@@ -94,7 +113,41 @@ const SpeechScreeningStep1 = ({
       // Notify parent component of the change
       onAbsentChange?.(checked)
     },
-    [form, onAbsentChange]
+    [form, onAbsentChange, localNoConsentValue]
+  )
+
+  // Memoized handler for no consent checkbox to prevent unnecessary re-renders
+  const handleNoConsentChange = useCallback(
+    (checked: boolean) => {
+      // Don't allow checking no consent if absent is already checked
+      if (checked && localAbsentValue) {
+        return
+      }
+
+      // Update local state immediately for responsive UI
+      setLocalNoConsentValue(checked)
+
+      // If no consent is checked, uncheck absent
+      if (checked) {
+        setLocalAbsentValue(false)
+        form.setValue('absent', {
+          isAbsent: false,
+          notes: '',
+        })
+        // Notify parent component that absent is now false
+        onAbsentChange?.(false)
+      }
+
+      // Update form state and trigger re-render
+      form.setValue('no_consent', {
+        isNoConsent: checked,
+        notes: form.getValues('no_consent.notes') || '',
+      })
+
+      // Notify parent component of the change
+      onNoConsentChange?.(checked)
+    },
+    [form, onAbsentChange, onNoConsentChange, localAbsentValue]
   )
 
   // Sync local state with form state on mount
@@ -103,7 +156,12 @@ const SpeechScreeningStep1 = ({
     if (formAbsentValue !== localAbsentValue) {
       setLocalAbsentValue(formAbsentValue || false)
     }
-  }, [form, localAbsentValue])
+
+    const formNoConsentValue = form.getValues('no_consent.isNoConsent')
+    if (formNoConsentValue !== localNoConsentValue) {
+      setLocalNoConsentValue(formNoConsentValue || false)
+    }
+  }, [form, localAbsentValue, localNoConsentValue])
 
   // Filter grades based on selected grade level and get unique academic years
   const availableGradeIds = React.useMemo(() => {
@@ -260,8 +318,11 @@ const SpeechScreeningStep1 = ({
                   id='absent'
                   checked={localAbsentValue}
                   onCheckedChange={handleAbsentChange}
+                  disabled={localNoConsentValue}
                 />
-                <Label htmlFor='absent' className='text-sm font-medium'>
+                <Label
+                  htmlFor='absent'
+                  className={`text-sm font-medium ${localNoConsentValue ? 'text-gray-400' : ''}`}>
                   Absent
                 </Label>
               </div>
@@ -278,7 +339,35 @@ const SpeechScreeningStep1 = ({
                   />
                 </div>
               )}
-              {localAbsentValue && (
+
+              <div className='flex items-center space-x-2'>
+                <Checkbox
+                  id='no_consent'
+                  checked={localNoConsentValue}
+                  onCheckedChange={handleNoConsentChange}
+                  disabled={localAbsentValue}
+                />
+                <Label
+                  htmlFor='no_consent'
+                  className={`text-sm font-medium ${localAbsentValue ? 'text-gray-400' : ''}`}>
+                  No Consent
+                </Label>
+              </div>
+              {localNoConsentValue && (
+                <div>
+                  <Label htmlFor='no_consent_notes' className='text-sm font-medium'>
+                    No Consent Notes
+                  </Label>
+                  <Textarea
+                    {...form.register('no_consent.notes')}
+                    placeholder='Enter notes about consent...'
+                    rows={2}
+                    className='mt-1'
+                  />
+                </div>
+              )}
+
+              {localAbsentValue || localNoConsentValue ? (
                 <div className='flex items-center space-x-2'>
                   <Checkbox
                     id='priority_re_screen'
@@ -291,6 +380,8 @@ const SpeechScreeningStep1 = ({
                     Priority re-screen
                   </Label>
                 </div>
+              ) : (
+                ''
               )}
             </div>
           )}

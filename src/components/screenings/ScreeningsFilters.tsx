@@ -262,8 +262,9 @@ const ScreeningsFilters = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='all'>All Students</SelectItem>
-                    <SelectItem value='true'>Qualified for Speech Program</SelectItem>
-                    <SelectItem value='false'>Not Qualified for Speech Program</SelectItem>
+                    <SelectItem value='qualifies'>Qualifies</SelectItem>
+                    <SelectItem value='not_in_program'>Not in Program</SelectItem>
+                    <SelectItem value='sub'>Sub</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

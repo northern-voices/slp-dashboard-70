@@ -244,26 +244,38 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
       <div className='space-y-4'>
         <h4 className='font-medium text-gray-900'>Speech Screening Details:</h4>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {metadata.qualifies_for_speech_program !== undefined && (
+          {(metadata.qualifies_for_speech_program !== undefined || metadata.sub !== undefined) && (
             <div
               className={`p-3 rounded-md border ${
-                metadata.qualifies_for_speech_program
-                  ? 'bg-green-50 border-green-200'
-                  : 'bg-red-50 border-red-200'
+                metadata.sub
+                  ? 'bg-orange-50 border-orange-200'
+                  : metadata.qualifies_for_speech_program
+                  ? 'bg-red-50 border-red-200'
+                  : 'bg-green-50 border-green-200'
               }`}>
               <h5
                 className={`text-sm font-medium mb-2 ${
-                  metadata.qualifies_for_speech_program ? 'text-green-800' : 'text-red-800'
+                  metadata.sub
+                    ? 'text-orange-800'
+                    : metadata.qualifies_for_speech_program
+                    ? 'text-red-800'
+                    : 'text-green-800'
                 }`}>
-                Qualifies for Speech Program:
+                Speech Program Status:
               </h5>
               <Badge
                 className={
-                  metadata.qualifies_for_speech_program
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                  metadata.sub
+                    ? 'bg-orange-100 text-orange-800'
+                    : metadata.qualifies_for_speech_program
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-green-100 text-green-800'
                 }>
-                {metadata.qualifies_for_speech_program ? 'Yes' : 'No'}
+                {metadata.sub
+                  ? 'Sub'
+                  : metadata.qualifies_for_speech_program
+                  ? 'Qualifies'
+                  : 'Not in Program'}
               </Badge>
             </div>
           )}
