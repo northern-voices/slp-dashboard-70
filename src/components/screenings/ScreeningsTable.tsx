@@ -140,7 +140,15 @@ const ScreeningsTable = ({
     let matchesQualifiesForSpeechProgram = true
     if (qualifiesForSpeechProgramFilter !== 'all' && screening.error_patterns?.screening_metadata) {
       const qualifies = screening.error_patterns.screening_metadata.qualifies_for_speech_program
-      matchesQualifiesForSpeechProgram = qualifies === (qualifiesForSpeechProgramFilter === 'true')
+      const sub = screening.error_patterns.screening_metadata.sub
+
+      if (qualifiesForSpeechProgramFilter === 'qualifies') {
+        matchesQualifiesForSpeechProgram = qualifies === true && !sub
+      } else if (qualifiesForSpeechProgramFilter === 'not_in_program') {
+        matchesQualifiesForSpeechProgram = qualifies === false && !sub
+      } else if (qualifiesForSpeechProgramFilter === 'sub') {
+        matchesQualifiesForSpeechProgram = sub === true
+      }
     }
 
     // Apply grade filter
@@ -322,15 +330,18 @@ const ScreeningsTable = ({
 
   const getQualificationBadge = (screening: Screening) => {
     const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
+    const sub = screening.error_patterns?.screening_metadata?.sub
 
-    if (qualifies === undefined || qualifies === null) {
+    if (qualifies === undefined && sub === undefined) {
       return <Badge className='bg-gray-100 text-gray-800 font-medium'>Not Set</Badge>
     }
 
-    if (qualifies) {
-      return <Badge className='bg-green-100 text-green-800 font-medium'>Program</Badge>
+    if (sub) {
+      return <Badge className='bg-orange-100 text-orange-800 font-medium'>Sub</Badge>
+    } else if (qualifies) {
+      return <Badge className='bg-red-100 text-red-800 font-medium'>Qualifies</Badge>
     } else {
-      return <Badge className='bg-red-100 text-red-800 font-medium'>Not In Program</Badge>
+      return <Badge className='bg-green-100 text-green-800 font-medium'>Not In Program</Badge>
     }
   }
 

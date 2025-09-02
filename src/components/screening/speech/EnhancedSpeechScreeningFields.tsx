@@ -35,6 +35,7 @@ interface EnhancedSpeechScreeningFieldsProps {
     speech_screen_result?: string
     vocabulary_support_recommended?: boolean
     qualifies_for_speech_program?: boolean
+    sub?: boolean
     areasOfConcern?: Record<string, string | null>
   }>
 }
@@ -53,17 +54,23 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for St-:
-    // 1. Cluster Reduction (Omits S) & Backing
+    // Omits ST is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsST = patterns.includes('Omits ST')
+    if (hasOmitsST && patterns.length > 1) {
+      return false
+    }
+
+    // Valid combinations for St- (excluding Omits ST):
+    // 1. Omits S & Backing
     // 2. Frontal Lisp & Backing
     // 3. Lateral Lisp & Backing
-    // 4. Cluster Reduction (Omits S) & Nasalization
-    // 5. Cluster Reduction (Omits T) & Frontal Lisp
-    // 6. Cluster Reduction (Omits T) & Lateral Lisp
-    // 7. Cluster Reduction (Omits T) & Nasalization
+    // 4. Omits S & Nasalization
+    // 5. Omits T & Frontal Lisp
+    // 6. Omits T & Lateral Lisp
+    // 7. Omits T & Nasalization
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionT = patterns.includes('Cluster Reduction (Omits T)')
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionT = patterns.includes('Omits T')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasNasalization = patterns.includes('Nasalization')
@@ -91,14 +98,20 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Sp-:
-    // 1. Cluster Reduction (Omits S) & Nasalization
-    // 2. Cluster Reduction (Omits P) & Frontal Lisp
-    // 3. Cluster Reduction (Omits P) & Lateral Lisp
-    // 4. Cluster Reduction (Omits P) & Nasalization
+    // Omits SP is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsSP = patterns.includes('Omits SP')
+    if (hasOmitsSP && patterns.length > 1) {
+      return false
+    }
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionP = patterns.includes('Cluster Reduction (Omits P)')
+    // Valid combinations for Sp- (excluding Omits SP):
+    // 1. Omits S & Nasalization
+    // 2. Omits P & Frontal Lisp
+    // 3. Omits P & Lateral Lisp
+    // 4. Omits P & Nasalization
+
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionP = patterns.includes('Omits P')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasNasalization = patterns.includes('Nasalization')
@@ -122,14 +135,20 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Sn-:
-    // 1. Cluster Reduction (Omits S) & Nasalization
-    // 2. Cluster Reduction (Omits N) & Nasalization
-    // 3. Cluster Reduction (Omits N) & Frontal Lisp
-    // 4. Cluster Reduction (Omits N) & Lateral Lisp
+    // Omits SN is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsSN = patterns.includes('Omits SN')
+    if (hasOmitsSN && patterns.length > 1) {
+      return false
+    }
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionN = patterns.includes('Cluster Reduction (Omits N)')
+    // Valid combinations for Sn- (excluding Omits SN):
+    // 1. Omits S & Nasalization
+    // 2. Omits N & Nasalization
+    // 3. Omits N & Frontal Lisp
+    // 4. Omits N & Lateral Lisp
+
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionN = patterns.includes('Omits N')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasNasalization = patterns.includes('Nasalization')
@@ -153,14 +172,20 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Sm-:
-    // 1. Cluster Reduction (Omits S) & Nasalization
-    // 2. Cluster Reduction (Omits M) & Nasalization
-    // 3. Cluster Reduction (Omits M) & Frontal Lisp
-    // 4. Cluster Reduction (Omits M) & Lateral Lisp
+    // Omits SM is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsSM = patterns.includes('Omits SM')
+    if (hasOmitsSM && patterns.length > 1) {
+      return false
+    }
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionM = patterns.includes('Cluster Reduction (Omits M)')
+    // Valid combinations for Sm- (excluding Omits SM):
+    // 1. Omits S & Nasalization
+    // 2. Omits M & Nasalization
+    // 3. Omits M & Frontal Lisp
+    // 4. Omits M & Lateral Lisp
+
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionM = patterns.includes('Omits M')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasNasalization = patterns.includes('Nasalization')
@@ -184,15 +209,21 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Sk-:
+    // Omits SK is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsSK = patterns.includes('Omits SK')
+    if (hasOmitsSK && patterns.length > 1) {
+      return false
+    }
+
+    // Valid combinations for Sk- (excluding Omits SK):
     // 1. Frontal Lisp & Fronting
     // 2. Lateral Lisp & Fronting
-    // 3. Cluster Reduction (Omits S) & Fronting
-    // 4. Cluster Reduction (Omits K) & Frontal Lisp
-    // 5. Cluster Reduction (Omits K) & Lateral Lisp
+    // 3. Omits S & Fronting
+    // 4. Omits K & Frontal Lisp
+    // 5. Omits K & Lateral Lisp
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionK = patterns.includes('Cluster Reduction (Omits K)')
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionK = patterns.includes('Omits K')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasFronting = patterns.includes('Fronting')
@@ -217,13 +248,19 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Final -ts:
-    // 1. Cluster Reduction (Omits S) & Backing
-    // 2. Cluster Reduction (Omits T) & Frontal Lisp
-    // 3. Cluster Reduction (Omits T) & Lateral Lisp
+    // Omits TS is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsTS = patterns.includes('Omits TS')
+    if (hasOmitsTS && patterns.length > 1) {
+      return false
+    }
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionT = patterns.includes('Cluster Reduction (Omits T)')
+    // Valid combinations for Final -ts (excluding Omits TS):
+    // 1. Omits S & Backing
+    // 2. Omits T & Frontal Lisp
+    // 3. Omits T & Lateral Lisp
+
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionT = patterns.includes('Omits T')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasBacking = patterns.includes('Backing')
@@ -246,11 +283,17 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Final -ps:
-    // 1. Cluster Reduction (Omits P) & Frontal Lisp
-    // 2. Cluster Reduction (Omits P) & Lateral Lisp
+    // Omits PS is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsPS = patterns.includes('Omits PS')
+    if (hasOmitsPS && patterns.length > 1) {
+      return false
+    }
 
-    const hasClusterReductionP = patterns.includes('Cluster Reduction (Omits P)')
+    // Valid combinations for Final -ps (excluding Omits PS):
+    // 1. Omits P & Frontal Lisp
+    // 2. Omits P & Lateral Lisp
+
+    const hasClusterReductionP = patterns.includes('Omits P')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
 
@@ -268,13 +311,19 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Final -ks:
-    // 1. Cluster Reduction (Omits K) & Frontal Lisp
-    // 2. Cluster Reduction (Omits K) & Lateral Lisp
-    // 3. Cluster Reduction (Omits S) & Fronting
+    // Omits KS is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsKS = patterns.includes('Omits KS')
+    if (hasOmitsKS && patterns.length > 1) {
+      return false
+    }
 
-    const hasClusterReductionK = patterns.includes('Cluster Reduction (Omits K)')
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
+    // Valid combinations for Final -ks (excluding Omits KS):
+    // 1. Omits K & Frontal Lisp
+    // 2. Omits K & Lateral Lisp
+    // 3. Omits S & Fronting
+
+    const hasClusterReductionK = patterns.includes('Omits K')
+    const hasClusterReductionS = patterns.includes('Omits S')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasFronting = patterns.includes('Fronting')
@@ -1255,8 +1304,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
-            <div>
-              <Label htmlFor='speech_screen_result'>Result *</Label>
+            <div className='flex flex-col gap-1'>
+              <Label htmlFor='speech_screen_result'>
+                Result <span className='text-red-500 text-lg'>*</span>
+              </Label>
               <Select
                 value={form.watch('speech_screen_result') || ''}
                 onValueChange={value => {
@@ -1275,7 +1326,6 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   <SelectItem value='profound'>Profound</SelectItem>
                   <SelectItem value='complex_needs'>Complex needs</SelectItem>
                   <SelectItem value='unable_to_screen'>Unable to screen (Compliance)</SelectItem>
-                  <SelectItem value='non_registered_no_consent'>No Consent</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1297,12 +1347,39 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
               <Checkbox
                 id='qualifies_for_speech_program'
                 checked={form.watch('qualifies_for_speech_program') || false}
+                disabled={form.watch('sub') || false}
                 onCheckedChange={checked => {
                   form.setValue('qualifies_for_speech_program', checked as boolean)
+                  if (checked) {
+                    form.setValue('sub', false)
+                  }
                 }}
               />
-              <Label htmlFor='qualifies_for_speech_program' className='text-sm font-medium'>
+              <Label
+                htmlFor='qualifies_for_speech_program'
+                className={`text-sm font-medium ${form.watch('sub') ? 'text-gray-400' : ''}`}>
                 Qualifies for Speech Program
+              </Label>
+            </div>
+
+            <div className='flex items-center space-x-2'>
+              <Checkbox
+                id='sub'
+                checked={form.watch('sub') || false}
+                disabled={form.watch('qualifies_for_speech_program') || false}
+                onCheckedChange={checked => {
+                  form.setValue('sub', checked as boolean)
+                  if (checked) {
+                    form.setValue('qualifies_for_speech_program', false)
+                  }
+                }}
+              />
+              <Label
+                htmlFor='sub'
+                className={`text-sm font-medium ${
+                  form.watch('qualifies_for_speech_program') ? 'text-gray-400' : ''
+                }`}>
+                Sub
               </Label>
             </div>
           </div>
