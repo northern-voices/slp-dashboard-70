@@ -52,6 +52,10 @@ const MultiStepSpeechScreeningForm = ({
         isAbsent: false,
         notes: '',
       },
+      no_consent: {
+        isNoConsent: false,
+        notes: '',
+      },
       priority_re_screen: false,
 
       // Step 2 fields
@@ -126,16 +130,18 @@ const MultiStepSpeechScreeningForm = ({
   }
 
   const handleSubmit = async (data: unknown) => {
-    // Allow submission from step 1 if absent is checked, otherwise require step 2
-    if (currentStep === 1 && !isAbsent) {
-      return
-    }
-    if (currentStep === 2 && isAbsent) {
-      // If we're on step 2 but absent is checked, we should have submitted from step 1
-      return
-    }
-
     const formData = data as Record<string, unknown>
+    const noConsentData = (formData.no_consent as Record<string, unknown>) || {}
+    const isNoConsent = (noConsentData.isNoConsent as boolean) || false
+
+    // Allow submission from step 1 if absent or no consent is checked, otherwise require step 2
+    if (currentStep === 1 && !isAbsent && !isNoConsent) {
+      return
+    }
+    if (currentStep === 2 && (isAbsent || isNoConsent)) {
+      // If we're on step 2 but absent or no consent is checked, we should have submitted from step 1
+      return
+    }
 
     // Validate required fields
     const validationErrors = validateRequiredFields(formData)
@@ -209,6 +215,7 @@ const MultiStepSpeechScreeningForm = ({
     const areasOfConcern = (formData.areasOfConcern as Record<string, unknown>) || {}
     const articulation = (formData.articulation as Record<string, unknown>) || {}
     const absent = (formData.absent as Record<string, unknown>) || {}
+    const noConsent = (formData.no_consent as Record<string, unknown>) || {}
 
     const screeningData = {
       // Direct column matches
@@ -224,6 +231,8 @@ const MultiStepSpeechScreeningForm = ({
       screening_type: (formData.screening_type as string) || 'initial',
       result: (absent.isAbsent as boolean)
         ? 'absent'
+        : (noConsent.isNoConsent as boolean)
+        ? 'no_consent'
         : (formData.speech_screen_result as string) || '',
       vocabulary_support: (formData.vocabulary_support_recommended as boolean) || false,
       clinical_notes: (formData.clinical_notes as string) || '',
@@ -255,6 +264,11 @@ const MultiStepSpeechScreeningForm = ({
           absent: (absent.isAbsent as boolean) || false,
           absence_notes: (absent.notes as string) || '',
           priority_re_screen: (formData.priority_re_screen as boolean) || false,
+        },
+
+        consent: {
+          no_consent: (noConsent.isNoConsent as boolean) || false,
+          no_consent_notes: (noConsent.notes as string) || '',
         },
 
         screening_metadata: {
@@ -300,8 +314,10 @@ const MultiStepSpeechScreeningForm = ({
   }
 
   const canSubmitFromStep1 = () => {
-    // Can submit from step 1 if absent is checked and we have required fields
-    return isAbsent && selectedGrade && selectedStudent
+    // Can submit from step 1 if absent or no consent is checked and we have required fields
+    const formValues = form.getValues()
+    const isNoConsent = (formValues.no_consent as Record<string, unknown>)?.isNoConsent as boolean
+    return (isAbsent || isNoConsent) && selectedGrade && selectedStudent
   }
 
   const canSubmitFromStep2 = () => {
@@ -390,8 +406,8 @@ const MultiStepSpeechScreeningForm = ({
             </Button> */}
 
             {currentStep === 1 ? (
-              // Step 1: Show Submit if absent, Next if not absent
-              isAbsent ? (
+              // Step 1: Show Submit if absent or no consent, Next if not
+              isAbsent || (form.getValues('no_consent') as Record<string, unknown>)?.isNoConsent ? (
                 <Button
                   type='button'
                   onClick={async () => {
@@ -406,7 +422,11 @@ const MultiStepSpeechScreeningForm = ({
                   }}
                   disabled={createScreening.isPending || !canSubmitFromStep1()}
                   className='bg-primary hover:bg-primary/90 text-primary-foreground'>
-                  {createScreening.isPending ? 'Creating...' : 'Submit Absent Screening'}
+                  {createScreening.isPending
+                    ? 'Creating...'
+                    : isAbsent
+                    ? 'Submit Absent Screening'
+                    : 'Submit No Consent Screening'}
                 </Button>
               ) : (
                 <Button

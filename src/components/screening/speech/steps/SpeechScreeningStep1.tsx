@@ -78,6 +78,9 @@ const SpeechScreeningStep1 = ({
   const [localAbsentValue, setLocalAbsentValue] = useState<boolean>(
     () => (form.getValues('absent.isAbsent') as boolean) || false
   )
+  const [localNoConsentValue, setLocalNoConsentValue] = useState<boolean>(
+    () => (form.getValues('no_consent.isNoConsent') as boolean) || false
+  )
 
   // Memoized handler for absent checkbox to prevent unnecessary re-renders
   const handleAbsentChange = useCallback(
@@ -97,13 +100,33 @@ const SpeechScreeningStep1 = ({
     [form, onAbsentChange]
   )
 
+  // Memoized handler for no consent checkbox to prevent unnecessary re-renders
+  const handleNoConsentChange = useCallback(
+    (checked: boolean) => {
+      // Update local state immediately for responsive UI
+      setLocalNoConsentValue(checked)
+
+      // Update form state and trigger re-render
+      form.setValue('no_consent', {
+        isNoConsent: checked,
+        notes: form.getValues('no_consent.notes') || '',
+      })
+    },
+    [form]
+  )
+
   // Sync local state with form state on mount
   useEffect(() => {
     const formAbsentValue = form.getValues('absent.isAbsent')
     if (formAbsentValue !== localAbsentValue) {
       setLocalAbsentValue(formAbsentValue || false)
     }
-  }, [form, localAbsentValue])
+
+    const formNoConsentValue = form.getValues('no_consent.isNoConsent')
+    if (formNoConsentValue !== localNoConsentValue) {
+      setLocalNoConsentValue(formNoConsentValue || false)
+    }
+  }, [form, localAbsentValue, localNoConsentValue])
 
   // Filter grades based on selected grade level and get unique academic years
   const availableGradeIds = React.useMemo(() => {
@@ -278,7 +301,32 @@ const SpeechScreeningStep1 = ({
                   />
                 </div>
               )}
-              {localAbsentValue && (
+
+              <div className='flex items-center space-x-2'>
+                <Checkbox
+                  id='no_consent'
+                  checked={localNoConsentValue}
+                  onCheckedChange={handleNoConsentChange}
+                />
+                <Label htmlFor='no_consent' className='text-sm font-medium'>
+                  No Consent
+                </Label>
+              </div>
+              {localNoConsentValue && (
+                <div>
+                  <Label htmlFor='no_consent_notes' className='text-sm font-medium'>
+                    No Consent Notes
+                  </Label>
+                  <Textarea
+                    {...form.register('no_consent.notes')}
+                    placeholder='Enter notes about consent...'
+                    rows={2}
+                    className='mt-1'
+                  />
+                </div>
+              )}
+
+              {localAbsentValue || localNoConsentValue ? (
                 <div className='flex items-center space-x-2'>
                   <Checkbox
                     id='priority_re_screen'
@@ -291,6 +339,8 @@ const SpeechScreeningStep1 = ({
                     Priority re-screen
                   </Label>
                 </div>
+              ) : (
+                ''
               )}
             </div>
           )}
