@@ -97,13 +97,6 @@ const IndividualStudentReports = () => {
   const getAvailableReports = () => {
     return [
       {
-        value: 'goal-sheet',
-        label: 'Goal Sheet',
-        description:
-          'Individualized goal tracking sheet with specific objectives and progress metrics',
-        icon: Target,
-      },
-      {
         value: 'progress-report',
         label: 'Progress Report',
         description: 'Comprehensive progress summary showing achievements and therapy outcomes',
@@ -114,6 +107,13 @@ const IndividualStudentReports = () => {
         label: 'Student Report',
         description: 'Detailed student assessment and performance overview',
         icon: BookOpen,
+      },
+      {
+        value: 'goal-sheet',
+        label: 'Goal Sheet',
+        description:
+          'Individualized goal tracking sheet with specific objectives and progress metrics',
+        icon: Target,
       },
     ]
   }
