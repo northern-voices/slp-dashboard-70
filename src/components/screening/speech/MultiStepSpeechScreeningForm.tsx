@@ -65,6 +65,7 @@ const MultiStepSpeechScreeningForm = ({
       speech_screen_result: '',
       vocabulary_support_recommended: false,
       qualifies_for_speech_program: false,
+      sub: false,
       general_articulation_notes: '',
       clinical_notes: '',
       referral_notes: '',
@@ -292,6 +293,7 @@ const MultiStepSpeechScreeningForm = ({
           qualifies_for_speech_program: (formData.qualifies_for_speech_program as boolean) || false,
           vocabulary_support_recommended:
             (formData.vocabulary_support_recommended as boolean) || false,
+          sub: (formData.sub as boolean) || false,
         },
 
         add_areas_of_concern: {

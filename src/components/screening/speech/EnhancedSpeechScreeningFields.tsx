@@ -35,6 +35,7 @@ interface EnhancedSpeechScreeningFieldsProps {
     speech_screen_result?: string
     vocabulary_support_recommended?: boolean
     qualifies_for_speech_program?: boolean
+    sub?: boolean
     areasOfConcern?: Record<string, string | null>
   }>
 }
@@ -1255,8 +1256,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
-            <div>
-              <Label htmlFor='speech_screen_result'>Result *</Label>
+            <div className='flex flex-col gap-1'>
+              <Label htmlFor='speech_screen_result'>
+                Result <span className='text-red-500 text-lg'>*</span>
+              </Label>
               <Select
                 value={form.watch('speech_screen_result') || ''}
                 onValueChange={value => {
@@ -1302,6 +1305,19 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
               />
               <Label htmlFor='qualifies_for_speech_program' className='text-sm font-medium'>
                 Qualifies for Speech Program
+              </Label>
+            </div>
+
+            <div className='flex items-center space-x-2'>
+              <Checkbox
+                id='sub'
+                checked={form.watch('sub') || false}
+                onCheckedChange={checked => {
+                  form.setValue('sub', checked as boolean)
+                }}
+              />
+              <Label htmlFor='sub' className='text-sm font-medium'>
+                Sub
               </Label>
             </div>
           </div>
