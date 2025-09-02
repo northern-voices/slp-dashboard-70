@@ -32,7 +32,7 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div>
               <Label htmlFor='screening_type' className='mb-2 block'>
-                Screening Type *
+                Screening Type <span className='text-red-500 text-lg'>*</span>
               </Label>
               <Select
                 value={form.watch('screening_type')}
@@ -48,7 +48,7 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
             </div>
             <div>
               <Label htmlFor='screening_date' className='mb-2 block'>
-                Screening Date *
+                Screening Date <span className='text-red-500 text-lg'>*</span>
               </Label>
               <Input
                 type='text'

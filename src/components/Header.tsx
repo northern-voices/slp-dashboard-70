@@ -147,7 +147,8 @@ const Header = ({
             )} */}
 
             {/* Notifications */}
-            <NotificationDropdown />
+            {/* // TODO: Add notifications functionality (brainstorm with team first) */}
+            {/* <NotificationDropdown /> */}
 
             {/* User Menu */}
             <DropdownMenu>
