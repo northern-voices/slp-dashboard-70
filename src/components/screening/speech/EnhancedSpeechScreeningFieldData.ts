@@ -69,6 +69,7 @@ export const soundErrorPatterns = {
   },
   'St-': {
     patterns: [
+      'Omits ST',
       'Omits S',
       'Omits T',
       'Frontal Lisp',
@@ -80,19 +81,44 @@ export const soundErrorPatterns = {
     word: 'Star',
   },
   'Sp-': {
-    patterns: ['Omits S', 'Omits P', 'Frontal Lisp', 'Lateral Lisp', 'Nasalization', 'Other'],
+    patterns: [
+      'Omits SP',
+      'Omits S',
+      'Omits P',
+      'Frontal Lisp',
+      'Lateral Lisp',
+      'Nasalization',
+      'Other',
+    ],
     word: 'Spoon',
   },
   'Sm-': {
-    patterns: ['Omits S', 'Omits M', 'Frontal Lisp', 'Lateral Lisp', 'Nasalization', 'Other'],
+    patterns: [
+      'Omits SM',
+      'Omits S',
+      'Omits M',
+      'Frontal Lisp',
+      'Lateral Lisp',
+      'Nasalization',
+      'Other',
+    ],
     word: 'Smoke',
   },
   'Sn-': {
-    patterns: ['Omits S', 'Omits N', 'Frontal Lisp', 'Lateral Lisp', 'Nasalization', 'Other'],
+    patterns: [
+      'Omits SN',
+      'Omits S',
+      'Omits N',
+      'Frontal Lisp',
+      'Lateral Lisp',
+      'Nasalization',
+      'Other',
+    ],
     word: 'Snow',
   },
   'Sk-': {
     patterns: [
+      'Omits SK',
       'Omits S',
       'Omits K',
       'Frontal Lisp',
@@ -105,6 +131,7 @@ export const soundErrorPatterns = {
   },
   'Final -ts': {
     patterns: [
+      'Omits TS',
       'Omits S',
       'Omits T',
       'Frontal Lisp',
@@ -116,11 +143,20 @@ export const soundErrorPatterns = {
     word: 'Boots',
   },
   'Final -ps': {
-    patterns: ['Omits S', 'Omits P', 'Frontal Lisp', 'Lateral Lisp', 'Nasalization', 'Other'],
+    patterns: [
+      'Omits PS',
+      'Omits S',
+      'Omits P',
+      'Frontal Lisp',
+      'Lateral Lisp',
+      'Nasalization',
+      'Other',
+    ],
     word: 'Chips',
   },
   'Final -ks': {
     patterns: [
+      'Omits KS',
       'Omits K',
       'Omits S',
       'Frontal Lisp',

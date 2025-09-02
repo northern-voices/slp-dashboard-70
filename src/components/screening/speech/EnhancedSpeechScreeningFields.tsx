@@ -54,7 +54,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for St-:
+    // Omits ST is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsST = patterns.includes('Omits ST')
+    if (hasOmitsST && patterns.length > 1) {
+      return false
+    }
+
+    // Valid combinations for St- (excluding Omits ST):
     // 1. Omits S & Backing
     // 2. Frontal Lisp & Backing
     // 3. Lateral Lisp & Backing
@@ -92,7 +98,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Sp-:
+    // Omits SP is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsSP = patterns.includes('Omits SP')
+    if (hasOmitsSP && patterns.length > 1) {
+      return false
+    }
+
+    // Valid combinations for Sp- (excluding Omits SP):
     // 1. Omits S & Nasalization
     // 2. Omits P & Frontal Lisp
     // 3. Omits P & Lateral Lisp
@@ -123,7 +135,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Sn-:
+    // Omits SN is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsSN = patterns.includes('Omits SN')
+    if (hasOmitsSN && patterns.length > 1) {
+      return false
+    }
+
+    // Valid combinations for Sn- (excluding Omits SN):
     // 1. Omits S & Nasalization
     // 2. Omits N & Nasalization
     // 3. Omits N & Frontal Lisp
@@ -154,7 +172,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Sm-:
+    // Omits SM is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsSM = patterns.includes('Omits SM')
+    if (hasOmitsSM && patterns.length > 1) {
+      return false
+    }
+
+    // Valid combinations for Sm- (excluding Omits SM):
     // 1. Omits S & Nasalization
     // 2. Omits M & Nasalization
     // 3. Omits M & Frontal Lisp
@@ -185,7 +209,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Sk-:
+    // Omits SK is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsSK = patterns.includes('Omits SK')
+    if (hasOmitsSK && patterns.length > 1) {
+      return false
+    }
+
+    // Valid combinations for Sk- (excluding Omits SK):
     // 1. Frontal Lisp & Fronting
     // 2. Lateral Lisp & Fronting
     // 3. Omits S & Fronting
@@ -218,7 +248,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Final -ts:
+    // Omits TS is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsTS = patterns.includes('Omits TS')
+    if (hasOmitsTS && patterns.length > 1) {
+      return false
+    }
+
+    // Valid combinations for Final -ts (excluding Omits TS):
     // 1. Omits S & Backing
     // 2. Omits T & Frontal Lisp
     // 3. Omits T & Lateral Lisp
@@ -247,7 +283,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Final -ps:
+    // Omits PS is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsPS = patterns.includes('Omits PS')
+    if (hasOmitsPS && patterns.length > 1) {
+      return false
+    }
+
+    // Valid combinations for Final -ps (excluding Omits PS):
     // 1. Omits P & Frontal Lisp
     // 2. Omits P & Lateral Lisp
 
@@ -269,7 +311,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 0) return true
     if (patterns.length === 1) return true
 
-    // Valid combinations for Final -ks:
+    // Omits KS is mutually exclusive - cannot be combined with any other patterns
+    const hasOmitsKS = patterns.includes('Omits KS')
+    if (hasOmitsKS && patterns.length > 1) {
+      return false
+    }
+
+    // Valid combinations for Final -ks (excluding Omits KS):
     // 1. Omits K & Frontal Lisp
     // 2. Omits K & Lateral Lisp
     // 3. Omits S & Fronting
