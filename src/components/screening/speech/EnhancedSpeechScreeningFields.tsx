@@ -1275,7 +1275,6 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   <SelectItem value='profound'>Profound</SelectItem>
                   <SelectItem value='complex_needs'>Complex needs</SelectItem>
                   <SelectItem value='unable_to_screen'>Unable to screen (Compliance)</SelectItem>
-                  <SelectItem value='non_registered_no_consent'>No Consent</SelectItem>
                 </SelectContent>
               </Select>
             </div>

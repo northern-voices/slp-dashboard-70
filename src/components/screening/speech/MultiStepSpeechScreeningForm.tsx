@@ -29,6 +29,7 @@ const MultiStepSpeechScreeningForm = ({
   const [selectedGradeId, setSelectedGradeId] = useState<string>('')
   const [gradeSchoolId, setGradeSchoolId] = useState<string>('')
   const [isAbsent, setIsAbsent] = useState(false)
+  const [isNoConsent, setIsNoConsent] = useState(false)
   const [showSubmissionModal, setShowSubmissionModal] = useState(false)
 
   const { user } = useAuth()
@@ -89,6 +90,18 @@ const MultiStepSpeechScreeningForm = ({
     },
   })
 
+  // Initialize states from form data if available
+  useEffect(() => {
+    const formAbsentValue = form.getValues('absent.isAbsent')
+    const formNoConsentValue = form.getValues('no_consent.isNoConsent')
+    if (formAbsentValue !== isAbsent) {
+      setIsAbsent(formAbsentValue || false)
+    }
+    if (formNoConsentValue !== isNoConsent) {
+      setIsNoConsent(formNoConsentValue || false)
+    }
+  }, [form, isAbsent, isNoConsent])
+
   const stepTitles = ['Student Info', 'Screening Details & Results']
 
   const handleNext = () => {
@@ -111,8 +124,8 @@ const MultiStepSpeechScreeningForm = ({
   const validateRequiredFields = (formData: Record<string, unknown>): string[] => {
     const errors: string[] = []
 
-    // Only validate these fields if we're on step 2 (not absent submission)
-    if (currentStep === 2 && !isAbsent) {
+    // Only validate these fields if we're on step 2 (not absent or no consent submission)
+    if (currentStep === 2 && !isAbsent && !isNoConsent) {
       if (!formData.screening_type || formData.screening_type === '') {
         errors.push('Screening type is required')
       }
@@ -131,14 +144,16 @@ const MultiStepSpeechScreeningForm = ({
 
   const handleSubmit = async (data: unknown) => {
     const formData = data as Record<string, unknown>
+    const absentData = (formData.absent as Record<string, unknown>) || {}
     const noConsentData = (formData.no_consent as Record<string, unknown>) || {}
-    const isNoConsent = (noConsentData.isNoConsent as boolean) || false
+    const formAbsent = (absentData.isAbsent as boolean) || false
+    const formNoConsent = (noConsentData.isNoConsent as boolean) || false
 
     // Allow submission from step 1 if absent or no consent is checked, otherwise require step 2
-    if (currentStep === 1 && !isAbsent && !isNoConsent) {
+    if (currentStep === 1 && !formAbsent && !formNoConsent) {
       return
     }
-    if (currentStep === 2 && (isAbsent || isNoConsent)) {
+    if (currentStep === 2 && (formAbsent || formNoConsent)) {
       // If we're on step 2 but absent or no consent is checked, we should have submitted from step 1
       return
     }
@@ -218,21 +233,14 @@ const MultiStepSpeechScreeningForm = ({
     const noConsent = (formData.no_consent as Record<string, unknown>) || {}
 
     const screeningData = {
-      // Direct column matches
+      // Direct column matches - only send fields that the API expects
       student_id: selectedStudent?.id || '',
       grade_id: validatedGradeId, // Use the validated grade ID from the validation process
       screener_id: user?.id || '',
-      academic_year:
-        (formData.academic_year as string) ||
-        (() => {
-          const currentYear = new Date().getFullYear()
-          return `${currentYear}-${currentYear + 1}`
-        })(),
-      screening_type: (formData.screening_type as string) || 'initial',
-      result: (absent.isAbsent as boolean)
+      result: formAbsent
         ? 'absent'
-        : (noConsent.isNoConsent as boolean)
-        ? 'no_consent'
+        : formNoConsent
+        ? 'non_registered_no_consent'
         : (formData.speech_screen_result as string) || '',
       vocabulary_support: (formData.vocabulary_support_recommended as boolean) || false,
       clinical_notes: (formData.clinical_notes as string) || '',
@@ -261,17 +269,24 @@ const MultiStepSpeechScreeningForm = ({
         },
 
         attendance: {
-          absent: (absent.isAbsent as boolean) || false,
+          absent: formAbsent,
           absence_notes: (absent.notes as string) || '',
           priority_re_screen: (formData.priority_re_screen as boolean) || false,
         },
 
         consent: {
-          no_consent: (noConsent.isNoConsent as boolean) || false,
+          no_consent: formNoConsent,
           no_consent_notes: (noConsent.notes as string) || '',
         },
 
         screening_metadata: {
+          academic_year:
+            (formData.academic_year as string) ||
+            (() => {
+              const currentYear = new Date().getFullYear()
+              return `${currentYear}-${currentYear + 1}`
+            })(),
+          screening_type: (formData.screening_type as string) || 'initial',
           screening_date:
             (formData.screening_date as string) || new Date().toISOString().split('T')[0],
           qualifies_for_speech_program: (formData.qualifies_for_speech_program as boolean) || false,
@@ -315,8 +330,6 @@ const MultiStepSpeechScreeningForm = ({
 
   const canSubmitFromStep1 = () => {
     // Can submit from step 1 if absent or no consent is checked and we have required fields
-    const formValues = form.getValues()
-    const isNoConsent = (formValues.no_consent as Record<string, unknown>)?.isNoConsent as boolean
     return (isAbsent || isNoConsent) && selectedGrade && selectedStudent
   }
 
@@ -342,6 +355,7 @@ const MultiStepSpeechScreeningForm = ({
     setSelectedGradeId('')
     setGradeSchoolId('')
     setIsAbsent(false)
+    setIsNoConsent(false)
   }
 
   const handleGoToDashboard = () => {
@@ -363,6 +377,7 @@ const MultiStepSpeechScreeningForm = ({
             onGradeChange={setSelectedGrade}
             onGradeIdChange={setSelectedGradeId}
             onAbsentChange={setIsAbsent}
+            onNoConsentChange={setIsNoConsent}
           />
         )
       case 2:
@@ -407,7 +422,7 @@ const MultiStepSpeechScreeningForm = ({
 
             {currentStep === 1 ? (
               // Step 1: Show Submit if absent or no consent, Next if not
-              isAbsent || (form.getValues('no_consent') as Record<string, unknown>)?.isNoConsent ? (
+              isAbsent || isNoConsent ? (
                 <Button
                   type='button'
                   onClick={async () => {
