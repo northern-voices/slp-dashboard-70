@@ -69,8 +69,8 @@ export const soundErrorPatterns = {
   },
   'St-': {
     patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits T)',
+      'Omits S',
+      'Omits T',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -80,42 +80,21 @@ export const soundErrorPatterns = {
     word: 'Star',
   },
   'Sp-': {
-    patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits P)',
-      'Frontal Lisp',
-      'Lateral Lisp',
-      'Nasalization',
-      'Other',
-    ],
+    patterns: ['Omits S', 'Omits P', 'Frontal Lisp', 'Lateral Lisp', 'Nasalization', 'Other'],
     word: 'Spoon',
   },
   'Sm-': {
-    patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits M)',
-      'Frontal Lisp',
-      'Lateral Lisp',
-      'Nasalization',
-      'Other',
-    ],
+    patterns: ['Omits S', 'Omits M', 'Frontal Lisp', 'Lateral Lisp', 'Nasalization', 'Other'],
     word: 'Smoke',
   },
   'Sn-': {
-    patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits N)',
-      'Frontal Lisp',
-      'Lateral Lisp',
-      'Nasalization',
-      'Other',
-    ],
+    patterns: ['Omits S', 'Omits N', 'Frontal Lisp', 'Lateral Lisp', 'Nasalization', 'Other'],
     word: 'Snow',
   },
   'Sk-': {
     patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits K)',
+      'Omits S',
+      'Omits K',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -126,8 +105,8 @@ export const soundErrorPatterns = {
   },
   'Final -ts': {
     patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits T)',
+      'Omits S',
+      'Omits T',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -137,20 +116,13 @@ export const soundErrorPatterns = {
     word: 'Boots',
   },
   'Final -ps': {
-    patterns: [
-      'Cluster Reduction (Omits S)',
-      'Cluster Reduction (Omits P)',
-      'Frontal Lisp',
-      'Lateral Lisp',
-      'Nasalization',
-      'Other',
-    ],
+    patterns: ['Omits S', 'Omits P', 'Frontal Lisp', 'Lateral Lisp', 'Nasalization', 'Other'],
     word: 'Chips',
   },
   'Final -ks': {
     patterns: [
-      'Cluster Reduction (Omits K)',
-      'Cluster Reduction (Omits S)',
+      'Omits K',
+      'Omits S',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',

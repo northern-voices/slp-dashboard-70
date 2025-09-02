@@ -55,16 +55,16 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 1) return true
 
     // Valid combinations for St-:
-    // 1. Cluster Reduction (Omits S) & Backing
+    // 1. Omits S & Backing
     // 2. Frontal Lisp & Backing
     // 3. Lateral Lisp & Backing
-    // 4. Cluster Reduction (Omits S) & Nasalization
-    // 5. Cluster Reduction (Omits T) & Frontal Lisp
-    // 6. Cluster Reduction (Omits T) & Lateral Lisp
-    // 7. Cluster Reduction (Omits T) & Nasalization
+    // 4. Omits S & Nasalization
+    // 5. Omits T & Frontal Lisp
+    // 6. Omits T & Lateral Lisp
+    // 7. Omits T & Nasalization
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionT = patterns.includes('Cluster Reduction (Omits T)')
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionT = patterns.includes('Omits T')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasNasalization = patterns.includes('Nasalization')
@@ -93,13 +93,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 1) return true
 
     // Valid combinations for Sp-:
-    // 1. Cluster Reduction (Omits S) & Nasalization
-    // 2. Cluster Reduction (Omits P) & Frontal Lisp
-    // 3. Cluster Reduction (Omits P) & Lateral Lisp
-    // 4. Cluster Reduction (Omits P) & Nasalization
+    // 1. Omits S & Nasalization
+    // 2. Omits P & Frontal Lisp
+    // 3. Omits P & Lateral Lisp
+    // 4. Omits P & Nasalization
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionP = patterns.includes('Cluster Reduction (Omits P)')
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionP = patterns.includes('Omits P')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasNasalization = patterns.includes('Nasalization')
@@ -124,13 +124,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 1) return true
 
     // Valid combinations for Sn-:
-    // 1. Cluster Reduction (Omits S) & Nasalization
-    // 2. Cluster Reduction (Omits N) & Nasalization
-    // 3. Cluster Reduction (Omits N) & Frontal Lisp
-    // 4. Cluster Reduction (Omits N) & Lateral Lisp
+    // 1. Omits S & Nasalization
+    // 2. Omits N & Nasalization
+    // 3. Omits N & Frontal Lisp
+    // 4. Omits N & Lateral Lisp
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionN = patterns.includes('Cluster Reduction (Omits N)')
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionN = patterns.includes('Omits N')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasNasalization = patterns.includes('Nasalization')
@@ -155,13 +155,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 1) return true
 
     // Valid combinations for Sm-:
-    // 1. Cluster Reduction (Omits S) & Nasalization
-    // 2. Cluster Reduction (Omits M) & Nasalization
-    // 3. Cluster Reduction (Omits M) & Frontal Lisp
-    // 4. Cluster Reduction (Omits M) & Lateral Lisp
+    // 1. Omits S & Nasalization
+    // 2. Omits M & Nasalization
+    // 3. Omits M & Frontal Lisp
+    // 4. Omits M & Lateral Lisp
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionM = patterns.includes('Cluster Reduction (Omits M)')
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionM = patterns.includes('Omits M')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasNasalization = patterns.includes('Nasalization')
@@ -188,12 +188,12 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     // Valid combinations for Sk-:
     // 1. Frontal Lisp & Fronting
     // 2. Lateral Lisp & Fronting
-    // 3. Cluster Reduction (Omits S) & Fronting
-    // 4. Cluster Reduction (Omits K) & Frontal Lisp
-    // 5. Cluster Reduction (Omits K) & Lateral Lisp
+    // 3. Omits S & Fronting
+    // 4. Omits K & Frontal Lisp
+    // 5. Omits K & Lateral Lisp
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionK = patterns.includes('Cluster Reduction (Omits K)')
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionK = patterns.includes('Omits K')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasFronting = patterns.includes('Fronting')
@@ -219,12 +219,12 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 1) return true
 
     // Valid combinations for Final -ts:
-    // 1. Cluster Reduction (Omits S) & Backing
-    // 2. Cluster Reduction (Omits T) & Frontal Lisp
-    // 3. Cluster Reduction (Omits T) & Lateral Lisp
+    // 1. Omits S & Backing
+    // 2. Omits T & Frontal Lisp
+    // 3. Omits T & Lateral Lisp
 
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
-    const hasClusterReductionT = patterns.includes('Cluster Reduction (Omits T)')
+    const hasClusterReductionS = patterns.includes('Omits S')
+    const hasClusterReductionT = patterns.includes('Omits T')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasBacking = patterns.includes('Backing')
@@ -248,10 +248,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 1) return true
 
     // Valid combinations for Final -ps:
-    // 1. Cluster Reduction (Omits P) & Frontal Lisp
-    // 2. Cluster Reduction (Omits P) & Lateral Lisp
+    // 1. Omits P & Frontal Lisp
+    // 2. Omits P & Lateral Lisp
 
-    const hasClusterReductionP = patterns.includes('Cluster Reduction (Omits P)')
+    const hasClusterReductionP = patterns.includes('Omits P')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
 
@@ -270,12 +270,12 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     if (patterns.length === 1) return true
 
     // Valid combinations for Final -ks:
-    // 1. Cluster Reduction (Omits K) & Frontal Lisp
-    // 2. Cluster Reduction (Omits K) & Lateral Lisp
-    // 3. Cluster Reduction (Omits S) & Fronting
+    // 1. Omits K & Frontal Lisp
+    // 2. Omits K & Lateral Lisp
+    // 3. Omits S & Fronting
 
-    const hasClusterReductionK = patterns.includes('Cluster Reduction (Omits K)')
-    const hasClusterReductionS = patterns.includes('Cluster Reduction (Omits S)')
+    const hasClusterReductionK = patterns.includes('Omits K')
+    const hasClusterReductionS = patterns.includes('Omits S')
     const hasFrontalLisp = patterns.includes('Frontal Lisp')
     const hasLateralLisp = patterns.includes('Lateral Lisp')
     const hasFronting = patterns.includes('Fronting')
