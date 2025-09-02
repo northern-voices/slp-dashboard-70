@@ -10,6 +10,7 @@ import { schoolGradesApi } from '@/api/schoolGrades'
 import ProgressIndicator from '../shared/ProgressIndicator'
 import SpeechScreeningStep1 from './steps/SpeechScreeningStep1'
 import SpeechScreeningStep2 from './steps/SpeechScreeningStep2'
+import SubmissionConfirmationModal from '../SubmissionConfirmationModal'
 
 interface MultiStepSpeechScreeningFormProps {
   onSubmit?: (data: unknown) => void
@@ -28,6 +29,7 @@ const MultiStepSpeechScreeningForm = ({
   const [selectedGradeId, setSelectedGradeId] = useState<string>('')
   const [gradeSchoolId, setGradeSchoolId] = useState<string>('')
   const [isAbsent, setIsAbsent] = useState(false)
+  const [showSubmissionModal, setShowSubmissionModal] = useState(false)
 
   const { user } = useAuth()
   const { currentSchool } = useOrganization()
@@ -237,8 +239,11 @@ const MultiStepSpeechScreeningForm = ({
           soundErrors:
             (articulation.soundErrors as Array<{
               notes: string
+              otherNotes?: string
               sound: string
+              word: string
               errorPatterns: string[]
+              stoppingSounds?: string[]
             }>) || [],
           articulationNotes:
             (articulation.articulationNotes as string) ||
@@ -278,9 +283,7 @@ const MultiStepSpeechScreeningForm = ({
 
     createScreening.mutate(screeningData, {
       onSuccess: () => {
-        if (onSubmit) {
-          onSubmit(screeningData)
-        }
+        setShowSubmissionModal(true)
       },
     })
   }
@@ -311,6 +314,25 @@ const MultiStepSpeechScreeningForm = ({
       formValues.screening_date &&
       formValues.speech_screen_result
     )
+  }
+
+  const handleNewScreening = () => {
+    setShowSubmissionModal(false)
+    // Reset form for new screening
+    form.reset()
+    setCurrentStep(1)
+    setSelectedStudent(null)
+    setSelectedGrade('')
+    setSelectedGradeId('')
+    setGradeSchoolId('')
+    setIsAbsent(false)
+  }
+
+  const handleGoToDashboard = () => {
+    setShowSubmissionModal(false)
+    if (onSubmit) {
+      onSubmit({})
+    }
   }
 
   const renderCurrentStep = () => {
@@ -417,6 +439,16 @@ const MultiStepSpeechScreeningForm = ({
           </div>
         </div>
       </form>
+
+      {/* Submission Confirmation Modal */}
+      <SubmissionConfirmationModal
+        isOpen={showSubmissionModal}
+        onNewScreening={handleNewScreening}
+        onGoToDashboard={handleGoToDashboard}
+        studentName={
+          selectedStudent ? `${selectedStudent.first_name} ${selectedStudent.last_name}` : undefined
+        }
+      />
     </div>
   )
 }
