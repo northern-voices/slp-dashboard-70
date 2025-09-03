@@ -463,7 +463,7 @@ const SpeechScreeningsTable = ({
               disabled={!selectedScreening}
               onClick={() => onSelectScreening(null)}
               className='h-7 text-xs ml-2'>
-              Clear Selection
+              Clear
             </Button>
           </div>
         </div>
