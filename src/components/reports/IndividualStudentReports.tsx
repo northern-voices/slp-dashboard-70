@@ -44,6 +44,7 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
+import { edgeFunctionsApi } from '@/api/edgeFunctions'
 
 const IndividualStudentReports = () => {
   const navigate = useNavigate()
@@ -86,6 +87,8 @@ const IndividualStudentReports = () => {
     null
   )
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [emailMessage, setEmailMessage] = useState('')
 
   const handleGenerateReport = (reportType: string) => {
     if (!selectedStudent) {
@@ -121,37 +124,68 @@ const IndividualStudentReports = () => {
   }
 
   const handleSendEmail = async () => {
-    if (!recipientEmail || selectedReports.length === 0) {
+    if (!recipientEmail || selectedReports.length === 0 || !selectedScreening) {
       return
     }
 
     setIsEmailLoading(true)
+    setEmailStatus('idle')
+    setEmailMessage('')
 
     try {
-      // Simulate email sending
-      console.log('Sending individual reports email:', {
-        student: selectedStudent,
-        recipient: recipientEmail,
-        reports: selectedReports,
-        selectedScreening: selectedScreening
-          ? {
-              id: selectedScreening.id,
-              date: selectedScreening.created_at,
-              type: selectedScreening.screening_type,
-            }
-          : null,
-        message: customMessage,
-      })
+      // Check if progress report is selected and trigger the edge function
+      if (selectedReports.includes('progress-report')) {
+        console.log('Triggering student progress report edge function:', {
+          speechScreeningId: selectedScreening.id,
+          overrideEmail: recipientEmail,
+        })
 
-      // TODO: Implement actual email sending logic
-      await new Promise(resolve => setTimeout(resolve, 1000))
+        const result = await edgeFunctionsApi.triggerStudentProgressReport(
+          selectedScreening.id,
+          recipientEmail
+        )
 
-      // Reset form
-      setSelectedReports([])
-      setRecipientEmail('')
-      setCustomMessage('')
+        console.log('Student progress report triggered successfully:', result)
+        setEmailStatus('success')
+        setEmailMessage('Progress report has been sent successfully!')
+      }
+
+      // Log other report types for future implementation
+      const otherReports = selectedReports.filter(report => report !== 'progress-report')
+      if (otherReports.length > 0) {
+        console.log('Other reports selected (not yet implemented):', {
+          student: selectedStudent,
+          recipient: recipientEmail,
+          reports: otherReports,
+          selectedScreening: selectedScreening
+            ? {
+                id: selectedScreening.id,
+                date: selectedScreening.created_at,
+                type: selectedScreening.screening_type,
+              }
+            : null,
+          message: customMessage,
+        })
+
+        // If only other reports are selected, show info message
+        if (!selectedReports.includes('progress-report')) {
+          setEmailStatus('success')
+          setEmailMessage('Report request logged. Other report types are coming soon!')
+        }
+      }
+
+      // Reset form after a short delay to show success message
+      setTimeout(() => {
+        setSelectedReports([])
+        setRecipientEmail('')
+        setCustomMessage('')
+        setEmailStatus('idle')
+        setEmailMessage('')
+      }, 3000)
     } catch (error) {
       console.error('Error sending email:', error)
+      setEmailStatus('error')
+      setEmailMessage('Failed to send report. Please try again.')
     } finally {
       setIsEmailLoading(false)
     }
@@ -326,6 +360,24 @@ const IndividualStudentReports = () => {
               </div> */}
             </div>
           </div>
+
+          {/* Status Message */}
+          {emailMessage && (
+            <div
+              className={`mt-4 p-3 rounded-lg border ${
+                emailStatus === 'success'
+                  ? 'bg-green-50 border-green-200 text-green-800'
+                  : emailStatus === 'error'
+                  ? 'bg-red-50 border-red-200 text-red-800'
+                  : 'bg-blue-50 border-blue-200 text-blue-800'
+              }`}>
+              <div className='flex items-center gap-2'>
+                {emailStatus === 'success' && <CheckCircle className='w-4 h-4' />}
+                {emailStatus === 'error' && <span className='text-red-600'>⚠️</span>}
+                <span className='text-sm font-medium'>{emailMessage}</span>
+              </div>
+            </div>
+          )}
 
           {/* Send Reports */}
           <div className='mt-6'>
