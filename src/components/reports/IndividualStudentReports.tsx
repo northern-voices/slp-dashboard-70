@@ -139,41 +139,35 @@ const IndividualStudentReports = () => {
       return
     }
 
+    setIsEmailLoading(true)
+    setEmailStatus('idle')
+    setEmailMessage('')
+
     try {
-      setIsEmailLoading(true)
-      setEmailStatus('idle')
-      setEmailMessage('')
+      // Process each selected report type
+      for (const reportType of selectedReports) {
+        let result
 
-      // Check if progress report is selected and trigger the edge function
-      if (selectedReports.includes('progress-report')) {
-        const result = await edgeFunctionsApi.studentProgressReport(
-          selectedScreening.id,
-          recipientEmail
-        )
+        switch (reportType) {
+          case 'progress-report':
+            result = await edgeFunctionsApi.studentProgressReport(
+              selectedScreening.id,
+              recipientEmail
+            )
+            break
+          case 'student-report':
+            result = await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
+            break
+          default:
+            console.warn(`Unknown report type: ${reportType}`)
+            continue
+        }
 
-        console.log('Student progress report triggered successfully:', result)
-        setIsSuccessModalOpen(true)
+        console.log(`${reportType} triggered successfully:`, result)
       }
-    } catch (error) {
-      console.error('Error sending email:', error)
-      setEmailStatus('error')
-      setEmailMessage('Failed to send report. Please try again.')
-    } finally {
-      setIsEmailLoading(false)
-    }
 
-    try {
-      setIsEmailLoading(true)
-      setEmailStatus('idle')
-      setEmailMessage('')
-
-      if (selectedReports.includes('student-report')) {
-        const result = await edgeFunctionsApi.sendStudentReport(
-          selectedScreening.id,
-          recipientEmail
-        )
-
-        console.log('Student progress report triggered successfully:', result)
+      // Show success modal if any reports were processed
+      if (selectedReports.length > 0) {
         setIsSuccessModalOpen(true)
       }
     } catch (error) {
