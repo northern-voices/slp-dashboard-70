@@ -22,6 +22,8 @@ import {
   Eye,
   TrendingUp,
   BookOpen,
+  Plus,
+  List,
 } from 'lucide-react'
 import { Student } from '@/types/database'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -45,6 +47,14 @@ import {
   TableCell,
 } from '@/components/ui/responsive-table'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 const IndividualStudentReports = () => {
   const navigate = useNavigate()
@@ -89,6 +99,7 @@ const IndividualStudentReports = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [emailMessage, setEmailMessage] = useState('')
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
 
   const handleGenerateReport = (reportType: string) => {
     if (!selectedStudent) {
@@ -128,11 +139,11 @@ const IndividualStudentReports = () => {
       return
     }
 
-    setIsEmailLoading(true)
-    setEmailStatus('idle')
-    setEmailMessage('')
-
     try {
+      setIsEmailLoading(true)
+      setEmailStatus('idle')
+      setEmailMessage('')
+
       // Check if progress report is selected and trigger the edge function
       if (selectedReports.includes('progress-report')) {
         const result = await edgeFunctionsApi.studentProgressReport(
@@ -141,18 +152,8 @@ const IndividualStudentReports = () => {
         )
 
         console.log('Student progress report triggered successfully:', result)
-        setEmailStatus('success')
-        setEmailMessage('Progress report has been sent successfully!')
+        setIsSuccessModalOpen(true)
       }
-
-      // Reset form after a short delay to show success message
-      setTimeout(() => {
-        setSelectedReports([])
-        setRecipientEmail('')
-        setCustomMessage('')
-        setEmailStatus('idle')
-        setEmailMessage('')
-      }, 3000)
     } catch (error) {
       console.error('Error sending email:', error)
       setEmailStatus('error')
@@ -162,20 +163,19 @@ const IndividualStudentReports = () => {
     }
 
     try {
+      setIsEmailLoading(true)
+      setEmailStatus('idle')
+      setEmailMessage('')
+
       if (selectedReports.includes('student-report')) {
         const result = await edgeFunctionsApi.sendStudentReport(
           selectedScreening.id,
           recipientEmail
         )
-      }
 
-      setTimeout(() => {
-        setSelectedReports([])
-        setRecipientEmail('')
-        setCustomMessage('')
-        setEmailStatus('idle')
-        setEmailMessage('')
-      }, 3000)
+        console.log('Student progress report triggered successfully:', result)
+        setIsSuccessModalOpen(true)
+      }
     } catch (error) {
       console.error('Error sending email:', error)
       setEmailStatus('error')
@@ -197,6 +197,23 @@ const IndividualStudentReports = () => {
   const handleViewDetails = (screening: Screening) => {
     setSelectedScreeningForDetails(screening)
     setIsDetailsModalOpen(true)
+  }
+
+  const handleGoBackToReports = () => {
+    setIsSuccessModalOpen(false)
+    navigate(`/school/${currentSchool.id}/speech-screening-reports`)
+  }
+
+  const handleStayOnPage = () => {
+    setIsSuccessModalOpen(false)
+    // Clear all selections
+    setSelectedStudent(null)
+    setSelectedScreening(null)
+    setSelectedReports([])
+    setRecipientEmail('')
+    setCustomMessage('')
+    setEmailStatus('idle')
+    setEmailMessage('')
   }
 
   return (
@@ -399,6 +416,46 @@ const IndividualStudentReports = () => {
         onClose={() => setIsDetailsModalOpen(false)}
         screening={selectedScreeningForDetails}
       />
+
+      {/* Success Modal */}
+      <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
+        <DialogContent className='mx-auto'>
+          <div className='flex flex-col items-center text-center space-y-6'>
+            {/* Success Icon */}
+            <div className='flex justify-center'>
+              <CheckCircle className='w-16 h-16 text-green-600' />
+            </div>
+
+            {/* Title and Description */}
+            <div className='space-y-2'>
+              <DialogTitle className='text-2xl font-semibold text-gray-900'>
+                Report Sent Successfully!
+              </DialogTitle>
+              <DialogDescription className='text-gray-600 text-base leading-relaxed'>
+                The progress report has been sent to {recipientEmail}. What would you like to do
+                next?
+              </DialogDescription>
+            </div>
+
+            {/* Action Buttons */}
+            <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
+              <Button
+                onClick={handleStayOnPage}
+                className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                <Plus className='w-4 h-4' />
+                Send Another Report
+              </Button>
+              <Button
+                onClick={handleGoBackToReports}
+                variant='outline'
+                className='w-full sm:w-auto px-6 py-2'>
+                <List className='w-4 h-4' />
+                Back to Reports
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
