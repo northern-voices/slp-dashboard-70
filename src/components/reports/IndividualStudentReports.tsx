@@ -1,19 +1,10 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
 import {
-  FileText,
-  Volume2,
   CheckCircle,
   Target,
   Mail,
@@ -24,13 +15,13 @@ import {
   BookOpen,
   Plus,
   List,
+  XCircle,
 } from 'lucide-react'
 import { Student } from '@/types/database'
-import LoadingSpinner from '@/components/common/LoadingSpinner'
+
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import Multiselect from '@/components/ui/multiselect'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import { Screening } from '@/types/database'
 import { format } from 'date-fns'
@@ -47,14 +38,7 @@ import {
   TableCell,
 } from '@/components/ui/responsive-table'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
 const IndividualStudentReports = () => {
   const navigate = useNavigate()
@@ -100,6 +84,8 @@ const IndividualStudentReports = () => {
   const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [emailMessage, setEmailMessage] = useState('')
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
+  const [modalType, setModalType] = useState<'success' | 'error'>('success')
+  const [modalMessage, setModalMessage] = useState('')
 
   const handleGenerateReport = (reportType: string) => {
     if (!selectedStudent) {
@@ -168,12 +154,15 @@ const IndividualStudentReports = () => {
 
       // Show success modal if any reports were processed
       if (selectedReports.length > 0) {
+        setModalType('success')
+        setModalMessage(`Report(s) sent successfully to ${recipientEmail}`)
         setIsSuccessModalOpen(true)
       }
     } catch (error) {
       console.error('Error sending email:', error)
-      setEmailStatus('error')
-      setEmailMessage('Failed to send report. Please try again.')
+      setModalType('error')
+      setModalMessage('Failed to send report. Please try again.')
+      setIsSuccessModalOpen(true)
     } finally {
       setIsEmailLoading(false)
     }
@@ -195,11 +184,15 @@ const IndividualStudentReports = () => {
 
   const handleGoBackToReports = () => {
     setIsSuccessModalOpen(false)
+    setModalType('success')
+    setModalMessage('')
     navigate(`/school/${currentSchool.id}/speech-screening-reports`)
   }
 
   const handleStayOnPage = () => {
     setIsSuccessModalOpen(false)
+    setModalType('success')
+    setModalMessage('')
     // Clear all selections
     setSelectedStudent(null)
     setSelectedScreening(null)
@@ -208,6 +201,12 @@ const IndividualStudentReports = () => {
     setCustomMessage('')
     setEmailStatus('idle')
     setEmailMessage('')
+  }
+
+  const handleCloseModal = () => {
+    setIsSuccessModalOpen(false)
+    setModalType('success')
+    setModalMessage('')
   }
 
   return (
@@ -411,41 +410,54 @@ const IndividualStudentReports = () => {
         screening={selectedScreeningForDetails}
       />
 
-      {/* Success Modal */}
-      <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
+      {/* Success/Error Modal */}
+      <Dialog open={isSuccessModalOpen} onOpenChange={handleCloseModal}>
         <DialogContent className='mx-auto'>
           <div className='flex flex-col items-center text-center space-y-6'>
-            {/* Success Icon */}
+            {/* Icon */}
             <div className='flex justify-center'>
-              <CheckCircle className='w-16 h-16 text-green-600' />
+              {modalType === 'success' ? (
+                <CheckCircle className='w-16 h-16 text-green-600' />
+              ) : (
+                <XCircle className='w-16 h-16 text-red-600' />
+              )}
             </div>
 
             {/* Title and Description */}
             <div className='space-y-2'>
               <DialogTitle className='text-2xl font-semibold text-gray-900'>
-                Report Sent Successfully!
+                {modalType === 'success' ? 'Report Sent Successfully!' : 'Error Sending Report'}
               </DialogTitle>
               <DialogDescription className='text-gray-600 text-base leading-relaxed'>
-                The progress report has been sent to {recipientEmail}. What would you like to do
-                next?
+                {modalMessage}
               </DialogDescription>
             </div>
 
             {/* Action Buttons */}
             <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
-              <Button
-                onClick={handleStayOnPage}
-                className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
-                <Plus className='w-4 h-4' />
-                Send Another Report
-              </Button>
-              <Button
-                onClick={handleGoBackToReports}
-                variant='outline'
-                className='w-full sm:w-auto px-6 py-2'>
-                <List className='w-4 h-4' />
-                Back to Reports
-              </Button>
+              {modalType === 'success' ? (
+                <>
+                  <Button
+                    onClick={handleStayOnPage}
+                    className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                    <Plus className='w-4 h-4' />
+                    Send Another Report
+                  </Button>
+                  <Button
+                    onClick={handleGoBackToReports}
+                    variant='outline'
+                    className='w-full sm:w-auto px-6 py-2'>
+                    <List className='w-4 h-4' />
+                    Back to Reports
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={handleCloseModal}
+                  className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                  Try Again
+                </Button>
+              )}
             </div>
           </div>
         </DialogContent>
