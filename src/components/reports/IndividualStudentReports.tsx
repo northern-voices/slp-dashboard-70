@@ -225,13 +225,13 @@ const IndividualStudentReports = () => {
 
         {/* Selected Student Info */}
         {selectedStudent && (
-          <div className='p-3 bg-purple-50 rounded-lg border border-purple-200'>
+          <div className='p-3 bg-blue-50 rounded-lg border border-blue-200'>
             <div className='flex items-center gap-2'>
-              <User className='w-4 h-4 text-purple-600' />
-              <span className='font-medium text-purple-900'>
+              <User className='w-4 h-4 text-blue-600' />
+              <span className='font-medium text-blue-900'>
                 {selectedStudent.first_name} {selectedStudent.last_name}
               </span>
-              <span className='text-sm text-purple-700'>Grade {selectedStudent.grade}</span>
+              <span className='text-sm text-blue-700'>Grade {selectedStudent.grade}</span>
             </div>
           </div>
         )}
@@ -390,7 +390,7 @@ const IndividualStudentReports = () => {
               onClick={() => handleSendEmail()}
               variant='default'
               size='sm'
-              className='w-full h-9 bg-purple-600 hover:bg-purple-700 text-white'
+              className='w-full h-9 bg-blue-600 hover:bg-blue-700 text-white'
               disabled={
                 !selectedStudent ||
                 !recipientEmail ||
@@ -544,13 +544,12 @@ const SpeechScreeningsTable = ({
           <div className='flex items-center gap-3'>
             <span className='text-sm font-medium text-gray-900'>Select a Screening</span>
           </div>
-          <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-1'>
             <div className='flex items-center gap-2'>
-              <span className='text-sm text-gray-600'>Total:</span>
               <Badge
                 variant='outline'
-                className='bg-gray-50 text-gray-700 border-gray-300 font-medium w-9 text-center flex items-center justify-center'>
-                {studentScreenings.length}
+                className='bg-blue-50 text-blue-600 border-blue-300 font-medium px-3 text-center flex items-center justify-center'>
+                Total: {studentScreenings.length}
               </Badge>
             </div>
 
