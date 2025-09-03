@@ -135,12 +135,7 @@ const IndividualStudentReports = () => {
     try {
       // Check if progress report is selected and trigger the edge function
       if (selectedReports.includes('progress-report')) {
-        console.log('Triggering student progress report edge function:', {
-          speechScreeningId: selectedScreening.id,
-          overrideEmail: recipientEmail,
-        })
-
-        const result = await edgeFunctionsApi.triggerStudentProgressReport(
+        const result = await edgeFunctionsApi.studentProgressReport(
           selectedScreening.id,
           recipientEmail
         )
@@ -150,31 +145,30 @@ const IndividualStudentReports = () => {
         setEmailMessage('Progress report has been sent successfully!')
       }
 
-      // Log other report types for future implementation
-      const otherReports = selectedReports.filter(report => report !== 'progress-report')
-      if (otherReports.length > 0) {
-        console.log('Other reports selected (not yet implemented):', {
-          student: selectedStudent,
-          recipient: recipientEmail,
-          reports: otherReports,
-          selectedScreening: selectedScreening
-            ? {
-                id: selectedScreening.id,
-                date: selectedScreening.created_at,
-                type: selectedScreening.screening_type,
-              }
-            : null,
-          message: customMessage,
-        })
+      // Reset form after a short delay to show success message
+      setTimeout(() => {
+        setSelectedReports([])
+        setRecipientEmail('')
+        setCustomMessage('')
+        setEmailStatus('idle')
+        setEmailMessage('')
+      }, 3000)
+    } catch (error) {
+      console.error('Error sending email:', error)
+      setEmailStatus('error')
+      setEmailMessage('Failed to send report. Please try again.')
+    } finally {
+      setIsEmailLoading(false)
+    }
 
-        // If only other reports are selected, show info message
-        if (!selectedReports.includes('progress-report')) {
-          setEmailStatus('success')
-          setEmailMessage('Report request logged. Other report types are coming soon!')
-        }
+    try {
+      if (selectedReports.includes('student-report')) {
+        const result = await edgeFunctionsApi.sendStudentReport(
+          selectedScreening.id,
+          recipientEmail
+        )
       }
 
-      // Reset form after a short delay to show success message
       setTimeout(() => {
         setSelectedReports([])
         setRecipientEmail('')
