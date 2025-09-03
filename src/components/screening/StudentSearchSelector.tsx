@@ -86,19 +86,7 @@ const StudentSearchSelector = ({
   const { toast } = useToast()
 
   const { userProfile, availableSchools, currentSchool, isLoading: orgLoading } = useOrganization()
-  console.log(
-    {
-      userProfile,
-      availableSchools,
-      orgLoading,
-      currentSchool,
-      // userAssignedSchools,
-      // schoolLoading,
-    },
-    'Full Context Debug'
-  )
 
-  // Use React Query hooks instead of StudentService
   // Only fetch students if a school is selected
   const { data: studentsByGrade = [], isLoading: loadingByGrade } = useStudentsByGrade(
     currentSchool && gradeFilter ? gradeFilter : ''

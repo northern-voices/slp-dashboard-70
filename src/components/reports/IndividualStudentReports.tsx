@@ -34,7 +34,7 @@ import { Screening } from '@/types/database'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import {
   ResponsiveTable,
@@ -78,11 +78,13 @@ const IndividualStudentReports = () => {
   }, [])
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [selectedReports, setSelectedReports] = useState<string[]>([])
-  const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
+  const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [recipientEmail, setRecipientEmail] = useState('')
   const [customMessage, setCustomMessage] = useState('')
   const [isEmailLoading, setIsEmailLoading] = useState(false)
-  const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
+  const [selectedScreeningForDetails, setSelectedScreeningForDetails] = useState<Screening | null>(
+    null
+  )
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
   const handleGenerateReport = (reportType: string) => {
@@ -131,11 +133,13 @@ const IndividualStudentReports = () => {
         student: selectedStudent,
         recipient: recipientEmail,
         reports: selectedReports,
-        selectedScreenings: selectedScreenings.map(s => ({
-          id: s.id,
-          date: s.created_at,
-          type: s.screening_type,
-        })),
+        selectedScreening: selectedScreening
+          ? {
+              id: selectedScreening.id,
+              date: selectedScreening.created_at,
+              type: selectedScreening.screening_type,
+            }
+          : null,
         message: customMessage,
       })
 
@@ -155,28 +159,15 @@ const IndividualStudentReports = () => {
 
   const handleStudentSelect = (student: Student | null) => {
     setSelectedStudent(student)
-    setSelectedScreenings([]) // Clear selected screenings when student changes
+    setSelectedScreening(null) // Clear selected screening when student changes
   }
 
-  const handleSelectScreening = (screening: Screening, checked: boolean) => {
-    if (checked) {
-      setSelectedScreenings(prev => [...prev, screening])
-    } else {
-      setSelectedScreenings(prev => prev.filter(s => s.id !== screening.id))
-    }
-  }
-
-  const handleSelectAllScreenings = (checked: boolean) => {
-    if (checked) {
-      // We'll need to get the screenings data from the hook
-      // For now, this will be handled by passing the screenings data down
-    } else {
-      setSelectedScreenings([])
-    }
+  const handleSelectScreening = (screening: Screening | null) => {
+    setSelectedScreening(screening)
   }
 
   const handleViewDetails = (screening: Screening) => {
-    setSelectedScreening(screening)
+    setSelectedScreeningForDetails(screening)
     setIsDetailsModalOpen(true)
   }
 
@@ -213,10 +204,8 @@ const IndividualStudentReports = () => {
               <h3 className='text-xl font-medium text-gray-700'>Screenings</h3>
               <SpeechScreeningsTable
                 studentId={selectedStudent.id}
-                selectedScreenings={selectedScreenings}
+                selectedScreening={selectedScreening}
                 onSelectScreening={handleSelectScreening}
-                onSelectAll={handleSelectAllScreenings}
-                setSelectedScreenings={setSelectedScreenings}
                 onViewDetails={handleViewDetails}
               />
             </div>
@@ -230,12 +219,6 @@ const IndividualStudentReports = () => {
           <h4 className='text-xl font-medium text-gray-700 mb-4 flex items-center gap-2'>
             <Mail className='w-5 h-5' />
             Send {selectedStudent.first_name}'s Reports
-            {selectedScreenings.length > 0 && (
-              <Badge variant='secondary' className='ml-2'>
-                {selectedScreenings.length} screening{selectedScreenings.length !== 1 ? 's' : ''}{' '}
-                selected
-              </Badge>
-            )}
           </h4>
 
           <div className='space-y-4'>
@@ -356,7 +339,7 @@ const IndividualStudentReports = () => {
                 !recipientEmail ||
                 selectedReports.length === 0 ||
                 isEmailLoading ||
-                selectedScreenings.length === 0
+                !selectedScreening
               }>
               <Send className='w-4 h-4 mr-2' />
               {isEmailLoading ? 'Sending...' : 'Send Reports'}
@@ -368,7 +351,7 @@ const IndividualStudentReports = () => {
       <ScreeningDetailsModal
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
-        screening={selectedScreening}
+        screening={selectedScreeningForDetails}
       />
     </>
   )
@@ -377,17 +360,13 @@ const IndividualStudentReports = () => {
 // Speech Screenings Table Component
 const SpeechScreeningsTable = ({
   studentId,
-  selectedScreenings,
+  selectedScreening,
   onSelectScreening,
-  onSelectAll,
-  setSelectedScreenings,
   onViewDetails,
 }: {
   studentId: string
-  selectedScreenings: Screening[]
-  onSelectScreening: (screening: Screening, checked: boolean) => void
-  onSelectAll: (checked: boolean) => void
-  setSelectedScreenings: React.Dispatch<React.SetStateAction<Screening[]>>
+  selectedScreening: Screening | null
+  onSelectScreening: (screening: Screening | null) => void
   onViewDetails: (screening: Screening) => void
 }) => {
   const { data: screeningsData, isLoading, error } = useSpeechScreeningsByStudent(studentId)
@@ -460,35 +439,15 @@ const SpeechScreeningsTable = ({
     }
   }
 
-  const isAllSelected =
-    studentScreenings.length > 0 && selectedScreenings.length === studentScreenings.length
-  const isSomeSelected = selectedScreenings.length > 0
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedScreenings([...studentScreenings])
-    } else {
-      setSelectedScreenings([])
-    }
-  }
-
   return (
     <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
       {/* Table Header */}
       <div className='bg-gray-50 border-b border-gray-200 px-6 py-3'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-3'>
-            <span className='text-sm font-medium text-gray-900'>Select Screenings</span>
+            <span className='text-sm font-medium text-gray-900'>Select a Screening</span>
           </div>
           <div className='flex items-center gap-3'>
-            <div className='flex items-center gap-2'>
-              <span className='text-sm text-gray-600'>Selected:</span>
-              <Badge
-                variant='secondary'
-                className='bg-blue-100 text-blue-800 border-blue-200 font-medium w-9 text-center flex items-center justify-center'>
-                {selectedScreenings.length}
-              </Badge>
-            </div>
             <div className='flex items-center gap-2'>
               <span className='text-sm text-gray-600'>Total:</span>
               <Badge
@@ -501,8 +460,8 @@ const SpeechScreeningsTable = ({
             <Button
               variant='outline'
               size='sm'
-              disabled={selectedScreenings.length === 0}
-              onClick={() => setSelectedScreenings([])}
+              disabled={!selectedScreening}
+              onClick={() => onSelectScreening(null)}
               className='h-7 text-xs ml-2'>
               Clear Selection
             </Button>
@@ -511,115 +470,115 @@ const SpeechScreeningsTable = ({
       </div>
 
       <div className='max-h-96 overflow-y-auto'>
-        <ResponsiveTable className='w-full'>
-          <TableHeader>
-            <tr>
-              <TableHead className='w-12'>
-                <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
-              </TableHead>
-              <TableHead className='w-1/6 min-w-[100px]'>Date</TableHead>
-              <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
-              <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
-              <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
-              <TableHead className='w-1/6 min-w-[80px]'>Grade</TableHead>
-              <TableHead className='w-12'></TableHead>
-            </tr>
-          </TableHeader>
-          <TableBody>
-            {studentScreenings.map(screening => (
-              <ResponsiveTableRow
-                key={screening.id}
-                mobileCardContent={
-                  <div className='space-y-3'>
-                    <div className='flex items-center justify-between'>
-                      <div className='flex items-center gap-2'>
-                        <Checkbox
-                          checked={selectedScreenings.some(s => s.id === screening.id)}
-                          onCheckedChange={checked =>
-                            onSelectScreening(screening, checked as boolean)
-                          }
-                        />
-                        <h3 className='font-medium'>
-                          {format(new Date(screening.created_at), 'MMM dd, yyyy')}
-                        </h3>
+        <RadioGroup
+          value={selectedScreening?.id || ''}
+          onValueChange={value => {
+            const screening = studentScreenings.find(s => s.id === value)
+            onSelectScreening(screening || null)
+          }}>
+          <ResponsiveTable className='w-full'>
+            <TableHeader>
+              <tr>
+                <TableHead className='w-12'></TableHead>
+                <TableHead className='w-1/6 min-w-[100px]'>Date</TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
+                <TableHead className='w-1/6 min-w-[80px]'>Grade</TableHead>
+                <TableHead className='w-12'></TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {studentScreenings.map(screening => (
+                <ResponsiveTableRow
+                  key={screening.id}
+                  mobileCardContent={
+                    <div className='space-y-3'>
+                      <div className='flex items-center justify-between'>
+                        <div className='flex items-center gap-2'>
+                          <RadioGroupItem value={screening.id} id={`mobile-${screening.id}`} />
+                          <h3 className='font-medium'>
+                            {format(new Date(screening.created_at), 'MMM dd, yyyy')}
+                          </h3>
+                        </div>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          onClick={() => onViewDetails(screening)}
+                          className='h-8 w-8 p-0 hover:bg-gray-100'>
+                          <Eye className='w-4 h-4' />
+                        </Button>
                       </div>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        onClick={() => onViewDetails(screening)}
-                        className='h-8 w-8 p-0 hover:bg-gray-100'>
-                        <Eye className='w-4 h-4' />
-                      </Button>
+                      <div className='flex items-center gap-2'>
+                        {getResultBadge(screening.result || screening.screening_result)}
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        {getQualificationBadge(screening)}
+                      </div>
+                      <div className='text-sm text-gray-600 space-y-1'>
+                        <p>
+                          <span className='font-medium'>Screener:</span> {screening.screener}
+                        </p>
+                        {screening.grade && (
+                          <p>
+                            <span className='font-medium'>Grade:</span> {screening.grade}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className='flex items-center gap-2'>
+                  }>
+                  <TableCell>
+                    <RadioGroupItem
+                      value={screening.id}
+                      id={`desktop-${screening.id}`}
+                      className='mt-1.5'
+                    />
+                  </TableCell>
+                  <TableCell className='max-w-0'>
+                    <div className='truncate'>
+                      <div className='text-sm font-medium text-gray-900'>
+                        {format(new Date(screening.created_at), 'MMM dd, yyyy')}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className='max-w-0'>
+                    <div className='truncate'>
                       {getResultBadge(screening.result || screening.screening_result)}
                     </div>
-                    <div className='flex items-center gap-2'>
-                      {getQualificationBadge(screening)}
+                  </TableCell>
+                  <TableCell className='max-w-0'>
+                    <div className='truncate'>{getQualificationBadge(screening)}</div>
+                  </TableCell>
+                  <TableCell className='max-w-0'>
+                    <div className='truncate' title={screening.screener}>
+                      {screening.screener}
                     </div>
-                    <div className='text-sm text-gray-600 space-y-1'>
-                      <p>
-                        <span className='font-medium'>Screener:</span> {screening.screener}
-                      </p>
-                      {screening.grade && (
-                        <p>
-                          <span className='font-medium'>Grade:</span> {screening.grade}
-                        </p>
+                  </TableCell>
+                  <TableCell className='max-w-0'>
+                    <div className='truncate' title={screening.grade || 'No grade'}>
+                      {screening.grade ? (
+                        <div className='text-xs text-gray-500 bg-gray-200 px-3 py-1 rounded-lg inline-block'>
+                          {screening.grade}
+                        </div>
+                      ) : (
+                        '-'
                       )}
                     </div>
-                  </div>
-                }>
-                <TableCell>
-                  <Checkbox
-                    className='mt-1.5'
-                    checked={selectedScreenings.some(s => s.id === screening.id)}
-                    onCheckedChange={checked => onSelectScreening(screening, checked as boolean)}
-                  />
-                </TableCell>
-                <TableCell className='max-w-0'>
-                  <div className='truncate'>
-                    <div className='text-sm font-medium text-gray-900'>
-                      {format(new Date(screening.created_at), 'MMM dd, yyyy')}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className='max-w-0'>
-                  <div className='truncate'>
-                    {getResultBadge(screening.result || screening.screening_result)}
-                  </div>
-                </TableCell>
-                <TableCell className='max-w-0'>
-                  <div className='truncate'>{getQualificationBadge(screening)}</div>
-                </TableCell>
-                <TableCell className='max-w-0'>
-                  <div className='truncate' title={screening.screener}>
-                    {screening.screener}
-                  </div>
-                </TableCell>
-                <TableCell className='max-w-0'>
-                  <div className='truncate' title={screening.grade || 'No grade'}>
-                    {screening.grade ? (
-                      <div className='text-xs text-gray-500 bg-gray-200 px-3 py-1 rounded-lg inline-block'>
-                        {screening.grade}
-                      </div>
-                    ) : (
-                      '-'
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={() => onViewDetails(screening)}
-                    className='h-8 w-8 p-0 hover:bg-gray-100'>
-                    <Eye className='w-4 h-4' />
-                  </Button>
-                </TableCell>
-              </ResponsiveTableRow>
-            ))}
-          </TableBody>
-        </ResponsiveTable>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={() => onViewDetails(screening)}
+                      className='h-8 w-8 p-0 hover:bg-gray-100'>
+                      <Eye className='w-4 h-4' />
+                    </Button>
+                  </TableCell>
+                </ResponsiveTableRow>
+              ))}
+            </TableBody>
+          </ResponsiveTable>
+        </RadioGroup>
       </div>
     </div>
   )
