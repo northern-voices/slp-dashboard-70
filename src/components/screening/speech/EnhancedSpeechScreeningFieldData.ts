@@ -69,9 +69,9 @@ export const soundErrorPatterns = {
   },
   'St-': {
     patterns: [
-      'Omits ST',
       'Omits S',
       'Omits T',
+      'Omits ST',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -82,9 +82,9 @@ export const soundErrorPatterns = {
   },
   'Sp-': {
     patterns: [
-      'Omits SP',
       'Omits S',
       'Omits P',
+      'Omits SP',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -94,9 +94,9 @@ export const soundErrorPatterns = {
   },
   'Sm-': {
     patterns: [
-      'Omits SM',
       'Omits S',
       'Omits M',
+      'Omits SM',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -106,9 +106,9 @@ export const soundErrorPatterns = {
   },
   'Sn-': {
     patterns: [
-      'Omits SN',
       'Omits S',
       'Omits N',
+      'Omits SN',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -118,9 +118,9 @@ export const soundErrorPatterns = {
   },
   'Sk-': {
     patterns: [
-      'Omits SK',
       'Omits S',
       'Omits K',
+      'Omits SK',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -131,9 +131,9 @@ export const soundErrorPatterns = {
   },
   'Final -ts': {
     patterns: [
-      'Omits TS',
       'Omits S',
       'Omits T',
+      'Omits TS',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -144,9 +144,9 @@ export const soundErrorPatterns = {
   },
   'Final -ps': {
     patterns: [
-      'Omits PS',
       'Omits S',
       'Omits P',
+      'Omits PS',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
@@ -156,9 +156,9 @@ export const soundErrorPatterns = {
   },
   'Final -ks': {
     patterns: [
-      'Omits KS',
       'Omits K',
       'Omits S',
+      'Omits KS',
       'Frontal Lisp',
       'Lateral Lisp',
       'Nasalization',
