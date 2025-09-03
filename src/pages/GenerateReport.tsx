@@ -37,13 +37,11 @@ const GenerateReportContent = () => {
                 <Button
                   variant='outline'
                   size='sm'
-                  onClick={() => navigate('/reports')}
+                  onClick={() => navigate(-1)}
                   className='flex items-center gap-2'>
                   <ArrowLeft className='w-4 h-4' />
-                  Back to Reports
+                  Back
                 </Button>
-
-                <Breadcrumb></Breadcrumb>
               </div>
 
               {/* Page Header */}

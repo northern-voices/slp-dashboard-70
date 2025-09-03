@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { screeningsApi } from '@/api/screenings'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { speechScreeningsApi } from '@/api/speechscreenings'
 
 export const useScreenings = () => {
   const { user } = useAuth()
@@ -114,5 +115,23 @@ export const useScreeningsBySchool = (schoolId?: string) => {
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
     enabled: !!schoolId && !!user && !!userProfile,
+  })
+}
+
+export const useSpeechScreeningsByStudent = (studentId?: string) => {
+  const { user } = useAuth()
+  const { userProfile } = useOrganization()
+
+  return useQuery({
+    queryKey: ['speech-screenings', 'by-student', studentId, user?.id, userProfile?.role],
+    queryFn: () =>
+      speechScreeningsApi.getSpeechScreeningsByStudent(
+        studentId!,
+        user?.id,
+        userProfile?.role as 'admin' | 'slp'
+      ),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: !!studentId && !!user && !!userProfile,
   })
 }

@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, Plus, Home } from 'lucide-react'
+import { CheckCircle, Plus, List } from 'lucide-react'
 
 interface SubmissionConfirmationModalProps {
   isOpen: boolean
@@ -49,15 +49,15 @@ const SubmissionConfirmationModal: React.FC<SubmissionConfirmationModalProps> = 
             <Button
               onClick={onNewScreening}
               className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
-              <Plus className='w-4 h-4 mr-2' />
+              <Plus className='w-4 h-4' />
               Submit New Screening
             </Button>
             <Button
               onClick={onGoToDashboard}
               variant='outline'
               className='w-full sm:w-auto px-6 py-2'>
-              <Home className='w-4 h-4 mr-2' />
-              Go to Dashboard
+              <List className='w-4 h-4' />
+              Go to Screenings
             </Button>
           </div>
         </div>
