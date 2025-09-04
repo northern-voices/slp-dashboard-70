@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -21,12 +21,10 @@ import { Student } from '@/types/database'
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import { Screening } from '@/types/database'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import {
@@ -44,33 +42,6 @@ const IndividualStudentReports = () => {
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
 
-  // Custom CSS to remove the blue outline from the select component
-  React.useEffect(() => {
-    const style = document.createElement('style')
-    style.textContent = `
-      .no-select-outline {
-        outline: none !important;
-        box-shadow: none !important;
-      }
-      .no-select-outline:focus {
-        outline: none !important;
-        box-shadow: none !important;
-      }
-      .no-select-outline[data-state="open"] {
-        outline: none !important;
-        box-shadow: none !important;
-      }
-      .no-select-outline[data-state="closed"] {
-        outline: none !important;
-        box-shadow: none !important;
-      }
-    `
-    document.head.appendChild(style)
-
-    return () => {
-      document.head.removeChild(style)
-    }
-  }, [])
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
@@ -86,15 +57,6 @@ const IndividualStudentReports = () => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
-
-  const handleGenerateReport = (reportType: string) => {
-    if (!selectedStudent) {
-      console.log('Cannot generate report: No student selected')
-      return
-    }
-    console.log(`Generating ${reportType} for student:`, selectedStudent.id)
-    // TODO: Implement individual report generation
-  }
 
   const getAvailableReports = () => {
     return [
