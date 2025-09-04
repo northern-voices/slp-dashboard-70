@@ -96,22 +96,18 @@ const IndividualStudentReports = () => {
       for (const reportType of selectedReports) {
         let result
 
-        switch (reportType) {
-          case 'progress-report':
-            result = await edgeFunctionsApi.studentProgressReport(
-              selectedScreening.id,
-              recipientEmail
-            )
-            break
-          case 'student-report':
-            result = await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
-            break
-          case 'goal-sheet':
-            result = await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
-            break
-          default:
-            console.warn(`Unknown report type: ${reportType}`)
-            continue
+        if (reportType === 'progress-report') {
+          result = await edgeFunctionsApi.studentProgressReport(
+            selectedScreening.id,
+            recipientEmail
+          )
+        } else if (reportType === 'student-report') {
+          result = await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
+        } else if (reportType === 'goal-sheet') {
+          result = await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
+        } else {
+          console.warn(`Unknown report type: ${reportType}`)
+          continue // skip to next iteration
         }
 
         console.log(`${reportType} triggered successfully:`, result)
