@@ -106,6 +106,9 @@ const IndividualStudentReports = () => {
           case 'student-report':
             result = await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
             break
+          case 'goal-sheet':
+            result = await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
+            break
           default:
             console.warn(`Unknown report type: ${reportType}`)
             continue
