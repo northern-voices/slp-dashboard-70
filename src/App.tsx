@@ -201,6 +201,11 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+              {/* Redirect /reports to /speech-screening-reports for consistency */}
+              <Route
+                path='/reports'
+                element={<Navigate to='/speech-screening-reports' replace />}
+              />
               <Route
                 path='/speech-screening-reports'
                 element={

@@ -21,16 +21,15 @@ const QuickActions = () => {
     //   description: 'Conduct hearing assessment',
     //   icon: Volume2,
     //   color: 'bg-teal-600 hover:bg-teal-700',
-    //   action: () => navigate('/screening/hearing')
+    //   action: () => navigate('/screening/hearing'),
     // },
-    // TODO: Uncomment report generation is working
-    // {
-    //   title: 'Generate Report',
-    //   description: 'Create comprehensive reports',
-    //   icon: FileText,
-    //   color: 'bg-indigo-600 hover:bg-indigo-700',
-    //   action: () => navigate('/reports'),
-    // },
+    {
+      title: 'Generate Report',
+      description: 'Create comprehensive reports',
+      icon: FileText,
+      color: 'bg-indigo-600 hover:bg-indigo-700',
+      action: () => navigate('/speech-screening-reports'),
+    },
   ]
 
   return (
