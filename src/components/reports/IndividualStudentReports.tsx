@@ -60,12 +60,13 @@ const IndividualStudentReports = () => {
 
   const getAvailableReports = () => {
     return [
-      {
-        value: 'progress-report',
-        label: 'Progress Report',
-        description: 'Comprehensive progress summary showing achievements and therapy outcomes',
-        icon: TrendingUp,
-      },
+      // TODO: Leave commented for now until Lisa decides what to do
+      // {
+      //   value: 'progress-report',
+      //   label: 'Progress Report',
+      //   description: 'Comprehensive progress summary showing achievements and therapy outcomes',
+      //   icon: TrendingUp,
+      // },
       {
         value: 'student-report',
         label: 'Student Report',
