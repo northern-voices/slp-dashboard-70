@@ -19,10 +19,10 @@ export const edgeFunctionsApi = {
       if (error) {
         console.error('Error:', error)
         throw error
-      } else {
-        console.log('Success:', data)
-        return data
       }
+
+      console.log('Success:', data)
+      return data
     } catch (error) {
       console.error('Failed to send student progress report:', error)
       throw error
@@ -41,10 +41,32 @@ export const edgeFunctionsApi = {
       if (error) {
         console.error('Error:', error)
         throw error
-      } else {
-        console.log('Success:', data)
-        return data
       }
+
+      console.log('Success:', data)
+      return data
+    } catch (error) {
+      console.error('Failed to generate student report:', error)
+      throw error
+    }
+  },
+
+  async studentGoalSheet(speechScreeningId: string, overrideEmail: string) {
+    try {
+      const { data, error } = await supabase.functions.invoke('student-goal-sheet', {
+        body: {
+          speech_screening_id: speechScreeningId,
+          override_email: overrideEmail,
+        },
+      })
+
+      if (error) {
+        console.error('Error:', error)
+        throw error
+      }
+
+      console.log('Success', data)
+      return data
     } catch (error) {
       console.error('Failed to generate student report:', error)
       throw error

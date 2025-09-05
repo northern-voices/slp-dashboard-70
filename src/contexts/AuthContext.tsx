@@ -111,8 +111,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session)
-
       if (session?.user) {
         // TODO: fetch additional user data from your profiles table here
         const transformedUser = transformUser(session.user)
