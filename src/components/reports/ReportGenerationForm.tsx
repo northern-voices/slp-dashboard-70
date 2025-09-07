@@ -39,11 +39,22 @@ type ReportFormData = z.infer<typeof reportSchema>
 const ReportGenerationForm = () => {
   const { toast } = useToast()
 
+  const currentYear = new Date().getFullYear()
+  const currentMonth = new Date().getMonth() // 0-11, where 0 is January
+
+  // Determine current school year: if we're before September, we're in the previous school year
+  // If we're September or later, we're in the current school year
+  const currentSchoolYear = currentMonth < 8 ? currentYear - 1 : currentYear
+  const currentAcademicYear = `${currentSchoolYear}-${currentSchoolYear + 1}`
+
+  // Generate academic years with previous years first, then current year
+  const academicYears = [`${currentSchoolYear - 1}-${currentSchoolYear}`, currentAcademicYear]
+
   const form = useForm<ReportFormData>({
     resolver: zodResolver(reportSchema),
     defaultValues: {
       reportType: '',
-      academicYear: '',
+      academicYear: currentAcademicYear,
       grades: [],
       email: '',
     },
@@ -79,13 +90,6 @@ const ReportGenerationForm = () => {
         'Creates comprehensive progress reports highlighting improvements, challenges, and next steps for continued therapy. Shared with parents, teachers, and administrators.',
       group: 'tracking',
     },
-  ]
-
-  const currentYear = new Date().getFullYear()
-  const academicYears = [
-    `${currentYear - 1}-${currentYear}`,
-    `${currentYear}-${currentYear + 1}`,
-    `${currentYear + 1}-${currentYear + 2}`,
   ]
 
   const selectedReportType = form.watch('reportType')
