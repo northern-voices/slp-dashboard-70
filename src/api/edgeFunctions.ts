@@ -80,7 +80,7 @@ export const edgeFunctionsApi = {
   ) {
     try {
       const { data, error } = await supabase.functions.invoke(
-        'class-wide-student-progress-report',
+        'school-wide-student-progress-report',
         {
           body: {
             school_id: schoolId,
