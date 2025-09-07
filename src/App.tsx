@@ -18,7 +18,7 @@ import MonthlyProgressCheck from './pages/student/MonthlyProgressCheck'
 import GenerateGoalSheet from './pages/student/GenerateGoalSheet'
 import Screenings from './pages/Screenings'
 import Reports from './pages/Reports'
-import GenerateReport from './pages/GenerateReport'
+import ClassWideReports from './pages/ClassWideReports'
 import IndividualReports from './pages/IndividualReports'
 import ReportDetail from './pages/ReportDetail'
 import Management from './pages/Management'
@@ -221,7 +221,7 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
-                      <GenerateReport />
+                      <ClassWideReports />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
@@ -420,7 +420,7 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
-                      <GenerateReport />
+                      <ClassWideReports />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }

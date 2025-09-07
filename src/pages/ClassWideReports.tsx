@@ -15,7 +15,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import ReportGenerationForm from '@/components/reports/ReportGenerationForm'
-const GenerateReportContent = () => {
+const ClassWideReportsContent = () => {
   const { userProfile } = useOrganization()
   const navigate = useNavigate()
   const userRole = userProfile?.role || 'slp'
@@ -66,6 +66,6 @@ const GenerateReportContent = () => {
   )
 }
 const GenerateReport = () => {
-  return <GenerateReportContent />
+  return <ClassWideReportsContent />
 }
 export default GenerateReport
