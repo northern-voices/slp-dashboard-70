@@ -1,5 +1,5 @@
-import React from 'react'
 import { useForm } from 'react-hook-form'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { ReportService } from '@/services/reportService'
+import { edgeFunctionsApi } from '@/api/edgeFunctions'
 
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
@@ -35,6 +36,7 @@ const reportSchema = z.object({
 type ReportFormData = z.infer<typeof reportSchema>
 
 const ReportGenerationForm = () => {
+  const { currentSchool } = useOrganization()
   const { toast } = useToast()
 
   const currentYear = new Date().getFullYear()
@@ -101,12 +103,19 @@ const ReportGenerationForm = () => {
         screeningReports.find(type => type.value === data.reportType)?.label
       } - ${data.academicYear}`
 
-      await ReportService.generateReport(data.reportType, {
-        title: reportTitle,
-        academicYear: data.academicYear,
-        email: data.email,
-        reportType: data.reportType,
-      })
+      console.log(currentSchool.id, data.academicYear, data.email)
+
+      try {
+        const result = await edgeFunctionsApi.schoolWideStudentProgressReport(
+          currentSchool.id,
+          data.academicYear,
+          data.email
+        )
+
+        console.log(result, 'result')
+      } catch (error) {
+        console.error('Error sending email:', error)
+      }
 
       toast({
         title: 'Report Generation Started',
