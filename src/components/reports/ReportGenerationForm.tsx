@@ -195,7 +195,13 @@ const ReportGenerationForm = () => {
                                 <Tooltip key={type.value}>
                                   <TooltipTrigger asChild>
                                     <div
-                                      onClick={() => field.onChange(type.value)}
+                                      onClick={() => {
+                                        if (isSelected) {
+                                          field.onChange('')
+                                        } else {
+                                          field.onChange(type.value)
+                                        }
+                                      }}
                                       className={`
                                         relative cursor-pointer rounded-lg border-2 p-3 sm:p-4 transition-all duration-200 w-full
                                         ${
@@ -281,7 +287,7 @@ const ReportGenerationForm = () => {
                       type='button'
                       variant='outline'
                       onClick={handleClearForm}
-                      className='w-full sm:w-auto'
+                      className='h-9 w-full'
                       disabled={isSubmitting}>
                       Clear Form
                     </Button>
@@ -293,14 +299,17 @@ const ReportGenerationForm = () => {
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button type='submit' className='w-full sm:w-auto' disabled={isSubmitting}>
+                    <Button
+                      type='submit'
+                      className='h-9 bg-blue-600 hover:bg-blue-700 text-white w-full'
+                      disabled={isSubmitting}>
                       {isSubmitting ? (
                         <>
                           <LoadingSpinner size='sm' className='mr-2' />
-                          Generating Report...
+                          Sending...
                         </>
                       ) : (
-                        'Generate Report'
+                        'Send Reports'
                       )}
                     </Button>
                   </TooltipTrigger>
