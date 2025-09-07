@@ -47,10 +47,10 @@ const ClassWideReportsContent = () => {
               {/* Page Header */}
               <div className='space-y-1 sm:space-y-2'>
                 <h1 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900'>
-                  Generate Report
+                  Class Wide Reports
                 </h1>
                 <p className='text-sm sm:text-base text-gray-600'>
-                  Create comprehensive class-wide reports for students
+                  Generate comprehensive class-wide reports for students
                 </p>
               </div>
 
