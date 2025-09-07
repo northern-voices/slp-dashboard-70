@@ -298,32 +298,6 @@ const IndividualStudentReports = () => {
                   className='h-12'
                 />
               </div>
-
-              {/* <div className='space-y-1'>
-                <Label htmlFor='subject' className='text-sm font-medium'>
-                  Subject
-                </Label>
-                <Input
-                  id='subject'
-                  value={`Reports for ${selectedStudent.first_name} ${selectedStudent.last_name}`}
-                  disabled
-                  className='bg-gray-50 h-9'
-                />
-              </div>
-
-              <div className='space-y-1'>
-                <Label htmlFor='message' className='text-sm font-medium'>
-                  Custom Message (Optional)
-                </Label>
-                <Textarea
-                  id='message'
-                  placeholder='Add a personal message to include with the reports...'
-                  value={customMessage}
-                  onChange={e => setCustomMessage(e.target.value)}
-                  rows={3}
-                  className='text-sm'
-                />
-              </div> */}
             </div>
           </div>
 
