@@ -22,7 +22,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import Multiselect from '@/components/ui/multiselect'
 import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { ReportService } from '@/services/reportService'
@@ -30,7 +29,6 @@ import { ReportService } from '@/services/reportService'
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
   academicYear: z.string().min(1, 'Please select an academic year'),
-  grades: z.array(z.string()).min(1, 'Please select at least one grade'),
   email: z.string().email('Please enter a valid email address'),
 })
 
@@ -55,7 +53,6 @@ const ReportGenerationForm = () => {
     defaultValues: {
       reportType: '',
       academicYear: currentAcademicYear,
-      grades: [],
       email: '',
     },
   })
@@ -107,7 +104,6 @@ const ReportGenerationForm = () => {
       await ReportService.generateReport(data.reportType, {
         title: reportTitle,
         academicYear: data.academicYear,
-        grades: data.grades,
         email: data.email,
         reportType: data.reportType,
       })
@@ -301,6 +297,7 @@ const ReportGenerationForm = () => {
                   <TooltipTrigger asChild>
                     <Button
                       type='submit'
+                      variant='default'
                       className='h-9 bg-blue-600 hover:bg-blue-700 text-white w-full'
                       disabled={isSubmitting}>
                       {isSubmitting ? (
