@@ -216,6 +216,7 @@ const ScreeningsFilters = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='all'>All Grades</SelectItem>
+                    <SelectItem value='Headstart'>Headstart</SelectItem>
                     <SelectItem value='Nursery'>Nursery</SelectItem>
                     <SelectItem value='Pre-K'>Pre-K</SelectItem>
                     <SelectItem value='K4'>K4</SelectItem>
