@@ -9,6 +9,7 @@ interface GradesFilterSectionProps {
 
 const GradesFilterSection = ({ selected, onChange }: GradesFilterSectionProps) => {
   const gradeOptions = [
+    'Headstart',
     'Nursery',
     'Pre-K',
     'K4',

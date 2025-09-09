@@ -30,6 +30,7 @@ interface SpeechScreeningStep1Props {
 }
 
 const gradeMapping = [
+  { display: 'Headstart', value: 'Headstart' },
   { display: 'Nursery', value: 'Nursery' },
   { display: 'Pre-K', value: 'Pre-K' },
   { display: 'K4', value: 'K4' },
