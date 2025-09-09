@@ -11,6 +11,7 @@ interface GradeManagementProps {
 }
 
 const AVAILABLE_GRADES = [
+  'Headstart',
   'Nursery',
   'PreK',
   'K4',
@@ -43,6 +44,7 @@ const AVAILABLE_GRADES = [
 ]
 
 const GRADE_LABELS: Record<string, string> = {
+  Headstart: 'Headstart',
   Nursery: 'Nursery',
   PreK: 'Pre-K',
   K4: 'K4',

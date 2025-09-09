@@ -1,125 +1,129 @@
-import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { useToast } from '@/hooks/use-toast'
 
 export const useManagement = () => {
-  const [schoolFormOpen, setSchoolFormOpen] = useState(false);
-  const [schoolDetailsOpen, setSchoolDetailsOpen] = useState(false);
-  const [userInviteOpen, setUserInviteOpen] = useState(false);
-  const [notificationSettingsOpen, setNotificationSettingsOpen] = useState(false);
-  const [screeningTemplatesOpen, setScreeningTemplatesOpen] = useState(false);
-  const [organizationSettingsOpen, setOrganizationSettingsOpen] = useState(false);
-  const [editingSchool, setEditingSchool] = useState(null);
-  const [selectedSchool, setSelectedSchool] = useState(null);
-  const [schoolSearch, setSchoolSearch] = useState('');
-  const { toast } = useToast();
+  const [schoolFormOpen, setSchoolFormOpen] = useState(false)
+  const [schoolDetailsOpen, setSchoolDetailsOpen] = useState(false)
+  const [userInviteOpen, setUserInviteOpen] = useState(false)
+  const [notificationSettingsOpen, setNotificationSettingsOpen] = useState(false)
+  const [screeningTemplatesOpen, setScreeningTemplatesOpen] = useState(false)
+  const [organizationSettingsOpen, setOrganizationSettingsOpen] = useState(false)
+  const [editingSchool, setEditingSchool] = useState(null)
+  const [selectedSchool, setSelectedSchool] = useState(null)
+  const [schoolSearch, setSchoolSearch] = useState('')
+  const { toast } = useToast()
 
   const [mockSchools, setMockSchools] = useState([
     {
       id: 1,
-      name: "Lincoln Elementary School",
-      address: "123 Main St, Springfield, IL",
-      principal: "Dr. Jane Smith",
-      principalEmail: "jsmith@springfield.edu",
-      phone: "(555) 123-4567",
-      district: "Springfield District 22",
+      name: 'Lincoln Elementary School',
+      address: '123 Main St, Springfield, IL',
+      principal: 'Dr. Jane Smith',
+      principalEmail: 'jsmith@springfield.edu',
+      phone: '(555) 123-4567',
+      district: 'Springfield District 22',
       studentCount: 245,
       slpCount: 2,
-      status: "active",
-      grades: ["K", "1", "2", "3", "4", "5"],
-      notes: "Renovated building in 2022"
+      status: 'active',
+      grades: ['K', '1', '2', '3', '4', '5'],
+      notes: 'Renovated building in 2022',
     },
     {
       id: 2,
-      name: "Washington Middle School",
-      address: "456 Oak Ave, Springfield, IL",
-      principal: "Mr. John Davis",
-      principalEmail: "jdavis@springfield.edu",
-      phone: "(555) 987-6543",
-      district: "Springfield District 22",
+      name: 'Washington Middle School',
+      address: '456 Oak Ave, Springfield, IL',
+      principal: 'Mr. John Davis',
+      principalEmail: 'jdavis@springfield.edu',
+      phone: '(555) 987-6543',
+      district: 'Springfield District 22',
       studentCount: 380,
       slpCount: 3,
-      status: "active",
-      grades: ["6", "7", "8"],
-      notes: "STEM focus program"
-    }
-  ]);
+      status: 'active',
+      grades: ['6', '7', '8'],
+      notes: 'STEM focus program',
+    },
+  ])
 
   const [mockSLPs, setMockSLPs] = useState([
     {
-      id: "1",
-      name: "Dr. Sarah Johnson",
-      email: "sarah.johnson@district.edu",
-      schools: ["Lincoln Elementary", "Roosevelt High"],
-      role: "slp",
-      status: "active",
-      lastActive: "2024-11-20",
-      licenseNumber: "SLP-12345"
+      id: '1',
+      name: 'Dr. Sarah Johnson',
+      email: 'sarah.johnson@district.edu',
+      schools: ['Lincoln Elementary', 'Roosevelt High'],
+      role: 'slp',
+      status: 'active',
+      lastActive: '2024-11-20',
+      licenseNumber: 'SLP-12345',
     },
     {
-      id: "2",
-      name: "Ms. Emily Chen",
-      email: "emily.chen@district.edu",
-      schools: ["Washington Middle"],
-      role: "supervisor",
-      status: "active",
-      lastActive: "2024-11-19",
-      licenseNumber: "SLP-67890"
-    }
-  ]);
+      id: '2',
+      name: 'Ms. Emily Chen',
+      email: 'emily.chen@district.edu',
+      schools: ['Washington Middle'],
+      role: 'supervisor',
+      status: 'active',
+      lastActive: '2024-11-19',
+      licenseNumber: 'SLP-67890',
+    },
+  ])
 
   const filteredSchools = mockSchools.filter(school =>
     school.name.toLowerCase().includes(schoolSearch.toLowerCase())
-  );
+  )
 
   const handleSaveSchool = (schoolData: any) => {
     if (editingSchool) {
-      setMockSchools(prev => prev.map(school => 
-        school.id === editingSchool.id ? { 
-          ...school, 
-          ...schoolData,
-          grades: schoolData.grades || [] 
-        } : school
-      ));
+      setMockSchools(prev =>
+        prev.map(school =>
+          school.id === editingSchool.id
+            ? {
+                ...school,
+                ...schoolData,
+                grades: schoolData.grades || [],
+              }
+            : school
+        )
+      )
     } else {
       const newSchool = {
         id: mockSchools.length + 1,
         ...schoolData,
         studentCount: 0,
         slpCount: 0,
-        grades: schoolData.grades || []
-      };
-      setMockSchools(prev => [...prev, newSchool]);
+        grades: schoolData.grades || [],
+      }
+      setMockSchools(prev => [...prev, newSchool])
     }
-    setEditingSchool(null);
-  };
+    setEditingSchool(null)
+  }
 
   const handleEditSchool = (school: any) => {
-    setEditingSchool(school);
-    setSchoolFormOpen(true);
-  };
+    setEditingSchool(school)
+    setSchoolFormOpen(true)
+  }
 
   const handleViewSchoolDetails = (school: any) => {
-    setSelectedSchool(school);
-    setSchoolDetailsOpen(true);
-  };
+    setSelectedSchool(school)
+    setSchoolDetailsOpen(true)
+  }
 
   const handleEditFromDetails = (school: any) => {
-    setSchoolDetailsOpen(false);
-    setEditingSchool(school);
-    setSchoolFormOpen(true);
-  };
+    setSchoolDetailsOpen(false)
+    setEditingSchool(school)
+    setSchoolFormOpen(true)
+  }
 
   const handleDeleteSchool = (schoolId: number) => {
-    const schoolToDelete = mockSchools.find(school => school.id === schoolId);
-    setMockSchools(prev => prev.filter(school => school.id !== schoolId));
-    
+    const schoolToDelete = mockSchools.find(school => school.id === schoolId)
+    setMockSchools(prev => prev.filter(school => school.id !== schoolId))
+
     toast({
-      title: "School deleted",
+      title: 'School deleted',
       description: `${schoolToDelete?.name} has been successfully deleted.`,
-      variant: "destructive",
-    });
-  };
+      variant: 'destructive',
+    })
+  }
 
   const handleInviteUser = (userData: any) => {
     const newUser = {
@@ -128,46 +132,49 @@ export const useManagement = () => {
       email: userData.email,
       role: userData.role,
       status: 'pending',
-      schools: userData.selectedSchools.map((id: string) => 
-        mockSchools.find(school => school.id.toString() === id)?.name || ''
-      ).filter(Boolean),
+      schools: userData.selectedSchools
+        .map((id: string) => mockSchools.find(school => school.id.toString() === id)?.name || '')
+        .filter(Boolean),
       lastActive: 'Never',
-      licenseNumber: userData.licenseNumber
-    };
-    setMockSLPs(prev => [...prev, newUser]);
-  };
+      licenseNumber: userData.licenseNumber,
+    }
+    setMockSLPs(prev => [...prev, newUser])
+  }
 
   const handleEditUser = (user: any) => {
-    console.log('Edit user:', user);
-  };
+    console.log('Edit user:', user)
+  }
 
   const handleDeactivateUser = (userId: string) => {
-    setMockSLPs(prev => prev.map(user => 
-      user.id === userId 
-        ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
-        : user
-    ));
-  };
+    setMockSLPs(prev =>
+      prev.map(user =>
+        user.id === userId
+          ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
+          : user
+      )
+    )
+  }
 
   const handleResendInvite = (userId: string) => {
-    console.log('Resend invite to user:', userId);
-  };
+    console.log('Resend invite to user:', userId)
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+        return <Badge className='bg-green-100 text-green-800'>Active</Badge>
       case 'inactive':
-        return <Badge variant="outline">Inactive</Badge>;
+        return <Badge variant='outline'>Inactive</Badge>
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant='secondary'>{status}</Badge>
     }
-  };
+  }
 
   const getGradeLabel = (grade: string) => {
     const gradeLabels: Record<string, string> = {
-      'PreK': 'Pre-K',
-      'K': 'Kindergarten',
+      Headstart: 'Headstart',
+      PreK: 'Pre-K',
+      K: 'Kindergarten',
       '1': '1st Grade',
       '2': '2nd Grade',
       '3': '3rd Grade',
@@ -179,11 +186,11 @@ export const useManagement = () => {
       '9': '9th Grade',
       '10': '10th Grade',
       '11': '11th Grade',
-      '12': '12th Grade'
-    };
-    
-    return gradeLabels[grade] || grade;
-  };
+      '12': '12th Grade',
+    }
+
+    return gradeLabels[grade] || grade
+  }
 
   return {
     // State
@@ -199,7 +206,7 @@ export const useManagement = () => {
     mockSchools,
     mockSLPs,
     filteredSchools,
-    
+
     // Setters
     setSchoolFormOpen,
     setSchoolDetailsOpen,
@@ -210,7 +217,7 @@ export const useManagement = () => {
     setEditingSchool,
     setSelectedSchool,
     setSchoolSearch,
-    
+
     // Handlers
     handleSaveSchool,
     handleEditSchool,
@@ -222,6 +229,6 @@ export const useManagement = () => {
     handleDeactivateUser,
     handleResendInvite,
     getStatusBadge,
-    getGradeLabel
-  };
-};
+    getGradeLabel,
+  }
+}

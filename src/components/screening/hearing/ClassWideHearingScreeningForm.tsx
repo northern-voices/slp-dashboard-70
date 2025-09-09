@@ -55,6 +55,7 @@ const ClassWideHearingScreeningForm = ({
   })
 
   const grades = [
+    'Headstart',
     'Nursery',
     'Pre-K',
     'K4',

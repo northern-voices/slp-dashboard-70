@@ -124,6 +124,7 @@ const StudentForm = ({ isOpen, onClose, onSubmit, student, title }: StudentFormP
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value='Headstart'>Headstart</SelectItem>
                         <SelectItem value='Nursery'>Nursery</SelectItem>
                         <SelectItem value='PreK'>Pre-K</SelectItem>
                         <SelectItem value='K4'>K4</SelectItem>
