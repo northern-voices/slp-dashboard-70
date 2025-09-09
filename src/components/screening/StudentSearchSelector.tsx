@@ -178,6 +178,7 @@ const StudentSearchSelector = ({
       toast({
         title: 'Success',
         description: `Student ${newStudent.first_name} ${newStudent.last_name} created successfully.`,
+        variant: 'top-right',
       })
 
       // Select the newly created student
