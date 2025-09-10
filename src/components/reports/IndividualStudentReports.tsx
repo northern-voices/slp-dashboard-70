@@ -95,29 +95,22 @@ const IndividualStudentReports = () => {
     try {
       // Process each selected report type
       for (const reportType of selectedReports) {
-        let result
-
         if (reportType === 'progress-report') {
-          result = await edgeFunctionsApi.studentProgressReport(
-            selectedScreening.id,
-            recipientEmail
-          )
+          await edgeFunctionsApi.studentProgressReport(selectedScreening.id, recipientEmail)
         } else if (reportType === 'student-report') {
-          result = await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
+          await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
         } else if (reportType === 'goal-sheet') {
-          result = await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
+          await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
         } else {
           console.warn(`Unknown report type: ${reportType}`)
           continue // skip to next iteration
         }
-
-        console.log(`${reportType} triggered successfully:`, result)
       }
 
       // Show success modal if any reports were processed
       if (selectedReports.length > 0) {
         setModalType('success')
-        setModalMessage(`Report(s) sent successfully to ${recipientEmail}`)
+        setModalMessage(`Reports sent successfully to ${recipientEmail}`)
         setIsSuccessModalOpen(true)
       }
     } catch (error) {

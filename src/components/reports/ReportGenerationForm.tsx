@@ -68,7 +68,6 @@ const ReportGenerationForm = () => {
       icon: Mic,
       tooltip:
         'Produces comprehensive speech screening reports with articulation assessments, language evaluations, and therapy recommendations. Perfect for SLPs and special education teams.',
-      group: 'screening',
     },
     {
       value: 'goal-sheets',
@@ -78,7 +77,6 @@ const ReportGenerationForm = () => {
       icon: Target,
       tooltip:
         'Generates customized goal sheets with specific objectives, progress tracking metrics, and intervention strategies for each student. Used by therapists and IEP teams.',
-      group: 'tracking',
     },
     {
       value: 'progress-reports',
@@ -87,35 +85,33 @@ const ReportGenerationForm = () => {
       icon: TrendingUp,
       tooltip:
         'Creates comprehensive progress reports highlighting improvements, challenges, and next steps for continued therapy. Shared with parents, teachers, and administrators.',
-      group: 'tracking',
     },
   ]
 
-  const selectedReportType = form.watch('reportType')
   const isSubmitting = form.formState.isSubmitting
 
   const onSubmit = async (data: ReportFormData) => {
+    console.log(data, 'data from the form')
+
     try {
-      console.log('Generating report with data:', data)
+      console.log('Generating report with data:', data.reportType)
 
-      // Use the static method from ReportService
-      const reportTitle = `${
-        screeningReports.find(type => type.value === data.reportType)?.label
-      } - ${data.academicYear}`
-
-      console.log(currentSchool.id, data.academicYear, data.email)
-
-      try {
-        const result = await edgeFunctionsApi.schoolWideStudentProgressReport(
+      let result
+      if (data.reportType === 'progress-reports') {
+        result = await edgeFunctionsApi.schoolWideStudentProgressReport(
           currentSchool.id,
           data.academicYear,
           data.email
         )
-
-        console.log(result, 'result')
-      } catch (error) {
-        console.error('Error sending email:', error)
+      } else if (data.reportType === 'goal-sheets') {
+        result = await edgeFunctionsApi.schoolWideStudentGoalSheets(
+          currentSchool.id,
+          data.academicYear,
+          data.email
+        )
       }
+
+      console.log(result, 'result')
 
       toast({
         title: 'Report Generation Started',

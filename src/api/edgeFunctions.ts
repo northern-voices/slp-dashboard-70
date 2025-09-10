@@ -102,4 +102,27 @@ export const edgeFunctionsApi = {
       throw error
     }
   },
+
+  async schoolWideStudentGoalSheets(schoolId: string, academicYear: string, overrideEmail: string) {
+    try {
+      const { data, error } = await supabase.functions.invoke('school-wide-student-goal-sheets', {
+        body: {
+          school_id: schoolId,
+          academic_year: academicYear,
+          override_email: overrideEmail,
+        },
+      })
+
+      if (error) {
+        console.error('Error', error)
+        throw error
+      }
+
+      console.log('Success', data) // TODO: Temporary only remove this
+      return data
+    } catch (error) {
+      console.error('Failed to generate school wide student goal sheet:', error)
+      throw error
+    }
+  },
 }
