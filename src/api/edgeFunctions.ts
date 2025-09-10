@@ -125,4 +125,31 @@ export const edgeFunctionsApi = {
       throw error
     }
   },
+
+  async schoolWideSendStudentReports(
+    schoolId: string,
+    academicYear: string,
+    overrideEmail: string
+  ) {
+    try {
+      const { data, error } = await supabase.functions.invoke('school-wide-send-student-report', {
+        body: {
+          school_id: schoolId,
+          academic_year: academicYear,
+          override_email: overrideEmail,
+        },
+      })
+
+      if (error) {
+        console.error('Error', error)
+        throw error
+      }
+
+      console.log('Success', data) // TODO: Temporary only
+      return data
+    } catch (error) {
+      console.error('Failed to send school wide student reports:', error)
+      throw error
+    }
+  },
 }

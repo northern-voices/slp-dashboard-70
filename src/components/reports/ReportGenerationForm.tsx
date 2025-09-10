@@ -61,8 +61,8 @@ const ReportGenerationForm = () => {
 
   const screeningReports = [
     {
-      value: 'speech-screens',
-      label: 'Class Wide Speech Screens',
+      value: 'student-reports',
+      label: 'Class Wide Student Reports',
       description:
         'Create detailed speech assessment reports covering multiple students in a class',
       icon: Mic,
@@ -109,6 +109,14 @@ const ReportGenerationForm = () => {
           data.academicYear,
           data.email
         )
+      } else if (data.reportType === 'student-reports') {
+        result = await edgeFunctionsApi.schoolWideSendStudentReports(
+          currentSchool.id,
+          data.academicYear,
+          data.email
+        )
+      } else {
+        console.warn(`Unknown report type: ${data.reportType}`)
       }
 
       console.log(result, 'result')
