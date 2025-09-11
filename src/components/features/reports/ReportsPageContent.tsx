@@ -45,7 +45,7 @@ const ReportsPageContent = () => {
                     <FileText className='w-6 h-6 text-green-600' />
                   </div>
                   <div className='flex-1'>
-                    <h3 className='text-lg font-semibold text-gray-900'>School-Wide Reports</h3>
+                    <h3 className='text-lg font-semibold text-gray-900'>Class Wide Reports</h3>
                   </div>
                 </div>
               </CardContent>

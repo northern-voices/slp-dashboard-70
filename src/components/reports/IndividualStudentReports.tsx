@@ -95,29 +95,22 @@ const IndividualStudentReports = () => {
     try {
       // Process each selected report type
       for (const reportType of selectedReports) {
-        let result
-
         if (reportType === 'progress-report') {
-          result = await edgeFunctionsApi.studentProgressReport(
-            selectedScreening.id,
-            recipientEmail
-          )
+          await edgeFunctionsApi.studentProgressReport(selectedScreening.id, recipientEmail)
         } else if (reportType === 'student-report') {
-          result = await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
+          await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
         } else if (reportType === 'goal-sheet') {
-          result = await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
+          await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
         } else {
           console.warn(`Unknown report type: ${reportType}`)
           continue // skip to next iteration
         }
-
-        console.log(`${reportType} triggered successfully:`, result)
       }
 
       // Show success modal if any reports were processed
       if (selectedReports.length > 0) {
         setModalType('success')
-        setModalMessage(`Report(s) sent successfully to ${recipientEmail}`)
+        setModalMessage(`Reports sent successfully to ${recipientEmail}`)
         setIsSuccessModalOpen(true)
       }
     } catch (error) {
@@ -298,32 +291,6 @@ const IndividualStudentReports = () => {
                   className='h-12'
                 />
               </div>
-
-              {/* <div className='space-y-1'>
-                <Label htmlFor='subject' className='text-sm font-medium'>
-                  Subject
-                </Label>
-                <Input
-                  id='subject'
-                  value={`Reports for ${selectedStudent.first_name} ${selectedStudent.last_name}`}
-                  disabled
-                  className='bg-gray-50 h-9'
-                />
-              </div>
-
-              <div className='space-y-1'>
-                <Label htmlFor='message' className='text-sm font-medium'>
-                  Custom Message (Optional)
-                </Label>
-                <Textarea
-                  id='message'
-                  placeholder='Add a personal message to include with the reports...'
-                  value={customMessage}
-                  onChange={e => setCustomMessage(e.target.value)}
-                  rows={3}
-                  className='text-sm'
-                />
-              </div> */}
             </div>
           </div>
 
@@ -498,15 +465,18 @@ const SpeechScreeningsTable = ({
 
   const getQualificationBadge = (screening: Screening) => {
     const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
+    const sub = screening.error_patterns?.screening_metadata?.sub
 
-    if (qualifies === undefined || qualifies === null) {
+    if (qualifies === undefined && sub === undefined) {
       return <Badge className='bg-gray-100 text-gray-800 font-medium'>Not Set</Badge>
     }
 
-    if (qualifies) {
-      return <Badge className='bg-green-100 text-green-800 font-medium'>Program</Badge>
+    if (sub) {
+      return <Badge className='bg-orange-100 text-orange-800 font-medium'>Sub</Badge>
+    } else if (qualifies) {
+      return <Badge className='bg-red-100 text-red-800 font-medium'>Qualifies</Badge>
     } else {
-      return <Badge className='bg-red-100 text-red-800 font-medium'>Not In Program</Badge>
+      return <Badge className='bg-green-100 text-green-800 font-medium'>Not In Program</Badge>
     }
   }
 

@@ -21,7 +21,7 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success:', data)
+      console.log('Success', data) // TODO: Temporary remove this
       return data
     } catch (error) {
       console.error('Failed to send student progress report:', error)
@@ -43,7 +43,7 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success:', data)
+      console.log('Success', data) // TODO: Temporary remove this
       return data
     } catch (error) {
       console.error('Failed to generate student report:', error)
@@ -65,10 +65,90 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data)
+      console.log('Success', data) // TODO: Temporary remove this
       return data
     } catch (error) {
-      console.error('Failed to generate student report:', error)
+      console.error('Failed to generate student goal sheet:', error)
+      throw error
+    }
+  },
+
+  async schoolWideStudentProgressReport(
+    schoolId: string,
+    academicYear: string,
+    overrideEmail: string
+  ) {
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        'school-wide-student-progress-report',
+        {
+          body: {
+            school_id: schoolId,
+            academic_year: academicYear,
+            override_email: overrideEmail,
+          },
+        }
+      )
+
+      if (error) {
+        console.error('Error:', error)
+        throw error
+      }
+
+      console.log('Success', data) // TODO: Temporary remove this
+      return data
+    } catch (error) {
+      console.error('Failed to generate school wide student progress report:', error)
+      throw error
+    }
+  },
+
+  async schoolWideStudentGoalSheets(schoolId: string, academicYear: string, overrideEmail: string) {
+    try {
+      const { data, error } = await supabase.functions.invoke('school-wide-student-goal-sheets', {
+        body: {
+          school_id: schoolId,
+          academic_year: academicYear,
+          override_email: overrideEmail,
+        },
+      })
+
+      if (error) {
+        console.error('Error', error)
+        throw error
+      }
+
+      console.log('Success', data) // TODO: Temporary only remove this
+      return data
+    } catch (error) {
+      console.error('Failed to generate school wide student goal sheet:', error)
+      throw error
+    }
+  },
+
+  async schoolWideSendStudentReports(
+    schoolId: string,
+    academicYear: string,
+    overrideEmail: string
+  ) {
+    try {
+      const { data, error } = await supabase.functions.invoke('school-wide-send-student-report', {
+        body: {
+          school_id: schoolId,
+          academic_year: academicYear,
+          override_email: overrideEmail,
+        },
+      })
+
+      if (error) {
+        console.error('Error', error)
+        throw error
+      }
+
+      console.log('Success', data) // TODO: Temporary only
+      return data
+    } catch (error) {
+      console.error('Failed to send school wide student reports:', error)
       throw error
     }
   },
