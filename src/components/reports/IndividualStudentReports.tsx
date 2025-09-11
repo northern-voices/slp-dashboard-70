@@ -340,7 +340,7 @@ const IndividualStudentReports = () => {
       />
 
       {/* Success/Error Modal */}
-      <Dialog open={isSuccessModalOpen} onOpenChange={handleCloseModal}>
+      <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
         <DialogContent className='mx-auto'>
           <div className='flex flex-col items-center text-center space-y-6'>
             {/* Icon */}
