@@ -982,7 +982,9 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                     <>
                       {/* Error Patterns for this sound */}
                       <div className='mt-2 space-y-1'>
-                        {soundErrorPatterns[sound]?.patterns.map(pattern => {
+                        {soundErrorPatterns[sound]?.patterns.map(patternObj => {
+                          const pattern = patternObj.value
+                          const patternDisplay = patternObj.display
                           const currentPatterns = selectedErrorPatterns[sound] || []
 
                           // Global rule: "Other" disables all other patterns when selected, and other patterns disable "Other"
@@ -1165,7 +1167,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                                   className={`text-xs font-medium ${
                                     isDisabled ? 'text-gray-400' : ''
                                   }`}>
-                                  {pattern}
+                                  {patternDisplay}
                                 </Label>
                               </div>
 

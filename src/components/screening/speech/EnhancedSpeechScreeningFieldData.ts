@@ -37,7 +37,7 @@ export const articulationSounds = [
 export const soundErrorPatterns = {
   '2 syllables': {
     patterns: [
-      { value: 'Weak Syllable Deletion', display: 'Weak Syllable Deletion)' },
+      { value: 'Weak Syllable Deletion', display: 'Weak Syllable Deletion' },
       { value: 'Syllable Addition', display: 'Syllable Addition' },
     ],
     word: 'Apple',
@@ -100,9 +100,9 @@ export const soundErrorPatterns = {
   },
   'St-': {
     patterns: [
-      { value: 'Omits S', display: 'Omits S (-tar)' },
-      { value: 'Omits T', display: 'Omits T (S-ar)' },
-      { value: 'Omits ST', display: 'Omits ST (-ar)' },
+      { value: 'Omits S', display: 'Omits S [-tar]' },
+      { value: 'Omits T', display: 'Omits T [S-ar]' },
+      { value: 'Omits ST', display: 'Omits ST [-ar]' },
       { value: 'Frontal Lisp', display: 'Frontal Lisp' },
       { value: 'Lateral Lisp', display: 'Lateral Lisp' },
       { value: 'Nasalization', display: 'Nasalization' },
@@ -113,9 +113,9 @@ export const soundErrorPatterns = {
   },
   'Sp-': {
     patterns: [
-      { value: 'Omits S', display: 'Omits S (-poon)' },
-      { value: 'Omits P', display: 'Omits P (S-oon)' },
-      { value: 'Omits SP', display: 'Omits SP (-oon)' },
+      { value: 'Omits S', display: 'Omits S [-poon]' },
+      { value: 'Omits P', display: 'Omits P [S-oon]' },
+      { value: 'Omits SP', display: 'Omits SP [-oon]' },
       { value: 'Frontal Lisp', display: 'Frontal Lisp' },
       { value: 'Lateral Lisp', display: 'Lateral Lisp' },
       { value: 'Nasalization', display: 'Nasalization' },
@@ -125,9 +125,9 @@ export const soundErrorPatterns = {
   },
   'Sm-': {
     patterns: [
-      { value: 'Omits S', display: 'Omits S (-moke)' },
-      { value: 'Omits M', display: 'Omits M (S-oke)' },
-      { value: 'Omits SM', display: 'Omits SM (-oke)' },
+      { value: 'Omits S', display: 'Omits S [-moke]' },
+      { value: 'Omits M', display: 'Omits M [S-oke]' },
+      { value: 'Omits SM', display: 'Omits SM [-oke]' },
       { value: 'Frontal Lisp', display: 'Frontal Lisp' },
       { value: 'Lateral Lisp', display: 'Lateral Lisp' },
       { value: 'Nasalization', display: 'Nasalization' },
@@ -137,9 +137,9 @@ export const soundErrorPatterns = {
   },
   'Sn-': {
     patterns: [
-      { value: 'Omits S', display: 'Omits S (-now)' },
-      { value: 'Omits N', display: 'Omits N (S-ow)' },
-      { value: 'Omits SN', display: 'Omits SN (-ow)' },
+      { value: 'Omits S', display: 'Omits S [-now]' },
+      { value: 'Omits N', display: 'Omits N [S-ow]' },
+      { value: 'Omits SN', display: 'Omits SN [-ow]' },
       { value: 'Frontal Lisp', display: 'Frontal Lisp' },
       { value: 'Lateral Lisp', display: 'Lateral Lisp' },
       { value: 'Nasalization', display: 'Nasalization' },
@@ -149,9 +149,9 @@ export const soundErrorPatterns = {
   },
   'Sk-': {
     patterns: [
-      { value: 'Omits S', display: 'Omits S (-ky)' },
-      { value: 'Omits K', display: 'Omits K (S-y)' },
-      { value: 'Omits SK', display: 'Omits SK (-y)' },
+      { value: 'Omits S', display: 'Omits S [-ky]' },
+      { value: 'Omits K', display: 'Omits K [S-y]' },
+      { value: 'Omits SK', display: 'Omits SK [-y]' },
       { value: 'Frontal Lisp', display: 'Frontal Lisp' },
       { value: 'Lateral Lisp', display: 'Lateral Lisp' },
       { value: 'Nasalization', display: 'Nasalization' },
@@ -162,9 +162,9 @@ export const soundErrorPatterns = {
   },
   'Final -ts': {
     patterns: [
-      { value: 'Omits S', display: 'Omits S (Boot-)' },
-      { value: 'Omits T', display: 'Omits T (Boo-s)' },
-      { value: 'Omits TS', display: 'Omits TS (Boo-)' },
+      { value: 'Omits S', display: 'Omits S [Boot-]' },
+      { value: 'Omits T', display: 'Omits T [Boo-s]' },
+      { value: 'Omits TS', display: 'Omits TS [Boo-]' },
       { value: 'Frontal Lisp', display: 'Frontal Lisp' },
       { value: 'Lateral Lisp', display: 'Lateral Lisp' },
       { value: 'Nasalization', display: 'Nasalization' },
@@ -175,9 +175,9 @@ export const soundErrorPatterns = {
   },
   'Final -ps': {
     patterns: [
-      { value: 'Omits S', display: 'Omits S (Chip-)' },
-      { value: 'Omits P', display: 'Omits P (Chi-s)' },
-      { value: 'Omits PS', display: 'Omits PS (Chi-)' },
+      { value: 'Omits S', display: 'Omits S [Chip-]' },
+      { value: 'Omits P', display: 'Omits P [Chi-s]' },
+      { value: 'Omits PS', display: 'Omits PS [Chi-]' },
       { value: 'Frontal Lisp', display: 'Frontal Lisp' },
       { value: 'Lateral Lisp', display: 'Lateral Lisp' },
       { value: 'Nasalization', display: 'Nasalization' },
@@ -187,9 +187,9 @@ export const soundErrorPatterns = {
   },
   'Final -ks': {
     patterns: [
-      { value: 'Omits K', display: 'Omits K (Bike-s)' },
-      { value: 'Omits S', display: 'Omits S (Bike-)' },
-      { value: 'Omits KS', display: 'Omits KS (Bike)' },
+      { value: 'Omits S', display: 'Omits S [Bike-]' },
+      { value: 'Omits K', display: 'Omits K [Bike-s]' },
+      { value: 'Omits KS', display: 'Omits KS [Bike]' },
       { value: 'Frontal Lisp', display: 'Frontal Lisp' },
       { value: 'Lateral Lisp', display: 'Lateral Lisp' },
       { value: 'Nasalization', display: 'Nasalization' },
@@ -236,16 +236,16 @@ export const soundErrorPatterns = {
   },
   L: {
     patterns: [
-      { value: 'Gliding w', display: 'Gliding w' },
-      { value: 'Gliding y', display: 'Gliding y' },
+      { value: "Gliding 'w'", display: "Gliding 'w'" },
+      { value: "Gliding 'y'", display: "Gliding 'y'" },
       { value: 'Other', display: 'Other' },
     ],
     word: 'Light',
   },
   R: {
     patterns: [
-      { value: 'Gliding w', display: 'Gliding w' },
-      { value: 'Gliding y', display: 'Gliding y' },
+      { value: "Gliding 'w'", display: "Gliding 'w'" },
+      { value: "Gliding 'y'", display: "Gliding 'y'" },
       { value: 'Other', display: 'Other' },
     ],
     word: 'Rain',
