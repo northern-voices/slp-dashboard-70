@@ -200,7 +200,7 @@ export const soundErrorPatterns = {
   },
   K: {
     patterns: [
-      { value: 'Fronting', display: 'Fronting' },
+      { value: 'Fronting', display: 'Fronting T' },
       { value: 'Omission', display: 'Omission' },
       { value: 'Nasalization', display: 'Nasalization' },
       { value: 'Other', display: 'Other' },
@@ -209,7 +209,7 @@ export const soundErrorPatterns = {
   },
   G: {
     patterns: [
-      { value: 'Fronting', display: 'Fronting' },
+      { value: 'Fronting', display: 'Fronting G' },
       { value: 'Omission', display: 'Omission' },
       { value: 'Nasalization', display: 'Nasalization' },
       { value: 'Other', display: 'Other' },
@@ -218,7 +218,7 @@ export const soundErrorPatterns = {
   },
   T: {
     patterns: [
-      { value: 'Backing', display: 'Backing' },
+      { value: 'Backing', display: 'Backing K' },
       { value: 'Omission', display: 'Omission' },
       { value: 'Nasalization', display: 'Nasalization' },
       { value: 'Other', display: 'Other' },
@@ -227,7 +227,7 @@ export const soundErrorPatterns = {
   },
   D: {
     patterns: [
-      { value: 'Backing', display: 'Backing' },
+      { value: 'Backing', display: 'Backing G' },
       { value: 'Omission', display: 'Omission' },
       { value: 'Nasalization', display: 'Nasalization' },
       { value: 'Other', display: 'Other' },
