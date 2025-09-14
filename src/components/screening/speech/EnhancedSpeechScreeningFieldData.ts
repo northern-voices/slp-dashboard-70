@@ -306,16 +306,16 @@ export const soundErrorPatterns = {
   },
   F: {
     patterns: [
-      { value: 'Omission', display: 'Omission' },
       { value: 'Stopping', display: 'Stopping' },
+      { value: 'Omission', display: 'Omission' },
       { value: 'Other', display: 'Other' },
     ],
     word: 'Fish',
   },
   V: {
     patterns: [
-      { value: 'Omission', display: 'Omission' },
       { value: 'Stopping', display: 'Stopping' },
+      { value: 'Omission', display: 'Omission' },
       { value: 'Other', display: 'Other' },
     ],
     word: 'Volcano',
