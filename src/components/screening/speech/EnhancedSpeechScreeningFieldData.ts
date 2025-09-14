@@ -236,16 +236,16 @@ export const soundErrorPatterns = {
   },
   L: {
     patterns: [
-      { value: "Gliding 'w'", display: "Gliding 'w'" },
-      { value: "Gliding 'y'", display: "Gliding 'y'" },
+      { value: "Gliding 'W'", display: "Gliding 'W'" },
+      { value: "Gliding 'Y'", display: "Gliding 'Y'" },
       { value: 'Other', display: 'Other' },
     ],
     word: 'Light',
   },
   R: {
     patterns: [
-      { value: "Gliding 'w'", display: "Gliding 'w'" },
-      { value: "Gliding 'y'", display: "Gliding 'y'" },
+      { value: "Gliding 'W'", display: "Gliding 'W'" },
+      { value: "Gliding 'Y'", display: "Gliding 'Y'" },
       { value: 'Other', display: 'Other' },
     ],
     word: 'Rain',
@@ -322,14 +322,14 @@ export const soundErrorPatterns = {
   },
   '-er': {
     patterns: [
-      { value: 'Vowelization', display: 'Vowelization' },
+      { value: 'Vowelization', display: 'Vowelization (uh)' },
       { value: 'Other', display: 'Other' },
     ],
     word: 'Flower',
   },
   '-ar': {
     patterns: [
-      { value: 'Vowelization w', display: 'Vowelization w' },
+      { value: 'Vowelization w', display: 'Vowelization w (aw)' },
       { value: 'Vowelization y', display: 'Vowelization y' },
       { value: 'Other', display: 'Other' },
     ],
@@ -337,8 +337,8 @@ export const soundErrorPatterns = {
   },
   '-or': {
     patterns: [
-      { value: 'Vowelization oh/w', display: 'Vowelization oh/w' },
-      { value: 'Vowelization y', display: 'Vowelization y' },
+      { value: 'Vowelization oh/w', display: 'Vowelization (oh/w)' },
+      { value: 'Vowelization y', display: 'Vowelization (y)' },
       { value: 'Other', display: 'Other' },
     ],
     word: 'Door',
@@ -346,8 +346,8 @@ export const soundErrorPatterns = {
   th: {
     patterns: [
       { value: 'Stopping', display: 'Stopping' },
-      { value: 'Sibilant Substitution (S)', display: 'Sibilant Substitution (S)' },
-      { value: 'Sibilant Substitution (F)', display: 'Sibilant Substitution (F)' },
+      { value: 'Sibilant Substitution (F)', display: 'Sibilant (F)' },
+      { value: 'Sibilant Substitution (S)', display: 'Sibilant (S)' },
       { value: 'Omission', display: 'Omission' },
       { value: 'Other', display: 'Other' },
     ],
