@@ -264,6 +264,7 @@ export const soundErrorPatterns = {
   Z: {
     patterns: [
       { value: 'Stopping', display: 'Stopping' },
+      { value: 'Sibilant S', display: 'Sibilant S' },
       { value: 'Frontal Lisp', display: 'Frontal Lisp' },
       { value: 'Lateral Lisp', display: 'Lateral Lisp' },
       { value: 'Omission', display: 'Omission' },
@@ -285,6 +286,7 @@ export const soundErrorPatterns = {
   Sh: {
     patterns: [
       { value: 'Stopping', display: 'Stopping' },
+      { value: 'Sibilant S', display: 'Sibilant S' },
       { value: 'Lateral Lisp', display: 'Lateral Lisp' },
       { value: 'Omission', display: 'Omission' },
       { value: 'Nasalization', display: 'Nasalization' },
