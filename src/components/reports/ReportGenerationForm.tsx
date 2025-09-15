@@ -78,14 +78,14 @@ const ReportGenerationForm = () => {
       tooltip:
         'Generates customized goal sheets with specific objectives, progress tracking metrics, and intervention strategies for each student. Used by therapists and IEP teams.',
     },
-    {
-      value: 'progress-reports',
-      label: 'Class Wide Progress Reports',
-      description: 'Generate progress summaries showing student achievements and therapy outcomes',
-      icon: TrendingUp,
-      tooltip:
-        'Creates comprehensive progress reports highlighting improvements, challenges, and next steps for continued therapy. Shared with parents, teachers, and administrators.',
-    },
+    // {
+    //   value: 'progress-reports',
+    //   label: 'Class Wide Progress Reports',
+    //   description: 'Generate progress summaries showing student achievements and therapy outcomes',
+    //   icon: TrendingUp,
+    //   tooltip:
+    //     'Creates comprehensive progress reports highlighting improvements, challenges, and next steps for continued therapy. Shared with parents, teachers, and administrators.',
+    // },
   ]
 
   const isSubmitting = form.formState.isSubmitting
