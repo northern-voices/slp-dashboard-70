@@ -313,7 +313,7 @@ const ScreeningsTable = ({
       monitor: { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800' },
       non_registered_no_consent: {
         label: 'No Consent',
-        color: 'bg-red-100 text-red-800',
+        color: 'bg-gray-100 text-gray-800',
       },
       passed: { label: 'Passed', color: 'bg-green-100 text-green-800' },
       profound: { label: 'Profound', color: 'bg-red-100 text-red-800' },
@@ -331,6 +331,13 @@ const ScreeningsTable = ({
   const getQualificationBadge = (screening: Screening) => {
     const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
     const sub = screening.error_patterns?.screening_metadata?.sub
+    const noConsent = screening.result === 'non_registered_no_consent'
+
+    console.log(noConsent, 'noConsent')
+
+    if (noConsent) {
+      return <Badge className='bg-gray-100 text-gray-800 font-medium'>No Consent</Badge>
+    }
 
     if (qualifies === undefined && sub === undefined) {
       return <Badge className='bg-gray-100 text-gray-800 font-medium'>Not Set</Badge>
