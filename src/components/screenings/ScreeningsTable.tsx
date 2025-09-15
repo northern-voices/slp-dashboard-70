@@ -306,7 +306,7 @@ const ScreeningsTable = ({
     const resultConfig = {
       absent: { label: 'Absent', color: 'bg-gray-100 text-gray-800' },
       age_appropriate: { label: 'Age Appropriate', color: 'bg-blue-100 text-blue-800' },
-      complex_needs: { label: 'Complex Needs', color: 'bg-purple-400 text-purple-900' },
+      complex_needs: { label: 'Complex Needs', color: 'bg-purple-300 text-purple-800' },
       mild: { label: 'Mild', color: 'bg-yellow-100 text-yellow-800' },
       mild_moderate: { label: 'Mild Moderate', color: 'bg-yellow-100 text-yellow-800' },
       moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800' },
