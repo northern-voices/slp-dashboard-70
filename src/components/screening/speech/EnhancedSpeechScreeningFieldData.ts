@@ -236,16 +236,16 @@ export const soundErrorPatterns = {
   },
   L: {
     patterns: [
-      { value: "Gliding 'W'", display: "Gliding 'W'" },
-      { value: "Gliding 'Y'", display: "Gliding 'Y'" },
+      { value: 'Gliding w', display: "Gliding 'W'" },
+      { value: 'Gliding y', display: "Gliding 'Y'" },
       { value: 'Other', display: 'Other' },
     ],
     word: 'Light',
   },
   R: {
     patterns: [
-      { value: "Gliding 'W'", display: "Gliding 'W'" },
-      { value: "Gliding 'Y'", display: "Gliding 'Y'" },
+      { value: 'Gliding w', display: "Gliding 'W'" },
+      { value: 'Gliding y', display: "Gliding 'Y'" },
       { value: 'Other', display: 'Other' },
     ],
     word: 'Rain',
