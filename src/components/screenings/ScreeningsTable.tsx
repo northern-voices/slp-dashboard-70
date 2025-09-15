@@ -305,8 +305,8 @@ const ScreeningsTable = ({
 
     const resultConfig = {
       absent: { label: 'Absent', color: 'bg-gray-100 text-gray-800' },
-      age_appropriate: { label: 'Age Appropriate', color: 'bg-green-100 text-green-800' },
-      complex_needs: { label: 'Complex Needs', color: 'bg-purple-100 text-purple-800' },
+      age_appropriate: { label: 'Age Appropriate', color: 'bg-blue-100 text-blue-800' },
+      complex_needs: { label: 'Complex Needs', color: 'bg-purple-400 text-purple-900' },
       mild: { label: 'Mild', color: 'bg-yellow-100 text-yellow-800' },
       mild_moderate: { label: 'Mild Moderate', color: 'bg-yellow-100 text-yellow-800' },
       moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800' },
@@ -316,10 +316,14 @@ const ScreeningsTable = ({
         color: 'bg-gray-100 text-gray-800',
       },
       passed: { label: 'Passed', color: 'bg-green-100 text-green-800' },
-      profound: { label: 'Profound', color: 'bg-red-100 text-red-800' },
+      profound: { label: 'Profound', color: 'bg-red-300 text-red-800' },
       severe: { label: 'Severe', color: 'bg-red-100 text-red-800' },
       severe_profound: { label: 'Severe Profound', color: 'bg-red-100 text-red-800' },
-      unable_to_screen: { label: 'Unable to Screen', color: 'bg-gray-100 text-gray-800' },
+      no_errors: { label: 'No Errors', color: 'bg-green-100 text-green-800' },
+      unable_to_screen: {
+        label: 'Non-Compliant',
+        color: 'bg-purple-100 text-purple-800',
+      },
     }
 
     const config = resultConfig[result as keyof typeof resultConfig]
@@ -332,8 +336,6 @@ const ScreeningsTable = ({
     const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
     const sub = screening.error_patterns?.screening_metadata?.sub
     const noConsent = screening.result === 'non_registered_no_consent'
-
-    console.log(noConsent, 'noConsent')
 
     if (noConsent) {
       return <Badge className='bg-gray-100 text-gray-800 font-medium'>No Consent</Badge>

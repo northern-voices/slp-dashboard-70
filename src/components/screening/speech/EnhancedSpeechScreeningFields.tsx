@@ -1408,6 +1408,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   <SelectValue placeholder='Select result' />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value='no_errors'>No Errors</SelectItem>
                   <SelectItem value='age_appropriate'>Age Appropriate</SelectItem>
                   {/* <SelectItem value='monitor'>Monitor (Age Appropriate)</SelectItem> // TODO Lisa said to remove this for now */}
                   <SelectItem value='mild'>Mild</SelectItem>
