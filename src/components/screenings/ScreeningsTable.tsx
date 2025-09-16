@@ -3,6 +3,13 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Eye,
   Download,
   Trash2,
@@ -41,7 +48,10 @@ import ScreeningBulkActions from './ScreeningBulkActions'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import { School, Screening } from '@/types/database'
 import { useScreenings } from '@/hooks/screenings/use-screenings'
-import { useDeleteScreening } from '@/hooks/screenings/use-screening-mutations'
+import {
+  useDeleteScreening,
+  useUpdateSpeechScreening,
+} from '@/hooks/screenings/use-screening-mutations'
 import { useToast } from '@/hooks/use-toast'
 
 interface ScreeningsTableProps {
@@ -85,9 +95,14 @@ const ScreeningsTable = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [screeningToDelete, setScreeningToDelete] = useState<Screening | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [updatingScreeningId, setUpdatingScreeningId] = useState<string | null>(null)
 
   // Use React Query to fetch screenings data
   const { data: allScreenings, isLoading, error } = useScreenings()
+
+  // Use mutation hooks
+  const { mutate: updateSpeechScreening, isPending: isUpdating } = useUpdateSpeechScreening()
+  const { toast } = useToast()
 
   // Filter screenings by current school
   const schoolScreenings = currentSchool
@@ -354,6 +369,45 @@ const ScreeningsTable = ({
     }
   }
 
+  const getResultSelector = (screening: Screening) => {
+    // For speech screenings, show editable dropdown
+    if (screening.source_table === 'speech') {
+      const isThisScreeningUpdating = updatingScreeningId === screening.id
+
+      return (
+        <Select
+          value={screening.result || ''}
+          onValueChange={value => handleResultChange(screening, value)}
+          disabled={isThisScreeningUpdating}>
+          <SelectTrigger className='w-full h-8 border-none p-0 hover:bg-transparent focus:ring-0'>
+            <SelectValue placeholder='Select result'>
+              <div className='flex items-center gap-2'>
+                {isThisScreeningUpdating && (
+                  <Loader2 className='w-3 h-3 animate-spin text-blue-600' />
+                )}
+                {screening.result ? (
+                  getResultBadge(screening.result)
+                ) : (
+                  <Badge className='bg-gray-100 text-gray-800 font-medium'>Select result</Badge>
+                )}
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {resultOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )
+    }
+
+    // For hearing screenings or when not editable, show badge
+    return getResultBadge(screening.result)
+  }
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedScreenings(filteredScreenings)
@@ -389,13 +443,64 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
     window.URL.revokeObjectURL(url)
   }
 
+  const handleResultChange = (screening: Screening, newResult: string) => {
+    if (screening.source_table === 'speech') {
+      setUpdatingScreeningId(screening.id)
+      updateSpeechScreening(
+        {
+          id: screening.id,
+          data: { result: newResult },
+        },
+        {
+          onSuccess: () => {
+            setUpdatingScreeningId(null)
+            toast({
+              title: 'Result updated',
+              description: `Successfully updated result for ${screening.student_name}`,
+              variant: 'default',
+            })
+          },
+          onError: error => {
+            setUpdatingScreeningId(null)
+            toast({
+              title: 'Error updating result',
+              description: error.message || 'Failed to update result',
+              variant: 'destructive',
+            })
+          },
+        }
+      )
+    } else {
+      // Handle hearing screenings update here if needed
+      toast({
+        title: 'Not supported',
+        description: 'Updating hearing screening results is not yet supported',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  // Define the result options
+  const resultOptions = [
+    { value: 'absent', label: 'Absent' },
+    { value: 'age_appropriate', label: 'Age Appropriate' },
+    { value: 'complex_needs', label: 'Complex Needs' },
+    { value: 'mild', label: 'Mild' },
+    { value: 'moderate', label: 'Moderate' },
+    // { value: 'monitor', label: 'Monitor' },
+    { value: 'non_registered_no_consent', label: 'No Consent' },
+    { value: 'passed', label: 'Passed' },
+    { value: 'profound', label: 'Profound' },
+    { value: 'severe', label: 'Severe' },
+    { value: 'no_errors', label: 'No Errors' },
+    { value: 'unable_to_screen', label: 'Non-Compliant' },
+  ]
+
   const {
     mutate: deleteScreening,
     isPending: isDeleting,
     error: deleteError,
   } = useDeleteScreening()
-
-  const { toast } = useToast()
 
   const handleDelete = (screening: Screening) => {
     setScreeningToDelete(screening)
@@ -571,9 +676,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-                      <div className='flex items-center gap-2'>
-                        {getResultBadge(screening.result)}
-                      </div>
+                      <div className='flex items-center gap-2'>{getResultSelector(screening)}</div>
                       <div className='flex items-center gap-2'>
                         {getQualificationBadge(screening)}
                       </div>
@@ -622,7 +725,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                     </div>
                   </TableCell>
                   <TableCell className='max-w-0'>
-                    <div className='truncate'>{getResultBadge(screening.result)}</div>
+                    <div className='w-full min-w-[120px]'>{getResultSelector(screening)}</div>
                   </TableCell>
                   <TableCell className='max-w-0'>
                     <div className='truncate'>{getQualificationBadge(screening)}</div>
