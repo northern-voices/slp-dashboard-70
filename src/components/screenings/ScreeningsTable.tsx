@@ -807,9 +807,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                         </DropdownMenu>
                       </div>
                       <div className='flex items-center gap-2'>{getResultSelector(screening)}</div>
-                      <div className='flex items-center gap-2'>
-                        {getProgramSelector(screening)}
-                      </div>
+                      <div className='flex items-center gap-2'>{getProgramSelector(screening)}</div>
                       <div className='text-sm text-gray-600 space-y-1'>
                         <p>
                           <span className='font-medium'>Date:</span>{' '}
