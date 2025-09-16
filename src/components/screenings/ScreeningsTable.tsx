@@ -96,6 +96,7 @@ const ScreeningsTable = ({
   const [screeningToDelete, setScreeningToDelete] = useState<Screening | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [updatingScreeningId, setUpdatingScreeningId] = useState<string | null>(null)
+  const [updatingProgramId, setUpdatingProgramId] = useState<string | null>(null)
 
   // Use React Query to fetch screenings data
   const { data: allScreenings, isLoading, error } = useScreenings()
@@ -369,6 +370,57 @@ const ScreeningsTable = ({
     }
   }
 
+  const getProgramValue = (screening: Screening): string => {
+    const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
+    const sub = screening.error_patterns?.screening_metadata?.sub
+
+    if (sub) return 'sub'
+    if (qualifies === true) return 'qualifies'
+    if (qualifies === false) return 'not_in_program'
+    return 'not_set'
+  }
+
+  const getProgramSelector = (screening: Screening) => {
+    // For speech screenings, show editable dropdown
+    if (screening.source_table === 'speech') {
+      const isThisScreeningUpdating = updatingProgramId === screening.id
+      const noConsent = screening.result === 'non_registered_no_consent'
+
+      // Don't allow editing if the result is "No Consent"
+      if (noConsent) {
+        return getQualificationBadge(screening)
+      }
+
+      return (
+        <Select
+          value={getProgramValue(screening)}
+          onValueChange={value => handleProgramChange(screening, value)}
+          disabled={isThisScreeningUpdating}>
+          <SelectTrigger className='w-full h-8 border-none p-0 hover:bg-transparent focus:ring-0'>
+            <SelectValue placeholder='Select program'>
+              <div className='flex items-center gap-2'>
+                {isThisScreeningUpdating && (
+                  <Loader2 className='w-3 h-3 animate-spin text-blue-600' />
+                )}
+                {getQualificationBadge(screening)}
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {programOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )
+    }
+
+    // For hearing screenings or when not editable, show badge
+    return getQualificationBadge(screening)
+  }
+
   const getResultSelector = (screening: Screening) => {
     // For speech screenings, show editable dropdown
     if (screening.source_table === 'speech') {
@@ -480,6 +532,76 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
     }
   }
 
+  const handleProgramChange = (screening: Screening, newProgram: string) => {
+    if (screening.source_table === 'speech') {
+      setUpdatingProgramId(screening.id)
+
+      // Parse the program value to determine qualifies_for_speech_program and sub
+      let qualifies_for_speech_program: boolean | undefined
+      let sub: boolean | undefined
+
+      switch (newProgram) {
+        case 'qualifies':
+          qualifies_for_speech_program = true
+          sub = false
+          break
+        case 'not_in_program':
+          qualifies_for_speech_program = false
+          sub = false
+          break
+        case 'sub':
+          qualifies_for_speech_program = undefined
+          sub = true
+          break
+        default:
+          qualifies_for_speech_program = undefined
+          sub = undefined
+      }
+
+      // Update the error_patterns with the new qualification data
+      const updatedErrorPatterns = {
+        ...screening.error_patterns,
+        screening_metadata: {
+          ...screening.error_patterns?.screening_metadata,
+          qualifies_for_speech_program,
+          sub,
+        },
+      }
+
+      updateSpeechScreening(
+        {
+          id: screening.id,
+          data: { error_patterns: updatedErrorPatterns },
+        },
+        {
+          onSuccess: () => {
+            setUpdatingProgramId(null)
+            toast({
+              title: 'Program qualification updated',
+              description: `Successfully updated program qualification for ${screening.student_name}`,
+              variant: 'default',
+            })
+          },
+          onError: error => {
+            setUpdatingProgramId(null)
+            toast({
+              title: 'Error updating program qualification',
+              description: error.message || 'Failed to update program qualification',
+              variant: 'destructive',
+            })
+          },
+        }
+      )
+    } else {
+      // Handle hearing screenings update here if needed
+      toast({
+        title: 'Not supported',
+        description: 'Updating hearing screening program qualification is not yet supported',
+        variant: 'destructive',
+      })
+    }
+  }
+
   // Define the result options
   const resultOptions = [
     { value: 'absent', label: 'Absent' },
@@ -494,6 +616,14 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
     { value: 'severe', label: 'Severe' },
     { value: 'no_errors', label: 'No Errors' },
     { value: 'unable_to_screen', label: 'Non-Compliant' },
+  ]
+
+  // Define the program qualification options
+  const programOptions = [
+    { value: 'qualifies', label: 'Qualifies' },
+    { value: 'not_in_program', label: 'Not In Program' },
+    { value: 'sub', label: 'Sub' },
+    { value: 'not_set', label: 'Not Set' },
   ]
 
   const {
@@ -678,7 +808,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                       </div>
                       <div className='flex items-center gap-2'>{getResultSelector(screening)}</div>
                       <div className='flex items-center gap-2'>
-                        {getQualificationBadge(screening)}
+                        {getProgramSelector(screening)}
                       </div>
                       <div className='text-sm text-gray-600 space-y-1'>
                         <p>
@@ -728,7 +858,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                     <div className='w-full min-w-[120px]'>{getResultSelector(screening)}</div>
                   </TableCell>
                   <TableCell className='max-w-0'>
-                    <div className='truncate'>{getQualificationBadge(screening)}</div>
+                    <div className='w-full min-w-[120px]'>{getProgramSelector(screening)}</div>
                   </TableCell>
                   <TableCell className='max-w-0'>
                     <div className='truncate' title={screening.grade || 'No grade'}>
