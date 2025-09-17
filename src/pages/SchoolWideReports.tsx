@@ -15,7 +15,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import ReportGenerationForm from '@/components/reports/ReportGenerationForm'
-const ClassWideReportsContent = () => {
+const SchoolWideReportsContent = () => {
   const { userProfile } = useOrganization()
   const navigate = useNavigate()
   const userRole = userProfile?.role || 'slp'
@@ -47,10 +47,10 @@ const ClassWideReportsContent = () => {
               {/* Page Header */}
               <div className='space-y-1 sm:space-y-2'>
                 <h1 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900'>
-                  Class Wide Reports
+                  School Wide Reports
                 </h1>
                 <p className='text-sm sm:text-base text-gray-600'>
-                  Generate comprehensive class-wide reports for students
+                  Generate comprehensive school-wide reports for students
                 </p>
               </div>
 
@@ -66,6 +66,6 @@ const ClassWideReportsContent = () => {
   )
 }
 const GenerateReport = () => {
-  return <ClassWideReportsContent />
+  return <SchoolWideReportsContent />
 }
 export default GenerateReport

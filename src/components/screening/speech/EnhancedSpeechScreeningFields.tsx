@@ -431,6 +431,40 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     return true
   }
 
+  // Helper function to validate -ar combinations
+  const isValidArCombination = (patterns: string[]): boolean => {
+    if (patterns.length === 0) return true
+    if (patterns.length === 1) return true
+
+    // For -ar: "Vowelization w" and "Vowelization y" are mutually exclusive
+    const hasVowelizationW = patterns.includes('Vowelization w')
+    const hasVowelizationY = patterns.includes('Vowelization y')
+
+    // Check if both vowelization patterns are selected (not allowed)
+    if (hasVowelizationW && hasVowelizationY) {
+      return false
+    }
+
+    return true
+  }
+
+  // Helper function to validate -or combinations
+  const isValidOrCombination = (patterns: string[]): boolean => {
+    if (patterns.length === 0) return true
+    if (patterns.length === 1) return true
+
+    // For -or: "Vowelization oh/w" and "Vowelization y" are mutually exclusive
+    const hasVowelizationOhW = patterns.includes('Vowelization oh/w')
+    const hasVowelizationY = patterns.includes('Vowelization y')
+
+    // Check if both vowelization patterns are selected (not allowed)
+    if (hasVowelizationOhW && hasVowelizationY) {
+      return false
+    }
+
+    return true
+  }
+
   // Helper function to convert concern names to field names
   const getFieldName = (concern: string): string => {
     const fieldNameMap: Record<string, string> = {
@@ -938,6 +972,42 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           [sound]: currentPatterns.filter(p => p !== pattern),
         })
       }
+    } else if (sound === '-ar') {
+      // For -ar: "Vowelization w" and "Vowelization y" are mutually exclusive
+      if (checked) {
+        // Check if this combination is valid
+        const newPatterns = [...currentPatterns, pattern]
+        if (isValidArCombination(newPatterns)) {
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: newPatterns,
+          })
+        }
+      } else {
+        // When unchecking, just remove the pattern
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: currentPatterns.filter(p => p !== pattern),
+        })
+      }
+    } else if (sound === '-or') {
+      // For -or: "Vowelization oh/w" and "Vowelization y" are mutually exclusive
+      if (checked) {
+        // Check if this combination is valid
+        const newPatterns = [...currentPatterns, pattern]
+        if (isValidOrCombination(newPatterns)) {
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: newPatterns,
+          })
+        }
+      } else {
+        // When unchecking, just remove the pattern
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: currentPatterns.filter(p => p !== pattern),
+        })
+      }
     } else {
       // For other sounds, use the original logic but ensure Other is exclusive
       if (checked) {
@@ -982,7 +1052,9 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                     <>
                       {/* Error Patterns for this sound */}
                       <div className='mt-2 space-y-1'>
-                        {soundErrorPatterns[sound]?.patterns.map(pattern => {
+                        {soundErrorPatterns[sound]?.patterns.map(patternObj => {
+                          const pattern = patternObj.value
+                          const patternDisplay = patternObj.display
                           const currentPatterns = selectedErrorPatterns[sound] || []
 
                           // Global rule: "Other" disables all other patterns when selected, and other patterns disable "Other"
@@ -1129,6 +1201,22 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             pattern === 'Other' &&
                             currentPatterns.some(p => p !== 'Other') // Disable 'Other' if other patterns are selected
 
+                          // For -ar: Disable invalid combinations
+                          const isArSound = sound === '-ar'
+                          const isArDisabled =
+                            isArSound &&
+                            currentPatterns.length > 0 &&
+                            !currentPatterns.includes(pattern) &&
+                            !isValidArCombination([...currentPatterns, pattern])
+
+                          // For -or: Disable invalid combinations
+                          const isOrSound = sound === '-or'
+                          const isOrDisabled =
+                            isOrSound &&
+                            currentPatterns.length > 0 &&
+                            !currentPatterns.includes(pattern) &&
+                            !isValidOrCombination([...currentPatterns, pattern])
+
                           const isDisabled =
                             isOtherDisabled ||
                             isOtherCheckboxDisabled ||
@@ -1147,7 +1235,9 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                             isKGDisabled ||
                             isTDDisabled ||
                             isLRDisabled ||
-                            isSZDisabled
+                            isSZDisabled ||
+                            isArDisabled ||
+                            isOrDisabled
 
                           return (
                             <div key={pattern} className='space-y-2'>
@@ -1165,7 +1255,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                                   className={`text-xs font-medium ${
                                     isDisabled ? 'text-gray-400' : ''
                                   }`}>
-                                  {pattern}
+                                  {patternDisplay}
                                 </Label>
                               </div>
 
@@ -1318,8 +1408,9 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   <SelectValue placeholder='Select result' />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value='no_errors'>No Errors</SelectItem>
                   <SelectItem value='age_appropriate'>Age Appropriate</SelectItem>
-                  <SelectItem value='monitor'>Monitor (Age Appropriate)</SelectItem>
+                  {/* <SelectItem value='monitor'>Monitor (Age Appropriate)</SelectItem> // TODO Lisa said to remove this for now */}
                   <SelectItem value='mild'>Mild</SelectItem>
                   <SelectItem value='moderate'>Moderate</SelectItem>
                   <SelectItem value='severe'>Severe</SelectItem>

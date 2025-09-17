@@ -72,7 +72,7 @@ const ClassWideReportsModal = ({ isOpen, onClose }: ClassWideReportsModalProps) 
           <div className='flex flex-col items-center justify-center py-8 text-center'>
             <CheckCircle className='w-16 h-16 text-green-500 mb-4' />
             <h3 className='text-lg font-semibold text-gray-900 mb-2'>Reports Sent Successfully!</h3>
-            <p className='text-gray-600'>The class-wide reports have been sent to {email}</p>
+            <p className='text-gray-600'>The school-wide reports have been sent to {email}</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -85,7 +85,7 @@ const ClassWideReportsModal = ({ isOpen, onClose }: ClassWideReportsModalProps) 
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2 text-xl font-semibold'>
             <Mail className='w-5 h-5' />
-            Send Class-Wide Reports
+            Send School-Wide Reports
           </DialogTitle>
         </DialogHeader>
 
@@ -113,15 +113,15 @@ const ClassWideReportsModal = ({ isOpen, onClose }: ClassWideReportsModalProps) 
             </TabsContent>
 
             <TabsContent value='speech-screens' className='mt-6'>
-              <ClassWideSpeechForm title='Class Wide Speech Screens' reportType='screens' />
+              <ClassWideSpeechForm title='School Wide Speech Screens' reportType='screens' />
             </TabsContent>
 
             <TabsContent value='goal-sheets' className='mt-6'>
-              <ClassWideSpeechForm title='Class Wide Goal Sheets' reportType='goals' />
+              <ClassWideSpeechForm title='School Wide Goal Sheets' reportType='goals' />
             </TabsContent>
 
             <TabsContent value='progress' className='mt-6'>
-              <ClassWideSpeechForm title='Class Wide Progress Reports' reportType='progress' />
+              <ClassWideSpeechForm title='School Wide Progress Reports' reportType='progress' />
             </TabsContent>
           </Tabs>
 

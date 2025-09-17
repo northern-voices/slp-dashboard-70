@@ -62,7 +62,7 @@ const ReportGenerationForm = () => {
   const screeningReports = [
     {
       value: 'student-reports',
-      label: 'Class Wide Student Reports',
+      label: 'School Wide Student Reports',
       description:
         'Create detailed speech assessment reports covering multiple students in a class',
       icon: Mic,
@@ -71,21 +71,21 @@ const ReportGenerationForm = () => {
     },
     {
       value: 'goal-sheets',
-      label: 'Class Wide Goal Sheets',
+      label: 'School Wide Goal Sheets',
       description:
         'Produce individualized goal tracking sheets for all students in selected classes',
       icon: Target,
       tooltip:
         'Generates customized goal sheets with specific objectives, progress tracking metrics, and intervention strategies for each student. Used by therapists and IEP teams.',
     },
-    {
-      value: 'progress-reports',
-      label: 'Class Wide Progress Reports',
-      description: 'Generate progress summaries showing student achievements and therapy outcomes',
-      icon: TrendingUp,
-      tooltip:
-        'Creates comprehensive progress reports highlighting improvements, challenges, and next steps for continued therapy. Shared with parents, teachers, and administrators.',
-    },
+    // {
+    //   value: 'progress-reports',
+    //   label: 'School Wide Progress Reports',
+    //   description: 'Generate progress summaries showing student achievements and therapy outcomes',
+    //   icon: TrendingUp,
+    //   tooltip:
+    //     'Creates comprehensive progress reports highlighting improvements, challenges, and next steps for continued therapy. Shared with parents, teachers, and administrators.',
+    // },
   ]
 
   const isSubmitting = form.formState.isSubmitting
@@ -149,7 +149,7 @@ const ReportGenerationForm = () => {
       <Card className='w-full max-w-full bg-white border border-gray-200 shadow-sm overflow-hidden'>
         <CardHeader className='pb-4 sm:pb-6 px-4 sm:px-6'>
           <CardTitle className='text-lg sm:text-xl font-semibold text-gray-900'>
-            Generate Class Wide Report
+            Generate School Wide Report
           </CardTitle>
           <p className='text-sm text-gray-600 mt-2 leading-relaxed'>
             Create comprehensive reports for multiple students
