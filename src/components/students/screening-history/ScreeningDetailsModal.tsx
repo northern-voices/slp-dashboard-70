@@ -2,10 +2,11 @@ import React from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar, User, FileText, X, AlertCircle, CheckCircle, Clock } from 'lucide-react'
+import { Calendar, User, FileText, X, AlertCircle, CheckCircle, Clock, Edit } from 'lucide-react'
 import { format } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { Screening } from '@/types/database'
+import { useNavigate } from 'react-router-dom'
 
 interface ScreeningDetailsModalProps {
   isOpen: boolean
@@ -14,7 +15,14 @@ interface ScreeningDetailsModalProps {
 }
 
 const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsModalProps) => {
+  const navigate = useNavigate()
+
   if (!screening) return null
+
+  const handleEditScreening = () => {
+    navigate(`/edit-screening/${screening.id}`)
+    onClose()
+  }
 
   const getResultBadge = (result?: string) => {
     if (!result) return null
@@ -302,9 +310,15 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
               <FileText className='w-5 h-5' />
               Screening Details
             </DialogTitle>
-            <Button variant='ghost' size='sm' onClick={onClose}>
-              <X className='w-4 h-4' />
-            </Button>
+            <div className='flex items-center gap-2'>
+              <Button variant='outline' size='sm' onClick={handleEditScreening}>
+                <Edit className='w-4 h-4 mr-2' />
+                Edit Screening
+              </Button>
+              <Button variant='ghost' size='sm' onClick={onClose}>
+                <X className='w-4 h-4' />
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
