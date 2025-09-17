@@ -18,7 +18,7 @@ import MonthlyProgressCheck from './pages/student/MonthlyProgressCheck'
 import GenerateGoalSheet from './pages/student/GenerateGoalSheet'
 import Screenings from './pages/Screenings'
 import Reports from './pages/Reports'
-import ClassWideReports from './pages/ClassWideReports'
+import SchoolWideReports from './pages/SchoolWideReports'
 import IndividualReports from './pages/IndividualReports'
 import ReportDetail from './pages/ReportDetail'
 import Management from './pages/Management'
@@ -217,11 +217,11 @@ const App = () => (
                 }
               />
               <Route
-                path='/speech-screening-reports/class-wide'
+                path='/speech-screening-reports/school-wide'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
-                      <ClassWideReports />
+                      <SchoolWideReports />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
@@ -416,11 +416,11 @@ const App = () => (
                 }
               />
               <Route
-                path='/school/:schoolId/speech-screening-reports/class-wide'
+                path='/school/:schoolId/speech-screening-reports/school-wide'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
-                      <ClassWideReports />
+                      <SchoolWideReports />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
