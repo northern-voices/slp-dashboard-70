@@ -19,11 +19,11 @@ const ScreeningResultBadge = ({ result }: ScreeningResultBadgeProps) => {
       color: 'bg-blue-100 text-blue-800',
       description: 'Student demonstrates age-appropriate skills with no concerns identified.',
     },
-    // monitor: {
-    //   label: 'Monitor',
-    //   color: 'bg-yellow-100 text-yellow-800',
-    //   description: 'Student requires ongoing monitoring and assessment.',
-    // },
+    monitor: {
+      label: 'Monitor',
+      color: 'bg-yellow-100 text-yellow-800',
+      description: 'Student requires ongoing monitoring and assessment.',
+    },
     mild: {
       label: 'Mild',
       color: 'bg-yellow-100 text-yellow-800',

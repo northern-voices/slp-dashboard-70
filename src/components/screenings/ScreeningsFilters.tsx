@@ -177,6 +177,7 @@ const ScreeningsFilters = ({
                     <SelectItem value='all'>All Results</SelectItem>
                     <SelectItem value='no_errors'>No Errors</SelectItem>
                     <SelectItem value='age_appropriate'>Age Appropriate</SelectItem>
+                    <SelectItem value='Monitor'>Monitor</SelectItem>
                     <SelectItem value='mild'>Mild</SelectItem>
                     <SelectItem value='moderate'>Moderate</SelectItem>
                     <SelectItem value='severe'>Severe</SelectItem>
