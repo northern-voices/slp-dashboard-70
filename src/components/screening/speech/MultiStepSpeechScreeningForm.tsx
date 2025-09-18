@@ -383,7 +383,7 @@ const MultiStepSpeechScreeningForm = ({
           />
         )
       case 2:
-        return <SpeechScreeningStep2 form={form as unknown as UseFormReturn} />
+        return <SpeechScreeningStep2 form={form as unknown as UseFormReturn} selectedStudent={selectedStudent} />
       default:
         return null
     }
