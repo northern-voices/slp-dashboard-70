@@ -179,15 +179,13 @@ const ScreeningsFilters = ({
                     <SelectItem value='age_appropriate'>Age Appropriate</SelectItem>
                     <SelectItem value='complex_needs'>Complex Needs</SelectItem>
                     <SelectItem value='mild'>Mild</SelectItem>
-                    <SelectItem value='mild_moderate'>Mild Moderate</SelectItem>
                     <SelectItem value='moderate'>Moderate</SelectItem>
-                    <SelectItem value='monitor'>Monitor</SelectItem>
                     <SelectItem value='non_registered_no_consent'>No Consent</SelectItem>
                     <SelectItem value='passed'>Passed</SelectItem>
                     <SelectItem value='profound'>Profound</SelectItem>
                     <SelectItem value='severe'>Severe</SelectItem>
-                    <SelectItem value='severe_profound'>Severe Profound</SelectItem>
-                    <SelectItem value='unable_to_screen'>Unable to Screen</SelectItem>
+                    <SelectItem value='no_errors'>No Errors</SelectItem>
+                    <SelectItem value='unable_to_screen'>Non-Compliant</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
