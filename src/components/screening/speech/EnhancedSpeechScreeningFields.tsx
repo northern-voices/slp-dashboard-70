@@ -1459,29 +1459,6 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
             <div className='flex items-center space-x-2'>
               <Checkbox
-                id='graduated'
-                checked={form.watch('graduated') || false}
-                disabled={form.watch('qualifies_for_speech_program') || form.watch('sub') || false}
-                onCheckedChange={checked => {
-                  form.setValue('graduated', checked as boolean)
-                  if (checked) {
-                    form.setValue('qualifies_for_speech_program', false)
-                    form.setValue('sub', false)
-                  }
-                }}
-              />
-              <Label
-                htmlFor='graduated'
-                className={`text-sm font-medium ${
-                  form.watch('qualifies_for_speech_program') ? 'text-gray-400' : ''
-                } 
-                ${form.watch('sub') ? 'text-gray-400' : ''}`}>
-                Graduated
-              </Label>
-            </div>
-
-            <div className='flex items-center space-x-2'>
-              <Checkbox
                 id='sub'
                 checked={form.watch('sub') || false}
                 disabled={
@@ -1501,6 +1478,29 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                   form.watch('qualifies_for_speech_program') ? 'text-gray-400' : ''
                 } ${form.watch('graduated') ? 'text-gray-400' : ''}`}>
                 Sub
+              </Label>
+            </div>
+
+            <div className='flex items-center space-x-2'>
+              <Checkbox
+                id='graduated'
+                checked={form.watch('graduated') || false}
+                disabled={form.watch('qualifies_for_speech_program') || form.watch('sub') || false}
+                onCheckedChange={checked => {
+                  form.setValue('graduated', checked as boolean)
+                  if (checked) {
+                    form.setValue('qualifies_for_speech_program', false)
+                    form.setValue('sub', false)
+                  }
+                }}
+              />
+              <Label
+                htmlFor='graduated'
+                className={`text-sm font-medium ${
+                  form.watch('qualifies_for_speech_program') ? 'text-gray-400' : ''
+                } 
+                ${form.watch('sub') ? 'text-gray-400' : ''}`}>
+                Graduated
               </Label>
             </div>
           </div>
