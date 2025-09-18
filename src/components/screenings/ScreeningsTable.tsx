@@ -320,26 +320,26 @@ const ScreeningsTable = ({
     if (!result) return null
 
     const resultConfig = {
-      absent: { label: 'Absent', color: 'bg-gray-100 text-gray-800' },
-      age_appropriate: { label: 'Age Appropriate', color: 'bg-blue-100 text-blue-800' },
-      complex_needs: { label: 'Complex Needs', color: 'bg-purple-300 text-purple-800' },
-      mild: { label: 'Mild', color: 'bg-yellow-100 text-yellow-800' },
-      mild_moderate: { label: 'Mild Moderate', color: 'bg-yellow-100 text-yellow-800' },
-      moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800' },
-      monitor: { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800' },
-      non_registered_no_consent: {
-        label: 'No Consent',
-        color: 'bg-gray-100 text-gray-800',
-      },
-      passed: { label: 'Passed', color: 'bg-green-100 text-green-800' },
-      profound: { label: 'Profound', color: 'bg-red-300 text-red-800' },
-      severe: { label: 'Severe', color: 'bg-red-100 text-red-800' },
-      severe_profound: { label: 'Severe Profound', color: 'bg-red-100 text-red-800' },
       no_errors: { label: 'No Errors', color: 'bg-green-100 text-green-800' },
+      age_appropriate: { label: 'Age Appropriate', color: 'bg-blue-100 text-blue-800' },
+      // monitor: { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800' },
+      mild: { label: 'Mild', color: 'bg-yellow-100 text-yellow-800' },
+      moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800' },
+      severe: { label: 'Severe', color: 'bg-red-100 text-red-800' },
+      profound: { label: 'Profound', color: 'bg-red-300 text-red-800' },
+      complex_needs: { label: 'Complex Needs', color: 'bg-purple-300 text-purple-800' },
       unable_to_screen: {
         label: 'Non-Compliant',
         color: 'bg-purple-100 text-purple-800',
       },
+      absent: { label: 'Absent', color: 'bg-gray-100 text-gray-800' },
+      non_registered_no_consent: {
+        label: 'No Consent',
+        color: 'bg-gray-100 text-gray-800',
+      },
+      // mild_moderate: { label: 'Mild Moderate', color: 'bg-yellow-100 text-yellow-800' },
+      // passed: { label: 'Passed', color: 'bg-green-100 text-green-800' },
+      // severe_profound: { label: 'Severe Profound', color: 'bg-red-100 text-red-800' },
     }
 
     const config = resultConfig[result as keyof typeof resultConfig]
@@ -620,18 +620,18 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
 
   // Define the result options
   const resultOptions = [
-    { value: 'absent', label: 'Absent' },
+    { value: 'no_errors', label: 'No Errors' },
     { value: 'age_appropriate', label: 'Age Appropriate' },
-    { value: 'complex_needs', label: 'Complex Needs' },
+    // { value: 'monitor', label: 'Monitor' },
     { value: 'mild', label: 'Mild' },
     { value: 'moderate', label: 'Moderate' },
-    // { value: 'monitor', label: 'Monitor' },
-    { value: 'non_registered_no_consent', label: 'No Consent' },
-    { value: 'passed', label: 'Passed' },
-    { value: 'profound', label: 'Profound' },
     { value: 'severe', label: 'Severe' },
-    { value: 'no_errors', label: 'No Errors' },
+    { value: 'profound', label: 'Profound' },
+    { value: 'complex_needs', label: 'Complex Needs' },
     { value: 'unable_to_screen', label: 'Non-Compliant' },
+    { value: 'absent', label: 'Absent' },
+    { value: 'non_registered_no_consent', label: 'No Consent' },
+    // { value: 'passed', label: 'Passed' },
   ]
 
   // Define the program qualification options

@@ -175,17 +175,16 @@ const ScreeningsFilters = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='all'>All Results</SelectItem>
-                    <SelectItem value='absent'>Absent</SelectItem>
+                    <SelectItem value='no_errors'>No Errors</SelectItem>
                     <SelectItem value='age_appropriate'>Age Appropriate</SelectItem>
-                    <SelectItem value='complex_needs'>Complex Needs</SelectItem>
                     <SelectItem value='mild'>Mild</SelectItem>
                     <SelectItem value='moderate'>Moderate</SelectItem>
-                    <SelectItem value='non_registered_no_consent'>No Consent</SelectItem>
-                    <SelectItem value='passed'>Passed</SelectItem>
-                    <SelectItem value='profound'>Profound</SelectItem>
                     <SelectItem value='severe'>Severe</SelectItem>
-                    <SelectItem value='no_errors'>No Errors</SelectItem>
+                    <SelectItem value='profound'>Profound</SelectItem>
+                    <SelectItem value='complex_needs'>Complex Needs</SelectItem>
                     <SelectItem value='unable_to_screen'>Non-Compliant</SelectItem>
+                    <SelectItem value='absent'>Absent</SelectItem>
+                    <SelectItem value='non_registered_no_consent'>No Consent</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
