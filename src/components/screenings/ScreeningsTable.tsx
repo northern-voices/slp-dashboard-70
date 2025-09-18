@@ -351,17 +351,20 @@ const ScreeningsTable = ({
   const getQualificationBadge = (screening: Screening) => {
     const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
     const sub = screening.error_patterns?.screening_metadata?.sub
+    const graduated = screening.error_patterns?.screening_metadata?.graduated
     const noConsent = screening.result === 'non_registered_no_consent'
 
     if (noConsent) {
       return <Badge className='bg-gray-100 text-gray-800 font-medium'>No Consent</Badge>
     }
 
-    if (qualifies === undefined && sub === undefined) {
+    if (qualifies === undefined && sub === undefined && graduated === undefined) {
       return <Badge className='bg-gray-100 text-gray-800 font-medium'>Not Set</Badge>
     }
 
-    if (sub) {
+    if (graduated) {
+      return <Badge className='bg-blue-100 text-blue-800 font-medium'>Graduated</Badge>
+    } else if (sub) {
       return <Badge className='bg-orange-100 text-orange-800 font-medium'>Sub</Badge>
     } else if (qualifies) {
       return <Badge className='bg-red-100 text-red-800 font-medium'>Qualifies</Badge>
@@ -373,8 +376,10 @@ const ScreeningsTable = ({
   const getProgramValue = (screening: Screening): string => {
     const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
     const sub = screening.error_patterns?.screening_metadata?.sub
+    const graduated = screening.error_patterns?.screening_metadata?.graduated
 
     if (sub) return 'sub'
+    if (graduated) return 'graduated'
     if (qualifies === true) return 'qualifies'
     if (qualifies === false) return 'not_in_program'
     return 'not_set'
@@ -536,26 +541,36 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
     if (screening.source_table === 'speech') {
       setUpdatingProgramId(screening.id)
 
-      // Parse the program value to determine qualifies_for_speech_program and sub
+      // Parse the program value to determine qualifies_for_speech_program, sub, and graduated
       let qualifies_for_speech_program: boolean | undefined
       let sub: boolean | undefined
+      let graduated: boolean | undefined
 
       switch (newProgram) {
         case 'qualifies':
           qualifies_for_speech_program = true
           sub = false
+          graduated = false
           break
         case 'not_in_program':
           qualifies_for_speech_program = false
           sub = false
+          graduated = false
           break
         case 'sub':
           qualifies_for_speech_program = undefined
           sub = true
+          graduated = false
+          break
+        case 'graduated':
+          qualifies_for_speech_program = undefined
+          sub = false
+          graduated = true
           break
         default:
           qualifies_for_speech_program = undefined
           sub = undefined
+          graduated = undefined
       }
 
       // Update the error_patterns with the new qualification data
@@ -565,6 +580,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
           ...screening.error_patterns?.screening_metadata,
           qualifies_for_speech_program,
           sub,
+          graduated,
         },
       }
 
@@ -624,6 +640,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
     { value: 'not_in_program', label: 'Not In Program' },
     { value: 'sub', label: 'Sub' },
     { value: 'not_set', label: 'Not Set' },
+    { value: 'graduated', label: 'Graduated' },
   ]
 
   const {

@@ -72,6 +72,7 @@ export interface ErrorPatterns {
     qualifies_for_speech_program: boolean
     vocabulary_support_recommended: boolean
     sub?: boolean
+    graduated?: boolean
   }
   add_areas_of_concern: {
     voice: string | null
