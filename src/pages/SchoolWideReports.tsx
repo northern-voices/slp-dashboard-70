@@ -15,7 +15,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import ReportGenerationForm from '@/components/reports/ReportGenerationForm'
-const GenerateReportContent = () => {
+const SchoolWideReportsContent = () => {
   const { userProfile } = useOrganization()
   const navigate = useNavigate()
   const userRole = userProfile?.role || 'slp'
@@ -37,22 +37,20 @@ const GenerateReportContent = () => {
                 <Button
                   variant='outline'
                   size='sm'
-                  onClick={() => navigate('/reports')}
+                  onClick={() => navigate(-1)}
                   className='flex items-center gap-2'>
                   <ArrowLeft className='w-4 h-4' />
-                  Back to Reports
+                  Back
                 </Button>
-
-                <Breadcrumb></Breadcrumb>
               </div>
 
               {/* Page Header */}
               <div className='space-y-1 sm:space-y-2'>
                 <h1 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900'>
-                  Generate Report
+                  School Wide Reports
                 </h1>
                 <p className='text-sm sm:text-base text-gray-600'>
-                  Create comprehensive class-wide reports for students
+                  Generate comprehensive school-wide reports for students
                 </p>
               </div>
 
@@ -68,6 +66,6 @@ const GenerateReportContent = () => {
   )
 }
 const GenerateReport = () => {
-  return <GenerateReportContent />
+  return <SchoolWideReportsContent />
 }
 export default GenerateReport

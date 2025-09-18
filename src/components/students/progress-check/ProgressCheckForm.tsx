@@ -1,18 +1,24 @@
-
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Save } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import React from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { CalendarIcon, Save } from 'lucide-react'
+import { format } from 'date-fns'
+import { cn } from '@/lib/utils'
 
 const formSchema = z.object({
   check_date: z.date({ required_error: 'Check date is required' }),
@@ -21,12 +27,12 @@ const formSchema = z.object({
     required_error: 'Please select attendance status',
   }),
   absence_reason: z.string().optional(),
-});
+})
 
 interface ProgressCheckFormProps {
-  onSubmit: (values: z.infer<typeof formSchema>) => void;
-  onCancel: () => void;
-  isSubmitting: boolean;
+  onSubmit: (values: z.infer<typeof formSchema>) => void
+  onCancel: () => void
+  isSubmitting: boolean
 }
 
 const ProgressCheckForm = ({ onSubmit, onCancel, isSubmitting }: ProgressCheckFormProps) => {
@@ -38,9 +44,9 @@ const ProgressCheckForm = ({ onSubmit, onCancel, isSubmitting }: ProgressCheckFo
       attendance: 'present',
       absence_reason: '',
     },
-  });
+  })
 
-  const attendance = form.watch('attendance');
+  const attendance = form.watch('attendance')
 
   return (
     <Card>
@@ -49,40 +55,35 @@ const ProgressCheckForm = ({ onSubmit, onCancel, isSubmitting }: ProgressCheckFo
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             {/* Check Date */}
             <FormField
               control={form.control}
-              name="check_date"
+              name='check_date'
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem className='flex flex-col'>
                   <FormLabel>Check Date</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant="outline"
+                          variant='outline'
                           className={cn(
-                            "w-full md:w-64 pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            'w-full md:w-64 pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}>
+                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                          <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className='w-auto p-0' align='start'>
                       <Calendar
-                        mode="single"
+                        mode='single'
                         selected={field.value}
                         onSelect={field.onChange}
                         initialFocus
-                        className="p-3 pointer-events-auto"
+                        className='p-3 pointer-events-auto'
                       />
                     </PopoverContent>
                   </Popover>
@@ -94,25 +95,24 @@ const ProgressCheckForm = ({ onSubmit, onCancel, isSubmitting }: ProgressCheckFo
             {/* Attendance */}
             <FormField
               control={form.control}
-              name="attendance"
+              name='attendance'
               render={({ field }) => (
-                <FormItem className="space-y-3">
+                <FormItem className='space-y-3'>
                   <FormLabel>Attendance Status</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="present" id="present" />
-                        <label htmlFor="present" className="text-sm font-medium">
+                      className='flex flex-col space-y-1'>
+                      <div className='flex items-center space-x-2'>
+                        <RadioGroupItem value='present' id='present' />
+                        <label htmlFor='present' className='text-sm font-medium'>
                           Present
                         </label>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="absent" id="absent" />
-                        <label htmlFor="absent" className="text-sm font-medium">
+                      <div className='flex items-center space-x-2'>
+                        <RadioGroupItem value='absent' id='absent' />
+                        <label htmlFor='absent' className='text-sm font-medium'>
                           Absent
                         </label>
                       </div>
@@ -127,14 +127,14 @@ const ProgressCheckForm = ({ onSubmit, onCancel, isSubmitting }: ProgressCheckFo
             {attendance === 'absent' && (
               <FormField
                 control={form.control}
-                name="absence_reason"
+                name='absence_reason'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Reason for Absence (Optional)</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Enter reason for absence..."
-                        className="min-h-[80px]"
+                        placeholder='Enter reason for absence...'
+                        className='min-h-[80px]'
                         {...field}
                       />
                     </FormControl>
@@ -147,14 +147,14 @@ const ProgressCheckForm = ({ onSubmit, onCancel, isSubmitting }: ProgressCheckFo
             {/* Progress Notes */}
             <FormField
               control={form.control}
-              name="notes"
+              name='notes'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Progress Notes</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter detailed progress observations, achievements, challenges, and recommendations..."
-                      className="min-h-[150px]"
+                      placeholder='Enter detailed progress observations, achievements, challenges, and recommendations...'
+                      className='min-h-[150px]'
                       {...field}
                     />
                   </FormControl>
@@ -164,16 +164,12 @@ const ProgressCheckForm = ({ onSubmit, onCancel, isSubmitting }: ProgressCheckFo
             />
 
             {/* Actions */}
-            <div className="flex justify-end space-x-4 pt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-              >
+            <div className='flex justify-end space-x-4 pt-6'>
+              <Button type='button' variant='outline' onClick={onCancel}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                <Save className="w-4 h-4 mr-2" />
+              <Button type='submit' disabled={isSubmitting}>
+                <Save className='w-4 h-4 mr-2' />
                 {isSubmitting ? 'Saving...' : 'Save Progress Check'}
               </Button>
             </div>
@@ -181,7 +177,7 @@ const ProgressCheckForm = ({ onSubmit, onCancel, isSubmitting }: ProgressCheckFo
         </Form>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default ProgressCheckForm;
+export default ProgressCheckForm

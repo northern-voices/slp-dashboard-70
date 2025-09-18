@@ -68,18 +68,32 @@ export const useCreateSpeechScreening = () => {
   })
 }
 
-// TODO: add other mutation hooks here
-// export const useUpdateSpeechScreening = () => {
-//   const queryClient = useQueryClient()
+export const useUpdateSpeechScreening = () => {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const { userProfile, currentOrganization } = useOrganization()
 
-//   return useMutation<Screening, Error, { id: string; data: Partial<CreateSpeechScreeningInput> }>({
-//     mutationFn: ({ id, data }) => screeningsApi.updateSpeechScreening(id, data),
-//     onSuccess: () => {
-//       queryClient.invalidateQueries({ queryKey: ['screenings'] })
-//       queryClient.invalidateQueries({ queryKey: ['speech-screenings'] })
-//     },
-//   })
-// }
+  return useMutation<Screening, Error, { id: string; data: Partial<CreateSpeechScreeningInput> }>({
+    mutationFn: ({ id, data }) => screeningsApi.updateSpeechScreening(id, data),
+    onSuccess: () => {
+      // Invalidate and refetch all screening-related queries
+      queryClient.invalidateQueries({
+        queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['speech-screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+
+      // Force refetch of the main screenings query to ensure immediate update
+      queryClient.refetchQueries({
+        queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+    },
+    onError: error => {
+      console.error('Failed to update speech screening:', error)
+    },
+  })
+}
 
 // export const useDeleteSpeechScreening = () => {
 //   const queryClient = useQueryClient()

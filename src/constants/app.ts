@@ -5,7 +5,7 @@ export const ROUTES = {
   HOME: '/',
   STUDENTS: '/students',
   STUDENT_DETAIL: '/students/:studentId',
-  REPORTS: '/reports',
+  REPORTS: '/speech-screening-reports',
   MANAGEMENT: '/management',
 } as const
 

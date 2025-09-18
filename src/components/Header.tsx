@@ -48,11 +48,8 @@ const Header = ({
     .map(n => n[0])
     .join('')
 
-  // Extract student ID from current path if on student detail page
-  const studentId = location.pathname.match(/\/students\/([^\/]+)/)?.[1]
-
   // Check if user is on main dashboard pages where Submit Ticket button should be visible
-  // const isDashboardPage = ['/', '/students', '/school-support', '/reports', '/management'].includes(location.pathname);
+  // const isDashboardPage = ['/', '/students', '/school-support', '/speech-screening-reports', '/management'].includes(location.pathname);
   // const shouldShowSubmitTicketButton = studentId || isDashboardPage;
 
   const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {

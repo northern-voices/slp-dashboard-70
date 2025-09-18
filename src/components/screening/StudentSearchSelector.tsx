@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Check, ChevronsUpDown, Plus, UserPlus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Student } from '@/types/database'
-import { useStudentsByGrade, useSearchStudents } from '@/hooks/students'
+import { useStudentsByGrade, useSearchStudents, useStudentsBySchool } from '@/hooks/students'
 import { StudentService } from '@/services/studentService'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -62,6 +62,7 @@ interface StudentSearchSelectorProps {
   onStudentSelect: (student: Student | null) => void
   selectedStudent?: Student | null
   gradeFilter?: string
+  isStudentCreatable?: boolean
 }
 
 // Simplified student creation schema
@@ -76,6 +77,7 @@ const StudentSearchSelector = ({
   onStudentSelect,
   selectedStudent,
   gradeFilter,
+  isStudentCreatable = true,
 }: StudentSearchSelectorProps) => {
   const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
@@ -84,19 +86,7 @@ const StudentSearchSelector = ({
   const { toast } = useToast()
 
   const { userProfile, availableSchools, currentSchool, isLoading: orgLoading } = useOrganization()
-  console.log(
-    {
-      userProfile,
-      availableSchools,
-      orgLoading,
-      currentSchool,
-      // userAssignedSchools,
-      // schoolLoading,
-    },
-    'Full Context Debug'
-  )
 
-  // Use React Query hooks instead of StudentService
   // Only fetch students if a school is selected
   const { data: studentsByGrade = [], isLoading: loadingByGrade } = useStudentsByGrade(
     currentSchool && gradeFilter ? gradeFilter : ''
@@ -104,17 +94,25 @@ const StudentSearchSelector = ({
   const { data: searchResults = [], isLoading: loadingSearch } = useSearchStudents(
     currentSchool && searchValue ? searchValue : ''
   )
+  const { data: studentsBySchool = [], isLoading: loadingBySchool } = useStudentsBySchool(
+    currentSchool?.id
+  )
 
   // Determine which students to show
   const studentsToShow = currentSchool
     ? searchValue.length >= 2
       ? searchResults
-      : studentsByGrade
+      : gradeFilter
+      ? studentsByGrade
+      : studentsBySchool
     : []
+
   const isLoading = currentSchool
     ? searchValue.length >= 2
       ? loadingSearch
-      : loadingByGrade
+      : gradeFilter
+      ? loadingByGrade
+      : loadingBySchool
     : false
 
   // New student form
@@ -262,18 +260,20 @@ const StudentSearchSelector = ({
             </div>
 
             {/* Create Student Button */}
-            <div className='flex items-center space-x-3'>
-              <div className='text-right'>
-                <p className='text-sm font-medium text-gray-700'>Need to add a student?</p>
-                <p className='text-xs text-gray-500'>Create a new student record</p>
+            {isStudentCreatable && (
+              <div className='flex items-center space-x-3'>
+                <div className='text-right'>
+                  <p className='text-sm font-medium text-gray-700'>Need to add a student?</p>
+                  <p className='text-xs text-gray-500'>Create a new student record</p>
+                </div>
+                <Button
+                  onClick={handleShowNewStudentForm}
+                  className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors duration-200 flex items-center space-x-2'>
+                  <UserPlus className='w-4 h-4' />
+                  <span>Add Student</span>
+                </Button>
               </div>
-              <Button
-                onClick={handleShowNewStudentForm}
-                className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors duration-200 flex items-center space-x-2'>
-                <UserPlus className='w-4 h-4' />
-                <span>Add Student</span>
-              </Button>
-            </div>
+            )}
           </div>
         </div>
       )}
@@ -344,14 +344,16 @@ const StudentSearchSelector = ({
                   ) : shouldShowAddNew ? (
                     <div className='p-2'>
                       <p className='text-sm text-muted-foreground mb-2'>No student found.</p>
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={handleShowNewStudentForm}
-                        className='w-full'>
-                        <UserPlus className='w-4 h-4 mr-2' />
-                        Add New Student
-                      </Button>
+                      {isStudentCreatable && (
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={handleShowNewStudentForm}
+                          className='w-full'>
+                          <UserPlus className='w-4 h-4 mr-2' />
+                          Add New Student
+                        </Button>
+                      )}
                     </div>
                   ) : (
                     'No student found.'
@@ -378,7 +380,7 @@ const StudentSearchSelector = ({
                       </div>
                     </CommandItem>
                   ))}
-                  {shouldShowAddNew && (
+                  {shouldShowAddNew && isStudentCreatable && (
                     <CommandItem
                       value='add-new-student'
                       onSelect={handleShowNewStudentForm}
@@ -391,16 +393,18 @@ const StudentSearchSelector = ({
               </CommandList>
 
               {/* Sticky Create New Student button at bottom */}
-              <div className='border-t bg-background sticky bottom-0 p-2'>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={handleShowNewStudentForm}
-                  className='w-full justify-start text-sm'>
-                  <Plus className='mr-2 h-4 w-4' />
-                  Create New Student
-                </Button>
-              </div>
+              {isStudentCreatable && (
+                <div className='border-t bg-background sticky bottom-0 p-2'>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={handleShowNewStudentForm}
+                    className='w-full justify-start text-sm'>
+                    <Plus className='mr-2 h-4 w-4' />
+                    Create New Student
+                  </Button>
+                </div>
+              )}
             </div>
           </Command>
         </PopoverContent>

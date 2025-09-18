@@ -1,12 +1,12 @@
-
-import { Notification } from '@/types/notifications';
+import { Notification } from '@/types/notifications'
 
 export const mockNotifications: Notification[] = [
   {
     id: '1',
     type: 'urgent',
     title: 'Urgent School Support Ticket',
-    message: 'New urgent ticket assigned for Emma Johnson at Lincoln Elementary - Speech screening required',
+    message:
+      'New urgent ticket assigned for Emma Johnson at Lincoln Elementary - Speech screening required',
     timestamp: '2024-06-03T09:15:00Z',
     isRead: false,
     priority: 'urgent',
@@ -14,8 +14,8 @@ export const mockNotifications: Notification[] = [
     metadata: {
       studentName: 'Emma Johnson',
       schoolName: 'Lincoln Elementary',
-      ticketId: '1'
-    }
+      ticketId: '1',
+    },
   },
   {
     id: '2',
@@ -28,8 +28,8 @@ export const mockNotifications: Notification[] = [
     actionUrl: '/students',
     metadata: {
       studentName: 'Marcus Rodriguez',
-      screeningType: 'Speech'
-    }
+      screeningType: 'Speech',
+    },
   },
   {
     id: '3',
@@ -42,8 +42,8 @@ export const mockNotifications: Notification[] = [
     actionUrl: '/school-support',
     metadata: {
       schoolName: 'Washington Middle School',
-      screeningType: 'Hearing'
-    }
+      screeningType: 'Hearing',
+    },
   },
   {
     id: '4',
@@ -56,8 +56,8 @@ export const mockNotifications: Notification[] = [
     actionUrl: '/students',
     metadata: {
       studentName: 'Aisha Patel',
-      schoolName: 'Roosevelt High School'
-    }
+      schoolName: 'Roosevelt High School',
+    },
   },
   {
     id: '5',
@@ -67,7 +67,7 @@ export const mockNotifications: Notification[] = [
     timestamp: '2024-06-02T08:00:00Z',
     isRead: true,
     priority: 'medium',
-    actionUrl: '/students'
+    actionUrl: '/students',
   },
   {
     id: '6',
@@ -78,8 +78,8 @@ export const mockNotifications: Notification[] = [
     isRead: true,
     priority: 'low',
     metadata: {
-      studentName: 'Sophie Chen'
-    }
+      studentName: 'Sophie Chen',
+    },
   },
   {
     id: '7',
@@ -92,8 +92,8 @@ export const mockNotifications: Notification[] = [
     actionUrl: '/school-support',
     metadata: {
       studentName: 'Jacob Thompson',
-      ticketId: '4'
-    }
+      ticketId: '4',
+    },
   },
   {
     id: '8',
@@ -103,6 +103,6 @@ export const mockNotifications: Notification[] = [
     timestamp: '2024-06-01T09:00:00Z',
     isRead: true,
     priority: 'low',
-    actionUrl: '/reports'
-  }
-];
+    actionUrl: '/speech-screening-reports',
+  },
+]

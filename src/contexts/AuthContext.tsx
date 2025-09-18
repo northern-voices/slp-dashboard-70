@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react'
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
@@ -111,8 +111,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session)
-
       if (session?.user) {
         // TODO: fetch additional user data from your profiles table here
         const transformedUser = transformUser(session.user)
@@ -127,7 +125,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription?.unsubscribe()
   }, [])
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true)
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -147,9 +145,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       const { error } = await supabase.auth.signOut()
       if (error) {
@@ -161,60 +159,65 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Logout error:', error)
       throw error
     }
-  }
+  }, [])
 
-  const signup = async (
-    email: string,
-    password: string,
-    organizationName: string,
-    firstName: string,
-    lastName: string
-  ): Promise<void> => {
-    setIsLoading(true)
-    try {
-      const userExists = await checkUserExists(email)
+  const signup = useCallback(
+    async (
+      email: string,
+      password: string,
+      organizationName: string,
+      firstName: string,
+      lastName: string
+    ): Promise<void> => {
+      setIsLoading(true)
+      try {
+        const userExists = await checkUserExists(email)
 
-      if (userExists) {
-        throw new Error('An account with this email already exists. Please try logging in instead.')
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            organizationName,
-            first_name: firstName,
-            last_name: lastName,
-            role: 'admin',
-          },
-          emailRedirectTo: `${window.location.origin}/auth/verify-email`,
-        },
-      })
-
-      if (error) {
-        if (error.message.includes('User already registered')) {
+        if (userExists) {
           throw new Error(
             'An account with this email already exists. Please try logging in instead.'
           )
         }
+
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              organizationName,
+              first_name: firstName,
+              last_name: lastName,
+              role: 'admin',
+            },
+            emailRedirectTo: `${window.location.origin}/auth/verify-email`,
+          },
+        })
+
+        if (error) {
+          if (error.message.includes('User already registered')) {
+            throw new Error(
+              'An account with this email already exists. Please try logging in instead.'
+            )
+          }
+          throw error
+        }
+
+        if (!data.user) {
+          throw new Error('Failed to create account. Please try again.')
+        }
+
+        console.log('Signup successful:', data)
+      } catch (error) {
+        console.error('Signup error:', error)
         throw error
+      } finally {
+        setIsLoading(false)
       }
+    },
+    []
+  )
 
-      if (!data.user) {
-        throw new Error('Failed to create account. Please try again.')
-      }
-
-      console.log('Signup successful:', data)
-    } catch (error) {
-      console.error('Signup error:', error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const resendVerificationEmail = async (email: string) => {
+  const resendVerificationEmail = useCallback(async (email: string) => {
     try {
       const { data, error } = await supabase.auth.resend({
         type: 'signup',
@@ -234,9 +237,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Resend verification email error:', error)
       throw error
     }
-  }
+  }, [])
 
-  const verifyEmail = async (token: string) => {
+  const verifyEmail = useCallback(async (token: string) => {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
         token_hash: token,
@@ -252,9 +255,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Email verification error:', error)
       throw error
     }
-  }
+  }, [])
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = useCallback(async (email: string) => {
     try {
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
@@ -269,9 +272,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Password reset error:', error)
       throw error
     }
-  }
+  }, [])
 
-  const updatePassword = async (token: string, newPassword: string) => {
+  const updatePassword = useCallback(async (token: string, newPassword: string) => {
     try {
       console.log('Attempting to update password with token:', token)
 
@@ -290,39 +293,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Password update process error:', error)
       throw error
     }
-  }
+  }, [])
 
-  const acceptInvitation = async (
-    token: string,
-    userData: {
-      email?: string
-      password?: string
-      organizationName?: string
-      firstName?: string
-      lastName?: string
-    }
-  ) => {
-    setIsLoading(true)
-    try {
-      // Example: If invitation includes signup
-      if (userData.email && userData.password) {
-        await signup(
-          userData.email,
-          userData.password,
-          userData.organizationName || '',
-          userData.firstName || '',
-          userData.lastName || ''
-        )
+  const acceptInvitation = useCallback(
+    async (
+      token: string,
+      userData: {
+        email?: string
+        password?: string
+        organizationName?: string
+        firstName?: string
+        lastName?: string
       }
-    } catch (error) {
-      console.error('Accept invitation error:', error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    ) => {
+      setIsLoading(true)
+      try {
+        // Example: If invitation includes signup
+        if (userData.email && userData.password) {
+          await signup(
+            userData.email,
+            userData.password,
+            userData.organizationName || '',
+            userData.firstName || '',
+            userData.lastName || ''
+          )
+        }
+      } catch (error) {
+        console.error('Accept invitation error:', error)
+        throw error
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [signup]
+  )
 
-  const checkUserExists = async (email: string): Promise<boolean> => {
+  const checkUserExists = useCallback(async (email: string): Promise<boolean> => {
     try {
       console.log('🔍 Checking if user exists:', email)
 
@@ -338,8 +344,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data, error } = await supabase
         .from('users')
         .select('id, email')
-        .eq('email', trimmedEmail)
         .limit(1)
+        .eq('email', trimmedEmail)
 
       if (error) {
         console.error('Error querying users table:', error)
@@ -358,7 +364,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('💥 Error in checkUserExists:', error)
       return false
     }
-  }
+  }, [])
 
   const value = useMemo(
     () => ({
@@ -374,19 +380,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       acceptInvitation,
       checkUserExists,
     }),
-    [
-      user,
-      isLoading,
-      login,
-      logout,
-      signup,
-      verifyEmail,
-      resendVerificationEmail,
-      resetPassword,
-      updatePassword,
-      acceptInvitation,
-      checkUserExists,
-    ]
+    [user, isLoading]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
