@@ -209,7 +209,7 @@ export const soundErrorPatterns = {
   },
   G: {
     patterns: [
-      { value: 'Fronting', display: 'Fronting G' },
+      { value: 'Fronting', display: 'Fronting D' },
       { value: 'Omission', display: 'Omission' },
       { value: 'Nasalization', display: 'Nasalization' },
       { value: 'Other', display: 'Other' },
