@@ -16,7 +16,6 @@ import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
 import { useSchoolGrades } from '@/hooks/use-school-grades'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { schoolGradesApi } from '@/api/schoolGrades'
 
 interface SpeechScreeningStep1Props {
   form: UseFormReturn<Record<string, unknown>>
