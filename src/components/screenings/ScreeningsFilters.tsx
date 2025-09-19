@@ -202,6 +202,7 @@ const ScreeningsFilters = ({
                     <SelectItem value='week'>This Week</SelectItem>
                     <SelectItem value='month'>This Month</SelectItem>
                     <SelectItem value='quarter'>This Quarter</SelectItem>
+                    <SelectItem value='school_year'>This School Year</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

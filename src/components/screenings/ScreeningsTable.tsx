@@ -149,6 +149,23 @@ const ScreeningsTable = ({
           matchesDateRange = screeningDate >= quarterAgo
           break
         }
+        case 'school_year': {
+          // School year starts September 1st
+          const currentDate = new Date()
+          const currentYear = currentDate.getFullYear()
+          const currentMonth = currentDate.getMonth() // 0-indexed (September = 8)
+
+          // Determine the start of the current school year
+          let schoolYearStart: Date
+          if (currentMonth >= 8) { // September or later
+            schoolYearStart = new Date(currentYear, 8, 1) // September 1st of current year
+          } else {
+            schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
+          }
+
+          matchesDateRange = screeningDate >= schoolYearStart
+          break
+        }
       }
     }
 
