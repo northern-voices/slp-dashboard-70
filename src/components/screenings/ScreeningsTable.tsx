@@ -742,6 +742,13 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
           />
         )}
 
+        <div className='flex justify-end mb-3'>
+          <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
+            {filteredScreenings.length} screening{filteredScreenings.length !== 1 ? 's' : ''}{' '}
+            found
+          </span>
+        </div>
+
         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <ResponsiveTable className='w-full'>
             <TableHeader>
@@ -779,7 +786,6 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                   </Button>
                 </TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
-                <TableHead className='w-12'></TableHead>
               </tr>
             </TableHeader>
             <TableBody>
