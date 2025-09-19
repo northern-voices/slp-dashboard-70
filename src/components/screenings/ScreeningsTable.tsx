@@ -174,6 +174,7 @@ const ScreeningsTable = ({
     if (qualifiesForSpeechProgramFilter !== 'all' && screening.error_patterns?.screening_metadata) {
       const qualifies = screening.error_patterns.screening_metadata.qualifies_for_speech_program
       const sub = screening.error_patterns.screening_metadata.sub
+      const graduated = screening.error_patterns.screening_metadata.graduated
 
       if (qualifiesForSpeechProgramFilter === 'qualifies') {
         matchesQualifiesForSpeechProgram = qualifies === true && !sub
@@ -181,6 +182,8 @@ const ScreeningsTable = ({
         matchesQualifiesForSpeechProgram = qualifies === false && !sub
       } else if (qualifiesForSpeechProgramFilter === 'sub') {
         matchesQualifiesForSpeechProgram = sub === true
+      } else if (qualifiesForSpeechProgramFilter === 'graduated') {
+        matchesQualifiesForSpeechProgram = graduated === true
       }
     }
 
