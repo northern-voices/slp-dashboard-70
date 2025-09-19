@@ -36,6 +36,7 @@ interface EnhancedSpeechScreeningFieldsProps {
     vocabulary_support_recommended?: boolean
     qualifies_for_speech_program?: boolean
     sub?: boolean
+    graduated?: boolean
     areasOfConcern?: Record<string, string | null>
   }>
 }
@@ -1438,17 +1439,20 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
               <Checkbox
                 id='qualifies_for_speech_program'
                 checked={form.watch('qualifies_for_speech_program') || false}
-                disabled={form.watch('sub') || false}
+                disabled={form.watch('sub') || form.watch('graduated') || false}
                 onCheckedChange={checked => {
                   form.setValue('qualifies_for_speech_program', checked as boolean)
                   if (checked) {
                     form.setValue('sub', false)
+                    form.setValue('graduated', false)
                   }
                 }}
               />
               <Label
                 htmlFor='qualifies_for_speech_program'
-                className={`text-sm font-medium ${form.watch('sub') ? 'text-gray-400' : ''}`}>
+                className={`text-sm font-medium ${form.watch('sub') ? 'text-gray-400' : ''} ${
+                  form.watch('graduated') ? 'text-gray-400' : ''
+                }`}>
                 Qualifies for Speech Program
               </Label>
             </div>
@@ -1457,11 +1461,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
               <Checkbox
                 id='sub'
                 checked={form.watch('sub') || false}
-                disabled={form.watch('qualifies_for_speech_program') || false}
+                disabled={
+                  form.watch('qualifies_for_speech_program') || form.watch('graduated') || false
+                }
                 onCheckedChange={checked => {
                   form.setValue('sub', checked as boolean)
                   if (checked) {
                     form.setValue('qualifies_for_speech_program', false)
+                    form.setValue('graduated', false)
                   }
                 }}
               />
@@ -1469,8 +1476,31 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                 htmlFor='sub'
                 className={`text-sm font-medium ${
                   form.watch('qualifies_for_speech_program') ? 'text-gray-400' : ''
-                }`}>
+                } ${form.watch('graduated') ? 'text-gray-400' : ''}`}>
                 Sub
+              </Label>
+            </div>
+
+            <div className='flex items-center space-x-2'>
+              <Checkbox
+                id='graduated'
+                checked={form.watch('graduated') || false}
+                disabled={form.watch('qualifies_for_speech_program') || form.watch('sub') || false}
+                onCheckedChange={checked => {
+                  form.setValue('graduated', checked as boolean)
+                  if (checked) {
+                    form.setValue('qualifies_for_speech_program', false)
+                    form.setValue('sub', false)
+                  }
+                }}
+              />
+              <Label
+                htmlFor='graduated'
+                className={`text-sm font-medium ${
+                  form.watch('qualifies_for_speech_program') ? 'text-gray-400' : ''
+                } 
+                ${form.watch('sub') ? 'text-gray-400' : ''}`}>
+                Graduated
               </Label>
             </div>
           </div>
