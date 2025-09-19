@@ -345,7 +345,7 @@ const ScreeningsTable = ({
     const config = resultConfig[result as keyof typeof resultConfig]
     if (!config) return null
 
-    return <Badge className={`${config.color} font-medium`}>{config.label}</Badge>
+    return <Badge className={`${config.color} font-medium text-[10px]`}>{config.label}</Badge>
   }
 
   const getQualificationBadge = (screening: Screening) => {
@@ -355,21 +355,25 @@ const ScreeningsTable = ({
     const noConsent = screening.result === 'non_registered_no_consent'
 
     if (noConsent) {
-      return <Badge className='bg-gray-100 text-gray-800 font-medium'>No Consent</Badge>
+      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     }
 
     if (qualifies === undefined && sub === undefined && graduated === undefined) {
-      return <Badge className='bg-gray-100 text-gray-800 font-medium'>Not Set</Badge>
+      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
     }
 
     if (graduated) {
-      return <Badge className='bg-blue-100 text-blue-800 font-medium'>Graduated</Badge>
+      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
     } else if (sub) {
-      return <Badge className='bg-orange-100 text-orange-800 font-medium'>Sub</Badge>
+      return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
     } else if (qualifies) {
-      return <Badge className='bg-red-100 text-red-800 font-medium'>Qualifies</Badge>
+      return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
     } else {
-      return <Badge className='bg-green-100 text-green-800 font-medium'>Not In Program</Badge>
+      return (
+        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
+          Not In Program
+        </Badge>
+      )
     }
   }
 
@@ -823,7 +827,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-                      <div className='flex items-center gap-2'>{getResultSelector(screening)}</div>
+                      <div className='flex items-center gap-'>{getResultSelector(screening)}</div>
                       <div className='flex items-center gap-2'>{getProgramSelector(screening)}</div>
                       <div className='text-sm text-gray-600 space-y-1'>
                         <p>
