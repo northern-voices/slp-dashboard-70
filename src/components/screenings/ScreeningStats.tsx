@@ -15,12 +15,12 @@ const ScreeningStats = () => {
   const stats = {
     totalScreenings: schoolScreenings.length,
     qualifiedScreenings: schoolScreenings.filter(
-      s => s.error_patterns.screening_metadata.qualifies_for_speech_program === true
+      s => s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true
     ).length,
-    subsScreenings: schoolScreenings.filter(s => s.error_patterns.screening_metadata.sub === true)
+    subsScreenings: schoolScreenings.filter(s => s.error_patterns?.screening_metadata?.sub === true)
       .length,
     scheduledScreenings: schoolScreenings.filter(
-      s => s.error_patterns.screening_metadata.graduated === true
+      s => s.error_patterns?.screening_metadata?.graduated === true
     ).length,
   }
 
