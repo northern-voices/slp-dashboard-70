@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, CheckCircle, Clock, FileText, Loader2 } from 'lucide-react'
+import { Calendar, CheckCircle, Clock, FileText } from 'lucide-react'
 import { useScreenings } from '@/hooks/screenings/use-screenings'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
@@ -12,20 +12,16 @@ const ScreeningStats = () => {
     ? (allScreenings || []).filter(screening => screening.school_id === currentSchool.id)
     : allScreenings || []
 
-  // Calculate stats from real data
   const stats = {
     totalScreenings: schoolScreenings.length,
-    completedScreenings: schoolScreenings.filter(s => s.status === 'completed').length,
-    pendingScreenings: schoolScreenings.filter(s => s.status === 'in_progress').length,
-    scheduledScreenings: schoolScreenings.filter(s => s.status === 'scheduled').length,
-    completionRate:
-      schoolScreenings.length > 0
-        ? Math.round(
-            (schoolScreenings.filter(s => s.status === 'completed').length /
-              schoolScreenings.length) *
-              100
-          )
-        : 0,
+    qualifiedScreenings: schoolScreenings.filter(
+      s => s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true
+    ).length,
+    subsScreenings: schoolScreenings.filter(s => s.error_patterns?.screening_metadata?.sub === true)
+      .length,
+    scheduledScreenings: schoolScreenings.filter(
+      s => s.error_patterns?.screening_metadata?.graduated === true
+    ).length,
   }
 
   if (isLoading) {
@@ -70,40 +66,36 @@ const ScreeningStats = () => {
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.totalScreenings}</div>
-          <p className='text-xs text-muted-foreground'>All time</p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>Completed</CardTitle>
+          <CardTitle className='text-sm font-medium'>Qualified</CardTitle>
           <CheckCircle className='h-4 w-4 text-muted-foreground' />
         </CardHeader>
         <CardContent>
-          <div className='text-2xl font-bold'>{stats.completedScreenings}</div>
-          <p className='text-xs text-muted-foreground'>{stats.completionRate}% completion rate</p>
+          <div className='text-2xl font-bold'>{stats.qualifiedScreenings}</div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>In Progress</CardTitle>
+          <CardTitle className='text-sm font-medium'>Subs</CardTitle>
           <Clock className='h-4 w-4 text-muted-foreground' />
         </CardHeader>
         <CardContent>
-          <div className='text-2xl font-bold'>{stats.pendingScreenings}</div>
-          <p className='text-xs text-muted-foreground'>Requires attention</p>
+          <div className='text-2xl font-bold'>{stats.subsScreenings}</div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>Scheduled</CardTitle>
+          <CardTitle className='text-sm font-medium'>Graduated</CardTitle>
           <Calendar className='h-4 w-4 text-muted-foreground' />
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.scheduledScreenings}</div>
-          <p className='text-xs text-muted-foreground'>Upcoming</p>
         </CardContent>
       </Card>
     </div>

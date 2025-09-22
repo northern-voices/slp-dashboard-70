@@ -1,12 +1,25 @@
-import React from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar, User, FileText, X, AlertCircle, CheckCircle, Clock, Edit } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Calendar,
+  User,
+  FileText,
+  X,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Edit2,
+  Save,
+  XCircle,
+} from 'lucide-react'
 import { format } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { Screening } from '@/types/database'
-import { useNavigate } from 'react-router-dom'
+import { useUpdateSpeechScreening } from '@/hooks/screenings/use-screening-mutations'
 
 interface ScreeningDetailsModalProps {
   isOpen: boolean
@@ -15,9 +28,119 @@ interface ScreeningDetailsModalProps {
 }
 
 const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsModalProps) => {
+  const [isEditingClinicalNotes, setIsEditingClinicalNotes] = useState(false)
+  const [isEditingAdditionalObservations, setIsEditingAdditionalObservations] = useState(false)
+  const [isEditingReferralNotes, setIsEditingReferralNotes] = useState(false)
+  const [clinicalNotesText, setClinicalNotesText] = useState('')
+  const [additionalObservationsText, setAdditionalObservationsText] = useState('')
+  const [referralNotesText, setReferralNotesText] = useState('')
+  const [currentScreening, setCurrentScreening] = useState<Screening | null>(null)
   const navigate = useNavigate()
 
-  if (!screening) return null
+  const updateSpeechScreening = useUpdateSpeechScreening()
+
+  // Update currentScreening when screening prop changes
+  useEffect(() => {
+    setCurrentScreening(screening)
+  }, [screening])
+
+  if (!currentScreening) return null
+
+  const handleEditClinicalNotes = () => {
+    setClinicalNotesText(currentScreening.clinical_notes || '')
+    setIsEditingClinicalNotes(true)
+  }
+
+  const handleEditAdditionalObservations = () => {
+    setAdditionalObservationsText(currentScreening.error_patterns?.additional_observations || '')
+    setIsEditingAdditionalObservations(true)
+  }
+
+  const handleSaveClinicalNotes = () => {
+    // Update local state immediately for instant UI feedback
+    setCurrentScreening(prev =>
+      prev
+        ? {
+            ...prev,
+            clinical_notes: clinicalNotesText,
+          }
+        : null
+    )
+
+    updateSpeechScreening.mutate({
+      id: currentScreening.id,
+      data: {
+        clinical_notes: clinicalNotesText,
+      },
+    })
+    setIsEditingClinicalNotes(false)
+  }
+
+  const handleSaveAdditionalObservations = () => {
+    // Update local state immediately for instant UI feedback
+    setCurrentScreening(prev =>
+      prev
+        ? {
+            ...prev,
+            error_patterns: {
+              ...prev.error_patterns,
+              additional_observations: additionalObservationsText,
+            },
+          }
+        : null
+    )
+
+    updateSpeechScreening.mutate({
+      id: currentScreening.id,
+      data: {
+        error_patterns: {
+          ...currentScreening.error_patterns,
+          additional_observations: additionalObservationsText,
+        },
+      },
+    })
+    setIsEditingAdditionalObservations(false)
+  }
+
+  const handleCancelClinicalNotes = () => {
+    setIsEditingClinicalNotes(false)
+    setClinicalNotesText('')
+  }
+
+  const handleCancelAdditionalObservations = () => {
+    setIsEditingAdditionalObservations(false)
+    setAdditionalObservationsText('')
+  }
+
+  const handleEditReferralNotes = () => {
+    setReferralNotesText(currentScreening.referral_notes || '')
+    setIsEditingReferralNotes(true)
+  }
+
+  const handleSaveReferralNotes = () => {
+    // Update local state immediately for instant UI feedback
+    setCurrentScreening(prev =>
+      prev
+        ? {
+            ...prev,
+            referral_notes: referralNotesText,
+          }
+        : null
+    )
+
+    updateSpeechScreening.mutate({
+      id: currentScreening.id,
+      data: {
+        referral_notes: referralNotesText,
+      },
+    })
+    setIsEditingReferralNotes(false)
+  }
+
+  const handleCancelReferralNotes = () => {
+    setIsEditingReferralNotes(false)
+    setReferralNotesText('')
+  }
 
   const handleEditScreening = () => {
     navigate(`/edit-screening/${screening.id}`)
@@ -85,9 +208,9 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   }
 
   const renderArticulationData = () => {
-    if (!screening.error_patterns?.articulation) return null
+    if (!currentScreening.error_patterns?.articulation) return null
 
-    const articulation = screening.error_patterns.articulation
+    const articulation = currentScreening.error_patterns.articulation
     const soundErrors = articulation.soundErrors || []
 
     return (
@@ -175,9 +298,9 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   }
 
   const renderAreasOfConcern = () => {
-    if (!screening.error_patterns?.add_areas_of_concern) return null
+    if (!currentScreening.error_patterns?.add_areas_of_concern) return null
 
-    const areas = screening.error_patterns.add_areas_of_concern
+    const areas = currentScreening.error_patterns.add_areas_of_concern
     const areasWithData = Object.entries(areas).filter(
       ([_, value]) => value !== null && value !== ''
     )
@@ -208,9 +331,9 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   }
 
   const renderAttendanceInfo = () => {
-    if (!screening.error_patterns?.attendance) return null
+    if (!currentScreening.error_patterns?.attendance) return null
 
-    const attendance = screening.error_patterns.attendance
+    const attendance = currentScreening.error_patterns.attendance
 
     return (
       <div className='space-y-4'>
@@ -244,9 +367,9 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   }
 
   const renderScreeningMetadata = () => {
-    if (!screening.error_patterns?.screening_metadata) return null
+    if (!currentScreening.error_patterns?.screening_metadata) return null
 
-    const metadata = screening.error_patterns.screening_metadata
+    const metadata = currentScreening.error_patterns.screening_metadata
 
     return (
       <div className='space-y-4'>
@@ -312,7 +435,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
             </DialogTitle>
             <div className='flex items-center gap-2'>
               <Button variant='outline' size='sm' onClick={handleEditScreening}>
-                <Edit className='w-4 h-4 mr-2' />
+                <Edit2 className='w-4 h-4 mr-2' />
                 Edit Screening
               </Button>
               <Button variant='ghost' size='sm' onClick={onClose}>
@@ -330,16 +453,16 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
               <div className='space-y-1'>
                 <div className='flex items-center gap-2'>
                   <User className='w-4 h-4 text-gray-500' />
-                  <span className='font-medium'>{screening.student_name}</span>
+                  <span className='font-medium'>{currentScreening.student_name}</span>
                 </div>
-                <p className='text-sm text-gray-600 ml-6'>Grade {screening.grade}</p>
-                {screening.academic_year && (
+                <p className='text-sm text-gray-600 ml-6'>Grade {currentScreening.grade}</p>
+                {currentScreening.academic_year && (
                   <p className='text-sm text-gray-600 ml-6'>
-                    Academic Year: {screening.academic_year}
+                    Academic Year: {currentScreening.academic_year}
                   </p>
                 )}
                 <p className='text-sm text-gray-600 ml-6'>
-                  School: {screening.school_name || 'Unknown School'}
+                  School: {currentScreening.school_name || 'Unknown School'}
                 </p>
               </div>
             </div>
@@ -347,31 +470,32 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
             <div>
               <h3 className='font-medium text-gray-900 mb-2'>Screening Information</h3>
               <div className='space-y-1'>
-                <p className='text-sm text-gray-600 ml-2'>Screener: {screening.screener}</p>
-                {screening.screening_type && (
+                <p className='text-sm text-gray-600 ml-2'>Screener: {currentScreening.screener}</p>
+                {currentScreening.screening_type && (
                   <p className='text-sm text-gray-600 ml-2'>
                     Screening Type:{' '}
-                    {screening.screening_type.charAt(0).toUpperCase() +
-                      screening.screening_type.slice(1)}
+                    {currentScreening.screening_type.charAt(0).toUpperCase() +
+                      currentScreening.screening_type.slice(1)}
                   </p>
                 )}
                 <p className='text-sm text-gray-600 ml-2'>
-                  Screening Date: {format(new Date(screening.created_at), 'MMM d, yyyy h:mm a')}
+                  Screening Date:{' '}
+                  {format(new Date(currentScreening.created_at), 'MMM d, yyyy h:mm a')}
                 </p>
                 <p className='text-sm text-gray-600 ml-2'>
-                  Updated: {format(new Date(screening.updated_at), 'MMM d, yyyy h:mm a')}
+                  Updated: {format(new Date(currentScreening.updated_at), 'MMM d, yyyy h:mm a')}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Sound Errors Summary as badges */}
-          {screening.error_patterns?.articulation?.soundErrors &&
-            screening.error_patterns.articulation.soundErrors.length > 0 && (
+          {currentScreening.error_patterns?.articulation?.soundErrors &&
+            currentScreening.error_patterns.articulation.soundErrors.length > 0 && (
               <div className='flex flex-col gap-2'>
                 <h4 className='font-medium text-gray-900'>Error Sounds:</h4>
                 <div className='flex flex-wrap gap-2'>
-                  {screening.error_patterns.articulation.soundErrors
+                  {currentScreening.error_patterns.articulation.soundErrors
                     .filter(
                       soundError => soundError.errorPatterns && soundError.errorPatterns.length > 0
                     )
@@ -387,15 +511,15 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
             )}
 
           {/* Speech-specific flags - Only show if not absent */}
-          {!screening.error_patterns?.attendance?.absent && (
+          {!currentScreening.error_patterns?.attendance?.absent && (
             <div className='flex flex-col gap-2'>
               <h4 className='font-medium text-gray-900'>Result:</h4>
               <div className='flex flex-wrap gap-2'>
-                {getResultBadge(screening.result)}
-                {screening.vocabulary_support && (
+                {getResultBadge(currentScreening.result)}
+                {currentScreening.vocabulary_support && (
                   <Badge className='bg-blue-100 text-blue-800'>Vocabulary Support</Badge>
                 )}
-                {screening.error_patterns?.add_areas_of_concern?.suspected_cas && (
+                {currentScreening.error_patterns?.add_areas_of_concern?.suspected_cas && (
                   <Badge className='bg-purple-100 text-purple-800'>Suspected CAS</Badge>
                 )}
               </div>
@@ -403,13 +527,13 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
           )}
 
           {/* Enhanced Backend Details for Speech Screenings */}
-          {screening.error_patterns && (
+          {currentScreening.error_patterns && (
             <div className='space-y-6'>
               {/* Attendance Information */}
               {renderAttendanceInfo()}
 
               {/* Only show other details if student is not absent */}
-              {!screening.error_patterns.attendance?.absent && (
+              {!currentScreening.error_patterns.attendance?.absent && (
                 <>
                   {/* Screening Metadata */}
                   {renderScreeningMetadata()}
@@ -425,45 +549,145 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
           )}
 
           {/* Notes Section - Only show if not absent */}
-          {!screening.error_patterns?.attendance?.absent && (
+          {!currentScreening.error_patterns?.attendance?.absent && (
             <div className='space-y-4'>
-              {screening.clinical_notes && (
+              {(currentScreening.clinical_notes || isEditingClinicalNotes) && (
                 <>
                   <h3 className='font-medium text-gray-900'>Clinical Notes:</h3>
 
                   <div>
-                    <h4 className='text-sm font-medium text-gray-700 mb-2'>
-                      Clinical Observations
-                    </h4>
-                    <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
-                      {screening.clinical_notes}
-                    </p>
+                    <div className='flex items-center justify-between mb-2'>
+                      <h4 className='text-sm font-medium text-gray-700'>Clinical Observations</h4>
+                      {!isEditingClinicalNotes && (
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          onClick={handleEditClinicalNotes}
+                          className='h-6 px-2'>
+                          <Edit2 className='w-3 h-3 mr-1' />
+                          Edit
+                        </Button>
+                      )}
+                    </div>
+                    {isEditingClinicalNotes ? (
+                      <div className='space-y-2'>
+                        <Textarea
+                          value={clinicalNotesText}
+                          onChange={e => setClinicalNotesText(e.target.value)}
+                          className='min-h-[100px] text-sm'
+                          placeholder='Enter clinical observations...'
+                        />
+                        <div className='flex gap-2 justify-end'>
+                          <Button variant='outline' size='sm' onClick={handleCancelClinicalNotes}>
+                            <XCircle className='w-3 h-3 mr-1' />
+                            Cancel
+                          </Button>
+                          <Button size='sm' onClick={handleSaveClinicalNotes}>
+                            <Save className='w-3 h-3 mr-1' />
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
+                        {currentScreening.clinical_notes}
+                      </p>
+                    )}
                   </div>
                 </>
               )}
 
-              {screening.error_patterns?.additional_observations && (
+              {(currentScreening.error_patterns?.additional_observations ||
+                isEditingAdditionalObservations) && (
                 <div>
-                  <h4 className='text-sm font-medium text-gray-700 mb-2'>
-                    Additional Observations
-                  </h4>
-                  <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
-                    {screening.error_patterns.additional_observations}
-                  </p>
+                  <div className='flex items-center justify-between mb-2'>
+                    <h4 className='text-sm font-medium text-gray-700'>Additional Observations</h4>
+                    {!isEditingAdditionalObservations && (
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        onClick={handleEditAdditionalObservations}
+                        className='h-6 px-2'>
+                        <Edit2 className='w-3 h-3 mr-1' />
+                        Edit
+                      </Button>
+                    )}
+                  </div>
+                  {isEditingAdditionalObservations ? (
+                    <div className='space-y-2'>
+                      <Textarea
+                        value={additionalObservationsText}
+                        onChange={e => setAdditionalObservationsText(e.target.value)}
+                        className='min-h-[100px] text-sm'
+                        placeholder='Enter additional observations...'
+                      />
+                      <div className='flex gap-2 justify-end'>
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={handleCancelAdditionalObservations}>
+                          <XCircle className='w-3 h-3 mr-1' />
+                          Cancel
+                        </Button>
+                        <Button size='sm' onClick={handleSaveAdditionalObservations}>
+                          <Save className='w-3 h-3 mr-1' />
+                          Save
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
+                      {currentScreening.error_patterns.additional_observations}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
           )}
 
           {/* Referral Notes Section - Only show if not absent */}
-          {screening.referral_notes && !screening.error_patterns?.attendance?.absent && (
-            <div>
-              <h3 className='font-medium text-gray-900 mb-2'>Referral Notes</h3>
-              <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
-                {screening.referral_notes}
-              </p>
-            </div>
-          )}
+          {(currentScreening.referral_notes || isEditingReferralNotes) &&
+            !currentScreening.error_patterns?.attendance?.absent && (
+              <div>
+                <div className='flex items-center justify-between mb-2'>
+                  <h3 className='font-medium text-gray-900'>Referral Notes</h3>
+                  {!isEditingReferralNotes && (
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={handleEditReferralNotes}
+                      className='h-6 px-2'>
+                      <Edit2 className='w-3 h-3 mr-1' />
+                      Edit
+                    </Button>
+                  )}
+                </div>
+                {isEditingReferralNotes ? (
+                  <div className='space-y-2'>
+                    <Textarea
+                      value={referralNotesText}
+                      onChange={e => setReferralNotesText(e.target.value)}
+                      className='min-h-[100px] text-sm'
+                      placeholder='Enter referral notes...'
+                    />
+                    <div className='flex gap-2 justify-end'>
+                      <Button variant='outline' size='sm' onClick={handleCancelReferralNotes}>
+                        <XCircle className='w-3 h-3 mr-1' />
+                        Cancel
+                      </Button>
+                      <Button size='sm' onClick={handleSaveReferralNotes}>
+                        <Save className='w-3 h-3 mr-1' />
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
+                    {currentScreening.referral_notes}
+                  </p>
+                )}
+              </div>
+            )}
         </div>
       </DialogContent>
     </Dialog>

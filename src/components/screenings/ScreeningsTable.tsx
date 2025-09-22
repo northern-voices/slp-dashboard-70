@@ -53,6 +53,7 @@ import {
   useUpdateSpeechScreening,
 } from '@/hooks/screenings/use-screening-mutations'
 import { useToast } from '@/hooks/use-toast'
+import { SCREENING_RESULTS } from '@/constants/screeningResults'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -149,6 +150,23 @@ const ScreeningsTable = ({
           matchesDateRange = screeningDate >= quarterAgo
           break
         }
+        case 'school_year': {
+          // School year starts September 1st
+          const currentDate = new Date()
+          const currentYear = currentDate.getFullYear()
+          const currentMonth = currentDate.getMonth() // 0-indexed (September = 8)
+
+          // Determine the start of the current school year
+          let schoolYearStart: Date
+          if (currentMonth >= 8) { // September or later
+            schoolYearStart = new Date(currentYear, 8, 1) // September 1st of current year
+          } else {
+            schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
+          }
+
+          matchesDateRange = screeningDate >= schoolYearStart
+          break
+        }
       }
     }
 
@@ -157,6 +175,7 @@ const ScreeningsTable = ({
     if (qualifiesForSpeechProgramFilter !== 'all' && screening.error_patterns?.screening_metadata) {
       const qualifies = screening.error_patterns.screening_metadata.qualifies_for_speech_program
       const sub = screening.error_patterns.screening_metadata.sub
+      const graduated = screening.error_patterns.screening_metadata.graduated
 
       if (qualifiesForSpeechProgramFilter === 'qualifies') {
         matchesQualifiesForSpeechProgram = qualifies === true && !sub
@@ -164,6 +183,8 @@ const ScreeningsTable = ({
         matchesQualifiesForSpeechProgram = qualifies === false && !sub
       } else if (qualifiesForSpeechProgramFilter === 'sub') {
         matchesQualifiesForSpeechProgram = sub === true
+      } else if (qualifiesForSpeechProgramFilter === 'graduated') {
+        matchesQualifiesForSpeechProgram = graduated === true
       }
     }
 
@@ -319,62 +340,48 @@ const ScreeningsTable = ({
   const getResultBadge = (result?: string) => {
     if (!result) return null
 
-    const resultConfig = {
-      absent: { label: 'Absent', color: 'bg-gray-100 text-gray-800' },
-      age_appropriate: { label: 'Age Appropriate', color: 'bg-blue-100 text-blue-800' },
-      complex_needs: { label: 'Complex Needs', color: 'bg-purple-300 text-purple-800' },
-      mild: { label: 'Mild', color: 'bg-yellow-100 text-yellow-800' },
-      mild_moderate: { label: 'Mild Moderate', color: 'bg-yellow-100 text-yellow-800' },
-      moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800' },
-      monitor: { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800' },
-      non_registered_no_consent: {
-        label: 'No Consent',
-        color: 'bg-gray-100 text-gray-800',
-      },
-      passed: { label: 'Passed', color: 'bg-green-100 text-green-800' },
-      profound: { label: 'Profound', color: 'bg-red-300 text-red-800' },
-      severe: { label: 'Severe', color: 'bg-red-100 text-red-800' },
-      severe_profound: { label: 'Severe Profound', color: 'bg-red-100 text-red-800' },
-      no_errors: { label: 'No Errors', color: 'bg-green-100 text-green-800' },
-      unable_to_screen: {
-        label: 'Non-Compliant',
-        color: 'bg-purple-100 text-purple-800',
-      },
-    }
-
-    const config = resultConfig[result as keyof typeof resultConfig]
+    const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
     if (!config) return null
 
-    return <Badge className={`${config.color} font-medium`}>{config.label}</Badge>
+    return <Badge className={`${config.color} font-medium text-[10px]`}>{config.label}</Badge>
   }
 
   const getQualificationBadge = (screening: Screening) => {
     const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
     const sub = screening.error_patterns?.screening_metadata?.sub
+    const graduated = screening.error_patterns?.screening_metadata?.graduated
     const noConsent = screening.result === 'non_registered_no_consent'
 
     if (noConsent) {
-      return <Badge className='bg-gray-100 text-gray-800 font-medium'>No Consent</Badge>
+      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     }
 
-    if (qualifies === undefined && sub === undefined) {
-      return <Badge className='bg-gray-100 text-gray-800 font-medium'>Not Set</Badge>
+    if (qualifies === undefined && sub === undefined && graduated === undefined) {
+      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
     }
 
-    if (sub) {
-      return <Badge className='bg-orange-100 text-orange-800 font-medium'>Sub</Badge>
+    if (graduated) {
+      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+    } else if (sub) {
+      return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
     } else if (qualifies) {
-      return <Badge className='bg-red-100 text-red-800 font-medium'>Qualifies</Badge>
+      return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
     } else {
-      return <Badge className='bg-green-100 text-green-800 font-medium'>Not In Program</Badge>
+      return (
+        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
+          Not In Program
+        </Badge>
+      )
     }
   }
 
   const getProgramValue = (screening: Screening): string => {
     const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
     const sub = screening.error_patterns?.screening_metadata?.sub
+    const graduated = screening.error_patterns?.screening_metadata?.graduated
 
     if (sub) return 'sub'
+    if (graduated) return 'graduated'
     if (qualifies === true) return 'qualifies'
     if (qualifies === false) return 'not_in_program'
     return 'not_set'
@@ -536,26 +543,36 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
     if (screening.source_table === 'speech') {
       setUpdatingProgramId(screening.id)
 
-      // Parse the program value to determine qualifies_for_speech_program and sub
+      // Parse the program value to determine qualifies_for_speech_program, sub, and graduated
       let qualifies_for_speech_program: boolean | undefined
       let sub: boolean | undefined
+      let graduated: boolean | undefined
 
       switch (newProgram) {
         case 'qualifies':
           qualifies_for_speech_program = true
           sub = false
+          graduated = false
           break
         case 'not_in_program':
           qualifies_for_speech_program = false
           sub = false
+          graduated = false
           break
         case 'sub':
           qualifies_for_speech_program = undefined
           sub = true
+          graduated = false
+          break
+        case 'graduated':
+          qualifies_for_speech_program = undefined
+          sub = false
+          graduated = true
           break
         default:
           qualifies_for_speech_program = undefined
           sub = undefined
+          graduated = undefined
       }
 
       // Update the error_patterns with the new qualification data
@@ -565,6 +582,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
           ...screening.error_patterns?.screening_metadata,
           qualifies_for_speech_program,
           sub,
+          graduated,
         },
       }
 
@@ -604,18 +622,18 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
 
   // Define the result options
   const resultOptions = [
-    { value: 'absent', label: 'Absent' },
+    { value: 'no_errors', label: 'No Errors' },
     { value: 'age_appropriate', label: 'Age Appropriate' },
-    { value: 'complex_needs', label: 'Complex Needs' },
+    { value: 'monitor', label: 'Monitor' },
     { value: 'mild', label: 'Mild' },
     { value: 'moderate', label: 'Moderate' },
-    // { value: 'monitor', label: 'Monitor' },
-    { value: 'non_registered_no_consent', label: 'No Consent' },
-    { value: 'passed', label: 'Passed' },
-    { value: 'profound', label: 'Profound' },
     { value: 'severe', label: 'Severe' },
-    { value: 'no_errors', label: 'No Errors' },
+    { value: 'profound', label: 'Profound' },
+    { value: 'complex_needs', label: 'Complex Needs' },
     { value: 'unable_to_screen', label: 'Non-Compliant' },
+    { value: 'absent', label: 'Absent' },
+    { value: 'non_registered_no_consent', label: 'No Consent' },
+    // { value: 'passed', label: 'Passed' },
   ]
 
   // Define the program qualification options
@@ -624,6 +642,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
     { value: 'not_in_program', label: 'Not In Program' },
     { value: 'sub', label: 'Sub' },
     { value: 'not_set', label: 'Not Set' },
+    { value: 'graduated', label: 'Graduated' },
   ]
 
   const {
@@ -721,6 +740,13 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
           />
         )}
 
+        <div className='flex justify-end mb-3'>
+          <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
+            {filteredScreenings.length} screening{filteredScreenings.length !== 1 ? 's' : ''}{' '}
+            found
+          </span>
+        </div>
+
         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <ResponsiveTable className='w-full'>
             <TableHeader>
@@ -758,7 +784,6 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                   </Button>
                 </TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
-                <TableHead className='w-12'></TableHead>
               </tr>
             </TableHeader>
             <TableBody>
@@ -806,7 +831,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-                      <div className='flex items-center gap-2'>{getResultSelector(screening)}</div>
+                      <div className='flex items-center gap-'>{getResultSelector(screening)}</div>
                       <div className='flex items-center gap-2'>{getProgramSelector(screening)}</div>
                       <div className='text-sm text-gray-600 space-y-1'>
                         <p>

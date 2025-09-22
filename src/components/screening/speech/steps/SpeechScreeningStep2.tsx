@@ -13,12 +13,14 @@ import {
 } from '@/components/ui/select'
 import { Calendar } from 'lucide-react'
 import EnhancedSpeechScreeningFields from '../EnhancedSpeechScreeningFields'
+import { Student } from '@/types/database'
 
 interface SpeechScreeningStep2Props {
   form: UseFormReturn
+  selectedStudent: Student | null
 }
 
-const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
+const SpeechScreeningStep2 = ({ form, selectedStudent }: SpeechScreeningStep2Props) => {
   return (
     <div className='space-y-6'>
       <Card>
@@ -29,6 +31,16 @@ const SpeechScreeningStep2 = ({ form }: SpeechScreeningStep2Props) => {
           </CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
+          {selectedStudent && (
+            <div className='mb-4 py-3 px-5 bg-blue-50 rounded-lg border border-blue-200'>
+              <div className='flex items-center gap-2'>
+                <span className='text-sm font-medium text-blue-900'>Student Name:</span>
+                <span className='text-sm font-semibold text-blue-800'>
+                  {selectedStudent.first_name} {selectedStudent.last_name}
+                </span>
+              </div>
+            </div>
+          )}
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div>
               <Label htmlFor='screening_type' className='mb-2 block'>

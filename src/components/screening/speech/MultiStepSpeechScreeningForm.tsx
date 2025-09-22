@@ -66,6 +66,7 @@ const MultiStepSpeechScreeningForm = ({
       vocabulary_support_recommended: false,
       qualifies_for_speech_program: false,
       sub: false,
+      graduated: false,
       general_articulation_notes: '',
       clinical_notes: '',
       referral_notes: '',
@@ -294,6 +295,7 @@ const MultiStepSpeechScreeningForm = ({
           vocabulary_support_recommended:
             (formData.vocabulary_support_recommended as boolean) || false,
           sub: (formData.sub as boolean) || false,
+          graduated: (formData.graduated as boolean) || false,
         },
 
         add_areas_of_concern: {
@@ -383,7 +385,7 @@ const MultiStepSpeechScreeningForm = ({
           />
         )
       case 2:
-        return <SpeechScreeningStep2 form={form as unknown as UseFormReturn} />
+        return <SpeechScreeningStep2 form={form as unknown as UseFormReturn} selectedStudent={selectedStudent} />
       default:
         return null
     }
