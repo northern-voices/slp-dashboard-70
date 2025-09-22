@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Volume2, Mic, Target, TrendingUp } from 'lucide-react'
+import { Volume2, Mic, Target, TrendingUp, CheckCircle, XCircle, Plus, List } from 'lucide-react'
 import {
   Form,
   FormControl,
@@ -26,6 +26,9 @@ import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { ReportService } from '@/services/reportService'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
+import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
@@ -38,6 +41,11 @@ type ReportFormData = z.infer<typeof reportSchema>
 const ReportGenerationForm = () => {
   const { currentSchool } = useOrganization()
   const { toast } = useToast()
+  const navigate = useNavigate()
+
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
+  const [modalType, setModalType] = useState<'success' | 'error'>('success')
+  const [modalMessage, setModalMessage] = useState('')
 
   const currentYear = new Date().getFullYear()
   const currentMonth = new Date().getMonth() // 0-11, where 0 is January
@@ -121,27 +129,43 @@ const ReportGenerationForm = () => {
 
       console.log(result, 'result')
 
-      toast({
-        title: 'Report Generation Started',
-        description: `Your ${
-          screeningReports.find(type => type.value === data.reportType)?.label
-        } is being generated. You'll receive an email at ${data.email} when it's ready.`,
-      })
-
-      // Reset form after successful submission
-      form.reset()
+      // Show success modal
+      setModalType('success')
+      setModalMessage(`Your ${
+        screeningReports.find(type => type.value === data.reportType)?.label
+      } is being generated. You'll receive an email at ${data.email} when it's ready.`)
+      setIsSuccessModalOpen(true)
     } catch (error) {
       console.error('Error generating report:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to generate report. Please try again.',
-        variant: 'destructive',
-      })
+      setModalType('error')
+      setModalMessage('Failed to generate report. Please try again.')
+      setIsSuccessModalOpen(true)
     }
   }
 
   const handleClearForm = () => {
     form.reset()
+  }
+
+  const handleGoBackToReports = () => {
+    setIsSuccessModalOpen(false)
+    setModalType('success')
+    setModalMessage('')
+    navigate(`/school/${currentSchool.id}/speech-screening-reports`)
+  }
+
+  const handleStayOnPage = () => {
+    setIsSuccessModalOpen(false)
+    setModalType('success')
+    setModalMessage('')
+    // Reset form after successful submission
+    form.reset()
+  }
+
+  const handleCloseModal = () => {
+    setIsSuccessModalOpen(false)
+    setModalType('success')
+    setModalMessage('')
   }
 
   return (
@@ -332,6 +356,59 @@ const ReportGenerationForm = () => {
           </Form>
         </CardContent>
       </Card>
+
+      {/* Success/Error Modal */}
+      <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
+        <DialogContent className='mx-auto'>
+          <div className='flex flex-col items-center text-center space-y-6'>
+            {/* Icon */}
+            <div className='flex justify-center'>
+              {modalType === 'success' ? (
+                <CheckCircle className='w-16 h-16 text-green-600' />
+              ) : (
+                <XCircle className='w-16 h-16 text-red-600' />
+              )}
+            </div>
+
+            {/* Title and Description */}
+            <div className='space-y-2'>
+              <DialogTitle className='text-2xl font-semibold text-gray-900'>
+                {modalType === 'success' ? 'Report Generation Started!' : 'Error Generating Report'}
+              </DialogTitle>
+              <DialogDescription className='text-gray-600 text-base leading-relaxed'>
+                {modalMessage}
+              </DialogDescription>
+            </div>
+
+            {/* Action Buttons */}
+            <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
+              {modalType === 'success' ? (
+                <>
+                  <Button
+                    onClick={handleStayOnPage}
+                    className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                    <Plus className='w-4 h-4' />
+                    Generate Another Report
+                  </Button>
+                  <Button
+                    onClick={handleGoBackToReports}
+                    variant='outline'
+                    className='w-full sm:w-auto px-6 py-2'>
+                    <List className='w-4 h-4' />
+                    Back to Reports
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={handleCloseModal}
+                  className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                  Try Again
+                </Button>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   )
 }
