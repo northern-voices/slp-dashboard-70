@@ -20,24 +20,45 @@ import {
 
 interface EnhancedSpeechScreeningFieldsProps {
   form: UseFormReturn<{
-    articulation?: {
-      soundErrors: Array<{
-        sound: string
-        word: string
-        errorPatterns: string[]
-        stoppingSounds?: string[]
-        notes: string
-        otherNotes?: string
-      }>
-      articulationNotes: string
+    screening_type: string
+    screening_date: string
+    clinical_notes: string
+    referral_notes: string
+    result: string
+    vocabulary_support: boolean
+    speech_screen_result: string
+    vocabulary_support_recommended: boolean
+    qualifies_for_speech_program: boolean
+    sub: boolean
+    graduated: boolean
+    error_patterns: {
+      attendance: {
+        absent: boolean
+        absence_notes: string
+        priority_re_screen: boolean
+      }
+      articulation: {
+        soundErrors: Array<{
+          sound: string
+          word: string
+          errorPatterns: string[]
+          stoppingSounds?: string[]
+          notes: string
+          otherNotes?: string
+        }>
+        articulationNotes: string
+      }
+      screening_metadata: {
+        screening_date: string
+        qualifies_for_speech_program: boolean
+        vocabulary_support_recommended: boolean
+        sub?: boolean
+        graduated?: boolean
+      }
+      add_areas_of_concern: Record<string, string | null>
+      additional_observations: string
     }
     general_articulation_notes?: string
-    speech_screen_result?: string
-    vocabulary_support_recommended?: boolean
-    qualifies_for_speech_program?: boolean
-    sub?: boolean
-    graduated?: boolean
-    areasOfConcern?: Record<string, string | null>
   }>
 }
 
@@ -579,7 +600,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       articulationNotes: form.watch('general_articulation_notes') || '',
     }
 
-    form.setValue('articulation', articulationData)
+    form.setValue('error_patterns.articulation', articulationData)
   }, [selectedSounds, selectedErrorPatterns, selectedStoppingSounds, soundNotes, notes, form])
 
   const handleConcernChange = (concern: string, checked: boolean) => {
@@ -609,10 +630,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         .replace(/_+/g, '_')
         .replace(/_$/, '')
         .replace(/_pallet/, '_pallet')
-      const notes = form.watch(`areasOfConcern.${key}`) || ''
+      const notes = form.watch(`error_patterns.add_areas_of_concern.${key}`) || ''
       areasOfConcernData[key] = notes || null
     })
-    form.setValue('areasOfConcern', areasOfConcernData)
+    form.setValue('error_patterns.add_areas_of_concern', areasOfConcernData)
   }, [selectedConcerns, form])
 
   const handleSoundToggle = (sound: string) => {
@@ -1599,10 +1620,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                 {selectedConcerns.includes(concern) && (
                   <div className='ml-6'>
                     <Textarea
-                      value={form.watch('areasOfConcern')?.[getFieldName(concern)] || ''}
+                      value={form.watch('error_patterns.add_areas_of_concern')?.[getFieldName(concern)] || ''}
                       onChange={e => {
-                        const current = form.watch('areasOfConcern') || {}
-                        form.setValue('areasOfConcern', {
+                        const current = form.watch('error_patterns.add_areas_of_concern') || {}
+                        form.setValue('error_patterns.add_areas_of_concern', {
                           ...current,
                           [getFieldName(concern)]: e.target.value,
                         })

@@ -46,7 +46,47 @@ const EditScreeningContent = () => {
   const [saving, setSaving] = React.useState(false)
   const updateSpeechScreening = useUpdateSpeechScreening()
 
-  const form = useForm({
+  const form = useForm<{
+    screening_type: string
+    screening_date: string
+    clinical_notes: string
+    referral_notes: string
+    result: string
+    vocabulary_support: boolean
+    speech_screen_result: string
+    vocabulary_support_recommended: boolean
+    qualifies_for_speech_program: boolean
+    sub: boolean
+    graduated: boolean
+    error_patterns: {
+      attendance: {
+        absent: boolean
+        absence_notes: string
+        priority_re_screen: boolean
+      }
+      articulation: {
+        soundErrors: Array<{
+          sound: string
+          word: string
+          errorPatterns: string[]
+          stoppingSounds?: string[]
+          notes: string
+          otherNotes?: string
+        }>
+        articulationNotes: string
+      }
+      screening_metadata: {
+        screening_date: string
+        qualifies_for_speech_program: boolean
+        vocabulary_support_recommended: boolean
+        sub?: boolean
+        graduated?: boolean
+      }
+      add_areas_of_concern: Record<string, string | null>
+      additional_observations: string
+    }
+    general_articulation_notes?: string
+  }>({
     mode: 'onChange',
     defaultValues: {
       screening_type: '',
@@ -64,18 +104,18 @@ const EditScreeningContent = () => {
         attendance: {
           absent: false,
           absence_notes: '',
-          priority_re_screen: false
+          priority_re_screen: false,
         },
         articulation: {
           soundErrors: [],
-          articulationNotes: ''
+          articulationNotes: '',
         },
         screening_metadata: {
           screening_date: '',
           qualifies_for_speech_program: false,
           vocabulary_support_recommended: false,
           sub: false,
-          graduated: false
+          graduated: false,
         },
         add_areas_of_concern: {
           voice: null,
@@ -87,11 +127,11 @@ const EditScreeningContent = () => {
           language_expression: null,
           language_comprehension: null,
           known_pending_diagnoses: null,
-          pragmatics_social_communication: null
+          pragmatics_social_communication: null,
         },
-        additional_observations: ''
-      }
-    }
+        additional_observations: '',
+      },
+    },
   })
 
   React.useEffect(() => {
@@ -112,18 +152,18 @@ const EditScreeningContent = () => {
               attendance: {
                 absent: false,
                 absence_notes: '',
-                priority_re_screen: false
+                priority_re_screen: false,
               },
               articulation: {
                 soundErrors: [],
-                articulationNotes: ''
+                articulationNotes: '',
               },
               screening_metadata: {
                 screening_date: '',
                 qualifies_for_speech_program: false,
                 vocabulary_support_recommended: false,
                 sub: false,
-                graduated: false
+                graduated: false,
               },
               add_areas_of_concern: {
                 voice: null,
@@ -135,46 +175,54 @@ const EditScreeningContent = () => {
                 language_expression: null,
                 language_comprehension: null,
                 known_pending_diagnoses: null,
-                pragmatics_social_communication: null
+                pragmatics_social_communication: null,
               },
-              additional_observations: ''
+              additional_observations: '',
             }
 
             // Merge existing error patterns with defaults
             const mergedErrorPatterns = {
               attendance: {
                 ...defaultErrorPatterns.attendance,
-                ...(screeningData.error_patterns?.attendance || {})
+                ...(screeningData.error_patterns?.attendance || {}),
               },
               articulation: {
                 ...defaultErrorPatterns.articulation,
-                ...(screeningData.error_patterns?.articulation || {})
+                ...(screeningData.error_patterns?.articulation || {}),
               },
               screening_metadata: {
                 ...defaultErrorPatterns.screening_metadata,
-                ...(screeningData.error_patterns?.screening_metadata || {})
+                ...(screeningData.error_patterns?.screening_metadata || {}),
               },
               add_areas_of_concern: {
                 ...defaultErrorPatterns.add_areas_of_concern,
-                ...(screeningData.error_patterns?.add_areas_of_concern || {})
+                ...(screeningData.error_patterns?.add_areas_of_concern || {}),
               },
-              additional_observations: screeningData.error_patterns?.additional_observations || defaultErrorPatterns.additional_observations
+              additional_observations:
+                screeningData.error_patterns?.additional_observations ||
+                defaultErrorPatterns.additional_observations,
             }
 
             // Populate form with existing data
             form.reset({
               screening_type: screeningData.screening_type || '',
-              screening_date: screeningData.created_at ? format(new Date(screeningData.created_at), 'yyyy-MM-dd') : '',
+              screening_date: screeningData.created_at
+                ? format(new Date(screeningData.created_at), 'yyyy-MM-dd')
+                : '',
               clinical_notes: screeningData.clinical_notes || '',
               referral_notes: screeningData.referral_notes || '',
               result: screeningData.result || '',
               vocabulary_support: screeningData.vocabulary_support || false,
               speech_screen_result: screeningData.result || '',
-              vocabulary_support_recommended: screeningData.error_patterns?.screening_metadata?.vocabulary_support_recommended || false,
-              qualifies_for_speech_program: screeningData.error_patterns?.screening_metadata?.qualifies_for_speech_program || false,
+              vocabulary_support_recommended:
+                screeningData.error_patterns?.screening_metadata?.vocabulary_support_recommended ||
+                false,
+              qualifies_for_speech_program:
+                screeningData.error_patterns?.screening_metadata?.qualifies_for_speech_program ||
+                false,
               sub: screeningData.error_patterns?.screening_metadata?.sub || false,
               graduated: screeningData.error_patterns?.screening_metadata?.graduated || false,
-              error_patterns: mergedErrorPatterns
+              error_patterns: mergedErrorPatterns,
             })
 
             console.log('Populated form with screening data:', {
@@ -182,11 +230,13 @@ const EditScreeningContent = () => {
               mergedErrorPatterns,
               resultFields: {
                 speech_screen_result: screeningData.result,
-                vocabulary_support_recommended: screeningData.error_patterns?.screening_metadata?.vocabulary_support_recommended,
-                qualifies_for_speech_program: screeningData.error_patterns?.screening_metadata?.qualifies_for_speech_program,
+                vocabulary_support_recommended:
+                  screeningData.error_patterns?.screening_metadata?.vocabulary_support_recommended,
+                qualifies_for_speech_program:
+                  screeningData.error_patterns?.screening_metadata?.qualifies_for_speech_program,
                 sub: screeningData.error_patterns?.screening_metadata?.sub,
-                graduated: screeningData.error_patterns?.screening_metadata?.graduated
-              }
+                graduated: screeningData.error_patterns?.screening_metadata?.graduated,
+              },
             })
           } else {
             throw new Error('Screening not found')
@@ -225,8 +275,8 @@ const EditScreeningContent = () => {
           vocabulary_support_recommended: formData.vocabulary_support_recommended,
           qualifies_for_speech_program: formData.qualifies_for_speech_program,
           sub: formData.sub,
-          graduated: formData.graduated
-        }
+          graduated: formData.graduated,
+        },
       }
 
       await updateSpeechScreening.mutateAsync({
@@ -237,8 +287,8 @@ const EditScreeningContent = () => {
           referral_notes: formData.referral_notes,
           result: formData.speech_screen_result || formData.result,
           vocabulary_support: formData.vocabulary_support,
-          error_patterns: updatedErrorPatterns
-        }
+          error_patterns: updatedErrorPatterns,
+        },
       })
 
       toast({
@@ -443,9 +493,9 @@ const EditScreeningContent = () => {
 }
 
 const EditScreening = () => (
-  <OrganizationProvider>
+  <div className='min-h-screen bg-gray-50'>
     <EditScreeningContent />
-  </OrganizationProvider>
+  </div>
 )
 
 export default EditScreening
