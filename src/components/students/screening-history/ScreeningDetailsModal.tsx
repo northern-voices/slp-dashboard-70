@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -36,6 +37,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   const [referralNotesText, setReferralNotesText] = useState('')
   const [currentScreening, setCurrentScreening] = useState<Screening | null>(null)
   const navigate = useNavigate()
+  const { currentSchool } = useOrganization()
 
   const updateSpeechScreening = useUpdateSpeechScreening()
 
@@ -143,7 +145,11 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   }
 
   const handleEditScreening = () => {
-    navigate(`/edit-screening/${screening.id}`)
+    if (currentSchool?.id) {
+      navigate(`/school/${currentSchool.id}/edit-screening/${screening.id}`)
+    } else {
+      navigate(`/edit-screening/${screening.id}`)
+    }
     onClose()
   }
 
