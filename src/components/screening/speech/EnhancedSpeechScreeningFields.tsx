@@ -49,6 +49,75 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [notesEnabled, setNotesEnabled] = useState<Record<string, boolean>>({})
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
   const [selectedStoppingSounds, setSelectedStoppingSounds] = useState<Record<string, string[]>>({})
+  const [initialized, setInitialized] = useState(false)
+
+  // Initialize component state from form data when available (for editing existing screenings)
+  React.useEffect(() => {
+    const formData = form.getValues()
+    const errorPatterns = formData?.error_patterns
+
+    if (errorPatterns && !initialized) {
+      // Initialize articulation data
+      if (errorPatterns.articulation?.soundErrors?.length > 0) {
+        const sounds = errorPatterns.articulation.soundErrors.map(se => se.sound)
+        const patterns: Record<string, string[]> = {}
+        const stoppingSounds: Record<string, string[]> = {}
+        const soundNotesData: Record<string, string> = {}
+        const notesData: Record<string, string> = {}
+        const notesEnabledData: Record<string, boolean> = {}
+
+        errorPatterns.articulation.soundErrors.forEach(soundError => {
+          if (soundError.errorPatterns) {
+            patterns[soundError.sound] = soundError.errorPatterns
+          }
+          if (soundError.stoppingSounds) {
+            stoppingSounds[soundError.sound] = soundError.stoppingSounds
+          }
+          if (soundError.notes) {
+            soundNotesData[soundError.sound] = soundError.notes
+            notesEnabledData[soundError.sound] = true
+          }
+          if (soundError.otherNotes) {
+            notesData[soundError.sound] = soundError.otherNotes
+          }
+        })
+
+        setSelectedSounds(sounds)
+        setSelectedErrorPatterns(patterns)
+        setSelectedStoppingSounds(stoppingSounds)
+        setSoundNotes(soundNotesData)
+        setNotes(notesData)
+        setNotesEnabled(notesEnabledData)
+      }
+
+      // Initialize areas of concern
+      if (errorPatterns.add_areas_of_concern) {
+        const concerns: string[] = []
+        Object.entries(errorPatterns.add_areas_of_concern).forEach(([key, value]) => {
+          if (value !== null && value !== '') {
+            // Convert key back to concern label
+            const concern = areasOfConcern.find(
+              c => c.toLowerCase().replace(/\s+|\/|-/g, '_') === key
+            )
+            if (concern) {
+              concerns.push(concern)
+            }
+          }
+        })
+        setSelectedConcerns(concerns)
+      }
+
+      setInitialized(true)
+      console.log('Initialized EnhancedSpeechScreeningFields with existing data:', {
+        selectedSounds: errorPatterns.articulation?.soundErrors?.map(se => se.sound) || [],
+        selectedConcerns: Object.keys(errorPatterns.add_areas_of_concern || {}).filter(
+          k =>
+            errorPatterns.add_areas_of_concern?.[k] !== null &&
+            errorPatterns.add_areas_of_concern?.[k] !== ''
+        ),
+      })
+    }
+  }, [form, initialized])
 
   // Helper function to validate St- combinations
   const isValidStCombination = (patterns: string[]): boolean => {
