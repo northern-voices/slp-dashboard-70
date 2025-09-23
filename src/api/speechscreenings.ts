@@ -353,6 +353,7 @@ export const speechScreeningsApi = {
       student_id: string
       screener_id: string
       grade_id: string
+      screening_type: string
       error_patterns: ErrorPatterns
       result: SpeechScreeningResult | null
       vocabulary_support: boolean

@@ -1,5 +1,6 @@
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
 import { Screening } from '@/types/database'
 import { screeningsApi } from '@/api/screenings'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
@@ -12,12 +13,26 @@ import {
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, FileText } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ChevronLeft, FileText, Calendar, Save } from 'lucide-react'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
+import { useUpdateSpeechScreening } from '@/hooks/screenings/use-screening-mutations'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import EnhancedSpeechScreeningFields from '@/components/screening/speech/EnhancedSpeechScreeningFields'
+import { format } from 'date-fns'
 
 const EditScreeningContent = () => {
   const { screeningId } = useParams<{
@@ -28,6 +43,51 @@ const EditScreeningContent = () => {
   const { userProfile } = useOrganization()
   const [screening, setScreening] = React.useState<Screening | null>(null)
   const [loading, setLoading] = React.useState(false)
+  const [saving, setSaving] = React.useState(false)
+  const updateSpeechScreening = useUpdateSpeechScreening()
+
+  const form = useForm({
+    mode: 'onChange',
+    defaultValues: {
+      screening_type: '',
+      screening_date: '',
+      clinical_notes: '',
+      referral_notes: '',
+      result: '',
+      vocabulary_support: false,
+      error_patterns: {
+        attendance: {
+          absent: false,
+          absence_notes: '',
+          priority_re_screen: false
+        },
+        articulation: {
+          soundErrors: [],
+          articulationNotes: ''
+        },
+        screening_metadata: {
+          screening_date: '',
+          qualifies_for_speech_program: false,
+          vocabulary_support_recommended: false,
+          sub: false,
+          graduated: false
+        },
+        add_areas_of_concern: {
+          voice: null,
+          fluency: null,
+          literacy: null,
+          suspected_cas: null,
+          cleft_lip_palate: null,
+          reluctant_speaking: null,
+          language_expression: null,
+          language_comprehension: null,
+          known_pending_diagnoses: null,
+          pragmatics_social_communication: null
+        },
+        additional_observations: ''
+      }
+    }
+  })
 
   React.useEffect(() => {
     if (screeningId) {
@@ -42,6 +102,46 @@ const EditScreeningContent = () => {
 
           if (screeningData) {
             setScreening(screeningData)
+            // Populate form with existing data
+            form.reset({
+              screening_type: screeningData.screening_type || '',
+              screening_date: screeningData.created_at ? format(new Date(screeningData.created_at), 'yyyy-MM-dd') : '',
+              clinical_notes: screeningData.clinical_notes || '',
+              referral_notes: screeningData.referral_notes || '',
+              result: screeningData.result || '',
+              vocabulary_support: screeningData.vocabulary_support || false,
+              error_patterns: screeningData.error_patterns || {
+                attendance: {
+                  absent: false,
+                  absence_notes: '',
+                  priority_re_screen: false
+                },
+                articulation: {
+                  soundErrors: [],
+                  articulationNotes: ''
+                },
+                screening_metadata: {
+                  screening_date: '',
+                  qualifies_for_speech_program: false,
+                  vocabulary_support_recommended: false,
+                  sub: false,
+                  graduated: false
+                },
+                add_areas_of_concern: {
+                  voice: null,
+                  fluency: null,
+                  literacy: null,
+                  suspected_cas: null,
+                  cleft_lip_palate: null,
+                  reluctant_speaking: null,
+                  language_expression: null,
+                  language_comprehension: null,
+                  known_pending_diagnoses: null,
+                  pragmatics_social_communication: null
+                },
+                additional_observations: ''
+              }
+            })
           } else {
             throw new Error('Screening not found')
           }
@@ -58,10 +158,47 @@ const EditScreeningContent = () => {
       }
       fetchScreening()
     }
-  }, [screeningId, toast])
+  }, [screeningId, toast, form])
 
   const handleGoBack = () => {
     navigate(-1)
+  }
+
+  const handleSave = async () => {
+    if (!screening) return
+
+    setSaving(true)
+    try {
+      const formData = form.getValues()
+      await updateSpeechScreening.mutateAsync({
+        id: screening.id,
+        data: {
+          screening_type: formData.screening_type,
+          clinical_notes: formData.clinical_notes,
+          referral_notes: formData.referral_notes,
+          result: formData.result,
+          vocabulary_support: formData.vocabulary_support,
+          error_patterns: formData.error_patterns
+        }
+      })
+
+      toast({
+        title: 'Success',
+        description: 'Screening updated successfully',
+        variant: 'default',
+      })
+
+      handleGoBack()
+    } catch (error) {
+      console.error('Failed to update screening:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to update screening',
+        variant: 'destructive',
+      })
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (loading) {
@@ -124,46 +261,118 @@ const EditScreeningContent = () => {
                 </div>
               </div>
 
-              {/* TODO: Add the actual edit form component here */}
-              <div className='bg-white rounded-lg p-6 border'>
-                <h3 className='text-lg font-medium mb-4'>Screening Details</h3>
-                <div className='space-y-4'>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700'>Student</label>
-                    <p className='text-sm text-gray-900'>{screening.student_name}</p>
-                  </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700'>Grade</label>
-                    <p className='text-sm text-gray-900'>{screening.grade}</p>
-                  </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700'>
-                      Screening Type
-                    </label>
-                    <p className='text-sm text-gray-900'>
-                      {screening.screening_type?.charAt(0).toUpperCase() +
-                        screening.screening_type?.slice(1)}
-                    </p>
-                  </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700'>
-                      Current Result
-                    </label>
-                    <p className='text-sm text-gray-900'>{screening.result || 'No result'}</p>
-                  </div>
-                </div>
+              <div className='space-y-6'>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className='flex items-center gap-2'>
+                      <Calendar className='w-5 h-5' />
+                      Screening Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className='space-y-4'>
+                    <div className='mb-4 py-3 px-5 bg-blue-50 rounded-lg border border-blue-200'>
+                      <div className='flex items-center gap-2'>
+                        <span className='text-sm font-medium text-blue-900'>Student Name:</span>
+                        <span className='text-sm font-semibold text-blue-800'>
+                          {screening.student_name}
+                        </span>
+                      </div>
+                      <div className='flex items-center gap-2 mt-1'>
+                        <span className='text-sm font-medium text-blue-900'>Grade:</span>
+                        <span className='text-sm font-semibold text-blue-800'>
+                          {screening.grade}
+                        </span>
+                      </div>
+                    </div>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                      <div>
+                        <Label htmlFor='screening_type' className='mb-2 block'>
+                          Screening Type <span className='text-red-500 text-lg'>*</span>
+                        </Label>
+                        <Select
+                          value={form.watch('screening_type')}
+                          onValueChange={value => form.setValue('screening_type', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select screening type' />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value='initial'>Initial</SelectItem>
+                            <SelectItem value='progress'>Progress</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor='screening_date' className='mb-2 block'>
+                          Screening Date <span className='text-red-500 text-lg'>*</span>
+                        </Label>
+                        <Input
+                          type='text'
+                          value={form.watch('screening_date')}
+                          readOnly
+                          className='bg-gray-50 cursor-not-allowed'
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                <div className='mt-6 pt-6 border-t'>
-                  <p className='text-sm text-gray-600'>
-                    The edit form will be implemented here. This will allow you to modify the
-                    screening data and save the changes.
-                  </p>
-                  <div className='flex gap-2 mt-4'>
-                    <Button variant='outline' onClick={handleGoBack}>
-                      Cancel
-                    </Button>
-                    <Button disabled>Save Changes (Coming Soon)</Button>
-                  </div>
+                <EnhancedSpeechScreeningFields form={form} />
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Clinical Notes (Private)</CardTitle>
+                  </CardHeader>
+                  <CardContent className='space-y-4'>
+                    <div>
+                      <Label htmlFor='clinical_notes'>Clinical Observations</Label>
+                      <Textarea
+                        {...form.register('clinical_notes')}
+                        placeholder='Enter clinical observations and notes...'
+                        rows={4}
+                        className='mt-2'
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && e.ctrlKey) {
+                            return
+                          }
+                          if (e.key === 'Enter') {
+                            e.stopPropagation()
+                          }
+                        }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recommendations and referrals (Reports)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
+                      {...form.register('referral_notes')}
+                      placeholder='Enter recommendations and referrals...'
+                      rows={4}
+                      className='-mt-2'
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && e.ctrlKey) {
+                          return
+                        }
+                        if (e.key === 'Enter') {
+                          e.stopPropagation()
+                        }
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+
+                <div className='flex gap-2 pt-4'>
+                  <Button variant='outline' onClick={handleGoBack} disabled={saving}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSave} disabled={saving}>
+                    <Save className='w-4 h-4 mr-2' />
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </Button>
                 </div>
               </div>
             </div>

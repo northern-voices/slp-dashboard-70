@@ -17,6 +17,20 @@ type CreateSpeechScreeningInput = {
   referral_notes?: string | null
 }
 
+// Type for the update speech screening input
+type UpdateSpeechScreeningInput = {
+  student_id?: string
+  screener_id?: string
+  grade_id?: string
+  screening_type?: string
+  error_patterns?: ErrorPatterns
+  result?: string | null
+  vocabulary_support?: boolean
+  suspected_cas?: boolean
+  clinical_notes?: string | null
+  referral_notes?: string | null
+}
+
 export const useCreateSpeechScreening = () => {
   const queryClient = useQueryClient()
   const { user } = useAuth()
@@ -73,7 +87,7 @@ export const useUpdateSpeechScreening = () => {
   const { user } = useAuth()
   const { userProfile, currentOrganization } = useOrganization()
 
-  return useMutation<Screening, Error, { id: string; data: Partial<CreateSpeechScreeningInput> }>({
+  return useMutation<Screening, Error, { id: string; data: Partial<UpdateSpeechScreeningInput> }>({
     mutationFn: ({ id, data }) => screeningsApi.updateSpeechScreening(id, data),
     onSuccess: () => {
       // Invalidate and refetch all screening-related queries
