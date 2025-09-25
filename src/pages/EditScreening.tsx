@@ -100,6 +100,7 @@ const EditScreeningContent = () => {
       qualifies_for_speech_program: false,
       sub: false,
       graduated: false,
+      general_articulation_notes: '',
       error_patterns: {
         attendance: {
           absent: false,
@@ -222,6 +223,7 @@ const EditScreeningContent = () => {
                 false,
               sub: screeningData.error_patterns?.screening_metadata?.sub || false,
               graduated: screeningData.error_patterns?.screening_metadata?.graduated || false,
+              general_articulation_notes: screeningData.error_patterns?.articulation?.articulationNotes || '',
               error_patterns: mergedErrorPatterns,
             })
 
@@ -236,6 +238,7 @@ const EditScreeningContent = () => {
                   screeningData.error_patterns?.screening_metadata?.qualifies_for_speech_program,
                 sub: screeningData.error_patterns?.screening_metadata?.sub,
                 graduated: screeningData.error_patterns?.screening_metadata?.graduated,
+                general_articulation_notes: screeningData.error_patterns?.articulation?.articulationNotes,
               },
             })
           } else {
@@ -267,9 +270,13 @@ const EditScreeningContent = () => {
     try {
       const formData = form.getValues()
 
-      // Update error_patterns.screening_metadata with the latest form values
+      // Update error_patterns with the latest form values
       const updatedErrorPatterns = {
         ...formData.error_patterns,
+        articulation: {
+          ...formData.error_patterns.articulation,
+          articulationNotes: formData.general_articulation_notes || '',
+        },
         screening_metadata: {
           ...formData.error_patterns.screening_metadata,
           vocabulary_support_recommended: formData.vocabulary_support_recommended,
