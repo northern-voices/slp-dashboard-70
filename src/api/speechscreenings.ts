@@ -103,9 +103,67 @@ export const speechScreeningsApi = {
         query = query.eq('screener_id', currentUserId)
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false })
+      const { data: initialData, error } = await query
+        .order('created_at', { ascending: false })
+        .limit(10000)
+
+      // Use let so we can reassign it later
+      let data = initialData
 
       if (error) throw error
+
+      // If organization schools are specified, check if any are missing from the main query
+      if (organizationSchoolIds.length > 0) {
+        const presentSchoolIds = new Set(
+          (data || []).map((s: RawSpeechScreening) => s.students?.school_id).filter(Boolean)
+        )
+
+        const missingSchoolIds = organizationSchoolIds.filter(schoolId =>
+          !presentSchoolIds.has(schoolId)
+        )
+
+        // If any organization schools are missing, fetch them specifically
+        if (missingSchoolIds.length > 0) {
+          const targetQuery = supabase
+            .from('speech_screenings')
+            .select(
+              `
+              *,
+              students!inner (
+                id,
+                first_name,
+                last_name,
+                school_id,
+                student_id,
+                schools (
+                  id,
+                  name
+                )
+              ),
+              school_grades (
+                id,
+                grade_level,
+                academic_year
+              ),
+              users (
+                id,
+                first_name,
+                last_name
+              )
+            `
+            )
+            .in('students.school_id', missingSchoolIds)
+            .order('created_at', { ascending: false })
+
+          const { data: targetData, error: targetError } = await targetQuery
+
+          if (!targetError && targetData && targetData.length > 0) {
+            // Merge the targeted data with the main data
+            const mergedData = [...(data || []), ...targetData]
+            data = mergedData as any[]
+          }
+        }
+      }
 
       const transformedData: Screening[] = (data || []).map((screening: RawSpeechScreening) => ({
         id: screening.id,
