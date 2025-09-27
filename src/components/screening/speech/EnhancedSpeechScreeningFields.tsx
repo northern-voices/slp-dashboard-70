@@ -608,11 +608,8 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     }
   }
 
-  // Create areas of concern object structure (only run after initialization)
+  // Create areas of concern object structure
   React.useEffect(() => {
-    // Don't run this during initial load to avoid overwriting form data
-    if (!initialized) return
-
     // Get current form data to preserve existing values
     const currentData = form.getValues('error_patterns.add_areas_of_concern') || {}
     const areasOfConcernData = {}
@@ -625,11 +622,19 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         .replace(/_+/g, '_')
         .replace(/_$/, '')
         .replace(/_pallet/, '_pallet')
-      // Preserve existing value if it exists, otherwise set to null
-      areasOfConcernData[key] = currentData[key] || null
+
+      // For editing: preserve existing values during initialization
+      // For new screening: start with null
+      if (initialized) {
+        // After initialization, preserve existing values
+        areasOfConcernData[key] = currentData[key] || null
+      } else {
+        // During initialization, only preserve non-null values (from loaded data)
+        areasOfConcernData[key] = currentData[key] !== null ? currentData[key] : null
+      }
     })
 
-    // For selected concerns, ensure they have at least an empty string if no value exists
+    // For selected concerns, ensure they're properly handled
     selectedConcerns.forEach(concern => {
       const key = concern
         .toLowerCase()
@@ -637,10 +642,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         .replace(/_+/g, '_')
         .replace(/_$/, '')
         .replace(/_pallet/, '_pallet')
-      // Only set to empty string if it was null and concern is selected
-      if (areasOfConcernData[key] === null) {
-        areasOfConcernData[key] = ''
+
+      if (initialized) {
+        // After initialization (user interaction), set empty string for new selections
+        if (areasOfConcernData[key] === null) {
+          areasOfConcernData[key] = ''
+        }
       }
+      // During initialization, keep whatever value was loaded (including non-null values)
     })
 
     form.setValue('error_patterns.add_areas_of_concern', areasOfConcernData)
