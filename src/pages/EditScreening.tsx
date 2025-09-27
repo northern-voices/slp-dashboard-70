@@ -197,7 +197,11 @@ const EditScreeningContent = () => {
               },
               add_areas_of_concern: {
                 ...defaultErrorPatterns.add_areas_of_concern,
-                ...(screeningData.error_patterns?.add_areas_of_concern || {}),
+                // Properly merge existing areas of concern, preserving non-null values
+                ...(screeningData.error_patterns?.add_areas_of_concern ?
+                  Object.fromEntries(
+                    Object.entries(screeningData.error_patterns.add_areas_of_concern).filter(([_, value]) => value !== null)
+                  ) : {}),
               },
               additional_observations:
                 screeningData.error_patterns?.additional_observations ||

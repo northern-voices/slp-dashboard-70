@@ -118,7 +118,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           if (value !== null && value !== '') {
             // Convert key back to concern label
             const concern = areasOfConcern.find(
-              c => c.toLowerCase().replace(/\s+|\/|-/g, '_') === key
+              c => {
+                const transformed = c.toLowerCase().replace(/\s+|\/|-/g, '_').replace(/_+/g, '_').replace(/_$/, '').replace(/_pallet/, '_pallet')
+                return transformed === key
+              }
             )
             if (concern) {
               concerns.push(concern)
@@ -558,19 +561,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
   // Helper function to convert concern names to field names
   const getFieldName = (concern: string): string => {
-    const fieldNameMap: Record<string, string> = {
-      'Language Comprehension': 'language_comprehension',
-      'Language Expression': 'language_expression',
-      'Pragmatics/Social Communication': 'pragmatics_social_communication',
-      Fluency: 'fluency',
-      'Suspected CAS': 'suspected_cas',
-      'Reluctant Speaking': 'reluctant_speaking',
-      Voice: 'voice',
-      Literacy: 'literacy',
-      'Cleft Lip / Palate': 'cleft_lip_palate',
-      'Known / Pending Diagnoses': 'known_pending_diagnoses',
-    }
-    return fieldNameMap[concern] || concern.toLowerCase().replace(/\s+/g, '_')
+    // Use the same transformation logic used elsewhere in the component
+    return concern
+      .toLowerCase()
+      .replace(/\s+|\/|-/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/_$/, '')
+      .replace(/_pallet/, '_pallet')
   }
 
   // Create nested structure for articulation data
@@ -611,9 +608,16 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     }
   }
 
-  // Create areas of concern object structure
+  // Create areas of concern object structure (only run after initialization)
   React.useEffect(() => {
+    // Don't run this during initial load to avoid overwriting form data
+    if (!initialized) return
+
+    // Get current form data to preserve existing values
+    const currentData = form.getValues('error_patterns.add_areas_of_concern') || {}
     const areasOfConcernData = {}
+
+    // Initialize all fields
     areasOfConcern.forEach(concern => {
       const key = concern
         .toLowerCase()
@@ -621,8 +625,11 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         .replace(/_+/g, '_')
         .replace(/_$/, '')
         .replace(/_pallet/, '_pallet')
-      areasOfConcernData[key] = null
+      // Preserve existing value if it exists, otherwise set to null
+      areasOfConcernData[key] = currentData[key] || null
     })
+
+    // For selected concerns, ensure they have at least an empty string if no value exists
     selectedConcerns.forEach(concern => {
       const key = concern
         .toLowerCase()
@@ -630,11 +637,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         .replace(/_+/g, '_')
         .replace(/_$/, '')
         .replace(/_pallet/, '_pallet')
-      const notes = form.watch(`error_patterns.add_areas_of_concern.${key}`) || ''
-      areasOfConcernData[key] = notes || null
+      // Only set to empty string if it was null and concern is selected
+      if (areasOfConcernData[key] === null) {
+        areasOfConcernData[key] = ''
+      }
     })
+
     form.setValue('error_patterns.add_areas_of_concern', areasOfConcernData)
-  }, [selectedConcerns, form])
+  }, [selectedConcerns, form, initialized])
 
   const handleSoundToggle = (sound: string) => {
     if (selectedSounds.includes(sound)) {
