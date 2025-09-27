@@ -72,22 +72,37 @@ const MultiStepSpeechScreeningForm = ({
       referral_notes: '',
       other_notes: '',
 
-      // Enhanced Speech Screening Fields
-      articulation: {
-        soundErrors: [],
-        articulationNotes: '',
-      },
-      areasOfConcern: {
-        language_comprehension: null,
-        language_expression: null,
-        pragmatics_social_communication: null,
-        fluency: null,
-        suspected_cas: null,
-        reluctant_speaking: null,
-        voice: null,
-        literacy: null,
-        cleft_lip_palate: null,
-        known_pending_diagnoses: null,
+      // Enhanced Speech Screening Fields - match the structure expected by EnhancedSpeechScreeningFields
+      error_patterns: {
+        articulation: {
+          soundErrors: [],
+          articulationNotes: '',
+        },
+        add_areas_of_concern: {
+          language_comprehension: null,
+          language_expression: null,
+          pragmatics_social_communication: null,
+          fluency: null,
+          suspected_cas: null,
+          reluctant_speaking: null,
+          voice: null,
+          literacy: null,
+          cleft_lip_palate: null,
+          known_pending_diagnoses: null,
+        },
+        attendance: {
+          absent: false,
+          absence_notes: '',
+          priority_re_screen: false,
+        },
+        screening_metadata: {
+          screening_date: '',
+          qualifies_for_speech_program: false,
+          vocabulary_support_recommended: false,
+          sub: false,
+          graduated: false,
+        },
+        additional_observations: '',
       },
     },
   })
@@ -229,8 +244,9 @@ const MultiStepSpeechScreeningForm = ({
       }
     }
 
-    const areasOfConcern = (formData.areasOfConcern as Record<string, unknown>) || {}
-    const articulation = (formData.articulation as Record<string, unknown>) || {}
+    const errorPatterns = (formData.error_patterns as Record<string, unknown>) || {}
+    const areasOfConcern = (errorPatterns.add_areas_of_concern as Record<string, unknown>) || {}
+    const articulation = (errorPatterns.articulation as Record<string, unknown>) || {}
     const absent = (formData.absent as Record<string, unknown>) || {}
     const noConsent = (formData.no_consent as Record<string, unknown>) || {}
 

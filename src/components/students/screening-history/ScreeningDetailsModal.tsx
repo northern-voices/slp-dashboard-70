@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -34,6 +36,8 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   const [additionalObservationsText, setAdditionalObservationsText] = useState('')
   const [referralNotesText, setReferralNotesText] = useState('')
   const [currentScreening, setCurrentScreening] = useState<Screening | null>(null)
+  const navigate = useNavigate()
+  const { currentSchool } = useOrganization()
 
   const updateSpeechScreening = useUpdateSpeechScreening()
 
@@ -138,6 +142,15 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   const handleCancelReferralNotes = () => {
     setIsEditingReferralNotes(false)
     setReferralNotesText('')
+  }
+
+  const handleEditScreening = () => {
+    if (currentSchool?.id) {
+      navigate(`/school/${currentSchool.id}/edit-screening/${screening.id}`)
+    } else {
+      navigate(`/edit-screening/${screening.id}`)
+    }
+    onClose()
   }
 
   const getResultBadge = (result?: string) => {
@@ -426,9 +439,15 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
               <FileText className='w-5 h-5' />
               Screening Details
             </DialogTitle>
-            <Button variant='ghost' size='sm' onClick={onClose}>
-              <X className='w-4 h-4' />
-            </Button>
+            <div className='flex items-center gap-2'>
+              <Button variant='outline' size='sm' onClick={handleEditScreening}>
+                <Edit2 className='w-4 h-4 mr-2' />
+                Edit Screening
+              </Button>
+              <Button variant='ghost' size='sm' onClick={onClose}>
+                <X className='w-4 h-4' />
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
