@@ -117,12 +117,15 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         Object.entries(errorPatterns.add_areas_of_concern).forEach(([key, value]) => {
           if (value !== null && value !== '') {
             // Convert key back to concern label
-            const concern = areasOfConcern.find(
-              c => {
-                const transformed = c.toLowerCase().replace(/\s+|\/|-/g, '_').replace(/_+/g, '_').replace(/_$/, '').replace(/_pallet/, '_pallet')
-                return transformed === key
-              }
-            )
+            const concern = areasOfConcern.find(c => {
+              const transformed = c
+                .toLowerCase()
+                .replace(/\s+|\/|-/g, '_')
+                .replace(/_+/g, '_')
+                .replace(/_$/, '')
+                .replace(/_pallet/, '_pallet')
+              return transformed === key
+            })
             if (concern) {
               concerns.push(concern)
             }
@@ -132,14 +135,6 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       }
 
       setInitialized(true)
-      console.log('Initialized EnhancedSpeechScreeningFields with existing data:', {
-        selectedSounds: errorPatterns.articulation?.soundErrors?.map(se => se.sound) || [],
-        selectedConcerns: Object.keys(errorPatterns.add_areas_of_concern || {}).filter(
-          k =>
-            errorPatterns.add_areas_of_concern?.[k] !== null &&
-            errorPatterns.add_areas_of_concern?.[k] !== ''
-        ),
-      })
     }
   }, [form, initialized])
 
@@ -1639,7 +1634,11 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                 {selectedConcerns.includes(concern) && (
                   <div className='ml-6'>
                     <Textarea
-                      value={form.watch('error_patterns.add_areas_of_concern')?.[getFieldName(concern)] || ''}
+                      value={
+                        form.watch('error_patterns.add_areas_of_concern')?.[
+                          getFieldName(concern)
+                        ] || ''
+                      }
                       onChange={e => {
                         const current = form.watch('error_patterns.add_areas_of_concern') || {}
                         form.setValue('error_patterns.add_areas_of_concern', {
