@@ -198,10 +198,13 @@ const EditScreeningContent = () => {
               add_areas_of_concern: {
                 ...defaultErrorPatterns.add_areas_of_concern,
                 // Properly merge existing areas of concern, preserving non-null values
-                ...(screeningData.error_patterns?.add_areas_of_concern ?
-                  Object.fromEntries(
-                    Object.entries(screeningData.error_patterns.add_areas_of_concern).filter(([_, value]) => value !== null)
-                  ) : {}),
+                ...(screeningData.error_patterns?.add_areas_of_concern
+                  ? Object.fromEntries(
+                      Object.entries(screeningData.error_patterns.add_areas_of_concern).filter(
+                        ([_, value]) => value !== null
+                      )
+                    )
+                  : {}),
               },
               additional_observations:
                 screeningData.error_patterns?.additional_observations ||
@@ -227,7 +230,8 @@ const EditScreeningContent = () => {
                 false,
               sub: screeningData.error_patterns?.screening_metadata?.sub || false,
               graduated: screeningData.error_patterns?.screening_metadata?.graduated || false,
-              general_articulation_notes: screeningData.error_patterns?.articulation?.articulationNotes || '',
+              general_articulation_notes:
+                screeningData.error_patterns?.articulation?.articulationNotes || '',
               error_patterns: mergedErrorPatterns,
             })
 
@@ -242,7 +246,8 @@ const EditScreeningContent = () => {
                   screeningData.error_patterns?.screening_metadata?.qualifies_for_speech_program,
                 sub: screeningData.error_patterns?.screening_metadata?.sub,
                 graduated: screeningData.error_patterns?.screening_metadata?.graduated,
-                general_articulation_notes: screeningData.error_patterns?.articulation?.articulationNotes,
+                general_articulation_notes:
+                  screeningData.error_patterns?.articulation?.articulationNotes,
               },
             })
           } else {
@@ -345,7 +350,7 @@ const EditScreeningContent = () => {
       <SidebarInset>
         <Header />
         <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
-          <div className='flex items-center gap-4'>
+          {/* <div className='flex items-center gap-4'>
             <Button variant='ghost' size='sm' onClick={handleGoBack} className='gap-2'>
               <ChevronLeft className='w-4 h-4' />
               Back
@@ -367,7 +372,7 @@ const EditScreeningContent = () => {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-          </div>
+          </div> */}
 
           <div className='min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min'>
             <div className='p-6'>
