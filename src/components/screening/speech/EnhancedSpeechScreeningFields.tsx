@@ -20,24 +20,45 @@ import {
 
 interface EnhancedSpeechScreeningFieldsProps {
   form: UseFormReturn<{
-    articulation?: {
-      soundErrors: Array<{
-        sound: string
-        word: string
-        errorPatterns: string[]
-        stoppingSounds?: string[]
-        notes: string
-        otherNotes?: string
-      }>
-      articulationNotes: string
+    screening_type: string
+    screening_date: string
+    clinical_notes: string
+    referral_notes: string
+    result: string
+    vocabulary_support: boolean
+    speech_screen_result: string
+    vocabulary_support_recommended: boolean
+    qualifies_for_speech_program: boolean
+    sub: boolean
+    graduated: boolean
+    error_patterns: {
+      attendance: {
+        absent: boolean
+        absence_notes: string
+        priority_re_screen: boolean
+      }
+      articulation: {
+        soundErrors: Array<{
+          sound: string
+          word: string
+          errorPatterns: string[]
+          stoppingSounds?: string[]
+          notes: string
+          otherNotes?: string
+        }>
+        articulationNotes: string
+      }
+      screening_metadata: {
+        screening_date: string
+        qualifies_for_speech_program: boolean
+        vocabulary_support_recommended: boolean
+        sub?: boolean
+        graduated?: boolean
+      }
+      add_areas_of_concern: Record<string, string | null>
+      additional_observations: string
     }
     general_articulation_notes?: string
-    speech_screen_result?: string
-    vocabulary_support_recommended?: boolean
-    qualifies_for_speech_program?: boolean
-    sub?: boolean
-    graduated?: boolean
-    areasOfConcern?: Record<string, string | null>
   }>
 }
 
@@ -49,6 +70,73 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [notesEnabled, setNotesEnabled] = useState<Record<string, boolean>>({})
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
   const [selectedStoppingSounds, setSelectedStoppingSounds] = useState<Record<string, string[]>>({})
+  const [initialized, setInitialized] = useState(false)
+
+  // Initialize component state from form data when available (for editing existing screenings)
+  React.useEffect(() => {
+    const formData = form.getValues()
+    const errorPatterns = formData?.error_patterns
+
+    if (errorPatterns && !initialized) {
+      // Initialize articulation data
+      if (errorPatterns.articulation?.soundErrors?.length > 0) {
+        const sounds = errorPatterns.articulation.soundErrors.map(se => se.sound)
+        const patterns: Record<string, string[]> = {}
+        const stoppingSounds: Record<string, string[]> = {}
+        const soundNotesData: Record<string, string> = {}
+        const notesData: Record<string, string> = {}
+        const notesEnabledData: Record<string, boolean> = {}
+
+        errorPatterns.articulation.soundErrors.forEach(soundError => {
+          if (soundError.errorPatterns) {
+            patterns[soundError.sound] = soundError.errorPatterns
+          }
+          if (soundError.stoppingSounds) {
+            stoppingSounds[soundError.sound] = soundError.stoppingSounds
+          }
+          if (soundError.notes) {
+            soundNotesData[soundError.sound] = soundError.notes
+            notesEnabledData[soundError.sound] = true
+          }
+          if (soundError.otherNotes) {
+            notesData[soundError.sound] = soundError.otherNotes
+          }
+        })
+
+        setSelectedSounds(sounds)
+        setSelectedErrorPatterns(patterns)
+        setSelectedStoppingSounds(stoppingSounds)
+        setSoundNotes(soundNotesData)
+        setNotes(notesData)
+        setNotesEnabled(notesEnabledData)
+      }
+
+      // Initialize areas of concern
+      if (errorPatterns.add_areas_of_concern) {
+        const concerns: string[] = []
+        Object.entries(errorPatterns.add_areas_of_concern).forEach(([key, value]) => {
+          if (value !== null && value !== '') {
+            // Convert key back to concern label
+            const concern = areasOfConcern.find(c => {
+              const transformed = c
+                .toLowerCase()
+                .replace(/\s+|\/|-/g, '_')
+                .replace(/_+/g, '_')
+                .replace(/_$/, '')
+                .replace(/_pallet/, '_pallet')
+              return transformed === key
+            })
+            if (concern) {
+              concerns.push(concern)
+            }
+          }
+        })
+        setSelectedConcerns(concerns)
+      }
+
+      setInitialized(true)
+    }
+  }, [form, initialized])
 
   // Helper function to validate St- combinations
   const isValidStCombination = (patterns: string[]): boolean => {
@@ -468,19 +556,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
   // Helper function to convert concern names to field names
   const getFieldName = (concern: string): string => {
-    const fieldNameMap: Record<string, string> = {
-      'Language Comprehension': 'language_comprehension',
-      'Language Expression': 'language_expression',
-      'Pragmatics/Social Communication': 'pragmatics_social_communication',
-      Fluency: 'fluency',
-      'Suspected CAS': 'suspected_cas',
-      'Reluctant Speaking': 'reluctant_speaking',
-      Voice: 'voice',
-      Literacy: 'literacy',
-      'Cleft Lip / Palate': 'cleft_lip_palate',
-      'Known / Pending Diagnoses': 'known_pending_diagnoses',
-    }
-    return fieldNameMap[concern] || concern.toLowerCase().replace(/\s+/g, '_')
+    // Use the same transformation logic used elsewhere in the component
+    return concern
+      .toLowerCase()
+      .replace(/\s+|\/|-/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/_$/, '')
+      .replace(/_pallet/, '_pallet')
   }
 
   // Create nested structure for articulation data
@@ -510,7 +592,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       articulationNotes: form.watch('general_articulation_notes') || '',
     }
 
-    form.setValue('articulation', articulationData)
+    form.setValue('error_patterns.articulation', articulationData)
   }, [selectedSounds, selectedErrorPatterns, selectedStoppingSounds, soundNotes, notes, form])
 
   const handleConcernChange = (concern: string, checked: boolean) => {
@@ -523,7 +605,11 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
   // Create areas of concern object structure
   React.useEffect(() => {
+    // Get current form data to preserve existing values
+    const currentData = form.getValues('error_patterns.add_areas_of_concern') || {}
     const areasOfConcernData = {}
+
+    // Initialize all fields
     areasOfConcern.forEach(concern => {
       const key = concern
         .toLowerCase()
@@ -531,8 +617,19 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         .replace(/_+/g, '_')
         .replace(/_$/, '')
         .replace(/_pallet/, '_pallet')
-      areasOfConcernData[key] = null
+
+      // For editing: preserve existing values during initialization
+      // For new screening: start with null
+      if (initialized) {
+        // After initialization, preserve existing values
+        areasOfConcernData[key] = currentData[key] || null
+      } else {
+        // During initialization, only preserve non-null values (from loaded data)
+        areasOfConcernData[key] = currentData[key] !== null ? currentData[key] : null
+      }
     })
+
+    // For selected concerns, ensure they're properly handled
     selectedConcerns.forEach(concern => {
       const key = concern
         .toLowerCase()
@@ -540,11 +637,18 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         .replace(/_+/g, '_')
         .replace(/_$/, '')
         .replace(/_pallet/, '_pallet')
-      const notes = form.watch(`areasOfConcern.${key}`) || ''
-      areasOfConcernData[key] = notes || null
+
+      if (initialized) {
+        // After initialization (user interaction), set empty string for new selections
+        if (areasOfConcernData[key] === null) {
+          areasOfConcernData[key] = ''
+        }
+      }
+      // During initialization, keep whatever value was loaded (including non-null values)
     })
-    form.setValue('areasOfConcern', areasOfConcernData)
-  }, [selectedConcerns, form])
+
+    form.setValue('error_patterns.add_areas_of_concern', areasOfConcernData)
+  }, [selectedConcerns, form, initialized])
 
   const handleSoundToggle = (sound: string) => {
     if (selectedSounds.includes(sound)) {
@@ -1530,10 +1634,14 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                 {selectedConcerns.includes(concern) && (
                   <div className='ml-6'>
                     <Textarea
-                      value={form.watch('areasOfConcern')?.[getFieldName(concern)] || ''}
+                      value={
+                        form.watch('error_patterns.add_areas_of_concern')?.[
+                          getFieldName(concern)
+                        ] || ''
+                      }
                       onChange={e => {
-                        const current = form.watch('areasOfConcern') || {}
-                        form.setValue('areasOfConcern', {
+                        const current = form.watch('error_patterns.add_areas_of_concern') || {}
+                        form.setValue('error_patterns.add_areas_of_concern', {
                           ...current,
                           [getFieldName(concern)]: e.target.value,
                         })
