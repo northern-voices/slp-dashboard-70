@@ -22,7 +22,6 @@ import {
   FileText,
   GraduationCap,
   Edit,
-  UserCheck,
   Save,
   X,
   Trash2,
@@ -194,13 +193,6 @@ const StudentInfoHeader = ({
               </div>
 
               <div className='flex items-center space-x-2 flex-wrap gap-2'>
-                <Badge
-                  variant={student.active ? 'default' : 'secondary'}
-                  className='flex items-center space-x-1'>
-                  <UserCheck className='w-3 h-3' />
-                  <span>{student.active ? 'Active' : 'Inactive'}</span>
-                </Badge>
-
                 {/* Move Up Grade Button */}
                 {student.grade !== '12th' && (
                   <AlertDialog>
