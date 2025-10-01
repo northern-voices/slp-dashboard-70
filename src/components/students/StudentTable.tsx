@@ -195,7 +195,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
                     <th className='text-left p-4 font-medium'>Grade</th>
                     {/* // TODO: Add date of birth (ask Lisa) */}
                     {/* <th className='text-left p-4 font-medium'>Date of Birth</th> */}
-                    <th className='text-left p-4 font-medium'>Actions</th>
+                    {/* <th className='text-left p-4 font-medium'>Actions</th> */}
                   </tr>
                 </thead>
                 <tbody>
@@ -214,7 +214,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
                       {/* // TODO: Add date of birth (ask Lisa) */}
                       {/* <td className='p-4'>N/A</td> */}
                       <td className='p-4'>{getStudentGrade(student)}</td>
-                      <td className='p-4'>
+                      {/* <td className='p-4'>
                         <Button
                           size='sm'
                           variant='outline'
@@ -223,7 +223,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
                           <Eye className='w-4 h-4' />
                           View
                         </Button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
