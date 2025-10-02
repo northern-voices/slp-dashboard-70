@@ -90,10 +90,10 @@ const ReportGenerationForm = () => {
       value: 'school-summary-report',
       label: 'School Summary Report',
       description:
-        'Generate a school-wide snapshot of speech screening results, highlighting qualified students, subs, and flagged recommendations for follow-up.',
+        'Generate a school-wide snapshot of screenings with qualified students, subs, and recommendations.',
       icon: Target,
       tooltip:
-        'Summarizes school-wide screenings with qualified students, subs, and recommendations.',
+        'Summarizes school-wide speech screenings, showing qualified students, subs, and recommendations to guide follow-up and planning.',
     },
     // {
     //   value: 'progress-reports',
