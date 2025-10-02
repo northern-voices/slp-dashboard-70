@@ -40,14 +40,14 @@ const StudentScreeningHistory = ({
                 Add Speech Screening
               </Button>
             )}
-            <Button
+            {/* <Button
               variant='outline'
               size='sm'
               onClick={onAddHearingScreening}
               className='flex items-center gap-2'>
               <Volume2 className='w-4 h-4' />
               Add Hearing Screening
-            </Button>
+            </Button> */}
           </div>
         </div>
       </CardHeader>
