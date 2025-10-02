@@ -93,7 +93,7 @@ const ReportGenerationForm = () => {
         'Generate a school-wide snapshot of speech screening results, highlighting qualified students, subs, and flagged recommendations for follow-up.',
       icon: Target,
       tooltip:
-        'Summarizes school-wide speech screenings, showing qualified students, subs, and recommendations to guide follow-up and planning.',
+        'Summarizes school-wide screenings with qualified students, subs, and recommendations.',
     },
     // {
     //   value: 'progress-reports',
