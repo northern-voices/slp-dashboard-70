@@ -193,44 +193,16 @@ const StudentInfoHeader = ({
               </div>
 
               <div className='flex items-center space-x-2 flex-wrap gap-2'>
-                {/* Move Up Grade Button */}
-                {student.grade !== '12th' && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant='outline' size='sm'>
-                        <TrendingUp className='w-4 h-4 mr-2' />
-                        Move to {getNextGrade(student.grade)}
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Move Student Up Grade</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to move {student.first_name} {student.last_name}{' '}
-                          from {student.grade} to {getNextGrade(student.grade)}? This action cannot
-                          be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleMoveUpGrade}>
-                          Move Up Grade
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-
                 {/* Edit Button */}
-                {onEdit && (
-                  <Button variant='outline' size='sm' onClick={onEdit}>
-                    <Edit className='w-4 h-4 mr-2' />
-                    Edit
-                  </Button>
-                )}
+                {/* {onEdit && ( */}
+                <Button variant='outline' size='sm' onClick={onEdit}>
+                  <Edit className='w-4 h-4 mr-2' />
+                  Edit
+                </Button>
+                {/* )} */}
 
                 {/* Delete Button */}
-                <AlertDialog>
+                {/* <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
                       variant='outline'
@@ -273,7 +245,7 @@ const StudentInfoHeader = ({
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
-                </AlertDialog>
+                </AlertDialog> */}
               </div>
             </div>
 
@@ -287,7 +259,7 @@ const StudentInfoHeader = ({
                 </div>
               </div>
 
-              <div className='flex items-start gap-2'>
+              {/* <div className='flex items-start gap-2'>
                 <Calendar className='w-4 h-4 text-gray-400 mt-0.5' />
                 <div>
                   <span className='text-sm font-medium text-gray-700'>Age</span>
@@ -295,24 +267,24 @@ const StudentInfoHeader = ({
                     {getAgeFromBirthDate(student.date_of_birth)} years old
                   </p>
                 </div>
-              </div>
+              </div> */}
 
-              <div className='flex items-start gap-2'>
+              {/* <div className='flex items-start gap-2'>
                 <User className='w-4 h-4 text-gray-400 mt-0.5' />
                 <div>
                   <span className='text-sm font-medium text-gray-700'>Gender</span>
                   <p className='text-sm text-gray-600'>{getGenderDisplay(student.gender)}</p>
                 </div>
-              </div>
+              </div> */}
 
-              <div className='flex items-start gap-2'>
+              {/* <div className='flex items-start gap-2'>
                 <Phone className='w-4 h-4 text-gray-400 mt-0.5' />
                 <div>
                   <span className='text-sm font-medium text-gray-700'>Emergency Contact</span>
                   <p className='text-sm text-gray-600'>{student.emergency_contact_name}</p>
                   <p className='text-sm text-gray-500'>{student.emergency_contact_phone}</p>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Additional Info */}
