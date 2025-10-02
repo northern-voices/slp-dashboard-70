@@ -293,7 +293,7 @@ const StudentInfoHeader = ({
                 <FileText className='w-4 h-4 text-gray-400 mt-0.5' />
                 <div className='flex-1'>
                   <div className='flex items-center justify-between mb-2'>
-                    <span className='text-sm font-medium text-gray-700'>Medical Notes</span>
+                    <span className='text-sm font-medium text-gray-700'>Student Notes</span>
                     {!isEditingNotes && (
                       <Button
                         variant='ghost'
@@ -309,7 +309,7 @@ const StudentInfoHeader = ({
                       <Textarea
                         value={editedNotes}
                         onChange={e => setEditedNotes(e.target.value)}
-                        placeholder='Enter medical notes...'
+                        placeholder='Enter notes...'
                         className='min-h-[80px]'
                       />
                       <div className='flex gap-2'>
@@ -329,7 +329,7 @@ const StudentInfoHeader = ({
                     </div>
                   ) : (
                     <span className='text-sm text-gray-600'>
-                      {student.notes || 'No medical notes on file'}
+                      {student.notes || 'No notes on file'}
                     </span>
                   )}
                 </div>
