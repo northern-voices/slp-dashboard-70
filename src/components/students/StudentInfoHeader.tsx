@@ -74,18 +74,36 @@ const StudentInfoHeader = ({
   }
 
   const handleEditNotes = () => {
-    setEditedNotes(student?.notes || '')
+    setEditedNotes('')
     setIsEditingNotes(true)
   }
 
-  const handleSaveNotes = () => {
-    // TODO: Implement save functionality
-    console.log('Saving notes:', editedNotes)
-    setIsEditingNotes(false)
-    toast({
-      title: 'Notes updated',
-      description: 'Student notes have been successfully updated.',
-    })
+  const handleSaveNotes = async () => {
+    if (!student?.id || !editedNotes.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a note before saving.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    try {
+      await studentsApi.createStudentNote(student.id, editedNotes.trim())
+      setIsEditingNotes(false)
+      setEditedNotes('')
+      toast({
+        title: 'Note saved',
+        description: 'Student note has been successfully saved.',
+      })
+    } catch (error) {
+      console.error('Error saving note:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to save note. Please try again.',
+        variant: 'destructive',
+      })
+    }
   }
 
   const handleCancelEdit = () => {
@@ -271,29 +289,20 @@ const StudentInfoHeader = ({
                 <FileText className='w-4 h-4 text-gray-400 mt-0.5' />
                 <div className='flex-1'>
                   <div className='flex items-center justify-between mb-2'>
-                    <span className='text-sm font-medium text-gray-700'>Student Notes</span>
-                    {!isEditingNotes && (
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        onClick={handleEditNotes}
-                        className='h-6 px-2 text-gray-500 hover:text-gray-700'>
-                        <Edit className='w-3 h-3' />
-                      </Button>
-                    )}
+                    <span className='text-sm font-medium text-gray-700'>Add New Note</span>
                   </div>
                   {isEditingNotes ? (
                     <div className='space-y-2'>
                       <Textarea
                         value={editedNotes}
                         onChange={e => setEditedNotes(e.target.value)}
-                        placeholder='Enter notes...'
+                        placeholder='Enter a new note...'
                         className='min-h-[80px]'
                       />
                       <div className='flex gap-2'>
                         <Button size='sm' onClick={handleSaveNotes} className='h-7 px-3'>
                           <Save className='w-3 h-3 mr-1' />
-                          Save
+                          Save Note
                         </Button>
                         <Button
                           variant='outline'
@@ -306,9 +315,14 @@ const StudentInfoHeader = ({
                       </div>
                     </div>
                   ) : (
-                    <span className='text-sm text-gray-600'>
-                      {student.notes || 'No notes on file'}
-                    </span>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={handleEditNotes}
+                      className='w-full justify-start'>
+                      <Edit className='w-3 h-3 mr-2' />
+                      Add a note
+                    </Button>
                   )}
                 </div>
               </div>
