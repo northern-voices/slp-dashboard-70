@@ -135,3 +135,43 @@ export const useSpeechScreeningsByStudent = (studentId?: string) => {
     enabled: !!studentId && !!user && !!userProfile,
   })
 }
+
+export const useScreeningsByStudent = (studentId?: string) => {
+  const { user } = useAuth()
+  const { userProfile } = useOrganization()
+
+  return useQuery({
+    queryKey: ['screenings', 'by-student', studentId, user?.id, userProfile?.role],
+    queryFn: async () => {
+      // Get both speech and hearing screenings for the specific student
+      const [speechScreenings, hearingScreenings] = await Promise.all([
+        speechScreeningsApi.getSpeechScreeningsByStudent(
+          studentId!,
+          user?.id,
+          userProfile?.role as 'admin' | 'slp'
+        ),
+        screeningsApi.getHearingScreeningsByStudent(
+          studentId!,
+          user?.id,
+          userProfile?.role as 'admin' | 'slp'
+        ),
+      ])
+
+      // Combine all screenings and add source table information
+      const allScreenings = [
+        ...speechScreenings.map(screening => ({ ...screening, source_table: 'speech' as const })),
+        ...hearingScreenings.map(screening => ({ ...screening, source_table: 'hearing' as const })),
+      ]
+
+      // Sort by date
+      allScreenings.sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+
+      return allScreenings
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: !!studentId && !!user && !!userProfile,
+  })
+}
