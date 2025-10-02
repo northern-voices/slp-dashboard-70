@@ -43,7 +43,6 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: Temporary remove this
       return data
     } catch (error) {
       console.error('Failed to generate student report:', error)
@@ -65,7 +64,6 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: Temporary remove this
       return data
     } catch (error) {
       console.error('Failed to generate student goal sheet:', error)
@@ -95,7 +93,6 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: Temporary remove this
       return data
     } catch (error) {
       console.error('Failed to generate school wide student progress report:', error)
@@ -118,7 +115,6 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: Temporary only remove this
       return data
     } catch (error) {
       console.error('Failed to generate school wide student goal sheet:', error)
@@ -145,7 +141,6 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: Temporary only
       return data
     } catch (error) {
       console.error('Failed to send school wide student reports:', error)
@@ -168,7 +163,6 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: TEMPORARY ONLY
       return data
     } catch (error) {
       console.error('Failed to send the school summary report:', error)
