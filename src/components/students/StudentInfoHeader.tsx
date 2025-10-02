@@ -64,21 +64,6 @@ const StudentInfoHeader = ({
     return age
   }
 
-  const getGenderDisplay = (gender: string) => {
-    switch (gender) {
-      case 'male':
-        return 'Male'
-      case 'female':
-        return 'Female'
-      case 'other':
-        return 'Other'
-      case 'prefer_not_to_say':
-        return 'Prefer not to say'
-      default:
-        return 'Not specified'
-    }
-  }
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -266,14 +251,6 @@ const StudentInfoHeader = ({
                   <p className='text-sm text-gray-600'>
                     {getAgeFromBirthDate(student.date_of_birth)} years old
                   </p>
-                </div>
-              </div> */}
-
-              {/* <div className='flex items-start gap-2'>
-                <User className='w-4 h-4 text-gray-400 mt-0.5' />
-                <div>
-                  <span className='text-sm font-medium text-gray-700'>Gender</span>
-                  <p className='text-sm text-gray-600'>{getGenderDisplay(student.gender)}</p>
                 </div>
               </div> */}
 
