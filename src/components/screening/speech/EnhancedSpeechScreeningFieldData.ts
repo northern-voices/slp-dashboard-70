@@ -189,7 +189,7 @@ export const soundErrorPatterns = {
     patterns: [
       { value: 'Omits S', display: 'Omits S [Bike-]' },
       { value: 'Omits K', display: 'Omits K [Bike-s]' },
-      { value: 'Omits KS', display: 'Omits KS [Bike]' },
+      { value: 'Omits KS', display: 'Omits KS [Bi-ke]' },
       { value: 'Frontal Lisp', display: 'Frontal Lisp' },
       { value: 'Lateral Lisp', display: 'Lateral Lisp' },
       { value: 'Nasalization', display: 'Nasalization' },
