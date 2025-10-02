@@ -86,6 +86,15 @@ const ReportGenerationForm = () => {
       tooltip:
         'Generates customized goal sheets with specific objectives, progress tracking metrics, and intervention strategies for each student. Used by therapists and IEP teams.',
     },
+    {
+      value: 'school-summary-report',
+      label: 'School Summary Report',
+      description:
+        'Generate a school-wide snapshot of speech screening results, highlighting qualified students, subs, and flagged recommendations for follow-up.',
+      icon: Target,
+      tooltip:
+        'Summarizes school-wide speech screenings, showing qualified students, subs, and recommendations to guide follow-up and planning.',
+    },
     // {
     //   value: 'progress-reports',
     //   label: 'School Wide Progress Reports',
@@ -131,9 +140,11 @@ const ReportGenerationForm = () => {
 
       // Show success modal
       setModalType('success')
-      setModalMessage(`Your ${
-        screeningReports.find(type => type.value === data.reportType)?.label
-      } is being generated. You'll receive an email at ${data.email} when it's ready.`)
+      setModalMessage(
+        `Your ${
+          screeningReports.find(type => type.value === data.reportType)?.label
+        } is being generated. You'll receive an email at ${data.email} when it's ready.`
+      )
       setIsSuccessModalOpen(true)
     } catch (error) {
       console.error('Error generating report:', error)
