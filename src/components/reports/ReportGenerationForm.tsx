@@ -132,6 +132,12 @@ const ReportGenerationForm = () => {
           data.academicYear,
           data.email
         )
+      } else if (data.reportType === 'school-summary-report') {
+        result = await edgeFunctionsApi.schoolSummaryReport(
+          currentSchool.id,
+          data.academicYear,
+          data.email
+        )
       } else {
         console.warn(`Unknown report type: ${data.reportType}`)
       }
