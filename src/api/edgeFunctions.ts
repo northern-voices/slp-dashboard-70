@@ -43,7 +43,6 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: Temporary remove this
       return data
     } catch (error) {
       console.error('Failed to generate student report:', error)
@@ -65,7 +64,6 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: Temporary remove this
       return data
     } catch (error) {
       console.error('Failed to generate student goal sheet:', error)
@@ -95,7 +93,6 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: Temporary remove this
       return data
     } catch (error) {
       console.error('Failed to generate school wide student progress report:', error)
@@ -118,7 +115,6 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: Temporary only remove this
       return data
     } catch (error) {
       console.error('Failed to generate school wide student goal sheet:', error)
@@ -145,10 +141,31 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: Temporary only
       return data
     } catch (error) {
       console.error('Failed to send school wide student reports:', error)
+      throw error
+    }
+  },
+
+  async schoolSummaryReport(schoolId: string, academicYear: string, overrideEmail: string) {
+    try {
+      const { data, error } = await supabase.functions.invoke('school-summary-report', {
+        body: {
+          school_id: schoolId,
+          academic_year: academicYear,
+          override_email: overrideEmail,
+        },
+      })
+
+      if (error) {
+        console.error('Error', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Failed to send the school summary report:', error)
       throw error
     }
   },
