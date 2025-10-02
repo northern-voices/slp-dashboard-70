@@ -58,6 +58,8 @@ const StudentInfoHeader = ({
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [editedNotes, setEditedNotes] = useState('')
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
+  const [editingNoteText, setEditingNoteText] = useState('')
   const [studentNotes, setStudentNotes] = useState<
     Array<{
       id: string
@@ -173,6 +175,71 @@ const StudentInfoHeader = ({
       toast({
         title: 'Grade updated',
         description: 'Student has been moved up to the next grade.',
+      })
+    }
+  }
+
+  const handleEditNote = (noteId: string, noteText: string) => {
+    setEditingNoteId(noteId)
+    setEditingNoteText(noteText)
+  }
+
+  const handleSaveEditedNote = async (noteId: string) => {
+    if (!editingNoteText.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a note before saving.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    try {
+      await studentsApi.updateStudentNote(noteId, editingNoteText.trim())
+      setEditingNoteId(null)
+      setEditingNoteText('')
+      // Refresh notes list
+      if (student?.id) {
+        const notes = await studentsApi.getStudentNotes(student.id)
+        setStudentNotes(notes)
+      }
+      toast({
+        title: 'Note updated',
+        description: 'Student note has been successfully updated.',
+      })
+    } catch (error) {
+      console.error('Error updating note:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to update note. Please try again.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleCancelEditNote = () => {
+    setEditingNoteId(null)
+    setEditingNoteText('')
+  }
+
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      await studentsApi.deleteStudentNote(noteId)
+      // Refresh notes list
+      if (student?.id) {
+        const notes = await studentsApi.getStudentNotes(student.id)
+        setStudentNotes(notes)
+      }
+      toast({
+        title: 'Note deleted',
+        description: 'Student note has been successfully deleted.',
+      })
+    } catch (error) {
+      console.error('Error deleting note:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to delete note. Please try again.',
+        variant: 'destructive',
       })
     }
   }
@@ -335,11 +402,7 @@ const StudentInfoHeader = ({
             {/* Additional Info */}
             <div className='mt-4 pt-4 border-t'>
               <div className='flex items-start gap-2'>
-                <FileText className='w-4 h-4 text-gray-400 mt-0.5' />
                 <div className='flex-1'>
-                  <div className='flex items-center justify-between mb-2'>
-                    <span className='text-sm font-medium text-gray-700'>Add New Note</span>
-                  </div>
                   {isEditingNotes ? (
                     <div className='space-y-2'>
                       <Textarea
@@ -393,19 +456,68 @@ const StudentInfoHeader = ({
                           <TableHead>Note</TableHead>
                           <TableHead className='w-[350px]'>Date Created</TableHead>
                           <TableHead className='w-[200px]'>Noted By</TableHead>
+                          <TableHead className='w-[100px]'>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {studentNotes.map(note => (
                           <TableRow key={note.id}>
                             <TableCell className='text-sm text-gray-700'>
-                              {note.note_text}
+                              {editingNoteId === note.id ? (
+                                <div className='space-y-2'>
+                                  <Textarea
+                                    value={editingNoteText}
+                                    onChange={e => setEditingNoteText(e.target.value)}
+                                    placeholder='Edit note...'
+                                    className='min-h-[60px]'
+                                  />
+                                  <div className='flex gap-2'>
+                                    <Button
+                                      size='sm'
+                                      onClick={() => handleSaveEditedNote(note.id)}
+                                      className='h-7 px-3'>
+                                      <Save className='w-3 h-3 mr-1' />
+                                      Save
+                                    </Button>
+                                    <Button
+                                      variant='outline'
+                                      size='sm'
+                                      onClick={handleCancelEditNote}
+                                      className='h-7 px-3'>
+                                      <X className='w-3 h-3 mr-1' />
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                note.note_text
+                              )}
                             </TableCell>
                             <TableCell className='text-sm text-gray-600'>
                               {formatDate(note.created_at)}
                             </TableCell>
                             <TableCell className='text-sm text-gray-600'>
                               {note.created_by.first_name} {note.created_by.last_name}
+                            </TableCell>
+                            <TableCell>
+                              <div className='flex items-center gap-2'>
+                                <Button
+                                  variant='ghost'
+                                  size='sm'
+                                  onClick={() => handleEditNote(note.id, note.note_text)}
+                                  className='h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                                  disabled={editingNoteId === note.id}>
+                                  <Edit className='w-4 h-4' />
+                                </Button>
+                                <Button
+                                  variant='ghost'
+                                  size='sm'
+                                  onClick={() => handleDeleteNote(note.id)}
+                                  className='h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50'
+                                  disabled={editingNoteId === note.id}>
+                                  <Trash2 className='w-4 h-4' />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
