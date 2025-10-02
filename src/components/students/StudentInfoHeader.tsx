@@ -1,9 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,7 +58,45 @@ const StudentInfoHeader = ({
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [editedNotes, setEditedNotes] = useState('')
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
+  const [studentNotes, setStudentNotes] = useState<
+    Array<{
+      id: string
+      note_text: string
+      created_at: string
+      updated_at: string
+      created_by: {
+        id: string
+        first_name: string
+        last_name: string
+      }
+    }>
+  >([])
+  const [isLoadingNotes, setIsLoadingNotes] = useState(false)
   const { toast } = useToast()
+
+  // Fetch student notes when component mounts or student changes
+  useEffect(() => {
+    const fetchNotes = async () => {
+      if (!student?.id) return
+
+      setIsLoadingNotes(true)
+      try {
+        const notes = await studentsApi.getStudentNotes(student.id)
+        setStudentNotes(notes)
+      } catch (error) {
+        console.error('Error fetching student notes:', error)
+        toast({
+          title: 'Error',
+          description: 'Failed to load student notes.',
+          variant: 'destructive',
+        })
+      } finally {
+        setIsLoadingNotes(false)
+      }
+    }
+
+    fetchNotes()
+  }, [student?.id, toast])
 
   const getAgeFromBirthDate = (birthDate: string) => {
     const today = new Date()
@@ -92,6 +138,9 @@ const StudentInfoHeader = ({
       await studentsApi.createStudentNote(student.id, editedNotes.trim())
       setIsEditingNotes(false)
       setEditedNotes('')
+      // Refresh notes list
+      const notes = await studentsApi.getStudentNotes(student.id)
+      setStudentNotes(notes)
       toast({
         title: 'Note saved',
         description: 'Student note has been successfully saved.',
@@ -325,6 +374,45 @@ const StudentInfoHeader = ({
                     </Button>
                   )}
                 </div>
+              </div>
+
+              {/* Student Notes Table */}
+              <div className='mt-6'>
+                <h3 className='text-sm font-medium text-gray-700 mb-3'>Note History</h3>
+                {isLoadingNotes ? (
+                  <div className='flex items-center justify-center py-8'>
+                    <LoadingSpinner size='sm' />
+                  </div>
+                ) : studentNotes.length === 0 ? (
+                  <p className='text-sm text-gray-500 text-center py-4'>No notes yet</p>
+                ) : (
+                  <div className='border rounded-lg overflow-hidden'>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Note</TableHead>
+                          <TableHead className='w-[350px]'>Date Created</TableHead>
+                          <TableHead className='w-[200px]'>Noted By</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {studentNotes.map(note => (
+                          <TableRow key={note.id}>
+                            <TableCell className='text-sm text-gray-700'>
+                              {note.note_text}
+                            </TableCell>
+                            <TableCell className='text-sm text-gray-600'>
+                              {formatDate(note.created_at)}
+                            </TableCell>
+                            <TableCell className='text-sm text-gray-600'>
+                              {note.created_by.first_name} {note.created_by.last_name}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </div>
             </div>
           </div>
