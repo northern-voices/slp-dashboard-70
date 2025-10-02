@@ -458,9 +458,10 @@ const StudentInfoHeader = ({
                       <TableHeader>
                         <TableRow>
                           <TableHead>Note</TableHead>
-                          <TableHead className='w-[350px]'>Date Created</TableHead>
+                          <TableHead className='w-[200px]'>Date Created</TableHead>
+                          <TableHead className='w-[200px]'>Last Updated</TableHead>
                           <TableHead className='w-[200px]'>Noted By</TableHead>
-                          <TableHead className='w-[100px]'>Actions</TableHead>
+                          <TableHead className='w-[100px]'></TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -501,6 +502,9 @@ const StudentInfoHeader = ({
                               {formatDate(note.created_at)}
                             </TableCell>
                             <TableCell className='text-sm text-gray-600'>
+                              {formatDate(note.updated_at)}
+                            </TableCell>
+                            <TableCell className='text-sm text-gray-600'>
                               {note.created_by.first_name} {note.created_by.last_name}
                             </TableCell>
                             <TableCell>
@@ -530,8 +534,8 @@ const StudentInfoHeader = ({
                                     <AlertDialogHeader>
                                       <AlertDialogTitle>Delete Note</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                        Are you sure you want to delete this note? This action cannot be
-                                        undone.
+                                        Are you sure you want to delete this note? This action
+                                        cannot be undone.
                                       </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
