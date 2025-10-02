@@ -30,6 +30,7 @@ import {
 import type { Student } from '@/types/database'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useToast } from '@/hooks/use-toast'
+import { studentsApi } from '@/api/students'
 
 interface StudentInfoHeaderProps {
   student?: Student | null
