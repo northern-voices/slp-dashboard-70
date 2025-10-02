@@ -55,12 +55,16 @@ const StudentInfoHeader = ({
   onMoveUpGrade,
   isLoading = false,
 }: StudentInfoHeaderProps) => {
+  const [localStudent, setLocalStudent] = useState<Student | null>(null)
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [editedNotes, setEditedNotes] = useState('')
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [editingNoteText, setEditingNoteText] = useState('')
   const [deletingNoteId, setDeletingNoteId] = useState<string | null>(null)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editedFirstName, setEditedFirstName] = useState('')
+  const [editedLastName, setEditedLastName] = useState('')
   const [studentNotes, setStudentNotes] = useState<
     Array<{
       id: string
@@ -76,6 +80,11 @@ const StudentInfoHeader = ({
   >([])
   const [isLoadingNotes, setIsLoadingNotes] = useState(false)
   const { toast } = useToast()
+
+  // Update local student when prop changes
+  useEffect(() => {
+    setLocalStudent(student || null)
+  }, [student])
 
   // Fetch student notes when component mounts or student changes
   useEffect(() => {
@@ -161,6 +170,62 @@ const StudentInfoHeader = ({
   const handleCancelEdit = () => {
     setIsEditingNotes(false)
     setEditedNotes('')
+  }
+
+  const handleEditName = () => {
+    if (!localStudent) return
+    setEditedFirstName(localStudent.first_name)
+    setEditedLastName(localStudent.last_name)
+    setIsEditingName(true)
+  }
+
+  const handleSaveName = async () => {
+    if (!localStudent?.id || !editedFirstName.trim() || !editedLastName.trim()) {
+      toast({
+        title: 'Error',
+        description: 'First name and last name are required.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    try {
+      await studentsApi.updateStudent(localStudent.id, {
+        first_name: editedFirstName.trim(),
+        last_name: editedLastName.trim(),
+      })
+
+      // Update local student state immediately
+      setLocalStudent({
+        ...localStudent,
+        first_name: editedFirstName.trim(),
+        last_name: editedLastName.trim(),
+      })
+
+      setIsEditingName(false)
+      toast({
+        title: 'Name updated',
+        description: 'Student name has been successfully updated.',
+      })
+
+      // Trigger a refresh of the student data if onEdit is provided
+      if (onEdit) {
+        onEdit()
+      }
+    } catch (error) {
+      console.error('Error updating student name:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to update student name. Please try again.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleCancelEditName = () => {
+    setIsEditingName(false)
+    setEditedFirstName('')
+    setEditedLastName('')
   }
 
   const handleDeleteStudent = () => {
@@ -267,7 +332,7 @@ const StudentInfoHeader = ({
     return gradeMap[currentGrade || ''] || 'Next Grade'
   }
 
-  const studentFullName = student ? `${student.first_name} ${student.last_name}` : ''
+  const studentFullName = localStudent ? `${localStudent.first_name} ${localStudent.last_name}` : ''
   const isDeleteConfirmationValid = deleteConfirmation === studentFullName
 
   if (isLoading) {
@@ -285,7 +350,7 @@ const StudentInfoHeader = ({
     )
   }
 
-  if (!student) {
+  if (!localStudent) {
     return (
       <Card className='mb-6'>
         <CardContent className='p-6'>
@@ -309,17 +374,52 @@ const StudentInfoHeader = ({
                   <User className='w-6 h-6 text-blue-600' />
                 </div>
                 <div>
-                  <h1 className='text-2xl font-semibold text-gray-900'>
-                    {student.first_name} {student.last_name}
-                  </h1>
-                  <p className='text-gray-600'>Student ID: {student.student_id}</p>
+                  {isEditingName ? (
+                    <div className='space-y-2'>
+                      <div className='flex gap-2'>
+                        <Input
+                          value={editedFirstName}
+                          onChange={e => setEditedFirstName(e.target.value)}
+                          placeholder='First Name'
+                          className='w-40'
+                        />
+                        <Input
+                          value={editedLastName}
+                          onChange={e => setEditedLastName(e.target.value)}
+                          placeholder='Last Name'
+                          className='w-40'
+                        />
+                      </div>
+                      <div className='flex gap-2'>
+                        <Button size='sm' onClick={handleSaveName} className='h-7 px-3'>
+                          <Save className='w-3 h-3 mr-1' />
+                          Save
+                        </Button>
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={handleCancelEditName}
+                          className='h-7 px-3'>
+                          <X className='w-3 h-3 mr-1' />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <h1 className='text-2xl font-semibold text-gray-900'>
+                        {localStudent.first_name} {localStudent.last_name}
+                      </h1>
+                      <p className='text-gray-600'>Student ID: {localStudent.student_id}</p>
+                    </>
+                  )}
                 </div>
               </div>
 
               <div className='flex items-center space-x-2 flex-wrap gap-2'>
                 {/* Edit Button */}
                 {/* {onEdit && ( */}
-                <Button variant='outline' size='sm' onClick={onEdit}>
+                <Button variant='outline' size='sm' onClick={handleEditName}>
                   <Edit className='w-4 h-4 mr-2' />
                   Edit
                 </Button>
@@ -341,7 +441,7 @@ const StudentInfoHeader = ({
                       <AlertDialogTitle>Delete Student</AlertDialogTitle>
                       <AlertDialogDescription>
                         This action cannot be undone. This will permanently delete{' '}
-                        {student.first_name} {student.last_name} and remove all student data,
+                        {localStudent.first_name} {localStudent.last_name} and remove all student data,
                         including screening history and reports.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -379,7 +479,7 @@ const StudentInfoHeader = ({
                 <GraduationCap className='w-4 h-4 text-gray-400 mt-0.5' />
                 <div>
                   <span className='text-sm font-medium text-gray-700'>Grade</span>
-                  <p className='text-sm text-gray-600'>{student.grade}</p>
+                  <p className='text-sm text-gray-600'>{localStudent.grade}</p>
                 </div>
               </div>
 
