@@ -60,7 +60,7 @@ const StudentScreeningHistory = ({
         </div>
       </CardHeader>
       <CardContent>
-        <ScreeningFilters
+        {/* <ScreeningFilters
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           filterType={filterType}
@@ -85,7 +85,7 @@ const StudentScreeningHistory = ({
           setLanguageComprehensionFilter={setLanguageComprehensionFilter}
           priorityRescreenFilter={priorityRescreenFilter}
           setPriorityRescreenFilter={setPriorityRescreenFilter}
-        />
+        /> */}
 
         <ScreeningsList
           studentId={studentId}
