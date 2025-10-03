@@ -321,27 +321,7 @@ const StudentInfoHeader = ({
     }
   }
 
-  const getNextGrade = (currentGrade?: string) => {
-    const gradeMap: { [key: string]: string } = {
-      'Pre-K': 'K',
-      K: '1st',
-      '1st': '2nd',
-      '2nd': '3rd',
-      '3rd': '4th',
-      '4th': '5th',
-      '5th': '6th',
-      '6th': '7th',
-      '7th': '8th',
-      '8th': '9th',
-      '9th': '10th',
-      '10th': '11th',
-      '11th': '12th',
-    }
-    return gradeMap[currentGrade || ''] || 'Next Grade'
-  }
-
   const studentFullName = localStudent ? `${localStudent.first_name} ${localStudent.last_name}` : ''
-  const isDeleteConfirmationValid = deleteConfirmation === studentFullName
 
   if (isLoading) {
     return (
@@ -395,52 +375,6 @@ const StudentInfoHeader = ({
                   <Edit className='w-4 h-4 mr-2' />
                   Edit
                 </Button>
-
-                {/* Delete Button */}
-                {/* <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      className='text-red-600 hover:text-red-700 hover:bg-red-50'>
-                      <Trash2 className='w-4 h-4 mr-2' />
-                      Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Student</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete{' '}
-                        {localStudent.first_name} {localStudent.last_name} and remove all student data,
-                        including screening history and reports.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <div className='py-4'>
-                      <p className='text-sm text-gray-700 mb-2'>
-                        To confirm deletion, please type the student's full name:{' '}
-                        <span className='font-semibold'>{studentFullName}</span>
-                      </p>
-                      <Input
-                        value={deleteConfirmation}
-                        onChange={e => setDeleteConfirmation(e.target.value)}
-                        placeholder="Type the student's full name"
-                        className='w-full'
-                      />
-                    </div>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setDeleteConfirmation('')}>
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDeleteStudent}
-                        disabled={!isDeleteConfirmationValid}
-                        className='bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed'>
-                        Delete Student
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog> */}
               </div>
             </div>
 
@@ -639,9 +573,7 @@ const StudentInfoHeader = ({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Student Name</DialogTitle>
-              <DialogDescription>
-                Update the student's first and last name below.
-              </DialogDescription>
+              <DialogDescription>Update the student's first and last name below.</DialogDescription>
             </DialogHeader>
             <div className='space-y-4 py-4'>
               <div className='space-y-2'>
