@@ -24,6 +24,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   User,
   Calendar,
   Phone,
@@ -374,56 +382,19 @@ const StudentInfoHeader = ({
                   <User className='w-6 h-6 text-blue-600' />
                 </div>
                 <div>
-                  {isEditingName ? (
-                    <div className='space-y-2'>
-                      <div className='flex gap-2'>
-                        <Input
-                          value={editedFirstName}
-                          onChange={e => setEditedFirstName(e.target.value)}
-                          placeholder='First Name'
-                          className='w-40'
-                        />
-                        <Input
-                          value={editedLastName}
-                          onChange={e => setEditedLastName(e.target.value)}
-                          placeholder='Last Name'
-                          className='w-40'
-                        />
-                      </div>
-                      <div className='flex gap-2'>
-                        <Button size='sm' onClick={handleSaveName} className='h-7 px-3'>
-                          <Save className='w-3 h-3 mr-1' />
-                          Save
-                        </Button>
-                        <Button
-                          variant='outline'
-                          size='sm'
-                          onClick={handleCancelEditName}
-                          className='h-7 px-3'>
-                          <X className='w-3 h-3 mr-1' />
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <h1 className='text-2xl font-semibold text-gray-900'>
-                        {localStudent.first_name} {localStudent.last_name}
-                      </h1>
-                      <p className='text-gray-600'>Student ID: {localStudent.student_id}</p>
-                    </>
-                  )}
+                  <h1 className='text-2xl font-semibold text-gray-900'>
+                    {localStudent.first_name} {localStudent.last_name}
+                  </h1>
+                  <p className='text-gray-600'>Student ID: {localStudent.student_id}</p>
                 </div>
               </div>
 
               <div className='flex items-center space-x-2 flex-wrap gap-2'>
                 {/* Edit Button */}
-                {/* {onEdit && ( */}
                 <Button variant='outline' size='sm' onClick={handleEditName}>
                   <Edit className='w-4 h-4 mr-2' />
                   Edit
                 </Button>
-                {/* )} */}
 
                 {/* Delete Button */}
                 {/* <AlertDialog>
@@ -662,6 +633,42 @@ const StudentInfoHeader = ({
             </div>
           </div>
         </div>
+
+        {/* Edit Name Modal */}
+        <Dialog open={isEditingName} onOpenChange={setIsEditingName}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Student Name</DialogTitle>
+              <DialogDescription>
+                Update the student's first and last name below.
+              </DialogDescription>
+            </DialogHeader>
+            <div className='space-y-4 py-4'>
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>First Name</label>
+                <Input
+                  value={editedFirstName}
+                  onChange={e => setEditedFirstName(e.target.value)}
+                  placeholder='First Name'
+                />
+              </div>
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>Last Name</label>
+                <Input
+                  value={editedLastName}
+                  onChange={e => setEditedLastName(e.target.value)}
+                  placeholder='Last Name'
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant='outline' onClick={handleCancelEditName}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveName}>Save Changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   )
