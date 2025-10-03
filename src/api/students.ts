@@ -350,7 +350,13 @@ export const studentsApi = {
 
       if (error) throw error
 
-      return data || []
+      // Transform the data to ensure created_by is a single object, not an array
+      const transformedData = data?.map(note => ({
+        ...note,
+        created_by: Array.isArray(note.created_by) ? note.created_by[0] : note.created_by,
+      }))
+
+      return transformedData || []
     } catch (error) {
       console.error('Error fetching student notes:', error)
       throw error
