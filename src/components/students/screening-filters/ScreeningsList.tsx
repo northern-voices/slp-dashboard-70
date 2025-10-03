@@ -29,6 +29,14 @@ interface ScreeningsListProps {
   filterType: string
   filterStatus: string
   dateRangeFilter: string
+  qualifiesForSpeechProgramFilter: string
+  vocabularySupportFilter: string
+  casFilter: string
+  gradeFilter: string
+  recommendationsFilter: string
+  clinicalNotesFilter: string
+  languageComprehensionFilter: string
+  priorityRescreenFilter: string
 }
 
 const ScreeningsList = ({
@@ -37,6 +45,14 @@ const ScreeningsList = ({
   filterType,
   filterStatus,
   dateRangeFilter,
+  qualifiesForSpeechProgramFilter,
+  vocabularySupportFilter,
+  casFilter,
+  gradeFilter,
+  recommendationsFilter,
+  clinicalNotesFilter,
+  languageComprehensionFilter,
+  priorityRescreenFilter,
 }: ScreeningsListProps) => {
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -46,33 +62,6 @@ const ScreeningsList = ({
   // Use React Query to fetch screenings data for the specific student
   // Only fetch if studentId is provided
   const { data: allScreenings, isLoading, error } = useScreeningsByStudent(studentId || '')
-
-  const filterByDateRange = (screening: Screening) => {
-    if (dateRangeFilter === 'all') return true
-
-    const screeningDate = parseDateSafely(screening.screening_date || screening.date)
-    const now = new Date()
-
-    switch (dateRangeFilter) {
-      case 'today': {
-        return screeningDate.toDateString() === now.toDateString()
-      }
-      case 'week': {
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        return screeningDate >= weekAgo
-      }
-      case 'month': {
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-        return screeningDate >= monthAgo
-      }
-      case 'quarter': {
-        const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-        return screeningDate >= quarterAgo
-      }
-      default:
-        return true
-    }
-  }
 
   // Apply filters to the screenings
   const filteredScreenings = (allScreenings || []).filter(screening => {
@@ -84,9 +73,167 @@ const ScreeningsList = ({
       filterStatus === 'all' ||
       screening.result === filterStatus ||
       screening.screening_result === filterStatus
-    const matchesDateRange = filterByDateRange(screening)
 
-    return matchesSearch && matchesType && matchesStatus && matchesDateRange
+    // Apply date range filter
+    let matchesDateRange = true
+    if (dateRangeFilter !== 'all') {
+      const screeningDate = new Date(screening.created_at)
+      const now = new Date()
+
+      switch (dateRangeFilter) {
+        case 'today': {
+          const screeningLocalDate = screeningDate.toLocaleDateString()
+          const nowLocalDate = now.toLocaleDateString()
+          matchesDateRange = screeningLocalDate === nowLocalDate
+          break
+        }
+        case 'week': {
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+          matchesDateRange = screeningDate >= weekAgo
+          break
+        }
+        case 'month': {
+          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+          matchesDateRange = screeningDate >= monthAgo
+          break
+        }
+        case 'quarter': {
+          const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+          matchesDateRange = screeningDate >= quarterAgo
+          break
+        }
+        case 'school_year': {
+          const currentDate = new Date()
+          const currentYear = currentDate.getFullYear()
+          const currentMonth = currentDate.getMonth()
+
+          let schoolYearStart: Date
+          if (currentMonth >= 8) {
+            schoolYearStart = new Date(currentYear, 8, 1)
+          } else {
+            schoolYearStart = new Date(currentYear - 1, 8, 1)
+          }
+
+          matchesDateRange = screeningDate >= schoolYearStart
+          break
+        }
+      }
+    }
+
+    // Apply qualifies for speech program filter
+    let matchesQualifiesForSpeechProgram = true
+    if (qualifiesForSpeechProgramFilter !== 'all' && screening.error_patterns?.screening_metadata) {
+      const qualifies = screening.error_patterns.screening_metadata.qualifies_for_speech_program
+      const sub = screening.error_patterns.screening_metadata.sub
+      const graduated = screening.error_patterns.screening_metadata.graduated
+
+      if (qualifiesForSpeechProgramFilter === 'qualifies') {
+        matchesQualifiesForSpeechProgram = qualifies === true && !sub
+      } else if (qualifiesForSpeechProgramFilter === 'not_in_program') {
+        matchesQualifiesForSpeechProgram = qualifies === false && !sub
+      } else if (qualifiesForSpeechProgramFilter === 'sub') {
+        matchesQualifiesForSpeechProgram = sub === true
+      } else if (qualifiesForSpeechProgramFilter === 'graduated') {
+        matchesQualifiesForSpeechProgram = graduated === true
+      }
+    }
+
+    // Apply grade filter
+    let matchesGrade = true
+    if (gradeFilter !== 'all') {
+      matchesGrade = screening.grade === gradeFilter
+    }
+
+    // Apply vocabulary support filter
+    let matchesVocabularySupport = true
+    if (vocabularySupportFilter !== 'all') {
+      const vocabularySupport = screening.vocabulary_support
+      matchesVocabularySupport = vocabularySupport === (vocabularySupportFilter === 'true')
+    }
+
+    // Apply CAS filter
+    let matchesCAS = true
+    if (casFilter !== 'all') {
+      const suspectedCAS = screening.error_patterns?.add_areas_of_concern?.suspected_cas
+      if (casFilter === 'has_text') {
+        matchesCAS = suspectedCAS !== null && suspectedCAS !== undefined && suspectedCAS !== ''
+      } else if (casFilter === 'no_text') {
+        matchesCAS =
+          !suspectedCAS ||
+          suspectedCAS === null ||
+          suspectedCAS === undefined ||
+          suspectedCAS === ''
+      }
+    }
+
+    // Apply language comprehension filter
+    let matchesLanguageComprehension = true
+    if (languageComprehensionFilter !== 'all') {
+      const languageComprehension =
+        screening.error_patterns?.add_areas_of_concern?.language_comprehension
+      if (languageComprehensionFilter === 'concern') {
+        matchesLanguageComprehension =
+          languageComprehension !== null &&
+          languageComprehension !== undefined &&
+          languageComprehension !== ''
+      } else if (languageComprehensionFilter === 'no_concern') {
+        matchesLanguageComprehension =
+          !languageComprehension ||
+          languageComprehension === null ||
+          languageComprehension === undefined ||
+          languageComprehension === ''
+      }
+    }
+
+    // Apply priority rescreen filter
+    let matchesPriorityRescreen = true
+    if (priorityRescreenFilter !== 'all') {
+      const priorityRescreen = screening.error_patterns?.attendance?.priority_re_screen
+      if (priorityRescreenFilter === 'true') {
+        matchesPriorityRescreen = priorityRescreen === true
+      } else if (priorityRescreenFilter === 'false') {
+        matchesPriorityRescreen =
+          priorityRescreen === false || priorityRescreen === null || priorityRescreen === undefined
+      }
+    }
+
+    // Apply recommendations filter
+    let matchesRecommendations = true
+    if (recommendationsFilter !== 'all') {
+      const hasReferralNotes = screening.referral_notes && screening.referral_notes.trim() !== ''
+
+      if (recommendationsFilter === 'has_referral_notes') {
+        matchesRecommendations = hasReferralNotes
+      } else if (recommendationsFilter === 'no_referral_notes') {
+        matchesRecommendations = !hasReferralNotes
+      }
+    }
+
+    // Apply clinical notes filter
+    let matchesClinicalNotes = true
+    if (clinicalNotesFilter !== 'all') {
+      const hasClinicalNotes = screening.clinical_notes && screening.clinical_notes.trim() !== ''
+      if (clinicalNotesFilter === 'has_notes') {
+        matchesClinicalNotes = hasClinicalNotes
+      } else if (clinicalNotesFilter === 'no_notes') {
+        matchesClinicalNotes = !hasClinicalNotes
+      }
+    }
+
+    return (
+      matchesSearch &&
+      matchesType &&
+      matchesStatus &&
+      matchesDateRange &&
+      matchesQualifiesForSpeechProgram &&
+      matchesGrade &&
+      matchesVocabularySupport &&
+      matchesCAS &&
+      matchesLanguageComprehension &&
+      matchesPriorityRescreen &&
+      matchesRecommendations &&
+      matchesClinicalNotes
+    )
   })
 
   const handleViewDetails = (screening: Screening) => {
@@ -193,7 +340,15 @@ const ScreeningsList = ({
     Boolean(searchTerm) ||
     filterType !== 'all' ||
     filterStatus !== 'all' ||
-    dateRangeFilter !== 'all'
+    dateRangeFilter !== 'all' ||
+    qualifiesForSpeechProgramFilter !== 'all' ||
+    vocabularySupportFilter !== 'all' ||
+    casFilter !== 'all' ||
+    gradeFilter !== 'all' ||
+    recommendationsFilter !== 'all' ||
+    clinicalNotesFilter !== 'all' ||
+    languageComprehensionFilter !== 'all' ||
+    priorityRescreenFilter !== 'all'
 
   // Loading state
   if (isLoading) {
