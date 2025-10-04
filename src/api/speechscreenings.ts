@@ -504,4 +504,107 @@ export const speechScreeningsApi = {
       throw error
     }
   },
+
+  getSpeechScreeningsBySchool: async (
+    schoolId: string,
+    currentUserId?: string,
+    userRole?: 'admin' | 'slp' | 'supervisor',
+    dateFilter?: 'all' | 'school_year'
+  ): Promise<Screening[]> => {
+    try {
+      // Calculate school year start date (September 1st)
+      const currentDate = new Date()
+      const currentYear = currentDate.getFullYear()
+      const currentMonth = currentDate.getMonth() // 0-indexed (September = 8)
+
+      let schoolYearStart: Date
+      if (currentMonth >= 8) {
+        // September or later
+        schoolYearStart = new Date(currentYear, 8, 1) // September 1st of current year
+      } else {
+        schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
+      }
+
+      // Build base query for specific school
+      let query = supabase
+        .from('speech_screenings')
+        .select(
+          `
+          *,
+          students!inner (
+            id,
+            first_name,
+            last_name,
+            school_id,
+            student_id,
+            schools (
+              id,
+              name
+            )
+          ),
+          school_grades (
+            id,
+            grade_level,
+            academic_year
+          ),
+          users (
+            id,
+            first_name,
+            last_name
+          )
+        `
+        )
+        .eq('students.school_id', schoolId)
+
+      // Apply date filter at database level (default to school year)
+      if (dateFilter !== 'all') {
+        query = query.gte('created_at', schoolYearStart.toISOString())
+      }
+
+      // Apply filters based on user role
+      if (userRole === 'slp' && currentUserId) {
+        // SLPs can only see their own screenings
+        query = query.eq('screener_id', currentUserId)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      const transformedData: Screening[] = (data || []).map((screening: RawSpeechScreening) => ({
+        id: screening.id,
+        student_id: screening.students?.student_id || '',
+        student_name: screening.students
+          ? `${screening.students.first_name} ${screening.students.last_name}`
+          : 'Unknown Student',
+        grade: screening.school_grades?.grade_level || '',
+        date: screening.created_at?.split('T')[0] || '',
+        screening_date: screening.created_at?.split('T')[0] || '',
+        screening_type: 'initial',
+        screener: screening.users
+          ? `${screening.users.first_name} ${screening.users.last_name}`
+          : 'Unknown Screener',
+        slp_id: screening.screener_id,
+        result: (screening.result as SpeechScreeningResult) || undefined,
+        screening_result: (screening.result as SpeechScreeningResult) || undefined,
+        referral_notes: screening.referral_notes || '',
+        clinical_notes: screening.clinical_notes || '',
+        vocabulary_support: screening.vocabulary_support,
+        suspected_cas: screening.suspected_cas,
+        error_patterns: screening.error_patterns,
+        created_at: screening.created_at,
+        updated_at: screening.updated_at,
+        school_id: screening.students?.school_id || '',
+        school_name: screening.students?.schools?.name || 'Unknown School',
+        grade_id: screening.grade_id,
+        screener_id: screening.screener_id,
+        academic_year: screening.school_grades?.academic_year || '',
+      }))
+
+      return transformedData
+    } catch (error) {
+      console.error('Error fetching speech screenings by school:', error)
+      throw error
+    }
+  },
 }

@@ -17,7 +17,7 @@ const ScreeningsContent = () => {
 
   // Basic filters
   const [resultFilter, setResultFilter] = useState('all')
-  const [dateRangeFilter, setDateRangeFilter] = useState('all')
+  const [dateRangeFilter, setDateRangeFilter] = useState('school_year')
   const [gradeFilter, setGradeFilter] = useState('all')
 
   // Speech program filters

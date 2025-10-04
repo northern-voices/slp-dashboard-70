@@ -47,7 +47,7 @@ import { parseDateSafely } from '@/utils/dateUtils'
 import ScreeningBulkActions from './ScreeningBulkActions'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import { School, Screening } from '@/types/database'
-import { useScreenings } from '@/hooks/screenings/use-screenings'
+import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import {
   useDeleteScreening,
   useUpdateSpeechScreening,
@@ -100,16 +100,36 @@ const ScreeningsTable = ({
   const [updatingProgramId, setUpdatingProgramId] = useState<string | null>(null)
 
   // Use React Query to fetch screenings data
-  const { data: allScreenings, isLoading, error } = useScreenings()
+  // If currentSchool is provided, use the school-specific query, otherwise fetch all
+  const {
+    data: allScreeningsData,
+    isLoading: isLoadingAll,
+    isFetching: isFetchingAll,
+    error: errorAll,
+  } = useScreenings()
+
+  const {
+    data: schoolScreeningsData,
+    isLoading: isLoadingSchool,
+    isFetching: isFetchingSchool,
+    error: errorSchool,
+  } = useScreeningsBySchool(
+    currentSchool?.id,
+    dateRangeFilter === 'school_year' ? 'school_year' : 'all'
+  )
 
   // Use mutation hooks
   const { mutate: updateSpeechScreening, isPending: isUpdating } = useUpdateSpeechScreening()
   const { toast } = useToast()
 
-  // Filter screenings by current school
-  const schoolScreenings = currentSchool
-    ? (allScreenings || []).filter(screening => screening.school_id === currentSchool.id)
-    : allScreenings || []
+  // Determine which data to use based on whether a school is selected
+  const allScreenings = currentSchool ? schoolScreeningsData : allScreeningsData
+  const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
+  const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
+  const error = currentSchool ? errorSchool : errorAll
+
+  // No need to filter anymore since we're fetching school-specific data
+  const schoolScreenings = allScreenings || []
 
   // Apply all filters
   const filteredScreenings = schoolScreenings.filter(screening => {
@@ -700,15 +720,75 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
     filteredScreenings.length > 0 && selectedScreenings.length === filteredScreenings.length
   const isSomeSelected = selectedScreenings.length > 0
 
-  // Loading state
+  // Loading state with skeleton (show when initially loading or when fetching without data)
   if (isLoading) {
     return (
       <div className='space-y-4'>
-        <div className='bg-white rounded-lg border border-gray-200 p-8'>
-          <div className='flex items-center justify-center'>
-            <Loader2 className='w-8 h-8 animate-spin text-blue-600' />
-            <span className='ml-2 text-gray-600'>Loading screenings...</span>
-          </div>
+        <div className='flex justify-end mb-3'>
+          <div className='h-7 w-32 bg-gray-200 rounded-full animate-pulse'></div>
+        </div>
+
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <ResponsiveTable className='w-full'>
+            <TableHeader>
+              <tr>
+                <TableHead className='w-12'>
+                  <div className='h-4 w-4 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/4 min-w-[200px]'>
+                  <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>
+                  <div className='h-4 w-16 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>
+                  <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/6 min-w-[80px]'>
+                  <div className='h-4 w-14 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/6 min-w-[100px]'>
+                  <div className='h-4 w-12 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>
+                  <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {[...Array(5)].map((_, i) => (
+                <tr key={i} className='border-b border-gray-200'>
+                  <TableCell>
+                    <div className='h-4 w-4 bg-gray-200 rounded animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='space-y-2'>
+                      <div className='h-4 w-32 bg-gray-200 rounded animate-pulse'></div>
+                      <div className='h-3 w-24 bg-gray-200 rounded animate-pulse'></div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-6 w-20 bg-gray-200 rounded-full animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-6 w-24 bg-gray-200 rounded-full animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-4 w-8 bg-gray-200 rounded animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-4 w-24 bg-gray-200 rounded animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-8 w-8 bg-gray-200 rounded animate-pulse'></div>
+                  </TableCell>
+                </tr>
+              ))}
+            </TableBody>
+          </ResponsiveTable>
         </div>
       </div>
     )

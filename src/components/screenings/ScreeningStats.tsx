@@ -1,16 +1,30 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, CheckCircle, Clock, FileText } from 'lucide-react'
-import { useScreenings } from '@/hooks/screenings/use-screenings'
+import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
 const ScreeningStats = () => {
   const { currentSchool } = useOrganization()
-  const { data: allScreenings, isLoading, error } = useScreenings()
 
-  // Filter screenings by current school
-  const schoolScreenings = currentSchool
-    ? (allScreenings || []).filter(screening => screening.school_id === currentSchool.id)
-    : allScreenings || []
+  // Use school-specific query when a school is selected
+  const {
+    data: allScreeningsData,
+    isLoading: isLoadingAll,
+    isFetching: isFetchingAll,
+    error: errorAll
+  } = useScreenings()
+  const {
+    data: schoolScreeningsData,
+    isLoading: isLoadingSchool,
+    isFetching: isFetchingSchool,
+    error: errorSchool
+  } = useScreeningsBySchool(currentSchool?.id, 'school_year')
+
+  // Determine which data to use
+  const schoolScreenings = currentSchool ? (schoolScreeningsData || []) : (allScreeningsData || [])
+  const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
+  const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
+  const error = currentSchool ? errorSchool : errorAll
 
   const stats = {
     totalScreenings: schoolScreenings.length,

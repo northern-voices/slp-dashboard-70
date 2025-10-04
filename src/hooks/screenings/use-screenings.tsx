@@ -93,27 +93,36 @@ export const useRecentScreeningsBySchool = (schoolId?: string, days: number = 7)
   })
 }
 
-export const useScreeningsBySchool = (schoolId?: string) => {
+export const useScreeningsBySchool = (
+  schoolId?: string,
+  dateFilter?: 'all' | 'school_year'
+) => {
   const { user } = useAuth()
   const { userProfile } = useOrganization()
 
   return useQuery({
-    queryKey: ['screenings', 'by-school', schoolId, user?.id, userProfile?.role],
+    queryKey: ['screenings', 'by-school', schoolId, user?.id, userProfile?.role, dateFilter],
     queryFn: async () => {
-      // Get both speech and hearing screenings for the school
-      const [speechScreenings, hearingScreenings] = await Promise.all([
-        screeningsApi.getSpeechScreeningsList(user?.id, userProfile?.role as 'admin' | 'slp'),
-        screeningsApi.getHearingScreeningsList(user?.id, userProfile?.role as 'admin' | 'slp'),
-      ])
+      if (!schoolId) return []
 
-      // Filter by school
-      const schoolSpeech = speechScreenings.filter(screening => screening.school_id === schoolId)
-      const schoolHearing = hearingScreenings.filter(screening => screening.school_id === schoolId)
+      // Fetch speech screenings for the school with date filter
+      const speechScreenings = await speechScreeningsApi.getSpeechScreeningsBySchool(
+        schoolId,
+        user?.id,
+        userProfile?.role as 'admin' | 'slp' | 'supervisor',
+        dateFilter || 'school_year' // Default to school_year if not provided
+      )
 
-      return schoolSpeech.length + schoolHearing.length
+      // Add source table information
+      const allScreenings = speechScreenings.map(screening => ({
+        ...screening,
+        source_table: 'speech' as const,
+      }))
+
+      return allScreenings
     },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
+    staleTime: 30 * 60 * 1000, // 30 minutes - keep cached data longer
+    gcTime: 60 * 60 * 1000, // 60 minutes - keep in cache longer
     enabled: !!schoolId && !!user && !!userProfile,
   })
 }
