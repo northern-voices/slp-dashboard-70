@@ -26,11 +26,10 @@ const SchoolSelector = () => {
   const navigateToSchool = (school: School) => {
     const currentPath = location.pathname
 
-    // Update the school context first
-    setCurrentSchool(school)
+    // Close dropdown immediately for instant feedback
     setOpen(false)
 
-    // If we're on a school route, replace the schoolId
+    // Navigate first for instant UI update
     if (currentPath.startsWith('/school/')) {
       const newPath = currentPath.replace(/^\/school\/[^/]+/, `/school/${school.id}`)
       navigate(newPath, { replace: true })
@@ -39,6 +38,12 @@ const SchoolSelector = () => {
       const newPath = `/school/${school.id}`
       navigate(newPath)
     }
+
+    // Update context after navigation (this triggers the data fetch)
+    // Using setTimeout to ensure navigation happens first
+    setTimeout(() => {
+      setCurrentSchool(school)
+    }, 0)
   }
 
   if (isLoading) {
