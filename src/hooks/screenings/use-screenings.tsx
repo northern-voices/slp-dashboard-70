@@ -123,7 +123,6 @@ export const useScreeningsBySchool = (
     },
     staleTime: 30 * 60 * 1000, // 30 minutes - keep cached data longer
     gcTime: 60 * 60 * 1000, // 60 minutes - keep in cache longer
-    placeholderData: previousData => previousData, // Show old data while fetching new data
     enabled: !!schoolId && !!user && !!userProfile,
   })
 }

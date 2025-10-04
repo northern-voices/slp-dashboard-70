@@ -7,16 +7,23 @@ const ScreeningStats = () => {
   const { currentSchool } = useOrganization()
 
   // Use school-specific query when a school is selected
-  const { data: allScreeningsData, isLoading: isLoadingAll, error: errorAll } = useScreenings()
+  const {
+    data: allScreeningsData,
+    isLoading: isLoadingAll,
+    isFetching: isFetchingAll,
+    error: errorAll
+  } = useScreenings()
   const {
     data: schoolScreeningsData,
     isLoading: isLoadingSchool,
+    isFetching: isFetchingSchool,
     error: errorSchool
   } = useScreeningsBySchool(currentSchool?.id, 'school_year')
 
   // Determine which data to use
   const schoolScreenings = currentSchool ? (schoolScreeningsData || []) : (allScreeningsData || [])
   const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
+  const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
   const error = currentSchool ? errorSchool : errorAll
 
   const stats = {

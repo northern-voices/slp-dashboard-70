@@ -104,12 +104,14 @@ const ScreeningsTable = ({
   const {
     data: allScreeningsData,
     isLoading: isLoadingAll,
+    isFetching: isFetchingAll,
     error: errorAll,
   } = useScreenings()
 
   const {
     data: schoolScreeningsData,
     isLoading: isLoadingSchool,
+    isFetching: isFetchingSchool,
     error: errorSchool,
   } = useScreeningsBySchool(
     currentSchool?.id,
@@ -123,6 +125,7 @@ const ScreeningsTable = ({
   // Determine which data to use based on whether a school is selected
   const allScreenings = currentSchool ? schoolScreeningsData : allScreeningsData
   const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
+  const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
   const error = currentSchool ? errorSchool : errorAll
 
   // No need to filter anymore since we're fetching school-specific data
@@ -717,7 +720,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
     filteredScreenings.length > 0 && selectedScreenings.length === filteredScreenings.length
   const isSomeSelected = selectedScreenings.length > 0
 
-  // Loading state with skeleton
+  // Loading state with skeleton (show when initially loading or when fetching without data)
   if (isLoading) {
     return (
       <div className='space-y-4'>
