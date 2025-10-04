@@ -47,7 +47,7 @@ import { parseDateSafely } from '@/utils/dateUtils'
 import ScreeningBulkActions from './ScreeningBulkActions'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import { School, Screening } from '@/types/database'
-import { useScreenings } from '@/hooks/screenings/use-screenings'
+import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import {
   useDeleteScreening,
   useUpdateSpeechScreening,
@@ -100,16 +100,30 @@ const ScreeningsTable = ({
   const [updatingProgramId, setUpdatingProgramId] = useState<string | null>(null)
 
   // Use React Query to fetch screenings data
-  const { data: allScreenings, isLoading, error } = useScreenings()
+  // If currentSchool is provided, use the school-specific query, otherwise fetch all
+  const {
+    data: allScreeningsData,
+    isLoading: isLoadingAll,
+    error: errorAll,
+  } = useScreenings()
+
+  const {
+    data: schoolScreeningsData,
+    isLoading: isLoadingSchool,
+    error: errorSchool,
+  } = useScreeningsBySchool(currentSchool?.id)
 
   // Use mutation hooks
   const { mutate: updateSpeechScreening, isPending: isUpdating } = useUpdateSpeechScreening()
   const { toast } = useToast()
 
-  // Filter screenings by current school
-  const schoolScreenings = currentSchool
-    ? (allScreenings || []).filter(screening => screening.school_id === currentSchool.id)
-    : allScreenings || []
+  // Determine which data to use based on whether a school is selected
+  const allScreenings = currentSchool ? schoolScreeningsData : allScreeningsData
+  const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
+  const error = currentSchool ? errorSchool : errorAll
+
+  // No need to filter anymore since we're fetching school-specific data
+  const schoolScreenings = allScreenings || []
 
   // Apply all filters
   const filteredScreenings = schoolScreenings.filter(screening => {
