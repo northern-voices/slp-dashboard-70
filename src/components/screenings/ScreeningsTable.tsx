@@ -717,15 +717,75 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
     filteredScreenings.length > 0 && selectedScreenings.length === filteredScreenings.length
   const isSomeSelected = selectedScreenings.length > 0
 
-  // Loading state
+  // Loading state with skeleton
   if (isLoading) {
     return (
       <div className='space-y-4'>
-        <div className='bg-white rounded-lg border border-gray-200 p-8'>
-          <div className='flex items-center justify-center'>
-            <Loader2 className='w-8 h-8 animate-spin text-blue-600' />
-            <span className='ml-2 text-gray-600'>Loading screenings...</span>
-          </div>
+        <div className='flex justify-end mb-3'>
+          <div className='h-7 w-32 bg-gray-200 rounded-full animate-pulse'></div>
+        </div>
+
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <ResponsiveTable className='w-full'>
+            <TableHeader>
+              <tr>
+                <TableHead className='w-12'>
+                  <div className='h-4 w-4 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/4 min-w-[200px]'>
+                  <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>
+                  <div className='h-4 w-16 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>
+                  <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/6 min-w-[80px]'>
+                  <div className='h-4 w-14 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/6 min-w-[100px]'>
+                  <div className='h-4 w-12 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>
+                  <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                </TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {[...Array(5)].map((_, i) => (
+                <tr key={i} className='border-b border-gray-200'>
+                  <TableCell>
+                    <div className='h-4 w-4 bg-gray-200 rounded animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='space-y-2'>
+                      <div className='h-4 w-32 bg-gray-200 rounded animate-pulse'></div>
+                      <div className='h-3 w-24 bg-gray-200 rounded animate-pulse'></div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-6 w-20 bg-gray-200 rounded-full animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-6 w-24 bg-gray-200 rounded-full animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-4 w-8 bg-gray-200 rounded animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-4 w-24 bg-gray-200 rounded animate-pulse'></div>
+                  </TableCell>
+                  <TableCell>
+                    <div className='h-8 w-8 bg-gray-200 rounded animate-pulse'></div>
+                  </TableCell>
+                </tr>
+              ))}
+            </TableBody>
+          </ResponsiveTable>
         </div>
       </div>
     )
