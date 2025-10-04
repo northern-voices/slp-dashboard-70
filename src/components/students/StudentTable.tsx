@@ -241,6 +241,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
                   <tr className='border-b'>
                     <th className='text-left p-4 font-medium'>Name</th>
                     <th className='text-left p-4 font-medium'>Grade</th>
+                    <th className='text-left p-4 font-medium'>Date Created</th>
                     {/* // TODO: Add date of birth (ask Lisa) */}
                     {/* <th className='text-left p-4 font-medium'>Date of Birth</th> */}
                     {/* <th className='text-left p-4 font-medium'>Actions</th> */}
@@ -262,6 +263,13 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
                       {/* // TODO: Add date of birth (ask Lisa) */}
                       {/* <td className='p-4'>N/A</td> */}
                       <td className='p-4'>{getStudentGrade(student)}</td>
+                      <td className='p-4'>
+                        {new Date(student.created_at).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </td>
                       {/* <td className='p-4'>
                         <Button
                           size='sm'
