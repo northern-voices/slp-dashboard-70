@@ -111,7 +111,10 @@ const ScreeningsTable = ({
     data: schoolScreeningsData,
     isLoading: isLoadingSchool,
     error: errorSchool,
-  } = useScreeningsBySchool(currentSchool?.id)
+  } = useScreeningsBySchool(
+    currentSchool?.id,
+    dateRangeFilter === 'school_year' ? 'school_year' : 'all'
+  )
 
   // Use mutation hooks
   const { mutate: updateSpeechScreening, isPending: isUpdating } = useUpdateSpeechScreening()

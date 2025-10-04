@@ -508,9 +508,23 @@ export const speechScreeningsApi = {
   getSpeechScreeningsBySchool: async (
     schoolId: string,
     currentUserId?: string,
-    userRole?: 'admin' | 'slp' | 'supervisor'
+    userRole?: 'admin' | 'slp' | 'supervisor',
+    dateFilter?: 'all' | 'school_year'
   ): Promise<Screening[]> => {
     try {
+      // Calculate school year start date (September 1st)
+      const currentDate = new Date()
+      const currentYear = currentDate.getFullYear()
+      const currentMonth = currentDate.getMonth() // 0-indexed (September = 8)
+
+      let schoolYearStart: Date
+      if (currentMonth >= 8) {
+        // September or later
+        schoolYearStart = new Date(currentYear, 8, 1) // September 1st of current year
+      } else {
+        schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
+      }
+
       // Build base query for specific school
       let query = supabase
         .from('speech_screenings')
@@ -541,6 +555,11 @@ export const speechScreeningsApi = {
         `
         )
         .eq('students.school_id', schoolId)
+
+      // Apply date filter at database level (default to school year)
+      if (dateFilter !== 'all') {
+        query = query.gte('created_at', schoolYearStart.toISOString())
+      }
 
       // Apply filters based on user role
       if (userRole === 'slp' && currentUserId) {

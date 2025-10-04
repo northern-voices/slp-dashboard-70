@@ -93,20 +93,24 @@ export const useRecentScreeningsBySchool = (schoolId?: string, days: number = 7)
   })
 }
 
-export const useScreeningsBySchool = (schoolId?: string) => {
+export const useScreeningsBySchool = (
+  schoolId?: string,
+  dateFilter?: 'all' | 'school_year'
+) => {
   const { user } = useAuth()
   const { userProfile } = useOrganization()
 
   return useQuery({
-    queryKey: ['screenings', 'by-school', schoolId, user?.id, userProfile?.role],
+    queryKey: ['screenings', 'by-school', schoolId, user?.id, userProfile?.role, dateFilter],
     queryFn: async () => {
       if (!schoolId) return []
 
-      // Fetch speech screenings for the school
+      // Fetch speech screenings for the school with date filter
       const speechScreenings = await speechScreeningsApi.getSpeechScreeningsBySchool(
         schoolId,
         user?.id,
-        userProfile?.role as 'admin' | 'slp' | 'supervisor'
+        userProfile?.role as 'admin' | 'slp' | 'supervisor',
+        dateFilter || 'school_year' // Default to school_year if not provided
       )
 
       // Add source table information
@@ -117,8 +121,9 @@ export const useScreeningsBySchool = (schoolId?: string) => {
 
       return allScreenings
     },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
+    staleTime: 30 * 60 * 1000, // 30 minutes - keep cached data longer
+    gcTime: 60 * 60 * 1000, // 60 minutes - keep in cache longer
+    placeholderData: previousData => previousData, // Show old data while fetching new data
     enabled: !!schoolId && !!user && !!userProfile,
   })
 }
