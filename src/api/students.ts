@@ -44,35 +44,6 @@ export const studentsApi = {
     }
   },
 
-  // Search students by name
-  searchStudents: async (searchTerm: string, schoolId?: string): Promise<Student[]> => {
-    try {
-      if (!schoolId) {
-        return []
-      }
-
-      const query = supabase
-        .from('students')
-        .select('*')
-        .eq('school_id', schoolId)
-        .or(
-          `first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,student_id.ilike.%${searchTerm}%`
-        )
-        .order('last_name', { ascending: true })
-        .order('first_name', { ascending: true })
-        .limit(50) // Limit results for performance
-
-      const { data, error } = await query
-
-      if (error) throw error
-
-      return data || []
-    } catch (error) {
-      console.error('Error searching students:', error)
-      throw error
-    }
-  },
-
   // Get students by grade (you might need this for your grade filter)
   getStudentsByGrade: async (gradeLevel: string, schoolId?: string): Promise<Student[]> => {
     try {

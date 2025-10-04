@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Check, ChevronsUpDown, Plus, UserPlus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Student } from '@/types/database'
-import { useStudentsByGrade, useSearchStudents, useStudentsBySchool } from '@/hooks/students'
+import { useStudentsByGrade, useStudentsBySchool } from '@/hooks/students'
 import { StudentService } from '@/services/studentService'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -91,29 +91,24 @@ const StudentSearchSelector = ({
   const { data: studentsByGrade = [], isLoading: loadingByGrade } = useStudentsByGrade(
     currentSchool && gradeFilter ? gradeFilter : ''
   )
-  const { data: searchResults = [], isLoading: loadingSearch } = useSearchStudents(
-    currentSchool && searchValue ? searchValue : ''
-  )
   const { data: studentsBySchool = [], isLoading: loadingBySchool } = useStudentsBySchool(
     currentSchool?.id
   )
 
-  // Determine which students to show
+  // Determine which students to show with client-side full name filtering
   const studentsToShow = currentSchool
     ? searchValue.length >= 2
-      ? searchResults
+      ? studentsBySchool.filter(student => {
+          const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
+          const search = searchValue.toLowerCase()
+          return fullName.includes(search) || student.student_id.toLowerCase().includes(search)
+        })
       : gradeFilter
       ? studentsByGrade
       : studentsBySchool
     : []
 
-  const isLoading = currentSchool
-    ? searchValue.length >= 2
-      ? loadingSearch
-      : gradeFilter
-      ? loadingByGrade
-      : loadingBySchool
-    : false
+  const isLoading = currentSchool ? (gradeFilter ? loadingByGrade : loadingBySchool) : false
 
   // New student form
   const newStudentForm = useForm<NewStudentFormData>({

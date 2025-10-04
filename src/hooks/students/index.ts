@@ -14,18 +14,6 @@ export const useStudents = () => {
   })
 }
 
-export const useSearchStudents = (searchTerm: string) => {
-  const { currentSchool } = useOrganization()
-
-  return useQuery({
-    queryKey: ['students', 'search', searchTerm, currentSchool?.id],
-    queryFn: () => studentsApi.searchStudents(searchTerm, currentSchool?.id),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    enabled: !!searchTerm && searchTerm.length >= 2 && !!currentSchool?.id,
-  })
-}
-
 export const useStudentsByGrade = (gradeLevel: string) => {
   const { currentSchool } = useOrganization()
 
