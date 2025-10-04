@@ -102,30 +102,18 @@ export const useScreeningsBySchool = (schoolId?: string) => {
     queryFn: async () => {
       if (!schoolId) return []
 
-      // Use the new API method to fetch screenings by school
+      // Fetch speech screenings for the school
       const speechScreenings = await speechScreeningsApi.getSpeechScreeningsBySchool(
         schoolId,
         user?.id,
         userProfile?.role as 'admin' | 'slp' | 'supervisor'
       )
 
-      // TODO: Add hearing screenings when getSpeechScreeningsBySchool is implemented
-      const hearingScreenings = await screeningsApi.getHearingScreeningsList(
-        user?.id,
-        userProfile?.role as 'admin' | 'slp'
-      )
-      const schoolHearing = hearingScreenings.filter(screening => screening.school_id === schoolId)
-
-      // Combine and add source table information
-      const allScreenings = [
-        ...speechScreenings.map(screening => ({ ...screening, source_table: 'speech' as const })),
-        ...schoolHearing.map(screening => ({ ...screening, source_table: 'hearing' as const })),
-      ]
-
-      // Sort by created_at descending
-      allScreenings.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      )
+      // Add source table information
+      const allScreenings = speechScreenings.map(screening => ({
+        ...screening,
+        source_table: 'speech' as const,
+      }))
 
       return allScreenings
     },
