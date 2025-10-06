@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { Student, School } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, UserPlus, Search, Filter, Eye } from 'lucide-react'
+import { Plus, UserPlus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import StudentTableFilters from './StudentTableFilters'
 import {
   Form,
   FormControl,
@@ -104,10 +105,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
     .filter(student => {
       const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
       const search = searchTerm.toLowerCase()
-      return (
-        fullName.includes(search) ||
-        student.student_id.toLowerCase().includes(search)
-      )
+      return fullName.includes(search) || student.student_id.toLowerCase().includes(search)
     })
     .sort((a, b) => {
       const gradeA = a.grade || 'N/A'
@@ -212,18 +210,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
         </Button>
       </div>
 
-      {/* Search and Filters */}
-      <div className='flex flex-col sm:flex-row gap-4'>
-        <div className='relative flex-1'>
-          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
-          <Input
-            placeholder='Search students by name or ID...'
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className='pl-10'
-          />
-        </div>
-      </div>
+      {/* Filters */}
+      <StudentTableFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
       {/* Students Table */}
       <Card>
