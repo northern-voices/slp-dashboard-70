@@ -192,6 +192,58 @@ export const hearingScreeningsApi = {
     }
   },
 
+  getHearingScreeningsByStudent: async (
+    studentId: string,
+    currentUserId?: string,
+    userRole?: 'admin' | 'slp' | 'supervisor'
+  ): Promise<Screening[]> => {
+    try {
+      // Build base query for specific student
+      let query = supabase
+        .from('hearing_screenings')
+        .select(
+          `
+          *,
+          students (
+            id,
+            first_name,
+            last_name,
+            school_id,
+            student_id
+          ),
+          school_grades (
+            id,
+            grade_level,
+            academic_year
+          ),
+          users (
+            id,
+            first_name,
+            last_name
+          )
+        `
+        )
+        .eq('student_id', studentId)
+
+      // Apply filters based on user role
+      if (userRole === 'slp' && currentUserId) {
+        // SLPs can only see their own screenings
+        query = query.eq('screener_id', currentUserId)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      const transformedData: Screening[] = (data || []).map(transformHearingScreening)
+
+      return transformedData
+    } catch (error) {
+      console.error('Error fetching hearing screenings by student:', error)
+      throw error
+    }
+  },
+
   createHearingScreening: async (data: {
     student_id: string
     screener_id: string

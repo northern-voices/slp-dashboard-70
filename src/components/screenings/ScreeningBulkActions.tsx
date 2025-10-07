@@ -4,7 +4,7 @@ import { Download, Trash2, Mail, X, RefreshCw } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Screening } from '@/types/database'
 import ExportScreeningsModal from './ExportScreeningsModal'
-import EmailReportsModal from './EmailReportsModal'
+import SendReportsModal from './SendReportsModal'
 import DeleteScreeningsModal from './DeleteScreeningsModal'
 import StatusUpdateModal from './StatusUpdateModal'
 
@@ -126,12 +126,12 @@ const ScreeningBulkActions = ({
         onExport={handleActionComplete}
       />
 
-      <EmailReportsModal
+      {/* <SendReportsModal
         isOpen={showEmailModal}
         onClose={() => setShowEmailModal(false)}
         selectedScreenings={selectedScreenings}
         onSend={handleActionComplete}
-      />
+      /> */}
 
       <StatusUpdateModal
         isOpen={showStatusModal}

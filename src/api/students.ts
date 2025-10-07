@@ -87,6 +87,7 @@ export const studentsApi = {
             id,
             grade_id,
             created_at,
+            error_patterns,
             school_grades!left(
               grade_level
             )
@@ -256,6 +257,110 @@ export const studentsApi = {
       if (error) throw error
     } catch (error) {
       console.error('Error deleting student:', error)
+      throw error
+    }
+  },
+
+  // Create a new student note
+  createStudentNote: async (studentId: string, noteText: string): Promise<void> => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      const { error } = await supabase.from('student_notes').insert({
+        student_id: studentId,
+        created_by: user.id,
+        note_text: noteText,
+      })
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error creating student note:', error)
+      throw error
+    }
+  },
+
+  // Get all notes for a student
+  getStudentNotes: async (
+    studentId: string
+  ): Promise<
+    Array<{
+      id: string
+      note_text: string
+      created_at: string
+      updated_at: string
+      created_by: {
+        id: string
+        first_name: string
+        last_name: string
+      }
+    }>
+  > => {
+    try {
+      const { data, error } = await supabase
+        .from('student_notes')
+        .select(
+          `
+          id,
+          note_text,
+          created_at,
+          updated_at,
+          created_by:users!student_notes_created_by_fkey(
+            id,
+            first_name,
+            last_name
+          )
+        `
+        )
+        .eq('student_id', studentId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      // Transform the data to ensure created_by is a single object, not an array
+      const transformedData = data?.map(note => ({
+        ...note,
+        created_by: Array.isArray(note.created_by) ? note.created_by[0] : note.created_by,
+      }))
+
+      return transformedData || []
+    } catch (error) {
+      console.error('Error fetching student notes:', error)
+      throw error
+    }
+  },
+
+  // Update a student note
+  updateStudentNote: async (noteId: string, noteText: string): Promise<void> => {
+    try {
+      const { error } = await supabase
+        .from('student_notes')
+        .update({
+          note_text: noteText,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', noteId)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error updating student note:', error)
+      throw error
+    }
+  },
+
+  // Delete a student note
+  deleteStudentNote: async (noteId: string): Promise<void> => {
+    try {
+      const { error } = await supabase.from('student_notes').delete().eq('id', noteId)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error deleting student note:', error)
       throw error
     }
   },

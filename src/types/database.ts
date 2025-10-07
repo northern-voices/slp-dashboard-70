@@ -52,6 +52,23 @@ export interface Student {
   qualifies_for_program?: boolean
   created_at: string
   updated_at: string
+  speech_screenings?: Array<{
+    id: string
+    grade_id: string
+    created_at: string
+    error_patterns?: string | ErrorPatterns
+    school_grades?: {
+      grade_level: string
+    }
+  }>
+  hearing_screenings?: Array<{
+    id: string
+    grade_id: string
+    created_at: string
+    school_grades?: {
+      grade_level: string
+    }
+  }>
 }
 
 // Updated Screening interface to match database schema

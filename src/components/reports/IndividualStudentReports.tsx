@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useAuth } from '@/contexts/AuthContext'
 
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
 import {
@@ -42,6 +43,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 const IndividualStudentReports = () => {
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
+  const { user } = useAuth()
 
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [selectedReports, setSelectedReports] = useState<string[]>([])
@@ -58,6 +60,13 @@ const IndividualStudentReports = () => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
+
+  // Pre-fill email with current user's email on component mount
+  useEffect(() => {
+    if (user?.email && !recipientEmail) {
+      setRecipientEmail(user.email)
+    }
+  }, [user?.email])
 
   const getAvailableReports = () => {
     return [
