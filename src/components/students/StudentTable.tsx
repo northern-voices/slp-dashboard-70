@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Plus, UserPlus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
 import StudentTableFilters from './StudentTableFilters'
 import { GRADE_MAPPING } from '@/constants/app'
 import {
@@ -74,6 +75,55 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
     // Otherwise, show N/A
     return 'N/A'
+  }
+
+  // Helper function to get qualification badge (similar to ScreeningsTable)
+  const getQualificationBadge = (student: Student) => {
+    const speechScreenings = student.speech_screenings || []
+    if (speechScreenings.length === 0) {
+      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Screening</Badge>
+    }
+
+    // Get most recent screening - create a copy to avoid mutating the original array
+    const mostRecent = [...speechScreenings].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )[0]
+
+    if (!mostRecent?.error_patterns) {
+      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
+    }
+
+    try {
+      const errorPatterns =
+        typeof mostRecent.error_patterns === 'string'
+          ? JSON.parse(mostRecent.error_patterns)
+          : mostRecent.error_patterns
+
+      const qualifies = errorPatterns?.screening_metadata?.qualifies_for_speech_program
+      const sub = errorPatterns?.screening_metadata?.sub
+      const graduated = errorPatterns?.screening_metadata?.graduated
+
+      if (qualifies === undefined && sub === undefined && graduated === undefined) {
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
+      }
+
+      if (graduated) {
+        return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+      } else if (sub) {
+        return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
+      } else if (qualifies) {
+        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
+      } else {
+        return (
+          <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
+            Not In Program
+          </Badge>
+        )
+      }
+    } catch (e) {
+      console.error('Error parsing error_patterns:', e)
+      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Error</Badge>
+    }
   }
 
   // Helper function to check if a date is within the selected range
@@ -280,6 +330,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   <tr className='border-b'>
                     <th className='text-left p-4 font-medium'>Name</th>
                     <th className='text-left p-4 font-medium'>Grade</th>
+                    <th className='text-left p-4 font-medium'>Program</th>
                     <th className='text-left p-4 font-medium'>Date Created</th>
                     {/* // TODO: Add date of birth (ask Lisa) */}
                     {/* <th className='text-left p-4 font-medium'>Date of Birth</th> */}
@@ -302,6 +353,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                       {/* // TODO: Add date of birth (ask Lisa) */}
                       {/* <td className='p-4'>N/A</td> */}
                       <td className='p-4'>{getStudentGrade(student)}</td>
+                      <td className='p-4'>{getQualificationBadge(student)}</td>
                       <td className='p-4'>
                         {new Date(student.created_at).toLocaleDateString('en-US', {
                           month: 'short',

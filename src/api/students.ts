@@ -87,6 +87,7 @@ export const studentsApi = {
             id,
             grade_id,
             created_at,
+            error_patterns,
             school_grades!left(
               grade_level
             )
