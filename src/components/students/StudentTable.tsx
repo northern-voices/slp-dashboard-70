@@ -36,20 +36,25 @@ const newStudentSchema = z.object({
 
 type NewStudentFormData = z.infer<typeof newStudentSchema>
 
-const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool }) => {
+const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [gradeFilter, setGradeFilter] = useState('all')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Get current school context
   const { currentSchool } = useOrganization()
 
   // Use the selectedSchool prop or fall back to currentSchool from context
   const activeSchool = selectedSchool || currentSchool
+
+  // Fetch students using React Query
+  const { data: students = [], isLoading } = useStudentsBySchool(activeSchool?.id)
+
+  // Use mutation hook for creating students
+  const createStudentMutation = useCreateStudent()
 
   // New student form
   const newStudentForm = useForm<NewStudentFormData>({
@@ -174,61 +179,68 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
     }
   }
 
-  const handleAddStudent = async (data: NewStudentFormData) => {
-    try {
-      setIsSubmitting(true)
+  const handleAddStudent = (data: NewStudentFormData) => {
+    // Generate a unique student ID based on name and timestamp
+    const timestamp = Date.now().toString(36)
+    const initials = `${data.first_name.charAt(0)}${data.last_name.charAt(0)}`.toUpperCase()
+    const generatedStudentId = `${initials}-${timestamp}`
 
-      // Generate a unique student ID based on name and timestamp
-      const timestamp = Date.now().toString(36)
-      const initials = `${data.first_name.charAt(0)}${data.last_name.charAt(0)}`.toUpperCase()
-      const generatedStudentId = `${initials}-${timestamp}`
-
-      const newStudentData: {
-        first_name: string
-        last_name: string
-        student_id: string
-        qualifies_for_program: boolean
-        school_id?: string
-      } = {
-        first_name: data.first_name,
-        last_name: data.last_name,
-        student_id: generatedStudentId,
-        qualifies_for_program: false, // Default value
-      }
-
-      // Only add school_id if the activeSchool exists and the database supports it
-      if (activeSchool?.id) {
-        newStudentData.school_id = activeSchool.id
-      }
-
-      await StudentService.createStudent(newStudentData)
-
-      toast({
-        title: 'Success',
-        description: 'Student added successfully',
-      })
-
-      setShowAddModal(false)
-      newStudentForm.reset()
-
-      // TODO: Change window reload to revalidate data instead
-      // Refresh the page to show the new student
-      window.location.reload()
-    } catch (error) {
-      console.error('Error adding student:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to add student. Please try again.',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsSubmitting(false)
+    const newStudentData: {
+      first_name: string
+      last_name: string
+      student_id: string
+      qualifies_for_program: boolean
+      school_id?: string
+    } = {
+      first_name: data.first_name,
+      last_name: data.last_name,
+      student_id: generatedStudentId,
+      qualifies_for_program: false, // Default value
     }
+
+    // Only add school_id if the activeSchool exists
+    if (activeSchool?.id) {
+      newStudentData.school_id = activeSchool.id
+    }
+
+    createStudentMutation.mutate(newStudentData, {
+      onSuccess: () => {
+        toast({
+          title: 'Success',
+          description: 'Student added successfully',
+        })
+        setShowAddModal(false)
+        newStudentForm.reset()
+        // No need for window.location.reload()! React Query auto-refetches
+      },
+      onError: (error) => {
+        console.error('Error adding student:', error)
+        toast({
+          title: 'Error',
+          description: 'Failed to add student. Please try again.',
+          variant: 'destructive',
+        })
+      },
+    })
   }
 
   const handleCloseNewStudentForm = () => {
     setShowAddModal(false)
     newStudentForm.reset()
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className='space-y-6'>
+        <div className='flex items-center justify-center py-12'>
+          <div className='text-center'>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
+            <p className='text-gray-600'>Loading students...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -368,8 +380,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
                 <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>
                   Cancel
                 </Button>
-                <Button type='submit' disabled={isSubmitting}>
-                  {isSubmitting ? 'Adding...' : 'Add Student'}
+                <Button type='submit' disabled={createStudentMutation.isPending}>
+                  {createStudentMutation.isPending ? 'Adding...' : 'Add Student'}
                 </Button>
               </div>
             </form>
