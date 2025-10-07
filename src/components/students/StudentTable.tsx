@@ -41,6 +41,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [gradeFilter, setGradeFilter] = useState('all')
+  const [dateRangeFilter, setDateRangeFilter] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -70,6 +71,65 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
     return 'N/A'
   }
 
+  // Helper function to check if a date is within the selected range
+  const isWithinDateRange = (dateString: string, range: string): boolean => {
+    if (range === 'all') return true
+
+    const date = new Date(dateString)
+    const now = new Date()
+
+    switch (range) {
+      case 'today':
+        return date.toDateString() === now.toDateString()
+
+      case 'week': {
+        const weekAgo = new Date(now)
+        weekAgo.setDate(now.getDate() - 7)
+        return date >= weekAgo
+      }
+
+      case 'month': {
+        const monthAgo = new Date(now)
+        monthAgo.setMonth(now.getMonth() - 1)
+        return date >= monthAgo
+      }
+
+      case 'school_year': {
+        const currentYear = now.getFullYear()
+        const currentMonth = now.getMonth() // 0-indexed (September = 8)
+        let schoolYearStart: Date
+        if (currentMonth >= 8) {
+          // September or later
+          schoolYearStart = new Date(currentYear, 8, 1) // September 1st of current year
+        } else {
+          schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
+        }
+        return date >= schoolYearStart
+      }
+
+      case 'last_school_year': {
+        const currentYear = now.getFullYear()
+        const currentMonth = now.getMonth() // 0-indexed (September = 8)
+        let lastSchoolYearStart: Date
+        let lastSchoolYearEnd: Date
+
+        if (currentMonth >= 8) {
+          // Currently in new school year (September or later)
+          lastSchoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of last year
+          lastSchoolYearEnd = new Date(currentYear, 7, 31) // August 31st of current year
+        } else {
+          // Currently in school year that started last calendar year
+          lastSchoolYearStart = new Date(currentYear - 2, 8, 1) // September 1st of two years ago
+          lastSchoolYearEnd = new Date(currentYear - 1, 7, 31) // August 31st of last year
+        }
+        return date >= lastSchoolYearStart && date <= lastSchoolYearEnd
+      }
+
+      default:
+        return true
+    }
+  }
+
   const filteredStudents = students
     .filter(student => {
       const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
@@ -78,7 +138,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
 
       const matchesGrade = gradeFilter === 'all' || student.grade === gradeFilter
 
-      return matchesSearch && matchesGrade
+      const matchesDateRange = isWithinDateRange(student.created_at, dateRangeFilter)
+
+      return matchesSearch && matchesGrade && matchesDateRange
     })
     .sort((a, b) => {
       const gradeA = a.grade || 'N/A'
@@ -189,6 +251,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
         setSearchTerm={setSearchTerm}
         gradeFilter={gradeFilter}
         setGradeFilter={setGradeFilter}
+        dateRangeFilter={dateRangeFilter}
+        setDateRangeFilter={setDateRangeFilter}
       />
 
       {/* Students Table */}

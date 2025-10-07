@@ -20,6 +20,8 @@ interface StudentTableFiltersProps {
   setSearchTerm: (value: string) => void
   gradeFilter: string
   setGradeFilter: (value: string) => void
+  dateRangeFilter: string
+  setDateRangeFilter: (value: string) => void
 }
 
 const StudentTableFilters = ({
@@ -27,16 +29,19 @@ const StudentTableFilters = ({
   setSearchTerm,
   gradeFilter,
   setGradeFilter,
+  dateRangeFilter,
+  setDateRangeFilter,
 }: StudentTableFiltersProps) => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
   // Check if any filters are active
-  const hasActiveFilters = searchTerm || gradeFilter !== 'all'
+  const hasActiveFilters = searchTerm || gradeFilter !== 'all' || dateRangeFilter !== 'all'
 
   // Clear all filters
   const clearAllFilters = () => {
     setSearchTerm('')
     setGradeFilter('all')
+    setDateRangeFilter('all')
   }
 
   // Get active filter count
@@ -44,6 +49,7 @@ const StudentTableFilters = ({
     let count = 0
     if (searchTerm) count++
     if (gradeFilter !== 'all') count++
+    if (dateRangeFilter !== 'all') count++
     return count
   }
 
@@ -116,6 +122,23 @@ const StudentTableFilters = ({
                         {grade.display}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>Date Range</label>
+                <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder='All Time' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='all'>All Time</SelectItem>
+                    <SelectItem value='today'>Today</SelectItem>
+                    <SelectItem value='week'>This Week</SelectItem>
+                    <SelectItem value='month'>This Month</SelectItem>
+                    <SelectItem value='school_year'>This School Year</SelectItem>
+                    <SelectItem value='last_school_year'>Last School Year</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
