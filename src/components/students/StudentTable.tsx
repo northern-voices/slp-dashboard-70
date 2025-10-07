@@ -43,6 +43,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [gradeFilter, setGradeFilter] = useState('all')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
+  const [programFilter, setProgramFilter] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
 
   // Get current school context
@@ -77,11 +78,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     return 'N/A'
   }
 
-  // Helper function to get qualification badge (similar to ScreeningsTable)
-  const getQualificationBadge = (student: Student) => {
+  // Helper function to get program status value for filtering
+  const getProgramStatus = (student: Student): string => {
     const speechScreenings = student.speech_screenings || []
     if (speechScreenings.length === 0) {
-      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Screening</Badge>
+      return 'no_screening'
     }
 
     // Get most recent screening - create a copy to avoid mutating the original array
@@ -90,7 +91,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     )[0]
 
     if (!mostRecent?.error_patterns) {
-      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
+      return 'not_set'
     }
 
     try {
@@ -104,25 +105,42 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       const graduated = errorPatterns?.screening_metadata?.graduated
 
       if (qualifies === undefined && sub === undefined && graduated === undefined) {
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
+        return 'not_set'
       }
 
-      if (graduated) {
+      if (graduated) return 'graduated'
+      if (sub) return 'sub'
+      if (qualifies) return 'qualifies'
+      return 'not_in_program'
+    } catch (e) {
+      console.error('Error parsing error_patterns:', e)
+      return 'not_set'
+    }
+  }
+
+  // Helper function to get qualification badge (similar to ScreeningsTable)
+  const getQualificationBadge = (student: Student) => {
+    const programStatus = getProgramStatus(student)
+
+    switch (programStatus) {
+      case 'no_screening':
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Screening</Badge>
+      case 'not_set':
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
+      case 'graduated':
         return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-      } else if (sub) {
+      case 'sub':
         return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
-      } else if (qualifies) {
+      case 'qualifies':
         return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
-      } else {
+      case 'not_in_program':
         return (
           <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
             Not In Program
           </Badge>
         )
-      }
-    } catch (e) {
-      console.error('Error parsing error_patterns:', e)
-      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Error</Badge>
+      default:
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Error</Badge>
     }
   }
 
@@ -195,7 +213,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
       const matchesDateRange = isWithinDateRange(student.created_at, dateRangeFilter)
 
-      return matchesSearch && matchesGrade && matchesDateRange
+      const matchesProgram = programFilter === 'all' || getProgramStatus(student) === programFilter
+
+      return matchesSearch && matchesGrade && matchesDateRange && matchesProgram
     })
     .sort((a, b) => {
       const gradeA = a.grade || 'N/A'
@@ -315,6 +335,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         setGradeFilter={setGradeFilter}
         dateRangeFilter={dateRangeFilter}
         setDateRangeFilter={setDateRangeFilter}
+        programFilter={programFilter}
+        setProgramFilter={setProgramFilter}
       />
 
       {/* Students Table */}

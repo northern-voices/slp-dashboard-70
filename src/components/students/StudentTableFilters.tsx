@@ -22,6 +22,8 @@ interface StudentTableFiltersProps {
   setGradeFilter: (value: string) => void
   dateRangeFilter: string
   setDateRangeFilter: (value: string) => void
+  programFilter: string
+  setProgramFilter: (value: string) => void
 }
 
 const StudentTableFilters = ({
@@ -31,17 +33,20 @@ const StudentTableFilters = ({
   setGradeFilter,
   dateRangeFilter,
   setDateRangeFilter,
+  programFilter,
+  setProgramFilter,
 }: StudentTableFiltersProps) => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
   // Check if any filters are active
-  const hasActiveFilters = searchTerm || gradeFilter !== 'all' || dateRangeFilter !== 'all'
+  const hasActiveFilters = searchTerm || gradeFilter !== 'all' || dateRangeFilter !== 'all' || programFilter !== 'all'
 
   // Clear all filters
   const clearAllFilters = () => {
     setSearchTerm('')
     setGradeFilter('all')
     setDateRangeFilter('all')
+    setProgramFilter('all')
   }
 
   // Get active filter count
@@ -50,6 +55,7 @@ const StudentTableFilters = ({
     if (searchTerm) count++
     if (gradeFilter !== 'all') count++
     if (dateRangeFilter !== 'all') count++
+    if (programFilter !== 'all') count++
     return count
   }
 
@@ -122,6 +128,22 @@ const StudentTableFilters = ({
                         {grade.display}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>Program</label>
+                <Select value={programFilter} onValueChange={setProgramFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder='All Programs' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='all'>All Programs</SelectItem>
+                    <SelectItem value='qualifies'>Qualifies</SelectItem>
+                    <SelectItem value='not_in_program'>Not In Program</SelectItem>
+                    <SelectItem value='sub'>Sub</SelectItem>
+                    <SelectItem value='graduated'>Graduated</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
