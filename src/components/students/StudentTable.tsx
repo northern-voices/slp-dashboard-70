@@ -68,7 +68,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   })
 
   // Helper function to get grade level for a student
-  const getStudentGrade = (student: Student): string => {
+  const getStudentGrade = (student): string => {
     // If the student has a grade field (from screenings), use it
     if (student.grade) {
       return student.grade
@@ -79,7 +79,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   }
 
   // Helper function to get program status value for filtering
-  const getProgramStatus = (student: Student): string => {
+  const getProgramStatus = (student): string => {
     const speechScreenings = student.speech_screenings || []
     if (speechScreenings.length === 0) {
       return 'no_screening'
