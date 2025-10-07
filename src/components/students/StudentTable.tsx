@@ -119,16 +119,20 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   }
 
   // Helper function to get qualification badge (similar to ScreeningsTable)
-  const getQualificationBadge = (student: Student) => {
+  const getQualificationBadge = student => {
     const programStatus = getProgramStatus(student)
 
     switch (programStatus) {
       case 'no_screening':
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Screening</Badge>
+        return (
+          <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Screening</Badge>
+        )
       case 'not_set':
         return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
       case 'graduated':
-        return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+        return (
+          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+        )
       case 'sub':
         return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
       case 'qualifies':
@@ -207,7 +211,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     .filter(student => {
       const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
       const search = searchTerm.toLowerCase()
-      const matchesSearch = fullName.includes(search) || student.student_id.toLowerCase().includes(search)
+      const matchesSearch =
+        fullName.includes(search) || student.student_id.toLowerCase().includes(search)
 
       const matchesGrade = gradeFilter === 'all' || student.grade === gradeFilter
 
@@ -283,7 +288,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         newStudentForm.reset()
         // No need for window.location.reload()! React Query auto-refetches
       },
-      onError: (error) => {
+      onError: error => {
         console.error('Error adding student:', error)
         toast({
           title: 'Error',
