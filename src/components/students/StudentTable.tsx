@@ -23,7 +23,7 @@ import { z } from 'zod'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
-import { useCreateStudent } from '@/hooks/students/use-students-mutations'
+import { useCreateStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 
 interface StudentTableProps {
   selectedSchool?: School | null
@@ -53,6 +53,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const { data: students = [], isLoading } = useStudentsBySchool(activeSchool?.id)
 
   const createStudentMutation = useCreateStudent()
+  const updateStudentMutation = useUpdateStudent()
 
   const newStudentForm = useForm<NewStudentFormData>({
     resolver: zodResolver(newStudentSchema),
@@ -245,48 +246,79 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   }
 
   const handleAddStudent = (data: NewStudentFormData) => {
-    // Generate a unique student ID based on name and timestamp
+    if (!activeSchool) {
+      toast({
+        title: 'Error',
+        description: 'No school selected. Please select a school first.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Generate school abbreviation from school name
+    const schoolAbbreviation = activeSchool.name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .join('')
+      .substring(0, 3) // Limit to 3 characters max
+
+    // Generate a temporary unique ID using timestamp to avoid conflicts
     const timestamp = Date.now().toString(36)
-    const initials = `${data.first_name.charAt(0)}${data.last_name.charAt(0)}`.toUpperCase()
-    const generatedStudentId = `${initials}-${timestamp}`
+    const tempStudentId = `${schoolAbbreviation}-TEMP-${timestamp}`
 
-    const newStudentData: {
-      first_name: string
-      last_name: string
-      student_id: string
-      qualifies_for_program: boolean
-      school_id?: string
-      date_of_birth?: string
-    } = {
-      first_name: data.first_name,
-      last_name: data.last_name,
-      student_id: generatedStudentId,
-      qualifies_for_program: false,
-      ...(data.date_of_birth && { date_of_birth: data.date_of_birth }),
-    }
-
-    if (activeSchool?.id) {
-      newStudentData.school_id = activeSchool.id
-    }
-
-    createStudentMutation.mutate(newStudentData, {
-      onSuccess: () => {
-        toast({
-          title: 'Success',
-          description: 'Student added successfully',
-        })
-        setShowAddModal(false)
-        newStudentForm.reset()
+    // Create student with temporary ID
+    createStudentMutation.mutate(
+      {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        student_id: tempStudentId,
+        school_id: activeSchool.id,
+        qualifies_for_program: false,
+        ...(data.date_of_birth && { date_of_birth: data.date_of_birth }),
       },
-      onError: error => {
-        console.error('Error adding student:', error)
-        toast({
-          title: 'Error',
-          description: 'Failed to add student. Please try again.',
-          variant: 'destructive',
-        })
-      },
-    })
+      {
+        onSuccess: newStudent => {
+          // Generate the final student ID with school abbreviation and UUID
+          const formattedStudentId = `${schoolAbbreviation}-${newStudent.id}`
+
+          // Update the student with the formatted ID
+          updateStudentMutation.mutate(
+            {
+              id: newStudent.id,
+              studentData: {
+                student_id: formattedStudentId,
+              },
+            },
+            {
+              onSuccess: () => {
+                toast({
+                  title: 'Success',
+                  description: `Student ${newStudent.first_name} ${newStudent.last_name} added successfully.`,
+                })
+                setShowAddModal(false)
+                newStudentForm.reset()
+              },
+              onError: error => {
+                console.error('Error updating student ID:', error)
+                toast({
+                  title: 'Error',
+                  description: 'Failed to finalize student ID. Please try again.',
+                  variant: 'destructive',
+                })
+              },
+            }
+          )
+        },
+        onError: error => {
+          console.error('Error adding student:', error)
+          toast({
+            title: 'Error',
+            description: 'Failed to add student. Please try again.',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
   }
 
   const handleCloseNewStudentForm = () => {
@@ -462,8 +494,12 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                 <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>
                   Cancel
                 </Button>
-                <Button type='submit' disabled={createStudentMutation.isPending}>
-                  {createStudentMutation.isPending ? 'Adding...' : 'Add Student'}
+                <Button
+                  type='submit'
+                  disabled={createStudentMutation.isPending || updateStudentMutation.isPending}>
+                  {createStudentMutation.isPending || updateStudentMutation.isPending
+                    ? 'Adding...'
+                    : 'Add Student'}
                 </Button>
               </div>
             </form>
