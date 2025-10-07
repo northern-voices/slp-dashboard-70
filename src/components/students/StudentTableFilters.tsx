@@ -5,28 +5,45 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react'
+import { GRADE_MAPPING } from '@/constants/app'
 
 interface StudentTableFiltersProps {
   searchTerm: string
   setSearchTerm: (value: string) => void
+  gradeFilter: string
+  setGradeFilter: (value: string) => void
 }
 
-const StudentTableFilters = ({ searchTerm, setSearchTerm }: StudentTableFiltersProps) => {
+const StudentTableFilters = ({
+  searchTerm,
+  setSearchTerm,
+  gradeFilter,
+  setGradeFilter,
+}: StudentTableFiltersProps) => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
   // Check if any filters are active
-  const hasActiveFilters = searchTerm
+  const hasActiveFilters = searchTerm || gradeFilter !== 'all'
 
   // Clear all filters
   const clearAllFilters = () => {
     setSearchTerm('')
+    setGradeFilter('all')
   }
 
   // Get active filter count
   const getActiveFilterCount = () => {
     let count = 0
     if (searchTerm) count++
+    if (gradeFilter !== 'all') count++
     return count
   }
 
@@ -84,7 +101,25 @@ const StudentTableFilters = ({ searchTerm, setSearchTerm }: StudentTableFiltersP
               </div>
             </div>
 
-            {/* Additional filters will go here */}
+            {/* Dropdown Filters */}
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6'>
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>Grade</label>
+                <Select value={gradeFilter} onValueChange={setGradeFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder='All Grades' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='all'>All Grades</SelectItem>
+                    {GRADE_MAPPING.map(grade => (
+                      <SelectItem key={grade.value} value={grade.value}>
+                        {grade.display}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardContent>
         </CollapsibleContent>
       </Collapsible>

@@ -72,6 +72,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
   const navigate = useNavigate()
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
+  const [gradeFilter, setGradeFilter] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -105,14 +106,18 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
     .filter(student => {
       const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
       const search = searchTerm.toLowerCase()
-      return fullName.includes(search) || student.student_id.toLowerCase().includes(search)
+      const matchesSearch = fullName.includes(search) || student.student_id.toLowerCase().includes(search)
+
+      const matchesGrade = gradeFilter === 'all' || student.grade === gradeFilter
+
+      return matchesSearch && matchesGrade
     })
     .sort((a, b) => {
       const gradeA = a.grade || 'N/A'
       const gradeB = b.grade || 'N/A'
 
-      const indexA = gradeMapping.findIndex(g => g.value === gradeA)
-      const indexB = gradeMapping.findIndex(g => g.value === gradeB)
+      const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
+      const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
 
       // If grade not found in mapping, put at the end
       if (indexA === -1 && indexB === -1) return 0
@@ -211,7 +216,12 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, selectedSchool })
       </div>
 
       {/* Filters */}
-      <StudentTableFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <StudentTableFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        gradeFilter={gradeFilter}
+        setGradeFilter={setGradeFilter}
+      />
 
       {/* Students Table */}
       <Card>
