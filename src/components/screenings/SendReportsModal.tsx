@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Mail, Send, CheckCircle, XCircle, Target, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface SendReportsModalProps {
   isOpen: boolean
@@ -20,12 +21,20 @@ interface SendReportsModalProps {
 }
 
 const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps) => {
+  const { user } = useAuth()
   const [recipientEmail, setRecipientEmail] = useState('')
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
+
+  // Pre-fill email with current user's email when modal opens
+  useEffect(() => {
+    if (isOpen && user?.email && !recipientEmail) {
+      setRecipientEmail(user.email)
+    }
+  }, [isOpen, user?.email])
 
   const handleSendEmail = async () => {
     if (!recipientEmail || selectedReports.length === 0 || !screening) {
