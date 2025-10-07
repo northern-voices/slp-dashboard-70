@@ -17,6 +17,9 @@ import {
   Loader2,
   ChevronUp,
   ChevronDown,
+  Mail,
+  Plus,
+  List,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -46,6 +49,7 @@ import { format } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
 import ScreeningBulkActions from './ScreeningBulkActions'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
+import SendReportsModal from './SendReportsModal'
 import { School, Screening } from '@/types/database'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import {
@@ -98,6 +102,8 @@ const ScreeningsTable = ({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [updatingScreeningId, setUpdatingScreeningId] = useState<string | null>(null)
   const [updatingProgramId, setUpdatingProgramId] = useState<string | null>(null)
+  const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
 
   // Use React Query to fetch screenings data
   // If currentSchool is provided, use the school-specific query, otherwise fetch all
@@ -178,7 +184,8 @@ const ScreeningsTable = ({
 
           // Determine the start of the current school year
           let schoolYearStart: Date
-          if (currentMonth >= 8) { // September or later
+          if (currentMonth >= 8) {
+            // September or later
             schoolYearStart = new Date(currentYear, 8, 1) // September 1st of current year
           } else {
             schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
@@ -508,18 +515,9 @@ const ScreeningsTable = ({
     setIsDetailsModalOpen(true)
   }
 
-  const handleExport = (screening: Screening) => {
-    // Create a simple CSV export for the screening
-    const csvContent = `Student,Date,Screener,Result
-${screening.student_name},${screening.date},${screening.screener},${screening.result || 'N/A'}`
-
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `screening-${screening.student_name}-${screening.date}.csv`
-    link.click()
-    window.URL.revokeObjectURL(url)
+  const handleEmailReport = (screening: Screening) => {
+    setScreeningToEmail(screening)
+    setIsEmailModalOpen(true)
   }
 
   const handleResultChange = (screening: Screening, newResult: string) => {
@@ -822,8 +820,7 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
 
         <div className='flex justify-end mb-3'>
           <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
-            {filteredScreenings.length} screening{filteredScreenings.length !== 1 ? 's' : ''}{' '}
-            found
+            {filteredScreenings.length} screening{filteredScreenings.length !== 1 ? 's' : ''} found
           </span>
         </div>
 
@@ -893,9 +890,9 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                               <Eye className='w-4 h-4 mr-2' />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleExport(screening)}>
-                              <Download className='w-4 h-4 mr-2' />
-                              Export
+                            <DropdownMenuItem onClick={() => handleEmailReport(screening)}>
+                              <Mail className='w-4 h-4 mr-2' />
+                              Send Report
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className='text-red-600'
@@ -992,9 +989,9 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
                           <Eye className='w-4 h-4 mr-2' />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExport(screening)}>
-                          <Download className='w-4 h-4 mr-2' />
-                          Export
+                        <DropdownMenuItem onClick={() => handleEmailReport(screening)}>
+                          <Mail className='w-4 h-4 mr-2' />
+                          Send Report
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className='text-red-600'
@@ -1051,6 +1048,13 @@ ${screening.student_name},${screening.date},${screening.screener},${screening.re
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Send Reports Modal */}
+      <SendReportsModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        screening={screeningToEmail}
+      />
     </>
   )
 }

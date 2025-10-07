@@ -8,187 +8,243 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Mail, Users, UserCheck, Building } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Mail, Send, CheckCircle, XCircle, Target, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
+import { edgeFunctionsApi } from '@/api/edgeFunctions'
 
 interface SendReportsModalProps {
   isOpen: boolean
   onClose: () => void
-  selectedScreenings: Screening[]
-  onSend: (action: string) => void
+  screening: Screening | null
 }
 
-const SendReportsModal = ({
-  isOpen,
-  onClose,
-  selectedScreenings,
-  onSend,
-}: SendReportsModalProps) => {
-  const [recipients, setRecipients] = useState({
-    teachers: true,
-    administrators: false,
-    parents: false,
-  })
-  const [customEmails, setCustomEmails] = useState('')
-  const [subject, setSubject] = useState(`Screening Reports - ${new Date().toLocaleDateString()}`)
-  const [message, setMessage] = useState(
-    `Please find attached the screening reports for ${selectedScreenings.length} student${
-      selectedScreenings.length > 1 ? 's' : ''
-    }.\n\nBest regards,\nScreening Team`
-  )
-  const [attachIndividualReports, setAttachIndividualReports] = useState(true)
-  const [attachSummaryReport, setAttachSummaryReport] = useState(true)
+const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps) => {
+  const [recipientEmail, setRecipientEmail] = useState('')
+  const [selectedReports, setSelectedReports] = useState<string[]>([])
+  const [isEmailLoading, setIsEmailLoading] = useState(false)
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
+  const [modalType, setModalType] = useState<'success' | 'error'>('success')
+  const [modalMessage, setModalMessage] = useState('')
 
-  const handleSend = () => {
-    console.log('Sending email reports:', {
-      recipients,
-      customEmails,
-      subject,
-      message,
-      selectedScreenings,
-      attachIndividualReports,
-      attachSummaryReport,
-    })
+  const handleSendEmail = async () => {
+    if (!recipientEmail || selectedReports.length === 0 || !screening) {
+      return
+    }
 
-    // In a real implementation, this would send emails via backend/Supabase
-    onSend('email')
+    setIsEmailLoading(true)
+
+    try {
+      // Process each selected report type
+      for (const reportType of selectedReports) {
+        if (reportType === 'student-report') {
+          await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmail)
+        } else if (reportType === 'goal-sheet') {
+          await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmail)
+        } else {
+          console.warn(`Unknown report type: ${reportType}`)
+          continue
+        }
+      }
+
+      // Show success modal
+      if (selectedReports.length > 0) {
+        setModalType('success')
+        setModalMessage(`Reports sent successfully to ${recipientEmail}`)
+        setIsSuccessModalOpen(true)
+        onClose()
+      }
+    } catch (error) {
+      console.error('Error sending email:', error)
+      setModalType('error')
+      setModalMessage('Failed to send report. Please try again.')
+      setIsSuccessModalOpen(true)
+    } finally {
+      setIsEmailLoading(false)
+    }
+  }
+
+  const handleCloseSuccessModal = () => {
+    setIsSuccessModalOpen(false)
+    setModalType('success')
+    setModalMessage('')
+    setRecipientEmail('')
+    setSelectedReports([])
+  }
+
+  const handleModalClose = () => {
+    setRecipientEmail('')
+    setSelectedReports([])
     onClose()
   }
 
-  const recipientOptions = [
-    {
-      key: 'teachers',
-      label: 'Teachers',
-      icon: UserCheck,
-      description: 'Send to classroom teachers',
-    },
-    {
-      key: 'administrators',
-      label: 'Administrators',
-      icon: Building,
-      description: 'Send to school administrators',
-    },
-    {
-      key: 'parents',
-      label: 'Parents/Guardians',
-      icon: Users,
-      description: 'Send to student parents/guardians',
-    },
-  ]
+  const getAvailableReports = () => {
+    return [
+      {
+        value: 'student-report',
+        label: 'Student Report',
+        description: 'Detailed student assessment and performance overview',
+        icon: BookOpen,
+      },
+      {
+        value: 'goal-sheet',
+        label: 'Goal Sheet',
+        description: 'Individualized goal tracking sheet with specific objectives and progress metrics',
+        icon: Target,
+      },
+    ]
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className='sm:max-w-lg max-h-[90vh] overflow-y-auto'>
-        <DialogHeader>
-          <DialogTitle>Email Screening Reports</DialogTitle>
-          <DialogDescription>
-            Send reports for {selectedScreenings.length} selected screening
-            {selectedScreenings.length > 1 ? 's' : ''}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      {/* Email Report Modal */}
+      <Dialog open={isOpen} onOpenChange={handleModalClose}>
+        <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
+          <DialogHeader>
+            <DialogTitle className='flex items-center gap-2 text-2xl'>
+              <Mail className='w-6 h-6' />
+              Send Report for {screening?.student_name}
+            </DialogTitle>
+            <DialogDescription className='text-base mt-2'>
+              Select report type and enter recipient email address
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className='space-y-6'>
-          <div>
-            <label className='text-sm font-medium mb-3 block'>Recipients</label>
-            <div className='space-y-3'>
-              {recipientOptions.map(option => {
-                const Icon = option.icon
-                return (
-                  <div key={option.key} className='flex items-center space-x-2'>
-                    <Checkbox
-                      id={option.key}
-                      checked={recipients[option.key as keyof typeof recipients]}
-                      onCheckedChange={checked =>
-                        setRecipients(prev => ({ ...prev, [option.key]: checked === true }))
-                      }
-                    />
-                    <div className='flex items-center gap-2'>
-                      <Icon className='w-4 h-4 text-gray-500' />
-                      <div>
-                        <label htmlFor={option.key} className='text-sm font-medium'>
-                          {option.label}
-                        </label>
-                        <div className='text-xs text-gray-500'>{option.description}</div>
+          <div className='space-y-6 mt-6'>
+            {/* Report Type Selection */}
+            <div className='space-y-4'>
+              <Label className='text-base font-semibold'>Select Type of Report</Label>
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+                {getAvailableReports().map(report => {
+                  const Icon = report.icon
+                  const isSelected = selectedReports.includes(report.value)
+                  return (
+                    <div
+                      key={report.value}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedReports(selectedReports.filter(r => r !== report.value))
+                        } else {
+                          setSelectedReports([...selectedReports, report.value])
+                        }
+                      }}
+                      className={`
+                        relative cursor-pointer rounded-lg border-2 p-6 transition-all duration-200 w-full
+                        ${
+                          isSelected
+                            ? 'border-blue-600 bg-blue-50 shadow-md'
+                            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                        }
+                      `}>
+                      <div className='flex items-start space-x-4 w-full'>
+                        <div
+                          className={`
+                          flex-shrink-0 p-3 rounded-lg
+                          ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}
+                        `}>
+                          <Icon className='w-6 h-6' />
+                        </div>
+                        <div className='flex-1 min-w-0'>
+                          <h3
+                            className={`
+                            text-base font-semibold leading-tight mb-2
+                            ${isSelected ? 'text-blue-900' : 'text-gray-900'}
+                          `}>
+                            {report.label}
+                          </h3>
+                          <p
+                            className={`
+                            text-sm leading-relaxed
+                            ${isSelected ? 'text-blue-700' : 'text-gray-600'}
+                          `}>
+                            {report.description}
+                          </p>
+                        </div>
                       </div>
+                      {isSelected && (
+                        <div className='absolute top-3 right-3'>
+                          <div className='w-3 h-3 bg-blue-600 rounded-full'></div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label htmlFor='custom-emails' className='text-sm font-medium mb-2 block'>
-              Additional Email Addresses
-            </label>
-            <Input
-              id='custom-emails'
-              placeholder='email1@example.com, email2@example.com'
-              value={customEmails}
-              onChange={e => setCustomEmails(e.target.value)}
-            />
-            <p className='text-xs text-gray-500 mt-1'>Separate multiple emails with commas</p>
-          </div>
-
-          <div>
-            <label htmlFor='subject' className='text-sm font-medium mb-2 block'>
-              Subject
-            </label>
-            <Input id='subject' value={subject} onChange={e => setSubject(e.target.value)} />
-          </div>
-
-          <div>
-            <label htmlFor='message' className='text-sm font-medium mb-2 block'>
-              Message
-            </label>
-            <Textarea
-              id='message'
-              rows={4}
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className='text-sm font-medium mb-3 block'>Attachments</label>
+            {/* Email Input */}
             <div className='space-y-3'>
-              <div className='flex items-center space-x-2'>
-                <Checkbox
-                  id='individual'
-                  checked={attachIndividualReports}
-                  onCheckedChange={checked => setAttachIndividualReports(checked === true)}
-                />
-                <label htmlFor='individual' className='text-sm'>
-                  Individual screening reports
-                </label>
-              </div>
-              <div className='flex items-center space-x-2'>
-                <Checkbox
-                  id='summary'
-                  checked={attachSummaryReport}
-                  onCheckedChange={checked => setAttachSummaryReport(checked === true)}
-                />
-                <label htmlFor='summary' className='text-sm'>
-                  Summary report
-                </label>
-              </div>
+              <Label htmlFor='email' className='text-base font-semibold'>
+                Recipient Email
+              </Label>
+              <Input
+                id='email'
+                type='email'
+                placeholder='Enter recipient email address'
+                value={recipientEmail}
+                onChange={e => setRecipientEmail(e.target.value)}
+                className='h-14 text-base'
+              />
+            </div>
+
+            {/* Send Button */}
+            <div className='flex justify-end gap-4 pt-6'>
+              <Button
+                variant='outline'
+                size='lg'
+                onClick={handleModalClose}
+                disabled={isEmailLoading}
+                className='px-8'>
+                Cancel
+              </Button>
+              <Button
+                size='lg'
+                onClick={handleSendEmail}
+                disabled={!recipientEmail || selectedReports.length === 0 || isEmailLoading}
+                className='bg-blue-600 hover:bg-blue-700 px-8'>
+                <Send className='w-5 h-5 mr-2' />
+                {isEmailLoading ? 'Sending...' : 'Send Reports'}
+              </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
 
-          <div className='flex justify-end gap-3'>
-            <Button variant='outline' onClick={onClose}>
-              Cancel
-            </Button>
-            <Button onClick={handleSend}>
-              <Mail className='w-4 h-4 mr-2' />
-              Send Reports
-            </Button>
+      {/* Success/Error Modal */}
+      <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
+        <DialogContent className='mx-auto'>
+          <div className='flex flex-col items-center text-center space-y-6'>
+            {/* Icon */}
+            <div className='flex justify-center'>
+              {modalType === 'success' ? (
+                <CheckCircle className='w-16 h-16 text-green-600' />
+              ) : (
+                <XCircle className='w-16 h-16 text-red-600' />
+              )}
+            </div>
+
+            {/* Title and Description */}
+            <div className='space-y-2'>
+              <DialogTitle className='text-2xl font-semibold text-gray-900'>
+                {modalType === 'success' ? 'Report Sent Successfully!' : 'Error Sending Report'}
+              </DialogTitle>
+              <DialogDescription className='text-gray-600 text-base leading-relaxed'>
+                {modalMessage}
+              </DialogDescription>
+            </div>
+
+            {/* Action Button */}
+            <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
+              <Button
+                onClick={handleCloseSuccessModal}
+                className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                {modalType === 'success' ? 'Done' : 'Try Again'}
+              </Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
