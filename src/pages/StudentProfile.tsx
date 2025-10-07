@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useDeleteStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 
-const StudentDetailContent = () => {
+const StudentProfileContent = () => {
   const { studentId, schoolId } = useParams<{ studentId: string; schoolId: string }>()
   const navigate = useNavigate()
   const { userProfile, currentSchool } = useOrganization()
@@ -214,7 +214,6 @@ const StudentDetailContent = () => {
                 onAddSpeechScreening={handleAddSpeechScreening}
               />
             </div>
-            <div>Hello guvna</div>
           </main>
         </SidebarInset>
       </SidebarProvider>
@@ -222,8 +221,8 @@ const StudentDetailContent = () => {
   )
 }
 
-const StudentDetail = () => {
-  return <StudentDetailContent />
+const StudentProfile = () => {
+  return <StudentProfileContent />
 }
 
-export default StudentDetail
+export default StudentProfile

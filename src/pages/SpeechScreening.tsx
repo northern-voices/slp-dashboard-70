@@ -30,7 +30,6 @@ const SpeechScreeningContent = () => {
   // Use React Query hook to fetch student
   const { data: student = null, isLoading: loading } = useStudent(studentId)
   const handleSubmit = (screeningData: ScreeningFormData) => {
-    console.log('Speech screening submitted:', screeningData)
     toast({
       title: 'Speech Screening completed',
       description: 'Speech screening has been recorded successfully.',
