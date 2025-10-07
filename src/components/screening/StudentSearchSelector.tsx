@@ -12,31 +12,10 @@ import { Button } from '@/components/ui/button'
 import { Check, ChevronsUpDown, Plus, UserPlus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Student } from '@/types/database'
-import { useStudentsByGrade, useStudentsBySchool } from '@/hooks/students'
-import { StudentService } from '@/services/studentService'
+import { useStudentsByGrade, useStudentsBySchool } from '@/hooks/students/use-students'
+import { useCreateStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
-
-// Type adapter to convert API Student to database Student
-const adaptStudent = (apiStudent: {
-  id: string
-  first_name: string
-  last_name: string
-  student_id: string
-  school_id?: string
-  qualifies_for_program?: boolean
-  created_at?: string
-  updated_at?: string
-}): Student => ({
-  id: apiStudent.id,
-  first_name: apiStudent.first_name,
-  last_name: apiStudent.last_name,
-  student_id: apiStudent.student_id,
-  school_id: apiStudent.school_id,
-  qualifies_for_program: apiStudent.qualifies_for_program,
-  created_at: apiStudent.created_at || new Date().toISOString(),
-  updated_at: apiStudent.updated_at || new Date().toISOString(),
-})
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   Form,
@@ -82,10 +61,13 @@ const StudentSearchSelector = ({
   const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [showNewStudentForm, setShowNewStudentForm] = useState(false)
-  const [isCreatingStudent, setIsCreatingStudent] = useState(false)
   const { toast } = useToast()
 
   const { userProfile, availableSchools, currentSchool, isLoading: orgLoading } = useOrganization()
+
+  // Use mutation hooks
+  const createStudentMutation = useCreateStudent()
+  const updateStudentMutation = useUpdateStudent()
 
   // Only fetch students if a school is selected
   const { data: studentsByGrade = [], isLoading: loadingByGrade } = useStudentsByGrade(
@@ -130,7 +112,7 @@ const StudentSearchSelector = ({
     setSearchValue('')
   }
 
-  const handleCreateNewStudent = async (data: NewStudentFormData) => {
+  const handleCreateNewStudent = (data: NewStudentFormData) => {
     if (!currentSchool) {
       toast({
         title: 'Error',
@@ -140,58 +122,75 @@ const StudentSearchSelector = ({
       return
     }
 
-    setIsCreatingStudent(true)
-    try {
-      // Generate school abbreviation from school name
-      const schoolAbbreviation = currentSchool.name
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase())
-        .join('')
-        .substring(0, 3) // Limit to 3 characters max
+    // Generate school abbreviation from school name
+    const schoolAbbreviation = currentSchool.name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .join('')
+      .substring(0, 3) // Limit to 3 characters max
 
-      // Generate a temporary unique ID using timestamp to avoid conflicts
-      const timestamp = Date.now().toString(36)
-      const tempStudentId = `${schoolAbbreviation}-TEMP-${timestamp}`
+    // Generate a temporary unique ID using timestamp to avoid conflicts
+    const timestamp = Date.now().toString(36)
+    const tempStudentId = `${schoolAbbreviation}-TEMP-${timestamp}`
 
-      // Create student with temporary ID
-      const newStudent = await StudentService.createStudent({
+    // Create student with temporary ID
+    createStudentMutation.mutate(
+      {
         first_name: data.first_name,
         last_name: data.last_name,
         student_id: tempStudentId,
         school_id: currentSchool.id,
         qualifies_for_program: true,
-      })
+      },
+      {
+        onSuccess: newStudent => {
+          // Generate the final student ID with school abbreviation and UUID
+          const formattedStudentId = `${schoolAbbreviation}-${newStudent.id}`
 
-      // Generate the final student ID with school abbreviation and UUID
-      const formattedStudentId = `${schoolAbbreviation}-${newStudent.id}`
+          // Update the student with the formatted ID
+          updateStudentMutation.mutate(
+            {
+              id: newStudent.id,
+              studentData: {
+                student_id: formattedStudentId,
+              },
+            },
+            {
+              onSuccess: updatedStudent => {
+                toast({
+                  title: 'Success',
+                  description: `Student ${newStudent.first_name} ${newStudent.last_name} created successfully.`,
+                  variant: 'top-right',
+                })
 
-      // Update the student with the formatted ID
-      const updatedStudent = await StudentService.updateStudent(newStudent.id, {
-        student_id: formattedStudentId,
-      })
-
-      toast({
-        title: 'Success',
-        description: `Student ${newStudent.first_name} ${newStudent.last_name} created successfully.`,
-        variant: 'top-right',
-      })
-
-      // Select the newly created student
-      onStudentSelect(updatedStudent as Student)
-      setShowNewStudentForm(false)
-      setOpen(false)
-      setSearchValue('')
-      newStudentForm.reset()
-    } catch (error) {
-      console.error('Error creating student:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to create student. Please try again.',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsCreatingStudent(false)
-    }
+                // Select the newly created student
+                onStudentSelect(updatedStudent as Student)
+                setShowNewStudentForm(false)
+                setOpen(false)
+                setSearchValue('')
+                newStudentForm.reset()
+              },
+              onError: error => {
+                console.error('Error updating student ID:', error)
+                toast({
+                  title: 'Error',
+                  description: 'Failed to finalize student ID. Please try again.',
+                  variant: 'destructive',
+                })
+              },
+            }
+          )
+        },
+        onError: error => {
+          console.error('Error creating student:', error)
+          toast({
+            title: 'Error',
+            description: 'Failed to create student. Please try again.',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
   }
 
   const handleShowNewStudentForm = () => {
@@ -453,8 +452,12 @@ const StudentSearchSelector = ({
                 <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>
                   Cancel
                 </Button>
-                <Button type='submit' disabled={isCreatingStudent}>
-                  {isCreatingStudent ? 'Creating...' : 'Add Student'}
+                <Button
+                  type='submit'
+                  disabled={createStudentMutation.isPending || updateStudentMutation.isPending}>
+                  {createStudentMutation.isPending || updateStudentMutation.isPending
+                    ? 'Creating...'
+                    : 'Add Student'}
                 </Button>
               </div>
             </form>
