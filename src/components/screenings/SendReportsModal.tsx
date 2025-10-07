@@ -101,20 +101,17 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
       <Dialog open={isOpen} onOpenChange={handleModalClose}>
         <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
           <DialogHeader>
-            <DialogTitle className='flex items-center gap-2 text-2xl'>
-              <Mail className='w-6 h-6' />
-              Send Report for {screening?.student_name}
+            <DialogTitle className='text-xl font-medium text-gray-700 flex items-center gap-2'>
+              <Mail className='w-5 h-5' />
+              Send {screening?.student_name}'s Reports
             </DialogTitle>
-            <DialogDescription className='text-base mt-2'>
-              Select report type and enter recipient email address
-            </DialogDescription>
           </DialogHeader>
 
-          <div className='space-y-6 mt-6'>
+          <div className='space-y-4'>
             {/* Report Type Selection */}
-            <div className='space-y-4'>
-              <Label className='text-base font-semibold'>Select Type of Report</Label>
-              <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+            <div className='space-y-3'>
+              <Label className='text-sm font-medium'>Select Type of Report</Label>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                 {getAvailableReports().map(report => {
                   const Icon = report.icon
                   const isSelected = selectedReports.includes(report.value)
@@ -129,41 +126,41 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                         }
                       }}
                       className={`
-                        relative cursor-pointer rounded-lg border-2 p-6 transition-all duration-200 w-full
+                        relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full
                         ${
                           isSelected
-                            ? 'border-blue-600 bg-blue-50 shadow-md'
+                            ? 'border-blue-600 bg-blue-50 shadow-sm'
                             : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                         }
                       `}>
-                      <div className='flex items-start space-x-4 w-full'>
+                      <div className='flex items-start space-x-3 w-full'>
                         <div
                           className={`
-                          flex-shrink-0 p-3 rounded-lg
+                          flex-shrink-0 p-2 rounded-lg
                           ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}
                         `}>
-                          <Icon className='w-6 h-6' />
+                          <Icon className='w-4 h-4' />
                         </div>
-                        <div className='flex-1 min-w-0'>
+                        <div className='flex-1 min-w-0 overflow-hidden'>
                           <h3
                             className={`
-                            text-base font-semibold leading-tight mb-2
+                            text-sm font-medium leading-tight truncate
                             ${isSelected ? 'text-blue-900' : 'text-gray-900'}
                           `}>
                             {report.label}
                           </h3>
                           <p
                             className={`
-                            text-sm leading-relaxed
-                            ${isSelected ? 'text-blue-700' : 'text-gray-600'}
+                            text-xs mt-1 leading-tight
+                            ${isSelected ? 'text-blue-700' : 'text-gray-500'}
                           `}>
                             {report.description}
                           </p>
                         </div>
                       </div>
                       {isSelected && (
-                        <div className='absolute top-3 right-3'>
-                          <div className='w-3 h-3 bg-blue-600 rounded-full'></div>
+                        <div className='absolute top-2 right-2'>
+                          <div className='w-2 h-2 bg-blue-600 rounded-full'></div>
                         </div>
                       )}
                     </div>
@@ -174,35 +171,30 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
 
             {/* Email Input */}
             <div className='space-y-3'>
-              <Label htmlFor='email' className='text-base font-semibold'>
-                Recipient Email
-              </Label>
-              <Input
-                id='email'
-                type='email'
-                placeholder='Enter recipient email address'
-                value={recipientEmail}
-                onChange={e => setRecipientEmail(e.target.value)}
-                className='h-14 text-base'
-              />
+              <div className='space-y-1'>
+                <Label htmlFor='email' className='text-sm font-medium'>
+                  Recipient Email
+                </Label>
+                <Input
+                  id='email'
+                  type='email'
+                  placeholder='Enter recipient email address'
+                  value={recipientEmail}
+                  onChange={e => setRecipientEmail(e.target.value)}
+                  className='h-12'
+                />
+              </div>
             </div>
 
             {/* Send Button */}
-            <div className='flex justify-end gap-4 pt-6'>
+            <div className='mt-6'>
               <Button
-                variant='outline'
-                size='lg'
-                onClick={handleModalClose}
-                disabled={isEmailLoading}
-                className='px-8'>
-                Cancel
-              </Button>
-              <Button
-                size='lg'
                 onClick={handleSendEmail}
-                disabled={!recipientEmail || selectedReports.length === 0 || isEmailLoading}
-                className='bg-blue-600 hover:bg-blue-700 px-8'>
-                <Send className='w-5 h-5 mr-2' />
+                variant='default'
+                size='sm'
+                className='w-full h-9 bg-blue-600 hover:bg-blue-700 text-white'
+                disabled={!recipientEmail || selectedReports.length === 0 || isEmailLoading}>
+                <Send className='w-4 h-4 mr-2' />
                 {isEmailLoading ? 'Sending...' : 'Send Reports'}
               </Button>
             </div>
