@@ -173,6 +173,53 @@ export const studentsApi = {
     }
   },
 
+  // Check for duplicate student
+  checkDuplicateStudent: async (
+    schoolId: string,
+    firstName: string,
+    lastName: string,
+    dateOfBirth?: string
+  ): Promise<Student | null> => {
+    try {
+      if (!schoolId || !firstName || !lastName) {
+        console.error('Missing required parameters:', { schoolId, firstName, lastName })
+        return null
+      }
+
+      let query = supabase
+        .from('students')
+        .select('*')
+        .eq('school_id', schoolId)
+        .ilike('first_name', firstName.trim())
+        .ilike('last_name', lastName.trim())
+
+      // If date of birth is provided and not empty, include it in the check
+      if (dateOfBirth && dateOfBirth.trim()) {
+        query = query.eq('date_of_birth', dateOfBirth)
+      }
+
+      // Use limit(1) instead of maybeSingle() to handle multiple duplicates
+      const { data, error } = await query.limit(1)
+
+      if (error) {
+        console.error('Supabase error in checkDuplicateStudent:', {
+          error,
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        })
+        throw error
+      }
+
+      // Return the first duplicate found, or null if no duplicates
+      return data && data.length > 0 ? data[0] : null
+    } catch (error) {
+      console.error('Error checking for duplicate student:', error)
+      throw error
+    }
+  },
+
   // Create a new student
   createStudent: async (studentData: {
     first_name: string

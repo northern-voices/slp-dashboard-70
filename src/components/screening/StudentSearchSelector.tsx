@@ -17,6 +17,7 @@ import { useCreateStudent, useUpdateStudent } from '@/hooks/students/use-student
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { studentsApi } from '@/api/students'
 import {
   Form,
   FormControl,
@@ -114,11 +115,40 @@ const StudentSearchSelector = ({
     setSearchValue('')
   }
 
-  const handleCreateNewStudent = (data: NewStudentFormData) => {
+  const handleCreateNewStudent = async (data: NewStudentFormData) => {
     if (!currentSchool) {
       toast({
         title: 'Error',
         description: 'No school selected. Please select a school first.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Check for duplicate student
+    try {
+      const duplicate = await studentsApi.checkDuplicateStudent(
+        currentSchool.id,
+        data.first_name,
+        data.last_name,
+        data.date_of_birth
+      )
+
+      if (duplicate) {
+        toast({
+          title: 'Duplicate Student',
+          description: `A student with the name "${data.first_name} ${data.last_name}"${
+            data.date_of_birth ? ` and birthdate ${data.date_of_birth}` : ''
+          } already exists in this school.`,
+          variant: 'destructive',
+        })
+        return
+      }
+    } catch (error) {
+      console.error('Error checking for duplicate:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to check for duplicate students. Please try again.',
         variant: 'destructive',
       })
       return

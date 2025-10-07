@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useCreateStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
+import { studentsApi } from '@/api/students'
 
 interface StudentTableProps {
   selectedSchool?: School | null
@@ -245,11 +246,40 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     }
   }
 
-  const handleAddStudent = (data: NewStudentFormData) => {
+  const handleAddStudent = async (data: NewStudentFormData) => {
     if (!activeSchool) {
       toast({
         title: 'Error',
         description: 'No school selected. Please select a school first.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Check for duplicate student
+    try {
+      const duplicate = await studentsApi.checkDuplicateStudent(
+        activeSchool.id,
+        data.first_name,
+        data.last_name,
+        data.date_of_birth
+      )
+
+      if (duplicate) {
+        toast({
+          title: 'Duplicate Student',
+          description: `A student with the name "${data.first_name} ${data.last_name}"${
+            data.date_of_birth ? ` and birthdate ${data.date_of_birth}` : ''
+          } already exists in this school.`,
+          variant: 'destructive',
+        })
+        return
+      }
+    } catch (error) {
+      console.error('Error checking for duplicate:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to check for duplicate students. Please try again.',
         variant: 'destructive',
       })
       return
