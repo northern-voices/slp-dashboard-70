@@ -381,7 +381,7 @@ const StudentInfoHeader = ({
             {/* Student Details Grid */}
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
               <div className='flex items-start gap-2'>
-                <GraduationCap className='w-4 h-4 text-gray-400 mt-0.5' />
+                <GraduationCap className='w-4 h-4 text-gray-400 mt-1' />
                 <div>
                   <span className='text-sm font-medium text-gray-700'>
                     Grade (as per last screen)
@@ -390,15 +390,20 @@ const StudentInfoHeader = ({
                 </div>
               </div>
 
-              {/* <div className='flex items-start gap-2'>
-                <Calendar className='w-4 h-4 text-gray-400 mt-0.5' />
-                <div>
-                  <span className='text-sm font-medium text-gray-700'>Age</span>
-                  <p className='text-sm text-gray-600'>
-                    {getAgeFromBirthDate(student.date_of_birth)} years old
-                  </p>
+              {localStudent.date_of_birth && (
+                <div className='flex items-start gap-2'>
+                  <Calendar className='w-4 h-4 text-gray-400 mt-1' />
+                  <div>
+                    <span className='text-sm font-medium text-gray-700'>Date of Birth</span>
+                    <p className='text-sm text-gray-600'>
+                      {formatDate(localStudent.date_of_birth)}
+                    </p>
+                    <p className='text-xs text-gray-500'>
+                      {getAgeFromBirthDate(localStudent.date_of_birth)} years old
+                    </p>
+                  </div>
                 </div>
-              </div> */}
+              )}
 
               {/* <div className='flex items-start gap-2'>
                 <Phone className='w-4 h-4 text-gray-400 mt-0.5' />
