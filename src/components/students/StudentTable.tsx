@@ -29,7 +29,6 @@ interface StudentTableProps {
   selectedSchool?: School | null
 }
 
-// Simplified student creation schema
 const newStudentSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   last_name: z.string().min(1, 'Last name is required'),
@@ -46,19 +45,14 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const [programFilter, setProgramFilter] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
 
-  // Get current school context
   const { currentSchool } = useOrganization()
 
-  // Use the selectedSchool prop or fall back to currentSchool from context
   const activeSchool = selectedSchool || currentSchool
 
-  // Fetch students using React Query
   const { data: students = [], isLoading } = useStudentsBySchool(activeSchool?.id)
 
-  // Use mutation hook for creating students
   const createStudentMutation = useCreateStudent()
 
-  // New student form
   const newStudentForm = useForm<NewStudentFormData>({
     resolver: zodResolver(newStudentSchema),
     defaultValues: {
@@ -67,18 +61,14 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     },
   })
 
-  // Helper function to get grade level for a student
   const getStudentGrade = (student): string => {
-    // If the student has a grade field (from screenings), use it
     if (student.grade) {
       return student.grade
     }
 
-    // Otherwise, show N/A
     return 'N/A'
   }
 
-  // Helper function to get program status value for filtering
   const getProgramStatus = (student): string => {
     const speechScreenings = student.speech_screenings || []
     if (speechScreenings.length === 0) {
@@ -118,7 +108,6 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     }
   }
 
-  // Helper function to get qualification badge (similar to ScreeningsTable)
   const getQualificationBadge = student => {
     const programStatus = getProgramStatus(student)
 
@@ -148,7 +137,6 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     }
   }
 
-  // Helper function to check if a date is within the selected range
   const isWithinDateRange = (dateString: string, range: string): boolean => {
     if (range === 'all') return true
 
@@ -270,10 +258,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       first_name: data.first_name,
       last_name: data.last_name,
       student_id: generatedStudentId,
-      qualifies_for_program: false, // Default value
+      qualifies_for_program: false,
     }
 
-    // Only add school_id if the activeSchool exists
     if (activeSchool?.id) {
       newStudentData.school_id = activeSchool.id
     }
@@ -286,7 +273,6 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         })
         setShowAddModal(false)
         newStudentForm.reset()
-        // No need for window.location.reload()! React Query auto-refetches
       },
       onError: error => {
         console.error('Error adding student:', error)
@@ -304,7 +290,6 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     newStudentForm.reset()
   }
 
-  // Show loading state
   if (isLoading) {
     return (
       <div className='space-y-6'>
