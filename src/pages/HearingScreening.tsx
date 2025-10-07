@@ -1,8 +1,6 @@
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Student } from '@/types/database'
 import { ScreeningFormData } from '@/types/screening'
-import { StudentService } from '@/services/studentService'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import {
   Breadcrumb,
@@ -17,9 +15,11 @@ import { ChevronLeft, FileText } from 'lucide-react'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
 import MultiStepHearingScreeningForm from '@/components/screening/hearing/MultiStepHearingScreeningForm'
-import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { useStudent } from '@/hooks/students/use-students'
+
 const HearingScreeningContent = () => {
   const { studentId } = useParams<{
     studentId: string
@@ -27,24 +27,9 @@ const HearingScreeningContent = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { userProfile } = useOrganization()
-  const [student, setStudent] = React.useState<Student | null>(null)
-  const [loading, setLoading] = React.useState(false)
-  React.useEffect(() => {
-    if (studentId) {
-      const fetchStudent = async () => {
-        setLoading(true)
-        try {
-          const studentData = await StudentService.getStudentById(studentId)
-          setStudent(studentData)
-        } catch (error) {
-          console.error('Failed to fetch student:', error)
-        } finally {
-          setLoading(false)
-        }
-      }
-      fetchStudent()
-    }
-  }, [studentId])
+
+  // Use React Query hook to fetch student
+  const { data: student = null, isLoading: loading } = useStudent(studentId)
   const handleSubmit = (screeningData: ScreeningFormData) => {
     console.log('Hearing screening submitted:', screeningData)
     toast({

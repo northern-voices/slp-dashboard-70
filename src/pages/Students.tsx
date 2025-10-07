@@ -1,63 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import StudentTable from '@/components/students/StudentTable'
-import { StudentService } from '@/services/studentService'
-import { Student } from '@/types/database'
 
 const StudentsContent = () => {
   const { userProfile, currentSchool } = useOrganization()
-  const [students, setStudents] = useState<Student[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
-
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        setIsLoading(true)
-
-        // Fetch students from the selected school
-        if (currentSchool) {
-          const studentsData = await StudentService.getStudentsBySchool(currentSchool.id)
-          setStudents(studentsData)
-        } else {
-          // Fallback: if no school is selected, show empty list
-          setStudents([])
-        }
-      } catch (error) {
-        console.error('Error fetching students:', error)
-        setStudents([])
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    // Only fetch if we have a selected school
-    if (currentSchool) {
-      fetchStudents()
-    } else {
-      setStudents([])
-      setIsLoading(false)
-    }
-  }, [currentSchool, userRole])
-
-  if (isLoading) {
-    return (
-      <div className='min-h-screen flex w-full bg-gray-25'>
-        <div className='flex-1 flex items-center justify-center'>
-          <div className='text-center'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
-            <p className='text-gray-600'>Loading students...</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <SidebarProvider>
@@ -92,7 +45,7 @@ const StudentsContent = () => {
                 </p>
               </div>
             ) : (
-              <StudentTable students={students} selectedSchool={currentSchool} />
+              <StudentTable selectedSchool={currentSchool} />
             )}
           </main>
         </SidebarInset>

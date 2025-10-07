@@ -77,6 +77,7 @@ export const screeningsApi = {
 
   // Re-export hearing screening methods
   getHearingScreeningsList: hearingScreeningsApi.getHearingScreeningsList,
+  getHearingScreeningsByStudent: hearingScreeningsApi.getHearingScreeningsByStudent,
   createHearingScreening: hearingScreeningsApi.createHearingScreening,
   updateHearingScreening: hearingScreeningsApi.updateHearingScreening,
   deleteHearingScreening: hearingScreeningsApi.deleteHearingScreening,

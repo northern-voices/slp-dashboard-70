@@ -10,7 +10,7 @@ import PublicRoute from '@/components/auth/PublicRoute'
 import SchoolRouter from '@/components/SchoolRouter'
 import Index from './pages/Index'
 import Students from './pages/Students'
-import StudentDetail from './pages/StudentDetail'
+import StudentProfile from './pages/StudentProfile'
 import SchoolSupportForm from './pages/student/SchoolSupportForm'
 import SchoolSupport from './pages/SchoolSupport'
 import CreateSchoolSupportForm from './pages/CreateSchoolSupportForm'
@@ -187,7 +187,7 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
-                      <StudentDetail />
+                      <StudentProfile />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
@@ -326,7 +326,7 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
-                      <StudentDetail />
+                      <StudentProfile />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }

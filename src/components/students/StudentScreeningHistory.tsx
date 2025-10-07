@@ -23,6 +23,14 @@ const StudentScreeningHistory = ({
   const [filterType, setFilterType] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
+  const [qualifiesForSpeechProgramFilter, setQualifiesForSpeechProgramFilter] = useState('all')
+  const [vocabularySupportFilter, setVocabularySupportFilter] = useState('all')
+  const [casFilter, setCasFilter] = useState('all')
+  const [gradeFilter, setGradeFilter] = useState('all')
+  const [recommendationsFilter, setRecommendationsFilter] = useState('all')
+  const [clinicalNotesFilter, setClinicalNotesFilter] = useState('all')
+  const [languageComprehensionFilter, setLanguageComprehensionFilter] = useState('all')
+  const [priorityRescreenFilter, setPriorityRescreenFilter] = useState('all')
 
   return (
     <Card>
@@ -40,19 +48,19 @@ const StudentScreeningHistory = ({
                 Add Speech Screening
               </Button>
             )}
-            <Button
+            {/* <Button
               variant='outline'
               size='sm'
               onClick={onAddHearingScreening}
               className='flex items-center gap-2'>
               <Volume2 className='w-4 h-4' />
               Add Hearing Screening
-            </Button>
+            </Button> */}
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <ScreeningFilters
+        {/* <ScreeningFilters
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           filterType={filterType}
@@ -61,7 +69,23 @@ const StudentScreeningHistory = ({
           setFilterStatus={setFilterStatus}
           dateRangeFilter={dateRangeFilter}
           setDateRangeFilter={setDateRangeFilter}
-        />
+          qualifiesForSpeechProgramFilter={qualifiesForSpeechProgramFilter}
+          setQualifiesForSpeechProgramFilter={setQualifiesForSpeechProgramFilter}
+          vocabularySupportFilter={vocabularySupportFilter}
+          setVocabularySupportFilter={setVocabularySupportFilter}
+          casFilter={casFilter}
+          setCasFilter={setCasFilter}
+          gradeFilter={gradeFilter}
+          setGradeFilter={setGradeFilter}
+          recommendationsFilter={recommendationsFilter}
+          setRecommendationsFilter={setRecommendationsFilter}
+          clinicalNotesFilter={clinicalNotesFilter}
+          setClinicalNotesFilter={setClinicalNotesFilter}
+          languageComprehensionFilter={languageComprehensionFilter}
+          setLanguageComprehensionFilter={setLanguageComprehensionFilter}
+          priorityRescreenFilter={priorityRescreenFilter}
+          setPriorityRescreenFilter={setPriorityRescreenFilter}
+        /> */}
 
         <ScreeningsList
           studentId={studentId}
@@ -69,6 +93,14 @@ const StudentScreeningHistory = ({
           filterType={filterType}
           filterStatus={filterStatus}
           dateRangeFilter={dateRangeFilter}
+          qualifiesForSpeechProgramFilter={qualifiesForSpeechProgramFilter}
+          vocabularySupportFilter={vocabularySupportFilter}
+          casFilter={casFilter}
+          gradeFilter={gradeFilter}
+          recommendationsFilter={recommendationsFilter}
+          clinicalNotesFilter={clinicalNotesFilter}
+          languageComprehensionFilter={languageComprehensionFilter}
+          priorityRescreenFilter={priorityRescreenFilter}
         />
       </CardContent>
     </Card>

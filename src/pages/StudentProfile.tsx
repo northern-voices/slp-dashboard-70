@@ -1,69 +1,53 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Student } from '@/types/database'
-import { StudentService } from '@/services/studentService'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import ErrorMessage from '@/components/common/ErrorMessage'
 import StudentInfoHeader from '@/components/students/StudentInfoHeader'
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory'
 import StudentDetailPagination from '@/components/students/StudentDetailPagination'
-import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
 import { useToast } from '@/hooks/use-toast'
+import { useStudentsBySchool } from '@/hooks/students/use-students'
+import { useDeleteStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 
-const StudentDetailContent = () => {
+const StudentProfileContent = () => {
   const { studentId, schoolId } = useParams<{ studentId: string; schoolId: string }>()
   const navigate = useNavigate()
-  const [student, setStudent] = useState<Student | null>(null)
-  const [allStudents, setAllStudents] = useState<Student[]>([])
-  const [currentStudentIndex, setCurrentStudentIndex] = useState<number>(-1)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const { userProfile, currentSchool } = useOrganization()
   const { toast } = useToast()
 
-  useEffect(() => {
-    const fetchStudentsAndCurrent = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        // Determine which school to fetch students from
-        const targetSchoolId = schoolId || currentSchool?.id
+  // Determine which school to fetch students from
+  const targetSchoolId = schoolId || currentSchool?.id
 
-        if (!targetSchoolId) {
-          setError('No school context available.')
-          return
-        }
+  // Use React Query hook to fetch students
+  const {
+    data: allStudents = [],
+    isLoading: loading,
+    error: queryError,
+  } = useStudentsBySchool(targetSchoolId)
 
-        // Fetch students from the specific school
-        const students = await StudentService.getStudentsBySchool(targetSchoolId)
-        setAllStudents(students)
+  // Use mutation hooks
+  const deleteStudentMutation = useDeleteStudent()
+  const updateStudentMutation = useUpdateStudent()
 
-        if (!studentId) {
-          setError('Student ID is required.')
-          return
-        }
+  // Find current student in the list
+  const currentStudentIndex = allStudents.findIndex(s => s.id === studentId)
+  const student = currentStudentIndex >= 0 ? allStudents[currentStudentIndex] : null
 
-        // Find current student in the list
-        const currentIndex = students.findIndex(s => s.id === studentId)
-        if (currentIndex === -1) {
-          setError('Student not found in this school.')
-          return
-        }
-
-        setCurrentStudentIndex(currentIndex)
-        setStudent(students[currentIndex])
-      } catch (e) {
-        setError(e.message || 'Failed to load student.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchStudentsAndCurrent()
-  }, [studentId, schoolId, currentSchool])
+  // Handle errors
+  const error = queryError
+    ? 'Failed to load students.'
+    : !targetSchoolId
+    ? 'No school context available.'
+    : !studentId
+    ? 'Student ID is required.'
+    : currentStudentIndex === -1 && allStudents.length > 0
+    ? 'Student not found in this school.'
+    : null
 
   const handleNavigatePrevious = () => {
     if (currentStudentIndex > 0) {
@@ -111,27 +95,29 @@ const StudentDetailContent = () => {
     }
   }
 
-  const handleDeleteStudent = async () => {
+  const handleDeleteStudent = () => {
     if (!student) return
 
-    try {
-      await StudentService.deleteStudent(student.id)
-      toast({
-        title: 'Student deleted',
-        description: 'The student has been successfully deleted.',
-        variant: 'destructive',
-      })
-      navigate('/students')
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete student. Please try again.',
-        variant: 'destructive',
-      })
-    }
+    deleteStudentMutation.mutate(student.id, {
+      onSuccess: () => {
+        toast({
+          title: 'Student deleted',
+          description: 'The student has been successfully deleted.',
+          variant: 'destructive',
+        })
+        navigate('/students')
+      },
+      onError: () => {
+        toast({
+          title: 'Error',
+          description: 'Failed to delete student. Please try again.',
+          variant: 'destructive',
+        })
+      },
+    })
   }
 
-  const handleMoveUpGrade = async () => {
+  const handleMoveUpGrade = () => {
     if (!student) return
 
     const gradeMap: { [key: string]: string } = {
@@ -153,22 +139,29 @@ const StudentDetailContent = () => {
     const nextGrade = gradeMap[student.grade || '']
     if (!nextGrade) return
 
-    try {
-      const updatedStudent = await StudentService.updateStudent(student.id, {
-        grade: nextGrade,
-      })
-      setStudent(updatedStudent)
-      toast({
-        title: 'Grade updated',
-        description: `${student.first_name} has been moved to ${nextGrade}.`,
-      })
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update student grade. Please try again.',
-        variant: 'destructive',
-      })
-    }
+    updateStudentMutation.mutate(
+      {
+        id: student.id,
+        studentData: {
+          grade: nextGrade,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Grade updated',
+            description: `${student.first_name} has been moved to ${nextGrade}.`,
+          })
+        },
+        onError: () => {
+          toast({
+            title: 'Error',
+            description: 'Failed to update student grade. Please try again.',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
   }
 
   if (loading)
@@ -228,8 +221,8 @@ const StudentDetailContent = () => {
   )
 }
 
-const StudentDetail = () => {
-  return <StudentDetailContent />
+const StudentProfile = () => {
+  return <StudentProfileContent />
 }
 
-export default StudentDetail
+export default StudentProfile
