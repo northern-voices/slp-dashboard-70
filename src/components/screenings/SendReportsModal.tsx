@@ -13,19 +13,19 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Mail, Users, UserCheck, Building } from 'lucide-react'
 import { Screening } from '@/types/database'
 
-interface EmailReportsModalProps {
+interface SendReportsModalProps {
   isOpen: boolean
   onClose: () => void
   selectedScreenings: Screening[]
   onSend: (action: string) => void
 }
 
-const EmailReportsModal = ({
+const SendReportsModal = ({
   isOpen,
   onClose,
   selectedScreenings,
   onSend,
-}: EmailReportsModalProps) => {
+}: SendReportsModalProps) => {
   const [recipients, setRecipients] = useState({
     teachers: true,
     administrators: false,
@@ -192,4 +192,4 @@ const EmailReportsModal = ({
   )
 }
 
-export default EmailReportsModal
+export default SendReportsModal
