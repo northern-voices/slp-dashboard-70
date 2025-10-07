@@ -180,6 +180,7 @@ export const studentsApi = {
     student_id: string
     school_id?: string
     grade?: string
+    date_of_birth?: string
     qualifies_for_program?: boolean
   }): Promise<Student> => {
     try {
@@ -190,6 +191,7 @@ export const studentsApi = {
         qualifies_for_program: boolean | null
         school_id?: string
         grade?: string
+        date_of_birth?: string
       } = {
         first_name: studentData.first_name,
         last_name: studentData.last_name,
@@ -205,6 +207,11 @@ export const studentsApi = {
       // Only include grade if it's provided
       if (studentData.grade) {
         insertData.grade = studentData.grade
+      }
+
+      // Only include date_of_birth if it's provided
+      if (studentData.date_of_birth) {
+        insertData.date_of_birth = studentData.date_of_birth
       }
 
       const { data, error } = await supabase.from('students').insert(insertData).select().single()
@@ -226,6 +233,7 @@ export const studentsApi = {
       last_name: string
       student_id: string
       school_id?: string
+      date_of_birth?: string
       qualifies_for_program: boolean
     }>
   ): Promise<Student> => {

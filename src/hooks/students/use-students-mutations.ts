@@ -12,6 +12,7 @@ export const useCreateStudent = () => {
       student_id: string
       qualifies_for_program?: boolean
       school_id?: string
+      date_of_birth?: string
     }) => {
       const createData: {
         first_name: string
@@ -19,6 +20,7 @@ export const useCreateStudent = () => {
         student_id: string
         qualifies_for_program?: boolean
         school_id?: string
+        date_of_birth?: string
       } = {
         first_name: studentData.first_name,
         last_name: studentData.last_name,
@@ -29,6 +31,11 @@ export const useCreateStudent = () => {
       // Only include school_id if it exists
       if (studentData.school_id) {
         createData.school_id = studentData.school_id
+      }
+
+      // Only include date_of_birth if it exists
+      if (studentData.date_of_birth) {
+        createData.date_of_birth = studentData.date_of_birth
       }
 
       return studentsApi.createStudent(createData)

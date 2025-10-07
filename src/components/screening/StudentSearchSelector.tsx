@@ -48,6 +48,7 @@ interface StudentSearchSelectorProps {
 const newStudentSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   last_name: z.string().min(1, 'Last name is required'),
+  date_of_birth: z.string().optional(),
 })
 
 type NewStudentFormData = z.infer<typeof newStudentSchema>
@@ -98,6 +99,7 @@ const StudentSearchSelector = ({
     defaultValues: {
       first_name: '',
       last_name: '',
+      date_of_birth: '',
     },
   })
 
@@ -141,6 +143,7 @@ const StudentSearchSelector = ({
         student_id: tempStudentId,
         school_id: currentSchool.id,
         qualifies_for_program: true,
+        ...(data.date_of_birth && { date_of_birth: data.date_of_birth }),
       },
       {
         onSuccess: newStudent => {
@@ -447,6 +450,20 @@ const StudentSearchSelector = ({
                   )}
                 />
               </div>
+
+              <FormField
+                control={newStudentForm.control}
+                name='date_of_birth'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date of Birth</FormLabel>
+                    <FormControl>
+                      <Input type='date' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className='flex justify-end space-x-2 pt-4'>
                 <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>

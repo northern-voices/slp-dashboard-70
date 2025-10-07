@@ -32,6 +32,7 @@ interface StudentTableProps {
 const newStudentSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   last_name: z.string().min(1, 'Last name is required'),
+  date_of_birth: z.string().optional(),
 })
 
 type NewStudentFormData = z.infer<typeof newStudentSchema>
@@ -58,6 +59,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     defaultValues: {
       first_name: '',
       last_name: '',
+      date_of_birth: '',
     },
   })
 
@@ -254,11 +256,13 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       student_id: string
       qualifies_for_program: boolean
       school_id?: string
+      date_of_birth?: string
     } = {
       first_name: data.first_name,
       last_name: data.last_name,
       student_id: generatedStudentId,
       qualifies_for_program: false,
+      ...(data.date_of_birth && { date_of_birth: data.date_of_birth }),
     }
 
     if (activeSchool?.id) {
@@ -439,6 +443,20 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   )}
                 />
               </div>
+
+              <FormField
+                control={newStudentForm.control}
+                name='date_of_birth'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date of Birth</FormLabel>
+                    <FormControl>
+                      <Input type='date' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className='flex justify-end space-x-2 pt-4'>
                 <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>

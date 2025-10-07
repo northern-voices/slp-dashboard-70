@@ -49,6 +49,7 @@ export interface Student {
   student_id: string
   school_id?: string
   grade?: string
+  date_of_birth?: string
   qualifies_for_program?: boolean
   created_at: string
   updated_at: string
