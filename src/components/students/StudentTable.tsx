@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Student, School } from '@/types/database'
+import { School } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, UserPlus } from 'lucide-react'
@@ -19,12 +19,12 @@ import {
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { StudentService } from '@/services/studentService'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useStudentsBySchool } from '@/hooks/students/use-students'
+import { useCreateStudent } from '@/hooks/students/use-students-mutations'
 
 interface StudentTableProps {
-  students: Student[]
   selectedSchool?: School | null
 }
 
