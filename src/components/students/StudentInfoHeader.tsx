@@ -383,7 +383,9 @@ const StudentInfoHeader = ({
               <div className='flex items-start gap-2'>
                 <GraduationCap className='w-4 h-4 text-gray-400 mt-0.5' />
                 <div>
-                  <span className='text-sm font-medium text-gray-700'>Grade</span>
+                  <span className='text-sm font-medium text-gray-700'>
+                    Grade (as per last screen)
+                  </span>
                   <p className='text-sm text-gray-600'>{localStudent.grade}</p>
                 </div>
               </div>
