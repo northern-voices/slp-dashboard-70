@@ -59,6 +59,17 @@ export const getNavigationGroups = (
         (useSchoolRoutes &&
           location.pathname.startsWith(`/school/${currentSchool.id}/speech-screening-reports`)),
     },
+    {
+      title: 'Monthly Meetings',
+      url: useSchoolRoutes
+        ? `/school/${currentSchool.id}/monthly-meetings`
+        : '/monthly-meetings',
+      icon: Building2,
+      isActive:
+        location.pathname === '/monthly-meetings' ||
+        (useSchoolRoutes &&
+          location.pathname.startsWith(`/school/${currentSchool.id}/monthly-meetings`)),
+    },
     // {
     //   title: 'School Support',
     //   url: useSchoolRoutes ? `/school/${currentSchool.id}/school-support` : '/school-support',
