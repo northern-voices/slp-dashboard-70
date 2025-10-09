@@ -1,36 +1,54 @@
-import React from 'react'
+import { useState } from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 
 const MonthlyMeetingsContent = () => {
-  const { userProfile } = useOrganization()
+  const { userProfile, currentSchool } = useOrganization()
+  const [showCreateModal, setShowCreateModal] = useState(false)
 
   const userRole = userProfile?.role || 'slp'
-  const userName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'User'
+  const userName = userProfile
+    ? `${userProfile.first_name} ${userProfile.last_name}`
+    : 'Dr. Sarah Johnson'
 
   return (
     <SidebarProvider>
-      <div className='min-h-screen flex w-full bg-gray-25 overflow-hidden'>
-        <AppSidebar userRole={userRole} userName={userName} className='font-medium' />
-
-        <SidebarInset className='flex-1 overflow-hidden'>
-          <Header userRole={userRole} userName={userName} userProfile={userProfile} />
-
-          <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8 overflow-x-hidden max-w-full'>
-            <div className='space-y-6'>
-              <div>
-                <h1 className='text-3xl font-semibold text-gray-900'>Monthly Meetings</h1>
-                <p className='text-sm text-gray-500 mt-1'>View and manage monthly meetings</p>
+      <div className='min-h-screen flex w-full'>
+        <AppSidebar />
+        <SidebarInset>
+          <Header userRole={userRole} userName={userName} />
+          <div className='flex-1 bg-gray-25 p-4 md:p-6 lg:p-8'>
+            <div className='max-w-7xl mx-auto'>
+              <div className='mb-8'>
+                <div className='flex items-center justify-between mb-6'>
+                  <div>
+                    <h1 className='text-3xl font-semibold text-gray-900 mb-2'>Monthly Meetings</h1>
+                    <p className='text-gray-600'>
+                      Manage and track all monthly meetings
+                      {currentSchool && ` for ${currentSchool.name}`}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => setShowCreateModal(true)}
+                    className='bg-blue-600 hover:bg-blue-700'>
+                    <Plus className='w-4 h-4 mr-2' />
+                    Create Monthly Meeting
+                  </Button>
+                </div>
               </div>
 
-              {/* Add your monthly meetings content here */}
-              <div className='bg-white rounded-lg border border-gray-200 p-6'>
-                <p className='text-gray-600'>Monthly meetings content will be displayed here.</p>
+              <div className='space-y-6'>
+                {/* Add your monthly meetings content here */}
+                <div className='bg-white rounded-lg border border-gray-200 p-6'>
+                  <p className='text-gray-600'>Monthly meetings content will be displayed here.</p>
+                </div>
               </div>
             </div>
-          </main>
+          </div>
         </SidebarInset>
       </div>
     </SidebarProvider>
