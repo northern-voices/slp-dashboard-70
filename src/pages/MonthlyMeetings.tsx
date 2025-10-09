@@ -5,10 +5,15 @@ import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import MonthlyMeetingsFilters from '@/components/monthly-meetings/MonthlyMeetingsFilters'
+import MonthlyMeetingsTable from '@/components/monthly-meetings/MonthlyMeetingsTable'
 
 const MonthlyMeetingsContent = () => {
   const { userProfile, currentSchool } = useOrganization()
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [dateRangeFilter, setDateRangeFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
 
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
@@ -42,10 +47,20 @@ const MonthlyMeetingsContent = () => {
               </div>
 
               <div className='space-y-6'>
-                {/* Add your monthly meetings content here */}
-                <div className='bg-white rounded-lg border border-gray-200 p-6'>
-                  <p className='text-gray-600'>Monthly meetings content will be displayed here.</p>
-                </div>
+                <MonthlyMeetingsFilters
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  dateRangeFilter={dateRangeFilter}
+                  setDateRangeFilter={setDateRangeFilter}
+                  statusFilter={statusFilter}
+                  setStatusFilter={setStatusFilter}
+                />
+
+                <MonthlyMeetingsTable
+                  searchTerm={searchTerm}
+                  dateRangeFilter={dateRangeFilter}
+                  statusFilter={statusFilter}
+                />
               </div>
             </div>
           </div>
