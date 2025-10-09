@@ -20,10 +20,10 @@ const CreateMonthlyMeetingContent = () => {
 
   const [formData, setFormData] = useState({
     title: '',
-    date: '',
+    date: new Date().toISOString().split('T')[0],
     participants: '',
-    agenda: '',
-    notes: '',
+    meeting_notes: '',
+    additional_notes: '',
   })
 
   const userRole = userProfile?.role || 'slp'
@@ -140,7 +140,7 @@ const CreateMonthlyMeetingContent = () => {
                           name='participants'
                           value={formData.participants}
                           onChange={handleInputChange}
-                          placeholder='e.g., Dr. Sarah Johnson, Ms. Emily Davis'
+                          placeholder='e.g. Lisa Brillinger, Cheryl Mullner, Danielle Ewanus'
                         />
                         <p className='text-sm text-gray-500'>
                           Separate multiple participants with commas
@@ -148,31 +148,31 @@ const CreateMonthlyMeetingContent = () => {
                       </div>
 
                       <div className='space-y-2'>
-                        <Label htmlFor='agenda'>Agenda</Label>
+                        <Label htmlFor='meeting_notes'>Meeting Notes</Label>
                         <Textarea
-                          id='agenda'
-                          name='agenda'
-                          value={formData.agenda}
+                          id='meeting_notes'
+                          name='meeting_notes'
+                          value={formData.meeting_notes}
                           onChange={handleInputChange}
-                          placeholder='Meeting agenda and topics to discuss...'
+                          placeholder='Meeting notes topics to discussed...'
                           rows={4}
                         />
                       </div>
 
                       <div className='space-y-2'>
-                        <Label htmlFor='notes'>Notes</Label>
+                        <Label htmlFor='additional_notes'>Additional Notes</Label>
                         <Textarea
-                          id='notes'
-                          name='notes'
-                          value={formData.notes}
+                          id='additional_notes'
+                          name='additional_notes'
+                          value={formData.additional_notes}
                           onChange={handleInputChange}
-                          placeholder='Additional notes or preparation required...'
+                          placeholder='Additional notes to be added...'
                           rows={4}
                         />
                       </div>
                     </div>
 
-                    <div className='flex justify-end gap-3 pt-4 border-t'>
+                    <div className='flex justify-end gap-3 pt-4'>
                       <Button
                         type='button'
                         variant='outline'

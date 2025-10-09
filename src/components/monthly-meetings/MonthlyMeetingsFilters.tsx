@@ -33,8 +33,7 @@ const MonthlyMeetingsFilters = ({
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
   // Check if any filters are active
-  const hasActiveFilters =
-    searchTerm || dateRangeFilter !== 'all' || statusFilter !== 'all'
+  const hasActiveFilters = searchTerm || dateRangeFilter !== 'all' || statusFilter !== 'all'
 
   // Clear all filters
   const clearAllFilters = () => {
