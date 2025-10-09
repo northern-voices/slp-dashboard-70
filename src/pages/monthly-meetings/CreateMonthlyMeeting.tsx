@@ -21,7 +21,6 @@ const CreateMonthlyMeetingContent = () => {
   const [formData, setFormData] = useState({
     title: '',
     date: '',
-    time: '',
     participants: '',
     agenda: '',
     notes: '',
@@ -96,9 +95,7 @@ const CreateMonthlyMeetingContent = () => {
                   Back to Monthly Meetings
                 </Button>
                 <div className='h-4 w-px bg-gray-300' />
-                <h1 className='text-2xl font-semibold text-gray-900'>
-                  Create Monthly Meeting
-                </h1>
+                <h1 className='text-2xl font-semibold text-gray-900'>Create Monthly Meeting</h1>
               </div>
 
               <Card>
@@ -111,19 +108,18 @@ const CreateMonthlyMeetingContent = () => {
                 <CardContent>
                   <form onSubmit={handleSubmit} className='space-y-6'>
                     <div className='space-y-4'>
-                      <div className='space-y-2'>
-                        <Label htmlFor='title'>Meeting Title *</Label>
-                        <Input
-                          id='title'
-                          name='title'
-                          value={formData.title}
-                          onChange={handleInputChange}
-                          placeholder='e.g., October Monthly Progress Review'
-                          required
-                        />
-                      </div>
-
-                      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                      <div className='grid grid-cols-3 gap-4'>
+                        <div className='space-y-2 col-span-2'>
+                          <Label htmlFor='title'>Meeting Title *</Label>
+                          <Input
+                            id='title'
+                            name='title'
+                            value={formData.title}
+                            onChange={handleInputChange}
+                            placeholder='e.g., October Monthly Progress Review'
+                            required
+                          />
+                        </div>
                         <div className='space-y-2'>
                           <Label htmlFor='date'>Date *</Label>
                           <Input
@@ -133,17 +129,6 @@ const CreateMonthlyMeetingContent = () => {
                             value={formData.date}
                             onChange={handleInputChange}
                             required
-                          />
-                        </div>
-
-                        <div className='space-y-2'>
-                          <Label htmlFor='time'>Time</Label>
-                          <Input
-                            id='time'
-                            name='time'
-                            type='time'
-                            value={formData.time}
-                            onChange={handleInputChange}
                           />
                         </div>
                       </div>
