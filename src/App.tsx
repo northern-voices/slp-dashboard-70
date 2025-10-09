@@ -37,7 +37,8 @@ import HearingScreening from './pages/HearingScreening'
 import EditScreening from './pages/EditScreening'
 import Drafts from './pages/Drafts'
 import Logout from './components/auth/Logout'
-import MonthlyMeetings from './pages/MonthlyMeetings'
+import MonthlyMeetings from './pages/monthly-meetings/MonthlyMeetings'
+import CreateMonthlyMeeting from './pages/monthly-meetings/CreateMonthlyMeeting'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -234,6 +235,16 @@ const App = () => (
                   <ProtectedRoute>
                     <SchoolRouter>
                       <MonthlyMeetings />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/monthly-meetings/create'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <CreateMonthlyMeeting />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
@@ -453,6 +464,16 @@ const App = () => (
                   <ProtectedRoute>
                     <SchoolRouter>
                       <MonthlyMeetings />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/school/:schoolId/monthly-meetings/create'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <CreateMonthlyMeeting />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }

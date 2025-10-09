@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -10,7 +11,7 @@ import MonthlyMeetingsTable from '@/components/monthly-meetings/MonthlyMeetingsT
 
 const MonthlyMeetingsContent = () => {
   const { userProfile, currentSchool } = useOrganization()
-  const [showCreateModal, setShowCreateModal] = useState(false)
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -19,6 +20,15 @@ const MonthlyMeetingsContent = () => {
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
+
+  const handleCreateMeeting = () => {
+    // Navigate with school context if available
+    if (currentSchool?.id) {
+      navigate(`/school/${currentSchool.id}/monthly-meetings/create`)
+    } else {
+      navigate('/monthly-meetings/create')
+    }
+  }
 
   return (
     <SidebarProvider>
@@ -38,7 +48,7 @@ const MonthlyMeetingsContent = () => {
                     </p>
                   </div>
                   <Button
-                    onClick={() => setShowCreateModal(true)}
+                    onClick={handleCreateMeeting}
                     className='bg-blue-600 hover:bg-blue-700'>
                     <Plus className='w-4 h-4 mr-2' />
                     Create Monthly Meeting
