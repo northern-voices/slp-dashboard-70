@@ -19,6 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  ResponsiveTable,
+  ResponsiveTableRow,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableCell,
+} from '@/components/ui/responsive-table'
 
 const CreateMonthlyMeetingContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -261,6 +269,23 @@ const CreateMonthlyMeetingContent = () => {
                         <p className='text-sm text-gray-500'>
                           Separate multiple attendees with commas
                         </p>
+                      </div>
+
+                      {/* Table Section */}
+                      <div className='space-y-2'>
+                        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+                          <ResponsiveTable className='w-full'>
+                            <TableHeader>
+                              <tr>
+                                <TableHead className='w-1/3 min-w-[200px]'>Meeting Title</TableHead>
+                                <TableHead className='w-1/6 min-w-[120px]'>Date</TableHead>
+                                <TableHead className='w-1/4 min-w-[180px]'>Attendees</TableHead>
+                                <TableHead className='w-1/6 min-w-[100px]'>Status</TableHead>
+                              </tr>
+                            </TableHeader>
+                            <TableBody>{/* Empty table for now */}</TableBody>
+                          </ResponsiveTable>
+                        </div>
                       </div>
 
                       <div className='space-y-2'>
