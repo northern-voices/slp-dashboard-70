@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useCreateMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
+import { useStudentsBySchool } from '@/hooks/students/use-students'
 import {
   Select,
   SelectContent,
@@ -27,6 +28,7 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
+import { Badge } from '@/components/ui/badge'
 
 const CreateMonthlyMeetingContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -35,6 +37,9 @@ const CreateMonthlyMeetingContent = () => {
   const { userProfile, currentSchool } = useOrganization()
 
   const createMonthlyMeetings = useCreateMonthlyMeeting()
+  const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
+    currentSchool?.id
+  )
 
   // Temporary facilitator data
   const facilitators = [
@@ -59,6 +64,76 @@ const CreateMonthlyMeetingContent = () => {
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
+
+  // Helper function to get program status from latest speech screening
+  const getProgramStatus = (student): string => {
+    const speechScreenings = student.speech_screenings || []
+    if (speechScreenings.length === 0) {
+      return 'no_screening'
+    }
+
+    // Get most recent screening - create a copy to avoid mutating the original array
+    const mostRecent = [...speechScreenings].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )[0]
+
+    if (!mostRecent?.error_patterns) {
+      return 'not_set'
+    }
+
+    try {
+      const errorPatterns =
+        typeof mostRecent.error_patterns === 'string'
+          ? JSON.parse(mostRecent.error_patterns)
+          : mostRecent.error_patterns
+
+      const qualifies = errorPatterns?.screening_metadata?.qualifies_for_speech_program
+      const sub = errorPatterns?.screening_metadata?.sub
+      const graduated = errorPatterns?.screening_metadata?.graduated
+
+      if (qualifies === undefined && sub === undefined && graduated === undefined) {
+        return 'not_set'
+      }
+
+      if (graduated) return 'graduated'
+      if (sub) return 'sub'
+      if (qualifies) return 'qualifies'
+      return 'not_in_program'
+    } catch (e) {
+      console.error('Error parsing error_patterns:', e)
+      return 'not_set'
+    }
+  }
+
+  // Helper function to render program status badge
+  const getQualificationBadge = student => {
+    const programStatus = getProgramStatus(student)
+
+    switch (programStatus) {
+      case 'no_screening':
+        return (
+          <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Screening</Badge>
+        )
+      case 'not_set':
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
+      case 'graduated':
+        return (
+          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+        )
+      case 'sub':
+        return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
+      case 'qualifies':
+        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
+      case 'not_in_program':
+        return (
+          <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
+            Not In Program
+          </Badge>
+        )
+      default:
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Error</Badge>
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -271,20 +346,51 @@ const CreateMonthlyMeetingContent = () => {
                         </p>
                       </div>
 
-                      {/* Table Section */}
+                      {/* Students Table Section */}
                       <div className='space-y-2'>
+                        <Label>Students</Label>
                         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-                          <ResponsiveTable className='w-full'>
-                            <TableHeader>
-                              <tr>
-                                <TableHead className='w-1/3 min-w-[200px]'>Meeting Title</TableHead>
-                                <TableHead className='w-1/6 min-w-[120px]'>Date</TableHead>
-                                <TableHead className='w-1/4 min-w-[180px]'>Attendees</TableHead>
-                                <TableHead className='w-1/6 min-w-[100px]'>Status</TableHead>
-                              </tr>
-                            </TableHeader>
-                            <TableBody>{/* Empty table for now */}</TableBody>
-                          </ResponsiveTable>
+                          {isLoadingStudents ? (
+                            <div className='flex items-center justify-center py-8'>
+                              <div className='text-center'>
+                                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
+                                <p className='text-gray-600 text-sm'>Loading students...</p>
+                              </div>
+                            </div>
+                          ) : students.length > 0 ? (
+                            <ResponsiveTable className='w-full'>
+                              <TableHeader>
+                                <tr>
+                                  <TableHead className='w-1/3 min-w-[200px]'>Name</TableHead>
+                                  <TableHead className='w-1/6 min-w-[100px]'>Grade</TableHead>
+                                  <TableHead className='w-1/4 min-w-[150px]'>Program Status</TableHead>
+                                  <TableHead className='w-1/6 min-w-[120px]'>Date Created</TableHead>
+                                </tr>
+                              </TableHeader>
+                              <TableBody>
+                                {students.map(student => (
+                                  <ResponsiveTableRow key={student.id}>
+                                    <TableCell>
+                                      {student.first_name} {student.last_name}
+                                    </TableCell>
+                                    <TableCell>{student.grade || 'N/A'}</TableCell>
+                                    <TableCell>{getQualificationBadge(student)}</TableCell>
+                                    <TableCell>
+                                      {new Date(student.created_at).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                      })}
+                                    </TableCell>
+                                  </ResponsiveTableRow>
+                                ))}
+                              </TableBody>
+                            </ResponsiveTable>
+                          ) : (
+                            <div className='text-center py-8 text-gray-500 text-sm'>
+                              No students found for this school.
+                            </div>
+                          )}
                         </div>
                       </div>
 
