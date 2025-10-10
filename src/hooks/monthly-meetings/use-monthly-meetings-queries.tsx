@@ -10,18 +10,9 @@ export const useMonthlyMeetingsBySchool = (
   const { user } = useAuth()
   const { userProfile } = useOrganization()
 
-  console.log('useMonthlyMeetingsBySchool called with:', {
-    schoolId,
-    dateFilter,
-    userId: user?.id,
-    userRole: userProfile?.role,
-    enabled: !!schoolId && !!user?.id,
-  })
-
   return useQuery<MonthlyMeeting[], Error>({
     queryKey: ['monthly-meetings', 'by-school', schoolId, dateFilter, user?.id, userProfile?.role],
     queryFn: async () => {
-      console.log('Executing query for monthly meetings by school:', schoolId)
       if (!schoolId) {
         throw new Error('School ID is required')
       }
@@ -31,7 +22,7 @@ export const useMonthlyMeetingsBySchool = (
         userProfile?.role as 'admin' | 'slp' | 'supervisor',
         dateFilter
       )
-      console.log('Query result:', result)
+
       return result
     },
     enabled: !!schoolId && !!user?.id,

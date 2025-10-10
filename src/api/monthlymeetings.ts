@@ -144,6 +144,7 @@ export const monthlyMeetingsApi = {
           if (!targetError && targetData && targetData.length > 0) {
             // Merge the targeted data with the main data
             const mergedData = [...(data || []), ...targetData]
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data = mergedData as any[]
           }
         }
@@ -209,13 +210,6 @@ export const monthlyMeetingsApi = {
     dateFilter?: 'all' | 'school_year'
   ): Promise<MonthlyMeeting[]> => {
     try {
-      console.log('getMonthlyMeetingsBySchool called with:', {
-        schoolId,
-        currentUserId,
-        userRole,
-        dateFilter,
-      })
-
       // Calculate school year start date (September 1st)
       const currentDate = new Date()
       const currentYear = currentDate.getFullYear()
@@ -229,15 +223,12 @@ export const monthlyMeetingsApi = {
         schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
       }
 
-      console.log('School year start:', schoolYearStart.toISOString().split('T')[0])
-
       // First, let's check all monthly meetings without filtering by school
       const { data: allMeetings, error: allError } = await supabase
         .from('monthly_meetings')
         .select('*')
         .order('meeting_date', { ascending: false })
 
-      console.log('All monthly meetings in database:', allMeetings)
       if (allError) console.error('Error fetching all meetings:', allError)
 
       // Build base query for specific school
@@ -264,13 +255,9 @@ export const monthlyMeetingsApi = {
 
       const { data, error } = await query.order('meeting_date', { ascending: false })
 
-      console.log('Query result for school:', { data, error, schoolId })
-
       if (error) throw error
 
       const transformedData: MonthlyMeeting[] = (data || []).map(transformMonthlyMeeting)
-
-      console.log('Transformed data:', transformedData)
 
       return transformedData
     } catch (error) {
