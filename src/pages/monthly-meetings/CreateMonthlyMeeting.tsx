@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useCreateMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
+import { GRADE_MAPPING } from '@/constants/app'
 import {
   Select,
   SelectContent,
@@ -59,6 +60,11 @@ const CreateMonthlyMeetingContent = () => {
     meeting_notes: '',
     additional_notes: '',
   })
+
+  const [gradeSortOrder, setGradeSortOrder] = useState<'default' | 'asc' | 'desc'>('default')
+  const [programStatusSortOrder, setProgramStatusSortOrder] = useState<'default' | 'asc' | 'desc'>(
+    'default'
+  )
 
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
@@ -348,7 +354,49 @@ const CreateMonthlyMeetingContent = () => {
 
                       {/* Students Table Section */}
                       <div className='space-y-2'>
-                        <Label>Students</Label>
+                        <div className='flex items-center justify-between'>
+                          <Label>Students</Label>
+                          <div className='flex gap-3'>
+                            <div className='flex items-center gap-2'>
+                              <div className='flex items-center gap-2'>
+                                <Label htmlFor='gradeSort' className='text-sm text-gray-600'>
+                                  Sort by Grade:
+                                </Label>
+                                <Select
+                                  value={gradeSortOrder}
+                                  onValueChange={value =>
+                                    setGradeSortOrder(value as 'default' | 'asc' | 'desc')
+                                  }>
+                                  <SelectTrigger id='gradeSort' className='w-[140px] h-9'>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value='default'>Default</SelectItem>
+                                    <SelectItem value='asc'>Ascending</SelectItem>
+                                    <SelectItem value='desc'>Descending</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <Label htmlFor='programStatusSort' className='text-sm text-gray-600'>
+                                Sort by Status:
+                              </Label>
+                              <Select
+                                value={programStatusSortOrder}
+                                onValueChange={value =>
+                                  setProgramStatusSortOrder(value as 'default' | 'asc' | 'desc')
+                                }>
+                                <SelectTrigger id='programStatusSort' className='w-[140px] h-9'>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value='default'>Default</SelectItem>
+                                  <SelectItem value='asc'>Ascending</SelectItem>
+                                  <SelectItem value='desc'>Descending</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
                         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
                           {isLoadingStudents ? (
                             <div className='flex items-center justify-center py-8'>
@@ -357,39 +405,127 @@ const CreateMonthlyMeetingContent = () => {
                                 <p className='text-gray-600 text-sm'>Loading students...</p>
                               </div>
                             </div>
-                          ) : students.length > 0 ? (
-                            <ResponsiveTable className='w-full'>
-                              <TableHeader>
-                                <tr>
-                                  <TableHead className='w-1/3 min-w-[200px]'>Name</TableHead>
-                                  <TableHead className='w-1/6 min-w-[100px]'>Grade</TableHead>
-                                  <TableHead className='w-1/4 min-w-[150px]'>Program Status</TableHead>
-                                  <TableHead className='w-1/6 min-w-[120px]'>Date Created</TableHead>
-                                </tr>
-                              </TableHeader>
-                              <TableBody>
-                                {students.map(student => (
-                                  <ResponsiveTableRow key={student.id}>
-                                    <TableCell>
-                                      {student.first_name} {student.last_name}
-                                    </TableCell>
-                                    <TableCell>{student.grade || 'N/A'}</TableCell>
-                                    <TableCell>{getQualificationBadge(student)}</TableCell>
-                                    <TableCell>
-                                      {new Date(student.created_at).toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric',
-                                      })}
-                                    </TableCell>
-                                  </ResponsiveTableRow>
-                                ))}
-                              </TableBody>
-                            </ResponsiveTable>
                           ) : (
-                            <div className='text-center py-8 text-gray-500 text-sm'>
-                              No students found for this school.
-                            </div>
+                            (() => {
+                              // Filter students to only show those with 'sub' or 'qualifies' status
+                              const filteredStudents = students
+                                .filter(student => {
+                                  const status = getProgramStatus(student)
+                                  return status === 'sub' || status === 'qualifies'
+                                })
+                                .sort((a, b) => {
+                                  // Determine which sorting to apply first based on user selection
+                                  let primarySort = 0
+                                  let secondarySort = 0
+
+                                  // Sort by program status
+                                  if (programStatusSortOrder !== 'default') {
+                                    const statusA = getProgramStatus(a)
+                                    const statusB = getProgramStatus(b)
+                                    const statusOrder = { qualifies: 0, sub: 1 }
+                                    primarySort = statusOrder[statusA] - statusOrder[statusB]
+                                    if (programStatusSortOrder === 'desc') {
+                                      primarySort = -primarySort
+                                    }
+                                  }
+
+                                  // Sort by grade
+                                  if (gradeSortOrder !== 'default') {
+                                    const gradeA = a.grade || 'N/A'
+                                    const gradeB = b.grade || 'N/A'
+
+                                    const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
+                                    const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
+
+                                    // If grade not found in mapping, put at the end
+                                    if (indexA === -1 && indexB === -1) {
+                                      secondarySort = 0
+                                    } else if (indexA === -1) {
+                                      secondarySort = 1
+                                    } else if (indexB === -1) {
+                                      secondarySort = -1
+                                    } else {
+                                      secondarySort = indexA - indexB
+                                      if (gradeSortOrder === 'desc') {
+                                        secondarySort = -secondarySort
+                                      }
+                                    }
+                                  }
+
+                                  // Apply default sorting if both are set to default
+                                  if (
+                                    programStatusSortOrder === 'default' &&
+                                    gradeSortOrder === 'default'
+                                  ) {
+                                    // Default: Sort by Date Created (most recent first)
+                                    const dateA = new Date(a.created_at).getTime()
+                                    const dateB = new Date(b.created_at).getTime()
+                                    return dateB - dateA
+                                  }
+
+                                  // If only program status sort is active, use it as primary
+                                  if (
+                                    programStatusSortOrder !== 'default' &&
+                                    gradeSortOrder === 'default'
+                                  ) {
+                                    return primarySort
+                                  }
+
+                                  // If only grade sort is active, use it as primary
+                                  if (
+                                    programStatusSortOrder === 'default' &&
+                                    gradeSortOrder !== 'default'
+                                  ) {
+                                    return secondarySort
+                                  }
+
+                                  // If both are active, apply program status first, then grade
+                                  if (primarySort !== 0) return primarySort
+                                  return secondarySort
+                                })
+
+                              return filteredStudents.length > 0 ? (
+                                <ResponsiveTable className='w-full'>
+                                  <TableHeader>
+                                    <tr>
+                                      <TableHead className='w-1/3 min-w-[200px]'>Name</TableHead>
+                                      <TableHead className='w-1/6 min-w-[100px]'>Grade</TableHead>
+                                      <TableHead className='w-1/4 min-w-[150px]'>
+                                        Program Status
+                                      </TableHead>
+                                      <TableHead className='w-1/6 min-w-[120px]'>
+                                        Date Created
+                                      </TableHead>
+                                    </tr>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {filteredStudents.map(student => (
+                                      <ResponsiveTableRow key={student.id}>
+                                        <TableCell>
+                                          {student.first_name} {student.last_name}
+                                        </TableCell>
+                                        <TableCell>{student.grade || 'N/A'}</TableCell>
+                                        <TableCell>{getQualificationBadge(student)}</TableCell>
+                                        <TableCell>
+                                          {new Date(student.created_at).toLocaleDateString(
+                                            'en-US',
+                                            {
+                                              month: 'short',
+                                              day: 'numeric',
+                                              year: 'numeric',
+                                            }
+                                          )}
+                                        </TableCell>
+                                      </ResponsiveTableRow>
+                                    ))}
+                                  </TableBody>
+                                </ResponsiveTable>
+                              ) : (
+                                <div className='text-center py-8 text-gray-500 text-sm'>
+                                  No students with Sub or Qualifies status found for this school.
+                                </div>
+                              )
+                            })()
                           )}
                         </div>
                       </div>
