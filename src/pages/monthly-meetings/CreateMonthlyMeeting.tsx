@@ -5,7 +5,7 @@ import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, Calendar } from 'lucide-react'
+import { ChevronLeft, Calendar, UserPlus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -30,6 +30,13 @@ import {
   TableCell,
 } from '@/components/ui/responsive-table'
 import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 const CreateMonthlyMeetingContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -67,6 +74,11 @@ const CreateMonthlyMeetingContent = () => {
   )
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [showStudentModal, setShowStudentModal] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<any>(null)
+  const [studentData, setStudentData] = useState<
+    Record<string, { sessions_attended: number | null; meeting_notes: string }>
+  >({})
 
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
@@ -497,95 +509,113 @@ const CreateMonthlyMeetingContent = () => {
 
                               return filteredStudents.length > 0 ? (
                                 <div className='space-y-4'>
-                                <ResponsiveTable className='w-full'>
-                                  <TableHeader>
-                                    <tr>
-                                      <TableHead className='w-1/3 min-w-[200px]'>Name</TableHead>
-                                      <TableHead className='w-1/6 min-w-[100px]'>Grade</TableHead>
-                                      <TableHead className='w-1/4 min-w-[150px]'>
-                                        Program Status
-                                      </TableHead>
-                                      <TableHead className='w-1/6 min-w-[120px]'>
-                                        Date Created
-                                      </TableHead>
-                                    </tr>
-                                  </TableHeader>
-                                  <TableBody>
-                                    {paginatedStudents.map(student => (
-                                      <ResponsiveTableRow key={student.id}>
-                                        <TableCell>
-                                          {student.first_name} {student.last_name}
-                                        </TableCell>
-                                        <TableCell>{student.grade || 'N/A'}</TableCell>
-                                        <TableCell>{getQualificationBadge(student)}</TableCell>
-                                        <TableCell>
-                                          {new Date(student.created_at).toLocaleDateString(
-                                            'en-US',
-                                            {
-                                              month: 'short',
-                                              day: 'numeric',
-                                              year: 'numeric',
-                                            }
-                                          )}
-                                        </TableCell>
-                                      </ResponsiveTableRow>
-                                    ))}
-                                  </TableBody>
-                                </ResponsiveTable>
+                                  <ResponsiveTable className='w-full'>
+                                    <TableHeader>
+                                      <tr>
+                                        <TableHead className='w-1/4 min-w-[200px]'>Name</TableHead>
+                                        <TableHead className='w-1/6 min-w-[100px]'>Grade</TableHead>
+                                        <TableHead className='w-1/5 min-w-[150px]'>
+                                          Program Status
+                                        </TableHead>
+                                        <TableHead className='w-1/6 min-w-[120px]'>
+                                          Date Created
+                                        </TableHead>
+                                        <TableHead className='w-[100px] text-center'></TableHead>
+                                      </tr>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {paginatedStudents.map(student => (
+                                        <ResponsiveTableRow key={student.id}>
+                                          <TableCell>
+                                            {student.first_name} {student.last_name}
+                                          </TableCell>
+                                          <TableCell>{student.grade || 'N/A'}</TableCell>
+                                          <TableCell>{getQualificationBadge(student)}</TableCell>
+                                          <TableCell>
+                                            {new Date(student.created_at).toLocaleDateString(
+                                              'en-US',
+                                              {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                              }
+                                            )}
+                                          </TableCell>
+                                          <TableCell className='text-center'>
+                                            <Button
+                                              type='button'
+                                              size='sm'
+                                              variant='outline'
+                                              onClick={() => {
+                                                setSelectedStudent(student)
+                                                setShowStudentModal(true)
+                                              }}
+                                              className='h-8 w-8 p-0'>
+                                              <UserPlus className='h-4 w-4' />
+                                            </Button>
+                                          </TableCell>
+                                        </ResponsiveTableRow>
+                                      ))}
+                                    </TableBody>
+                                  </ResponsiveTable>
 
-                                {/* Pagination Controls */}
-                                <div className='flex items-center justify-between px-4 py-3 border-t border-gray-200'>
-                                  <div className='flex items-center gap-2'>
-                                    <Label htmlFor='itemsPerPage' className='text-sm text-gray-600'>
-                                      Rows per page:
-                                    </Label>
-                                    <Select
-                                      value={itemsPerPage.toString()}
-                                      onValueChange={value => {
-                                        setItemsPerPage(Number(value))
-                                        setCurrentPage(1) // Reset to first page when changing items per page
-                                      }}>
-                                      <SelectTrigger id='itemsPerPage' className='w-[80px] h-9'>
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value='5'>5</SelectItem>
-                                        <SelectItem value='10'>10</SelectItem>
-                                        <SelectItem value='20'>20</SelectItem>
-                                        <SelectItem value='50'>50</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
+                                  {/* Pagination Controls */}
+                                  <div className='flex items-center justify-between px-4 py-3 border-t border-gray-200'>
+                                    <div className='flex items-center gap-2'>
+                                      <Label
+                                        htmlFor='itemsPerPage'
+                                        className='text-sm text-gray-600'>
+                                        Rows per page:
+                                      </Label>
+                                      <Select
+                                        value={itemsPerPage.toString()}
+                                        onValueChange={value => {
+                                          setItemsPerPage(Number(value))
+                                          setCurrentPage(1) // Reset to first page when changing items per page
+                                        }}>
+                                        <SelectTrigger id='itemsPerPage' className='w-[80px] h-9'>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value='5'>5</SelectItem>
+                                          <SelectItem value='10'>10</SelectItem>
+                                          <SelectItem value='20'>20</SelectItem>
+                                          <SelectItem value='50'>50</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
 
-                                  <div className='flex items-center gap-2'>
-                                    <span className='text-sm text-gray-600'>
-                                      Showing {startIndex + 1}-{Math.min(endIndex, totalStudents)} of{' '}
-                                      {totalStudents}
-                                    </span>
-                                    <div className='flex gap-1'>
-                                      <Button
-                                        type='button'
-                                        variant='outline'
-                                        size='sm'
-                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                        disabled={currentPage === 1}
-                                        className='h-9 w-9 p-0'>
-                                        &larr;
-                                      </Button>
-                                      <Button
-                                        type='button'
-                                        variant='outline'
-                                        size='sm'
-                                        onClick={() =>
-                                          setCurrentPage(prev => Math.min(totalPages, prev + 1))
-                                        }
-                                        disabled={currentPage === totalPages}
-                                        className='h-9 w-9 p-0'>
-                                        &rarr;
-                                      </Button>
+                                    <div className='flex items-center gap-2'>
+                                      <span className='text-sm text-gray-600'>
+                                        Showing {startIndex + 1}-{Math.min(endIndex, totalStudents)}{' '}
+                                        of {totalStudents}
+                                      </span>
+                                      <div className='flex gap-1'>
+                                        <Button
+                                          type='button'
+                                          variant='outline'
+                                          size='sm'
+                                          onClick={() =>
+                                            setCurrentPage(prev => Math.max(1, prev - 1))
+                                          }
+                                          disabled={currentPage === 1}
+                                          className='h-9 w-9 p-0'>
+                                          &larr;
+                                        </Button>
+                                        <Button
+                                          type='button'
+                                          variant='outline'
+                                          size='sm'
+                                          onClick={() =>
+                                            setCurrentPage(prev => Math.min(totalPages, prev + 1))
+                                          }
+                                          disabled={currentPage === totalPages}
+                                          className='h-9 w-9 p-0'>
+                                          &rarr;
+                                        </Button>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
                                 </div>
                               ) : (
                                 <div className='text-center py-8 text-gray-500 text-sm'>
@@ -595,34 +625,6 @@ const CreateMonthlyMeetingContent = () => {
                             })()
                           )}
                         </div>
-                      </div>
-
-                      <div className='space-y-2'>
-                        <Label htmlFor='sessions_attended'>Sessions Attended</Label>
-                        <Input
-                          id='sessions_attended'
-                          name='sessions_attended'
-                          type='number'
-                          min='0'
-                          value={formData.sessions_attended ?? ''}
-                          onChange={e => {
-                            const value = e.target.value === '' ? null : parseInt(e.target.value)
-                            setFormData(prev => ({ ...prev, sessions_attended: value }))
-                          }}
-                          placeholder='Enter number of sessions attended'
-                        />
-                      </div>
-
-                      <div className='space-y-2'>
-                        <Label htmlFor='meeting_notes'>Meeting Notes</Label>
-                        <Textarea
-                          id='meeting_notes'
-                          name='meeting_notes'
-                          value={formData.meeting_notes}
-                          onChange={handleInputChange}
-                          placeholder='Meeting notes topics to discussed...'
-                          rows={4}
-                        />
                       </div>
 
                       <div className='space-y-2'>
@@ -656,6 +658,99 @@ const CreateMonthlyMeetingContent = () => {
                   </form>
                 </CardContent>
               </Card>
+
+              {/* Student Details Modal */}
+              <Dialog open={showStudentModal} onOpenChange={setShowStudentModal}>
+                <DialogContent className='max-w-2xl'>
+                  <DialogHeader>
+                    <DialogTitle>
+                      Student Details:{' '}
+                      {selectedStudent
+                        ? `${selectedStudent.first_name} ${selectedStudent.last_name}`
+                        : ''}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className='space-y-4 py-4'>
+                    <div className='space-y-2'>
+                      <Label htmlFor='modal_sessions_attended'>Sessions Attended</Label>
+                      <Input
+                        id='modal_sessions_attended'
+                        type='number'
+                        min='0'
+                        value={
+                          selectedStudent?.id
+                            ? studentData[selectedStudent.id]?.sessions_attended ?? ''
+                            : ''
+                        }
+                        onChange={e => {
+                          if (selectedStudent?.id) {
+                            const value = e.target.value === '' ? null : parseInt(e.target.value)
+                            setStudentData(prev => ({
+                              ...prev,
+                              [selectedStudent.id]: {
+                                ...prev[selectedStudent.id],
+                                sessions_attended: value,
+                                meeting_notes: prev[selectedStudent.id]?.meeting_notes || '',
+                              },
+                            }))
+                          }
+                        }}
+                        placeholder='Enter number of sessions attended'
+                      />
+                    </div>
+
+                    <div className='space-y-2'>
+                      <Label htmlFor='modal_meeting_notes'>Meeting Notes</Label>
+                      <Textarea
+                        id='modal_meeting_notes'
+                        value={
+                          selectedStudent?.id
+                            ? studentData[selectedStudent.id]?.meeting_notes || ''
+                            : ''
+                        }
+                        onChange={e => {
+                          if (selectedStudent?.id) {
+                            setStudentData(prev => ({
+                              ...prev,
+                              [selectedStudent.id]: {
+                                ...prev[selectedStudent.id],
+                                sessions_attended:
+                                  prev[selectedStudent.id]?.sessions_attended ?? null,
+                                meeting_notes: e.target.value,
+                              },
+                            }))
+                          }
+                        }}
+                        placeholder='Meeting notes for this student...'
+                        rows={6}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      onClick={() => {
+                        setShowStudentModal(false)
+                        setSelectedStudent(null)
+                      }}>
+                      Close
+                    </Button>
+                    <Button
+                      type='button'
+                      onClick={() => {
+                        setShowStudentModal(false)
+                        setSelectedStudent(null)
+                        toast({
+                          title: 'Student Data Saved',
+                          description: `Data for ${selectedStudent?.first_name} ${selectedStudent?.last_name} has been saved.`,
+                        })
+                      }}>
+                      Save
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </SidebarInset>
