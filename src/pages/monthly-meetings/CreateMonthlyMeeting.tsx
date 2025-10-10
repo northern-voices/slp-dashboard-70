@@ -65,6 +65,8 @@ const CreateMonthlyMeetingContent = () => {
   const [programStatusSortOrder, setProgramStatusSortOrder] = useState<'default' | 'asc' | 'desc'>(
     'default'
   )
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
@@ -364,9 +366,10 @@ const CreateMonthlyMeetingContent = () => {
                                 </Label>
                                 <Select
                                   value={gradeSortOrder}
-                                  onValueChange={value =>
+                                  onValueChange={value => {
                                     setGradeSortOrder(value as 'default' | 'asc' | 'desc')
-                                  }>
+                                    setCurrentPage(1) // Reset to first page when sorting changes
+                                  }}>
                                   <SelectTrigger id='gradeSort' className='w-[140px] h-9'>
                                     <SelectValue />
                                   </SelectTrigger>
@@ -382,9 +385,10 @@ const CreateMonthlyMeetingContent = () => {
                               </Label>
                               <Select
                                 value={programStatusSortOrder}
-                                onValueChange={value =>
+                                onValueChange={value => {
                                   setProgramStatusSortOrder(value as 'default' | 'asc' | 'desc')
-                                }>
+                                  setCurrentPage(1) // Reset to first page when sorting changes
+                                }}>
                                 <SelectTrigger id='programStatusSort' className='w-[140px] h-9'>
                                   <SelectValue />
                                 </SelectTrigger>
@@ -407,7 +411,7 @@ const CreateMonthlyMeetingContent = () => {
                             </div>
                           ) : (
                             (() => {
-                              // Filter students to only show those with 'sub' or 'qualifies' status
+                              // Filter and sort students
                               const filteredStudents = students
                                 .filter(student => {
                                   const status = getProgramStatus(student)
@@ -484,7 +488,15 @@ const CreateMonthlyMeetingContent = () => {
                                   return secondarySort
                                 })
 
+                              // Calculate pagination
+                              const totalStudents = filteredStudents.length
+                              const totalPages = Math.ceil(totalStudents / itemsPerPage)
+                              const startIndex = (currentPage - 1) * itemsPerPage
+                              const endIndex = startIndex + itemsPerPage
+                              const paginatedStudents = filteredStudents.slice(startIndex, endIndex)
+
                               return filteredStudents.length > 0 ? (
+                                <div className='space-y-4'>
                                 <ResponsiveTable className='w-full'>
                                   <TableHeader>
                                     <tr>
@@ -499,7 +511,7 @@ const CreateMonthlyMeetingContent = () => {
                                     </tr>
                                   </TableHeader>
                                   <TableBody>
-                                    {filteredStudents.map(student => (
+                                    {paginatedStudents.map(student => (
                                       <ResponsiveTableRow key={student.id}>
                                         <TableCell>
                                           {student.first_name} {student.last_name}
@@ -520,6 +532,59 @@ const CreateMonthlyMeetingContent = () => {
                                     ))}
                                   </TableBody>
                                 </ResponsiveTable>
+
+                                {/* Pagination Controls */}
+                                <div className='flex items-center justify-between px-4 py-3 border-t border-gray-200'>
+                                  <div className='flex items-center gap-2'>
+                                    <Label htmlFor='itemsPerPage' className='text-sm text-gray-600'>
+                                      Rows per page:
+                                    </Label>
+                                    <Select
+                                      value={itemsPerPage.toString()}
+                                      onValueChange={value => {
+                                        setItemsPerPage(Number(value))
+                                        setCurrentPage(1) // Reset to first page when changing items per page
+                                      }}>
+                                      <SelectTrigger id='itemsPerPage' className='w-[80px] h-9'>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value='5'>5</SelectItem>
+                                        <SelectItem value='10'>10</SelectItem>
+                                        <SelectItem value='20'>20</SelectItem>
+                                        <SelectItem value='50'>50</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+
+                                  <div className='flex items-center gap-2'>
+                                    <span className='text-sm text-gray-600'>
+                                      Showing {startIndex + 1}-{Math.min(endIndex, totalStudents)} of{' '}
+                                      {totalStudents}
+                                    </span>
+                                    <div className='flex gap-1'>
+                                      <Button
+                                        variant='outline'
+                                        size='sm'
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                        className='h-9 w-9 p-0'>
+                                        &larr;
+                                      </Button>
+                                      <Button
+                                        variant='outline'
+                                        size='sm'
+                                        onClick={() =>
+                                          setCurrentPage(prev => Math.min(totalPages, prev + 1))
+                                        }
+                                        disabled={currentPage === totalPages}
+                                        className='h-9 w-9 p-0'>
+                                        &rarr;
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                                </div>
                               ) : (
                                 <div className='text-center py-8 text-gray-500 text-sm'>
                                   No students with Sub or Qualifies status found for this school.
