@@ -564,6 +564,7 @@ const CreateMonthlyMeetingContent = () => {
                                     </span>
                                     <div className='flex gap-1'>
                                       <Button
+                                        type='button'
                                         variant='outline'
                                         size='sm'
                                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -572,6 +573,7 @@ const CreateMonthlyMeetingContent = () => {
                                         &larr;
                                       </Button>
                                       <Button
+                                        type='button'
                                         variant='outline'
                                         size='sm'
                                         onClick={() =>
