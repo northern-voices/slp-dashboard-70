@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 
 export interface MonthlyMeeting {
   id: string
+  meeting_title: string
   student_id: string
   attendees: string[]
   sessions_attended: number | null
@@ -22,6 +23,7 @@ export interface MonthlyMeeting {
 
 interface RawMonthlyMeeting {
   id: string
+  meeting_title: string
   student_id: string
   attendees: string[]
   sessions_attended: number | null
@@ -60,6 +62,7 @@ const getUserOrganizationSchools = async (organizationId: string): Promise<strin
 // Transform raw monthly meeting data
 const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => ({
   id: meeting.id,
+  meeting_title: meeting.meeting_title,
   student_id: meeting.student_id,
   attendees: meeting.attendees,
   sessions_attended: meeting.sessions_attended,
@@ -73,7 +76,8 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
 
 export const monthlyMeetingsApi = {
   createMonthlyMeeting: async (data: {
-    student_id: string
+    meeting_title: string
+    student_id: string | null
     attendees: string[]
     sessions_attended?: number | null
     meeting_notes?: string | null
@@ -82,7 +86,7 @@ export const monthlyMeetingsApi = {
   }): Promise<MonthlyMeeting> => {
     try {
       // Validate required fields
-      if (!data.student_id || !data.meeting_date) {
+      if (!data.meeting_date) {
         throw new Error('Missing required fields: student_id or meeting_date')
       }
 
@@ -91,12 +95,13 @@ export const monthlyMeetingsApi = {
       }
 
       const insertData = {
-        student_id: data.student_id,
+        meeting_title: data.meeting_title,
+        student_id: data.student_id || null,
         attendees: data.attendees,
         sessions_attended: data.sessions_attended || null,
         meeting_notes: data.meeting_notes || null,
         additional_notes: data.additional_notes || null,
-        meeting_data: data.meeting_date,
+        meeting_date: data.meeting_date,
       }
 
       const { data: newMeeting, error } = await supabase
