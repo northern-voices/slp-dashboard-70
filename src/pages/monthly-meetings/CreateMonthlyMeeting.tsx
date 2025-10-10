@@ -12,6 +12,13 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useCreateMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const CreateMonthlyMeetingContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -21,9 +28,18 @@ const CreateMonthlyMeetingContent = () => {
 
   const createMonthlyMeetings = useCreateMonthlyMeeting()
 
+  // Temporary facilitator data
+  const facilitators = [
+    { id: '1', name: 'Lisa Brillinger' },
+    { id: '2', name: 'Cheryl Mullner' },
+    { id: '3', name: 'Danielle Ewanus' },
+    { id: '4', name: 'Emily Davis' },
+  ]
+
   const [formData, setFormData] = useState({
     meeting_title: '',
     student_id: '',
+    meeting_facilitator: '',
     attendees: '',
     meeting_date: new Date().toISOString().split('T')[0],
     sessions_attended: null as number | null,
@@ -52,6 +68,7 @@ const CreateMonthlyMeetingContent = () => {
     const submitData = {
       meeting_title: formData.meeting_title,
       student_id: formData.student_id || null,
+      meeting_facilitator: formData.meeting_facilitator || null,
       attendees: formData.attendees
         .split(',')
         .map(a => a.trim())
@@ -164,6 +181,26 @@ const CreateMonthlyMeetingContent = () => {
                           required
                         />
                       </div> */}
+
+                      <div className='space-y-2'>
+                        <Label htmlFor='meeting_facilitator'>Meeting Facilitator</Label>
+                        <Select
+                          value={formData.meeting_facilitator}
+                          onValueChange={value =>
+                            setFormData(prev => ({ ...prev, meeting_facilitator: value }))
+                          }>
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select a facilitator' />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {facilitators.map(facilitator => (
+                              <SelectItem key={facilitator.id} value={facilitator.id}>
+                                {facilitator.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
                       <div className='space-y-2'>
                         <Label htmlFor='attendees'>Attendees *</Label>

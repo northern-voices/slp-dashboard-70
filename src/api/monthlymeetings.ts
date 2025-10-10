@@ -4,6 +4,7 @@ export interface MonthlyMeeting {
   id: string
   meeting_title: string
   student_id: string
+  meeting_facilitator: string | null
   attendees: string[]
   sessions_attended: number | null
   meeting_notes: string | null
@@ -25,6 +26,7 @@ interface RawMonthlyMeeting {
   id: string
   meeting_title: string
   student_id: string
+  meeting_facilitator: string | null
   attendees: string[]
   sessions_attended: number | null
   meeting_notes: string | null
@@ -64,6 +66,7 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
   id: meeting.id,
   meeting_title: meeting.meeting_title,
   student_id: meeting.student_id,
+  meeting_facilitator: meeting.meeting_facilitator,
   attendees: meeting.attendees,
   sessions_attended: meeting.sessions_attended,
   meeting_notes: meeting.meeting_notes,
@@ -269,6 +272,7 @@ export const monthlyMeetingsApi = {
   createMonthlyMeeting: async (data: {
     meeting_title: string
     student_id: string | null
+    meeting_facilitator?: string | null
     attendees: string[]
     sessions_attended?: number | null
     meeting_notes?: string | null
@@ -288,6 +292,7 @@ export const monthlyMeetingsApi = {
       const insertData = {
         meeting_title: data.meeting_title,
         student_id: data.student_id || null,
+        facilitator_id: data.meeting_facilitator || null,
         attendees: data.attendees,
         sessions_attended: data.sessions_attended || null,
         meeting_notes: data.meeting_notes || null,

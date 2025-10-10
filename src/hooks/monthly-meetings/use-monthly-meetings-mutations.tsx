@@ -8,6 +8,7 @@ import { monthlyMeetingsApi, MonthlyMeeting } from '@/api/monthlymeetings'
 type CreateMonthlyMeetingInput = {
   meeting_title: string
   student_id: string | null
+  meeting_facilitator?: string | null
   attendees: string[]
   sessions_attended?: number | null
   meeting_notes?: string | null
