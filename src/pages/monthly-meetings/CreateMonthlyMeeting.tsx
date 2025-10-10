@@ -64,15 +64,61 @@ const CreateMonthlyMeetingContent = () => {
     e.preventDefault()
     setIsSubmitting(true)
 
+    // Validate meeting title
+    if (!formData.meeting_title.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Meeting title cannot be empty.',
+        variant: 'destructive',
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate attendees
+    if (!formData.attendees.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Attendees cannot be empty.',
+        variant: 'destructive',
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate attendees format (must be comma-separated)
+    const attendeesList = formData.attendees
+      .split(',')
+      .map(a => a.trim())
+      .filter(a => a.length > 0)
+
+    if (attendeesList.length === 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please provide at least one attendee.',
+        variant: 'destructive',
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate sessions attended
+    if (formData.sessions_attended !== null && formData.sessions_attended < 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Sessions attended cannot be less than 0.',
+        variant: 'destructive',
+      })
+      setIsSubmitting(false)
+      return
+    }
+
     // Convert attendees string to array
     const submitData = {
-      meeting_title: formData.meeting_title,
+      meeting_title: formData.meeting_title.trim(),
       student_id: formData.student_id || null,
       meeting_facilitator: formData.meeting_facilitator || null,
-      attendees: formData.attendees
-        .split(',')
-        .map(a => a.trim())
-        .filter(a => a.length > 0),
+      attendees: attendeesList,
       meeting_date: formData.meeting_date,
       sessions_attended: formData.sessions_attended,
       meeting_notes: formData.meeting_notes || null,
@@ -223,6 +269,7 @@ const CreateMonthlyMeetingContent = () => {
                           id='sessions_attended'
                           name='sessions_attended'
                           type='number'
+                          min='0'
                           value={formData.sessions_attended ?? ''}
                           onChange={e => {
                             const value = e.target.value === '' ? null : parseInt(e.target.value)
