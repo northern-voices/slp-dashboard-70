@@ -6,7 +6,8 @@ import { monthlyMeetingsApi, MonthlyMeeting } from '@/api/monthlymeetings'
 
 // Type for the create monthly meeting input
 type CreateMonthlyMeetingInput = {
-  student_id: string
+  meeting_title: string
+  student_id: string | null
   attendees: string[]
   sessions_attended?: number | null
   meeting_notes?: string | null

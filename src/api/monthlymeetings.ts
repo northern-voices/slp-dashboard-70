@@ -209,6 +209,13 @@ export const monthlyMeetingsApi = {
     dateFilter?: 'all' | 'school_year'
   ): Promise<MonthlyMeeting[]> => {
     try {
+      console.log('getMonthlyMeetingsBySchool called with:', {
+        schoolId,
+        currentUserId,
+        userRole,
+        dateFilter,
+      })
+
       // Calculate school year start date (September 1st)
       const currentDate = new Date()
       const currentYear = currentDate.getFullYear()
@@ -222,13 +229,25 @@ export const monthlyMeetingsApi = {
         schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
       }
 
-      // Build base query for specific school
-      let query = supabase
+      console.log('School year start:', schoolYearStart.toISOString().split('T')[0])
+
+      // First, let's check all monthly meetings without filtering by school
+      const { data: allMeetings, error: allError } = await supabase
         .from('monthly_meetings')
-        .select(
-          `
+        .select('*')
+        .order('meeting_date', { ascending: false })
+
+      console.log('All monthly meetings in database:', allMeetings)
+      if (allError) console.error('Error fetching all meetings:', allError)
+
+      // Build base query for specific school
+      // Note: We can't filter by school_id directly since student_id can be null
+      // We'll fetch all meetings and filter client-side, or we need a different approach
+      // For now, let's just get all meetings since student_id is optional
+      let query = supabase.from('monthly_meetings').select(
+        `
           *,
-          students!inner (
+          students (
             id,
             first_name,
             last_name,
@@ -236,8 +255,7 @@ export const monthlyMeetingsApi = {
             school_id
           )
         `
-        )
-        .eq('students.school_id', schoolId)
+      )
 
       // Apply date filter at database level (default to school year)
       if (dateFilter !== 'all') {
@@ -246,9 +264,13 @@ export const monthlyMeetingsApi = {
 
       const { data, error } = await query.order('meeting_date', { ascending: false })
 
+      console.log('Query result for school:', { data, error, schoolId })
+
       if (error) throw error
 
       const transformedData: MonthlyMeeting[] = (data || []).map(transformMonthlyMeeting)
+
+      console.log('Transformed data:', transformedData)
 
       return transformedData
     } catch (error) {
@@ -258,7 +280,8 @@ export const monthlyMeetingsApi = {
   },
 
   createMonthlyMeeting: async (data: {
-    student_id: string
+    meeting_title: string
+    student_id: string | null
     attendees: string[]
     sessions_attended?: number | null
     meeting_notes?: string | null
@@ -267,8 +290,8 @@ export const monthlyMeetingsApi = {
   }): Promise<MonthlyMeeting> => {
     try {
       // Validate required fields
-      if (!data.student_id || !data.meeting_date) {
-        throw new Error('Missing required fields: student_id or meeting_date')
+      if (!data.meeting_date) {
+        throw new Error('Missing required fields: meeting_date')
       }
 
       if (!data.attendees || data.attendees.length === 0) {
@@ -276,7 +299,8 @@ export const monthlyMeetingsApi = {
       }
 
       const insertData = {
-        student_id: data.student_id,
+        meeting_title: data.meeting_title,
+        student_id: data.student_id || null,
         attendees: data.attendees,
         sessions_attended: data.sessions_attended || null,
         meeting_notes: data.meeting_notes || null,

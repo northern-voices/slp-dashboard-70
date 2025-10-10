@@ -9,6 +9,7 @@ import {
   ChevronDown,
   Trash2,
   Edit,
+  Loader2,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -25,16 +26,9 @@ import {
   TableCell,
 } from '@/components/ui/responsive-table'
 import { format } from 'date-fns'
-
-interface MonthlyMeeting {
-  id: string
-  title: string
-  date: string
-  participants: string[]
-  status: 'scheduled' | 'completed' | 'cancelled'
-  notes?: string
-  created_at: string
-}
+import { useMonthlyMeetingsBySchool } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { MonthlyMeeting } from '@/api/monthlymeetings'
 
 interface MonthlyMeetingsTableProps {
   searchTerm: string
@@ -47,43 +41,47 @@ const MonthlyMeetingsTable = ({
   dateRangeFilter,
   statusFilter,
 }: MonthlyMeetingsTableProps) => {
+  const { currentSchool } = useOrganization()
   const [selectedMeetings, setSelectedMeetings] = useState<MonthlyMeeting[]>([])
-  const [sortField, setSortField] = useState<'date' | 'title' | null>(null)
+  const [sortField, setSortField] = useState<'meeting_date' | 'meeting_title' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
 
-  // Mock data - replace with actual data fetching
-  const mockMeetings: MonthlyMeeting[] = [
-    {
-      id: '1',
-      title: 'September Monthly Review',
-      date: '2024-09-15',
-      participants: ['Dr. Sarah Johnson', 'Ms. Emily Davis'],
-      status: 'completed',
-      notes: 'Discussed student progress and upcoming screenings',
-      created_at: '2024-09-01',
-    },
-    {
-      id: '2',
-      title: 'October Planning Meeting',
-      date: '2024-10-08',
-      participants: ['Dr. Sarah Johnson', 'Mr. John Smith'],
-      status: 'scheduled',
-      created_at: '2024-10-01',
-    },
-  ]
+  // Fetch monthly meetings by school
+  const {
+    data: meetings = [],
+    isLoading,
+    error,
+  } = useMonthlyMeetingsBySchool(
+    currentSchool?.id,
+    dateRangeFilter === 'school_year' || dateRangeFilter === 'all' ? dateRangeFilter : 'all'
+  )
+
+  // Debug logging
+  console.log('MonthlyMeetingsTable Debug:', {
+    currentSchoolId: currentSchool?.id,
+    dateRangeFilter,
+    isLoading,
+    error,
+    meetingsCount: meetings.length,
+    meetings,
+  })
 
   // Apply filters
-  const filteredMeetings = mockMeetings.filter(meeting => {
+  const filteredMeetings = meetings.filter(meeting => {
     const matchesSearch =
-      meeting.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      meeting.participants?.some(p => p.toLowerCase().includes(searchTerm.toLowerCase()))
+      meeting.meeting_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      meeting.attendees?.some(p => p.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      meeting.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      meeting.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesStatus = statusFilter === 'all' || meeting.status === statusFilter
+    // For now, we'll skip status filter since we don't have a status field in the API
+    const matchesStatus = true
 
-    // Apply date range filter
+    // Apply client-side date range filter for filters other than 'all' and 'school_year'
+    // (those are handled at the API level)
     let matchesDateRange = true
-    if (dateRangeFilter !== 'all') {
-      const meetingDate = new Date(meeting.date)
+    if (dateRangeFilter !== 'all' && dateRangeFilter !== 'school_year') {
+      const meetingDate = new Date(meeting.meeting_date)
       const now = new Date()
 
       switch (dateRangeFilter) {
@@ -108,21 +106,6 @@ const MonthlyMeetingsTable = ({
           matchesDateRange = meetingDate >= quarterAgo
           break
         }
-        case 'school_year': {
-          const currentDate = new Date()
-          const currentYear = currentDate.getFullYear()
-          const currentMonth = currentDate.getMonth()
-
-          let schoolYearStart: Date
-          if (currentMonth >= 8) {
-            schoolYearStart = new Date(currentYear, 8, 1)
-          } else {
-            schoolYearStart = new Date(currentYear - 1, 8, 1)
-          }
-
-          matchesDateRange = meetingDate >= schoolYearStart
-          break
-        }
       }
     }
 
@@ -136,14 +119,14 @@ const MonthlyMeetingsTable = ({
     let comparison = 0
 
     switch (sortField) {
-      case 'date': {
-        const dateA = new Date(a.date).getTime()
-        const dateB = new Date(b.date).getTime()
+      case 'meeting_date': {
+        const dateA = new Date(a.meeting_date).getTime()
+        const dateB = new Date(b.meeting_date).getTime()
         comparison = dateA - dateB
         break
       }
-      case 'title': {
-        comparison = (a.title || '').localeCompare(b.title || '')
+      case 'meeting_title': {
+        comparison = (a.meeting_title || '').localeCompare(b.meeting_title || '')
         break
       }
     }
@@ -151,7 +134,7 @@ const MonthlyMeetingsTable = ({
     return sortOrder === 'asc' ? comparison : -comparison
   })
 
-  const handleSort = (field: 'date' | 'title') => {
+  const handleSort = (field: 'meeting_date' | 'meeting_title') => {
     if (sortField !== field) {
       setSortField(field)
       setSortOrder('desc')
@@ -163,7 +146,7 @@ const MonthlyMeetingsTable = ({
     }
   }
 
-  const getSortIcon = (field: 'date' | 'title') => {
+  const getSortIcon = (field: 'meeting_date' | 'meeting_title') => {
     if (sortField !== field) {
       return <ChevronUp className='w-4 h-4 opacity-30' />
     }
@@ -175,16 +158,14 @@ const MonthlyMeetingsTable = ({
     return <ChevronUp className='w-4 h-4 opacity-30' />
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'scheduled':
-        return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Scheduled</Badge>
-      case 'completed':
-        return <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Completed</Badge>
-      case 'cancelled':
-        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Cancelled</Badge>
-      default:
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Unknown</Badge>
+  const getStatusBadge = (meetingDate: string) => {
+    const now = new Date()
+    const date = new Date(meetingDate)
+
+    if (date > now) {
+      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Scheduled</Badge>
+    } else {
+      return <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Completed</Badge>
     }
   }
 
@@ -207,6 +188,22 @@ const MonthlyMeetingsTable = ({
   const isAllSelected =
     filteredMeetings.length > 0 && selectedMeetings.length === filteredMeetings.length
 
+  if (isLoading) {
+    return (
+      <div className='flex items-center justify-center py-12'>
+        <Loader2 className='w-8 h-8 animate-spin text-blue-600' />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
+        <p className='text-red-800'>Error loading monthly meetings: {error.message}</p>
+      </div>
+    )
+  }
+
   return (
     <div className='space-y-4'>
       <div className='flex justify-end mb-3'>
@@ -225,22 +222,22 @@ const MonthlyMeetingsTable = ({
               <TableHead className='w-1/3 min-w-[200px]'>
                 <Button
                   variant='ghost'
-                  onClick={() => handleSort('title')}
+                  onClick={() => handleSort('meeting_title')}
                   className='h-auto p-0 font-medium hover:bg-transparent'>
                   Meeting Title
-                  <span className='ml-1'>{getSortIcon('title')}</span>
+                  <span className='ml-1'>{getSortIcon('meeting_title')}</span>
                 </Button>
               </TableHead>
               <TableHead className='w-1/6 min-w-[120px]'>
                 <Button
                   variant='ghost'
-                  onClick={() => handleSort('date')}
+                  onClick={() => handleSort('meeting_date')}
                   className='h-auto p-0 font-medium hover:bg-transparent'>
                   Date
-                  <span className='ml-1'>{getSortIcon('date')}</span>
+                  <span className='ml-1'>{getSortIcon('meeting_date')}</span>
                 </Button>
               </TableHead>
-              <TableHead className='w-1/4 min-w-[180px]'>Participants</TableHead>
+              <TableHead className='w-1/4 min-w-[180px]'>Attendees</TableHead>
               <TableHead className='w-1/6 min-w-[100px]'>Status</TableHead>
               <TableHead className='w-12'></TableHead>
             </tr>
@@ -259,7 +256,7 @@ const MonthlyMeetingsTable = ({
                             handleSelectMeeting(meeting, checked as boolean)
                           }
                         />
-                        <h3 className='font-medium'>{meeting.title}</h3>
+                        <h3 className='font-medium'>{meeting.meeting_title}</h3>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -283,15 +280,15 @@ const MonthlyMeetingsTable = ({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    <div className='flex items-center gap-2'>{getStatusBadge(meeting.status)}</div>
+                    <div className='flex items-center gap-2'>{getStatusBadge(meeting.meeting_date)}</div>
                     <div className='text-sm text-gray-600 space-y-1'>
                       <p>
                         <span className='font-medium'>Date:</span>{' '}
-                        {format(new Date(meeting.date), 'MMM d, yyyy')}
+                        {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
                       </p>
                       <p>
-                        <span className='font-medium'>Participants:</span>{' '}
-                        {meeting.participants.join(', ')}
+                        <span className='font-medium'>Attendees:</span>{' '}
+                        {meeting.attendees.join(', ')}
                       </p>
                     </div>
                   </div>
@@ -305,23 +302,23 @@ const MonthlyMeetingsTable = ({
                 </TableCell>
                 <TableCell className='max-w-0'>
                   <div className='truncate'>
-                    <div className='font-medium text-base truncate' title={meeting.title}>
-                      {meeting.title}
+                    <div className='font-medium text-base truncate' title={meeting.meeting_title}>
+                      {meeting.meeting_title}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className='max-w-0'>
-                  <div className='truncate' title={format(new Date(meeting.date), 'MMM d, yyyy')}>
-                    {format(new Date(meeting.date), 'MMM d, yyyy')}
+                  <div className='truncate' title={format(new Date(meeting.meeting_date), 'MMM d, yyyy')}>
+                    {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
                   </div>
                 </TableCell>
                 <TableCell className='max-w-0'>
-                  <div className='truncate' title={meeting.participants.join(', ')}>
-                    {meeting.participants.join(', ')}
+                  <div className='truncate' title={meeting.attendees.join(', ')}>
+                    {meeting.attendees.join(', ')}
                   </div>
                 </TableCell>
                 <TableCell className='max-w-0'>
-                  <div className='w-full'>{getStatusBadge(meeting.status)}</div>
+                  <div className='w-full'>{getStatusBadge(meeting.meeting_date)}</div>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
