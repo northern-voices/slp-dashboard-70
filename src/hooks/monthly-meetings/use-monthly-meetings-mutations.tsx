@@ -62,3 +62,103 @@ export const useCreateMonthlyMeeting = () => {
     },
   })
 }
+
+export const useUpdateMonthlyMeeting = () => {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const { userProfile, currentOrganization } = useOrganization()
+
+  return useMutation<
+    MonthlyMeeting,
+    Error,
+    { id: string; data: Partial<UpdateMonthlyMeetingInput> }
+  >({
+    mutationFn: ({ id, data }) => monthlyMeetingsApi.updateMonthlyMeeting(id, data),
+
+    onSuccess: () => {
+      // Invalidate and refetch all monthly meeting-related queries
+      queryClient.invalidateQueries({
+        queryKey: ['monthly-meetings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ['monthly-meetings'],
+      })
+
+      // Force refetch of the main monthly meetings query to ensure immediate update
+      queryClient.refetchQueries({
+        queryKey: ['monthly-meetings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+    },
+
+    onError: error => {
+      console.error('Failed to update monthly meeting:', error)
+      // You could add toast notifications here
+    },
+  })
+}
+
+export const useDeleteMonthlyMeeting = () => {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const { userProfile, currentOrganization } = useOrganization()
+
+  return useMutation<void, Error, string>({
+    mutationFn: (id: string) => monthlyMeetingsApi.deleteMonthlyMeeting(id),
+
+    onSuccess: () => {
+      // Invalidate and refetch all monthly meeting-related queries
+      queryClient.invalidateQueries({
+        queryKey: ['monthly-meetings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ['monthly-meetings'],
+      })
+
+      // Force refetch of the main monthly meetings query to ensure immediate update
+      queryClient.refetchQueries({
+        queryKey: ['monthly-meetings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+    },
+
+    onError: error => {
+      console.error('Failed to delete monthly meeting:', error)
+      // You could add toast notifications here
+    },
+  })
+}
+
+export const useBulkDeleteMonthlyMeetings = () => {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const { userProfile, currentOrganization } = useOrganization()
+
+  return useMutation<void, Error, { meetingIds: string[] }>({
+    mutationFn: async ({ meetingIds }) => {
+      // Delete meetings in parallel
+      await Promise.all(meetingIds.map(id => monthlyMeetingsApi.deleteMonthlyMeeting(id)))
+    },
+
+    onSuccess: () => {
+      // Invalidate and refetch all monthly meeting-related queries
+      queryClient.invalidateQueries({
+        queryKey: ['monthly-meetings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: ['monthly-meetings'],
+      })
+
+      // Force refetch of the main monthly meetings query to ensure immediate update
+      queryClient.refetchQueries({
+        queryKey: ['monthly-meetings', user?.id, userProfile?.role, currentOrganization?.id],
+      })
+    },
+
+    onError: error => {
+      console.error('Failed to delete monthly meetings:', error)
+      // You could add toast notifications here
+    },
+  })
+}
