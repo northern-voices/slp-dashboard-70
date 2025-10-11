@@ -142,9 +142,7 @@ export const monthlyMeetingsApi = {
         `
       )
 
-      const { data, error } = await query
-        .order('meeting_date', { ascending: false })
-        .limit(10000)
+      const { data, error } = await query.order('meeting_date', { ascending: false }).limit(10000)
 
       if (error) throw error
 
@@ -154,7 +152,8 @@ export const monthlyMeetingsApi = {
       if (organizationSchoolIds.length > 0) {
         return transformedData.filter(meeting =>
           meeting.student_updates?.some(
-            update => update.student?.school_id && organizationSchoolIds.includes(update.student.school_id)
+            update =>
+              update.student?.school_id && organizationSchoolIds.includes(update.student.school_id)
           )
         )
       }

@@ -2,28 +2,42 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
-import { monthlyMeetingsApi, MonthlyMeeting } from '@/api/monthlymeetings'
+import { monthlyMeetingsApi, MonthlyMeeting, StudentUpdate } from '@/api/monthlymeetings'
 
 // Type for the create monthly meeting input
 type CreateMonthlyMeetingInput = {
   meeting_title: string
-  student_id: string | null
-  meeting_facilitator?: string | null
-  attendees: string[]
-  sessions_attended?: number | null
-  meeting_notes?: string | null
-  additional_notes?: string | null
   meeting_date: string
+  attendees: string[]
+  additional_notes?: string | null
+  facilitator_id?: string | null
+  student_updates?: Array<{
+    student_id: string
+    sessions_attended?: number | null
+    meeting_notes?: string | null
+  }>
 }
 
 // Type for the update monthly meeting input
 type UpdateMonthlyMeetingInput = {
-  student_id?: string
+  meeting_title?: string
+  meeting_date?: string
   attendees?: string[]
+  additional_notes?: string | null
+  facilitator_id?: string | null
+}
+
+// Type for student update operations
+type AddStudentUpdateInput = {
+  monthly_meeting_id: string
+  student_id: string
   sessions_attended?: number | null
   meeting_notes?: string | null
-  additional_notes?: string | null
-  meeting_date?: string
+}
+
+type UpdateStudentUpdateInput = {
+  sessions_attended?: number | null
+  meeting_notes?: string | null
 }
 
 export const useCreateMonthlyMeeting = () => {
@@ -161,6 +175,61 @@ export const useBulkDeleteMonthlyMeetings = () => {
     onError: error => {
       console.error('Failed to delete monthly meetings:', error)
       // You could add toast notifications here
+    },
+  })
+}
+
+// Hooks for managing student updates
+export const useAddStudentUpdate = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<StudentUpdate, Error, AddStudentUpdateInput>({
+    mutationFn: data => monthlyMeetingsApi.addStudentUpdate(data),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['monthly-meetings'],
+      })
+    },
+
+    onError: error => {
+      console.error('Failed to add student update:', error)
+    },
+  })
+}
+
+export const useUpdateStudentUpdate = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<StudentUpdate, Error, { id: string; data: UpdateStudentUpdateInput }>({
+    mutationFn: ({ id, data }) => monthlyMeetingsApi.updateStudentUpdate(id, data),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['monthly-meetings'],
+      })
+    },
+
+    onError: error => {
+      console.error('Failed to update student update:', error)
+    },
+  })
+}
+
+export const useDeleteStudentUpdate = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<void, Error, string>({
+    mutationFn: id => monthlyMeetingsApi.deleteStudentUpdate(id),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['monthly-meetings'],
+      })
+    },
+
+    onError: error => {
+      console.error('Failed to delete student update:', error)
     },
   })
 }

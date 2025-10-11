@@ -59,12 +59,9 @@ const CreateMonthlyMeetingContent = () => {
 
   const [formData, setFormData] = useState({
     meeting_title: '',
-    student_id: '',
-    meeting_facilitator: '',
+    facilitator_id: '',
     attendees: '',
     meeting_date: new Date().toISOString().split('T')[0],
-    sessions_attended: null as number | null,
-    meeting_notes: '',
     additional_notes: '',
   })
 
@@ -205,27 +202,23 @@ const CreateMonthlyMeetingContent = () => {
       return
     }
 
-    // Validate sessions attended
-    if (formData.sessions_attended !== null && formData.sessions_attended < 0) {
-      toast({
-        title: 'Validation Error',
-        description: 'Sessions attended cannot be less than 0.',
-        variant: 'destructive',
-      })
-      setIsSubmitting(false)
-      return
-    }
+    // Build student updates array from studentData
+    const student_updates = Object.entries(studentData)
+      .filter(([_, data]) => data.sessions_attended !== null || data.meeting_notes.trim() !== '')
+      .map(([student_id, data]) => ({
+        student_id,
+        sessions_attended: data.sessions_attended,
+        meeting_notes: data.meeting_notes.trim() || null,
+      }))
 
     // Convert attendees string to array
     const submitData = {
       meeting_title: formData.meeting_title.trim(),
-      student_id: formData.student_id || null,
-      meeting_facilitator: formData.meeting_facilitator || null,
-      attendees: attendeesList,
       meeting_date: formData.meeting_date,
-      sessions_attended: formData.sessions_attended,
-      meeting_notes: formData.meeting_notes || null,
-      additional_notes: formData.additional_notes || null,
+      attendees: attendeesList,
+      facilitator_id: 'ec8a31f7-be34-4f87-abad-98a5a0eef3cf', // Temporary hardcoded for testing
+      additional_notes: formData.additional_notes.trim() || null,
+      student_updates: student_updates.length > 0 ? student_updates : undefined,
     }
 
     createMonthlyMeetings.mutate(submitData, {
@@ -332,11 +325,11 @@ const CreateMonthlyMeetingContent = () => {
                       </div> */}
 
                       <div className='space-y-2'>
-                        <Label htmlFor='meeting_facilitator'>Meeting Facilitator</Label>
+                        <Label htmlFor='facilitator_id'>Meeting Facilitator</Label>
                         <Select
-                          value={formData.meeting_facilitator}
+                          value={formData.facilitator_id}
                           onValueChange={value =>
-                            setFormData(prev => ({ ...prev, meeting_facilitator: value }))
+                            setFormData(prev => ({ ...prev, facilitator_id: value }))
                           }>
                           <SelectTrigger>
                             <SelectValue placeholder='Select a facilitator' />
