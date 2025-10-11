@@ -1,17 +1,10 @@
 import { supabase } from '@/lib/supabase'
 
-export interface MonthlyMeeting {
+export interface StudentUpdate {
   id: string
-  meeting_title: string
   student_id: string
-  meeting_facilitator: string | null
-  attendees: string[]
   sessions_attended: number | null
   meeting_notes: string | null
-  additional_notes: string | null
-  meeting_date: string
-  created_at: string
-  updated_at: string
   // Joined data
   student?: {
     id: string
@@ -22,25 +15,53 @@ export interface MonthlyMeeting {
   } | null
 }
 
-interface RawMonthlyMeeting {
+export interface MonthlyMeeting {
   id: string
   meeting_title: string
-  student_id: string
-  meeting_facilitator: string | null
-  attendees: string[]
-  sessions_attended: number | null
-  meeting_notes: string | null
-  additional_notes: string | null
   meeting_date: string
+  attendees: string[]
+  additional_notes: string | null
+  facilitator_id: string | null
   created_at: string
   updated_at: string
-  students: {
+  // Joined data
+  facilitator?: {
     id: string
     first_name: string
     last_name: string
-    student_id: string
-    school_id: string
+    email: string
   } | null
+  student_updates?: StudentUpdate[]
+}
+
+interface RawMonthlyMeeting {
+  id: string
+  meeting_title: string
+  meeting_date: string
+  attendees: string[]
+  additional_notes: string | null
+  facilitator_id: string | null
+  created_at: string
+  updated_at: string
+  facilitator: {
+    id: string
+    first_name: string
+    last_name: string
+    email: string
+  } | null
+  monthly_meeting_student_updates: Array<{
+    id: string
+    student_id: string
+    sessions_attended: number | null
+    meeting_notes: string | null
+    students: {
+      id: string
+      first_name: string
+      last_name: string
+      student_id: string
+      school_id: string
+    } | null
+  }>
 }
 
 // Helper function to get user's organization schools
@@ -65,16 +86,20 @@ const getUserOrganizationSchools = async (organizationId: string): Promise<strin
 const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => ({
   id: meeting.id,
   meeting_title: meeting.meeting_title,
-  student_id: meeting.student_id,
-  meeting_facilitator: meeting.meeting_facilitator,
-  attendees: meeting.attendees,
-  sessions_attended: meeting.sessions_attended,
-  meeting_notes: meeting.meeting_notes,
-  additional_notes: meeting.additional_notes,
   meeting_date: meeting.meeting_date,
+  attendees: meeting.attendees,
+  additional_notes: meeting.additional_notes,
+  facilitator_id: meeting.facilitator_id,
   created_at: meeting.created_at,
   updated_at: meeting.updated_at,
-  student: meeting.students,
+  facilitator: meeting.facilitator,
+  student_updates: meeting.monthly_meeting_student_updates.map(update => ({
+    id: update.id,
+    student_id: update.student_id,
+    sessions_attended: update.sessions_attended,
+    meeting_notes: update.meeting_notes,
+    student: update.students,
+  })),
 })
 
 export const monthlyMeetingsApi = {
@@ -91,75 +116,46 @@ export const monthlyMeetingsApi = {
         organizationSchoolIds = await getUserOrganizationSchools(organizationId)
       }
 
-      // Build base query
+      // Build base query with student updates
       const query = supabase.from('monthly_meetings').select(
         `
           *,
-          students (
+          facilitator:users!facilitator_id (
             id,
             first_name,
             last_name,
+            email
+          ),
+          monthly_meeting_student_updates (
+            id,
             student_id,
-            school_id
+            sessions_attended,
+            meeting_notes,
+            students (
+              id,
+              first_name,
+              last_name,
+              student_id,
+              school_id
+            )
           )
         `
       )
 
-      const { data: initialData, error } = await query
+      const { data, error } = await query
         .order('meeting_date', { ascending: false })
         .limit(10000)
 
-      let data = initialData
-
       if (error) throw error
-
-      // If organization schools are specified, check if any are missing from the main query
-      if (organizationSchoolIds.length > 0) {
-        const presentSchoolIds = new Set(
-          (data || []).map((m: RawMonthlyMeeting) => m.students?.school_id).filter(Boolean)
-        )
-
-        const missingSchoolIds = organizationSchoolIds.filter(
-          schoolId => !presentSchoolIds.has(schoolId)
-        )
-
-        // If any organization schools are missing, fetch them specifically
-        if (missingSchoolIds.length > 0) {
-          const targetQuery = supabase
-            .from('monthly_meetings')
-            .select(
-              `
-              *,
-              students!inner (
-                id,
-                first_name,
-                last_name,
-                student_id,
-                school_id
-              )
-            `
-            )
-            .in('students.school_id', missingSchoolIds)
-            .order('meeting_date', { ascending: false })
-
-          const { data: targetData, error: targetError } = await targetQuery
-
-          if (!targetError && targetData && targetData.length > 0) {
-            // Merge the targeted data with the main data
-            const mergedData = [...(data || []), ...targetData]
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            data = mergedData as any[]
-          }
-        }
-      }
 
       const transformedData: MonthlyMeeting[] = (data || []).map(transformMonthlyMeeting)
 
       // Filter by organization schools if provided
       if (organizationSchoolIds.length > 0) {
-        return transformedData.filter(
-          meeting =>
-            meeting.student?.school_id && organizationSchoolIds.includes(meeting.student.school_id)
+        return transformedData.filter(meeting =>
+          meeting.student_updates?.some(
+            update => update.student?.school_id && organizationSchoolIds.includes(update.student.school_id)
+          )
         )
       }
 
@@ -176,22 +172,34 @@ export const monthlyMeetingsApi = {
     userRole?: 'admin' | 'slp' | 'supervisor'
   ): Promise<MonthlyMeeting[]> => {
     try {
-      // Build base query for specific student
+      // Query monthly meetings that have updates for this student
       const query = supabase
         .from('monthly_meetings')
         .select(
           `
           *,
-          students (
+          facilitator:users!facilitator_id (
             id,
             first_name,
             last_name,
+            email
+          ),
+          monthly_meeting_student_updates!inner (
+            id,
             student_id,
-            school_id
+            sessions_attended,
+            meeting_notes,
+            students (
+              id,
+              first_name,
+              last_name,
+              student_id,
+              school_id
+            )
           )
         `
         )
-        .eq('student_id', studentId)
+        .eq('monthly_meeting_student_updates.student_id', studentId)
 
       const { data, error } = await query.order('meeting_date', { ascending: false })
 
@@ -226,27 +234,28 @@ export const monthlyMeetingsApi = {
         schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
       }
 
-      // First, let's check all monthly meetings without filtering by school
-      const { data: allMeetings, error: allError } = await supabase
-        .from('monthly_meetings')
-        .select('*')
-        .order('meeting_date', { ascending: false })
-
-      if (allError) console.error('Error fetching all meetings:', allError)
-
-      // Build base query for specific school
-      // Note: We can't filter by school_id directly since student_id can be null
-      // We'll fetch all meetings and filter client-side, or we need a different approach
-      // For now, let's just get all meetings since student_id is optional
+      // Build base query with student updates
       let query = supabase.from('monthly_meetings').select(
         `
           *,
-          students (
+          facilitator:users!facilitator_id (
             id,
             first_name,
             last_name,
+            email
+          ),
+          monthly_meeting_student_updates (
+            id,
             student_id,
-            school_id
+            sessions_attended,
+            meeting_notes,
+            students (
+              id,
+              first_name,
+              last_name,
+              student_id,
+              school_id
+            )
           )
         `
       )
@@ -262,7 +271,10 @@ export const monthlyMeetingsApi = {
 
       const transformedData: MonthlyMeeting[] = (data || []).map(transformMonthlyMeeting)
 
-      return transformedData
+      // Filter by school - meetings that have at least one student update from this school
+      return transformedData.filter(meeting =>
+        meeting.student_updates?.some(update => update.student?.school_id === schoolId)
+      )
     } catch (error) {
       console.error('Error fetching monthly meetings by school:', error)
       throw error
@@ -271,13 +283,15 @@ export const monthlyMeetingsApi = {
 
   createMonthlyMeeting: async (data: {
     meeting_title: string
-    student_id: string | null
-    meeting_facilitator?: string | null
-    attendees: string[]
-    sessions_attended?: number | null
-    meeting_notes?: string | null
-    additional_notes?: string | null
     meeting_date: string
+    attendees: string[]
+    additional_notes?: string | null
+    facilitator_id?: string | null
+    student_updates?: Array<{
+      student_id: string
+      sessions_attended?: number | null
+      meeting_notes?: string | null
+    }>
   }): Promise<MonthlyMeeting> => {
     try {
       // Validate required fields
@@ -285,48 +299,90 @@ export const monthlyMeetingsApi = {
         throw new Error('Missing required fields: meeting_date')
       }
 
+      if (!data.meeting_title) {
+        throw new Error('Missing required fields: meeting_title')
+      }
+
       if (!data.attendees || data.attendees.length === 0) {
         throw new Error('At least one attendee is required')
       }
 
-      const insertData = {
+      // Insert the meeting
+      const meetingData = {
         meeting_title: data.meeting_title,
-        student_id: data.student_id || null,
-        facilitator_id: data.meeting_facilitator || null,
-        attendees: data.attendees,
-        sessions_attended: data.sessions_attended || null,
-        meeting_notes: data.meeting_notes || null,
-        additional_notes: data.additional_notes || null,
         meeting_date: data.meeting_date,
+        attendees: data.attendees,
+        additional_notes: data.additional_notes || null,
+        facilitator_id: data.facilitator_id || null,
       }
 
-      const { data: newMeeting, error } = await supabase
+      const { data: newMeeting, error: meetingError } = await supabase
         .from('monthly_meetings')
-        .insert(insertData)
-        .select(
-          `
-        *,
-        students (
-          id,
-          first_name,
-          last_name,
-          student_id,
-          school_id
-        )
-      `
-        )
+        .insert(meetingData)
+        .select()
         .single()
 
-      if (error) {
-        console.error('Supabase error:', error)
-        throw error
+      if (meetingError) {
+        console.error('Supabase error:', meetingError)
+        throw meetingError
       }
 
       if (!newMeeting) {
         throw new Error('No data returned from insert operation')
       }
 
-      return transformMonthlyMeeting(newMeeting)
+      // Insert student updates if provided
+      if (data.student_updates && data.student_updates.length > 0) {
+        const studentUpdateData = data.student_updates.map(update => ({
+          monthly_meeting_id: newMeeting.id,
+          student_id: update.student_id,
+          sessions_attended: update.sessions_attended || null,
+          meeting_notes: update.meeting_notes || null,
+        }))
+
+        const { error: updatesError } = await supabase
+          .from('monthly_meeting_student_updates')
+          .insert(studentUpdateData)
+
+        if (updatesError) {
+          console.error('Error inserting student updates:', updatesError)
+          throw updatesError
+        }
+      }
+
+      // Fetch the complete meeting with all relations
+      const { data: completeMeeting, error: fetchError } = await supabase
+        .from('monthly_meetings')
+        .select(
+          `
+          *,
+          facilitator:users!facilitator_id (
+            id,
+            first_name,
+            last_name,
+            email
+          ),
+          monthly_meeting_student_updates (
+            id,
+            student_id,
+            sessions_attended,
+            meeting_notes,
+            students (
+              id,
+              first_name,
+              last_name,
+              student_id,
+              school_id
+            )
+          )
+        `
+        )
+        .eq('id', newMeeting.id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      return transformMonthlyMeeting(completeMeeting)
     } catch (error) {
       console.error('Error creating monthly meeting:', error)
       throw error
@@ -336,12 +392,11 @@ export const monthlyMeetingsApi = {
   updateMonthlyMeeting: async (
     id: string,
     data: Partial<{
-      student_id: string
-      attendees: string[]
-      sessions_attended: number | null
-      meeting_notes: string | null
-      additional_notes: string | null
+      meeting_title: string
       meeting_date: string
+      attendees: string[]
+      additional_notes: string | null
+      facilitator_id: string | null
     }>
   ): Promise<MonthlyMeeting> => {
     try {
@@ -351,15 +406,27 @@ export const monthlyMeetingsApi = {
         .eq('id', id)
         .select(
           `
-        *,
-        students (
-          id,
-          first_name,
-          last_name,
-          student_id,
-          school_id
-        )
-      `
+          *,
+          facilitator:users!facilitator_id (
+            id,
+            first_name,
+            last_name,
+            email
+          ),
+          monthly_meeting_student_updates (
+            id,
+            student_id,
+            sessions_attended,
+            meeting_notes,
+            students (
+              id,
+              first_name,
+              last_name,
+              student_id,
+              school_id
+            )
+          )
+        `
         )
         .single()
 
@@ -368,6 +435,103 @@ export const monthlyMeetingsApi = {
       return transformMonthlyMeeting(updatedMeeting)
     } catch (error) {
       console.error('Error updating monthly meeting:', error)
+      throw error
+    }
+  },
+
+  // New methods for managing student updates
+  addStudentUpdate: async (data: {
+    monthly_meeting_id: string
+    student_id: string
+    sessions_attended?: number | null
+    meeting_notes?: string | null
+  }): Promise<StudentUpdate> => {
+    try {
+      const { data: newUpdate, error } = await supabase
+        .from('monthly_meeting_student_updates')
+        .insert({
+          monthly_meeting_id: data.monthly_meeting_id,
+          student_id: data.student_id,
+          sessions_attended: data.sessions_attended || null,
+          meeting_notes: data.meeting_notes || null,
+        })
+        .select(
+          `
+          *,
+          students (
+            id,
+            first_name,
+            last_name,
+            student_id,
+            school_id
+          )
+        `
+        )
+        .single()
+
+      if (error) throw error
+
+      return {
+        id: newUpdate.id,
+        student_id: newUpdate.student_id,
+        sessions_attended: newUpdate.sessions_attended,
+        meeting_notes: newUpdate.meeting_notes,
+        student: newUpdate.students,
+      }
+    } catch (error) {
+      console.error('Error adding student update:', error)
+      throw error
+    }
+  },
+
+  updateStudentUpdate: async (
+    id: string,
+    data: Partial<{
+      sessions_attended: number | null
+      meeting_notes: string | null
+    }>
+  ): Promise<StudentUpdate> => {
+    try {
+      const { data: updatedUpdate, error } = await supabase
+        .from('monthly_meeting_student_updates')
+        .update(data)
+        .eq('id', id)
+        .select(
+          `
+          *,
+          students (
+            id,
+            first_name,
+            last_name,
+            student_id,
+            school_id
+          )
+        `
+        )
+        .single()
+
+      if (error) throw error
+
+      return {
+        id: updatedUpdate.id,
+        student_id: updatedUpdate.student_id,
+        sessions_attended: updatedUpdate.sessions_attended,
+        meeting_notes: updatedUpdate.meeting_notes,
+        student: updatedUpdate.students,
+      }
+    } catch (error) {
+      console.error('Error updating student update:', error)
+      throw error
+    }
+  },
+
+  deleteStudentUpdate: async (id: string): Promise<void> => {
+    try {
+      const { error } = await supabase.from('monthly_meeting_student_updates').delete().eq('id', id)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error deleting student update:', error)
       throw error
     }
   },
