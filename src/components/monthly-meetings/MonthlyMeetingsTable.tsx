@@ -33,13 +33,13 @@ import { MonthlyMeeting } from '@/api/monthlymeetings'
 interface MonthlyMeetingsTableProps {
   searchTerm: string
   dateRangeFilter: string
-  statusFilter: string
+  facilitatorFilter: string
 }
 
 const MonthlyMeetingsTable = ({
   searchTerm,
   dateRangeFilter,
-  statusFilter,
+  facilitatorFilter,
 }: MonthlyMeetingsTableProps) => {
   const { currentSchool } = useOrganization()
   const [selectedMeetings, setSelectedMeetings] = useState<MonthlyMeeting[]>([])
@@ -71,11 +71,13 @@ const MonthlyMeetingsTable = ({
     const matchesSearch =
       meeting.meeting_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       meeting.attendees?.some(p => p.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      meeting.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      meeting.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      meeting.student_updates?.some(update =>
+        update.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        update.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
 
-    // For now, we'll skip status filter since we don't have a status field in the API
-    const matchesStatus = true
+    // Filter by facilitator
+    const matchesFacilitator = facilitatorFilter === 'all' || meeting.facilitator_id === facilitatorFilter
 
     // Apply client-side date range filter for filters other than 'all' and 'school_year'
     // (those are handled at the API level)
@@ -109,7 +111,7 @@ const MonthlyMeetingsTable = ({
       }
     }
 
-    return matchesSearch && matchesStatus && matchesDateRange
+    return matchesSearch && matchesFacilitator && matchesDateRange
   })
 
   // Sort meetings
@@ -238,7 +240,7 @@ const MonthlyMeetingsTable = ({
                 </Button>
               </TableHead>
               <TableHead className='w-1/4 min-w-[180px]'>Attendees</TableHead>
-              <TableHead className='w-1/6 min-w-[100px]'>Status</TableHead>
+              <TableHead className='w-1/6 min-w-[120px]'>Facilitator</TableHead>
               <TableHead className='w-12'></TableHead>
             </tr>
           </TableHeader>
@@ -280,7 +282,6 @@ const MonthlyMeetingsTable = ({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    <div className='flex items-center gap-2'>{getStatusBadge(meeting.meeting_date)}</div>
                     <div className='text-sm text-gray-600 space-y-1'>
                       <p>
                         <span className='font-medium'>Date:</span>{' '}
@@ -289,6 +290,12 @@ const MonthlyMeetingsTable = ({
                       <p>
                         <span className='font-medium'>Attendees:</span>{' '}
                         {meeting.attendees.join(', ')}
+                      </p>
+                      <p>
+                        <span className='font-medium'>Facilitator:</span>{' '}
+                        {meeting.facilitator
+                          ? `${meeting.facilitator.first_name} ${meeting.facilitator.last_name}`
+                          : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -318,7 +325,11 @@ const MonthlyMeetingsTable = ({
                   </div>
                 </TableCell>
                 <TableCell className='max-w-0'>
-                  <div className='w-full'>{getStatusBadge(meeting.meeting_date)}</div>
+                  <div className='truncate'>
+                    {meeting.facilitator
+                      ? `${meeting.facilitator.first_name} ${meeting.facilitator.last_name}`
+                      : 'N/A'}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

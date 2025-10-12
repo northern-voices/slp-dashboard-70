@@ -14,7 +14,7 @@ const MonthlyMeetingsContent = () => {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [facilitatorFilter, setFacilitatorFilter] = useState('all')
 
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
@@ -62,14 +62,14 @@ const MonthlyMeetingsContent = () => {
                   setSearchTerm={setSearchTerm}
                   dateRangeFilter={dateRangeFilter}
                   setDateRangeFilter={setDateRangeFilter}
-                  statusFilter={statusFilter}
-                  setStatusFilter={setStatusFilter}
+                  facilitatorFilter={facilitatorFilter}
+                  setFacilitatorFilter={setFacilitatorFilter}
                 />
 
                 <MonthlyMeetingsTable
                   searchTerm={searchTerm}
                   dateRangeFilter={dateRangeFilter}
-                  statusFilter={statusFilter}
+                  facilitatorFilter={facilitatorFilter}
                 />
               </div>
             </div>

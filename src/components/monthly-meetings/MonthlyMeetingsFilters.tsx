@@ -12,14 +12,15 @@ import {
 } from '@/components/ui/select'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react'
+import { useGetUsers } from '@/hooks/users/use-users'
 
 interface MonthlyMeetingsFiltersProps {
   searchTerm: string
   setSearchTerm: (value: string) => void
   dateRangeFilter: string
   setDateRangeFilter: (value: string) => void
-  statusFilter: string
-  setStatusFilter: (value: string) => void
+  facilitatorFilter: string
+  setFacilitatorFilter: (value: string) => void
 }
 
 const MonthlyMeetingsFilters = ({
@@ -27,19 +28,20 @@ const MonthlyMeetingsFilters = ({
   setSearchTerm,
   dateRangeFilter,
   setDateRangeFilter,
-  statusFilter,
-  setStatusFilter,
+  facilitatorFilter,
+  setFacilitatorFilter,
 }: MonthlyMeetingsFiltersProps) => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
+  const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
 
   // Check if any filters are active
-  const hasActiveFilters = searchTerm || dateRangeFilter !== 'all' || statusFilter !== 'all'
+  const hasActiveFilters = searchTerm || dateRangeFilter !== 'all' || facilitatorFilter !== 'all'
 
   // Clear all filters
   const clearAllFilters = () => {
     setSearchTerm('')
     setDateRangeFilter('all')
-    setStatusFilter('all')
+    setFacilitatorFilter('all')
   }
 
   // Get active filter count
@@ -47,7 +49,7 @@ const MonthlyMeetingsFilters = ({
     let count = 0
     if (searchTerm) count++
     if (dateRangeFilter !== 'all') count++
-    if (statusFilter !== 'all') count++
+    if (facilitatorFilter !== 'all') count++
     return count
   }
 
@@ -125,16 +127,18 @@ const MonthlyMeetingsFilters = ({
               </div>
 
               <div className='space-y-2'>
-                <label className='text-sm font-medium text-gray-700'>Status</label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <label className='text-sm font-medium text-gray-700'>Facilitator</label>
+                <Select value={facilitatorFilter} onValueChange={setFacilitatorFilter} disabled={isLoadingUsers}>
                   <SelectTrigger>
-                    <SelectValue placeholder='All Statuses' />
+                    <SelectValue placeholder={isLoadingUsers ? 'Loading...' : 'All Facilitators'} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='all'>All Statuses</SelectItem>
-                    <SelectItem value='scheduled'>Scheduled</SelectItem>
-                    <SelectItem value='completed'>Completed</SelectItem>
-                    <SelectItem value='cancelled'>Cancelled</SelectItem>
+                    <SelectItem value='all'>All Facilitators</SelectItem>
+                    {users.map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.first_name} {user.last_name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
