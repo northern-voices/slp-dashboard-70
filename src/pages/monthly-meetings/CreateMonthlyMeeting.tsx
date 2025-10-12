@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, Calendar, UserPlus } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -50,12 +51,19 @@ const CreateMonthlyMeetingContent = () => {
     currentSchool?.id
   )
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
+  const { user } = useAuth()
 
   const [formData, setFormData] = useState({
     meeting_title: '',
-    facilitator_id: '',
+    facilitator_id: user?.id || '',
     attendees: '',
-    meeting_date: new Date().toISOString().split('T')[0],
+    meeting_date: (() => {
+      const today = new Date()
+      const year = today.getFullYear()
+      const month = String(today.getMonth() + 1).padStart(2, '0')
+      const day = String(today.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    })(),
     additional_notes: '',
   })
 
