@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useCreateMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
+import { useGetUsers } from '@/hooks/users/use-users'
 import { GRADE_MAPPING } from '@/constants/app'
 import {
   Select,
@@ -48,14 +49,7 @@ const CreateMonthlyMeetingContent = () => {
   const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
     currentSchool?.id
   )
-
-  // Temporary facilitator data
-  const facilitators = [
-    { id: '1', name: 'Lisa Brillinger' },
-    { id: '2', name: 'Cheryl Mullner' },
-    { id: '3', name: 'Danielle Ewanus' },
-    { id: '4', name: 'Emily Davis' },
-  ]
+  const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
 
   const [formData, setFormData] = useState({
     meeting_title: '',
@@ -216,7 +210,7 @@ const CreateMonthlyMeetingContent = () => {
       meeting_title: formData.meeting_title.trim(),
       meeting_date: formData.meeting_date,
       attendees: attendeesList,
-      facilitator_id: 'ec8a31f7-be34-4f87-abad-98a5a0eef3cf', // Temporary hardcoded for testing
+      facilitator_id: formData.facilitator_id || null,
       additional_notes: formData.additional_notes.trim() || null,
       student_updates: student_updates.length > 0 ? student_updates : undefined,
     }
@@ -330,14 +324,15 @@ const CreateMonthlyMeetingContent = () => {
                           value={formData.facilitator_id}
                           onValueChange={value =>
                             setFormData(prev => ({ ...prev, facilitator_id: value }))
-                          }>
+                          }
+                          disabled={isLoadingUsers}>
                           <SelectTrigger>
-                            <SelectValue placeholder='Select a facilitator' />
+                            <SelectValue placeholder={isLoadingUsers ? 'Loading...' : 'Select a facilitator'} />
                           </SelectTrigger>
                           <SelectContent>
-                            {facilitators.map(facilitator => (
-                              <SelectItem key={facilitator.id} value={facilitator.id}>
-                                {facilitator.name}
+                            {users.map(user => (
+                              <SelectItem key={user.id} value={user.id}>
+                                {user.first_name} {user.last_name}
                               </SelectItem>
                             ))}
                           </SelectContent>
