@@ -71,8 +71,8 @@ const CreateMonthlyMeetingContent = () => {
     additional_notes: '',
   })
 
-  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>(null)
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
+  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [showStudentModal, setShowStudentModal] = useState(false)
