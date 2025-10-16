@@ -54,7 +54,11 @@ const CreateMonthlyMeetingContent = () => {
   const { user } = useAuth()
 
   const [formData, setFormData] = useState({
-    meeting_title: '',
+    meeting_title: (() => {
+      const today = new Date()
+      const monthName = today.toLocaleDateString('en-US', { month: 'long' })
+      return `${monthName} Monthly Meeting`
+    })(),
     facilitator_id: user?.id || '',
     attendees: '',
     meeting_date: (() => {
