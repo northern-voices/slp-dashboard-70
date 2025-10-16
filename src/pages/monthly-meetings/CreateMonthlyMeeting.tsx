@@ -6,7 +6,16 @@ import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, Calendar, UserPlus, ChevronUp, ChevronDown, CheckCircle2 } from 'lucide-react'
+import {
+  ChevronLeft,
+  Calendar,
+  UserPlus,
+  ChevronUp,
+  ChevronDown,
+  CheckCircle2,
+  X,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -60,7 +69,7 @@ const CreateMonthlyMeetingContent = () => {
       return `${monthName} Monthly Meeting`
     })(),
     facilitator_id: user?.id || '',
-    attendees: '',
+    attendees: [] as string[],
     meeting_date: (() => {
       const today = new Date()
       const year = today.getFullYear()
@@ -80,6 +89,36 @@ const CreateMonthlyMeetingContent = () => {
   const [studentData, setStudentData] = useState<
     Record<string, { sessions_attended: number | null; meeting_notes: string }>
   >({})
+  const [attendeeInput, setAttendeeInput] = useState('')
+
+  const handleAddAttendee = () => {
+    const trimmedInput = attendeeInput.trim()
+    if (trimmedInput && !formData.attendees.includes(trimmedInput)) {
+      setFormData(prev => ({
+        ...prev,
+        attendees: [...prev.attendees, trimmedInput],
+      }))
+      setAttendeeInput('')
+    }
+  }
+
+  const handleRemoveAttendee = (attendeeToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      attendees: prev.attendees.filter(attendee => attendee !== attendeeToRemove),
+    }))
+  }
+
+  const handleAttendeeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleAddAttendee()
+    } else if (e.key === 'Backspace' && attendeeInput === '' && formData.attendees.length > 0) {
+      const newAttendees = [...formData.attendees]
+      newAttendees.pop()
+      setFormData(prev => ({ ...prev, attendees: newAttendees }))
+    }
+  }
 
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
@@ -205,26 +244,10 @@ const CreateMonthlyMeetingContent = () => {
     }
 
     // Validate attendees
-    if (!formData.attendees.trim()) {
+    if (formData.attendees.length === 0) {
       toast({
         title: 'Validation Error',
-        description: 'Attendees cannot be empty.',
-        variant: 'destructive',
-      })
-      setIsSubmitting(false)
-      return
-    }
-
-    // Validate attendees format (must be comma-separated)
-    const attendeesList = formData.attendees
-      .split(',')
-      .map(a => a.trim())
-      .filter(a => a.length > 0)
-
-    if (attendeesList.length === 0) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please provide at least one attendee.',
+        description: 'Please add at least one attendee.',
         variant: 'destructive',
       })
       setIsSubmitting(false)
@@ -244,7 +267,7 @@ const CreateMonthlyMeetingContent = () => {
     const submitData = {
       meeting_title: formData.meeting_title.trim(),
       meeting_date: formData.meeting_date,
-      attendees: attendeesList,
+      attendees: formData.attendees,
       facilitator_id: formData.facilitator_id || null,
       additional_notes: formData.additional_notes.trim() || null,
       student_updates: student_updates.length > 0 ? student_updates : undefined,
@@ -382,7 +405,7 @@ const CreateMonthlyMeetingContent = () => {
                         </Select>
                       </div>
 
-                      <div className='space-y-2'>
+                      {/* <div className='space-y-2'>
                         <Label htmlFor='attendees'>Attendees *</Label>
                         <Input
                           id='attendees'
@@ -394,6 +417,52 @@ const CreateMonthlyMeetingContent = () => {
                         />
                         <p className='text-sm text-gray-500'>
                           Separate multiple attendees with commas
+                        </p>
+                      </div> */}
+
+                      <div className='space-y-2'>
+                        <Label htmlFor='attendees'>Attendees *</Label>
+                        <div
+                          className={cn(
+                            'min-h-[42px] w-full rounded-md border border-input bg-background',
+                            'px-3 py-2 text-sm ring-offset-background',
+                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
+                          )}>
+                          <div className='flex flex-wrap gap-2'>
+                            {/* Display existing attendees as badges */}
+                            {formData.attendees.map((attendee, index) => (
+                              <Badge
+                                key={index}
+                                variant='secondary'
+                                className='flex items-center gap-1 px-2 py-1'>
+                                <span>{attendee}</span>
+                                <button
+                                  type='button'
+                                  onClick={() => handleRemoveAttendee(attendee)}
+                                  className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
+                                  <X className='h-3 w-3' />
+                                </button>
+                              </Badge>
+                            ))}
+
+                            {/* Input for new attendee */}
+                            <input
+                              type='text'
+                              id='attendees'
+                              value={attendeeInput}
+                              onChange={e => setAttendeeInput(e.target.value)}
+                              onKeyDown={handleAttendeeKeyDown}
+                              onBlur={handleAddAttendee}
+                              placeholder={
+                                formData.attendees.length === 0 ? 'Type name and press Enter' : ''
+                              }
+                              className='flex-1 min-w-[120px] outline-none bg-transparent'
+                            />
+                          </div>
+                        </div>
+                        <p className='text-sm text-gray-500'>
+                          Type a name and press Enter to add. Click the × or hit Backspace to
+                          remove.
                         </p>
                       </div>
 
