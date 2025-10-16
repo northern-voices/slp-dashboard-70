@@ -74,7 +74,7 @@ const CreateMonthlyMeetingContent = () => {
   const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
   const [showStudentModal, setShowStudentModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
   const [studentData, setStudentData] = useState<
@@ -451,9 +451,10 @@ const CreateMonthlyMeetingContent = () => {
 
                               // Calculate pagination
                               const totalStudents = filteredStudents.length
-                              const totalPages = Math.ceil(totalStudents / itemsPerPage)
-                              const startIndex = (currentPage - 1) * itemsPerPage
-                              const endIndex = startIndex + itemsPerPage
+                              const effectiveItemsPerPage = itemsPerPage === 'all' ? totalStudents : itemsPerPage
+                              const totalPages = Math.ceil(totalStudents / effectiveItemsPerPage)
+                              const startIndex = (currentPage - 1) * effectiveItemsPerPage
+                              const endIndex = startIndex + effectiveItemsPerPage
                               const paginatedStudents = filteredStudents.slice(startIndex, endIndex)
 
                               return filteredStudents.length > 0 ? (
@@ -537,7 +538,7 @@ const CreateMonthlyMeetingContent = () => {
                                       <Select
                                         value={itemsPerPage.toString()}
                                         onValueChange={value => {
-                                          setItemsPerPage(Number(value))
+                                          setItemsPerPage(value === 'all' ? 'all' : Number(value))
                                           setCurrentPage(1) // Reset to first page when changing items per page
                                         }}>
                                         <SelectTrigger id='itemsPerPage' className='w-[80px] h-9'>
@@ -548,6 +549,7 @@ const CreateMonthlyMeetingContent = () => {
                                           <SelectItem value='10'>10</SelectItem>
                                           <SelectItem value='20'>20</SelectItem>
                                           <SelectItem value='50'>50</SelectItem>
+                                          <SelectItem value='all'>All</SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
