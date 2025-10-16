@@ -6,7 +6,7 @@ import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, Calendar, UserPlus, ChevronUp, ChevronDown } from 'lucide-react'
+import { ChevronLeft, Calendar, UserPlus, ChevronUp, ChevronDown, CheckCircle2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -285,6 +285,12 @@ const CreateMonthlyMeetingContent = () => {
     }
   }
 
+  // Check if student has data entered
+  const hasStudentData = (studentId: string) => {
+    const data = studentData[studentId]
+    return data && (data.sessions_attended !== null || data.meeting_notes.trim() !== '')
+  }
+
   return (
     <SidebarProvider>
       <div className='min-h-screen flex w-full'>
@@ -451,7 +457,8 @@ const CreateMonthlyMeetingContent = () => {
 
                               // Calculate pagination
                               const totalStudents = filteredStudents.length
-                              const effectiveItemsPerPage = itemsPerPage === 'all' ? totalStudents : itemsPerPage
+                              const effectiveItemsPerPage =
+                                itemsPerPage === 'all' ? totalStudents : itemsPerPage
                               const totalPages = Math.ceil(totalStudents / effectiveItemsPerPage)
                               const startIndex = (currentPage - 1) * effectiveItemsPerPage
                               const endIndex = startIndex + effectiveItemsPerPage
@@ -488,7 +495,8 @@ const CreateMonthlyMeetingContent = () => {
                                         <TableHead className='w-1/6 min-w-[120px]'>
                                           Date Created
                                         </TableHead>
-                                        <TableHead className='w-[100px] text-center'></TableHead>
+                                        <TableHead className='w-[60px] text-center'></TableHead>
+                                        <TableHead className='w-[60px] text-center'></TableHead>
                                       </tr>
                                     </TableHeader>
                                     <TableBody>
@@ -521,6 +529,11 @@ const CreateMonthlyMeetingContent = () => {
                                               className='h-8 w-8 p-0'>
                                               <UserPlus className='h-4 w-4' />
                                             </Button>
+                                          </TableCell>
+                                          <TableCell className='text-center'>
+                                            {hasStudentData(student.id) && (
+                                              <CheckCircle2 className='h-5 w-5 text-green-600 mx-auto' />
+                                            )}
                                           </TableCell>
                                         </ResponsiveTableRow>
                                       ))}
