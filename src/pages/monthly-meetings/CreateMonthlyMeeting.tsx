@@ -6,7 +6,7 @@ import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, Calendar, UserPlus } from 'lucide-react'
+import { ChevronLeft, Calendar, UserPlus, ChevronUp, ChevronDown } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -67,10 +67,8 @@ const CreateMonthlyMeetingContent = () => {
     additional_notes: '',
   })
 
-  const [gradeSortOrder, setGradeSortOrder] = useState<'default' | 'asc' | 'desc'>('default')
-  const [programStatusSortOrder, setProgramStatusSortOrder] = useState<'default' | 'asc' | 'desc'>(
-    'default'
-  )
+  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [showStudentModal, setShowStudentModal] = useState(false)
@@ -83,6 +81,31 @@ const CreateMonthlyMeetingContent = () => {
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
+
+  const handleSort = (field: 'grade' | 'program_status') => {
+    if (sortField !== field) {
+      setSortField(field)
+      setSortOrder('desc')
+    } else if (sortOrder === 'desc') {
+      setSortOrder('asc')
+    } else if (sortOrder === 'asc') {
+      setSortField(null)
+      setSortOrder(null)
+    }
+    setCurrentPage(1) // Reset to first page when sorting changes
+  }
+
+  const getSortIcon = (field: 'grade' | 'program_status') => {
+    if (sortField !== field) {
+      return <ChevronUp className='w-4 h-4 opacity-30' />
+    }
+    if (sortOrder === 'asc') {
+      return <ChevronUp className='w-4 h-4' />
+    } else if (sortOrder === 'desc') {
+      return <ChevronDown className='w-4 h-4' />
+    }
+    return <ChevronUp className='w-4 h-4 opacity-30' />
+  }
 
   // Helper function to get program status from latest speech screening
   const getProgramStatus = (student): string => {
@@ -335,7 +358,9 @@ const CreateMonthlyMeetingContent = () => {
                           }
                           disabled={isLoadingUsers}>
                           <SelectTrigger>
-                            <SelectValue placeholder={isLoadingUsers ? 'Loading...' : 'Select a facilitator'} />
+                            <SelectValue
+                              placeholder={isLoadingUsers ? 'Loading...' : 'Select a facilitator'}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {users.map(user => (
@@ -364,51 +389,7 @@ const CreateMonthlyMeetingContent = () => {
 
                       {/* Students Table Section */}
                       <div className='space-y-2'>
-                        <div className='flex items-center justify-between'>
-                          <Label>Students</Label>
-                          <div className='flex gap-3'>
-                            <div className='flex items-center gap-2'>
-                              <div className='flex items-center gap-2'>
-                                <Label htmlFor='gradeSort' className='text-sm text-gray-600'>
-                                  Sort by Grade:
-                                </Label>
-                                <Select
-                                  value={gradeSortOrder}
-                                  onValueChange={value => {
-                                    setGradeSortOrder(value as 'default' | 'asc' | 'desc')
-                                    setCurrentPage(1) // Reset to first page when sorting changes
-                                  }}>
-                                  <SelectTrigger id='gradeSort' className='w-[140px] h-9'>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value='default'>Default</SelectItem>
-                                    <SelectItem value='asc'>Ascending</SelectItem>
-                                    <SelectItem value='desc'>Descending</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <Label htmlFor='programStatusSort' className='text-sm text-gray-600'>
-                                Sort by Status:
-                              </Label>
-                              <Select
-                                value={programStatusSortOrder}
-                                onValueChange={value => {
-                                  setProgramStatusSortOrder(value as 'default' | 'asc' | 'desc')
-                                  setCurrentPage(1) // Reset to first page when sorting changes
-                                }}>
-                                <SelectTrigger id='programStatusSort' className='w-[140px] h-9'>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value='default'>Default</SelectItem>
-                                  <SelectItem value='asc'>Ascending</SelectItem>
-                                  <SelectItem value='desc'>Descending</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        </div>
+                        <Label>Students</Label>
                         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
                           {isLoadingStudents ? (
                             <div className='flex items-center justify-center py-8'>
@@ -426,23 +407,18 @@ const CreateMonthlyMeetingContent = () => {
                                   return status === 'sub' || status === 'qualifies'
                                 })
                                 .sort((a, b) => {
-                                  // Determine which sorting to apply first based on user selection
-                                  let primarySort = 0
-                                  let secondarySort = 0
-
-                                  // Sort by program status
-                                  if (programStatusSortOrder !== 'default') {
-                                    const statusA = getProgramStatus(a)
-                                    const statusB = getProgramStatus(b)
-                                    const statusOrder = { qualifies: 0, sub: 1 }
-                                    primarySort = statusOrder[statusA] - statusOrder[statusB]
-                                    if (programStatusSortOrder === 'desc') {
-                                      primarySort = -primarySort
-                                    }
+                                  // Apply default sorting if no sort is active
+                                  if (!sortField || !sortOrder) {
+                                    // Default: Sort by Date Created (most recent first)
+                                    const dateA = new Date(a.created_at).getTime()
+                                    const dateB = new Date(b.created_at).getTime()
+                                    return dateB - dateA
                                   }
 
-                                  // Sort by grade
-                                  if (gradeSortOrder !== 'default') {
+                                  let comparison = 0
+
+                                  // Sort by the selected field
+                                  if (sortField === 'grade') {
                                     const gradeA = a.grade || 'N/A'
                                     const gradeB = b.grade || 'N/A'
 
@@ -451,49 +427,22 @@ const CreateMonthlyMeetingContent = () => {
 
                                     // If grade not found in mapping, put at the end
                                     if (indexA === -1 && indexB === -1) {
-                                      secondarySort = 0
+                                      comparison = 0
                                     } else if (indexA === -1) {
-                                      secondarySort = 1
+                                      comparison = 1
                                     } else if (indexB === -1) {
-                                      secondarySort = -1
+                                      comparison = -1
                                     } else {
-                                      secondarySort = indexA - indexB
-                                      if (gradeSortOrder === 'desc') {
-                                        secondarySort = -secondarySort
-                                      }
+                                      comparison = indexA - indexB
                                     }
+                                  } else if (sortField === 'program_status') {
+                                    const statusA = getProgramStatus(a)
+                                    const statusB = getProgramStatus(b)
+                                    const statusOrder = { qualifies: 0, sub: 1 }
+                                    comparison = statusOrder[statusA] - statusOrder[statusB]
                                   }
 
-                                  // Apply default sorting if both are set to default
-                                  if (
-                                    programStatusSortOrder === 'default' &&
-                                    gradeSortOrder === 'default'
-                                  ) {
-                                    // Default: Sort by Date Created (most recent first)
-                                    const dateA = new Date(a.created_at).getTime()
-                                    const dateB = new Date(b.created_at).getTime()
-                                    return dateB - dateA
-                                  }
-
-                                  // If only program status sort is active, use it as primary
-                                  if (
-                                    programStatusSortOrder !== 'default' &&
-                                    gradeSortOrder === 'default'
-                                  ) {
-                                    return primarySort
-                                  }
-
-                                  // If only grade sort is active, use it as primary
-                                  if (
-                                    programStatusSortOrder === 'default' &&
-                                    gradeSortOrder !== 'default'
-                                  ) {
-                                    return secondarySort
-                                  }
-
-                                  // If both are active, apply program status first, then grade
-                                  if (primarySort !== 0) return primarySort
-                                  return secondarySort
+                                  return sortOrder === 'asc' ? comparison : -comparison
                                 })
 
                               // Calculate pagination
@@ -509,9 +458,27 @@ const CreateMonthlyMeetingContent = () => {
                                     <TableHeader>
                                       <tr>
                                         <TableHead className='w-1/4 min-w-[200px]'>Name</TableHead>
-                                        <TableHead className='w-1/6 min-w-[100px]'>Grade</TableHead>
+                                        <TableHead className='w-1/6 min-w-[100px]'>
+                                          <Button
+                                            type='button'
+                                            variant='ghost'
+                                            onClick={() => handleSort('grade')}
+                                            className='h-auto p-0 font-medium hover:bg-transparent'>
+                                            Grade
+                                            <span className='ml-1'>{getSortIcon('grade')}</span>
+                                          </Button>
+                                        </TableHead>
                                         <TableHead className='w-1/5 min-w-[150px]'>
-                                          Program Status
+                                          <Button
+                                            type='button'
+                                            variant='ghost'
+                                            onClick={() => handleSort('program_status')}
+                                            className='h-auto p-0 font-medium hover:bg-transparent'>
+                                            Program Status
+                                            <span className='ml-1'>
+                                              {getSortIcon('program_status')}
+                                            </span>
+                                          </Button>
                                         </TableHead>
                                         <TableHead className='w-1/6 min-w-[120px]'>
                                           Date Created

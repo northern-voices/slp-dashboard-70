@@ -151,6 +151,7 @@ export const monthlyMeetingsApi = {
       // Filter by organization schools if provided
       if (organizationSchoolIds.length > 0) {
         return transformedData.filter(meeting =>
+          meeting.student_updates?.length === 0 ||
           meeting.student_updates?.some(
             update =>
               update.student?.school_id && organizationSchoolIds.includes(update.student.school_id)
@@ -271,7 +272,9 @@ export const monthlyMeetingsApi = {
       const transformedData: MonthlyMeeting[] = (data || []).map(transformMonthlyMeeting)
 
       // Filter by school - meetings that have at least one student update from this school
+      // OR meetings with no student updates (show all meetings for the school)
       return transformedData.filter(meeting =>
+        meeting.student_updates?.length === 0 ||
         meeting.student_updates?.some(update => update.student?.school_id === schoolId)
       )
     } catch (error) {
