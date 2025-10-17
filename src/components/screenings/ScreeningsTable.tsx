@@ -377,18 +377,26 @@ const ScreeningsTable = ({
     const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
     const sub = screening.error_patterns?.screening_metadata?.sub
     const graduated = screening.error_patterns?.screening_metadata?.graduated
+    const pause = screening.error_patterns?.screening_metadata?.pause
     const noConsent = screening.result === 'non_registered_no_consent'
 
     if (noConsent) {
       return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     }
 
-    if (qualifies === undefined && sub === undefined && graduated === undefined) {
+    if (
+      qualifies === undefined &&
+      sub === undefined &&
+      graduated === undefined &&
+      pause === undefined
+    ) {
       return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
     }
 
     if (graduated) {
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+    } else if (pause) {
+      return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
     } else if (sub) {
       return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
     } else if (qualifies) {
@@ -406,7 +414,9 @@ const ScreeningsTable = ({
     const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
     const sub = screening.error_patterns?.screening_metadata?.sub
     const graduated = screening.error_patterns?.screening_metadata?.graduated
+    const pause = screening.error_patterns?.screening_metadata?.pause
 
+    if (pause) return 'pause'
     if (sub) return 'sub'
     if (graduated) return 'graduated'
     if (qualifies === true) return 'qualifies'
@@ -565,32 +575,44 @@ const ScreeningsTable = ({
       let qualifies_for_speech_program: boolean | undefined
       let sub: boolean | undefined
       let graduated: boolean | undefined
+      let pause: boolean | undefined
 
       switch (newProgram) {
         case 'qualifies':
           qualifies_for_speech_program = true
           sub = false
           graduated = false
+          pause = false
           break
         case 'not_in_program':
           qualifies_for_speech_program = false
           sub = false
           graduated = false
+          pause = false
           break
         case 'sub':
           qualifies_for_speech_program = undefined
           sub = true
           graduated = false
+          pause = false
+          break
+        case 'pause':
+          qualifies_for_speech_program = undefined
+          sub = false
+          graduated = false
+          pause = true
           break
         case 'graduated':
           qualifies_for_speech_program = undefined
           sub = false
           graduated = true
+          pause = false
           break
         default:
           qualifies_for_speech_program = undefined
           sub = undefined
           graduated = undefined
+          pause = undefined
       }
 
       // Update the error_patterns with the new qualification data
@@ -601,6 +623,7 @@ const ScreeningsTable = ({
           qualifies_for_speech_program,
           sub,
           graduated,
+          pause,
         },
       }
 
@@ -659,6 +682,7 @@ const ScreeningsTable = ({
     { value: 'qualifies', label: 'Qualifies' },
     { value: 'not_in_program', label: 'Not In Program' },
     { value: 'sub', label: 'Sub' },
+    { value: 'pause', label: 'Pause' },
     { value: 'not_set', label: 'Not Set' },
     { value: 'graduated', label: 'Graduated' },
   ]
