@@ -97,12 +97,19 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       const qualifies = errorPatterns?.screening_metadata?.qualifies_for_speech_program
       const sub = errorPatterns?.screening_metadata?.sub
       const graduated = errorPatterns?.screening_metadata?.graduated
+      const pause = errorPatterns?.screening_metadata?.pause
 
-      if (qualifies === undefined && sub === undefined && graduated === undefined) {
+      if (
+        qualifies === undefined &&
+        sub === undefined &&
+        graduated === undefined &&
+        pause === undefined
+      ) {
         return 'not_set'
       }
 
       if (graduated) return 'graduated'
+      if (pause) return 'pause'
       if (sub) return 'sub'
       if (qualifies) return 'qualifies'
       return 'not_in_program'
@@ -125,6 +132,10 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       case 'graduated':
         return (
           <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+        )
+      case 'pause':
+        return (
+          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
         )
       case 'sub':
         return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>

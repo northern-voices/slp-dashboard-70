@@ -39,7 +39,8 @@ const StudentTableFilters = ({
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
   // Check if any filters are active
-  const hasActiveFilters = searchTerm || gradeFilter !== 'all' || dateRangeFilter !== 'all' || programFilter !== 'all'
+  const hasActiveFilters =
+    searchTerm || gradeFilter !== 'all' || dateRangeFilter !== 'all' || programFilter !== 'all'
 
   // Clear all filters
   const clearAllFilters = () => {
