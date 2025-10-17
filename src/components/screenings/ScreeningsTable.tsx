@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -126,6 +127,7 @@ const ScreeningsTable = ({
 
   // Use mutation hooks
   const { mutate: updateSpeechScreening, isPending: isUpdating } = useUpdateSpeechScreening()
+  const { mutate: updateStudent } = useUpdateStudent()
   const { toast } = useToast()
 
   // Determine which data to use based on whether a school is selected
@@ -199,19 +201,19 @@ const ScreeningsTable = ({
 
     // Apply qualifies for speech program filter
     let matchesQualifiesForSpeechProgram = true
-    if (qualifiesForSpeechProgramFilter !== 'all' && screening.error_patterns?.screening_metadata) {
-      const qualifies = screening.error_patterns.screening_metadata.qualifies_for_speech_program
-      const sub = screening.error_patterns.screening_metadata.sub
-      const graduated = screening.error_patterns.screening_metadata.graduated
+    if (qualifiesForSpeechProgramFilter !== 'all') {
+      const programStatus = screening.program_status
 
-      if (qualifiesForSpeechProgramFilter === 'qualifies') {
-        matchesQualifiesForSpeechProgram = qualifies === true && !sub
+      if (qualifiesForSpeechProgramFilter === 'qualified') {
+        matchesQualifiesForSpeechProgram = programStatus === 'qualified'
       } else if (qualifiesForSpeechProgramFilter === 'not_in_program') {
-        matchesQualifiesForSpeechProgram = qualifies === false && !sub
+        matchesQualifiesForSpeechProgram = programStatus === 'not_in_program'
       } else if (qualifiesForSpeechProgramFilter === 'sub') {
-        matchesQualifiesForSpeechProgram = sub === true
+        matchesQualifiesForSpeechProgram = programStatus === 'sub'
+      } else if (qualifiesForSpeechProgramFilter === 'paused') {
+        matchesQualifiesForSpeechProgram = programStatus === 'paused'
       } else if (qualifiesForSpeechProgramFilter === 'graduated') {
-        matchesQualifiesForSpeechProgram = graduated === true
+        matchesQualifiesForSpeechProgram = programStatus === 'graduated'
       }
     }
 
@@ -374,54 +376,40 @@ const ScreeningsTable = ({
   }
 
   const getQualificationBadge = (screening: Screening) => {
-    const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
-    const sub = screening.error_patterns?.screening_metadata?.sub
-    const graduated = screening.error_patterns?.screening_metadata?.graduated
-    const pause = screening.error_patterns?.screening_metadata?.pause
+    const programStatus = screening.program_status
     const noConsent = screening.result === 'non_registered_no_consent'
 
     if (noConsent) {
       return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     }
 
-    if (
-      qualifies === undefined &&
-      sub === undefined &&
-      graduated === undefined &&
-      pause === undefined
-    ) {
-      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
-    }
-
-    if (graduated) {
-      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-    } else if (pause) {
-      return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
-    } else if (sub) {
-      return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
-    } else if (qualifies) {
-      return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
-    } else {
-      return (
-        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
-          Not In Program
-        </Badge>
-      )
+    switch (programStatus) {
+      case 'graduated':
+        return (
+          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+        )
+      case 'paused':
+        return (
+          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
+        )
+      case 'sub':
+        return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
+      case 'qualified':
+        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
+      case 'not_in_program':
+        return (
+          <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
+            Not In Program
+          </Badge>
+        )
+      case 'none':
+      default:
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
     }
   }
 
   const getProgramValue = (screening: Screening): string => {
-    const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
-    const sub = screening.error_patterns?.screening_metadata?.sub
-    const graduated = screening.error_patterns?.screening_metadata?.graduated
-    const pause = screening.error_patterns?.screening_metadata?.pause
-
-    if (pause) return 'pause'
-    if (sub) return 'sub'
-    if (graduated) return 'graduated'
-    if (qualifies === true) return 'qualifies'
-    if (qualifies === false) return 'not_in_program'
-    return 'not_set'
+    return screening.program_status || 'none'
   }
 
   const getProgramSelector = (screening: Screening) => {
@@ -438,7 +426,7 @@ const ScreeningsTable = ({
       return (
         <Select
           value={getProgramValue(screening)}
-          onValueChange={value => handleProgramChange(screening, value)}
+          onValueChange={value => handleProgramChange(screening, value as ProgramStatus)}
           disabled={isThisScreeningUpdating}>
           <SelectTrigger className='w-full h-8 border-none p-0 hover:bg-transparent focus:ring-0'>
             <SelectValue placeholder='Select program'>
@@ -567,70 +555,16 @@ const ScreeningsTable = ({
     }
   }
 
-  const handleProgramChange = (screening: Screening, newProgram: string) => {
+  type ProgramStatus = 'none' | 'qualified' | 'not_in_program' | 'sub' | 'paused' | 'graduated'
+
+  const handleProgramChange = (screening: Screening, newProgram: ProgramStatus) => {
     if (screening.source_table === 'speech') {
       setUpdatingProgramId(screening.id)
 
-      // Parse the program value to determine qualifies_for_speech_program, sub, and graduated
-      let qualifies_for_speech_program: boolean | undefined
-      let sub: boolean | undefined
-      let graduated: boolean | undefined
-      let pause: boolean | undefined
-
-      switch (newProgram) {
-        case 'qualifies':
-          qualifies_for_speech_program = true
-          sub = false
-          graduated = false
-          pause = false
-          break
-        case 'not_in_program':
-          qualifies_for_speech_program = false
-          sub = false
-          graduated = false
-          pause = false
-          break
-        case 'sub':
-          qualifies_for_speech_program = undefined
-          sub = true
-          graduated = false
-          pause = false
-          break
-        case 'pause':
-          qualifies_for_speech_program = undefined
-          sub = false
-          graduated = false
-          pause = true
-          break
-        case 'graduated':
-          qualifies_for_speech_program = undefined
-          sub = false
-          graduated = true
-          pause = false
-          break
-        default:
-          qualifies_for_speech_program = undefined
-          sub = undefined
-          graduated = undefined
-          pause = undefined
-      }
-
-      // Update the error_patterns with the new qualification data
-      const updatedErrorPatterns = {
-        ...screening.error_patterns,
-        screening_metadata: {
-          ...screening.error_patterns?.screening_metadata,
-          qualifies_for_speech_program,
-          sub,
-          graduated,
-          pause,
-        },
-      }
-
-      updateSpeechScreening(
+      updateStudent(
         {
-          id: screening.id,
-          data: { error_patterns: updatedErrorPatterns },
+          id: screening.student_id,
+          studentData: { program_status: newProgram },
         },
         {
           onSuccess: () => {
@@ -645,7 +579,7 @@ const ScreeningsTable = ({
             setUpdatingProgramId(null)
             toast({
               title: 'Error updating program qualification',
-              description: error.message || 'Failed to update program qualification',
+              description: error.message || 'Failed to update program status',
               variant: 'destructive',
             })
           },
@@ -679,10 +613,10 @@ const ScreeningsTable = ({
 
   // Define the program qualification options
   const programOptions = [
-    { value: 'qualifies', label: 'Qualifies' },
+    { value: 'qualified', label: 'Qualifies' },
     { value: 'not_in_program', label: 'Not In Program' },
     { value: 'sub', label: 'Sub' },
-    { value: 'pause', label: 'Pause' },
+    { value: 'paused', label: 'Pause' },
     { value: 'not_set', label: 'Not Set' },
     { value: 'graduated', label: 'Graduated' },
   ]
