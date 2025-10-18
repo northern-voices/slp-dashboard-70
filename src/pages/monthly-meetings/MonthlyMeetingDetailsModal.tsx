@@ -70,8 +70,8 @@ const MonthlyMeetingDetailsModal = ({
 
         <div className='space-y-6'>
           {/* Header Information */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg'>
-            <div>
+          <div className='flex flex-col md:flex-row md:justify-between gap-6 p-4 bg-gray-50 rounded-lg'>
+            <div className='md:w-2/3'>
               <h3 className='font-medium text-gray-900 mb-2'>Meeting Information</h3>
               <div className='space-y-2'>
                 <div className='flex items-center gap-2'>
@@ -88,7 +88,7 @@ const MonthlyMeetingDetailsModal = ({
               </div>
             </div>
 
-            <div>
+            <div className='md:w-1/3'>
               <h3 className='font-medium text-gray-900 mb-2'>Facilitator</h3>
               <div className='space-y-1'>
                 <div className='flex items-center gap-2'>
