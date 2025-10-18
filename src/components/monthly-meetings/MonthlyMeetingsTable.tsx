@@ -38,7 +38,10 @@ const MonthlyMeetingsTable = ({
   const [selectedMeetings, setSelectedMeetings] = useState<MonthlyMeeting[]>([])
   const [sortField, setSortField] = useState<'meeting_date' | 'meeting_title' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
-  const [isOpen, setIsOpen] = useState(true)
+  const [selectedMeetingForDetails, setSelectedMeetingForDetails] = useState<MonthlyMeeting | null>(
+    null
+  )
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
   // Fetch monthly meetings by school
   const {
@@ -185,6 +188,16 @@ const MonthlyMeetingsTable = ({
     }
   }
 
+  const handleViewDetails = (meeting: MonthlyMeeting) => {
+    setSelectedMeetingForDetails(meeting)
+    setIsDetailsModalOpen(true)
+  }
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false)
+    setSelectedMeetingForDetails(null)
+  }
+
   const isAllSelected =
     filteredMeetings.length > 0 && selectedMeetings.length === filteredMeetings.length
 
@@ -265,7 +278,7 @@ const MonthlyMeetingsTable = ({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align='end' className='bg-white'>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewDetails(meeting)}>
                             <Eye className='w-4 h-4 mr-2' />
                             View Details
                           </DropdownMenuItem>
@@ -339,7 +352,7 @@ const MonthlyMeetingsTable = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end' className='bg-white'>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleViewDetails(meeting)}>
                         <Eye className='w-4 h-4 mr-2' />
                         View Details
                       </DropdownMenuItem>
@@ -354,8 +367,6 @@ const MonthlyMeetingsTable = ({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
-
-                <MonthlyMeetingDetailsModal isOpen={isOpen} onClose={setIsOpen} meeting={meeting} />
               </ResponsiveTableRow>
             ))}
           </TableBody>
@@ -366,6 +377,13 @@ const MonthlyMeetingsTable = ({
             <p className='text-gray-500'>No monthly meetings found matching your criteria.</p>
           </div>
         )}
+
+        {/* Monthly Meeting Details Modal */}
+        <MonthlyMeetingDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={handleCloseDetailsModal}
+          meeting={selectedMeetingForDetails}
+        />
       </div>
     </div>
   )
