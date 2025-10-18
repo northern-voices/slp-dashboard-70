@@ -131,43 +131,47 @@ const MonthlyMeetingDetailsModal = ({
               <div className='grid grid-cols-1 gap-4'>
                 {meeting.student_updates.map((update, index) => (
                   <div key={index} className='p-4 bg-gray-50 rounded-lg border border-gray-200'>
-                    <div className='flex items-start justify-between mb-3'>
-                      <div className='flex items-center gap-2 flex-wrap'>
-                        <User className='w-4 h-4 text-gray-500' />
-                        <span className='font-medium text-gray-900'>
-                          {update.student?.first_name} {update.student?.last_name}
-                        </span>
-                        {update.student?.grade?.grade_level && (
-                          <Badge variant='outline' className='text-xs'>
-                            Grade {update.student.grade.grade_level}
-                          </Badge>
-                        )}
-                      </div>
+                    {/* Student Header */}
+                    <div className='flex items-center gap-2 flex-wrap mb-4'>
+                      <User className='w-4 h-4 text-gray-500' />
+                      <span className='font-medium text-gray-900'>
+                        {update.student?.first_name} {update.student?.last_name}
+                      </span>
+                      {update.student?.grade?.grade_level && (
+                        <Badge variant='outline' className='text-xs'>
+                          Grade {update.student.grade.grade_level}
+                        </Badge>
+                      )}
+                    </div>
 
-                      {/* Sessions Attended Badge */}
-                      {update.sessions_attended !== null &&
-                        update.sessions_attended !== undefined && (
-                          <Badge className='bg-blue-100 text-blue-800'>
+                    {/* Sessions and Notes Grid */}
+                    <div className='grid grid-cols-1 md:grid-cols-[200px_1fr] gap-1'>
+                      {/* Sessions Attended - Left Column */}
+                      <div className='flex flex-col gap-2'>
+                        <h5 className='text-xs font-semibold text-gray-600'>Sessions Attended:</h5>
+                        {update.sessions_attended !== null &&
+                        update.sessions_attended !== undefined ? (
+                          <Badge className='bg-blue-100 text-blue-800 w-fit'>
                             {update.sessions_attended}{' '}
                             {update.sessions_attended === 1 ? 'session' : 'sessions'}
                           </Badge>
+                        ) : (
+                          <span className='text-sm text-gray-500 italic'>Not recorded</span>
                         )}
-                    </div>
-
-                    {/* Meeting Notes */}
-                    {update.meeting_notes && (
-                      <div className='mt-2 pl-6'>
-                        <h5 className='text-xs font-semibold text-gray-600 mb-1'>Notes:</h5>
-                        <p className='text-sm text-gray-700 whitespace-pre-wrap'>
-                          {update.meeting_notes}
-                        </p>
                       </div>
-                    )}
 
-                    {/* Show message if no notes */}
-                    {!update.meeting_notes && (
-                      <p className='text-sm text-gray-500 italic pl-6'>No notes recorded</p>
-                    )}
+                      {/* Meeting Notes - Right Column */}
+                      <div className='flex flex-col gap-2'>
+                        <h5 className='text-xs font-semibold text-gray-600'>Notes:</h5>
+                        {update.meeting_notes ? (
+                          <p className='text-sm text-gray-700 whitespace-pre-wrap'>
+                            {update.meeting_notes}
+                          </p>
+                        ) : (
+                          <p className='text-sm text-gray-500 italic'>No notes recorded</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
