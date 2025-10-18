@@ -2,15 +2,7 @@ import React, { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Eye,
-  MoreHorizontal,
-  ChevronUp,
-  ChevronDown,
-  Trash2,
-  Edit,
-  Loader2,
-} from 'lucide-react'
+import { Eye, MoreHorizontal, ChevronUp, ChevronDown, Trash2, Edit, Loader2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +21,7 @@ import { format } from 'date-fns'
 import { useMonthlyMeetingsBySchool } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
+import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
 
 interface MonthlyMeetingsTableProps {
   searchTerm: string
@@ -45,6 +38,7 @@ const MonthlyMeetingsTable = ({
   const [selectedMeetings, setSelectedMeetings] = useState<MonthlyMeeting[]>([])
   const [sortField, setSortField] = useState<'meeting_date' | 'meeting_title' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
+  const [isOpen, setIsOpen] = useState(true)
 
   // Fetch monthly meetings by school
   const {
@@ -71,13 +65,15 @@ const MonthlyMeetingsTable = ({
     const matchesSearch =
       meeting.meeting_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       meeting.attendees?.some(p => p.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      meeting.student_updates?.some(update =>
-        update.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        update.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      meeting.student_updates?.some(
+        update =>
+          update.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          update.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
       )
 
     // Filter by facilitator
-    const matchesFacilitator = facilitatorFilter === 'all' || meeting.facilitator_id === facilitatorFilter
+    const matchesFacilitator =
+      facilitatorFilter === 'all' || meeting.facilitator_id === facilitatorFilter
 
     // Apply client-side date range filter for filters other than 'all' and 'school_year'
     // (those are handled at the API level)
@@ -167,7 +163,9 @@ const MonthlyMeetingsTable = ({
     if (date > now) {
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Scheduled</Badge>
     } else {
-      return <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Completed</Badge>
+      return (
+        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Completed</Badge>
+      )
     }
   }
 
@@ -315,7 +313,9 @@ const MonthlyMeetingsTable = ({
                   </div>
                 </TableCell>
                 <TableCell className='max-w-0'>
-                  <div className='truncate' title={format(new Date(meeting.meeting_date), 'MMM d, yyyy')}>
+                  <div
+                    className='truncate'
+                    title={format(new Date(meeting.meeting_date), 'MMM d, yyyy')}>
                     {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
                   </div>
                 </TableCell>
@@ -354,6 +354,8 @@ const MonthlyMeetingsTable = ({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
+
+                <MonthlyMeetingDetailsModal isOpen={isOpen} onClose={setIsOpen} meeting={meeting} />
               </ResponsiveTableRow>
             ))}
           </TableBody>

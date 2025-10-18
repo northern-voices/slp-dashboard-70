@@ -35,4 +35,42 @@ const MonthlyMeetingDetailsModal = ({
     }
     onClose()
   }
+
+  const getStatusBadge = (meetingDate: string) => {
+    const now = new Date()
+    const date = new Date(meetingDate)
+
+    if (date > now) {
+      return <Badge className='bg-blue-100 text-blue-800 font-medium'>Scheduled</Badge>
+    } else {
+      return <Badge className='bg-green-100 text-green-800 font-medium'>Completed</Badge>
+    }
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
+        <DialogHeader>
+          <div className='flex items-center justify-between'>
+            <DialogTitle className='flex items-center gap-2'>
+              <FileText className='w-5 h-5' />
+              Monthly Meeting Details
+            </DialogTitle>
+            <div className='flex items-center gap-2'>
+              <Button variant='outline' size='sm' onClick={handleEditMeeting}>
+                <Edit2 className='w-4 h-4 mr-2' />
+                Edit Meeting
+              </Button>
+
+              <Button variant='ghost' size='sm' onClick={onClose}>
+                <X className='w-4 h-4' />
+              </Button>
+            </div>
+          </div>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  )
 }
+
+export default MonthlyMeetingDetailsModal
