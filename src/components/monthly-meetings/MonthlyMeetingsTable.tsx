@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useToast } from '@/hooks/use-toast'
 import { Eye, MoreHorizontal, ChevronUp, ChevronDown, Trash2, Edit, Loader2 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -17,8 +18,19 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { format } from 'date-fns'
 import { useMonthlyMeetingsBySchool } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
+import { useDeleteMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
 import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
@@ -42,6 +54,10 @@ const MonthlyMeetingsTable = ({
     null
   )
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [meetingToDelete, setMeetingToDelete] = useState<MonthlyMeeting | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const { toast } = useToast()
+  const deleteMonthlyMeeting = useDeleteMonthlyMeeting()
 
   // Fetch monthly meetings by school
   const {
@@ -198,6 +214,41 @@ const MonthlyMeetingsTable = ({
     setSelectedMeetingForDetails(null)
   }
 
+  const handleDeleteMeeting = (meeting: MonthlyMeeting) => {
+    setMeetingToDelete(meeting)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteMeeting = () => {
+    if (!meetingToDelete) return
+
+    deleteMonthlyMeeting.mutate(meetingToDelete.id, {
+      onSuccess: () => {
+        toast({
+          title: 'Meeting Deleted',
+          description: 'The monthly meeting has been successfully deleted.',
+        })
+        setIsDeleteDialogOpen(false)
+        setMeetingToDelete(null)
+        // Remove from selected meetings if it was selected
+        setSelectedMeetings(selectedMeetings.filter(m => m.id !== meetingToDelete.id))
+      },
+      onError: error => {
+        console.error('Failed to delete meeting:', error)
+        toast({
+          title: 'Error',
+          description: 'Failed to delete the meeting. Please try again.',
+          variant: 'destructive',
+        })
+      },
+    })
+  }
+
+  const cancelDeleteMeeting = () => {
+    setIsDeleteDialogOpen(false)
+    setMeetingToDelete(null)
+  }
+
   const isAllSelected =
     filteredMeetings.length > 0 && selectedMeetings.length === filteredMeetings.length
 
@@ -286,7 +337,9 @@ const MonthlyMeetingsTable = ({
                             <Edit className='w-4 h-4 mr-2' />
                             Edit Meeting
                           </DropdownMenuItem>
-                          <DropdownMenuItem className='text-red-600'>
+                          <DropdownMenuItem
+                            className='text-red-600'
+                            onClick={() => handleDeleteMeeting(meeting)}>
                             <Trash2 className='w-4 h-4 mr-2' />
                             Delete
                           </DropdownMenuItem>
@@ -360,7 +413,11 @@ const MonthlyMeetingsTable = ({
                         <Edit className='w-4 h-4 mr-2' />
                         Edit Meeting
                       </DropdownMenuItem>
-                      <DropdownMenuItem className='text-red-600'>
+                      <DropdownMenuItem
+                        className='text-red-600'
+                        onClick={() => {
+                          handleDeleteMeeting(meeting)
+                        }}>
                         <Trash2 className='w-4 h-4 mr-2' />
                         Delete
                       </DropdownMenuItem>
@@ -384,6 +441,41 @@ const MonthlyMeetingsTable = ({
           onClose={handleCloseDetailsModal}
           meeting={selectedMeetingForDetails}
         />
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Monthly Meeting</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this meeting "{meetingToDelete?.meeting_title}"?
+                This action cannot be undone.
+                {meetingToDelete?.student_updates && meetingToDelete.student_updates.length > 0 && (
+                  <span className='block mt-2 font-medium text-orange-600'>
+                    This meeting has {meetingToDelete.student_updates.length} student update(s) that
+                    will also be deleted.
+                  </span>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={cancelDeleteMeeting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDeleteMeeting}
+                className='bg-red-600 hover:bg-red-700'
+                disabled={deleteMonthlyMeeting.isPending}>
+                {deleteMonthlyMeeting.isPending ? (
+                  <>
+                    <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )
