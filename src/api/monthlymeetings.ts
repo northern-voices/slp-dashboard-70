@@ -468,13 +468,57 @@ export const monthlyMeetingsApi = {
       attendees: string[]
       additional_notes: string | null
       facilitator_id: string | null
+      student_updates: Array<{
+        student_id: string
+        sessions_attended?: number | null
+        meeting_notes?: string | null
+      }>
     }>
   ): Promise<MonthlyMeeting> => {
     try {
+      // Extract student_updates from data
+      const { student_updates, ...meetingData } = data
+
+      // Update the meeting itself
       const { data: updatedMeeting, error } = await supabase
         .from('monthly_meetings')
-        .update(data)
+        .update(meetingData)
         .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      // Handle student updates if provided
+      if (student_updates !== undefined) {
+        // Delete existing student updates for this meeting
+        const { error: deleteError } = await supabase
+          .from('monthly_meeting_student_updates')
+          .delete()
+          .eq('monthly_meeting_id', id)
+
+        if (deleteError) throw deleteError
+
+        // Insert new student updates if there are any
+        if (student_updates.length > 0) {
+          const studentUpdateData = student_updates.map(update => ({
+            monthly_meeting_id: id,
+            student_id: update.student_id,
+            sessions_attended: update.sessions_attended || null,
+            meeting_notes: update.meeting_notes || null,
+          }))
+
+          const { error: insertError } = await supabase
+            .from('monthly_meeting_student_updates')
+            .insert(studentUpdateData)
+
+          if (insertError) throw insertError
+        }
+      }
+
+      // Fetch the complete updated meeting with all relations
+      const { data: completeMeeting, error: fetchError } = await supabase
+        .from('monthly_meetings')
         .select(
           `
           *,
@@ -507,11 +551,12 @@ export const monthlyMeetingsApi = {
           )
         `
         )
+        .eq('id', id)
         .single()
 
-      if (error) throw error
+      if (fetchError) throw fetchError
 
-      return transformMonthlyMeeting(updatedMeeting)
+      return transformMonthlyMeeting(completeMeeting)
     } catch (error) {
       console.error('Error updating monthly meeting:', error)
       throw error
