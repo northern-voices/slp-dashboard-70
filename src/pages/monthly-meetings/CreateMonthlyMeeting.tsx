@@ -6,15 +6,7 @@ import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import {
-  ChevronLeft,
-  Calendar,
-  UserPlus,
-  ChevronUp,
-  ChevronDown,
-  CheckCircle2,
-  X,
-} from 'lucide-react'
+import { ChevronLeft, Calendar, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -32,14 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  ResponsiveTable,
-  ResponsiveTableRow,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableCell,
-} from '@/components/ui/responsive-table'
 import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
@@ -48,6 +32,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMeetingStudentTable'
 
 const CreateMonthlyMeetingContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -80,10 +65,6 @@ const CreateMonthlyMeetingContent = () => {
     additional_notes: '',
   })
 
-  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
   const [showStudentModal, setShowStudentModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
   const [studentData, setStudentData] = useState<
@@ -124,101 +105,6 @@ const CreateMonthlyMeetingContent = () => {
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
-
-  const handleSort = (field: 'grade' | 'program_status') => {
-    if (sortField !== field) {
-      setSortField(field)
-      setSortOrder('desc')
-    } else if (sortOrder === 'desc') {
-      setSortOrder('asc')
-    } else if (sortOrder === 'asc') {
-      setSortField(null)
-      setSortOrder(null)
-    }
-    setCurrentPage(1) // Reset to first page when sorting changes
-  }
-
-  const getSortIcon = (field: 'grade' | 'program_status') => {
-    if (sortField !== field) {
-      return <ChevronUp className='w-4 h-4 opacity-30' />
-    }
-    if (sortOrder === 'asc') {
-      return <ChevronUp className='w-4 h-4' />
-    } else if (sortOrder === 'desc') {
-      return <ChevronDown className='w-4 h-4' />
-    }
-    return <ChevronUp className='w-4 h-4 opacity-30' />
-  }
-
-  // Helper function to get program status from latest speech screening
-  const getProgramStatus = (student): string => {
-    const speechScreenings = student.speech_screenings || []
-    if (speechScreenings.length === 0) {
-      return 'no_screening'
-    }
-
-    // Get most recent screening - create a copy to avoid mutating the original array
-    const mostRecent = [...speechScreenings].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    )[0]
-
-    if (!mostRecent?.error_patterns) {
-      return 'not_set'
-    }
-
-    try {
-      const errorPatterns =
-        typeof mostRecent.error_patterns === 'string'
-          ? JSON.parse(mostRecent.error_patterns)
-          : mostRecent.error_patterns
-
-      const qualifies = errorPatterns?.screening_metadata?.qualifies_for_speech_program
-      const sub = errorPatterns?.screening_metadata?.sub
-      const graduated = errorPatterns?.screening_metadata?.graduated
-
-      if (qualifies === undefined && sub === undefined && graduated === undefined) {
-        return 'not_set'
-      }
-
-      if (graduated) return 'graduated'
-      if (sub) return 'sub'
-      if (qualifies) return 'qualifies'
-      return 'not_in_program'
-    } catch (e) {
-      console.error('Error parsing error_patterns:', e)
-      return 'not_set'
-    }
-  }
-
-  // Helper function to render program status badge
-  const getQualificationBadge = student => {
-    const programStatus = getProgramStatus(student)
-
-    switch (programStatus) {
-      case 'no_screening':
-        return (
-          <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Screening</Badge>
-        )
-      case 'not_set':
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
-      case 'graduated':
-        return (
-          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-        )
-      case 'sub':
-        return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
-      case 'qualifies':
-        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
-      case 'not_in_program':
-        return (
-          <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
-            Not In Program
-          </Badge>
-        )
-      default:
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Error</Badge>
-    }
-  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -469,212 +355,18 @@ const CreateMonthlyMeetingContent = () => {
                       {/* Students Table Section */}
                       <div className='space-y-2'>
                         <Label>Students</Label>
+
                         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-                          {isLoadingStudents ? (
-                            <div className='flex items-center justify-center py-8'>
-                              <div className='text-center'>
-                                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
-                                <p className='text-gray-600 text-sm'>Loading students...</p>
-                              </div>
-                            </div>
-                          ) : (
-                            (() => {
-                              // Filter and sort students
-                              const filteredStudents = students
-                                .filter(student => {
-                                  const status = getProgramStatus(student)
-                                  return status === 'sub' || status === 'qualifies'
-                                })
-                                .sort((a, b) => {
-                                  // Apply default sorting if no sort is active
-                                  if (!sortField || !sortOrder) {
-                                    // Default: Sort by Date Created (most recent first)
-                                    const dateA = new Date(a.created_at).getTime()
-                                    const dateB = new Date(b.created_at).getTime()
-                                    return dateB - dateA
-                                  }
-
-                                  let comparison = 0
-
-                                  // Sort by the selected field
-                                  if (sortField === 'grade') {
-                                    const gradeA = a.grade || 'N/A'
-                                    const gradeB = b.grade || 'N/A'
-
-                                    const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
-                                    const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
-
-                                    // If grade not found in mapping, put at the end
-                                    if (indexA === -1 && indexB === -1) {
-                                      comparison = 0
-                                    } else if (indexA === -1) {
-                                      comparison = 1
-                                    } else if (indexB === -1) {
-                                      comparison = -1
-                                    } else {
-                                      comparison = indexA - indexB
-                                    }
-                                  } else if (sortField === 'program_status') {
-                                    const statusA = getProgramStatus(a)
-                                    const statusB = getProgramStatus(b)
-                                    const statusOrder = { qualifies: 0, sub: 1 }
-                                    comparison = statusOrder[statusA] - statusOrder[statusB]
-                                  }
-
-                                  return sortOrder === 'asc' ? comparison : -comparison
-                                })
-
-                              // Calculate pagination
-                              const totalStudents = filteredStudents.length
-                              const effectiveItemsPerPage =
-                                itemsPerPage === 'all' ? totalStudents : itemsPerPage
-                              const totalPages = Math.ceil(totalStudents / effectiveItemsPerPage)
-                              const startIndex = (currentPage - 1) * effectiveItemsPerPage
-                              const endIndex = startIndex + effectiveItemsPerPage
-                              const paginatedStudents = filteredStudents.slice(startIndex, endIndex)
-
-                              return filteredStudents.length > 0 ? (
-                                <div className='space-y-4'>
-                                  <ResponsiveTable className='w-full'>
-                                    <TableHeader>
-                                      <tr>
-                                        <TableHead className='w-1/4 min-w-[200px]'>Name</TableHead>
-                                        <TableHead className='w-1/6 min-w-[100px]'>
-                                          <Button
-                                            type='button'
-                                            variant='ghost'
-                                            onClick={() => handleSort('grade')}
-                                            className='h-auto p-0 font-medium hover:bg-transparent'>
-                                            Grade
-                                            <span className='ml-1'>{getSortIcon('grade')}</span>
-                                          </Button>
-                                        </TableHead>
-                                        <TableHead className='w-1/5 min-w-[150px]'>
-                                          <Button
-                                            type='button'
-                                            variant='ghost'
-                                            onClick={() => handleSort('program_status')}
-                                            className='h-auto p-0 font-medium hover:bg-transparent'>
-                                            Program Status
-                                            <span className='ml-1'>
-                                              {getSortIcon('program_status')}
-                                            </span>
-                                          </Button>
-                                        </TableHead>
-                                        <TableHead className='w-1/6 min-w-[120px]'>
-                                          Date Created
-                                        </TableHead>
-                                        <TableHead className='w-[60px] text-center'></TableHead>
-                                        <TableHead className='w-[60px] text-center'></TableHead>
-                                      </tr>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {paginatedStudents.map(student => (
-                                        <ResponsiveTableRow key={student.id}>
-                                          <TableCell>
-                                            {student.first_name} {student.last_name}
-                                          </TableCell>
-                                          <TableCell>{student.grade || 'N/A'}</TableCell>
-                                          <TableCell>{getQualificationBadge(student)}</TableCell>
-                                          <TableCell>
-                                            {new Date(student.created_at).toLocaleDateString(
-                                              'en-US',
-                                              {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                year: 'numeric',
-                                              }
-                                            )}
-                                          </TableCell>
-                                          <TableCell className='text-center'>
-                                            <Button
-                                              type='button'
-                                              size='sm'
-                                              variant='outline'
-                                              onClick={() => {
-                                                setSelectedStudent(student)
-                                                setShowStudentModal(true)
-                                              }}
-                                              className='h-8 w-8 p-0'>
-                                              <UserPlus className='h-4 w-4' />
-                                            </Button>
-                                          </TableCell>
-                                          <TableCell className='text-center'>
-                                            {hasStudentData(student.id) && (
-                                              <CheckCircle2 className='h-5 w-5 text-green-600 mx-auto' />
-                                            )}
-                                          </TableCell>
-                                        </ResponsiveTableRow>
-                                      ))}
-                                    </TableBody>
-                                  </ResponsiveTable>
-
-                                  {/* Pagination Controls */}
-                                  <div className='flex items-center justify-between px-4 py-3 border-t border-gray-200'>
-                                    <div className='flex items-center gap-2'>
-                                      <Label
-                                        htmlFor='itemsPerPage'
-                                        className='text-sm text-gray-600'>
-                                        Rows per page:
-                                      </Label>
-                                      <Select
-                                        value={itemsPerPage.toString()}
-                                        onValueChange={value => {
-                                          setItemsPerPage(value === 'all' ? 'all' : Number(value))
-                                          setCurrentPage(1) // Reset to first page when changing items per page
-                                        }}>
-                                        <SelectTrigger id='itemsPerPage' className='w-[80px] h-9'>
-                                          <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value='5'>5</SelectItem>
-                                          <SelectItem value='10'>10</SelectItem>
-                                          <SelectItem value='20'>20</SelectItem>
-                                          <SelectItem value='50'>50</SelectItem>
-                                          <SelectItem value='all'>All</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-
-                                    <div className='flex items-center gap-2'>
-                                      <span className='text-sm text-gray-600'>
-                                        Showing {startIndex + 1}-{Math.min(endIndex, totalStudents)}{' '}
-                                        of {totalStudents}
-                                      </span>
-                                      <div className='flex gap-1'>
-                                        <Button
-                                          type='button'
-                                          variant='outline'
-                                          size='sm'
-                                          onClick={() =>
-                                            setCurrentPage(prev => Math.max(1, prev - 1))
-                                          }
-                                          disabled={currentPage === 1}
-                                          className='h-9 w-9 p-0'>
-                                          &larr;
-                                        </Button>
-                                        <Button
-                                          type='button'
-                                          variant='outline'
-                                          size='sm'
-                                          onClick={() =>
-                                            setCurrentPage(prev => Math.min(totalPages, prev + 1))
-                                          }
-                                          disabled={currentPage === totalPages}
-                                          className='h-9 w-9 p-0'>
-                                          &rarr;
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className='text-center py-8 text-gray-500 text-sm'>
-                                  No students with Sub or Qualifies status found for this school.
-                                </div>
-                              )
-                            })()
-                          )}
+                          <MonthlyMeetingsStudentTable
+                            students={students}
+                            isLoading={isLoadingStudents}
+                            studentData={studentData}
+                            onStudentClick={student => {
+                              setSelectedStudent(student)
+                              setShowStudentModal(true)
+                            }}
+                            hasStudentData={hasStudentData}
+                          />
                         </div>
                       </div>
 
