@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
-import { Eye, MoreHorizontal, ChevronUp, ChevronDown, Trash2, Edit, Loader2 } from 'lucide-react'
+import { Eye, MoreHorizontal, ChevronUp, ChevronDown, Trash2, Mail, Loader2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -334,8 +334,8 @@ const MonthlyMeetingsTable = ({
                             View Details
                           </DropdownMenuItem>
                           <DropdownMenuItem>
-                            <Edit className='w-4 h-4 mr-2' />
-                            Edit Meeting
+                            <Mail className='w-4 h-4 mr-2' />
+                            Send Report
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className='text-red-600'
@@ -410,8 +410,8 @@ const MonthlyMeetingsTable = ({
                         View Details
                       </DropdownMenuItem>
                       <DropdownMenuItem>
-                        <Edit className='w-4 h-4 mr-2' />
-                        Edit Meeting
+                        <Mail className='w-4 h-4 mr-2' />
+                        Send Report
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className='text-red-600'
