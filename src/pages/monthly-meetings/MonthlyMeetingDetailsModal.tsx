@@ -27,11 +27,13 @@ const MonthlyMeetingDetailsModal = ({
 
   if (!meeting) return null
 
+  console.log(meeting.id, 'meetingid')
+
   const handleEditMeeting = () => {
     if (currentSchool?.id) {
-      navigate(`/school/${currentSchool.id}/edit-monthly-meeting/${meeting.id}`)
+      navigate(`/school/${currentSchool.id}/monthly-meetings/edit/${meeting.id}`)
     } else {
-      navigate(`/edit-monthly-meeting/${meeting.id}`)
+      navigate(`/monthly-meetings/edit/${meeting.id}`)
     }
     onClose()
   }
