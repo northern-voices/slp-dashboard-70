@@ -12,6 +12,11 @@ export interface StudentUpdate {
     last_name: string
     student_id: string
     school_id: string
+    grade?: {
+      id: string
+      grade_level: string
+      academic_year: string
+    } | null
   } | null
 }
 
@@ -60,6 +65,14 @@ interface RawMonthlyMeeting {
       last_name: string
       student_id: string
       school_id: string
+      speech_screenings: Array<{
+        created_at: string
+        school_grades: {
+          id: string
+          grade_level: string
+          academic_year: string
+        } | null
+      }>
     } | null
   }>
 }
@@ -93,13 +106,34 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
   created_at: meeting.created_at,
   updated_at: meeting.updated_at,
   facilitator: meeting.facilitator,
-  student_updates: meeting.monthly_meeting_student_updates.map(update => ({
-    id: update.id,
-    student_id: update.student_id,
-    sessions_attended: update.sessions_attended,
-    meeting_notes: update.meeting_notes,
-    student: update.students,
-  })),
+  student_updates: meeting.monthly_meeting_student_updates.map(update => {
+    // Get the most recent speech screening by sorting by created_at
+    let mostRecentGrade = null
+
+    if (update.students?.speech_screenings && update.students.speech_screenings.length > 0) {
+      const sortedScreenings = [...update.students.speech_screenings].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+      mostRecentGrade = sortedScreenings[0]?.school_grades || null
+    }
+
+    return {
+      id: update.id,
+      student_id: update.student_id,
+      sessions_attended: update.sessions_attended,
+      meeting_notes: update.meeting_notes,
+      student: update.students
+        ? {
+            id: update.students.id,
+            first_name: update.students.first_name,
+            last_name: update.students.last_name,
+            student_id: update.students.student_id,
+            school_id: update.students.school_id,
+            grade: mostRecentGrade,
+          }
+        : null,
+    }
+  }),
 })
 
 export const monthlyMeetingsApi = {
@@ -136,7 +170,15 @@ export const monthlyMeetingsApi = {
               first_name,
               last_name,
               student_id,
-              school_id
+              school_id,
+              speech_screenings (
+                created_at,
+                school_grades (
+                  id,
+                  grade_level,
+                  academic_year
+                )
+              )
             )
           )
         `
@@ -150,12 +192,14 @@ export const monthlyMeetingsApi = {
 
       // Filter by organization schools if provided
       if (organizationSchoolIds.length > 0) {
-        return transformedData.filter(meeting =>
-          meeting.student_updates?.length === 0 ||
-          meeting.student_updates?.some(
-            update =>
-              update.student?.school_id && organizationSchoolIds.includes(update.student.school_id)
-          )
+        return transformedData.filter(
+          meeting =>
+            meeting.student_updates?.length === 0 ||
+            meeting.student_updates?.some(
+              update =>
+                update.student?.school_id &&
+                organizationSchoolIds.includes(update.student.school_id)
+            )
         )
       }
 
@@ -184,7 +228,7 @@ export const monthlyMeetingsApi = {
             last_name,
             email
           ),
-          monthly_meeting_student_updates!inner (
+          monthly_meeting_student_updates (
             id,
             student_id,
             sessions_attended,
@@ -194,7 +238,15 @@ export const monthlyMeetingsApi = {
               first_name,
               last_name,
               student_id,
-              school_id
+              school_id,
+              speech_screenings (
+                created_at,
+                school_grades (
+                  id,
+                  grade_level,
+                  academic_year
+                )
+              )
             )
           )
         `
@@ -254,7 +306,15 @@ export const monthlyMeetingsApi = {
               first_name,
               last_name,
               student_id,
-              school_id
+              school_id,
+              speech_screenings (
+                created_at,
+                school_grades (
+                  id,
+                  grade_level,
+                  academic_year
+                )
+              )
             )
           )
         `
@@ -265,18 +325,15 @@ export const monthlyMeetingsApi = {
         query = query.gte('meeting_date', schoolYearStart.toISOString().split('T')[0])
       }
 
-      const { data, error } = await query.order('meeting_date', { ascending: false })
+      const { data, error } = await query
+        .eq('school_id', schoolId)
+        .order('meeting_date', { ascending: false })
 
       if (error) throw error
 
       const transformedData: MonthlyMeeting[] = (data || []).map(transformMonthlyMeeting)
 
-      // Filter by school - meetings that have at least one student update from this school
-      // OR meetings with no student updates (show all meetings for the school)
-      return transformedData.filter(meeting =>
-        meeting.student_updates?.length === 0 ||
-        meeting.student_updates?.some(update => update.student?.school_id === schoolId)
-      )
+      return transformedData
     } catch (error) {
       console.error('Error fetching monthly meetings by school:', error)
       throw error
@@ -374,7 +431,15 @@ export const monthlyMeetingsApi = {
               first_name,
               last_name,
               student_id,
-              school_id
+              school_id,
+              speech_screenings (
+                created_at,
+                school_grades (
+                  id,
+                  grade_level,
+                  academic_year
+                )
+              )
             )
           )
         `
@@ -399,13 +464,57 @@ export const monthlyMeetingsApi = {
       attendees: string[]
       additional_notes: string | null
       facilitator_id: string | null
+      student_updates: Array<{
+        student_id: string
+        sessions_attended?: number | null
+        meeting_notes?: string | null
+      }>
     }>
   ): Promise<MonthlyMeeting> => {
     try {
+      // Extract student_updates from data
+      const { student_updates, ...meetingData } = data
+
+      // Update the meeting itself
       const { data: updatedMeeting, error } = await supabase
         .from('monthly_meetings')
-        .update(data)
+        .update(meetingData)
         .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      // Handle student updates if provided
+      if (student_updates !== undefined) {
+        // Delete existing student updates for this meeting
+        const { error: deleteError } = await supabase
+          .from('monthly_meeting_student_updates')
+          .delete()
+          .eq('monthly_meeting_id', id)
+
+        if (deleteError) throw deleteError
+
+        // Insert new student updates if there are any
+        if (student_updates.length > 0) {
+          const studentUpdateData = student_updates.map(update => ({
+            monthly_meeting_id: id,
+            student_id: update.student_id,
+            sessions_attended: update.sessions_attended || null,
+            meeting_notes: update.meeting_notes || null,
+          }))
+
+          const { error: insertError } = await supabase
+            .from('monthly_meeting_student_updates')
+            .insert(studentUpdateData)
+
+          if (insertError) throw insertError
+        }
+      }
+
+      // Fetch the complete updated meeting with all relations
+      const { data: completeMeeting, error: fetchError } = await supabase
+        .from('monthly_meetings')
         .select(
           `
           *,
@@ -425,16 +534,25 @@ export const monthlyMeetingsApi = {
               first_name,
               last_name,
               student_id,
-              school_id
+              school_id,
+              speech_screenings (
+                created_at,
+                school_grades (
+                  id,
+                  grade_level,
+                  academic_year
+                )
+              )
             )
           )
         `
         )
+        .eq('id', id)
         .single()
 
-      if (error) throw error
+      if (fetchError) throw fetchError
 
-      return transformMonthlyMeeting(updatedMeeting)
+      return transformMonthlyMeeting(completeMeeting)
     } catch (error) {
       console.error('Error updating monthly meeting:', error)
       throw error
@@ -465,7 +583,15 @@ export const monthlyMeetingsApi = {
             first_name,
             last_name,
             student_id,
-            school_id
+            school_id,
+            speech_screenings (
+              created_at,
+              school_grades (
+                id,
+                grade_level,
+                academic_year
+              )
+            )
           )
         `
         )
@@ -473,12 +599,33 @@ export const monthlyMeetingsApi = {
 
       if (error) throw error
 
+      let mostRecentGrade = null
+
+      if (
+        newUpdate.students?.speech_screenings &&
+        newUpdate.students.speech_screenings.length > 0
+      ) {
+        const sortedScreenings = [...newUpdate.students.speech_screenings].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        mostRecentGrade = sortedScreenings[0]?.school_grades || null
+      }
+
       return {
         id: newUpdate.id,
         student_id: newUpdate.student_id,
         sessions_attended: newUpdate.sessions_attended,
         meeting_notes: newUpdate.meeting_notes,
-        student: newUpdate.students,
+        student: newUpdate.students
+          ? {
+              id: newUpdate.students.id,
+              first_name: newUpdate.students.first_name,
+              last_name: newUpdate.students.last_name,
+              student_id: newUpdate.students.student_id,
+              school_id: newUpdate.students.school_id,
+              grade: mostRecentGrade,
+            }
+          : null,
       }
     } catch (error) {
       console.error('Error adding student update:', error)
@@ -506,7 +653,15 @@ export const monthlyMeetingsApi = {
             first_name,
             last_name,
             student_id,
-            school_id
+            school_id,
+            speech_screenings (
+              created_at,
+              school_grades (
+                id,
+                grade_level,
+                academic_year
+              )
+            )
           )
         `
         )
@@ -514,12 +669,33 @@ export const monthlyMeetingsApi = {
 
       if (error) throw error
 
+      let mostRecentGrade = null
+
+      if (
+        updatedUpdate.students?.speech_screenings &&
+        updatedUpdate.students.speech_screenings.length > 0
+      ) {
+        const sortedScreenings = [...updatedUpdate.students.speech_screenings].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        mostRecentGrade = sortedScreenings[0]?.school_grades || null
+      }
+
       return {
         id: updatedUpdate.id,
         student_id: updatedUpdate.student_id,
         sessions_attended: updatedUpdate.sessions_attended,
         meeting_notes: updatedUpdate.meeting_notes,
-        student: updatedUpdate.students,
+        student: updatedUpdate.students
+          ? {
+              id: updatedUpdate.students.id,
+              first_name: updatedUpdate.students.first_name,
+              last_name: updatedUpdate.students.last_name,
+              student_id: updatedUpdate.students.student_id,
+              school_id: updatedUpdate.students.school_id,
+              grade: mostRecentGrade,
+            }
+          : null,
       }
     } catch (error) {
       console.error('Error updating student update:', error)

@@ -25,6 +25,11 @@ type UpdateMonthlyMeetingInput = {
   attendees?: string[]
   additional_notes?: string | null
   facilitator_id?: string | null
+  student_updates?: Array<{
+    student_id: string
+    sessions_attended?: number | null
+    meeting_notes?: string | null
+  }>
 }
 
 // Type for student update operations

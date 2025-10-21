@@ -1,16 +1,9 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Eye,
-  MoreHorizontal,
-  ChevronUp,
-  ChevronDown,
-  Trash2,
-  Edit,
-  Loader2,
-} from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
+import { Eye, MoreHorizontal, ChevronUp, ChevronDown, Trash2, Mail, Loader2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,10 +18,22 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { format } from 'date-fns'
 import { useMonthlyMeetingsBySchool } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
+import { useDeleteMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
+import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
 
 interface MonthlyMeetingsTableProps {
   searchTerm: string
@@ -45,6 +50,14 @@ const MonthlyMeetingsTable = ({
   const [selectedMeetings, setSelectedMeetings] = useState<MonthlyMeeting[]>([])
   const [sortField, setSortField] = useState<'meeting_date' | 'meeting_title' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
+  const [selectedMeetingForDetails, setSelectedMeetingForDetails] = useState<MonthlyMeeting | null>(
+    null
+  )
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [meetingToDelete, setMeetingToDelete] = useState<MonthlyMeeting | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const { toast } = useToast()
+  const deleteMonthlyMeeting = useDeleteMonthlyMeeting()
 
   // Fetch monthly meetings by school
   const {
@@ -71,13 +84,15 @@ const MonthlyMeetingsTable = ({
     const matchesSearch =
       meeting.meeting_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       meeting.attendees?.some(p => p.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      meeting.student_updates?.some(update =>
-        update.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        update.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      meeting.student_updates?.some(
+        update =>
+          update.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          update.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
       )
 
     // Filter by facilitator
-    const matchesFacilitator = facilitatorFilter === 'all' || meeting.facilitator_id === facilitatorFilter
+    const matchesFacilitator =
+      facilitatorFilter === 'all' || meeting.facilitator_id === facilitatorFilter
 
     // Apply client-side date range filter for filters other than 'all' and 'school_year'
     // (those are handled at the API level)
@@ -167,7 +182,9 @@ const MonthlyMeetingsTable = ({
     if (date > now) {
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Scheduled</Badge>
     } else {
-      return <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Completed</Badge>
+      return (
+        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Completed</Badge>
+      )
     }
   }
 
@@ -185,6 +202,51 @@ const MonthlyMeetingsTable = ({
     } else {
       setSelectedMeetings(selectedMeetings.filter(m => m.id !== meeting.id))
     }
+  }
+
+  const handleViewDetails = (meeting: MonthlyMeeting) => {
+    setSelectedMeetingForDetails(meeting)
+    setIsDetailsModalOpen(true)
+  }
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false)
+    setSelectedMeetingForDetails(null)
+  }
+
+  const handleDeleteMeeting = (meeting: MonthlyMeeting) => {
+    setMeetingToDelete(meeting)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteMeeting = () => {
+    if (!meetingToDelete) return
+
+    deleteMonthlyMeeting.mutate(meetingToDelete.id, {
+      onSuccess: () => {
+        toast({
+          title: 'Meeting Deleted',
+          description: 'The monthly meeting has been successfully deleted.',
+        })
+        setIsDeleteDialogOpen(false)
+        setMeetingToDelete(null)
+        // Remove from selected meetings if it was selected
+        setSelectedMeetings(selectedMeetings.filter(m => m.id !== meetingToDelete.id))
+      },
+      onError: error => {
+        console.error('Failed to delete meeting:', error)
+        toast({
+          title: 'Error',
+          description: 'Failed to delete the meeting. Please try again.',
+          variant: 'destructive',
+        })
+      },
+    })
+  }
+
+  const cancelDeleteMeeting = () => {
+    setIsDeleteDialogOpen(false)
+    setMeetingToDelete(null)
   }
 
   const isAllSelected =
@@ -267,15 +329,17 @@ const MonthlyMeetingsTable = ({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align='end' className='bg-white'>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewDetails(meeting)}>
                             <Eye className='w-4 h-4 mr-2' />
                             View Details
                           </DropdownMenuItem>
                           <DropdownMenuItem>
-                            <Edit className='w-4 h-4 mr-2' />
-                            Edit Meeting
+                            <Mail className='w-4 h-4 mr-2' />
+                            Send Report
                           </DropdownMenuItem>
-                          <DropdownMenuItem className='text-red-600'>
+                          <DropdownMenuItem
+                            className='text-red-600'
+                            onClick={() => handleDeleteMeeting(meeting)}>
                             <Trash2 className='w-4 h-4 mr-2' />
                             Delete
                           </DropdownMenuItem>
@@ -315,7 +379,9 @@ const MonthlyMeetingsTable = ({
                   </div>
                 </TableCell>
                 <TableCell className='max-w-0'>
-                  <div className='truncate' title={format(new Date(meeting.meeting_date), 'MMM d, yyyy')}>
+                  <div
+                    className='truncate'
+                    title={format(new Date(meeting.meeting_date), 'MMM d, yyyy')}>
                     {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
                   </div>
                 </TableCell>
@@ -339,15 +405,19 @@ const MonthlyMeetingsTable = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end' className='bg-white'>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleViewDetails(meeting)}>
                         <Eye className='w-4 h-4 mr-2' />
                         View Details
                       </DropdownMenuItem>
                       <DropdownMenuItem>
-                        <Edit className='w-4 h-4 mr-2' />
-                        Edit Meeting
+                        <Mail className='w-4 h-4 mr-2' />
+                        Send Report
                       </DropdownMenuItem>
-                      <DropdownMenuItem className='text-red-600'>
+                      <DropdownMenuItem
+                        className='text-red-600'
+                        onClick={() => {
+                          handleDeleteMeeting(meeting)
+                        }}>
                         <Trash2 className='w-4 h-4 mr-2' />
                         Delete
                       </DropdownMenuItem>
@@ -364,6 +434,48 @@ const MonthlyMeetingsTable = ({
             <p className='text-gray-500'>No monthly meetings found matching your criteria.</p>
           </div>
         )}
+
+        {/* Monthly Meeting Details Modal */}
+        <MonthlyMeetingDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={handleCloseDetailsModal}
+          meeting={selectedMeetingForDetails}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Monthly Meeting</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this meeting "{meetingToDelete?.meeting_title}"?
+                This action cannot be undone.
+                {meetingToDelete?.student_updates && meetingToDelete.student_updates.length > 0 && (
+                  <span className='block mt-2 font-medium text-orange-600'>
+                    This meeting has {meetingToDelete.student_updates.length} student update(s) that
+                    will also be deleted.
+                  </span>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={cancelDeleteMeeting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDeleteMeeting}
+                className='bg-red-600 hover:bg-red-700'
+                disabled={deleteMonthlyMeeting.isPending}>
+                {deleteMonthlyMeeting.isPending ? (
+                  <>
+                    <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )
