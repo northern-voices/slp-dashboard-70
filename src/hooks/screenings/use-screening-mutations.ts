@@ -87,8 +87,35 @@ export const useUpdateSpeechScreening = () => {
   const { user } = useAuth()
   const { userProfile, currentOrganization } = useOrganization()
 
-  return useMutation<Screening, Error, { id: string; data: Partial<UpdateSpeechScreeningInput> }>({
+  return useMutation<
+    Screening,
+    Error,
+    { id: string; data: Partial<UpdateSpeechScreeningInput> },
+    { previousScreenings: Array<[import('@tanstack/react-query').QueryKey, unknown]> }
+  >({
     mutationFn: ({ id, data }) => screeningsApi.updateSpeechScreening(id, data),
+
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['screenings'] })
+
+      const previousScreenings = queryClient.getQueriesData({ queryKey: ['screenings'] })
+
+      queryClient.setQueriesData<Screening[]>({ queryKey: ['screenings'] }, old => {
+        if (!old) return old
+        return old.map(screening =>
+          screening.id === id
+            ? {
+                ...screening,
+                ...data,
+                error_patterns: data.error_patterns || screening.error_patterns,
+              }
+            : screening
+        )
+      })
+
+      return { previousScreenings }
+    },
+
     onSuccess: () => {
       // Invalidate and refetch all screening-related queries
       queryClient.invalidateQueries({
@@ -103,7 +130,12 @@ export const useUpdateSpeechScreening = () => {
         queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
       })
     },
-    onError: error => {
+    onError: (error, variables, context) => {
+      if (context?.previousScreenings) {
+        context.previousScreenings.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data)
+        })
+      }
       console.error('Failed to update speech screening:', error)
     },
   })

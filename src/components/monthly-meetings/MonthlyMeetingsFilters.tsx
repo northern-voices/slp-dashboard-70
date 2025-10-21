@@ -1,10 +1,8 @@
-import { useState } from 'react'
-
-import { Badge } from '@/components/ui/badge'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -12,51 +10,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react'
-import { GRADE_MAPPING } from '@/constants/app'
+import { useGetUsers } from '@/hooks/users/use-users'
 
-interface StudentTableFiltersProps {
+interface MonthlyMeetingsFiltersProps {
   searchTerm: string
   setSearchTerm: (value: string) => void
-  gradeFilter: string
-  setGradeFilter: (value: string) => void
   dateRangeFilter: string
   setDateRangeFilter: (value: string) => void
-  programFilter: string
-  setProgramFilter: (value: string) => void
+  facilitatorFilter: string
+  setFacilitatorFilter: (value: string) => void
 }
 
-const StudentTableFilters = ({
+const MonthlyMeetingsFilters = ({
   searchTerm,
   setSearchTerm,
-  gradeFilter,
-  setGradeFilter,
   dateRangeFilter,
   setDateRangeFilter,
-  programFilter,
-  setProgramFilter,
-}: StudentTableFiltersProps) => {
+  facilitatorFilter,
+  setFacilitatorFilter,
+}: MonthlyMeetingsFiltersProps) => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
+  const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
 
   // Check if any filters are active
-  const hasActiveFilters =
-    searchTerm || gradeFilter !== 'all' || dateRangeFilter !== 'all' || programFilter !== 'all'
+  const hasActiveFilters = searchTerm || dateRangeFilter !== 'all' || facilitatorFilter !== 'all'
 
   // Clear all filters
   const clearAllFilters = () => {
     setSearchTerm('')
-    setGradeFilter('all')
     setDateRangeFilter('all')
-    setProgramFilter('all')
+    setFacilitatorFilter('all')
   }
 
   // Get active filter count
   const getActiveFilterCount = () => {
     let count = 0
     if (searchTerm) count++
-    if (gradeFilter !== 'all') count++
     if (dateRangeFilter !== 'all') count++
-    if (programFilter !== 'all') count++
+    if (facilitatorFilter !== 'all') count++
     return count
   }
 
@@ -106,7 +99,7 @@ const StudentTableFilters = ({
               <div className='relative'>
                 <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
                 <Input
-                  placeholder='Search students by name or ID...'
+                  placeholder='Search by meeting title or participant...'
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   className='pl-10'
@@ -115,41 +108,7 @@ const StudentTableFilters = ({
             </div>
 
             {/* Dropdown Filters */}
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6'>
-              <div className='space-y-2'>
-                <label className='text-sm font-medium text-gray-700'>Grade</label>
-                <Select value={gradeFilter} onValueChange={setGradeFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder='All Grades' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='all'>All Grades</SelectItem>
-                    {GRADE_MAPPING.map(grade => (
-                      <SelectItem key={grade.value} value={grade.value}>
-                        {grade.display}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className='space-y-2'>
-                <label className='text-sm font-medium text-gray-700'>Program</label>
-                <Select value={programFilter} onValueChange={setProgramFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder='All Programs' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='all'>All Programs</SelectItem>
-                    <SelectItem value='qualifies'>Qualifies</SelectItem>
-                    <SelectItem value='not_in_program'>Not In Program</SelectItem>
-                    <SelectItem value='sub'>Sub</SelectItem>
-                    <SelectItem value='pause'>Pause</SelectItem>
-                    <SelectItem value='graduated'>Graduated</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6'>
               <div className='space-y-2'>
                 <label className='text-sm font-medium text-gray-700'>Date Range</label>
                 <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
@@ -161,8 +120,25 @@ const StudentTableFilters = ({
                     <SelectItem value='today'>Today</SelectItem>
                     <SelectItem value='week'>This Week</SelectItem>
                     <SelectItem value='month'>This Month</SelectItem>
+                    <SelectItem value='quarter'>This Quarter</SelectItem>
                     <SelectItem value='school_year'>This School Year</SelectItem>
-                    <SelectItem value='last_school_year'>Last School Year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>Facilitator</label>
+                <Select value={facilitatorFilter} onValueChange={setFacilitatorFilter} disabled={isLoadingUsers}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoadingUsers ? 'Loading...' : 'All Facilitators'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='all'>All Facilitators</SelectItem>
+                    {users.map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.first_name} {user.last_name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -174,4 +150,4 @@ const StudentTableFilters = ({
   )
 }
 
-export default StudentTableFilters
+export default MonthlyMeetingsFilters

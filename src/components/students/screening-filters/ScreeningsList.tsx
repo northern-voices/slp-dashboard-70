@@ -390,11 +390,11 @@ const ScreeningsList = ({
   return (
     <>
       <div className='space-y-4'>
-        <div className='flex justify-end mb-3'>
+        {/* <div className='flex justify-end mb-3'>
           <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
             {filteredScreenings.length} screening{filteredScreenings.length !== 1 ? 's' : ''} found
           </span>
-        </div>
+        </div> */}
 
         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <ResponsiveTable className='w-full'>
