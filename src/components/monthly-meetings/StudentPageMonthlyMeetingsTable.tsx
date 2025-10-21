@@ -13,7 +13,7 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
-import { Loader2, Calendar, Eye, Edit2, Trash2 } from 'lucide-react'
+import { Loader2, Calendar, Eye, Edit2 } from 'lucide-react'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
@@ -57,19 +57,6 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
     }
   }
 
-  const getStatusBadge = (meetingDate: string) => {
-    const now = new Date()
-    const date = new Date(meetingDate)
-
-    if (date > now) {
-      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Scheduled</Badge>
-    } else {
-      return (
-        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Completed</Badge>
-      )
-    }
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -102,10 +89,9 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
                 <TableHeader>
                   <tr>
                     <TableHead className='w-1/3'>Meeting Title</TableHead>
-                    <TableHead className='w-1/6'>Date</TableHead>
-                    <TableHead className='w-1/6'>Status</TableHead>
-                    <TableHead className='w-1/6'>Sessions</TableHead>
-                    <TableHead className='w-1/6'>Facilitator</TableHead>
+                    <TableHead className='w-1/5'>Date</TableHead>
+                    <TableHead className='w-1/5'>Sessions</TableHead>
+                    <TableHead className='w-1/5'>Facilitator</TableHead>
                     <TableHead className='w-12'></TableHead>
                   </tr>
                 </TableHeader>
@@ -147,12 +133,14 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
                                 {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
                               </p>
                               <p>
-                                <span className='font-medium'>Status:</span>{' '}
-                                {getStatusBadge(meeting.meeting_date)}
-                              </p>
-                              <p>
                                 <span className='font-medium'>Sessions:</span>{' '}
                                 {studentUpdate?.sessions_attended ?? 'N/A'}
+                              </p>
+                              <p>
+                                <span className='font-medium'>Facilitator:</span>{' '}
+                                {meeting.facilitator
+                                  ? `${meeting.facilitator.first_name} ${meeting.facilitator.last_name}`
+                                  : 'N/A'}
                               </p>
                             </div>
                           </div>
@@ -168,7 +156,6 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>{getStatusBadge(meeting.meeting_date)}</TableCell>
                         <TableCell>
                           {studentUpdate?.sessions_attended !== null &&
                           studentUpdate?.sessions_attended !== undefined ? (
