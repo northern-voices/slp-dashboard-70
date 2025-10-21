@@ -38,17 +38,6 @@ const MonthlyMeetingDetailsModal = ({
     onClose()
   }
 
-  const getStatusBadge = (meetingDate: string) => {
-    const now = new Date()
-    const date = new Date(meetingDate)
-
-    if (date > now) {
-      return <Badge className='bg-blue-100 text-blue-800 font-medium'>Scheduled</Badge>
-    } else {
-      return <Badge className='bg-green-100 text-green-800 font-medium'>Completed</Badge>
-    }
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
@@ -86,7 +75,6 @@ const MonthlyMeetingDetailsModal = ({
                     {format(new Date(meeting.meeting_date), 'EEEE, MMMM d, yyyy')}
                   </span>
                 </div>
-                <div className='ml-6'>{getStatusBadge(meeting.meeting_date)}</div>
               </div>
             </div>
 
@@ -180,8 +168,17 @@ const MonthlyMeetingDetailsModal = ({
             </div>
           )}
 
-          {/* Meeting Notes Section (if you have a notes field) */}
-          {/* This can be added if your MonthlyMeeting type has a notes field */}
+          {/* Meeting Additional Notes Section */}
+          {meeting.additional_notes && (
+            <div className='space-y-4'>
+              <h3 className='font-medium text-gray-900'>Additional Notes</h3>
+              <div className='p-4 bg-gray-50 rounded-lg border border-gray-200'>
+                <p className='text-sm text-gray-700 whitespace-pre-wrap'>
+                  {meeting.additional_notes}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
