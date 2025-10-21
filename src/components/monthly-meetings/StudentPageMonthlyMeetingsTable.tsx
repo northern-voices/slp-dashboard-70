@@ -85,119 +85,121 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
         ) : (
           <>
             <div className='overflow-x-auto'>
-              <ResponsiveTable className='w-full'>
-                <TableHeader>
-                  <tr>
-                    <TableHead className='w-1/3'>Meeting Title</TableHead>
-                    <TableHead className='w-1/5'>Date</TableHead>
-                    <TableHead className='w-1/5'>Sessions</TableHead>
-                    <TableHead className='w-1/5'>Facilitator</TableHead>
-                    <TableHead className='w-12'></TableHead>
-                  </tr>
-                </TableHeader>
-                <TableBody>
-                  {meetings.map(meeting => {
-                    // Find the student update for this specific student
-                    const studentUpdate = meeting.student_updates?.find(
-                      update => update.student_id === studentId
-                    )
+              <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+                <ResponsiveTable className='w-full'>
+                  <TableHeader>
+                    <tr>
+                      <TableHead className='w-1/3'>Meeting Title</TableHead>
+                      <TableHead className='w-1/5'>Date</TableHead>
+                      <TableHead className='w-1/5'>Sessions</TableHead>
+                      <TableHead className='w-1/5'>Facilitator</TableHead>
+                      <TableHead className='w-12'></TableHead>
+                    </tr>
+                  </TableHeader>
+                  <TableBody>
+                    {meetings.map(meeting => {
+                      // Find the student update for this specific student
+                      const studentUpdate = meeting.student_updates?.find(
+                        update => update.student_id === studentId
+                      )
 
-                    return (
-                      <ResponsiveTableRow
-                        key={meeting.id}
-                        mobileCardContent={
-                          <div className='space-y-3'>
-                            <div className='flex items-center justify-between'>
-                              <h3 className='font-medium'>{meeting.meeting_title}</h3>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant='ghost' size='sm'>
-                                    <MoreHorizontal className='w-4 h-4' />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align='end' className='bg-white'>
-                                  <DropdownMenuItem onClick={() => handleViewDetails(meeting)}>
-                                    <Eye className='w-4 h-4 mr-2' />
-                                    View Details
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleEditMeeting(meeting)}>
-                                    <Edit2 className='w-4 h-4 mr-2' />
-                                    Edit
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                      return (
+                        <ResponsiveTableRow
+                          key={meeting.id}
+                          mobileCardContent={
+                            <div className='space-y-3'>
+                              <div className='flex items-center justify-between'>
+                                <h3 className='font-medium'>{meeting.meeting_title}</h3>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant='ghost' size='sm'>
+                                      <MoreHorizontal className='w-4 h-4' />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align='end' className='bg-white'>
+                                    <DropdownMenuItem onClick={() => handleViewDetails(meeting)}>
+                                      <Eye className='w-4 h-4 mr-2' />
+                                      View Details
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleEditMeeting(meeting)}>
+                                      <Edit2 className='w-4 h-4 mr-2' />
+                                      Edit
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                              <div className='text-sm text-gray-600 space-y-1'>
+                                <p>
+                                  <span className='font-medium'>Date:</span>{' '}
+                                  {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
+                                </p>
+                                <p>
+                                  <span className='font-medium'>Sessions:</span>{' '}
+                                  {studentUpdate?.sessions_attended ?? 'N/A'}
+                                </p>
+                                <p>
+                                  <span className='font-medium'>Facilitator:</span>{' '}
+                                  {meeting.facilitator
+                                    ? `${meeting.facilitator.first_name} ${meeting.facilitator.last_name}`
+                                    : 'N/A'}
+                                </p>
+                              </div>
                             </div>
-                            <div className='text-sm text-gray-600 space-y-1'>
-                              <p>
-                                <span className='font-medium'>Date:</span>{' '}
+                          }>
+                          <TableCell>
+                            <div className='font-medium'>{meeting.meeting_title}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className='flex items-center gap-2'>
+                              <Calendar className='w-4 h-4 text-gray-500' />
+                              <span className='text-sm'>
                                 {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
-                              </p>
-                              <p>
-                                <span className='font-medium'>Sessions:</span>{' '}
-                                {studentUpdate?.sessions_attended ?? 'N/A'}
-                              </p>
-                              <p>
-                                <span className='font-medium'>Facilitator:</span>{' '}
-                                {meeting.facilitator
-                                  ? `${meeting.facilitator.first_name} ${meeting.facilitator.last_name}`
-                                  : 'N/A'}
-                              </p>
+                              </span>
                             </div>
-                          </div>
-                        }>
-                        <TableCell>
-                          <div className='font-medium'>{meeting.meeting_title}</div>
-                        </TableCell>
-                        <TableCell>
-                          <div className='flex items-center gap-2'>
-                            <Calendar className='w-4 h-4 text-gray-500' />
-                            <span className='text-sm'>
-                              {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
+                          </TableCell>
+                          <TableCell>
+                            {studentUpdate?.sessions_attended !== null &&
+                            studentUpdate?.sessions_attended !== undefined ? (
+                              <Badge className='bg-blue-100 text-blue-800 text-[10px]'>
+                                {studentUpdate.sessions_attended}{' '}
+                                {studentUpdate.sessions_attended === 1 ? 'session' : 'sessions'}
+                              </Badge>
+                            ) : (
+                              <span className='text-sm text-gray-500 italic'>Not recorded</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <span className='text-sm text-gray-600'>
+                              {meeting.facilitator
+                                ? `${meeting.facilitator.first_name} ${meeting.facilitator.last_name}`
+                                : 'N/A'}
                             </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {studentUpdate?.sessions_attended !== null &&
-                          studentUpdate?.sessions_attended !== undefined ? (
-                            <Badge className='bg-blue-100 text-blue-800 text-[10px]'>
-                              {studentUpdate.sessions_attended}{' '}
-                              {studentUpdate.sessions_attended === 1 ? 'session' : 'sessions'}
-                            </Badge>
-                          ) : (
-                            <span className='text-sm text-gray-500 italic'>Not recorded</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <span className='text-sm text-gray-600'>
-                            {meeting.facilitator
-                              ? `${meeting.facilitator.first_name} ${meeting.facilitator.last_name}`
-                              : 'N/A'}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant='ghost' size='sm'>
-                                <MoreHorizontal className='w-4 h-4' />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align='end' className='bg-white'>
-                              <DropdownMenuItem onClick={() => handleViewDetails(meeting)}>
-                                <Eye className='w-4 h-4 mr-2' />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEditMeeting(meeting)}>
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant='ghost' size='sm'>
+                                  <MoreHorizontal className='w-4 h-4' />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align='end' className='bg-white'>
+                                <DropdownMenuItem onClick={() => handleViewDetails(meeting)}>
+                                  <Eye className='w-4 h-4 mr-2' />
+                                  View Details
+                                </DropdownMenuItem>
+                                {/* <DropdownMenuItem onClick={() => handleEditMeeting(meeting)}>
                                 <Edit2 className='w-4 h-4 mr-2' />
                                 Edit
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </ResponsiveTableRow>
-                    )
-                  })}
-                </TableBody>
-              </ResponsiveTable>
+                              </DropdownMenuItem> */}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </ResponsiveTableRow>
+                      )
+                    })}
+                  </TableBody>
+                </ResponsiveTable>
+              </div>
             </div>
 
             {/* Monthly Meeting Details Modal */}
