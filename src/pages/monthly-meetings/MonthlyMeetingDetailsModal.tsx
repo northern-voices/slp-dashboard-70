@@ -180,8 +180,17 @@ const MonthlyMeetingDetailsModal = ({
             </div>
           )}
 
-          {/* Meeting Notes Section (if you have a notes field) */}
-          {/* This can be added if your MonthlyMeeting type has a notes field */}
+          {/* Meeting Additional Notes Section */}
+          {meeting.additional_notes && (
+            <div className='space-y-4'>
+              <h3 className='font-medium text-gray-900'>Additional Notes</h3>
+              <div className='p-4 bg-gray-50 rounded-lg border border-gray-200'>
+                <p className='text-sm text-gray-700 whitespace-pre-wrap'>
+                  {meeting.additional_notes}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
