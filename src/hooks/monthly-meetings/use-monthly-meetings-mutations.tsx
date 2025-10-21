@@ -9,6 +9,7 @@ type CreateMonthlyMeetingInput = {
   meeting_title: string
   meeting_date: string
   attendees: string[]
+  school_id: string
   additional_notes?: string | null
   facilitator_id?: string | null
   student_updates?: Array<{
@@ -23,6 +24,7 @@ type UpdateMonthlyMeetingInput = {
   meeting_title?: string
   meeting_date?: string
   attendees?: string[]
+  school_id: string
   additional_notes?: string | null
   facilitator_id?: string | null
   student_updates?: Array<{
