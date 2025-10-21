@@ -37,6 +37,9 @@ import HearingScreening from './pages/HearingScreening'
 import EditScreening from './pages/EditScreening'
 import Drafts from './pages/Drafts'
 import Logout from './components/auth/Logout'
+import MonthlyMeetings from './pages/monthly-meetings/MonthlyMeetings'
+import CreateMonthlyMeeting from './pages/monthly-meetings/CreateMonthlyMeeting'
+import EditMonthlyMeeting from './pages/monthly-meetings/EditMonthlyMeeting'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -223,6 +226,36 @@ const App = () => (
                   <ProtectedRoute>
                     <SchoolRouter>
                       <Reports />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/monthly-meetings'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <MonthlyMeetings />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/monthly-meetings/create'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <CreateMonthlyMeeting />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/monthly-meetings/edit/:meetingId'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <EditMonthlyMeeting />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
@@ -432,6 +465,37 @@ const App = () => (
                   <ProtectedRoute>
                     <SchoolRouter>
                       <Reports />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/school/:schoolId/monthly-meetings'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <MonthlyMeetings />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/school/:schoolId/monthly-meetings/create'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <CreateMonthlyMeeting />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path='/school/:schoolId/monthly-meetings/edit/:meetingId'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <EditMonthlyMeeting />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
