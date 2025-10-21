@@ -13,6 +13,7 @@ import Header from '@/components/Header'
 import { useToast } from '@/hooks/use-toast'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useDeleteStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
+import StudentPageMonthlyMeetingsTable from '@/components/monthly-meetings/StudentPageMonthlyMeetingsTable'
 
 const StudentProfileContent = () => {
   const { studentId, schoolId } = useParams<{ studentId: string; schoolId: string }>()
@@ -206,13 +207,13 @@ const StudentProfileContent = () => {
                 onDelete={handleDeleteStudent}
                 onMoveUpGrade={handleMoveUpGrade}
               />
-
               <StudentScreeningHistory
                 studentId={studentId}
                 student={student}
                 onAddHearingScreening={handleAddHearingScreening}
                 onAddSpeechScreening={handleAddSpeechScreening}
               />
+              <StudentPageMonthlyMeetingsTable studentId={studentId} />
             </div>
           </main>
         </SidebarInset>
