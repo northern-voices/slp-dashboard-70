@@ -325,19 +325,15 @@ export const monthlyMeetingsApi = {
         query = query.gte('meeting_date', schoolYearStart.toISOString().split('T')[0])
       }
 
-      const { data, error } = await query.order('meeting_date', { ascending: false })
+      const { data, error } = await query
+        .eq('school_id', schoolId)
+        .order('meeting_date', { ascending: false })
 
       if (error) throw error
 
       const transformedData: MonthlyMeeting[] = (data || []).map(transformMonthlyMeeting)
 
-      // Filter by school - meetings that have at least one student update from this school
-      // OR meetings with no student updates (show all meetings for the school)
-      return transformedData.filter(
-        meeting =>
-          meeting.student_updates?.length === 0 ||
-          meeting.student_updates?.some(update => update.student?.school_id === schoolId)
-      )
+      return transformedData
     } catch (error) {
       console.error('Error fetching monthly meetings by school:', error)
       throw error
