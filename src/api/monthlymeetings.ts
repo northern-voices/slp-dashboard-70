@@ -27,6 +27,7 @@ export interface MonthlyMeeting {
   attendees: string[]
   additional_notes: string | null
   facilitator_id: string | null
+  school_id: string | null
   created_at: string
   updated_at: string
   // Joined data
@@ -46,6 +47,7 @@ interface RawMonthlyMeeting {
   attendees: string[]
   additional_notes: string | null
   facilitator_id: string | null
+  school_id: string | null
   created_at: string
   updated_at: string
   facilitator: {
@@ -103,6 +105,7 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
   attendees: meeting.attendees,
   additional_notes: meeting.additional_notes,
   facilitator_id: meeting.facilitator_id,
+  school_id: meeting.school_id,
   created_at: meeting.created_at,
   updated_at: meeting.updated_at,
   facilitator: meeting.facilitator,
@@ -393,6 +396,7 @@ export const monthlyMeetingsApi = {
     meeting_title: string
     meeting_date: string
     attendees: string[]
+    school_id: string
     additional_notes?: string | null
     facilitator_id?: string | null
     student_updates?: Array<{
@@ -415,11 +419,16 @@ export const monthlyMeetingsApi = {
         throw new Error('At least one attendee is required')
       }
 
+      if (!data.school_id) {
+        throw new Error('Missing required fields: school_id')
+      }
+
       // Insert the meeting
       const meetingData = {
         meeting_title: data.meeting_title,
         meeting_date: data.meeting_date,
         attendees: data.attendees,
+        school_id: data.school_id,
         additional_notes: data.additional_notes || null,
         facilitator_id: data.facilitator_id || null,
       }
@@ -511,6 +520,7 @@ export const monthlyMeetingsApi = {
       meeting_title: string
       meeting_date: string
       attendees: string[]
+      school_id: string
       additional_notes: string | null
       facilitator_id: string | null
       student_updates: Array<{

@@ -149,11 +149,34 @@ const CreateMonthlyMeetingContent = () => {
         meeting_notes: data.meeting_notes.trim() || null,
       }))
 
+    // Validate attendees
+    if (formData.attendees.length === 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please add at least one attendee.',
+        variant: 'destructive',
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate school_id
+    if (!currentSchool?.id) {
+      toast({
+        title: 'Validation Error',
+        description: 'No school selected. Please select a school first.',
+        variant: 'destructive',
+      })
+      setIsSubmitting(false)
+      return
+    }
+
     // Convert attendees string to array
     const submitData = {
       meeting_title: formData.meeting_title.trim(),
       meeting_date: formData.meeting_date,
       attendees: formData.attendees,
+      school_id: currentSchool?.id || '',
       facilitator_id: formData.facilitator_id || null,
       additional_notes: formData.additional_notes.trim() || null,
       student_updates: student_updates.length > 0 ? student_updates : undefined,
@@ -163,7 +186,7 @@ const CreateMonthlyMeetingContent = () => {
       onSuccess: () => {
         toast({
           title: 'Monthly Meeting Created',
-          description: 'The monthly meeting has been successfully scheduled.',
+          description: 'The monthly meeting has been successfully created.',
         })
 
         // Navigate back to monthly meetings page
