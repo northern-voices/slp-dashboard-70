@@ -27,6 +27,7 @@ export interface MonthlyMeeting {
   attendees: string[]
   additional_notes: string | null
   facilitator_id: string | null
+  school_id: string | null
   created_at: string
   updated_at: string
   // Joined data
@@ -46,6 +47,7 @@ interface RawMonthlyMeeting {
   attendees: string[]
   additional_notes: string | null
   facilitator_id: string | null
+  school_id: string | null
   created_at: string
   updated_at: string
   facilitator: {
@@ -103,6 +105,7 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
   attendees: meeting.attendees,
   additional_notes: meeting.additional_notes,
   facilitator_id: meeting.facilitator_id,
+  school_id: meeting.school_id,
   created_at: meeting.created_at,
   updated_at: meeting.updated_at,
   facilitator: meeting.facilitator,
@@ -228,7 +231,7 @@ export const monthlyMeetingsApi = {
             last_name,
             email
           ),
-          monthly_meeting_student_updates (
+          monthly_meeting_student_updates!inner (
             id,
             student_id,
             sessions_attended,
@@ -257,7 +260,56 @@ export const monthlyMeetingsApi = {
 
       if (error) throw error
 
-      const transformedData: MonthlyMeeting[] = (data || []).map(transformMonthlyMeeting)
+      // Transform and filter to only include the specific student's update
+      const transformedData: MonthlyMeeting[] = (data || []).map(meeting => {
+        // Filter student updates to only include this specific student
+        const studentUpdates = meeting.monthly_meeting_student_updates.filter(
+          update => update.student_id === studentId
+        )
+
+        return {
+          id: meeting.id,
+          meeting_title: meeting.meeting_title,
+          meeting_date: meeting.meeting_date,
+          attendees: meeting.attendees,
+          additional_notes: meeting.additional_notes,
+          facilitator_id: meeting.facilitator_id,
+          created_at: meeting.created_at,
+          updated_at: meeting.updated_at,
+          facilitator: meeting.facilitator,
+          student_updates: studentUpdates.map(update => {
+            // Get the most recent speech screening by sorting by created_at
+            let mostRecentGrade = null
+
+            if (
+              update.students?.speech_screenings &&
+              update.students.speech_screenings.length > 0
+            ) {
+              const sortedScreenings = [...update.students.speech_screenings].sort(
+                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+              )
+              mostRecentGrade = sortedScreenings[0]?.school_grades || null
+            }
+
+            return {
+              id: update.id,
+              student_id: update.student_id,
+              sessions_attended: update.sessions_attended,
+              meeting_notes: update.meeting_notes,
+              student: update.students
+                ? {
+                    id: update.students.id,
+                    first_name: update.students.first_name,
+                    last_name: update.students.last_name,
+                    student_id: update.students.student_id,
+                    school_id: update.students.school_id,
+                    grade: mostRecentGrade,
+                  }
+                : null,
+            }
+          }),
+        }
+      })
 
       return transformedData
     } catch (error) {
@@ -344,6 +396,7 @@ export const monthlyMeetingsApi = {
     meeting_title: string
     meeting_date: string
     attendees: string[]
+    school_id: string
     additional_notes?: string | null
     facilitator_id?: string | null
     student_updates?: Array<{
@@ -366,11 +419,16 @@ export const monthlyMeetingsApi = {
         throw new Error('At least one attendee is required')
       }
 
+      if (!data.school_id) {
+        throw new Error('Missing required fields: school_id')
+      }
+
       // Insert the meeting
       const meetingData = {
         meeting_title: data.meeting_title,
         meeting_date: data.meeting_date,
         attendees: data.attendees,
+        school_id: data.school_id,
         additional_notes: data.additional_notes || null,
         facilitator_id: data.facilitator_id || null,
       }
@@ -462,6 +520,7 @@ export const monthlyMeetingsApi = {
       meeting_title: string
       meeting_date: string
       attendees: string[]
+      school_id: string
       additional_notes: string | null
       facilitator_id: string | null
       student_updates: Array<{

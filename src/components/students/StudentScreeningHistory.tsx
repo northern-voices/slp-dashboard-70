@@ -5,6 +5,7 @@ import { Plus, Volume2, Mic } from 'lucide-react'
 import { Student } from '@/types/database'
 import ScreeningFilters from './screening-filters/ScreeningFilters'
 import ScreeningsList from './screening-filters/ScreeningsList'
+import { useScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 
 interface StudentScreeningHistoryProps {
   studentId?: string
@@ -32,31 +33,19 @@ const StudentScreeningHistory = ({
   const [languageComprehensionFilter, setLanguageComprehensionFilter] = useState('all')
   const [priorityRescreenFilter, setPriorityRescreenFilter] = useState('all')
 
+  // Fetch screenings to get count
+  const { data: screenings = [] } = useScreeningsByStudent(studentId || '')
+
   return (
     <Card>
       <CardHeader>
         <div className='flex items-center justify-between'>
           <CardTitle className='text-lg font-semibold'>Screening History</CardTitle>
-          <div className='flex gap-2'>
-            {onAddSpeechScreening && (
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={onAddSpeechScreening}
-                className='flex items-center gap-2'>
-                <Mic className='w-4 h-4' />
-                Add Speech Screening
-              </Button>
-            )}
-            {/* <Button
-              variant='outline'
-              size='sm'
-              onClick={onAddHearingScreening}
-              className='flex items-center gap-2'>
-              <Volume2 className='w-4 h-4' />
-              Add Hearing Screening
-            </Button> */}
-          </div>
+          {screenings.length > 0 && (
+            <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
+              {screenings.length} screening{screenings.length !== 1 ? 's' : ''}
+            </span>
+          )}
         </div>
       </CardHeader>
       <CardContent>
