@@ -185,8 +185,8 @@ const CreateMonthlyMeetingContent = () => {
     createMonthlyMeetings.mutate(submitData, {
       onSuccess: () => {
         toast({
-          title: 'Monthly Meeting Created',
-          description: 'The monthly meeting has been successfully created.',
+          title: 'Monthly Meeting Saved',
+          description: 'The monthly meeting has been successfully saved.',
         })
 
         // Navigate back to monthly meetings page
@@ -418,7 +418,7 @@ const CreateMonthlyMeetingContent = () => {
                         type='submit'
                         className='bg-blue-600 hover:bg-blue-700'
                         disabled={isSubmitting}>
-                        {isSubmitting ? 'Creating...' : 'Create Meeting'}
+                        {isSubmitting ? 'Saving...' : 'Save Meeting Notes'}
                       </Button>
                     </div>
                   </form>
