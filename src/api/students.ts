@@ -77,28 +77,28 @@ export const studentsApi = {
         return []
       }
 
-      // First, try to query with school_id filter and join with screenings to get grade info
-      const query = supabase
+      // Query students with their current grade AND latest screening information
+      const { data, error } = await supabase
         .from('students')
         .select(
           `
           *,
+          current_grade:school_grades!current_grade_id(
+            id,
+            grade_level,
+            academic_year
+          ),
           speech_screenings!left(
             id,
             grade_id,
             created_at,
             error_patterns,
-            school_grades!left(
-              grade_level
-            )
+            result
           ),
           hearing_screenings!left(
             id,
             grade_id,
-            created_at,
-            school_grades!left(
-              grade_level
-            )
+            created_at
           )
         `
         )
@@ -106,49 +106,32 @@ export const studentsApi = {
         .order('last_name', { ascending: true })
         .order('first_name', { ascending: true })
 
-      // Try to filter by school_id if the field exists
-      try {
-        const { data, error } = await query
-        if (!error && data) {
-          // Transform the data to include grade information from most recent screening
-          const transformedStudents = data.map(student => {
-            // Get the most recent screening (speech or hearing) to determine grade
-            const speechScreenings = student.speech_screenings || []
-            const hearingScreenings = student.hearing_screenings || []
-
-            // Combine and sort by creation date to find most recent
-            const allScreenings = [
-              ...speechScreenings.map(s => ({ ...s, type: 'speech' })),
-              ...hearingScreenings.map(s => ({ ...s, type: 'hearing' })),
-            ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-
-            // Get grade from most recent screening
-            const mostRecentScreening = allScreenings[0]
-            const grade = mostRecentScreening?.school_grades?.grade_level || null
-
-            return {
-              ...student,
-              grade,
-            }
-          })
-
-          return transformedStudents
-        }
-      } catch (filterError) {
-        // school_id filter failed, fall back to all students
-      }
-
-      // Fallback: if school_id filter fails, return all students
-      // This handles the case where the database schema doesn't have school_id
-      const { data, error } = await supabase
-        .from('students')
-        .select('*')
-        .order('last_name', { ascending: true })
-        .order('first_name', { ascending: true })
-
       if (error) throw error
 
-      return data || []
+      // Transform the data to include grade and sort screenings
+      const transformedStudents = (data || []).map(student => {
+        // Get grade from current_grade_id
+        const grade = student.current_grade?.grade_level || null
+
+        // Sort speech screenings by date (most recent first)
+        const speechScreenings = (student.speech_screenings || []).sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+
+        // Sort hearing screenings by date (most recent first)
+        const hearingScreenings = (student.hearing_screenings || []).sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+
+        return {
+          ...student,
+          grade,
+          speech_screenings: speechScreenings,
+          hearing_screenings: hearingScreenings,
+        }
+      })
+
+      return transformedStudents
     } catch (error) {
       console.error('Error fetching students by school:', error)
       throw error
