@@ -32,6 +32,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   User,
   Calendar,
   Phone,
@@ -87,6 +94,7 @@ const StudentInfoHeader = ({
     }>
   >([])
   const [isLoadingNotes, setIsLoadingNotes] = useState(false)
+  const [editedGrade, setEditedGrade] = useState('')
   const { toast } = useToast()
 
   // Update local student when prop changes
@@ -184,47 +192,70 @@ const StudentInfoHeader = ({
     if (!localStudent) return
     setEditedFirstName(localStudent.first_name)
     setEditedLastName(localStudent.last_name)
+    setEditedGrade(localStudent.grade || '')
     setIsEditingName(true)
   }
 
   const handleSaveName = async () => {
-    if (!localStudent?.id || !editedFirstName.trim() || !editedLastName.trim()) {
+    if (
+      !localStudent?.id ||
+      !editedFirstName.trim() ||
+      !editedLastName.trim() ||
+      !editedGrade.trim()
+    ) {
       toast({
         title: 'Error',
-        description: 'First name and last name are required.',
+        description: 'First name, last name, and grade are required.',
         variant: 'destructive',
       })
       return
     }
 
     try {
+      // Get current academic year
+      const currentYear = new Date().getFullYear()
+      const currentMonth = new Date().getMonth()
+      const academicYear =
+        currentMonth >= 8
+          ? `${currentYear}-${currentYear + 1}`
+          : `${currentYear - 1}-${currentYear}`
+
+      // Get the grade_id using the API
+      const gradeId = await studentsApi.getGradeId(
+        localStudent.school_id,
+        editedGrade.trim(),
+        academicYear
+      )
+
+      // Update student with grade_id
       await studentsApi.updateStudent(localStudent.id, {
         first_name: editedFirstName.trim(),
         last_name: editedLastName.trim(),
+        current_grade_id: gradeId || undefined,
       })
 
-      // Update local student state immediately
+      // Update local state
       setLocalStudent({
         ...localStudent,
         first_name: editedFirstName.trim(),
         last_name: editedLastName.trim(),
+        grade: editedGrade.trim(),
       })
 
       setIsEditingName(false)
       toast({
-        title: 'Name updated',
-        description: 'Student name has been successfully updated.',
+        title: 'Student updated',
+        description: 'Student information has been successfully updated.',
       })
 
-      // Trigger a refresh of the student data if onEdit is provided
       if (onEdit) {
         onEdit()
       }
     } catch (error) {
-      console.error('Error updating student name:', error)
+      console.error('Error updating student:', error)
       toast({
         title: 'Error',
-        description: 'Failed to update student name. Please try again.',
+        description: 'Failed to update student information. Please try again.',
         variant: 'destructive',
       })
     }
@@ -234,22 +265,13 @@ const StudentInfoHeader = ({
     setIsEditingName(false)
     setEditedFirstName('')
     setEditedLastName('')
+    setEditedGrade('')
   }
 
   const handleDeleteStudent = () => {
     if (onDelete) {
       onDelete()
       setDeleteConfirmation('') // Reset confirmation text
-    }
-  }
-
-  const handleMoveUpGrade = () => {
-    if (onMoveUpGrade) {
-      onMoveUpGrade()
-      toast({
-        title: 'Grade updated',
-        description: 'Student has been moved up to the next grade.',
-      })
     }
   }
 
@@ -382,11 +404,13 @@ const StudentInfoHeader = ({
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
               <div className='flex items-start gap-2'>
                 <GraduationCap className='w-4 h-4 text-gray-400 mt-1' />
-                <div>
+                <div className='flex-1'>
                   <span className='text-sm font-medium text-gray-700'>
                     Grade (as per last screen)
                   </span>
-                  <p className='text-sm text-gray-600'>{localStudent.grade}</p>
+                  <div className='flex items-center gap-2'>
+                    <p className='text-sm text-gray-600'>{localStudent.grade}</p>
+                  </div>
                 </div>
               </div>
 
@@ -575,12 +599,12 @@ const StudentInfoHeader = ({
           </div>
         </div>
 
-        {/* Edit Name Modal */}
+        {/* Edit Student Info Modal */}
         <Dialog open={isEditingName} onOpenChange={setIsEditingName}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Student Name</DialogTitle>
-              <DialogDescription>Update the student's first and last name below.</DialogDescription>
+              <DialogTitle>Edit Student Information</DialogTitle>
+              <DialogDescription>Update the student's name and grade below.</DialogDescription>
             </DialogHeader>
             <div className='space-y-4 py-4'>
               <div className='space-y-2'>
@@ -598,6 +622,46 @@ const StudentInfoHeader = ({
                   onChange={e => setEditedLastName(e.target.value)}
                   placeholder='Last Name'
                 />
+              </div>
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>Grade</label>
+                <Select value={editedGrade} onValueChange={setEditedGrade}>
+                  <SelectTrigger>
+                    <SelectValue placeholder='Select grade' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='Headstart'>Headstart</SelectItem>
+                    <SelectItem value='Nursery'>Nursery</SelectItem>
+                    <SelectItem value='Pre-K'>Pre-K</SelectItem>
+                    <SelectItem value='K4'>K4</SelectItem>
+                    <SelectItem value='K5'>K5</SelectItem>
+                    <SelectItem value='Kindergarten'>Kindergarten</SelectItem>
+                    <SelectItem value='K/1'>K/1</SelectItem>
+                    <SelectItem value='1'>1</SelectItem>
+                    <SelectItem value='1/2'>1/2</SelectItem>
+                    <SelectItem value='2'>2</SelectItem>
+                    <SelectItem value='2/3'>2/3</SelectItem>
+                    <SelectItem value='3'>3</SelectItem>
+                    <SelectItem value='3/4'>3/4</SelectItem>
+                    <SelectItem value='4'>4</SelectItem>
+                    <SelectItem value='4/5'>4/5</SelectItem>
+                    <SelectItem value='5'>5</SelectItem>
+                    <SelectItem value='5/6'>5/6</SelectItem>
+                    <SelectItem value='6'>6</SelectItem>
+                    <SelectItem value='6/7'>6/7</SelectItem>
+                    <SelectItem value='7'>7</SelectItem>
+                    <SelectItem value='7/8'>7/8</SelectItem>
+                    <SelectItem value='8'>8</SelectItem>
+                    <SelectItem value='8/9'>8/9</SelectItem>
+                    <SelectItem value='9'>9</SelectItem>
+                    <SelectItem value='9/10'>9/10</SelectItem>
+                    <SelectItem value='10'>10</SelectItem>
+                    <SelectItem value='10/11'>10/11</SelectItem>
+                    <SelectItem value='11'>11</SelectItem>
+                    <SelectItem value='11/12'>11/12</SelectItem>
+                    <SelectItem value='12'>12</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter>

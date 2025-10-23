@@ -265,6 +265,7 @@ export const studentsApi = {
       school_id?: string
       date_of_birth?: string
       qualifies_for_program: boolean
+      current_grade_id?: string
     }>
   ): Promise<Student> => {
     try {
@@ -399,6 +400,28 @@ export const studentsApi = {
       if (error) throw error
     } catch (error) {
       console.error('Error deleting student note:', error)
+      throw error
+    }
+  },
+  getGradeId: async (
+    schoolId: string,
+    gradeLevel: string,
+    academicYear: string
+  ): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('school_grades')
+        .select('id')
+        .eq('school_id', schoolId)
+        .eq('grade_level', gradeLevel)
+        .eq('academic_year', academicYear)
+        .maybeSingle()
+
+      if (error) throw error
+
+      return data?.id || null
+    } catch (error) {
+      console.error('Error fetching grade ID:', error)
       throw error
     }
   },
