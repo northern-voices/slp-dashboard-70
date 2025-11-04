@@ -74,6 +74,7 @@ import React, { useState, useEffect } from 'react'
       attendees: [] as string[],
       meeting_date: '',
       additional_notes: '',
+      action_plan: '',
     })
 
     const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
@@ -115,6 +116,7 @@ import React, { useState, useEffect } from 'react'
             attendees: meeting.attendees || [],
             meeting_date: meeting.meeting_date ? meeting.meeting_date.split('T')[0] : '',
             additional_notes: meeting.additional_notes || '',
+            action_plan: meeting.action_plan || '',
           })
 
           // Populate student data if exists
@@ -321,6 +323,7 @@ import React, { useState, useEffect } from 'react'
         attendees: formData.attendees,
         facilitator_id: formData.facilitator_id || null,
         additional_notes: formData.additional_notes.trim() || null,
+        action_plan: formData.action_plan.trim() || null,
         student_updates: student_updates.length > 0 ? student_updates : undefined,
       }
 
@@ -707,6 +710,18 @@ import React, { useState, useEffect } from 'react'
                             value={formData.additional_notes}
                             onChange={handleInputChange}
                             placeholder='Additional notes to be added...'
+                            rows={4}
+                          />
+                        </div>
+
+                        <div className='space-y-2'>
+                          <Label htmlFor='action_plan'>Action Plan</Label>
+                          <Textarea
+                            id='action_plan'
+                            name='action_plan'
+                            value={formData.action_plan}
+                            onChange={handleInputChange}
+                            placeholder='Action plan and next steps...'
                             rows={4}
                           />
                         </div>

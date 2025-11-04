@@ -26,6 +26,7 @@ export interface MonthlyMeeting {
   meeting_date: string
   attendees: string[]
   additional_notes: string | null
+  action_plan: string | null
   facilitator_id: string | null
   school_id: string | null
   created_at: string
@@ -46,6 +47,7 @@ interface RawMonthlyMeeting {
   meeting_date: string
   attendees: string[]
   additional_notes: string | null
+  action_plan: string | null
   facilitator_id: string | null
   school_id: string | null
   created_at: string
@@ -104,6 +106,7 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
   meeting_date: meeting.meeting_date,
   attendees: meeting.attendees,
   additional_notes: meeting.additional_notes,
+  action_plan: meeting.action_plan,
   facilitator_id: meeting.facilitator_id,
   school_id: meeting.school_id,
   created_at: meeting.created_at,
@@ -273,7 +276,9 @@ export const monthlyMeetingsApi = {
           meeting_date: meeting.meeting_date,
           attendees: meeting.attendees,
           additional_notes: meeting.additional_notes,
+          action_plan: meeting.action_plan,
           facilitator_id: meeting.facilitator_id,
+          school_id: meeting.school_id,
           created_at: meeting.created_at,
           updated_at: meeting.updated_at,
           facilitator: meeting.facilitator,
@@ -398,6 +403,7 @@ export const monthlyMeetingsApi = {
     attendees: string[]
     school_id: string
     additional_notes?: string | null
+    action_plan?: string | null
     facilitator_id?: string | null
     student_updates?: Array<{
       student_id: string
@@ -430,6 +436,7 @@ export const monthlyMeetingsApi = {
         attendees: data.attendees,
         school_id: data.school_id,
         additional_notes: data.additional_notes || null,
+        action_plan: data.action_plan || null,
         facilitator_id: data.facilitator_id || null,
       }
 
@@ -522,6 +529,7 @@ export const monthlyMeetingsApi = {
       attendees: string[]
       school_id: string
       additional_notes: string | null
+      action_plan: string | null
       facilitator_id: string | null
       student_updates: Array<{
         student_id: string
