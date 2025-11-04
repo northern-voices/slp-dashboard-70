@@ -132,6 +132,11 @@ const MonthlyMeetingDetailsModal = ({
                           Grade {update.student.grade.grade_level}
                         </Badge>
                       )}
+                      {update.student?.program_status === 'sub' && (
+                        <Badge className='bg-orange-100 text-orange-800 text-xs'>
+                          Sub
+                        </Badge>
+                      )}
                     </div>
 
                     {/* Sessions and Notes Grid */}

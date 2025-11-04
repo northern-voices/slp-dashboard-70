@@ -12,6 +12,7 @@ export interface StudentUpdate {
     last_name: string
     student_id: string
     school_id: string
+    program_status?: string
     grade?: {
       id: string
       grade_level: string
@@ -135,6 +136,7 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
             last_name: update.students.last_name,
             student_id: update.students.student_id,
             school_id: update.students.school_id,
+            program_status: update.students.program_status,
             grade: mostRecentGrade,
           }
         : null,
@@ -177,6 +179,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              program_status,
               speech_screenings (
                 created_at,
                 school_grades (
@@ -364,6 +367,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              program_status,
               speech_screenings (
                 created_at,
                 school_grades (
@@ -497,6 +501,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              program_status,
               speech_screenings (
                 created_at,
                 school_grades (
@@ -602,6 +607,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              program_status,
               speech_screenings (
                 created_at,
                 school_grades (
