@@ -168,6 +168,16 @@ const MonthlyMeetingDetailsModal = ({
             </div>
           )}
 
+          {/* Action Plan Section */}
+          {meeting.action_plan && (
+            <div className='space-y-4'>
+              <h3 className='font-medium text-gray-900'>Action Plan</h3>
+              <div className='p-4 bg-gray-50 rounded-lg border border-gray-200'>
+                <p className='text-sm text-gray-700 whitespace-pre-wrap'>{meeting.action_plan}</p>
+              </div>
+            </div>
+          )}
+
           {/* Meeting Additional Notes Section */}
           {meeting.additional_notes && (
             <div className='space-y-4'>
