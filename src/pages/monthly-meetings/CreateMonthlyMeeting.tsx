@@ -63,6 +63,7 @@ const CreateMonthlyMeetingContent = () => {
       return `${year}-${month}-${day}`
     })(),
     additional_notes: '',
+    action_plan: '',
   })
 
   const [showStudentModal, setShowStudentModal] = useState(false)
@@ -179,6 +180,7 @@ const CreateMonthlyMeetingContent = () => {
       school_id: currentSchool?.id || '',
       facilitator_id: formData.facilitator_id || null,
       additional_notes: formData.additional_notes.trim() || null,
+      action_plan: formData.action_plan.trim() || null,
       student_updates: student_updates.length > 0 ? student_updates : undefined,
     }
 
@@ -404,6 +406,18 @@ const CreateMonthlyMeetingContent = () => {
                           rows={4}
                         />
                       </div>
+                    </div>
+
+                    <div className='space-y-2'>
+                      <Label htmlFor='action_plan'>Action Plan</Label>
+                      <Textarea
+                        id='action_plan'
+                        name='action_plan'
+                        value={formData.action_plan}
+                        onChange={handleInputChange}
+                        placeholder='Action plan and next steps...'
+                        rows={4}
+                      />
                     </div>
 
                     <div className='flex justify-end gap-3 pt-4'>
