@@ -396,18 +396,6 @@ const CreateMonthlyMeetingContent = () => {
                       </div>
 
                       <div className='space-y-2'>
-                        <Label htmlFor='action_plan'>Action Plan</Label>
-                        <Textarea
-                          id='action_plan'
-                          name='action_plan'
-                          value={formData.action_plan}
-                          onChange={handleInputChange}
-                          placeholder='Action plan and next steps...'
-                          rows={4}
-                        />
-                      </div>
-
-                      <div className='space-y-2'>
                         <Label htmlFor='additional_notes'>Additional Notes</Label>
                         <Textarea
                           id='additional_notes'
@@ -418,6 +406,18 @@ const CreateMonthlyMeetingContent = () => {
                           rows={4}
                         />
                       </div>
+                    </div>
+
+                    <div className='space-y-2'>
+                      <Label htmlFor='action_plan'>Action Plan</Label>
+                      <Textarea
+                        id='action_plan'
+                        name='action_plan'
+                        value={formData.action_plan}
+                        onChange={handleInputChange}
+                        placeholder='Action plan and next steps...'
+                        rows={4}
+                      />
                     </div>
 
                     <div className='flex justify-end gap-3 pt-4'>

@@ -703,18 +703,6 @@ const EditMonthlyMeetingContent = () => {
                       </div>
 
                       <div className='space-y-2'>
-                        <Label htmlFor='action_plan'>Action Plan</Label>
-                        <Textarea
-                          id='action_plan'
-                          name='action_plan'
-                          value={formData.action_plan}
-                          onChange={handleInputChange}
-                          placeholder='Action plan and next steps...'
-                          rows={4}
-                        />
-                      </div>
-
-                      <div className='space-y-2'>
                         <Label htmlFor='additional_notes'>Additional Notes</Label>
                         <Textarea
                           id='additional_notes'
@@ -722,6 +710,18 @@ const EditMonthlyMeetingContent = () => {
                           value={formData.additional_notes}
                           onChange={handleInputChange}
                           placeholder='Additional notes to be added...'
+                          rows={4}
+                        />
+                      </div>
+
+                      <div className='space-y-2'>
+                        <Label htmlFor='action_plan'>Action Plan</Label>
+                        <Textarea
+                          id='action_plan'
+                          name='action_plan'
+                          value={formData.action_plan}
+                          onChange={handleInputChange}
+                          placeholder='Action plan and next steps...'
                           rows={4}
                         />
                       </div>
