@@ -169,4 +169,27 @@ export const edgeFunctionsApi = {
       throw error
     }
   },
+
+  async monthlyMeetings(monthlyMeetingId: string, overrideEmail: string) {
+    try {
+      const { data, error } = await supabase.functions.invoke('monthly-meeting', {
+        body: {
+          monthly_meeting_id: monthlyMeetingId,
+          override_email: overrideEmail,
+        },
+      })
+
+      if (error) {
+        console.error('Error', error)
+        throw error
+      }
+
+      console.log(data, 'data')
+
+      return data
+    } catch (error) {
+      console.error('Failed to send the school summary report:', error)
+      throw error
+    }
+  },
 }
