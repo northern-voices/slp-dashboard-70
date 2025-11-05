@@ -12,6 +12,7 @@ export interface StudentUpdate {
     last_name: string
     student_id: string
     school_id: string
+    program_status?: string
     grade?: {
       id: string
       grade_level: string
@@ -26,6 +27,7 @@ export interface MonthlyMeeting {
   meeting_date: string
   attendees: string[]
   additional_notes: string | null
+  action_plan: string | null
   facilitator_id: string | null
   school_id: string | null
   created_at: string
@@ -46,6 +48,7 @@ interface RawMonthlyMeeting {
   meeting_date: string
   attendees: string[]
   additional_notes: string | null
+  action_plan: string | null
   facilitator_id: string | null
   school_id: string | null
   created_at: string
@@ -104,6 +107,7 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
   meeting_date: meeting.meeting_date,
   attendees: meeting.attendees,
   additional_notes: meeting.additional_notes,
+  action_plan: meeting.action_plan,
   facilitator_id: meeting.facilitator_id,
   school_id: meeting.school_id,
   created_at: meeting.created_at,
@@ -132,6 +136,7 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
             last_name: update.students.last_name,
             student_id: update.students.student_id,
             school_id: update.students.school_id,
+            program_status: update.students.program_status,
             grade: mostRecentGrade,
           }
         : null,
@@ -174,6 +179,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              program_status,
               speech_screenings (
                 created_at,
                 school_grades (
@@ -273,7 +279,9 @@ export const monthlyMeetingsApi = {
           meeting_date: meeting.meeting_date,
           attendees: meeting.attendees,
           additional_notes: meeting.additional_notes,
+          action_plan: meeting.action_plan,
           facilitator_id: meeting.facilitator_id,
+          school_id: meeting.school_id,
           created_at: meeting.created_at,
           updated_at: meeting.updated_at,
           facilitator: meeting.facilitator,
@@ -359,6 +367,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              program_status,
               speech_screenings (
                 created_at,
                 school_grades (
@@ -398,6 +407,7 @@ export const monthlyMeetingsApi = {
     attendees: string[]
     school_id: string
     additional_notes?: string | null
+    action_plan?: string | null
     facilitator_id?: string | null
     student_updates?: Array<{
       student_id: string
@@ -430,6 +440,7 @@ export const monthlyMeetingsApi = {
         attendees: data.attendees,
         school_id: data.school_id,
         additional_notes: data.additional_notes || null,
+        action_plan: data.action_plan || null,
         facilitator_id: data.facilitator_id || null,
       }
 
@@ -490,6 +501,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              program_status,
               speech_screenings (
                 created_at,
                 school_grades (
@@ -522,6 +534,7 @@ export const monthlyMeetingsApi = {
       attendees: string[]
       school_id: string
       additional_notes: string | null
+      action_plan: string | null
       facilitator_id: string | null
       student_updates: Array<{
         student_id: string
@@ -594,6 +607,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              program_status,
               speech_screenings (
                 created_at,
                 school_grades (

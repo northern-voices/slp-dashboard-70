@@ -10,6 +10,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   ResponsiveTable,
   ResponsiveTableRow,
@@ -34,6 +44,7 @@ import { useDeleteMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-me
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
 import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
+import { edgeFunctionsApi } from '@/api/edgeFunctions'
 
 interface MonthlyMeetingsTableProps {
   searchTerm: string
@@ -56,6 +67,10 @@ const MonthlyMeetingsTable = ({
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [meetingToDelete, setMeetingToDelete] = useState<MonthlyMeeting | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [meetingToSend, setMeetingToSend] = useState<MonthlyMeeting | null>(null)
+  const [isSendReportDialogOpen, setIsSendReportDialogOpen] = useState(false)
+  const [sendReportEmail, setSendReportEmail] = useState('')
+  const [isSendingReport, setIsSendingReport] = useState(false)
   const { toast } = useToast()
   const deleteMonthlyMeeting = useDeleteMonthlyMeeting()
 
@@ -249,6 +264,57 @@ const MonthlyMeetingsTable = ({
     setMeetingToDelete(null)
   }
 
+  const handleSendReport = (meeting: MonthlyMeeting) => {
+    setMeetingToSend(meeting)
+    setSendReportEmail('')
+    setIsSendReportDialogOpen(true)
+  }
+
+  const confirmSendReport = async () => {
+    if (!meetingToSend || !sendReportEmail) return
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(sendReportEmail)) {
+      toast({
+        title: 'Invalid Email',
+        description: 'Please enter a valid email address.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsSendingReport(true)
+
+    try {
+      await edgeFunctionsApi.monthlyMeetings(meetingToSend.id, sendReportEmail)
+
+      toast({
+        title: 'Report Sent',
+        description: `Monthly meeting report has been sent to ${sendReportEmail}`,
+      })
+
+      setIsSendReportDialogOpen(false)
+      setMeetingToSend(null)
+      setSendReportEmail('')
+    } catch (error) {
+      console.error('Failed to send report:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to send the report. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSendingReport(false)
+    }
+  }
+
+  const cancelSendReport = () => {
+    setIsSendReportDialogOpen(false)
+    setMeetingToSend(null)
+    setSendReportEmail('')
+  }
+
   const isAllSelected =
     filteredMeetings.length > 0 && selectedMeetings.length === filteredMeetings.length
 
@@ -333,7 +399,7 @@ const MonthlyMeetingsTable = ({
                             <Eye className='w-4 h-4 mr-2' />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSendReport(meeting)}>
                             <Mail className='w-4 h-4 mr-2' />
                             Send Report
                           </DropdownMenuItem>
@@ -409,7 +475,7 @@ const MonthlyMeetingsTable = ({
                         <Eye className='w-4 h-4 mr-2' />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleSendReport(meeting)}>
                         <Mail className='w-4 h-4 mr-2' />
                         Send Report
                       </DropdownMenuItem>
@@ -476,6 +542,49 @@ const MonthlyMeetingsTable = ({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Send Report Dialog */}
+        <Dialog open={isSendReportDialogOpen} onOpenChange={setIsSendReportDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Send Monthly Meeting Report</DialogTitle>
+              <DialogDescription>
+                Send the monthly meeting report for "{meetingToSend?.meeting_title}" via email.
+              </DialogDescription>
+            </DialogHeader>
+            <div className='space-y-4 py-4'>
+              <div className='space-y-2'>
+                <Label htmlFor='email'>Email Address</Label>
+                <Input
+                  id='email'
+                  type='email'
+                  placeholder='Enter email address'
+                  value={sendReportEmail}
+                  onChange={e => setSendReportEmail(e.target.value)}
+                  disabled={isSendingReport}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant='outline' onClick={cancelSendReport} disabled={isSendingReport}>
+                Cancel
+              </Button>
+              <Button onClick={confirmSendReport} disabled={isSendingReport || !sendReportEmail}>
+                {isSendingReport ? (
+                  <>
+                    <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Mail className='w-4 h-4 mr-2' />
+                    Send Report
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )
