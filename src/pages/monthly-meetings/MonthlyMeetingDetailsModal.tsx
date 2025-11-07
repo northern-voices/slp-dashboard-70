@@ -132,6 +132,9 @@ const MonthlyMeetingDetailsModal = ({
                           Grade {update.student.grade.grade_level}
                         </Badge>
                       )}
+                      {update.student?.program_status === 'sub' && (
+                        <Badge className='bg-orange-100 text-orange-800 text-xs'>Sub</Badge>
+                      )}
                     </div>
 
                     {/* Sessions and Notes Grid */}
@@ -176,6 +179,16 @@ const MonthlyMeetingDetailsModal = ({
                 <p className='text-sm text-gray-700 whitespace-pre-wrap'>
                   {meeting.additional_notes}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* Action Plan Section */}
+          {meeting.action_plan && (
+            <div className='space-y-4'>
+              <h3 className='font-medium text-gray-900'>Action Plan</h3>
+              <div className='p-4 bg-gray-50 rounded-lg border border-gray-200'>
+                <p className='text-sm text-gray-700 whitespace-pre-wrap'>{meeting.action_plan}</p>
               </div>
             </div>
           )}
