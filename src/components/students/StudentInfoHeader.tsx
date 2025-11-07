@@ -5,6 +5,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Table,
   TableBody,
   TableCell,
@@ -47,6 +54,7 @@ import type { Student } from '@/types/database'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useToast } from '@/hooks/use-toast'
 import { studentsApi } from '@/api/students'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 
 interface StudentInfoHeaderProps {
   student?: Student | null
@@ -73,6 +81,10 @@ const StudentInfoHeader = ({
   const [isEditingName, setIsEditingName] = useState(false)
   const [editedFirstName, setEditedFirstName] = useState('')
   const [editedLastName, setEditedLastName] = useState('')
+  const [editedGradeId, setEditedGradeId] = useState<string>('')
+  const [availableGrades, setAvailableGrades] = useState<SchoolGrade[]>([])
+  const [isLoadingGrades, setIsLoadingGrades] = useState(false)
+  const [currentGrade, setCurrentGrade] = useState<SchoolGrade | null>(null)
   const [studentNotes, setStudentNotes] = useState<
     Array<{
       id: string
@@ -93,6 +105,27 @@ const StudentInfoHeader = ({
   useEffect(() => {
     setLocalStudent(student || null)
   }, [student])
+
+  // Fetch current grade when student has a current_grade_id
+  useEffect(() => {
+    const fetchCurrentGrade = async () => {
+      if (!student?.current_grade_id || !student?.school_id) {
+        setCurrentGrade(null)
+        return
+      }
+
+      try {
+        const grades = await schoolGradesApi.getSchoolGradesBySchool(student.school_id)
+        const grade = grades.find(g => g.id === student.current_grade_id)
+        setCurrentGrade(grade || null)
+      } catch (error) {
+        console.error('Error fetching current grade:', error)
+        setCurrentGrade(null)
+      }
+    }
+
+    fetchCurrentGrade()
+  }, [student?.current_grade_id, student?.school_id])
 
   // Fetch student notes when component mounts or student changes
   useEffect(() => {
@@ -184,7 +217,29 @@ const StudentInfoHeader = ({
     if (!localStudent) return
     setEditedFirstName(localStudent.first_name)
     setEditedLastName(localStudent.last_name)
+    setEditedGradeId(localStudent.current_grade_id || '')
     setIsEditingName(true)
+
+    // Fetch available grades for the student's school in the background
+    if (localStudent.school_id) {
+      setIsLoadingGrades(true)
+      schoolGradesApi
+        .getSchoolGradesBySchool(localStudent.school_id)
+        .then(grades => {
+          setAvailableGrades(grades)
+        })
+        .catch(error => {
+          console.error('Error fetching grades:', error)
+          toast({
+            title: 'Error',
+            description: 'Failed to load available grades.',
+            variant: 'destructive',
+          })
+        })
+        .finally(() => {
+          setIsLoadingGrades(false)
+        })
+    }
   }
 
   const handleSaveName = async () => {
@@ -201,6 +256,7 @@ const StudentInfoHeader = ({
       await studentsApi.updateStudent(localStudent.id, {
         first_name: editedFirstName.trim(),
         last_name: editedLastName.trim(),
+        current_grade_id: editedGradeId || undefined,
       })
 
       // Update local student state immediately
@@ -208,12 +264,21 @@ const StudentInfoHeader = ({
         ...localStudent,
         first_name: editedFirstName.trim(),
         last_name: editedLastName.trim(),
+        current_grade_id: editedGradeId || null,
       })
+
+      // Update current grade display
+      if (editedGradeId) {
+        const selectedGrade = availableGrades.find(g => g.id === editedGradeId)
+        setCurrentGrade(selectedGrade || null)
+      } else {
+        setCurrentGrade(null)
+      }
 
       setIsEditingName(false)
       toast({
-        title: 'Name updated',
-        description: 'Student name has been successfully updated.',
+        title: 'Student updated',
+        description: 'Student information has been successfully updated.',
       })
 
       // Trigger a refresh of the student data if onEdit is provided
@@ -221,10 +286,10 @@ const StudentInfoHeader = ({
         onEdit()
       }
     } catch (error) {
-      console.error('Error updating student name:', error)
+      console.error('Error updating student:', error)
       toast({
         title: 'Error',
-        description: 'Failed to update student name. Please try again.',
+        description: 'Failed to update student information. Please try again.',
         variant: 'destructive',
       })
     }
@@ -234,6 +299,8 @@ const StudentInfoHeader = ({
     setIsEditingName(false)
     setEditedFirstName('')
     setEditedLastName('')
+    setEditedGradeId('')
+    setAvailableGrades([])
   }
 
   const handleDeleteStudent = () => {
@@ -383,10 +450,12 @@ const StudentInfoHeader = ({
               <div className='flex items-start gap-2'>
                 <GraduationCap className='w-4 h-4 text-gray-400 mt-1' />
                 <div>
-                  <span className='text-sm font-medium text-gray-700'>
-                    Grade (as per last screen)
-                  </span>
-                  <p className='text-sm text-gray-600'>{localStudent.grade}</p>
+                  <span className='text-sm font-medium text-gray-700'>Current Grade</span>
+                  <p className='text-sm text-gray-600'>
+                    {currentGrade
+                      ? `${currentGrade.grade_level} (${currentGrade.academic_year})`
+                      : 'No grade assigned'}
+                  </p>
                 </div>
               </div>
 
@@ -576,11 +645,19 @@ const StudentInfoHeader = ({
         </div>
 
         {/* Edit Name Modal */}
-        <Dialog open={isEditingName} onOpenChange={setIsEditingName}>
+        <Dialog
+          open={isEditingName}
+          onOpenChange={open => {
+            if (!open) {
+              handleCancelEditName()
+            }
+          }}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Student Name</DialogTitle>
-              <DialogDescription>Update the student's first and last name below.</DialogDescription>
+              <DialogTitle>Edit Student Information</DialogTitle>
+              <DialogDescription>
+                Update the student's first name, last name, and current grade below.
+              </DialogDescription>
             </DialogHeader>
             <div className='space-y-4 py-4'>
               <div className='space-y-2'>
@@ -598,6 +675,27 @@ const StudentInfoHeader = ({
                   onChange={e => setEditedLastName(e.target.value)}
                   placeholder='Last Name'
                 />
+              </div>
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>Current Grade</label>
+                {isLoadingGrades ? (
+                  <div className='flex items-center justify-center py-2'>
+                    <LoadingSpinner size='sm' />
+                  </div>
+                ) : (
+                  <Select value={editedGradeId || undefined} onValueChange={setEditedGradeId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder='Select grade (optional)' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableGrades.map(grade => (
+                        <SelectItem key={grade.id} value={grade.id}>
+                          {grade.grade_level} ({grade.academic_year})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
             <DialogFooter>

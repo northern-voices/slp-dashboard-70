@@ -51,6 +51,7 @@ export interface Student {
   grade?: string
   date_of_birth?: string
   qualifies_for_program?: boolean
+  current_grade_id?: string | null
   created_at: string
   updated_at: string
   speech_screenings?: Array<{
