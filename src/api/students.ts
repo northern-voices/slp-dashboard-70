@@ -155,7 +155,7 @@ export const studentsApi = {
     }
   },
 
-  // Get a specific student by ID (UUID)
+  // Get a specific student by ID
   getStudent: async (studentId: string): Promise<Student | null> => {
     try {
       const { data, error } = await supabase
@@ -173,7 +173,7 @@ export const studentsApi = {
     }
   },
 
-  // Get a specific student by formatted student_id (e.g., "we", "TS-uuid")
+  // Get a specific student by formatted student_id
   getStudentByStudentId: async (studentId: string): Promise<Student | null> => {
     try {
       const { data, error } = await supabase
