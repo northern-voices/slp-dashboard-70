@@ -55,6 +55,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useToast } from '@/hooks/use-toast'
 import { studentsApi } from '@/api/students'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface StudentInfoHeaderProps {
   student?: Student | null
@@ -85,6 +86,7 @@ const StudentInfoHeader = ({
   const [availableGrades, setAvailableGrades] = useState<SchoolGrade[]>([])
   const [isLoadingGrades, setIsLoadingGrades] = useState(false)
   const [currentGrade, setCurrentGrade] = useState<SchoolGrade | null>(null)
+  const [isLoadingCurrentGrade, setIsLoadingCurrentGrade] = useState(false)
   const [studentNotes, setStudentNotes] = useState<
     Array<{
       id: string
@@ -100,6 +102,7 @@ const StudentInfoHeader = ({
   >([])
   const [isLoadingNotes, setIsLoadingNotes] = useState(false)
   const { toast } = useToast()
+  const queryClient = useQueryClient()
 
   // Update local student when prop changes
   useEffect(() => {
@@ -111,9 +114,11 @@ const StudentInfoHeader = ({
     const fetchCurrentGrade = async () => {
       if (!student?.current_grade_id || !student?.school_id) {
         setCurrentGrade(null)
+        setIsLoadingCurrentGrade(false)
         return
       }
 
+      setIsLoadingCurrentGrade(true)
       try {
         const grades = await schoolGradesApi.getSchoolGradesBySchool(student.school_id)
         const grade = grades.find(g => g.id === student.current_grade_id)
@@ -121,6 +126,8 @@ const StudentInfoHeader = ({
       } catch (error) {
         console.error('Error fetching current grade:', error)
         setCurrentGrade(null)
+      } finally {
+        setIsLoadingCurrentGrade(false)
       }
     }
 
@@ -259,7 +266,11 @@ const StudentInfoHeader = ({
         current_grade_id: editedGradeId || undefined,
       })
 
-      // Update local student state immediately
+      // Invalidate React Query cache to refetch student data
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+      queryClient.invalidateQueries({ queryKey: ['students', localStudent.id] })
+
+      // Update local student state immediately for instant UI feedback
       setLocalStudent({
         ...localStudent,
         first_name: editedFirstName.trim(),
@@ -451,11 +462,15 @@ const StudentInfoHeader = ({
                 <GraduationCap className='w-4 h-4 text-gray-400 mt-1' />
                 <div>
                   <span className='text-sm font-medium text-gray-700'>Current Grade</span>
-                  <p className='text-sm text-gray-600'>
-                    {currentGrade
-                      ? `${currentGrade.grade_level} (${currentGrade.academic_year})`
-                      : 'No grade assigned'}
-                  </p>
+                  {isLoadingCurrentGrade ? (
+                    <div className='animate-pulse bg-gray-200 h-5 w-32 rounded mt-1'></div>
+                  ) : (
+                    <p className='text-sm text-gray-600'>
+                      {currentGrade
+                        ? `${currentGrade.grade_level} (${currentGrade.academic_year})`
+                        : 'No grade assigned'}
+                    </p>
+                  )}
                 </div>
               </div>
 
