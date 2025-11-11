@@ -155,12 +155,12 @@ export const studentsApi = {
     }
   },
 
-  // Get a specific student by ID
+  // Get a specific student by ID (UUID)
   getStudent: async (studentId: string): Promise<Student | null> => {
     try {
       const { data, error } = await supabase
         .from('students')
-        .select('*')
+        .select('*, current_grade_id')
         .eq('id', studentId)
         .single()
 
@@ -169,6 +169,24 @@ export const studentsApi = {
       return data
     } catch (error) {
       console.error('Error fetching student:', error)
+      throw error
+    }
+  },
+
+  // Get a specific student by formatted student_id (e.g., "we", "TS-uuid")
+  getStudentByStudentId: async (studentId: string): Promise<Student | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .select('*, current_grade_id')
+        .eq('student_id', studentId)
+        .maybeSingle()
+
+      if (error) throw error
+
+      return data
+    } catch (error) {
+      console.error('Error fetching student by student_id:', error)
       throw error
     }
   },
