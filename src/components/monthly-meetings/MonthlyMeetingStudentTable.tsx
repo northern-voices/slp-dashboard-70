@@ -111,60 +111,25 @@ const MonthlyMeetingsStudentTable = ({
   }
 
   const getProgramStatus = (student: Student): string => {
-    const speechScreenings = student.speech_screenings || []
-    if (speechScreenings.length === 0) {
-      return 'no_screening'
-    }
-
-    const mostRecent = [...speechScreenings].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    )[0]
-
-    if (!mostRecent?.error_patterns) {
-      return 'not_set'
-    }
-
-    try {
-      const errorPatterns =
-        typeof mostRecent.error_patterns === 'string'
-          ? JSON.parse(mostRecent.error_patterns)
-          : mostRecent.error_patterns
-
-      const qualifies = errorPatterns?.screening_metadata?.qualifies_for_speech_program
-      const sub = errorPatterns?.screening_metadata?.sub
-      const graduated = errorPatterns?.screening_metadata?.graduated
-
-      if (qualifies === undefined && sub === undefined && graduated === undefined) {
-        return 'not_set'
-      }
-
-      if (graduated) return 'graduated'
-      if (sub) return 'sub'
-      if (qualifies) return 'qualifies'
-      return 'not_in_program'
-    } catch (e) {
-      console.error('Error parsing error_patterns:', e)
-      return 'not_set'
-    }
+    // Read directly from student.program_status field
+    return student.program_status || 'none'
   }
 
   const getQualificationBadge = (student: Student) => {
     const programStatus = getProgramStatus(student)
 
     switch (programStatus) {
-      case 'no_screening':
-        return (
-          <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Screening</Badge>
-        )
-      case 'not_set':
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
       case 'graduated':
         return (
           <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
         )
+      case 'paused':
+        return (
+          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
+        )
       case 'sub':
         return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
-      case 'qualifies':
+      case 'qualified':
         return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
       case 'not_in_program':
         return (
@@ -172,8 +137,9 @@ const MonthlyMeetingsStudentTable = ({
             Not In Program
           </Badge>
         )
+      case 'none':
       default:
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Error</Badge>
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
     }
   }
 
@@ -192,7 +158,7 @@ const MonthlyMeetingsStudentTable = ({
   const filteredStudents = students
     .filter(student => {
       const status = getProgramStatus(student)
-      return status === 'sub' || status === 'qualifies'
+      return status === 'sub' || status === 'qualified'
     })
     .sort((a, b) => {
       if (!sortField || !sortOrder) {
@@ -222,7 +188,7 @@ const MonthlyMeetingsStudentTable = ({
       } else if (sortField === 'program_status') {
         const statusA = getProgramStatus(a)
         const statusB = getProgramStatus(b)
-        const statusOrder = { qualifies: 0, sub: 1 }
+        const statusOrder = { qualified: 0, sub: 1 }
         comparison = statusOrder[statusA] - statusOrder[statusB]
       }
 
