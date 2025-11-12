@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -50,7 +50,7 @@ import { parseDateSafely } from '@/utils/dateUtils'
 import ScreeningBulkActions from './ScreeningBulkActions'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import SendReportsModal from './SendReportsModal'
-import { School, Screening } from '@/types/database'
+import { School, Screening, Student } from '@/types/database'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import {
   useDeleteScreening,
@@ -58,6 +58,8 @@ import {
 } from '@/hooks/screenings/use-screening-mutations'
 import { useToast } from '@/hooks/use-toast'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
+import { useStudentsBySchool } from '@/hooks/students/use-students'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -104,6 +106,8 @@ const ScreeningsTable = ({
   const [updatingProgramId, setUpdatingProgramId] = useState<string | null>(null)
   const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
+  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
+  const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
 
   // Use React Query to fetch screenings data
   // If currentSchool is provided, use the school-specific query, otherwise fetch all
@@ -127,6 +131,60 @@ const ScreeningsTable = ({
   // Use mutation hooks
   const { mutate: updateSpeechScreening, isPending: isUpdating } = useUpdateSpeechScreening()
   const { toast } = useToast()
+
+  // Fetch students for the school
+  const { data: students = [] } = useStudentsBySchool(currentSchool?.id)
+
+  // Fetch grades and students data
+  useEffect(() => {
+    const fetchGradesAndStudents = async () => {
+      if (!currentSchool?.id) {
+        setGradesMap(new Map())
+        setStudentsMap(new Map())
+        return
+      }
+
+      try {
+        // Fetch grades
+        const grades = await schoolGradesApi.getSchoolGradesBySchool(currentSchool.id)
+        const gradesMapping = new Map<string, SchoolGrade>()
+        grades.forEach(grade => {
+          gradesMapping.set(grade.id, grade)
+        })
+        setGradesMap(gradesMapping)
+
+        // Create students map - map by BOTH UUID and formatted student_id
+        const studentsMapping = new Map<string, Student>()
+        students.forEach(student => {
+          // Map by UUID (student.id)
+          studentsMapping.set(student.id, student)
+          // Also map by formatted student_id (e.g., "TS-uuid")
+          studentsMapping.set(student.student_id, student)
+        })
+        setStudentsMap(studentsMapping)
+      } catch (error) {
+        console.error('Error fetching grades or students:', error)
+        setGradesMap(new Map())
+        setStudentsMap(new Map())
+      }
+    }
+
+    fetchGradesAndStudents()
+  }, [currentSchool?.id, students])
+
+  // Helper function to get grade for a screening
+  const getScreeningGrade = (screening: Screening): string => {
+    const student = studentsMap.get(screening.student_id)
+
+    if (student?.current_grade_id) {
+      const grade = gradesMap.get(student.current_grade_id)
+      if (grade) {
+        return grade.grade_level
+      }
+    }
+    // Fallback to screening's grade field if student doesn't have current_grade_id
+    return screening.grade || 'N/A'
+  }
 
   // Determine which data to use based on whether a school is selected
   const allScreenings = currentSchool ? schoolScreeningsData : allScreeningsData
@@ -218,7 +276,7 @@ const ScreeningsTable = ({
     // Apply grade filter
     let matchesGrade = true
     if (gradeFilter !== 'all') {
-      matchesGrade = screening.grade === gradeFilter
+      matchesGrade = getScreeningGrade(screening) === gradeFilter
     }
 
     // Apply vocabulary support filter
@@ -330,8 +388,8 @@ const ScreeningsTable = ({
         break
       }
       case 'grade': {
-        const gradeA = a.grade || ''
-        const gradeB = b.grade || ''
+        const gradeA = getScreeningGrade(a)
+        const gradeB = getScreeningGrade(b)
         comparison = gradeA.localeCompare(gradeB)
         break
       }
@@ -859,7 +917,7 @@ const ScreeningsTable = ({
                   <Button
                     variant='ghost'
                     onClick={() => handleSort('name')}
-                    className='h-auto p-0 font-medium hover:bg-transparent'>
+                    className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
                     Student
                     <span className='ml-1'>{getSortIcon('name')}</span>
                   </Button>
@@ -870,7 +928,7 @@ const ScreeningsTable = ({
                   <Button
                     variant='ghost'
                     onClick={() => handleSort('grade')}
-                    className='h-auto p-0 font-medium hover:bg-transparent'>
+                    className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
                     Grade
                     <span className='ml-1'>{getSortIcon('grade')}</span>
                   </Button>
@@ -879,12 +937,13 @@ const ScreeningsTable = ({
                   <Button
                     variant='ghost'
                     onClick={() => handleSort('date')}
-                    className='h-auto p-0 font-medium hover:bg-transparent'>
+                    className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
                     Date
                     <span className='ml-1'>{getSortIcon('date')}</span>
                   </Button>
                 </TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
+                <TableHead className='w-1/6 min-w-[120px] bg-gray-25/80'>Screener</TableHead>
+                <TableHead className='w-12'></TableHead>
               </tr>
             </TableHeader>
             <TableBody>
@@ -949,9 +1008,10 @@ const ScreeningsTable = ({
                         <p>
                           <span className='font-medium'>Student ID:</span> {screening.student_id}
                         </p>
-                        {screening.grade && (
+                        {getScreeningGrade(screening) !== 'N/A' && (
                           <p>
-                            <span className='font-medium'>Grade:</span> {screening.grade}
+                            <span className='font-medium'>Grade:</span>{' '}
+                            {getScreeningGrade(screening)}
                           </p>
                         )}
                       </div>
@@ -985,8 +1045,8 @@ const ScreeningsTable = ({
                     <div className='w-full min-w-[120px]'>{getProgramSelector(screening)}</div>
                   </TableCell>
                   <TableCell className='max-w-0'>
-                    <div className='truncate' title={screening.grade || 'No grade'}>
-                      {screening.grade || '-'}
+                    <div className='truncate' title={getScreeningGrade(screening)}>
+                      {getScreeningGrade(screening) === 'N/A' ? '-' : getScreeningGrade(screening)}
                     </div>
                   </TableCell>
                   <TableCell className='max-w-0'>

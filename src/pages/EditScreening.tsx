@@ -33,6 +33,8 @@ import { useUpdateSpeechScreening } from '@/hooks/screenings/use-screening-mutat
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import EnhancedSpeechScreeningFields from '@/components/screening/speech/EnhancedSpeechScreeningFields'
 import { format } from 'date-fns'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { studentsApi } from '@/api/students'
 
 const EditScreeningContent = () => {
   const { screeningId } = useParams<{
@@ -40,8 +42,11 @@ const EditScreeningContent = () => {
   }>()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { userProfile } = useOrganization()
+  const { userProfile, currentSchool } = useOrganization()
   const [screening, setScreening] = React.useState<Screening | null>(null)
+  const [screeningGrade, setScreeningGrade] = React.useState<string>('N/A')
+  const [studentCurrentGrade, setStudentCurrentGrade] = React.useState<string | null>(null)
+  const [gradesMatch, setGradesMatch] = React.useState<boolean>(true)
   const [loading, setLoading] = React.useState(false)
   const [saving, setSaving] = React.useState(false)
   const updateSpeechScreening = useUpdateSpeechScreening()
@@ -148,6 +153,40 @@ const EditScreeningContent = () => {
 
           if (screeningData) {
             setScreening(screeningData)
+
+            // Fetch grades for the school
+            if (currentSchool?.id) {
+              try {
+                const grades = await schoolGradesApi.getSchoolGradesBySchool(currentSchool.id)
+
+                // Get the screening's grade from grade_id
+                if (screeningData.grade_id) {
+                  const screeningGradeObj = grades.find(g => g.id === screeningData.grade_id)
+                  if (screeningGradeObj) {
+                    setScreeningGrade(screeningGradeObj.grade_level)
+                  }
+                }
+
+                // Fetch student's current grade to compare
+                if (screeningData.student_id) {
+                  const student = await studentsApi.getStudentByStudentId(screeningData.student_id)
+
+                  if (student?.current_grade_id) {
+                    const studentGradeObj = grades.find(g => g.id === student.current_grade_id)
+                    if (studentGradeObj) {
+                      setStudentCurrentGrade(studentGradeObj.grade_level)
+
+                      // Check if grades match
+                      if (student.current_grade_id !== screeningData.grade_id) {
+                        setGradesMatch(false)
+                      }
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching grades:', error)
+              }
+            }
             // Create default error patterns structure
             const defaultErrorPatterns = {
               attendance: {
@@ -234,22 +273,6 @@ const EditScreeningContent = () => {
                 screeningData.error_patterns?.articulation?.articulationNotes || '',
               error_patterns: mergedErrorPatterns,
             })
-
-            console.log('Populated form with screening data:', {
-              screeningData,
-              mergedErrorPatterns,
-              resultFields: {
-                speech_screen_result: screeningData.result,
-                vocabulary_support_recommended:
-                  screeningData.error_patterns?.screening_metadata?.vocabulary_support_recommended,
-                qualifies_for_speech_program:
-                  screeningData.error_patterns?.screening_metadata?.qualifies_for_speech_program,
-                sub: screeningData.error_patterns?.screening_metadata?.sub,
-                graduated: screeningData.error_patterns?.screening_metadata?.graduated,
-                general_articulation_notes:
-                  screeningData.error_patterns?.articulation?.articulationNotes,
-              },
-            })
           } else {
             throw new Error('Screening not found')
           }
@@ -266,7 +289,7 @@ const EditScreeningContent = () => {
       }
       fetchScreening()
     }
-  }, [screeningId, toast, form])
+  }, [screeningId, toast, form, currentSchool?.id])
 
   const handleGoBack = () => {
     navigate(-1)
@@ -403,11 +426,23 @@ const EditScreeningContent = () => {
                         </span>
                       </div>
                       <div className='flex items-center gap-2 mt-1'>
-                        <span className='text-sm font-medium text-blue-900'>Grade:</span>
+                        <span className='text-sm font-medium text-blue-900'>
+                          {gradesMatch ? 'Grade:' : 'Screening Grade:'}
+                        </span>
                         <span className='text-sm font-semibold text-blue-800'>
-                          {screening.grade}
+                          {screeningGrade}
                         </span>
                       </div>
+                      {!gradesMatch && studentCurrentGrade && (
+                        <div className='flex items-center gap-2 mt-1'>
+                          <span className='text-sm font-medium text-blue-900'>
+                            Student Current Grade:
+                          </span>
+                          <span className='text-sm font-semibold text-blue-800'>
+                            {studentCurrentGrade}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                       <div>

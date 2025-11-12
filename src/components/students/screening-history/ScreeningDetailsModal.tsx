@@ -21,6 +21,8 @@ import { format } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { Screening } from '@/types/database'
 import { useUpdateSpeechScreening } from '@/hooks/screenings/use-screening-mutations'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { studentsApi } from '@/api/students'
 
 interface ScreeningDetailsModalProps {
   isOpen: boolean
@@ -36,6 +38,10 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   const [additionalObservationsText, setAdditionalObservationsText] = useState('')
   const [referralNotesText, setReferralNotesText] = useState('')
   const [currentScreening, setCurrentScreening] = useState<Screening | null>(null)
+  const [screeningGrade, setScreeningGrade] = useState<string>('N/A')
+  const [studentCurrentGrade, setStudentCurrentGrade] = useState<string | null>(null)
+  const [gradesMatch, setGradesMatch] = useState<boolean>(true)
+  const [isLoadingGrades, setIsLoadingGrades] = useState(false)
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
 
@@ -45,6 +51,59 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   useEffect(() => {
     setCurrentScreening(screening)
   }, [screening])
+
+  // Fetch grades and compare when modal opens
+  useEffect(() => {
+    const fetchGrades = async () => {
+      if (!screening || !isOpen) return
+
+      // Reset state
+      setScreeningGrade('N/A')
+      setStudentCurrentGrade(null)
+      setGradesMatch(true)
+      setIsLoadingGrades(true)
+
+      if (!screening.school_id) {
+        setIsLoadingGrades(false)
+        return
+      }
+
+      try {
+        const grades = await schoolGradesApi.getSchoolGradesBySchool(screening.school_id)
+
+        // Get the screening's grade from grade_id
+        if (screening.grade_id) {
+          const screeningGradeObj = grades.find(g => g.id === screening.grade_id)
+          if (screeningGradeObj) {
+            setScreeningGrade(screeningGradeObj.grade_level)
+          }
+        }
+
+        // Fetch student's current grade to compare
+        if (screening.student_id) {
+          const student = await studentsApi.getStudentByStudentId(screening.student_id)
+
+          if (student?.current_grade_id) {
+            const studentGradeObj = grades.find(g => g.id === student.current_grade_id)
+            if (studentGradeObj) {
+              setStudentCurrentGrade(studentGradeObj.grade_level)
+
+              // Check if grades match
+              if (student.current_grade_id !== screening.grade_id) {
+                setGradesMatch(false)
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching grades:', error)
+      } finally {
+        setIsLoadingGrades(false)
+      }
+    }
+
+    fetchGrades()
+  }, [screening, isOpen])
 
   if (!currentScreening) return null
 
@@ -461,7 +520,22 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                   <User className='w-4 h-4 text-gray-500' />
                   <span className='font-medium'>{currentScreening.student_name}</span>
                 </div>
-                <p className='text-sm text-gray-600 ml-6'>Grade {currentScreening.grade}</p>
+                {isLoadingGrades ? (
+                  <div className='ml-6'>
+                    <div className='animate-pulse bg-gray-200 h-5 w-32 rounded'></div>
+                  </div>
+                ) : (
+                  <>
+                    <p className='text-sm text-gray-600 ml-6'>
+                      {gradesMatch ? 'Grade:' : 'Screening Grade:'} {screeningGrade}
+                    </p>
+                    {!gradesMatch && studentCurrentGrade && (
+                      <p className='text-sm text-gray-600 ml-6'>
+                        Student Current Grade: {studentCurrentGrade}
+                      </p>
+                    )}
+                  </>
+                )}
                 {currentScreening.academic_year && (
                   <p className='text-sm text-gray-600 ml-6'>
                     Academic Year: {currentScreening.academic_year}
