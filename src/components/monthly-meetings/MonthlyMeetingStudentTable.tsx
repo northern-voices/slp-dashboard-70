@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/responsive-table'
 import { GRADE_MAPPING } from '@/constants/app'
 import { Student } from '@/types/database'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface StudentData {
   sessions_attended: number | null
@@ -41,10 +43,36 @@ const MonthlyMeetingsStudentTable = ({
   onStudentClick,
   hasStudentData,
 }: MonthlyMeetingsStudentTableProps) => {
+  const { currentSchool } = useOrganization()
+  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
+
+  // Fetch grades when component mounts
+  useEffect(() => {
+    const fetchGrades = async () => {
+      if (!currentSchool?.id) {
+        setGradesMap(new Map())
+        return
+      }
+
+      try {
+        const grades = await schoolGradesApi.getSchoolGradesBySchool(currentSchool.id)
+        const map = new Map<string, SchoolGrade>()
+        grades.forEach(grade => {
+          map.set(grade.id, grade)
+        })
+        setGradesMap(map)
+      } catch (error) {
+        console.error('Error fetching grades:', error)
+        setGradesMap(new Map())
+      }
+    }
+
+    fetchGrades()
+  }, [currentSchool?.id])
 
   const handleSort = (field: 'grade' | 'program_status') => {
     if (sortField !== field) {
@@ -69,6 +97,17 @@ const MonthlyMeetingsStudentTable = ({
       return <ChevronDown className='w-4 h-4' />
     }
     return <ChevronUp className='w-4 h-4 opacity-30' />
+  }
+
+  // Helper function to get student's current grade
+  const getStudentGrade = (student: Student): string => {
+    if (student.current_grade_id) {
+      const grade = gradesMap.get(student.current_grade_id)
+      if (grade) {
+        return grade.grade_level
+      }
+    }
+    return 'N/A'
   }
 
   const getProgramStatus = (student: Student): string => {
@@ -165,11 +204,11 @@ const MonthlyMeetingsStudentTable = ({
       let comparison = 0
 
       if (sortField === 'grade') {
-        const gradeA = a.grade || 'N/A'
-        const gradeB = b.grade || 'N/A'
+        const gradeA = getStudentGrade(a)
+        const gradeB = getStudentGrade(b)
 
-        const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
-        const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
+        const indexA = GRADE_MAPPING.findIndex(g => gradeA.includes(g.value))
+        const indexB = GRADE_MAPPING.findIndex(g => gradeB.includes(g.value))
 
         if (indexA === -1 && indexB === -1) {
           comparison = 0
@@ -242,7 +281,7 @@ const MonthlyMeetingsStudentTable = ({
               <TableCell>
                 {student.first_name} {student.last_name}
               </TableCell>
-              <TableCell>{student.grade || 'N/A'}</TableCell>
+              <TableCell>{getStudentGrade(student)}</TableCell>
               <TableCell>{getQualificationBadge(student)}</TableCell>
               <TableCell className='text-center'>
                 <Button

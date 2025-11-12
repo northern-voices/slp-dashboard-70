@@ -52,6 +52,7 @@ export interface Student {
   date_of_birth?: string
   qualifies_for_program?: boolean
   program_status?: 'none' | 'qualified' | 'not_in_program' | 'sub' | 'paused' | 'graduated'
+  current_grade_id?: string | null
   created_at: string
   updated_at: string
   speech_screenings?: Array<{

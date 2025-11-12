@@ -67,7 +67,7 @@ const CreateMonthlyMeetingContent = () => {
   })
 
   const [showStudentModal, setShowStudentModal] = useState(false)
-  const [selectedStudent, setSelectedStudent] = useState<any>(null)
+  const [selectedStudent, setSelectedStudent] = useState(null)
   const [studentData, setStudentData] = useState<
     Record<string, { sessions_attended: number | null; meeting_notes: string }>
   >({})

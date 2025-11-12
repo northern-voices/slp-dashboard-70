@@ -12,6 +12,7 @@ export interface StudentUpdate {
     last_name: string
     student_id: string
     school_id: string
+    current_grade_id?: string | null
     program_status?: string
     grade?: {
       id: string
@@ -136,6 +137,7 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
             last_name: update.students.last_name,
             student_id: update.students.student_id,
             school_id: update.students.school_id,
+            current_grade_id: update.students.current_grade_id,
             program_status: update.students.program_status,
             grade: mostRecentGrade,
           }
@@ -179,6 +181,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              current_grade_id,
               program_status,
               speech_screenings (
                 created_at,
@@ -248,6 +251,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              current_grade_id,
               speech_screenings (
                 created_at,
                 school_grades (
@@ -311,6 +315,7 @@ export const monthlyMeetingsApi = {
                     last_name: update.students.last_name,
                     student_id: update.students.student_id,
                     school_id: update.students.school_id,
+                    current_grade_id: update.students.current_grade_id,
                     grade: mostRecentGrade,
                   }
                 : null,
@@ -367,6 +372,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              current_grade_id,
               program_status,
               speech_screenings (
                 created_at,
@@ -501,6 +507,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              current_grade_id,
               program_status,
               speech_screenings (
                 created_at,
@@ -607,6 +614,7 @@ export const monthlyMeetingsApi = {
               last_name,
               student_id,
               school_id,
+              current_grade_id,
               program_status,
               speech_screenings (
                 created_at,
@@ -696,6 +704,7 @@ export const monthlyMeetingsApi = {
               last_name: newUpdate.students.last_name,
               student_id: newUpdate.students.student_id,
               school_id: newUpdate.students.school_id,
+              current_grade_id: newUpdate.students.current_grade_id,
               grade: mostRecentGrade,
             }
           : null,
@@ -766,6 +775,7 @@ export const monthlyMeetingsApi = {
               last_name: updatedUpdate.students.last_name,
               student_id: updatedUpdate.students.student_id,
               school_id: updatedUpdate.students.school_id,
+              current_grade_id: updatedUpdate.students.current_grade_id,
               grade: mostRecentGrade,
             }
           : null,

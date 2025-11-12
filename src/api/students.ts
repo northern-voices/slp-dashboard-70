@@ -160,7 +160,7 @@ export const studentsApi = {
     try {
       const { data, error } = await supabase
         .from('students')
-        .select('*')
+        .select('*, current_grade_id')
         .eq('id', studentId)
         .single()
 
@@ -169,6 +169,24 @@ export const studentsApi = {
       return data
     } catch (error) {
       console.error('Error fetching student:', error)
+      throw error
+    }
+  },
+
+  // Get a specific student by formatted student_id
+  getStudentByStudentId: async (studentId: string): Promise<Student | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .select('*, current_grade_id')
+        .eq('student_id', studentId)
+        .maybeSingle()
+
+      if (error) throw error
+
+      return data
+    } catch (error) {
+      console.error('Error fetching student by student_id:', error)
       throw error
     }
   },
@@ -282,6 +300,7 @@ export const studentsApi = {
       school_id?: string
       date_of_birth?: string
       qualifies_for_program: boolean
+      current_grade_id?: string
     }>
   ): Promise<Student> => {
     try {
@@ -300,6 +319,28 @@ export const studentsApi = {
       return data
     } catch (error) {
       console.error('Error updating student:', error)
+      throw error
+    }
+  },
+
+  // Update a student's grade
+  updateStudentGrade: async (studentId: string, gradeId: string | null): Promise<Student> => {
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .update({
+          current_grade_id: gradeId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', studentId)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return data
+    } catch (error) {
+      console.error('Error updating student grade:', error)
       throw error
     }
   },

@@ -52,6 +52,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 
 const EditMonthlyMeetingContent = () => {
   const { meetingId } = useParams<{ meetingId: string }>()
@@ -77,6 +78,7 @@ const EditMonthlyMeetingContent = () => {
     action_plan: '',
   })
 
+  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
@@ -151,6 +153,30 @@ const EditMonthlyMeetingContent = () => {
     fetchMeetingData()
   }, [meetingId, user?.id, toast])
 
+  // Fetch grades when component mounts
+  useEffect(() => {
+    const fetchGrades = async () => {
+      if (!currentSchool?.id) {
+        setGradesMap(new Map())
+        return
+      }
+
+      try {
+        const grades = await schoolGradesApi.getSchoolGradesBySchool(currentSchool.id)
+        const map = new Map<string, SchoolGrade>()
+        grades.forEach(grade => {
+          map.set(grade.id, grade)
+        })
+        setGradesMap(map)
+      } catch (error) {
+        console.error('Error fetching grades:', error)
+        setGradesMap(new Map())
+      }
+    }
+
+    fetchGrades()
+  }, [currentSchool?.id])
+
   const handleAddAttendee = () => {
     const trimmedInput = attendeeInput.trim()
     if (trimmedInput && !formData.attendees.includes(trimmedInput)) {
@@ -184,6 +210,17 @@ const EditMonthlyMeetingContent = () => {
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
+
+  // Helper function to get student's current grade
+  const getStudentGrade = (student: any): string => {
+    if (student.current_grade_id) {
+      const grade = gradesMap.get(student.current_grade_id)
+      if (grade) {
+        return grade.grade_level
+      }
+    }
+    return 'N/A'
+  }
 
   const handleSort = (field: 'grade' | 'program_status') => {
     if (sortField !== field) {
@@ -524,11 +561,11 @@ const EditMonthlyMeetingContent = () => {
                                   let comparison = 0
 
                                   if (sortField === 'grade') {
-                                    const gradeA = a.grade || 'N/A'
-                                    const gradeB = b.grade || 'N/A'
+                                    const gradeA = getStudentGrade(a)
+                                    const gradeB = getStudentGrade(b)
 
-                                    const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
-                                    const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
+                                    const indexA = GRADE_MAPPING.findIndex(g => gradeA.includes(g.value))
+                                    const indexB = GRADE_MAPPING.findIndex(g => gradeB.includes(g.value))
 
                                     if (indexA === -1 && indexB === -1) {
                                       comparison = 0
@@ -598,7 +635,7 @@ const EditMonthlyMeetingContent = () => {
                                           <TableCell>
                                             {student.first_name} {student.last_name}
                                           </TableCell>
-                                          <TableCell>{student.grade || 'N/A'}</TableCell>
+                                          <TableCell>{getStudentGrade(student)}</TableCell>
                                           <TableCell>{getQualificationBadge(student)}</TableCell>
                                           <TableCell>
                                             {new Date(student.created_at).toLocaleDateString(
