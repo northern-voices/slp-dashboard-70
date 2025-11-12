@@ -432,51 +432,63 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   }
 
   const renderScreeningMetadata = () => {
-    if (!currentScreening.error_patterns?.screening_metadata) return null
+    const programStatus = currentScreening.program_status
+    const metadata = currentScreening.error_patterns?.screening_metadata
 
-    const metadata = currentScreening.error_patterns.screening_metadata
+    // Determine background and text colors based on program status
+    const getStatusColors = (status: string) => {
+      switch (status) {
+        case 'graduated':
+          return { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-800', badge: 'bg-blue-100 text-blue-800' }
+        case 'paused':
+          return { bg: 'bg-purple-50 border-purple-200', text: 'text-purple-800', badge: 'bg-purple-100 text-purple-800' }
+        case 'sub':
+          return { bg: 'bg-orange-50 border-orange-200', text: 'text-orange-800', badge: 'bg-orange-100 text-orange-800' }
+        case 'qualified':
+          return { bg: 'bg-red-50 border-red-200', text: 'text-red-800', badge: 'bg-red-100 text-red-800' }
+        case 'not_in_program':
+          return { bg: 'bg-green-50 border-green-200', text: 'text-green-800', badge: 'bg-green-100 text-green-800' }
+        case 'none':
+        default:
+          return { bg: 'bg-gray-50 border-gray-200', text: 'text-gray-800', badge: 'bg-gray-100 text-gray-800' }
+      }
+    }
+
+    const getStatusLabel = (status: string) => {
+      switch (status) {
+        case 'graduated': return 'Graduated'
+        case 'paused': return 'Paused'
+        case 'sub': return 'Sub'
+        case 'qualified': return 'Qualifies'
+        case 'not_in_program': return 'Not in Program'
+        case 'none':
+        default: return 'Not Set'
+      }
+    }
+
+    const colors = getStatusColors(programStatus || 'none')
+    const showMetadata = programStatus && programStatus !== 'none'
+    const showVocabularySupport = metadata?.vocabulary_support_recommended
+
+    // Don't render anything if there's no program status and no vocabulary support
+    if (!showMetadata && !showVocabularySupport) return null
 
     return (
       <div className='space-y-4'>
         <h4 className='font-medium text-gray-900'>Speech Screening Details:</h4>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {(metadata.qualifies_for_speech_program !== undefined || metadata.sub !== undefined) && (
-            <div
-              className={`p-3 rounded-md border ${
-                metadata.sub
-                  ? 'bg-orange-50 border-orange-200'
-                  : metadata.qualifies_for_speech_program
-                  ? 'bg-red-50 border-red-200'
-                  : 'bg-green-50 border-green-200'
-              }`}>
-              <h5
-                className={`text-sm font-medium mb-2 ${
-                  metadata.sub
-                    ? 'text-orange-800'
-                    : metadata.qualifies_for_speech_program
-                    ? 'text-red-800'
-                    : 'text-green-800'
-                }`}>
+          {showMetadata && (
+            <div className={`p-3 rounded-md border ${colors.bg}`}>
+              <h5 className={`text-sm font-medium mb-2 ${colors.text}`}>
                 Speech Program Status:
               </h5>
-              <Badge
-                className={
-                  metadata.sub
-                    ? 'bg-orange-100 text-orange-800'
-                    : metadata.qualifies_for_speech_program
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-green-100 text-green-800'
-                }>
-                {metadata.sub
-                  ? 'Sub'
-                  : metadata.qualifies_for_speech_program
-                  ? 'Qualifies'
-                  : 'Not in Program'}
+              <Badge className={colors.badge}>
+                {getStatusLabel(programStatus)}
               </Badge>
             </div>
           )}
 
-          {metadata.vocabulary_support_recommended && (
+          {showVocabularySupport && (
             <div className='p-3 bg-blue-50 rounded-md border border-blue-200'>
               <h5 className='text-sm font-medium text-blue-800 mb-2'>
                 Vocabulary Support Recommended:
