@@ -917,7 +917,7 @@ const ScreeningsTable = ({
                   <Button
                     variant='ghost'
                     onClick={() => handleSort('name')}
-                    className='h-auto p-0 font-medium hover:bg-transparent'>
+                    className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
                     Student
                     <span className='ml-1'>{getSortIcon('name')}</span>
                   </Button>
@@ -928,7 +928,7 @@ const ScreeningsTable = ({
                   <Button
                     variant='ghost'
                     onClick={() => handleSort('grade')}
-                    className='h-auto p-0 font-medium hover:bg-transparent'>
+                    className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
                     Grade
                     <span className='ml-1'>{getSortIcon('grade')}</span>
                   </Button>
@@ -937,12 +937,13 @@ const ScreeningsTable = ({
                   <Button
                     variant='ghost'
                     onClick={() => handleSort('date')}
-                    className='h-auto p-0 font-medium hover:bg-transparent'>
+                    className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
                     Date
                     <span className='ml-1'>{getSortIcon('date')}</span>
                   </Button>
                 </TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
+                <TableHead className='w-1/6 min-w-[120px] bg-gray-25/80'>Screener</TableHead>
+                <TableHead className='w-12'></TableHead>
               </tr>
             </TableHeader>
             <TableBody>
@@ -1009,7 +1010,8 @@ const ScreeningsTable = ({
                         </p>
                         {getScreeningGrade(screening) !== 'N/A' && (
                           <p>
-                            <span className='font-medium'>Grade:</span> {getScreeningGrade(screening)}
+                            <span className='font-medium'>Grade:</span>{' '}
+                            {getScreeningGrade(screening)}
                           </p>
                         )}
                       </div>
