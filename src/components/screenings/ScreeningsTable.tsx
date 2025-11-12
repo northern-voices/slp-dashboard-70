@@ -619,9 +619,21 @@ const ScreeningsTable = ({
     if (screening.source_table === 'speech') {
       setUpdatingProgramId(screening.id)
 
+      const student = studentsMap.get(screening.student_id)
+
+      if (!student) {
+        toast({
+          title: 'Error updating program qualification',
+          description: 'Student not found',
+          variant: 'destructive',
+        })
+        setUpdatingProgramId(null)
+        return
+      }
+
       updateStudent(
         {
-          id: screening.student_id,
+          id: student.id,
           studentData: { program_status: newProgram },
         },
         {
@@ -675,7 +687,7 @@ const ScreeningsTable = ({
     { value: 'not_in_program', label: 'Not In Program' },
     { value: 'sub', label: 'Sub' },
     { value: 'paused', label: 'Pause' },
-    { value: 'not_set', label: 'Not Set' },
+    // { value: 'not_set', label: 'Not Set' },
     { value: 'graduated', label: 'Graduated' },
   ]
 
