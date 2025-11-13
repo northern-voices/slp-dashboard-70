@@ -141,11 +141,12 @@ const StudentTableFilters = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='all'>All Programs</SelectItem>
-                    <SelectItem value='qualifies'>Qualifies</SelectItem>
+                    <SelectItem value='qualified'>Qualifies</SelectItem>
                     <SelectItem value='not_in_program'>Not In Program</SelectItem>
                     <SelectItem value='sub'>Sub</SelectItem>
-                    <SelectItem value='pause'>Pause</SelectItem>
+                    <SelectItem value='paused'>Pause</SelectItem>
                     <SelectItem value='graduated'>Graduated</SelectItem>
+                    <SelectItem value='none'>Not Set</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

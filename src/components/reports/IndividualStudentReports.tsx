@@ -452,20 +452,42 @@ const SpeechScreeningsTable = ({
   }
 
   const getQualificationBadge = (screening: Screening) => {
-    const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
-    const sub = screening.error_patterns?.screening_metadata?.sub
+    const metadata = screening.error_patterns?.screening_metadata
+    const noConsent = screening.result === 'non_registered_no_consent'
 
-    if (qualifies === undefined && sub === undefined) {
-      return <Badge className='bg-gray-100 text-gray-800 font-medium'>Not Set</Badge>
+    if (noConsent) {
+      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     }
 
+    // Read from screening metadata not student program status
+    const graduated = metadata?.graduated || false
+    const paused = metadata?.paused || false
+    const sub = metadata?.sub || false
+    const qualifies = metadata?.qualifies_for_speech_program || false
+
+    if (graduated) {
+      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+    }
+    if (paused) {
+      return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
+    }
     if (sub) {
-      return <Badge className='bg-orange-100 text-orange-800 font-medium'>Sub</Badge>
-    } else if (qualifies) {
-      return <Badge className='bg-red-100 text-red-800 font-medium'>Qualifies</Badge>
-    } else {
-      return <Badge className='bg-green-100 text-green-800 font-medium'>Not In Program</Badge>
+      return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
     }
+    if (qualifies) {
+      return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
+    }
+
+    // If none of the above, check if they explicitly don't qualify
+    if (qualifies === false && !sub && !graduated && !paused) {
+      return (
+        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
+          Not In Program
+        </Badge>
+      )
+    }
+
+    return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
   }
 
   return (
