@@ -111,7 +111,9 @@ const HearingScreeningStep1 = ({
                 className='mb-3 block text-sm font-medium text-gray-700'>
                 Screening Type *
               </Label>
-              <Select {...form.register('screening_type')}>
+              <Select
+                value={form.watch('screening_type')}
+                onValueChange={value => form.setValue('screening_type', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder='Select screening type' />
                 </SelectTrigger>
