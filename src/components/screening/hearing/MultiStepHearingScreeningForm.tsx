@@ -23,23 +23,16 @@ const MultiStepHearingScreeningForm = ({
     defaultValues: {
       screening_type: 'initial' as const,
       screening_date: new Date().toISOString().split('T')[0],
-      right_ear_250: '',
-      right_ear_500: '',
-      right_ear_1000: '',
-      right_ear_2000: '',
-      right_ear_4000: '',
-      left_ear_250: '',
-      left_ear_500: '',
-      left_ear_1000: '',
-      left_ear_2000: '',
-      left_ear_4000: '',
-      tympanometry_results: '',
-      otoscopic_findings: '',
-      hearing_observations: '',
-      general_notes: '',
-      recommendations: '',
-      follow_up_required: false,
-      follow_up_date: '',
+      // Tympanometry fields
+      right_vol: '',
+      right_comp: '',
+      right_press: '',
+      left_vol: '',
+      left_comp: '',
+      left_press: '',
+      // Notes fields
+      clinical_notes: '',
+      referral_notes: '',
     },
   })
 
@@ -52,29 +45,21 @@ const MultiStepHearingScreeningForm = ({
       screening_date: data.screening_date,
       form_type: 'hearing',
       hearing_data: {
-        pure_tone_results: {
+        tympanometry_results: {
           right_ear: {
-            '250': parseFloat(data.right_ear_250) || 0,
-            '500': parseFloat(data.right_ear_500) || 0,
-            '1000': parseFloat(data.right_ear_1000) || 0,
-            '2000': parseFloat(data.right_ear_2000) || 0,
-            '4000': parseFloat(data.right_ear_4000) || 0,
+            vol: parseFloat(data.right_vol) || 0,
+            comp: parseFloat(data.right_comp) || 0,
+            press: parseFloat(data.right_press) || 0,
           },
           left_ear: {
-            '250': parseFloat(data.left_ear_250) || 0,
-            '500': parseFloat(data.left_ear_500) || 0,
-            '1000': parseFloat(data.left_ear_1000) || 0,
-            '2000': parseFloat(data.left_ear_2000) || 0,
-            '4000': parseFloat(data.left_ear_4000) || 0,
+            vol: parseFloat(data.left_vol) || 0,
+            comp: parseFloat(data.left_comp) || 0,
+            press: parseFloat(data.left_press) || 0,
           },
         },
-        tympanometry_results: data.tympanometry_results || '',
-        observations: data.hearing_observations || '',
       },
-      general_notes: data.general_notes || '',
-      recommendations: data.recommendations || '',
-      follow_up_required: data.follow_up_required || false,
-      follow_up_date: data.follow_up_date,
+      clinical_notes: data.clinical_notes || '',
+      referral_notes: data.referral_notes || '',
     }
 
     onSubmit(screeningData)

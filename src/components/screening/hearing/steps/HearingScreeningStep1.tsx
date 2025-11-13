@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
 import { User, Volume2, FileText } from 'lucide-react'
 import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
@@ -24,8 +23,6 @@ interface HearingScreeningStep1Props {
   onStudentSelect: (student: Student | null) => void
   onGradeChange: (grade: string) => void
 }
-
-const frequencies = ['250', '500', '1000', '2000', '4000']
 
 const HearingScreeningStep1 = ({
   form,
@@ -136,144 +133,126 @@ const HearingScreeningStep1 = ({
 
           <Card>
             <CardHeader>
-              <CardTitle className='text-lg'>Pure Tone Screening Results</CardTitle>
-              <p className='text-sm text-gray-600'>Record hearing threshold levels in dB HL</p>
-            </CardHeader>
-            <CardContent>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                <div>
-                  <h4 className='font-medium mb-3'>Right Ear</h4>
-                  <div className='space-y-3'>
-                    {frequencies.map(freq => (
-                      <div key={`right-${freq}`} className='flex items-center gap-3'>
-                        <Label className='w-16'>{freq} Hz</Label>
-                        <Input
-                          type='number'
-                          placeholder='dB HL'
-                          className='w-24'
-                          min='0'
-                          max='120'
-                          {...form.register(`right_ear_${freq}`)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className='font-medium mb-3'>Left Ear</h4>
-                  <div className='space-y-3'>
-                    {frequencies.map(freq => (
-                      <div key={`left-${freq}`} className='flex items-center gap-3'>
-                        <Label className='w-16'>{freq} Hz</Label>
-                        <Input
-                          type='number'
-                          placeholder='dB HL'
-                          className='w-24'
-                          min='0'
-                          max='120'
-                          {...form.register(`left_ear_${freq}`)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
               <CardTitle className='text-lg'>Tympanometry Results</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='space-y-4'>
-                <Textarea
-                  placeholder='Note tympanometry findings, ear canal volume, acoustic reflex results...'
-                  rows={3}
-                  {...form.register('tympanometry_results')}
-                />
-              </div>
-            </CardContent>
-          </Card>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                {/* Right Ear Tympanometry */}
+                <div>
+                  <h4 className='font-medium mb-3'>Right Ear</h4>
+                  <div className='space-y-3'>
+                    <div>
+                      <Label htmlFor='right_vol' className='text-sm font-medium text-gray-700'>
+                        R+ Vol (ml)
+                      </Label>
+                      <Input
+                        type='number'
+                        step='0.1'
+                        placeholder='0.0'
+                        {...form.register('right_vol')}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor='right_comp' className='text-sm font-medium text-gray-700'>
+                        R+ Comp (ml)
+                      </Label>
+                      <Input
+                        type='number'
+                        step='0.1'
+                        placeholder='0.0'
+                        {...form.register('right_comp')}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor='right_press' className='text-sm font-medium text-gray-700'>
+                        R+ Press (daPa)
+                      </Label>
+                      <Input
+                        type='number'
+                        step='1'
+                        placeholder='0'
+                        {...form.register('right_press')}
+                      />
+                    </div>
+                  </div>
+                </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className='text-lg'>Otoscopic Examination</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                placeholder='Describe ear canal and eardrum appearance for both ears...'
-                rows={3}
-                {...form.register('otoscopic_findings')}
-              />
+                {/* Left Ear Tympanometry */}
+                <div>
+                  <h4 className='font-medium mb-3'>Left Ear</h4>
+                  <div className='space-y-3'>
+                    <div>
+                      <Label htmlFor='left_vol' className='text-sm font-medium text-gray-700'>
+                        L+ Vol (ml)
+                      </Label>
+                      <Input
+                        type='number'
+                        step='0.1'
+                        placeholder='0.0'
+                        {...form.register('left_vol')}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor='left_comp' className='text-sm font-medium text-gray-700'>
+                        L+ Comp (ml)
+                      </Label>
+                      <Input
+                        type='number'
+                        step='0.1'
+                        placeholder='0.0'
+                        {...form.register('left_comp')}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor='left_press' className='text-sm font-medium text-gray-700'>
+                        L+ Press (daPa)
+                      </Label>
+                      <Input
+                        type='number'
+                        step='1'
+                        placeholder='0'
+                        {...form.register('left_press')}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </CardContent>
       </Card>
 
-      {/* Results & Notes Section */}
+      {/* Notes Section */}
       <Card className='border-0 rounded-none shadow-none'>
         <CardHeader className='px-0 pt-0 pb-0 mb-6'>
           <CardTitle className='flex items-center gap-2 text-lg font-semibold text-gray-900'>
             <FileText className='w-5 h-5' />
-            Results & Notes
+            Notes
           </CardTitle>
         </CardHeader>
         <CardContent className='space-y-6 p-0'>
           <div>
             <Label
-              htmlFor='hearing_observations'
+              htmlFor='clinical_notes'
               className='mb-3 block text-sm font-medium text-gray-700'>
-              Behavioral Observations
+              Clinical Notes
             </Label>
             <Textarea
-              placeholder="Note student's responses to sounds, following directions, attention during testing, any concerns raised by teacher/parent..."
+              placeholder='Enter clinical observations and findings...'
               rows={4}
-              {...form.register('hearing_observations')}
+              {...form.register('clinical_notes')}
             />
           </div>
 
           <div>
-            <Label htmlFor='general_notes' className='mb-3 block text-sm font-medium text-gray-700'>
-              General Notes
+            <Label htmlFor='referral_notes' className='mb-3 block text-sm font-medium text-gray-700'>
+              Referral Notes
             </Label>
             <Textarea
-              placeholder='Additional observations, testing conditions, student cooperation...'
+              placeholder='Enter referral information and recommendations...'
               rows={3}
-              {...form.register('general_notes')}
+              {...form.register('referral_notes')}
             />
-          </div>
-
-          <div>
-            <Label
-              htmlFor='recommendations'
-              className='mb-3 block text-sm font-medium text-gray-700'>
-              Recommendations
-            </Label>
-            <Textarea
-              placeholder='Recommendations for follow-up, referrals, accommodations...'
-              rows={3}
-              {...form.register('recommendations')}
-            />
-          </div>
-
-          <div className='space-y-4'>
-            <div className='flex items-center space-x-2'>
-              <Checkbox id='follow_up_required' {...form.register('follow_up_required')} />
-              <Label htmlFor='follow_up_required' className='text-sm font-medium text-gray-700'>
-                Follow-up required
-              </Label>
-            </div>
-
-            <div>
-              <Label
-                htmlFor='follow_up_date'
-                className='mb-3 block text-sm font-medium text-gray-700'>
-                Follow-up Date
-              </Label>
-              <Input type='date' {...form.register('follow_up_date')} />
-            </div>
           </div>
         </CardContent>
       </Card>
