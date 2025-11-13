@@ -58,6 +58,9 @@ export const useUpdateStudent = () => {
       queryClient.invalidateQueries({ queryKey: ['students'] })
       // Invalidate the specific student query
       queryClient.invalidateQueries({ queryKey: ['students', variables.id] })
+      // Invalidate screenings queries to reflect student changes (like program_status)
+      queryClient.invalidateQueries({ queryKey: ['screenings'] })
+      queryClient.invalidateQueries({ queryKey: ['speech-screenings'] })
     },
   })
 }

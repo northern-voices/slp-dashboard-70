@@ -24,6 +24,7 @@ interface RawSpeechScreening {
     last_name: string
     school_id: string
     student_id: string
+    program_status: 'none' | 'qualifies' | 'not_in_program' | 'sub' | 'pause' | 'graduated'
   } | null
   school_grades: {
     id: string
@@ -79,6 +80,7 @@ export const speechScreeningsApi = {
             last_name,
             school_id,
             student_id,
+            program_status,
             schools (
               id,
               name
@@ -118,8 +120,8 @@ export const speechScreeningsApi = {
           (data || []).map((s: RawSpeechScreening) => s.students?.school_id).filter(Boolean)
         )
 
-        const missingSchoolIds = organizationSchoolIds.filter(schoolId =>
-          !presentSchoolIds.has(schoolId)
+        const missingSchoolIds = organizationSchoolIds.filter(
+          schoolId => !presentSchoolIds.has(schoolId)
         )
 
         // If any organization schools are missing, fetch them specifically
@@ -135,6 +137,7 @@ export const speechScreeningsApi = {
                 last_name,
                 school_id,
                 student_id,
+                program_status,
                 schools (
                   id,
                   name
@@ -193,6 +196,7 @@ export const speechScreeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',
+        program_status: screening.students?.program_status || 'none',
       }))
 
       // Filter by organization schools if provided
@@ -227,6 +231,7 @@ export const speechScreeningsApi = {
             last_name,
             school_id,
             student_id,
+            program_status,
             schools (
               id,
               name
@@ -284,6 +289,7 @@ export const speechScreeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',
+        program_status: screening.students?.program_status || 'none',
       }))
 
       return transformedData
@@ -333,7 +339,8 @@ export const speechScreeningsApi = {
           first_name,
           last_name,
           school_id,
-          student_id
+          student_id,
+          program_status
         ),
         school_grades (
           id,
@@ -395,6 +402,7 @@ export const speechScreeningsApi = {
         grade_id: newScreening.grade_id,
         screener_id: newScreening.screener_id,
         academic_year: newScreening.school_grades?.academic_year || '',
+        program_status: newScreening.students?.program_status || 'none',
       }
 
       return transformedScreening
@@ -433,7 +441,8 @@ export const speechScreeningsApi = {
           first_name,
           last_name,
           school_id,
-          student_id
+          student_id,
+          program_status
         ),
         school_grades (
           id,
@@ -485,6 +494,7 @@ export const speechScreeningsApi = {
         grade_id: updatedScreening.grade_id,
         screener_id: updatedScreening.screener_id,
         academic_year: updatedScreening.school_grades?.academic_year || '',
+        program_status: updatedScreening.students?.program_status || 'none',
       }
 
       return transformedScreening
@@ -537,6 +547,7 @@ export const speechScreeningsApi = {
             last_name,
             school_id,
             student_id,
+            program_status,
             schools (
               id,
               name
@@ -599,6 +610,7 @@ export const speechScreeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',
+        program_status: screening.students?.program_status || 'none',
       }))
 
       return transformedData

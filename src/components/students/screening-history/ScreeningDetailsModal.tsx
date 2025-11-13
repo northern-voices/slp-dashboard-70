@@ -21,6 +21,8 @@ import { format } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { Screening } from '@/types/database'
 import { useUpdateSpeechScreening } from '@/hooks/screenings/use-screening-mutations'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { studentsApi } from '@/api/students'
 
 interface ScreeningDetailsModalProps {
   isOpen: boolean
@@ -36,6 +38,10 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   const [additionalObservationsText, setAdditionalObservationsText] = useState('')
   const [referralNotesText, setReferralNotesText] = useState('')
   const [currentScreening, setCurrentScreening] = useState<Screening | null>(null)
+  const [screeningGrade, setScreeningGrade] = useState<string>('N/A')
+  const [studentCurrentGrade, setStudentCurrentGrade] = useState<string | null>(null)
+  const [gradesMatch, setGradesMatch] = useState<boolean>(true)
+  const [isLoadingGrades, setIsLoadingGrades] = useState(false)
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
 
@@ -45,6 +51,59 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   useEffect(() => {
     setCurrentScreening(screening)
   }, [screening])
+
+  // Fetch grades and compare when modal opens
+  useEffect(() => {
+    const fetchGrades = async () => {
+      if (!screening || !isOpen) return
+
+      // Reset state
+      setScreeningGrade('N/A')
+      setStudentCurrentGrade(null)
+      setGradesMatch(true)
+      setIsLoadingGrades(true)
+
+      if (!screening.school_id) {
+        setIsLoadingGrades(false)
+        return
+      }
+
+      try {
+        const grades = await schoolGradesApi.getSchoolGradesBySchool(screening.school_id)
+
+        // Get the screening's grade from grade_id
+        if (screening.grade_id) {
+          const screeningGradeObj = grades.find(g => g.id === screening.grade_id)
+          if (screeningGradeObj) {
+            setScreeningGrade(screeningGradeObj.grade_level)
+          }
+        }
+
+        // Fetch student's current grade to compare
+        if (screening.student_id) {
+          const student = await studentsApi.getStudentByStudentId(screening.student_id)
+
+          if (student?.current_grade_id) {
+            const studentGradeObj = grades.find(g => g.id === student.current_grade_id)
+            if (studentGradeObj) {
+              setStudentCurrentGrade(studentGradeObj.grade_level)
+
+              // Check if grades match
+              if (student.current_grade_id !== screening.grade_id) {
+                setGradesMatch(false)
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching grades:', error)
+      } finally {
+        setIsLoadingGrades(false)
+      }
+    }
+
+    fetchGrades()
+  }, [screening, isOpen])
 
   if (!currentScreening) return null
 
@@ -373,51 +432,63 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   }
 
   const renderScreeningMetadata = () => {
-    if (!currentScreening.error_patterns?.screening_metadata) return null
+    const programStatus = currentScreening.program_status
+    const metadata = currentScreening.error_patterns?.screening_metadata
 
-    const metadata = currentScreening.error_patterns.screening_metadata
+    // Determine background and text colors based on program status
+    const getStatusColors = (status: string) => {
+      switch (status) {
+        case 'graduated':
+          return { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-800', badge: 'bg-blue-100 text-blue-800' }
+        case 'paused':
+          return { bg: 'bg-purple-50 border-purple-200', text: 'text-purple-800', badge: 'bg-purple-100 text-purple-800' }
+        case 'sub':
+          return { bg: 'bg-orange-50 border-orange-200', text: 'text-orange-800', badge: 'bg-orange-100 text-orange-800' }
+        case 'qualified':
+          return { bg: 'bg-red-50 border-red-200', text: 'text-red-800', badge: 'bg-red-100 text-red-800' }
+        case 'not_in_program':
+          return { bg: 'bg-green-50 border-green-200', text: 'text-green-800', badge: 'bg-green-100 text-green-800' }
+        case 'none':
+        default:
+          return { bg: 'bg-gray-50 border-gray-200', text: 'text-gray-800', badge: 'bg-gray-100 text-gray-800' }
+      }
+    }
+
+    const getStatusLabel = (status: string) => {
+      switch (status) {
+        case 'graduated': return 'Graduated'
+        case 'paused': return 'Paused'
+        case 'sub': return 'Sub'
+        case 'qualified': return 'Qualifies'
+        case 'not_in_program': return 'Not in Program'
+        case 'none':
+        default: return 'Not Set'
+      }
+    }
+
+    const colors = getStatusColors(programStatus || 'none')
+    const showMetadata = programStatus && programStatus !== 'none'
+    const showVocabularySupport = metadata?.vocabulary_support_recommended
+
+    // Don't render anything if there's no program status and no vocabulary support
+    if (!showMetadata && !showVocabularySupport) return null
 
     return (
       <div className='space-y-4'>
         <h4 className='font-medium text-gray-900'>Speech Screening Details:</h4>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {(metadata.qualifies_for_speech_program !== undefined || metadata.sub !== undefined) && (
-            <div
-              className={`p-3 rounded-md border ${
-                metadata.sub
-                  ? 'bg-orange-50 border-orange-200'
-                  : metadata.qualifies_for_speech_program
-                  ? 'bg-red-50 border-red-200'
-                  : 'bg-green-50 border-green-200'
-              }`}>
-              <h5
-                className={`text-sm font-medium mb-2 ${
-                  metadata.sub
-                    ? 'text-orange-800'
-                    : metadata.qualifies_for_speech_program
-                    ? 'text-red-800'
-                    : 'text-green-800'
-                }`}>
+          {showMetadata && (
+            <div className={`p-3 rounded-md border ${colors.bg}`}>
+              <h5 className={`text-sm font-medium mb-2 ${colors.text}`}>
                 Speech Program Status:
               </h5>
-              <Badge
-                className={
-                  metadata.sub
-                    ? 'bg-orange-100 text-orange-800'
-                    : metadata.qualifies_for_speech_program
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-green-100 text-green-800'
-                }>
-                {metadata.sub
-                  ? 'Sub'
-                  : metadata.qualifies_for_speech_program
-                  ? 'Qualifies'
-                  : 'Not in Program'}
+              <Badge className={colors.badge}>
+                {getStatusLabel(programStatus)}
               </Badge>
             </div>
           )}
 
-          {metadata.vocabulary_support_recommended && (
+          {showVocabularySupport && (
             <div className='p-3 bg-blue-50 rounded-md border border-blue-200'>
               <h5 className='text-sm font-medium text-blue-800 mb-2'>
                 Vocabulary Support Recommended:
@@ -461,7 +532,22 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                   <User className='w-4 h-4 text-gray-500' />
                   <span className='font-medium'>{currentScreening.student_name}</span>
                 </div>
-                <p className='text-sm text-gray-600 ml-6'>Grade {currentScreening.grade}</p>
+                {isLoadingGrades ? (
+                  <div className='ml-6'>
+                    <div className='animate-pulse bg-gray-200 h-5 w-32 rounded'></div>
+                  </div>
+                ) : (
+                  <>
+                    <p className='text-sm text-gray-600 ml-6'>
+                      {gradesMatch ? 'Grade:' : 'Screening Grade:'} {screeningGrade}
+                    </p>
+                    {!gradesMatch && studentCurrentGrade && (
+                      <p className='text-sm text-gray-600 ml-6'>
+                        Student Current Grade: {studentCurrentGrade}
+                      </p>
+                    )}
+                  </>
+                )}
                 {currentScreening.academic_year && (
                   <p className='text-sm text-gray-600 ml-6'>
                     Academic Year: {currentScreening.academic_year}

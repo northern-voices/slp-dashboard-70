@@ -73,7 +73,7 @@ export interface ErrorPatterns {
     vocabulary_support_recommended: boolean
     sub?: boolean
     graduated?: boolean
-    pause?: boolean
+    paused?: boolean
   }
   add_areas_of_concern: {
     voice: string | null

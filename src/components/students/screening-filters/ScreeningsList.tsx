@@ -122,19 +122,19 @@ const ScreeningsList = ({
 
     // Apply qualifies for speech program filter
     let matchesQualifiesForSpeechProgram = true
-    if (qualifiesForSpeechProgramFilter !== 'all' && screening.error_patterns?.screening_metadata) {
-      const qualifies = screening.error_patterns.screening_metadata.qualifies_for_speech_program
-      const sub = screening.error_patterns.screening_metadata.sub
-      const graduated = screening.error_patterns.screening_metadata.graduated
+    if (qualifiesForSpeechProgramFilter !== 'all') {
+      const metadata = screening.error_patterns?.screening_metadata
 
-      if (qualifiesForSpeechProgramFilter === 'qualifies') {
-        matchesQualifiesForSpeechProgram = qualifies === true && !sub
+      if (qualifiesForSpeechProgramFilter === 'qualified') {
+        matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === true
       } else if (qualifiesForSpeechProgramFilter === 'not_in_program') {
-        matchesQualifiesForSpeechProgram = qualifies === false && !sub
+        matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === false
       } else if (qualifiesForSpeechProgramFilter === 'sub') {
-        matchesQualifiesForSpeechProgram = sub === true
+        matchesQualifiesForSpeechProgram = metadata?.sub === true
+      } else if (qualifiesForSpeechProgramFilter === 'paused') {
+        matchesQualifiesForSpeechProgram = metadata?.paused === true
       } else if (qualifiesForSpeechProgramFilter === 'graduated') {
-        matchesQualifiesForSpeechProgram = graduated === true
+        matchesQualifiesForSpeechProgram = metadata?.graduated === true
       }
     }
 
@@ -308,32 +308,41 @@ const ScreeningsList = ({
   }
 
   const getQualificationBadge = (screening: Screening) => {
-    const qualifies = screening.error_patterns?.screening_metadata?.qualifies_for_speech_program
-    const sub = screening.error_patterns?.screening_metadata?.sub
-    const graduated = screening.error_patterns?.screening_metadata?.graduated
+    const metadata = screening.error_patterns?.screening_metadata
     const noConsent = screening.result === 'non_registered_no_consent'
 
     if (noConsent) {
       return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     }
 
-    if (qualifies === undefined && sub === undefined && graduated === undefined) {
-      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
-    }
+    const graduated = metadata?.graduated || false
+    const paused = metadata?.paused || false
+    const sub = metadata?.sub || false
+    const qualifies = metadata?.qualifies_for_speech_program || false
 
     if (graduated) {
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-    } else if (sub) {
+    }
+    if (paused) {
+      return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
+    }
+    if (sub) {
       return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
-    } else if (qualifies) {
+    }
+    if (qualifies) {
       return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
-    } else {
+    }
+
+    // If none of the above, check if they explicitly don't qualify
+    if (qualifies === false && !sub && !graduated && !paused) {
       return (
         <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
           Not In Program
         </Badge>
       )
     }
+
+    return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
   }
 
   const hasFilters =

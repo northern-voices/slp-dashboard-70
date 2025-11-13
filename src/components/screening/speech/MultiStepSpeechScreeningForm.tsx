@@ -3,6 +3,7 @@ import { useForm, UseFormReturn } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Student } from '@/types/database'
 import { useCreateSpeechScreening } from '@/hooks/screenings'
+import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
@@ -36,6 +37,7 @@ const MultiStepSpeechScreeningForm = ({
   const { currentSchool } = useOrganization()
   const { toast } = useToast()
   const createScreening = useCreateSpeechScreening()
+  const updateStudent = useUpdateStudent()
 
   // Grade ID will be set through backend validation in handleSubmit
   // No default grade ID needed - it will come from existing or newly created grade records
@@ -157,6 +159,23 @@ const MultiStepSpeechScreeningForm = ({
     }
 
     return errors
+  }
+
+  // Helper function to determine program_status from form data
+  const determineProgramStatus = (formData: Record<string, unknown>): string => {
+    const graduated = (formData.graduated as boolean) || false
+    const paused = (formData.paused as boolean) || false
+    const sub = (formData.sub as boolean) || false
+    const qualifies = (formData.qualifies_for_speech_program as boolean) || false
+
+    if (graduated) return 'graduated'
+    if (paused) return 'paused'
+    if (sub) return 'sub'
+    if (qualifies) return 'qualified'
+
+    // If none of the above are true, check if they explicitly don't qualify
+    // For now, default to 'none' if nothing is selected
+    return 'none'
   }
 
   const handleSubmit = async (data: unknown) => {
@@ -332,7 +351,36 @@ const MultiStepSpeechScreeningForm = ({
 
     createScreening.mutate(screeningData, {
       onSuccess: () => {
-        setShowSubmissionModal(true)
+        // After creating the screening, update the student's program_status
+        if (selectedStudent?.id) {
+          const programStatus = determineProgramStatus(formData)
+
+          updateStudent.mutate(
+            {
+              id: selectedStudent.id,
+              studentData: { program_status: programStatus },
+            },
+            {
+              onSuccess: () => {
+                setShowSubmissionModal(true)
+              },
+              onError: error => {
+                console.error('Failed to update student program status:', error)
+                // Still show the success modal even if student update fails
+                // The screening was created successfully
+                setShowSubmissionModal(true)
+                toast({
+                  title: 'Warning',
+                  description: 'Screening created but failed to update program status',
+                  variant: 'destructive',
+                })
+              },
+            }
+          )
+        } else {
+          // No student selected, just show the modal
+          setShowSubmissionModal(true)
+        }
       },
     })
   }

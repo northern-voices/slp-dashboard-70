@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/responsive-table'
 import { GRADE_MAPPING } from '@/constants/app'
 import { Student } from '@/types/database'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface StudentData {
   sessions_attended: number | null
@@ -41,10 +43,36 @@ const MonthlyMeetingsStudentTable = ({
   onStudentClick,
   hasStudentData,
 }: MonthlyMeetingsStudentTableProps) => {
+  const { currentSchool } = useOrganization()
+  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
+
+  // Fetch grades when component mounts
+  useEffect(() => {
+    const fetchGrades = async () => {
+      if (!currentSchool?.id) {
+        setGradesMap(new Map())
+        return
+      }
+
+      try {
+        const grades = await schoolGradesApi.getSchoolGradesBySchool(currentSchool.id)
+        const map = new Map<string, SchoolGrade>()
+        grades.forEach(grade => {
+          map.set(grade.id, grade)
+        })
+        setGradesMap(map)
+      } catch (error) {
+        console.error('Error fetching grades:', error)
+        setGradesMap(new Map())
+      }
+    }
+
+    fetchGrades()
+  }, [currentSchool?.id])
 
   const handleSort = (field: 'grade' | 'program_status') => {
     if (sortField !== field) {
@@ -71,61 +99,37 @@ const MonthlyMeetingsStudentTable = ({
     return <ChevronUp className='w-4 h-4 opacity-30' />
   }
 
-  const getProgramStatus = (student: Student): string => {
-    const speechScreenings = student.speech_screenings || []
-    if (speechScreenings.length === 0) {
-      return 'no_screening'
-    }
-
-    const mostRecent = [...speechScreenings].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    )[0]
-
-    if (!mostRecent?.error_patterns) {
-      return 'not_set'
-    }
-
-    try {
-      const errorPatterns =
-        typeof mostRecent.error_patterns === 'string'
-          ? JSON.parse(mostRecent.error_patterns)
-          : mostRecent.error_patterns
-
-      const qualifies = errorPatterns?.screening_metadata?.qualifies_for_speech_program
-      const sub = errorPatterns?.screening_metadata?.sub
-      const graduated = errorPatterns?.screening_metadata?.graduated
-
-      if (qualifies === undefined && sub === undefined && graduated === undefined) {
-        return 'not_set'
+  // Helper function to get student's current grade
+  const getStudentGrade = (student: Student): string => {
+    if (student.current_grade_id) {
+      const grade = gradesMap.get(student.current_grade_id)
+      if (grade) {
+        return grade.grade_level
       }
-
-      if (graduated) return 'graduated'
-      if (sub) return 'sub'
-      if (qualifies) return 'qualifies'
-      return 'not_in_program'
-    } catch (e) {
-      console.error('Error parsing error_patterns:', e)
-      return 'not_set'
     }
+    return 'N/A'
+  }
+
+  const getProgramStatus = (student: Student): string => {
+    // Read directly from student.program_status field
+    return student.program_status || 'none'
   }
 
   const getQualificationBadge = (student: Student) => {
     const programStatus = getProgramStatus(student)
 
     switch (programStatus) {
-      case 'no_screening':
-        return (
-          <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Screening</Badge>
-        )
-      case 'not_set':
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
       case 'graduated':
         return (
           <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
         )
+      case 'paused':
+        return (
+          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
+        )
       case 'sub':
         return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
-      case 'qualifies':
+      case 'qualified':
         return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
       case 'not_in_program':
         return (
@@ -133,8 +137,9 @@ const MonthlyMeetingsStudentTable = ({
             Not In Program
           </Badge>
         )
+      case 'none':
       default:
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Error</Badge>
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
     }
   }
 
@@ -153,7 +158,7 @@ const MonthlyMeetingsStudentTable = ({
   const filteredStudents = students
     .filter(student => {
       const status = getProgramStatus(student)
-      return status === 'sub' || status === 'qualifies'
+      return status === 'sub' || status === 'qualified'
     })
     .sort((a, b) => {
       if (!sortField || !sortOrder) {
@@ -165,11 +170,11 @@ const MonthlyMeetingsStudentTable = ({
       let comparison = 0
 
       if (sortField === 'grade') {
-        const gradeA = a.grade || 'N/A'
-        const gradeB = b.grade || 'N/A'
+        const gradeA = getStudentGrade(a)
+        const gradeB = getStudentGrade(b)
 
-        const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
-        const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
+        const indexA = GRADE_MAPPING.findIndex(g => gradeA.includes(g.value))
+        const indexB = GRADE_MAPPING.findIndex(g => gradeB.includes(g.value))
 
         if (indexA === -1 && indexB === -1) {
           comparison = 0
@@ -183,7 +188,7 @@ const MonthlyMeetingsStudentTable = ({
       } else if (sortField === 'program_status') {
         const statusA = getProgramStatus(a)
         const statusB = getProgramStatus(b)
-        const statusOrder = { qualifies: 0, sub: 1 }
+        const statusOrder = { qualified: 0, sub: 1 }
         comparison = statusOrder[statusA] - statusOrder[statusB]
       }
 
@@ -242,7 +247,7 @@ const MonthlyMeetingsStudentTable = ({
               <TableCell>
                 {student.first_name} {student.last_name}
               </TableCell>
-              <TableCell>{student.grade || 'N/A'}</TableCell>
+              <TableCell>{getStudentGrade(student)}</TableCell>
               <TableCell>{getQualificationBadge(student)}</TableCell>
               <TableCell className='text-center'>
                 <Button

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { School } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,6 +25,7 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useCreateStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { studentsApi } from '@/api/students'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 
 interface StudentTableProps {
   selectedSchool?: School | null
@@ -46,6 +47,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
   const [programFilter, setProgramFilter] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
+  const [isLoadingGrades, setIsLoadingGrades] = useState(true)
 
   const { currentSchool } = useOrganization()
 
@@ -56,6 +59,34 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const createStudentMutation = useCreateStudent()
   const updateStudentMutation = useUpdateStudent()
 
+  // Fetch all grades for the school
+  useEffect(() => {
+    const fetchGrades = async () => {
+      if (!activeSchool?.id) {
+        setGradesMap(new Map())
+        setIsLoadingGrades(false)
+        return
+      }
+
+      setIsLoadingGrades(true)
+      try {
+        const grades = await schoolGradesApi.getSchoolGradesBySchool(activeSchool.id)
+        const map = new Map<string, SchoolGrade>()
+        grades.forEach(grade => {
+          map.set(grade.id, grade)
+        })
+        setGradesMap(map)
+      } catch (error) {
+        console.error('Error fetching grades:', error)
+        setGradesMap(new Map())
+      } finally {
+        setIsLoadingGrades(false)
+      }
+    }
+
+    fetchGrades()
+  }, [activeSchool?.id])
+
   const newStudentForm = useForm<NewStudentFormData>({
     resolver: zodResolver(newStudentSchema),
     defaultValues: {
@@ -65,81 +96,45 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     },
   })
 
-  const getStudentGrade = (student): string => {
-    if (student.grade) {
-      return student.grade
+  const getStudentGrade = (student): string | JSX.Element => {
+    if (isLoadingGrades) {
+      return (
+        <div className='flex items-center gap-2'>
+          <div className='animate-pulse bg-gray-200 h-4 w-12 rounded'></div>
+        </div>
+      )
+    }
+
+    if (student.current_grade_id) {
+      const grade = gradesMap.get(student.current_grade_id)
+      if (grade) {
+        return grade.grade_level
+      }
     }
 
     return 'N/A'
   }
 
   const getProgramStatus = (student): string => {
-    const speechScreenings = student.speech_screenings || []
-    if (speechScreenings.length === 0) {
-      return 'no_screening'
-    }
-
-    // Get most recent screening - create a copy to avoid mutating the original array
-    const mostRecent = [...speechScreenings].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    )[0]
-
-    if (!mostRecent?.error_patterns) {
-      return 'not_set'
-    }
-
-    try {
-      const errorPatterns =
-        typeof mostRecent.error_patterns === 'string'
-          ? JSON.parse(mostRecent.error_patterns)
-          : mostRecent.error_patterns
-
-      const qualifies = errorPatterns?.screening_metadata?.qualifies_for_speech_program
-      const sub = errorPatterns?.screening_metadata?.sub
-      const graduated = errorPatterns?.screening_metadata?.graduated
-      const pause = errorPatterns?.screening_metadata?.pause
-
-      if (
-        qualifies === undefined &&
-        sub === undefined &&
-        graduated === undefined &&
-        pause === undefined
-      ) {
-        return 'not_set'
-      }
-
-      if (graduated) return 'graduated'
-      if (pause) return 'pause'
-      if (sub) return 'sub'
-      if (qualifies) return 'qualifies'
-      return 'not_in_program'
-    } catch (e) {
-      console.error('Error parsing error_patterns:', e)
-      return 'not_set'
-    }
+    // Read directly from student.program_status field
+    return student.program_status || 'none'
   }
 
   const getQualificationBadge = student => {
     const programStatus = getProgramStatus(student)
 
     switch (programStatus) {
-      case 'no_screening':
-        return (
-          <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Screening</Badge>
-        )
-      case 'not_set':
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
       case 'graduated':
         return (
           <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
         )
-      case 'pause':
+      case 'paused':
         return (
           <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
         )
       case 'sub':
         return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
-      case 'qualifies':
+      case 'qualified':
         return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
       case 'not_in_program':
         return (
@@ -147,8 +142,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
             Not In Program
           </Badge>
         )
+      case 'none':
       default:
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Error</Badge>
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
     }
   }
 
@@ -217,7 +213,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       const matchesSearch =
         fullName.includes(search) || student.student_id.toLowerCase().includes(search)
 
-      const matchesGrade = gradeFilter === 'all' || student.grade === gradeFilter
+      // Get grade level from current_grade_id
+      let studentGradeLevel = 'N/A'
+      if (student.current_grade_id) {
+        const grade = gradesMap.get(student.current_grade_id)
+        if (grade) {
+          studentGradeLevel = grade.grade_level
+        }
+      }
+      const matchesGrade = gradeFilter === 'all' || studentGradeLevel === gradeFilter
 
       const matchesDateRange = isWithinDateRange(student.created_at, dateRangeFilter)
 
@@ -226,8 +230,22 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       return matchesSearch && matchesGrade && matchesDateRange && matchesProgram
     })
     .sort((a, b) => {
-      const gradeA = a.grade || 'N/A'
-      const gradeB = b.grade || 'N/A'
+      // Get grade levels from current_grade_id
+      let gradeA = 'N/A'
+      if (a.current_grade_id) {
+        const grade = gradesMap.get(a.current_grade_id)
+        if (grade) {
+          gradeA = grade.grade_level
+        }
+      }
+
+      let gradeB = 'N/A'
+      if (b.current_grade_id) {
+        const grade = gradesMap.get(b.current_grade_id)
+        if (grade) {
+          gradeB = grade.grade_level
+        }
+      }
 
       const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
       const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)

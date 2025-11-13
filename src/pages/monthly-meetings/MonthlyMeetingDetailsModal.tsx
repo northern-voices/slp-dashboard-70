@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Calendar, User, FileText, X, Users, Edit2, Save, XCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 
 interface MonthlyMeetingDetailsModalProps {
   isOpen: boolean
@@ -22,12 +23,46 @@ const MonthlyMeetingDetailsModal = ({
 }: MonthlyMeetingDetailsModalProps) => {
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [notesText, setNotesText] = useState('')
+  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
 
-  if (!meeting) return null
+  // Fetch grades when modal opens
+  useEffect(() => {
+    const fetchGrades = async () => {
+      if (!meeting?.school_id) {
+        setGradesMap(new Map())
+        return
+      }
 
-  console.log(meeting.id, 'meetingid')
+      try {
+        const grades = await schoolGradesApi.getSchoolGradesBySchool(meeting.school_id)
+        const map = new Map<string, SchoolGrade>()
+        grades.forEach(grade => {
+          map.set(grade.id, grade)
+        })
+        setGradesMap(map)
+      } catch (error) {
+        console.error('Error fetching grades:', error)
+        setGradesMap(new Map())
+      }
+    }
+
+    if (isOpen && meeting) {
+      fetchGrades()
+    }
+  }, [isOpen, meeting])
+
+  // Helper function to get student's current grade
+  const getStudentGrade = (student): string | null => {
+    if (!student?.current_grade_id) {
+      return null
+    }
+    const grade = gradesMap.get(student.current_grade_id)
+    return grade ? grade.grade_level : null
+  }
+
+  if (!meeting) return null
 
   const handleEditMeeting = () => {
     if (currentSchool?.id) {
@@ -127,9 +162,9 @@ const MonthlyMeetingDetailsModal = ({
                       <span className='font-medium text-gray-900'>
                         {update.student?.first_name} {update.student?.last_name}
                       </span>
-                      {update.student?.grade?.grade_level && (
+                      {getStudentGrade(update.student) && (
                         <Badge variant='outline' className='text-xs'>
-                          Grade {update.student.grade.grade_level}
+                          {getStudentGrade(update.student)}
                         </Badge>
                       )}
                       {update.student?.program_status === 'sub' && (
