@@ -30,11 +30,13 @@ import Header from '@/components/Header'
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import { useUpdateSpeechScreening } from '@/hooks/screenings/use-screening-mutations'
+import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import EnhancedSpeechScreeningFields from '@/components/screening/speech/EnhancedSpeechScreeningFields'
 import { format } from 'date-fns'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { studentsApi } from '@/api/students'
+import { speechScreeningsApi } from '@/api/speechscreenings'
 
 const EditScreeningContent = () => {
   const { screeningId } = useParams<{
@@ -49,7 +51,9 @@ const EditScreeningContent = () => {
   const [gradesMatch, setGradesMatch] = React.useState<boolean>(true)
   const [loading, setLoading] = React.useState(false)
   const [saving, setSaving] = React.useState(false)
+  const [studentData, setStudentData] = React.useState<any>(null)
   const updateSpeechScreening = useUpdateSpeechScreening()
+  const updateStudent = useUpdateStudent()
 
   const form = useForm<{
     screening_type: string
@@ -63,6 +67,7 @@ const EditScreeningContent = () => {
     qualifies_for_speech_program: boolean
     sub: boolean
     graduated: boolean
+    paused: boolean
     error_patterns: {
       attendance: {
         absent: boolean
@@ -86,6 +91,7 @@ const EditScreeningContent = () => {
         vocabulary_support_recommended: boolean
         sub?: boolean
         graduated?: boolean
+        paused?: boolean
       }
       add_areas_of_concern: Record<string, string | null>
       additional_observations: string
@@ -105,6 +111,7 @@ const EditScreeningContent = () => {
       qualifies_for_speech_program: false,
       sub: false,
       graduated: false,
+      paused: false,
       general_articulation_notes: '',
       error_patterns: {
         attendance: {
@@ -122,6 +129,7 @@ const EditScreeningContent = () => {
           vocabulary_support_recommended: false,
           sub: false,
           graduated: false,
+          paused: false,
         },
         add_areas_of_concern: {
           voice: null,
@@ -170,6 +178,7 @@ const EditScreeningContent = () => {
                 // Fetch student's current grade to compare
                 if (screeningData.student_id) {
                   const student = await studentsApi.getStudentByStudentId(screeningData.student_id)
+                  setStudentData(student) // Store student data for later use
 
                   if (student?.current_grade_id) {
                     const studentGradeObj = grades.find(g => g.id === student.current_grade_id)
@@ -269,6 +278,7 @@ const EditScreeningContent = () => {
                 false,
               sub: screeningData.error_patterns?.screening_metadata?.sub || false,
               graduated: screeningData.error_patterns?.screening_metadata?.graduated || false,
+              paused: screeningData.error_patterns?.screening_metadata?.paused || false,
               general_articulation_notes:
                 screeningData.error_patterns?.articulation?.articulationNotes || '',
               error_patterns: mergedErrorPatterns,
@@ -315,7 +325,34 @@ const EditScreeningContent = () => {
           qualifies_for_speech_program: formData.qualifies_for_speech_program,
           sub: formData.sub,
           graduated: formData.graduated,
+          paused: formData.paused,
         },
+      }
+
+      // Check if this is the most recent screening for the student
+      let isLatestScreening = false
+      if (studentData) {
+        try {
+          const studentScreenings = await speechScreeningsApi.getSpeechScreeningsByStudent(
+            studentData.id
+          )
+          const mostRecentScreening = studentScreenings.sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )[0]
+          isLatestScreening = mostRecentScreening?.id === screening.id
+        } catch (error) {
+          console.error('Error checking if latest screening:', error)
+        }
+      }
+
+      // Determine the program status from form data
+      const determineProgramStatus = (): string => {
+        if (formData.graduated) return 'graduated'
+        if (formData.paused) return 'paused'
+        if (formData.sub) return 'sub'
+        if (formData.qualifies_for_speech_program) return 'qualified'
+        if (formData.qualifies_for_speech_program === false) return 'not_in_program'
+        return 'none'
       }
 
       await updateSpeechScreening.mutateAsync({
@@ -330,9 +367,25 @@ const EditScreeningContent = () => {
         },
       })
 
+      // Only update student's program_status if this is the latest screening
+      if (isLatestScreening && studentData) {
+        const programStatus = determineProgramStatus()
+        try {
+          await updateStudent.mutateAsync({
+            id: studentData.id,
+            studentData: { program_status: programStatus },
+          })
+        } catch (error) {
+          console.error('Failed to update student program status:', error)
+          // Don't fail the whole operation if student update fails
+        }
+      }
+
       toast({
         title: 'Success',
-        description: 'Screening updated successfully',
+        description: isLatestScreening
+          ? 'Screening updated successfully'
+          : 'Screening updated successfully (historical record)',
         variant: 'default',
       })
 
