@@ -2,36 +2,25 @@ import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { User } from 'lucide-react'
 import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
-import Multiselect from '@/components/ui/multiselect'
+import { GRADE_MAPPING } from '@/constants/app'
 
 interface HearingScreeningStep1Props {
-  form: UseFormReturn<any>
+  form: UseFormReturn
   selectedStudent: Student | null
   selectedGrade: string
   onStudentSelect: (student: Student | null) => void
   onGradeChange: (grade: string) => void
 }
-
-const gradeOptions = [
-  'Headstart',
-  'Pre-K',
-  'K',
-  '1st',
-  '2nd',
-  '3rd',
-  '4th',
-  '5th',
-  '6th',
-  '7th',
-  '8th',
-  '9th',
-  '10th',
-  '11th',
-  '12th',
-]
 
 const HearingScreeningStep1 = ({
   form,
@@ -40,10 +29,9 @@ const HearingScreeningStep1 = ({
   onStudentSelect,
   onGradeChange,
 }: HearingScreeningStep1Props) => {
-  const handleGradeSelect = (grades: string[]) => {
-    // For this component, we'll use the first selected grade
-    // since the existing logic expects a single grade
-    onGradeChange(grades[0] || '')
+  const handleGradeChange = (grade: string) => {
+    onGradeChange(grade)
+    onStudentSelect(null)
   }
 
   return (
@@ -58,18 +46,20 @@ const HearingScreeningStep1 = ({
         <CardContent className='space-y-6 p-0'>
           <div>
             <Label htmlFor='grade' className='mb-3 block text-sm font-medium text-gray-700'>
-              Grade *
+              Grade Level *
             </Label>
-            <Multiselect
-              options={gradeOptions}
-              selected={selectedGrade ? [selectedGrade] : []}
-              onChange={handleGradeSelect}
-              placeholder='Select grade'
-              searchPlaceholder='Search grades...'
-              emptyMessage='No grades found.'
-              showSelectAll={false}
-              showClearAll={false}
-            />
+            <Select value={selectedGrade} onValueChange={handleGradeChange}>
+              <SelectTrigger>
+                <SelectValue placeholder='Select grade' />
+              </SelectTrigger>
+              <SelectContent>
+                {GRADE_MAPPING.map(grade => (
+                  <SelectItem key={grade.value} value={grade.value}>
+                    {grade.display}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {selectedGrade && (

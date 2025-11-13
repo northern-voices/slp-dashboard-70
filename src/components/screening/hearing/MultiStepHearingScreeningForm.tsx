@@ -135,20 +135,21 @@ const MultiStepHearingScreeningForm = ({
 
         <div className='flex justify-between items-center pt-6 border-t'>
           <div className='flex space-x-3'>
-            <Button type='button' variant='outline' onClick={onCancel}>
+            <Button type='button' variant='destructive' onClick={onCancel}>
               Cancel
             </Button>
             {currentStep > 1 && (
-              <Button type='button' variant='outline' onClick={handlePrevious}>
+              <Button type='button' variant='default' onClick={handlePrevious}>
                 Previous
               </Button>
             )}
           </div>
 
           <div className='flex space-x-3'>
-            <Button type='button' variant='outline' onClick={handleSaveDraft}>
+            {/* // TODO: Fix draft functionality */}
+            {/* <Button type='button' variant='secondary' onClick={handleSaveDraft}>
               Save Draft
-            </Button>
+            </Button> */}
             {currentStep < 2 ? (
               <Button
                 type='button'

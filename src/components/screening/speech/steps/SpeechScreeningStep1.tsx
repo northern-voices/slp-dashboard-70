@@ -16,6 +16,7 @@ import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
 import { useSchoolGrades } from '@/hooks/use-school-grades'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { GRADE_MAPPING } from '@/constants/app'
 
 interface SpeechScreeningStep1Props {
   form: UseFormReturn<Record<string, unknown>>
@@ -27,39 +28,6 @@ interface SpeechScreeningStep1Props {
   onAbsentChange?: (isAbsent: boolean) => void
   onNoConsentChange?: (isNoConsent: boolean) => void
 }
-
-const gradeMapping = [
-  { display: 'Headstart', value: 'Headstart' },
-  { display: 'Nursery', value: 'Nursery' },
-  { display: 'Pre-K', value: 'Pre-K' },
-  { display: 'K4', value: 'K4' },
-  { display: 'K5', value: 'K5' },
-  { display: 'Kindergarten', value: 'Kindergarten' },
-  { display: 'K/1', value: 'K/1' },
-  { display: '1', value: '1' },
-  { display: '1/2', value: '1/2' },
-  { display: '2', value: '2' },
-  { display: '2/3', value: '2/3' },
-  { display: '3', value: '3' },
-  { display: '3/4', value: '3/4' },
-  { display: '4', value: '4' },
-  { display: '4/5', value: '4/5' },
-  { display: '5', value: '5' },
-  { display: '5/6', value: '5/6' },
-  { display: '6', value: '6' },
-  { display: '6/7', value: '6/7' },
-  { display: '7', value: '7' },
-  { display: '7/8', value: '7/8' },
-  { display: '8', value: '8' },
-  { display: '8/9', value: '8/9' },
-  { display: '9', value: '9' },
-  { display: '9/10', value: '9/10' },
-  { display: '10', value: '10' },
-  { display: '10/11', value: '10/11' },
-  { display: '11', value: '11' },
-  { display: '11/12', value: '11/12' },
-  { display: '12', value: '12' },
-]
 
 const SpeechScreeningStep1 = ({
   form,
@@ -250,7 +218,7 @@ const SpeechScreeningStep1 = ({
                 <SelectValue placeholder='Select grade' />
               </SelectTrigger>
               <SelectContent>
-                {gradeMapping.map(grade => (
+                {GRADE_MAPPING.map(grade => (
                   <SelectItem key={grade.value} value={grade.value}>
                     {grade.display}
                   </SelectItem>
