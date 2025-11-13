@@ -442,7 +442,7 @@ export const speechScreeningsApi = {
           last_name,
           school_id,
           student_id,
-          program_status,
+          program_status
         ),
         school_grades (
           id,
