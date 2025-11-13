@@ -459,7 +459,7 @@ const SpeechScreeningsTable = ({
       return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     }
 
-    // Read from screening metadata (old location)
+    // Read from screening metadata not student program status
     const graduated = metadata?.graduated || false
     const paused = metadata?.paused || false
     const sub = metadata?.sub || false
