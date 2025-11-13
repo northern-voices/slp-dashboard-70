@@ -2,14 +2,7 @@ import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ScreeningFormData } from '@/types/screening'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from '@/components/ui/breadcrumb'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, FileText } from 'lucide-react'
 import AppSidebar from '@/components/AppSidebar'
@@ -93,8 +86,6 @@ const HearingScreeningContent = () => {
                   <ChevronLeft className='w-4 h-4 mr-1' />
                   Back
                 </Button>
-
-                <Breadcrumb></Breadcrumb>
               </div>
 
               {/* Title and View Drafts Button */}
