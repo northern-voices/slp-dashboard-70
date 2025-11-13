@@ -57,6 +57,14 @@ export const getNavigationGroups = (
         (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screenings`),
     },
     {
+      title: 'Hearing Screenings',
+      url: useSchoolRoutes ? `/school/${currentSchool.id}/screening/hearing` : '/screening/hearing',
+      icon: Ear,
+      isActive:
+        location.pathname === '/screening/hearing' ||
+        (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screening/hearing`),
+    },
+    {
       title: 'Speech Reports',
       url: useSchoolRoutes
         ? `/school/${currentSchool.id}/speech-screening-reports`
@@ -66,14 +74,6 @@ export const getNavigationGroups = (
         location.pathname === '/speech-screening-reports' ||
         (useSchoolRoutes &&
           location.pathname.startsWith(`/school/${currentSchool.id}/speech-screening-reports`)),
-    },
-    {
-      title: 'Hearing Screenings',
-      url: useSchoolRoutes ? `/school/${currentSchool.id}/screening/hearing` : '/screening/hearing',
-      icon: Ear,
-      isActive:
-        location.pathname === '/screening/hearing' ||
-        (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screening/hearing`),
     },
     {
       title: 'Monthly Meetings',
