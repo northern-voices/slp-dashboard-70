@@ -81,7 +81,6 @@ export const useCreateMonthlyMeeting = () => {
 
     onError: error => {
       console.error('Failed to create monthly meeting:', error)
-      // You could add toast notifications here
     },
   })
 }
@@ -116,7 +115,6 @@ export const useUpdateMonthlyMeeting = () => {
 
     onError: error => {
       console.error('Failed to update monthly meeting:', error)
-      // You could add toast notifications here
     },
   })
 }
@@ -147,7 +145,6 @@ export const useDeleteMonthlyMeeting = () => {
 
     onError: error => {
       console.error('Failed to delete monthly meeting:', error)
-      // You could add toast notifications here
     },
   })
 }
@@ -181,7 +178,6 @@ export const useBulkDeleteMonthlyMeetings = () => {
 
     onError: error => {
       console.error('Failed to delete monthly meetings:', error)
-      // You could add toast notifications here
     },
   })
 }

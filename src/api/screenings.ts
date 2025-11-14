@@ -71,6 +71,7 @@ export const screeningsApi = {
   // Re-export speech screening methods
   getSpeechScreeningsList: speechScreeningsApi.getSpeechScreeningsList,
   getSpeechScreeningsBySchool: speechScreeningsApi.getSpeechScreeningsBySchool,
+  getSpeechScreeningById: speechScreeningsApi.getSpeechScreeningById,
   createSpeechScreening: speechScreeningsApi.createSpeechScreening,
   updateSpeechScreening: speechScreeningsApi.updateSpeechScreening,
   deleteSpeechScreening: speechScreeningsApi.deleteSpeechScreening,

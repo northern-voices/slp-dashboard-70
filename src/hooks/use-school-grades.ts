@@ -11,3 +11,11 @@ export const useSchoolGrades = () => {
     enabled: !!currentOrganization?.id,
   })
 }
+
+export const useSchoolGradesBySchool = (schoolId?: string) => {
+  return useQuery({
+    queryKey: ['school-grades', 'by-school', schoolId],
+    queryFn: () => schoolGradesApi.getSchoolGradesBySchool(schoolId!),
+    enabled: !!schoolId,
+  })
+}
