@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -60,7 +60,8 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
-import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { useSchoolGradesBySchool } from '@/hooks/use-school-grades'
+import type { SchoolGrade } from '@/api/schoolGrades'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -107,7 +108,6 @@ const ScreeningsTable = ({
   const [updatingProgramId, setUpdatingProgramId] = useState<string | null>(null)
   const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
-  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
 
   // Use React Query to fetch screenings data
@@ -137,53 +137,57 @@ const ScreeningsTable = ({
   // Fetch students for the school
   const { data: students = [] } = useStudentsBySchool(currentSchool?.id)
 
-  // Fetch grades and students data
+  // Fetch grades using React Query
+  const {
+    data: grades = [],
+    isLoading: isLoadingGrades,
+    error: gradesError,
+  } = useSchoolGradesBySchool(currentSchool?.id)
+
+  // Create grades map from React Query data
+  const gradesMap = useMemo(() => {
+    const mapping = new Map<string, SchoolGrade>()
+    grades.forEach(grade => {
+      mapping.set(grade.id, grade)
+    })
+    return mapping
+  }, [grades])
+
+  // Create students map
   useEffect(() => {
-    const fetchGradesAndStudents = async () => {
-      if (!currentSchool?.id) {
-        setGradesMap(new Map())
-        setStudentsMap(new Map())
-        return
-      }
-
-      try {
-        // Fetch grades
-        const grades = await schoolGradesApi.getSchoolGradesBySchool(currentSchool.id)
-        const gradesMapping = new Map<string, SchoolGrade>()
-        grades.forEach(grade => {
-          gradesMapping.set(grade.id, grade)
-        })
-        setGradesMap(gradesMapping)
-
-        // Create students map - map by BOTH UUID and formatted student_id
-        const studentsMapping = new Map<string, Student>()
-        students.forEach(student => {
-          // Map by UUID (student.id)
-          studentsMapping.set(student.id, student)
-          // Also map by formatted student_id (e.g., "TS-uuid")
-          studentsMapping.set(student.student_id, student)
-        })
-        setStudentsMap(studentsMapping)
-      } catch (error) {
-        console.error('Error fetching grades or students:', error)
-        setGradesMap(new Map())
-        setStudentsMap(new Map())
-      }
+    if (!currentSchool?.id) {
+      setStudentsMap(new Map())
+      return
     }
 
-    fetchGradesAndStudents()
+    // Create students map - map by BOTH UUID and formatted student_id
+    const studentsMapping = new Map<string, Student>()
+    students.forEach(student => {
+      // Map by UUID (student.id)
+      studentsMapping.set(student.id, student)
+      // Also map by formatted student_id (e.g., "TS-uuid")
+      studentsMapping.set(student.student_id, student)
+    })
+    setStudentsMap(studentsMapping)
   }, [currentSchool?.id, students])
 
   // Helper function to get grade for a screening
-  const getScreeningGrade = (screening: Screening): string => {
+  const getScreeningGrade = (screening: Screening): string | JSX.Element => {
     const student = studentsMap.get(screening.student_id)
 
+    // If student has a current_grade_id, try to look it up
     if (student?.current_grade_id) {
+      // If grades are still loading, show loading indicator
+      if (isLoadingGrades) {
+        return <Loader2 className='w-3 h-3 animate-spin text-gray-400 inline' />
+      }
+
       const grade = gradesMap.get(student.current_grade_id)
       if (grade) {
         return grade.grade_level
       }
     }
+
     // Fallback to screening's grade field if student doesn't have current_grade_id
     return screening.grade || 'N/A'
   }
@@ -278,7 +282,9 @@ const ScreeningsTable = ({
     // Apply grade filter
     let matchesGrade = true
     if (gradeFilter !== 'all') {
-      matchesGrade = getScreeningGrade(screening) === gradeFilter
+      const grade = getScreeningGrade(screening)
+      const gradeStr = typeof grade === 'string' ? grade : ''
+      matchesGrade = gradeStr === gradeFilter
     }
 
     // Apply vocabulary support filter
@@ -392,7 +398,10 @@ const ScreeningsTable = ({
       case 'grade': {
         const gradeA = getScreeningGrade(a)
         const gradeB = getScreeningGrade(b)
-        comparison = gradeA.localeCompare(gradeB)
+        // Handle case where grade might be JSX (loading spinner)
+        const gradeAStr = typeof gradeA === 'string' ? gradeA : ''
+        const gradeBStr = typeof gradeB === 'string' ? gradeB : ''
+        comparison = gradeAStr.localeCompare(gradeBStr)
         break
       }
     }
@@ -1033,12 +1042,15 @@ const ScreeningsTable = ({
                         <p>
                           <span className='font-medium'>Student ID:</span> {screening.student_id}
                         </p>
-                        {getScreeningGrade(screening) !== 'N/A' && (
-                          <p>
-                            <span className='font-medium'>Grade:</span>{' '}
-                            {getScreeningGrade(screening)}
-                          </p>
-                        )}
+                        {(() => {
+                          const grade = getScreeningGrade(screening)
+                          const gradeStr = typeof grade === 'string' ? grade : '...'
+                          return gradeStr !== 'N/A' ? (
+                            <p>
+                              <span className='font-medium'>Grade:</span> {grade}
+                            </p>
+                          ) : null
+                        })()}
                       </div>
                     </div>
                   }>
@@ -1070,9 +1082,15 @@ const ScreeningsTable = ({
                     <div className='w-full min-w-[120px]'>{getProgramSelector(screening)}</div>
                   </TableCell>
                   <TableCell className='max-w-0'>
-                    <div className='truncate' title={getScreeningGrade(screening)}>
-                      {getScreeningGrade(screening) === 'N/A' ? '-' : getScreeningGrade(screening)}
-                    </div>
+                    {(() => {
+                      const grade = getScreeningGrade(screening)
+                      const gradeStr = typeof grade === 'string' ? grade : '...'
+                      return (
+                        <div className='truncate' title={gradeStr}>
+                          {gradeStr === 'N/A' ? '-' : grade}
+                        </div>
+                      )
+                    })()}
                   </TableCell>
                   <TableCell className='max-w-0'>
                     <div
