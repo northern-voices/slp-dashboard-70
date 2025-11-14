@@ -778,6 +778,11 @@ const ScreeningsTable = ({
 
   const confirmDelete = () => {
     if (screeningToDelete && screeningToDelete.source_table) {
+      const deletedStudentName = screeningToDelete.student_name
+
+      setIsDeleteDialogOpen(false)
+      setScreeningToDelete(null)
+
       deleteScreening(
         {
           id: screeningToDelete.id,
@@ -787,11 +792,9 @@ const ScreeningsTable = ({
           onSuccess: () => {
             toast({
               title: 'Screening deleted',
-              description: `Successfully deleted screening for ${screeningToDelete.student_name}`,
+              description: `Successfully deleted screening for ${deletedStudentName}`,
               variant: 'default',
             })
-            setIsDeleteDialogOpen(false)
-            setScreeningToDelete(null)
           },
           onError: error => {
             toast({
@@ -808,6 +811,8 @@ const ScreeningsTable = ({
         description: 'Cannot delete screening: source table not specified',
         variant: 'destructive',
       })
+      setIsDeleteDialogOpen(false)
+      setScreeningToDelete(null)
     }
   }
 

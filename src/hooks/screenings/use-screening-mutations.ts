@@ -158,13 +158,36 @@ export const useDeleteScreening = () => {
   const { user } = useAuth()
   const { userProfile, currentOrganization } = useOrganization()
 
-  return useMutation<void, Error, { id: string; sourceTable: 'speech' | 'hearing' }>({
+  return useMutation<
+    void,
+    Error,
+    { id: string; sourceTable: 'speech' | 'hearing' },
+    { previousScreenings: Array<[import('@tanstack/react-query').QueryKey, unknown]> }
+  >({
     mutationFn: ({ id, sourceTable }) => {
       if (sourceTable === 'speech') {
         return screeningsApi.deleteSpeechScreening(id)
       } else {
         return screeningsApi.deleteHearingScreening(id)
       }
+    },
+
+    // Optimistically remove the screening from the UI immediately
+    onMutate: async ({ id }) => {
+      // Cancel any outgoing refetches to prevent them from overwriting our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['screenings'] })
+
+      // Snapshot the previous value
+      const previousScreenings = queryClient.getQueriesData({ queryKey: ['screenings'] })
+
+      // Optimistically update to remove the screening
+      queryClient.setQueriesData<Screening[]>({ queryKey: ['screenings'] }, old => {
+        if (!old) return old
+        return old.filter(screening => screening.id !== id)
+      })
+
+      // Return the context with the previous data for rollback on error
+      return { previousScreenings }
     },
 
     onSuccess: () => {
@@ -185,9 +208,14 @@ export const useDeleteScreening = () => {
       })
     },
 
-    onError: error => {
+    onError: (error, variables, context) => {
+      // Rollback to the previous state if the deletion fails
+      if (context?.previousScreenings) {
+        context.previousScreenings.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data)
+        })
+      }
       console.error('Failed to delete screening:', error)
-      // You could add toast notifications here
     },
   })
 }
