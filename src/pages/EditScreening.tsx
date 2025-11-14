@@ -153,11 +153,8 @@ const EditScreeningContent = () => {
       const fetchScreening = async () => {
         setLoading(true)
         try {
-          // For now, we'll fetch all screenings and find the one we need
-          // This is a temporary solution until a getById method is added to the API
-          // TODO: Make a getScreeningById to be able to make this functionality work
-          const allScreenings = await screeningsApi.getScreeningsList()
-          const screeningData = allScreenings.find(s => s.id === screeningId)
+          // Fetch the specific screening by ID
+          const screeningData = await screeningsApi.getSpeechScreeningById(screeningId)
 
           if (screeningData) {
             setScreening(screeningData)

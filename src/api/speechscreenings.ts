@@ -299,6 +299,90 @@ export const speechScreeningsApi = {
     }
   },
 
+  getSpeechScreeningById: async (screeningId: string): Promise<Screening | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('speech_screenings')
+        .select(
+          `
+          *,
+          students (
+            id,
+            first_name,
+            last_name,
+            school_id,
+            student_id,
+            program_status,
+            schools (
+              id,
+              name
+            )
+          ),
+          school_grades (
+            id,
+            grade_level,
+            academic_year
+          ),
+          users (
+            id,
+            first_name,
+            last_name
+          )
+        `
+        )
+        .eq('id', screeningId)
+        .single()
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows found
+          return null
+        }
+        throw error
+      }
+
+      if (!data) return null
+
+      const screening: RawSpeechScreening = data
+
+      const transformedScreening: Screening = {
+        id: screening.id,
+        student_id: screening.students?.student_id || '',
+        student_name: screening.students
+          ? `${screening.students.first_name} ${screening.students.last_name}`
+          : 'Unknown Student',
+        grade: screening.school_grades?.grade_level || '',
+        date: screening.created_at?.split('T')[0] || '',
+        screening_date: screening.created_at?.split('T')[0] || '',
+        screening_type: 'initial',
+        screener: screening.users
+          ? `${screening.users.first_name} ${screening.users.last_name}`
+          : 'Unknown Screener',
+        slp_id: screening.screener_id,
+        result: (screening.result as SpeechScreeningResult) || undefined,
+        screening_result: (screening.result as SpeechScreeningResult) || undefined,
+        referral_notes: screening.referral_notes || '',
+        clinical_notes: screening.clinical_notes || '',
+        vocabulary_support: screening.vocabulary_support,
+        suspected_cas: screening.suspected_cas,
+        error_patterns: screening.error_patterns,
+        created_at: screening.created_at,
+        updated_at: screening.updated_at,
+        school_id: screening.students?.school_id || '',
+        school_name: screening.students?.schools?.name || 'Unknown School',
+        grade_id: screening.grade_id,
+        screener_id: screening.screener_id,
+        academic_year: screening.school_grades?.academic_year || '',
+        program_status: screening.students?.program_status || 'none',
+      }
+
+      return transformedScreening
+    } catch (error) {
+      console.error('Error fetching speech screening by ID:', error)
+      throw error
+    }
+  },
+
   createSpeechScreening: async (data: {
     student_id: string
     screener_id: string
