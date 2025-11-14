@@ -153,8 +153,11 @@ const EditScreeningContent = () => {
       const fetchScreening = async () => {
         setLoading(true)
         try {
-          // Fetch the specific screening by ID
-          const screeningData = await screeningsApi.getSpeechScreeningById(screeningId)
+          // Fetch the specific screening by ID, validating organization access
+          const screeningData = await screeningsApi.getSpeechScreeningById(
+            screeningId,
+            userProfile?.organization_id
+          )
 
           if (screeningData) {
             setScreening(screeningData)
@@ -296,7 +299,7 @@ const EditScreeningContent = () => {
       }
       fetchScreening()
     }
-  }, [screeningId, toast, form, currentSchool?.id])
+  }, [screeningId, toast, form, currentSchool?.id, userProfile?.organization_id])
 
   const handleGoBack = () => {
     navigate(-1)

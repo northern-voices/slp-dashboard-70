@@ -299,7 +299,10 @@ export const speechScreeningsApi = {
     }
   },
 
-  getSpeechScreeningById: async (screeningId: string): Promise<Screening | null> => {
+  getSpeechScreeningById: async (
+    screeningId: string,
+    organizationId?: string
+  ): Promise<Screening | null> => {
     try {
       const { data, error } = await supabase
         .from('speech_screenings')
@@ -315,7 +318,8 @@ export const speechScreeningsApi = {
             program_status,
             schools (
               id,
-              name
+              name,
+              organization_id
             )
           ),
           school_grades (
@@ -344,6 +348,16 @@ export const speechScreeningsApi = {
       if (!data) return null
 
       const screening: RawSpeechScreening = data
+
+      // Validate organization access if organizationId is provided
+      if (organizationId && screening.students?.schools) {
+        const screeningOrgId = (screening.students.schools as any).organization_id
+        if (screeningOrgId !== organizationId) {
+          // Screening belongs to a different organization - deny access
+          console.warn('Access denied: Screening belongs to a different organization')
+          return null
+        }
+      }
 
       const transformedScreening: Screening = {
         id: screening.id,
