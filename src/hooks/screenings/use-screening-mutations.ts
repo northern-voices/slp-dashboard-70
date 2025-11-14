@@ -77,7 +77,6 @@ export const useCreateSpeechScreening = () => {
 
     onError: error => {
       console.error('Failed to create speech screening:', error)
-      // You could add toast notifications here
     },
   })
 }
@@ -279,7 +278,6 @@ export const useBulkDeleteScreenings = () => {
 
     onError: error => {
       console.error('Failed to delete screenings:', error)
-      // You could add toast notifications here
     },
   })
 }
