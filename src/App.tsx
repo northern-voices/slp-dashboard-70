@@ -34,6 +34,7 @@ import Onboarding from './pages/Onboarding'
 import NotFound from './pages/NotFound'
 import SpeechScreening from './pages/SpeechScreening'
 import HearingScreening from './pages/HearingScreening'
+import HearingScreenings from './pages/HearingScreenings'
 import EditScreening from './pages/EditScreening'
 import Drafts from './pages/Drafts'
 import Logout from './components/auth/Logout'
@@ -151,6 +152,16 @@ const App = () => (
                   <ProtectedRoute>
                     <SchoolRouter>
                       <SpeechScreening />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/screenings/hearing'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <HearingScreenings />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
@@ -412,6 +423,16 @@ const App = () => (
                   <ProtectedRoute>
                     <SchoolRouter>
                       <SpeechScreening />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/school/:schoolId/screenings/hearing'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <HearingScreenings />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }

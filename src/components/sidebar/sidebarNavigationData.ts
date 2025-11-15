@@ -58,11 +58,11 @@ export const getNavigationGroups = (
     },
     {
       title: 'Hearing Screenings',
-      url: useSchoolRoutes ? `/school/${currentSchool.id}/screening/hearing` : '/screening/hearing',
+      url: useSchoolRoutes ? `/school/${currentSchool.id}/screenings/hearing` : '/screenings/hearing',
       icon: Ear,
       isActive:
-        location.pathname === '/screening/hearing' ||
-        (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screening/hearing`),
+        location.pathname === '/screenings/hearing' ||
+        (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screenings/hearing`),
     },
     {
       title: 'Speech Reports',
