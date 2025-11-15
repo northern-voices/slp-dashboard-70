@@ -241,7 +241,7 @@ const HearingScreeningStep1 = ({
                 <Label
                   htmlFor='clinical_notes'
                   className='mb-3 block text-sm font-medium text-gray-700'>
-                  Clinical Notes
+                  Clinical Notes (Private)
                 </Label>
                 <Textarea
                   placeholder='Enter clinical observations and findings...'
@@ -254,7 +254,7 @@ const HearingScreeningStep1 = ({
                 <Label
                   htmlFor='referral_notes'
                   className='mb-3 block text-sm font-medium text-gray-700'>
-                  Referral Notes
+                  Referral Notes (Included in Reports)
                 </Label>
                 <Textarea
                   placeholder='Enter referral information and recommendations...'
