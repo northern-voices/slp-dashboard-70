@@ -145,7 +145,7 @@ const HearingScreeningStep1 = ({
                       <div className='space-y-3'>
                         <div>
                           <Label htmlFor='right_vol' className='text-sm font-medium text-gray-700'>
-                            R+ Vol (ml)
+                            R+ Volume (ml)
                           </Label>
                           <Input
                             type='number'
@@ -155,19 +155,23 @@ const HearingScreeningStep1 = ({
                           />
                         </div>
                         <div>
-                          <Label htmlFor='right_comp' className='text-sm font-medium text-gray-700'>
-                            R+ Comp (ml)
+                          <Label
+                            htmlFor='right_compliance'
+                            className='text-sm font-medium text-gray-700'>
+                            R+ Compliance (ml)
                           </Label>
                           <Input
                             type='number'
                             step='0.1'
                             placeholder='0.0'
-                            {...form.register('right_comp')}
+                            {...form.register('right_compliance')}
                           />
                         </div>
                         <div>
-                          <Label htmlFor='right_press' className='text-sm font-medium text-gray-700'>
-                            R+ Press (daPa)
+                          <Label
+                            htmlFor='right_press'
+                            className='text-sm font-medium text-gray-700'>
+                            R+ Pressure (daPa)
                           </Label>
                           <Input
                             type='number'
@@ -185,7 +189,7 @@ const HearingScreeningStep1 = ({
                       <div className='space-y-3'>
                         <div>
                           <Label htmlFor='left_vol' className='text-sm font-medium text-gray-700'>
-                            L+ Vol (ml)
+                            L+ Volume (ml)
                           </Label>
                           <Input
                             type='number'
@@ -196,18 +200,18 @@ const HearingScreeningStep1 = ({
                         </div>
                         <div>
                           <Label htmlFor='left_comp' className='text-sm font-medium text-gray-700'>
-                            L+ Comp (ml)
+                            L+ Compliance (ml)
                           </Label>
                           <Input
                             type='number'
                             step='0.1'
                             placeholder='0.0'
-                            {...form.register('left_comp')}
+                            {...form.register('left_compliance')}
                           />
                         </div>
                         <div>
                           <Label htmlFor='left_press' className='text-sm font-medium text-gray-700'>
-                            L+ Press (daPa)
+                            L+ Pressure (daPa)
                           </Label>
                           <Input
                             type='number'
@@ -247,7 +251,9 @@ const HearingScreeningStep1 = ({
               </div>
 
               <div>
-                <Label htmlFor='referral_notes' className='mb-3 block text-sm font-medium text-gray-700'>
+                <Label
+                  htmlFor='referral_notes'
+                  className='mb-3 block text-sm font-medium text-gray-700'>
                   Referral Notes
                 </Label>
                 <Textarea

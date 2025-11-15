@@ -25,10 +25,10 @@ const MultiStepHearingScreeningForm = ({
       screening_date: new Date().toISOString().split('T')[0],
       // Tympanometry fields
       right_vol: '',
-      right_comp: '',
+      right_compliance: '',
       right_press: '',
       left_vol: '',
-      left_comp: '',
+      left_compliance: '',
       left_press: '',
       // Notes fields
       clinical_notes: '',
@@ -48,12 +48,12 @@ const MultiStepHearingScreeningForm = ({
         tympanometry_results: {
           right_ear: {
             vol: parseFloat(data.right_vol) || 0,
-            comp: parseFloat(data.right_comp) || 0,
+            comp: parseFloat(data.right_compliance) || 0,
             press: parseFloat(data.right_press) || 0,
           },
           left_ear: {
             vol: parseFloat(data.left_vol) || 0,
-            comp: parseFloat(data.left_comp) || 0,
+            comp: parseFloat(data.left_compliance) || 0,
             press: parseFloat(data.left_press) || 0,
           },
         },
