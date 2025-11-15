@@ -244,8 +244,15 @@ const HearingScreeningsTable = ({
   }
 
   return (
-    <div className='bg-white rounded-lg shadow'>
-      <ResponsiveTable>
+    <div className='space-y-4'>
+      <div className='flex justify-end mb-3'>
+        <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
+          {sortedScreenings.length} screening{sortedScreenings.length !== 1 ? 's' : ''} found
+        </span>
+      </div>
+
+      <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+        <ResponsiveTable>
         <TableHeader>
           <tr>
             <TableHead className='w-12'>
@@ -347,14 +354,7 @@ const HearingScreeningsTable = ({
           )}
         </TableBody>
       </ResponsiveTable>
-
-      {sortedScreenings.length > 0 && (
-        <div className='px-6 py-4 border-t border-gray-200'>
-          <p className='text-sm text-gray-600'>
-            Showing {sortedScreenings.length} of {DUMMY_SCREENINGS.length} hearing screenings
-          </p>
-        </div>
-      )}
+      </div>
     </div>
   )
 }
