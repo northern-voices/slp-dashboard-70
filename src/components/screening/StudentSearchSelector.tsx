@@ -13,9 +13,9 @@ import { Check, ChevronsUpDown, Plus, UserPlus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Student } from '@/types/database'
 import { useStudentsByGrade, useStudentsBySchool } from '@/hooks/students/use-students'
-import { useCreateStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { studentsApi } from '@/api/students'
 import {
@@ -66,10 +66,34 @@ const StudentSearchSelector = ({
   const { toast } = useToast()
 
   const { userProfile, availableSchools, currentSchool, isLoading: orgLoading } = useOrganization()
+  const queryClient = useQueryClient()
 
-  // Use mutation hooks
-  const createStudentMutation = useCreateStudent()
-  const updateStudentMutation = useUpdateStudent()
+  // Custom mutations that don't invalidate screenings to prevent unwanted navigation
+  const createStudentMutation = useMutation({
+    mutationFn: (studentData: {
+      first_name: string
+      last_name: string
+      student_id: string
+      qualifies_for_program?: boolean
+      school_id?: string
+      date_of_birth?: string
+    }) => studentsApi.createStudent(studentData),
+    onSuccess: () => {
+      // Only invalidate student queries, not screenings
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+    },
+  })
+
+  const updateStudentMutation = useMutation({
+    mutationFn: ({ id, studentData }: { id: string; studentData: Partial<Student> }) =>
+      studentsApi.updateStudent(id, studentData),
+    onSuccess: (_, variables) => {
+      // Only invalidate student queries, not screenings
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+      queryClient.invalidateQueries({ queryKey: ['students', variables.id] })
+      // Don't invalidate screenings to prevent navigation issues
+    },
+  })
 
   // Only fetch students if a school is selected
   const { data: studentsByGrade = [], isLoading: loadingByGrade } = useStudentsByGrade(
@@ -115,7 +139,13 @@ const StudentSearchSelector = ({
     setSearchValue('')
   }
 
-  const handleCreateNewStudent = async (data: NewStudentFormData) => {
+  const handleCreateNewStudent = async (data: NewStudentFormData, e?: React.FormEvent) => {
+    // Prevent form submission propagation
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
     if (!currentSchool) {
       toast({
         title: 'Error',
@@ -190,18 +220,24 @@ const StudentSearchSelector = ({
             },
             {
               onSuccess: updatedStudent => {
-                toast({
-                  title: 'Success',
-                  description: `Student ${newStudent.first_name} ${newStudent.last_name} created successfully.`,
-                  variant: 'top-right',
-                })
-
-                // Select the newly created student
-                onStudentSelect(updatedStudent as Student)
+                // Close modal and reset form FIRST before showing toast
                 setShowNewStudentForm(false)
                 setOpen(false)
                 setSearchValue('')
                 newStudentForm.reset()
+
+                // Select the newly created student
+                onStudentSelect(updatedStudent as Student)
+
+                // Show success toast after modal is closed
+                // Use setTimeout to ensure modal closes before toast appears
+                setTimeout(() => {
+                  toast({
+                    title: 'Success',
+                    description: `Student ${newStudent.first_name} ${newStudent.last_name} created successfully.`,
+                    variant: 'top-right',
+                  })
+                }, 100)
               },
               onError: error => {
                 console.error('Error updating student ID:', error)
@@ -294,6 +330,7 @@ const StudentSearchSelector = ({
                   <p className='text-xs text-gray-500'>Create a new student record</p>
                 </div>
                 <Button
+                  type='button'
                   onClick={handleShowNewStudentForm}
                   className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors duration-200 flex items-center space-x-2'>
                   <UserPlus className='w-4 h-4' />
@@ -373,6 +410,7 @@ const StudentSearchSelector = ({
                       <p className='text-sm text-muted-foreground mb-2'>No student found.</p>
                       {isStudentCreatable && (
                         <Button
+                          type='button'
                           variant='outline'
                           size='sm'
                           onClick={handleShowNewStudentForm}
@@ -423,6 +461,7 @@ const StudentSearchSelector = ({
               {isStudentCreatable && (
                 <div className='border-t bg-background sticky bottom-0 p-2'>
                   <Button
+                    type='button'
                     variant='outline'
                     size='sm'
                     onClick={handleShowNewStudentForm}
@@ -438,8 +477,29 @@ const StudentSearchSelector = ({
       </Popover>
 
       {/* New Student Creation Dialog */}
-      <Dialog open={showNewStudentForm} onOpenChange={handleCloseNewStudentForm}>
-        <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto'>
+      <Dialog
+        open={showNewStudentForm}
+        onOpenChange={(open) => {
+          if (!open && !createStudentMutation.isPending && !updateStudentMutation.isPending) {
+            handleCloseNewStudentForm()
+          }
+        }}
+      >
+        <DialogContent
+          className='max-w-2xl max-h-[90vh] overflow-y-auto'
+          onPointerDownOutside={(e) => {
+            // Prevent closing during mutation
+            if (createStudentMutation.isPending || updateStudentMutation.isPending) {
+              e.preventDefault()
+            }
+          }}
+          onInteractOutside={(e) => {
+            // Prevent closing during mutation
+            if (createStudentMutation.isPending || updateStudentMutation.isPending) {
+              e.preventDefault()
+            }
+          }}
+        >
           <DialogHeader>
             <DialogTitle className='flex items-center gap-2'>
               <UserPlus className='w-5 h-5' />
@@ -449,7 +509,15 @@ const StudentSearchSelector = ({
 
           <Form {...newStudentForm}>
             <form
-              onSubmit={newStudentForm.handleSubmit(handleCreateNewStudent)}
+              onSubmit={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                // Ensure the event doesn't bubble to parent forms
+                return newStudentForm.handleSubmit((data) => {
+                  handleCreateNewStudent(data, e)
+                  return false
+                })(e)
+              }}
               className='space-y-4'>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <FormField
