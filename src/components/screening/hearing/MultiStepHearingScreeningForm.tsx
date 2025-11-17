@@ -44,17 +44,20 @@ const MultiStepHearingScreeningForm = ({
       student_id: selectedStudent?.id || '',
       screening_date: data.screening_date,
       form_type: 'hearing',
+      selected_grade: selectedGrade, // Pass the selected grade level
       hearing_data: {
         tympanometry_results: {
           right_ear: {
-            vol: parseFloat(data.right_vol) || 0,
-            comp: parseFloat(data.right_compliance) || 0,
-            press: parseFloat(data.right_press) || 0,
+            // Send null if immeasurable, otherwise parse the numeric value
+            vol: data.right_vol === null ? null : (parseFloat(data.right_vol) || null),
+            comp: data.right_compliance === null ? null : (parseFloat(data.right_compliance) || null),
+            press: data.right_press === null ? null : (parseFloat(data.right_press) || null),
           },
           left_ear: {
-            vol: parseFloat(data.left_vol) || 0,
-            comp: parseFloat(data.left_compliance) || 0,
-            press: parseFloat(data.left_press) || 0,
+            // Send null if immeasurable, otherwise parse the numeric value
+            vol: data.left_vol === null ? null : (parseFloat(data.left_vol) || null),
+            comp: data.left_compliance === null ? null : (parseFloat(data.left_compliance) || null),
+            press: data.left_press === null ? null : (parseFloat(data.left_press) || null),
           },
         },
       },

@@ -29,7 +29,18 @@ export interface ScreeningFormData {
       right_ear: Record<string, number>
       left_ear: Record<string, number>
     }
-    tympanometry_results: string
+    tympanometry_results: {
+      right_ear: {
+        vol: number | null
+        comp: number | null
+        press: number | null
+      }
+      left_ear: {
+        vol: number | null
+        comp: number | null
+        press: number | null
+      }
+    } | string
     observations: string
   }
 
