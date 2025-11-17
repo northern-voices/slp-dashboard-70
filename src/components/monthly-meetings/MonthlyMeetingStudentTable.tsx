@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +22,7 @@ import { GRADE_MAPPING } from '@/constants/app'
 import { Student } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 
 interface StudentData {
   sessions_attended: number | null
@@ -49,6 +50,18 @@ const MonthlyMeetingsStudentTable = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
+
+  // Fetch screenings for the current school to filter students
+  const { data: schoolScreenings = [] } = useScreeningsBySchool(currentSchool?.id, 'all')
+
+  // Create a Set of student IDs who have at least one screening
+  const studentsWithScreenings = useMemo(() => {
+    const studentIds = new Set<string>()
+    schoolScreenings.forEach(screening => {
+      studentIds.add(screening.student_id)
+    })
+    return studentIds
+  }, [schoolScreenings])
 
   // Fetch grades when component mounts
   useEffect(() => {
@@ -158,7 +171,9 @@ const MonthlyMeetingsStudentTable = ({
   const filteredStudents = students
     .filter(student => {
       const status = getProgramStatus(student)
-      return status === 'sub' || status === 'qualified'
+      const isQualifiedOrSub = status === 'sub' || status === 'qualified'
+      const hasScreening = studentsWithScreenings.has(student.id)
+      return isQualifiedOrSub && hasScreening
     })
     .sort((a, b) => {
       if (!sortField || !sortOrder) {

@@ -26,16 +26,35 @@ const ScreeningStats = () => {
   const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
   const error = currentSchool ? errorSchool : errorAll
 
+  // Get the latest screening for each student
+  const latestScreeningsByStudent = schoolScreenings.reduce((acc, screening) => {
+    const studentId = screening.student_id
+    const existingScreening = acc.get(studentId)
+
+    if (!existingScreening || new Date(screening.created_at) > new Date(existingScreening.created_at)) {
+      acc.set(studentId, screening)
+    }
+
+    return acc
+  }, new Map())
+
+  const latestScreenings = Array.from(latestScreeningsByStudent.values())
+
+  const qualifiedScreenings = latestScreenings.filter(
+    s => s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true
+  )
+  const subsScreenings = latestScreenings.filter(
+    s => s.error_patterns?.screening_metadata?.sub === true
+  )
+  const graduatedScreenings = latestScreenings.filter(
+    s => s.error_patterns?.screening_metadata?.graduated === true
+  )
+
   const stats = {
     totalScreenings: schoolScreenings.length,
-    qualifiedScreenings: schoolScreenings.filter(
-      s => s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true
-    ).length,
-    subsScreenings: schoolScreenings.filter(s => s.error_patterns?.screening_metadata?.sub === true)
-      .length,
-    scheduledScreenings: schoolScreenings.filter(
-      s => s.error_patterns?.screening_metadata?.graduated === true
-    ).length,
+    qualifiedScreenings: qualifiedScreenings.length,
+    subsScreenings: subsScreenings.length,
+    scheduledScreenings: graduatedScreenings.length,
   }
 
   if (isLoading) {
