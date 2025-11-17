@@ -170,7 +170,7 @@ export const speechScreeningsApi = {
 
       const transformedData: Screening[] = (data || []).map((screening: RawSpeechScreening) => ({
         id: screening.id,
-        student_id: screening.students?.student_id || '',
+        student_id: screening.student_id,
         student_name: screening.students
           ? `${screening.students.first_name} ${screening.students.last_name}`
           : 'Unknown Student',
@@ -263,7 +263,7 @@ export const speechScreeningsApi = {
 
       const transformedData: Screening[] = (data || []).map((screening: RawSpeechScreening) => ({
         id: screening.id,
-        student_id: screening.students?.student_id || '',
+        student_id: screening.student_id,
         student_name: screening.students
           ? `${screening.students.first_name} ${screening.students.last_name}`
           : 'Unknown Student',
@@ -361,7 +361,7 @@ export const speechScreeningsApi = {
 
       const transformedScreening: Screening = {
         id: screening.id,
-        student_id: screening.students?.student_id || '',
+        student_id: screening.student_id,
         student_name: screening.students
           ? `${screening.students.first_name} ${screening.students.last_name}`
           : 'Unknown Student',
@@ -682,7 +682,7 @@ export const speechScreeningsApi = {
 
       const transformedData: Screening[] = (data || []).map((screening: RawSpeechScreening) => ({
         id: screening.id,
-        student_id: screening.students?.student_id || '',
+        student_id: screening.student_id,
         student_name: screening.students
           ? `${screening.students.first_name} ${screening.students.last_name}`
           : 'Unknown Student',
