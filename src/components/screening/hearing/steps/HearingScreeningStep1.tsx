@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import { User, Volume2, FileText } from 'lucide-react'
 import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
@@ -31,6 +32,14 @@ const HearingScreeningStep1 = ({
   onStudentSelect,
   onGradeChange,
 }: HearingScreeningStep1Props) => {
+  // State for immeasurable checkboxes
+  const [rightVolumeImmeasurable, setRightVolumeImmeasurable] = useState(false)
+  const [rightComplianceImmeasurable, setRightComplianceImmeasurable] = useState(false)
+  const [rightPressureImmeasurable, setRightPressureImmeasurable] = useState(false)
+  const [leftVolumeImmeasurable, setLeftVolumeImmeasurable] = useState(false)
+  const [leftComplianceImmeasurable, setLeftComplianceImmeasurable] = useState(false)
+  const [leftPressureImmeasurable, setLeftPressureImmeasurable] = useState(false)
+
   const handleGradeChange = (grade: string) => {
     onGradeChange(grade)
     onStudentSelect(null)
@@ -152,7 +161,29 @@ const HearingScreeningStep1 = ({
                             step='0.1'
                             placeholder='0.0'
                             {...form.register('right_vol')}
+                            disabled={rightVolumeImmeasurable}
                           />
+                          <div className='flex items-center space-x-2 mt-2'>
+                            <Checkbox
+                              id='right_vol_immeasurable'
+                              checked={rightVolumeImmeasurable}
+                              onCheckedChange={(checked) => {
+                                setRightVolumeImmeasurable(checked as boolean)
+                                if (checked) {
+                                  // Set to null when immeasurable
+                                  form.setValue('right_vol', null)
+                                } else {
+                                  // Clear field when unchecked
+                                  form.setValue('right_vol', '')
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor='right_vol_immeasurable'
+                              className='text-sm text-gray-600 cursor-pointer'>
+                              Immeasurable
+                            </label>
+                          </div>
                         </div>
                         <div>
                           <Label
@@ -165,7 +196,29 @@ const HearingScreeningStep1 = ({
                             step='0.1'
                             placeholder='0.0'
                             {...form.register('right_compliance')}
+                            disabled={rightComplianceImmeasurable}
                           />
+                          <div className='flex items-center space-x-2 mt-2'>
+                            <Checkbox
+                              id='right_compliance_immeasurable'
+                              checked={rightComplianceImmeasurable}
+                              onCheckedChange={(checked) => {
+                                setRightComplianceImmeasurable(checked as boolean)
+                                if (checked) {
+                                  // Set to null when immeasurable
+                                  form.setValue('right_compliance', null)
+                                } else {
+                                  // Clear field when unchecked
+                                  form.setValue('right_compliance', '')
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor='right_compliance_immeasurable'
+                              className='text-sm text-gray-600 cursor-pointer'>
+                              Immeasurable
+                            </label>
+                          </div>
                         </div>
                         <div>
                           <Label
@@ -178,7 +231,29 @@ const HearingScreeningStep1 = ({
                             step='1'
                             placeholder='0'
                             {...form.register('right_press')}
+                            disabled={rightPressureImmeasurable}
                           />
+                          <div className='flex items-center space-x-2 mt-2'>
+                            <Checkbox
+                              id='right_press_immeasurable'
+                              checked={rightPressureImmeasurable}
+                              onCheckedChange={(checked) => {
+                                setRightPressureImmeasurable(checked as boolean)
+                                if (checked) {
+                                  // Set to null when immeasurable
+                                  form.setValue('right_press', null)
+                                } else {
+                                  // Clear field when unchecked
+                                  form.setValue('right_press', '')
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor='right_press_immeasurable'
+                              className='text-sm text-gray-600 cursor-pointer'>
+                              Immeasurable
+                            </label>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -196,7 +271,29 @@ const HearingScreeningStep1 = ({
                             step='0.1'
                             placeholder='0.0'
                             {...form.register('left_vol')}
+                            disabled={leftVolumeImmeasurable}
                           />
+                          <div className='flex items-center space-x-2 mt-2'>
+                            <Checkbox
+                              id='left_vol_immeasurable'
+                              checked={leftVolumeImmeasurable}
+                              onCheckedChange={(checked) => {
+                                setLeftVolumeImmeasurable(checked as boolean)
+                                if (checked) {
+                                  // Set to null when immeasurable
+                                  form.setValue('left_vol', null)
+                                } else {
+                                  // Clear field when unchecked
+                                  form.setValue('left_vol', '')
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor='left_vol_immeasurable'
+                              className='text-sm text-gray-600 cursor-pointer'>
+                              Immeasurable
+                            </label>
+                          </div>
                         </div>
                         <div>
                           <Label htmlFor='left_comp' className='text-sm font-medium text-gray-700'>
@@ -207,7 +304,29 @@ const HearingScreeningStep1 = ({
                             step='0.1'
                             placeholder='0.0'
                             {...form.register('left_compliance')}
+                            disabled={leftComplianceImmeasurable}
                           />
+                          <div className='flex items-center space-x-2 mt-2'>
+                            <Checkbox
+                              id='left_compliance_immeasurable'
+                              checked={leftComplianceImmeasurable}
+                              onCheckedChange={(checked) => {
+                                setLeftComplianceImmeasurable(checked as boolean)
+                                if (checked) {
+                                  // Set to null when immeasurable
+                                  form.setValue('left_compliance', null)
+                                } else {
+                                  // Clear field when unchecked
+                                  form.setValue('left_compliance', '')
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor='left_compliance_immeasurable'
+                              className='text-sm text-gray-600 cursor-pointer'>
+                              Immeasurable
+                            </label>
+                          </div>
                         </div>
                         <div>
                           <Label htmlFor='left_press' className='text-sm font-medium text-gray-700'>
@@ -218,7 +337,29 @@ const HearingScreeningStep1 = ({
                             step='1'
                             placeholder='0'
                             {...form.register('left_press')}
+                            disabled={leftPressureImmeasurable}
                           />
+                          <div className='flex items-center space-x-2 mt-2'>
+                            <Checkbox
+                              id='left_press_immeasurable'
+                              checked={leftPressureImmeasurable}
+                              onCheckedChange={(checked) => {
+                                setLeftPressureImmeasurable(checked as boolean)
+                                if (checked) {
+                                  // Set to null when immeasurable
+                                  form.setValue('left_press', null)
+                                } else {
+                                  // Clear field when unchecked
+                                  form.setValue('left_press', '')
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor='left_press_immeasurable'
+                              className='text-sm text-gray-600 cursor-pointer'>
+                              Immeasurable
+                            </label>
+                          </div>
                         </div>
                       </div>
                     </div>

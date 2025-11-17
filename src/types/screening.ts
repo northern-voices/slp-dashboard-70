@@ -12,6 +12,7 @@ export interface ScreeningFormData {
   screening_type: 'initial' | 'progress'
   screening_date: string
   form_type: 'speech' | 'hearing' | 'progress'
+  selected_grade?: string
 
   // Speech screening specific fields
   speech_data?: {
