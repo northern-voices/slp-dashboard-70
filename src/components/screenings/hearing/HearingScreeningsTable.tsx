@@ -21,6 +21,7 @@ import { format } from 'date-fns'
 import { useHearingScreenings } from '@/hooks/screenings/use-hearing-screenings'
 import { Screening } from '@/types/database'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -39,6 +40,8 @@ const HearingScreeningsTable = ({
 }: HearingScreeningsTableProps) => {
   const [sortField, setSortField] = useState<'date' | 'name' | 'grade' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
+  const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
   // Fetch hearing screenings from backend
   const { data: screenings = [], isLoading } = useHearingScreenings()
@@ -107,6 +110,11 @@ const HearingScreeningsTable = ({
       return 'Immeasurable'
     }
     return `${value} ${unit}`
+  }
+
+  const handleViewDetails = (screening: Screening) => {
+    setSelectedScreening(screening)
+    setIsDetailsModalOpen(true)
   }
 
   const SortIcon = ({ field }: { field: 'date' | 'name' | 'grade' }) => {
@@ -233,7 +241,7 @@ const HearingScreeningsTable = ({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align='end'>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewDetails(screening)}>
                           <Eye className='w-4 h-4 mr-2' />
                           View Details
                         </DropdownMenuItem>
@@ -254,6 +262,13 @@ const HearingScreeningsTable = ({
           </TableBody>
         </ResponsiveTable>
       </div>
+
+      {/* Hearing Screening Details Modal */}
+      <HearingScreeningDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        screening={selectedScreening}
+      />
     </div>
   )
 }
