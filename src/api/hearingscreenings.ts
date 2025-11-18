@@ -18,6 +18,8 @@ interface RawHearingScreening {
   left_ear_volume_result: string | null
   left_ear_pressure_result: string | null
   left_ear_compliance_result: string | null
+  right_ear_result: string | null
+  left_ear_result: string | null
   clinical_notes: string | null
   referral_notes: string | null
   created_at: string
@@ -134,6 +136,8 @@ const transformHearingScreening = (screening: RawHearingScreening): Screening =>
     left_ear_volume_result: screening.left_ear_volume_result,
     left_ear_pressure_result: screening.left_ear_pressure_result,
     left_ear_compliance_result: screening.left_ear_compliance_result,
+    right_ear_result: screening.right_ear_result,
+    left_ear_result: screening.left_ear_result,
     created_at: screening.created_at,
     updated_at: screening.updated_at,
     school_id: screening.students?.school_id || '',

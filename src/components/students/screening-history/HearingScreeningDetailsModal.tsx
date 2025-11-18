@@ -291,6 +291,14 @@ const HearingScreeningDetailsModal = ({
                       </Badge>
                     </div>
                   </div>
+                  {currentScreening.right_ear_result && (
+                    <div className='mt-3 pt-3 border-t border-blue-300'>
+                      <span className='text-xs font-medium text-blue-900 block mb-1'>
+                        Overall Result:
+                      </span>
+                      <p className='text-sm text-blue-800'>{currentScreening.right_ear_result}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -348,6 +356,14 @@ const HearingScreeningDetailsModal = ({
                       </Badge>
                     </div>
                   </div>
+                  {currentScreening.left_ear_result && (
+                    <div className='mt-3 pt-3 border-t border-purple-300'>
+                      <span className='text-xs font-medium text-purple-900 block mb-1'>
+                        Overall Result:
+                      </span>
+                      <p className='text-sm text-purple-800'>{currentScreening.left_ear_result}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

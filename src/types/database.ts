@@ -116,6 +116,8 @@ export interface Screening {
   left_ear_volume_result?: string | null
   left_ear_pressure_result?: string | null
   left_ear_compliance_result?: string | null
+  right_ear_result?: string | null
+  left_ear_result?: string | null
 
   // Source table information for deletion
   source_table?: 'speech' | 'hearing'
