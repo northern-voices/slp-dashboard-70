@@ -12,6 +12,12 @@ interface RawHearingScreening {
   left_volume_db: number | null
   left_pressure: number | null
   left_compliance: number | null
+  right_ear_volume_result: string | null
+  right_ear_pressure_result: string | null
+  right_ear_compliance_result: string | null
+  left_ear_volume_result: string | null
+  left_ear_pressure_result: string | null
+  left_ear_compliance_result: string | null
   clinical_notes: string | null
   referral_notes: string | null
   created_at: string
@@ -96,38 +102,46 @@ const getUserOrganizationSchools = async (organizationId: string): Promise<strin
 }
 
 // Transform raw hearing screening data to unified Screening interface
-const transformHearingScreening = (screening: RawHearingScreening): Screening => ({
-  id: screening.id,
-  student_id: screening.students?.student_id || '',
-  student_name: screening.students
-    ? `${screening.students.first_name} ${screening.students.last_name}`
-    : 'Unknown Student',
-  grade: screening.school_grades?.grade_level || '',
-  date: screening.created_at?.split('T')[0] || '',
-  screening_date: screening.created_at?.split('T')[0] || '',
-  screening_type: 'initial',
-  screener: screening.users
-    ? `${screening.users.first_name} ${screening.users.last_name}`
-    : 'Unknown Screener',
-  slp_id: screening.screener_id,
-  result: getHearingResult(screening),
-  screening_result: getHearingResult(screening),
-  referral_notes: screening.referral_notes || '',
-  clinical_notes: screening.clinical_notes || '',
-  // Hearing-specific fields
-  right_volume_db: screening.right_volume_db,
-  right_pressure: screening.right_pressure,
-  right_compliance: screening.right_compliance,
-  left_volume_db: screening.left_volume_db,
-  left_pressure: screening.left_pressure,
-  left_compliance: screening.left_compliance,
-  created_at: screening.created_at,
-  updated_at: screening.updated_at,
-  school_id: screening.students?.school_id || '',
-  grade_id: screening.grade_id,
-  screener_id: screening.screener_id,
-  academic_year: screening.school_grades?.academic_year || '',
-})
+const transformHearingScreening = (screening: RawHearingScreening): Screening => {
+  return {
+    id: screening.id,
+    student_id: screening.students?.student_id || '',
+    student_name: screening.students
+      ? `${screening.students.first_name} ${screening.students.last_name}`
+      : 'Unknown Student',
+    grade: screening.school_grades?.grade_level || '',
+    date: screening.created_at?.split('T')[0] || '',
+    screening_date: screening.created_at?.split('T')[0] || '',
+    screening_type: 'initial',
+    screener: screening.users
+      ? `${screening.users.first_name} ${screening.users.last_name}`
+      : 'Unknown Screener',
+    slp_id: screening.screener_id,
+    result: getHearingResult(screening),
+    screening_result: getHearingResult(screening),
+    referral_notes: screening.referral_notes || '',
+    clinical_notes: screening.clinical_notes || '',
+    // Hearing-specific fields
+    right_volume_db: screening.right_volume_db,
+    right_pressure: screening.right_pressure,
+    right_compliance: screening.right_compliance,
+    left_volume_db: screening.left_volume_db,
+    left_pressure: screening.left_pressure,
+    left_compliance: screening.left_compliance,
+    right_ear_volume_result: screening.right_ear_volume_result,
+    right_ear_pressure_result: screening.right_ear_pressure_result,
+    right_ear_compliance_result: screening.right_ear_compliance_result,
+    left_ear_volume_result: screening.left_ear_volume_result,
+    left_ear_pressure_result: screening.left_ear_pressure_result,
+    left_ear_compliance_result: screening.left_ear_compliance_result,
+    created_at: screening.created_at,
+    updated_at: screening.updated_at,
+    school_id: screening.students?.school_id || '',
+    grade_id: screening.grade_id,
+    screener_id: screening.screener_id,
+    academic_year: screening.school_grades?.academic_year || '',
+  }
+}
 
 export const hearingScreeningsApi = {
   getHearingScreeningsList: async (
@@ -142,7 +156,7 @@ export const hearingScreeningsApi = {
         organizationSchoolIds = await getUserOrganizationSchools(organizationId)
       }
 
-      // Build base query
+      // Build base query - using * to get all columns
       let query = supabase.from('hearing_screenings').select(
         `
           *,
@@ -203,7 +217,26 @@ export const hearingScreeningsApi = {
         .from('hearing_screenings')
         .select(
           `
-          *,
+          id,
+          student_id,
+          screener_id,
+          grade_id,
+          right_volume_db,
+          right_pressure,
+          right_compliance,
+          left_volume_db,
+          left_pressure,
+          left_compliance,
+          right_ear_volume_result,
+          right_ear_pressure_result,
+          right_ear_compliance_result,
+          left_ear_volume_result,
+          left_ear_pressure_result,
+          left_ear_compliance_result,
+          clinical_notes,
+          referral_notes,
+          created_at,
+          updated_at,
           students (
             id,
             first_name,
@@ -282,7 +315,26 @@ export const hearingScreeningsApi = {
         .insert(insertData)
         .select(
           `
-        *,
+        id,
+        student_id,
+        screener_id,
+        grade_id,
+        right_volume_db,
+        right_pressure,
+        right_compliance,
+        left_volume_db,
+        left_pressure,
+        left_compliance,
+        right_ear_volume_result,
+        right_ear_pressure_result,
+        right_ear_compliance_result,
+        left_ear_volume_result,
+        left_ear_pressure_result,
+        left_ear_compliance_result,
+        clinical_notes,
+        referral_notes,
+        created_at,
+        updated_at,
         students (
           id,
           first_name,
@@ -343,7 +395,26 @@ export const hearingScreeningsApi = {
         .eq('id', id)
         .select(
           `
-        *,
+        id,
+        student_id,
+        screener_id,
+        grade_id,
+        right_volume_db,
+        right_pressure,
+        right_compliance,
+        left_volume_db,
+        left_pressure,
+        left_compliance,
+        right_ear_volume_result,
+        right_ear_pressure_result,
+        right_ear_compliance_result,
+        left_ear_volume_result,
+        left_ear_pressure_result,
+        left_ear_compliance_result,
+        clinical_notes,
+        referral_notes,
+        created_at,
+        updated_at,
         students (
           id,
           first_name,
