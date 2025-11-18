@@ -3,14 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  User,
-  FileText,
-  X,
-  Edit2,
-  Save,
-  XCircle,
-} from 'lucide-react'
+import { User, FileText, X, Edit2, Save, XCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { Screening } from '@/types/database'
 import { schoolGradesApi } from '@/api/schoolGrades'
@@ -258,7 +251,8 @@ const HearingScreeningDetailsModal = ({
                           'ml'
                         )}
                       </span>
-                      <Badge className={getResultBadgeColor(currentScreening.right_ear_volume_result)}>
+                      <Badge
+                        className={getResultBadgeColor(currentScreening.right_ear_volume_result)}>
                         {currentScreening.right_ear_volume_result || '-'}
                       </Badge>
                     </div>
@@ -273,7 +267,10 @@ const HearingScreeningDetailsModal = ({
                           'ml'
                         )}
                       </span>
-                      <Badge className={getResultBadgeColor(currentScreening.right_ear_compliance_result)}>
+                      <Badge
+                        className={getResultBadgeColor(
+                          currentScreening.right_ear_compliance_result
+                        )}>
                         {currentScreening.right_ear_compliance_result || '-'}
                       </Badge>
                     </div>
@@ -288,7 +285,8 @@ const HearingScreeningDetailsModal = ({
                           'daPa'
                         )}
                       </span>
-                      <Badge className={getResultBadgeColor(currentScreening.right_ear_pressure_result)}>
+                      <Badge
+                        className={getResultBadgeColor(currentScreening.right_ear_pressure_result)}>
                         {currentScreening.right_ear_pressure_result || '-'}
                       </Badge>
                     </div>
@@ -310,7 +308,8 @@ const HearingScreeningDetailsModal = ({
                           'ml'
                         )}
                       </span>
-                      <Badge className={getResultBadgeColor(currentScreening.left_ear_volume_result)}>
+                      <Badge
+                        className={getResultBadgeColor(currentScreening.left_ear_volume_result)}>
                         {currentScreening.left_ear_volume_result || '-'}
                       </Badge>
                     </div>
@@ -325,7 +324,10 @@ const HearingScreeningDetailsModal = ({
                           'ml'
                         )}
                       </span>
-                      <Badge className={getResultBadgeColor(currentScreening.left_ear_compliance_result)}>
+                      <Badge
+                        className={getResultBadgeColor(
+                          currentScreening.left_ear_compliance_result
+                        )}>
                         {currentScreening.left_ear_compliance_result || '-'}
                       </Badge>
                     </div>
@@ -340,7 +342,8 @@ const HearingScreeningDetailsModal = ({
                           'daPa'
                         )}
                       </span>
-                      <Badge className={getResultBadgeColor(currentScreening.left_ear_pressure_result)}>
+                      <Badge
+                        className={getResultBadgeColor(currentScreening.left_ear_pressure_result)}>
                         {currentScreening.left_ear_pressure_result || '-'}
                       </Badge>
                     </div>
