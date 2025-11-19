@@ -10,6 +10,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   ResponsiveTable,
   ResponsiveTableRow,
   TableHeader,
@@ -19,10 +29,12 @@ import {
 } from '@/components/ui/responsive-table'
 import { format } from 'date-fns'
 import { useHearingScreenings } from '@/hooks/screenings/use-hearing-screenings'
+import { useDeleteHearingScreening } from '@/hooks/screenings/use-screening-hearing-mutations'
 import { Screening } from '@/types/database'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useToast } from '@/hooks/use-toast'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -43,10 +55,15 @@ const HearingScreeningsTable = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [screeningToDelete, setScreeningToDelete] = useState<Screening | null>(null)
   const { currentSchool } = useOrganization()
+  const { toast } = useToast()
 
   // Fetch hearing screenings from backend filtered by current school
   const { data: screenings = [], isLoading } = useHearingScreenings(currentSchool?.id)
+
+  // Delete mutation
+  const deleteScreeningMutation = useDeleteHearingScreening()
 
   // Apply filters
   const filteredScreenings = screenings.filter(screening => {
@@ -117,6 +134,35 @@ const HearingScreeningsTable = ({
   const handleViewDetails = (screening: Screening) => {
     setSelectedScreening(screening)
     setIsDetailsModalOpen(true)
+  }
+
+  const handleDeleteClick = (screening: Screening) => {
+    setScreeningToDelete(screening)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!screeningToDelete) return
+
+    try {
+      await deleteScreeningMutation.mutateAsync(screeningToDelete.id)
+      toast({
+        title: 'Success',
+        description: 'Hearing screening deleted successfully',
+      })
+      setScreeningToDelete(null)
+      // Remove from selected screenings if it was selected
+      setSelectedScreenings(selectedScreenings.filter(s => s.id !== screeningToDelete.id))
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete hearing screening. Please try again.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setScreeningToDelete(null)
   }
 
   const SortIcon = ({ field }: { field: 'date' | 'name' | 'grade' }) => {
@@ -264,7 +310,9 @@ const HearingScreeningsTable = ({
                           <Download className='w-4 h-4 mr-2' />
                           Export Report
                         </DropdownMenuItem>
-                        <DropdownMenuItem className='text-red-600'>
+                        <DropdownMenuItem
+                          className='text-red-600'
+                          onClick={() => handleDeleteClick(screening)}>
                           <Trash2 className='w-4 h-4 mr-2' />
                           Delete
                         </DropdownMenuItem>
@@ -284,6 +332,27 @@ const HearingScreeningsTable = ({
         onClose={() => setIsDetailsModalOpen(false)}
         screening={selectedScreening}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!screeningToDelete} onOpenChange={handleDeleteCancel}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Hearing Screening</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the hearing screening for{' '}
+              <strong>{screeningToDelete?.student_name}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className='bg-red-600 hover:bg-red-700'>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

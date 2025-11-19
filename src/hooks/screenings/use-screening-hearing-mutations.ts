@@ -26,3 +26,16 @@ export const useCreateHearingScreening = () => {
     },
   })
 }
+
+export const useDeleteHearingScreening = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => hearingScreeningsApi.deleteHearingScreening(id),
+    onSuccess: () => {
+      // Invalidate and refetch hearing screenings queries
+      queryClient.invalidateQueries({ queryKey: ['hearing-screenings'] })
+      queryClient.invalidateQueries({ queryKey: ['screenings'] })
+    },
+  })
+}
