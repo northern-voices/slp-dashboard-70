@@ -89,45 +89,6 @@ const HearingScreeningStep1 = ({
 
           {selectedGrade && (
             <div>
-              <Label
-                htmlFor='screening_result'
-                className='mb-3 block text-sm font-medium text-gray-700'>
-                Screening Result
-              </Label>
-              <div className='relative'>
-                <Select
-                  value={form.watch('screening_result') || ''}
-                  onValueChange={value => {
-                    if (value === 'none') {
-                      form.setValue('screening_result', '')
-                    } else {
-                      form.setValue('screening_result', value)
-                    }
-                  }}>
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select result (optional)' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='absent'>Absent</SelectItem>
-                    <SelectItem value='non_compliant'>Non Compliant</SelectItem>
-                    <SelectItem value='complex_needs'>Complex Needs</SelectItem>
-                    <SelectItem value='results_uncertain'>Results Uncertain</SelectItem>
-                  </SelectContent>
-                </Select>
-                {form.watch('screening_result') && (
-                  <button
-                    type='button'
-                    onClick={() => form.setValue('screening_result', '')}
-                    className='absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors'>
-                    <X className='w-4 h-4 text-gray-500' />
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {selectedGrade && (
-            <div>
               <Label className='mb-3 block text-sm font-medium text-gray-700'>
                 Select Student <span className='text-red-500 text-lg'>*</span>
               </Label>
@@ -163,6 +124,45 @@ const HearingScreeningStep1 = ({
                 </div>
               )}
             </>
+          )}
+
+          {selectedGrade && (
+            <div>
+              <Label
+                htmlFor='screening_result'
+                className='mb-3 block text-sm font-medium text-gray-700'>
+                Screening Result
+              </Label>
+              <div className='relative'>
+                <Select
+                  value={form.watch('screening_result') || ''}
+                  onValueChange={value => {
+                    if (value === 'none') {
+                      form.setValue('screening_result', '')
+                    } else {
+                      form.setValue('screening_result', value)
+                    }
+                  }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder='Select result (optional)' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='absent'>Absent</SelectItem>
+                    <SelectItem value='non_compliant'>Non Compliant</SelectItem>
+                    <SelectItem value='complex_needs'>Complex Needs</SelectItem>
+                    <SelectItem value='results_uncertain'>Results Uncertain</SelectItem>
+                  </SelectContent>
+                </Select>
+                {form.watch('screening_result') && (
+                  <button
+                    type='button'
+                    onClick={() => form.setValue('screening_result', '')}
+                    className='absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors'>
+                    <X className='w-4 h-4 text-gray-500' />
+                  </button>
+                )}
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
