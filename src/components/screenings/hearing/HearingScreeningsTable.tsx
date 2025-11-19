@@ -22,6 +22,7 @@ import { useHearingScreenings } from '@/hooks/screenings/use-hearing-screenings'
 import { Screening } from '@/types/database'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -42,9 +43,10 @@ const HearingScreeningsTable = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const { currentSchool } = useOrganization()
 
-  // Fetch hearing screenings from backend
-  const { data: screenings = [], isLoading } = useHearingScreenings()
+  // Fetch hearing screenings from backend filtered by current school
+  const { data: screenings = [], isLoading } = useHearingScreenings(currentSchool?.id)
 
   // Apply filters
   const filteredScreenings = screenings.filter(screening => {

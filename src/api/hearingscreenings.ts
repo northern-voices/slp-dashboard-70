@@ -31,6 +31,10 @@ interface RawHearingScreening {
     last_name: string
     school_id: string
     student_id: string
+    schools: {
+      id: string
+      name: string
+    } | null
   } | null
   school_grades: {
     id: string
@@ -121,6 +125,7 @@ const transformHearingScreening = (screening: RawHearingScreening): Screening =>
       : 'Unknown Screener',
     slp_id: screening.screener_id,
     result: screening.result,
+    school_name: screening.students?.schools?.name || 'Unknown School',
     referral_notes: screening.referral_notes || '',
     clinical_notes: screening.clinical_notes || '',
     // Hearing-specific fields
@@ -151,7 +156,8 @@ export const hearingScreeningsApi = {
   getHearingScreeningsList: async (
     currentUserId?: string,
     userRole?: 'admin' | 'slp' | 'supervisor',
-    organizationId?: string
+    organizationId?: string,
+    schoolId?: string
   ): Promise<Screening[]> => {
     try {
       // Get organization schools if organizationId is provided
@@ -169,7 +175,11 @@ export const hearingScreeningsApi = {
             first_name,
             last_name,
             school_id,
-            student_id
+            student_id,
+            schools (
+              id,
+              name
+            )
           ),
           school_grades (
             id,
@@ -196,7 +206,12 @@ export const hearingScreeningsApi = {
 
       const transformedData: Screening[] = (data || []).map(transformHearingScreening)
 
-      // Filter by organization schools if provided
+      // Filter by specific school if provided (takes priority)
+      if (schoolId) {
+        return transformedData.filter(screening => screening.school_id === schoolId)
+      }
+
+      // Otherwise filter by organization schools if provided
       if (organizationSchoolIds.length > 0) {
         return transformedData.filter(screening =>
           organizationSchoolIds.includes(screening.school_id)

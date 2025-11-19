@@ -5,6 +5,20 @@ import { Student } from '@/types/database'
 import { ScreeningFormData } from '@/types/screening'
 import HearingScreeningStep1 from './steps/HearingScreeningStep1'
 
+interface HearingScreeningFormValues {
+  screening_type: string
+  screening_date: string
+  screening_result: string
+  right_vol: string | null
+  right_compliance: string | null
+  right_press: string | null
+  left_vol: string | null
+  left_compliance: string | null
+  left_press: string | null
+  clinical_notes: string
+  referral_notes: string
+}
+
 interface MultiStepHearingScreeningFormProps {
   onSubmit: (data: ScreeningFormData) => void
   onCancel: () => void
@@ -19,7 +33,7 @@ const MultiStepHearingScreeningForm = ({
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null)
   const [selectedGrade, setSelectedGrade] = useState(existingStudent?.grade || '')
 
-  const form = useForm({
+  const form = useForm<HearingScreeningFormValues>({
     defaultValues: {
       screening_type: 'initial' as const,
       screening_date: new Date().toISOString().split('T')[0],
@@ -37,9 +51,7 @@ const MultiStepHearingScreeningForm = ({
     },
   })
 
-  const handleSubmit = (data: any) => {
-    console.log('Hearing screening submitted:', data)
-
+  const handleSubmit = data => {
     const screeningData: ScreeningFormData = {
       screening_type: data.screening_type,
       student_id: selectedStudent?.id || '',
@@ -51,28 +63,28 @@ const MultiStepHearingScreeningForm = ({
         tympanometry_results: {
           right_ear: {
             // Send null if immeasurable, otherwise parse the numeric value
-            vol: data.right_vol === null ? null : (parseFloat(data.right_vol) || null),
-            comp: data.right_compliance === null ? null : (parseFloat(data.right_compliance) || null),
-            press: data.right_press === null ? null : (parseFloat(data.right_press) || null),
+            vol: data.right_vol === null ? null : parseFloat(data.right_vol) || null,
+            comp: data.right_compliance === null ? null : parseFloat(data.right_compliance) || null,
+            press: data.right_press === null ? null : parseFloat(data.right_press) || null,
           },
           left_ear: {
             // Send null if immeasurable, otherwise parse the numeric value
-            vol: data.left_vol === null ? null : (parseFloat(data.left_vol) || null),
-            comp: data.left_compliance === null ? null : (parseFloat(data.left_compliance) || null),
-            press: data.left_press === null ? null : (parseFloat(data.left_press) || null),
+            vol: data.left_vol === null ? null : parseFloat(data.left_vol) || null,
+            comp: data.left_compliance === null ? null : parseFloat(data.left_compliance) || null,
+            press: data.left_press === null ? null : parseFloat(data.left_press) || null,
           },
         },
       },
       clinical_notes: data.clinical_notes || '',
       referral_notes: data.referral_notes || '',
+      general_notes: '',
+      recommendations: '',
+      follow_up_required: false,
     }
 
     onSubmit(screeningData)
   }
 
-  // Can submit if student is selected AND either:
-  // 1. A screening result is selected (absent, non_compliant, etc.), OR
-  // 2. No screening result is selected (meaning they need to fill out the full form)
   const hasScreeningResult = form.watch('screening_result')
   const canSubmit = selectedStudent !== null
 

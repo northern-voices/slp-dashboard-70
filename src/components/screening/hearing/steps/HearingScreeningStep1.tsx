@@ -17,8 +17,22 @@ import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
 import { GRADE_MAPPING } from '@/constants/app'
 
+interface HearingScreeningFormValues {
+  screening_type: string
+  screening_date: string
+  screening_result: string
+  right_vol: string | null
+  right_compliance: string | null
+  right_press: string | null
+  left_vol: string | null
+  left_compliance: string | null
+  left_press: string | null
+  clinical_notes: string
+  referral_notes: string
+}
+
 interface HearingScreeningStep1Props {
-  form: UseFormReturn
+  form: UseFormReturn<HearingScreeningFormValues>
   selectedStudent: Student | null
   selectedGrade: string
   onStudentSelect: (student: Student | null) => void
