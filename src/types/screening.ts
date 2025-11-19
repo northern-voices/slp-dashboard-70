@@ -13,6 +13,9 @@ export interface ScreeningFormData {
   screening_date: string
   form_type: 'speech' | 'hearing' | 'progress'
   selected_grade?: string
+  result?: string
+  clinical_notes?: string
+  referral_notes?: string
 
   // Speech screening specific fields
   speech_data?: {

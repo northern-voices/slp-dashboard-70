@@ -35,10 +35,23 @@ const HearingScreeningContent = () => {
     console.log('Hearing screening submitted:', screeningData)
 
     // Validate required data
-    if (!screeningData.student_id || !user?.id || !screeningData.hearing_data?.tympanometry_results) {
+    // If a result is selected (absent, non_compliant, etc.), we don't need tympanometry data
+    const hasResult = screeningData.result && screeningData.result !== ''
+
+    if (!screeningData.student_id || !user?.id) {
       toast({
         title: 'Error',
         description: 'Missing required screening data',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Only require tympanometry data if no result is selected
+    if (!hasResult && !screeningData.hearing_data?.tympanometry_results) {
+      toast({
+        title: 'Error',
+        description: 'Please either select a screening result or enter tympanometry data',
         variant: 'destructive',
       })
       return
@@ -118,31 +131,29 @@ const HearingScreeningContent = () => {
     }
 
     // Transform form data to API format
-    const tympData = typeof screeningData.hearing_data.tympanometry_results === 'string'
-      ? null
-      : screeningData.hearing_data.tympanometry_results
+    let tympData = null
 
-    if (!tympData) {
-      toast({
-        title: 'Error',
-        description: 'Invalid tympanometry data',
-        variant: 'destructive',
-      })
-      return
+    // Only process tympanometry data if it exists
+    if (screeningData.hearing_data?.tympanometry_results) {
+      tympData = typeof screeningData.hearing_data.tympanometry_results === 'string'
+        ? null
+        : screeningData.hearing_data.tympanometry_results
     }
 
     const apiData = {
       student_id: screeningData.student_id,
       screener_id: user.id,
       grade_id: gradeId,
-      right_volume_db: tympData.right_ear.vol,
-      right_compliance: tympData.right_ear.comp,
-      right_pressure: tympData.right_ear.press,
-      left_volume_db: tympData.left_ear.vol,
-      left_compliance: tympData.left_ear.comp,
-      left_pressure: tympData.left_ear.press,
+      // Use tympanometry data if available, otherwise use null
+      right_volume_db: tympData?.right_ear.vol ?? null,
+      right_compliance: tympData?.right_ear.comp ?? null,
+      right_pressure: tympData?.right_ear.press ?? null,
+      left_volume_db: tympData?.left_ear.vol ?? null,
+      left_compliance: tympData?.left_ear.comp ?? null,
+      left_pressure: tympData?.left_ear.press ?? null,
       clinical_notes: screeningData.clinical_notes || null,
       referral_notes: screeningData.referral_notes || null,
+      result: screeningData.result || null,
     }
 
     try {

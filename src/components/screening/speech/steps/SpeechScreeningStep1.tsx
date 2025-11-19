@@ -211,7 +211,7 @@ const SpeechScreeningStep1 = ({
         <CardContent className='space-y-6 p-0'>
           <div>
             <Label htmlFor='grade' className='mb-3 block text-sm font-medium text-gray-700'>
-              Grade Level *
+              Grade Level <span className='text-red-500 text-lg'>*</span>
             </Label>
             <Select value={selectedGrade} onValueChange={handleGradeChange}>
               <SelectTrigger>
@@ -230,7 +230,7 @@ const SpeechScreeningStep1 = ({
           {selectedGrade && (
             <div>
               <Label className='mb-3 block text-sm font-medium text-gray-700'>
-                Select Student *
+                Select Student <span className='text-red-500 text-lg'>*</span>
               </Label>
               <div>
                 <StudentSearchSelector
@@ -255,7 +255,7 @@ const SpeechScreeningStep1 = ({
           {selectedGrade && (
             <div>
               <Label className='mb-3 block text-sm font-medium text-gray-700'>
-                Academic Year *
+                Academic Year <span className='text-red-500 text-lg'>*</span>
               </Label>
               <Select
                 value={(() => {

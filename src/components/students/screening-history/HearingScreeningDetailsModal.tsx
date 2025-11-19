@@ -228,6 +228,17 @@ const HearingScreeningDetailsModal = ({
                 <p className='text-sm text-gray-600 ml-2'>
                   Updated: {format(new Date(currentScreening.updated_at), 'MMM d, yyyy h:mm a')}
                 </p>
+                {currentScreening.result && currentScreening.result !== '' && (
+                  <div className='flex items-center gap-2 ml-2 mt-2'>
+                    <span className='text-sm text-gray-600'>Result:</span>
+                    <Badge variant='secondary'>
+                      {currentScreening.result === 'absent' && 'Absent'}
+                      {currentScreening.result === 'non_compliant' && 'Non Compliant'}
+                      {currentScreening.result === 'complex_needs' && 'Complex Needs'}
+                      {currentScreening.result === 'results_uncertain' && 'Results Uncertain'}
+                    </Badge>
+                  </div>
+                )}
               </div>
             </div>
           </div>

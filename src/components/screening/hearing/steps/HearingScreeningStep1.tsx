@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { User, Volume2, FileText } from 'lucide-react'
+import { User, Volume2, FileText, X } from 'lucide-react'
 import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
 import { GRADE_MAPPING } from '@/constants/app'
@@ -57,7 +57,7 @@ const HearingScreeningStep1 = ({
         <CardContent className='space-y-6 p-0'>
           <div>
             <Label htmlFor='grade' className='mb-3 block text-sm font-medium text-gray-700'>
-              Grade Level *
+              Grade Level <span className='text-red-500 text-lg'>*</span>
             </Label>
             <Select value={selectedGrade} onValueChange={handleGradeChange}>
               <SelectTrigger>
@@ -75,8 +75,47 @@ const HearingScreeningStep1 = ({
 
           {selectedGrade && (
             <div>
+              <Label
+                htmlFor='screening_result'
+                className='mb-3 block text-sm font-medium text-gray-700'>
+                Screening Result
+              </Label>
+              <div className='relative'>
+                <Select
+                  value={form.watch('screening_result') || ''}
+                  onValueChange={value => {
+                    if (value === 'none') {
+                      form.setValue('screening_result', '')
+                    } else {
+                      form.setValue('screening_result', value)
+                    }
+                  }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder='Select result (optional)' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='absent'>Absent</SelectItem>
+                    <SelectItem value='non_compliant'>Non Compliant</SelectItem>
+                    <SelectItem value='complex_needs'>Complex Needs</SelectItem>
+                    <SelectItem value='results_uncertain'>Results Uncertain</SelectItem>
+                  </SelectContent>
+                </Select>
+                {form.watch('screening_result') && (
+                  <button
+                    type='button'
+                    onClick={() => form.setValue('screening_result', '')}
+                    className='absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors'>
+                    <X className='w-4 h-4 text-gray-500' />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {selectedGrade && (
+            <div>
               <Label className='mb-3 block text-sm font-medium text-gray-700'>
-                Select Student *
+                Select Student <span className='text-red-500 text-lg'>*</span>
               </Label>
               <div>
                 <StudentSearchSelector
@@ -89,20 +128,33 @@ const HearingScreeningStep1 = ({
           )}
 
           {selectedStudent && (
-            <div className='mt-6 p-4 bg-blue-50 rounded-lg'>
-              <h4 className='text-sm font-semibold text-blue-900 mb-2'>Selected Student</h4>
-              <p className='text-sm text-blue-800 font-medium'>
-                {selectedStudent.first_name} {selectedStudent.last_name} - Grade{' '}
-                {selectedStudent.grade}
-              </p>
-              <p className='text-xs text-blue-600 mt-1'>Student ID: {selectedStudent.student_id}</p>
-            </div>
+            <>
+              <div className='mt-6 p-4 bg-blue-50 rounded-lg'>
+                <h4 className='text-sm font-semibold text-blue-900 mb-2'>Selected Student</h4>
+                <p className='text-sm text-blue-800 font-medium'>
+                  {selectedStudent.first_name} {selectedStudent.last_name} - Grade{' '}
+                  {selectedStudent.grade}
+                </p>
+                <p className='text-xs text-blue-600 mt-1'>
+                  Student ID: {selectedStudent.student_id}
+                </p>
+              </div>
+
+              {form.watch('screening_result') && (
+                <div className='p-4 bg-green-50 border border-green-200 rounded-lg'>
+                  <p className='text-sm text-green-800'>
+                    <strong>Note:</strong> Since you've selected a screening result, you can submit
+                    the form now without entering tympanometry data.
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
 
-      {/* Screening Details Section - Only show after student is selected */}
-      {selectedStudent && (
+      {/* Screening Details Section - Only show when student is selected AND no result is selected */}
+      {selectedStudent && !form.watch('screening_result') && (
         <>
           <Card className='border-0 rounded-none shadow-none'>
             <CardHeader className='px-0 pt-0 pb-0 mb-6'>
@@ -117,7 +169,7 @@ const HearingScreeningStep1 = ({
                   <Label
                     htmlFor='screening_type'
                     className='mb-3 block text-sm font-medium text-gray-700'>
-                    Screening Type *
+                    Screening Type <span className='text-red-500 text-lg'>*</span>
                   </Label>
                   <Select
                     value={form.watch('screening_type')}
@@ -136,7 +188,7 @@ const HearingScreeningStep1 = ({
                   <Label
                     htmlFor='screening_date'
                     className='mb-3 block text-sm font-medium text-gray-700'>
-                    Screening Date *
+                    Screening Date <span className='text-red-500 text-lg'>*</span>
                   </Label>
                   <Input type='date' {...form.register('screening_date')} />
                 </div>
@@ -167,7 +219,7 @@ const HearingScreeningStep1 = ({
                             <Checkbox
                               id='right_vol_immeasurable'
                               checked={rightVolumeImmeasurable}
-                              onCheckedChange={(checked) => {
+                              onCheckedChange={checked => {
                                 setRightVolumeImmeasurable(checked as boolean)
                                 if (checked) {
                                   // Set to null when immeasurable
@@ -202,7 +254,7 @@ const HearingScreeningStep1 = ({
                             <Checkbox
                               id='right_compliance_immeasurable'
                               checked={rightComplianceImmeasurable}
-                              onCheckedChange={(checked) => {
+                              onCheckedChange={checked => {
                                 setRightComplianceImmeasurable(checked as boolean)
                                 if (checked) {
                                   // Set to null when immeasurable
@@ -237,7 +289,7 @@ const HearingScreeningStep1 = ({
                             <Checkbox
                               id='right_press_immeasurable'
                               checked={rightPressureImmeasurable}
-                              onCheckedChange={(checked) => {
+                              onCheckedChange={checked => {
                                 setRightPressureImmeasurable(checked as boolean)
                                 if (checked) {
                                   // Set to null when immeasurable
@@ -277,7 +329,7 @@ const HearingScreeningStep1 = ({
                             <Checkbox
                               id='left_vol_immeasurable'
                               checked={leftVolumeImmeasurable}
-                              onCheckedChange={(checked) => {
+                              onCheckedChange={checked => {
                                 setLeftVolumeImmeasurable(checked as boolean)
                                 if (checked) {
                                   // Set to null when immeasurable
@@ -310,7 +362,7 @@ const HearingScreeningStep1 = ({
                             <Checkbox
                               id='left_compliance_immeasurable'
                               checked={leftComplianceImmeasurable}
-                              onCheckedChange={(checked) => {
+                              onCheckedChange={checked => {
                                 setLeftComplianceImmeasurable(checked as boolean)
                                 if (checked) {
                                   // Set to null when immeasurable
@@ -343,7 +395,7 @@ const HearingScreeningStep1 = ({
                             <Checkbox
                               id='left_press_immeasurable'
                               checked={leftPressureImmeasurable}
-                              onCheckedChange={(checked) => {
+                              onCheckedChange={checked => {
                                 setLeftPressureImmeasurable(checked as boolean)
                                 if (checked) {
                                   // Set to null when immeasurable

@@ -23,6 +23,7 @@ const MultiStepHearingScreeningForm = ({
     defaultValues: {
       screening_type: 'initial' as const,
       screening_date: new Date().toISOString().split('T')[0],
+      screening_result: '',
       // Tympanometry fields
       right_vol: '',
       right_compliance: '',
@@ -45,6 +46,7 @@ const MultiStepHearingScreeningForm = ({
       screening_date: data.screening_date,
       form_type: 'hearing',
       selected_grade: selectedGrade, // Pass the selected grade level
+      result: data.screening_result || undefined, // Include the result field
       hearing_data: {
         tympanometry_results: {
           right_ear: {
@@ -68,6 +70,10 @@ const MultiStepHearingScreeningForm = ({
     onSubmit(screeningData)
   }
 
+  // Can submit if student is selected AND either:
+  // 1. A screening result is selected (absent, non_compliant, etc.), OR
+  // 2. No screening result is selected (meaning they need to fill out the full form)
+  const hasScreeningResult = form.watch('screening_result')
   const canSubmit = selectedStudent !== null
 
   return (

@@ -167,6 +167,7 @@ const HearingScreeningsTable = ({
                 Grade
                 <SortIcon field='grade' />
               </TableHead>
+              <TableHead>Result</TableHead>
               <TableHead>Right Ear</TableHead>
               <TableHead>Right Ear Results</TableHead>
               <TableHead>Left Ear</TableHead>
@@ -184,7 +185,7 @@ const HearingScreeningsTable = ({
           <TableBody>
             {sortedScreenings.length === 0 ? (
               <tr>
-                <TableCell colSpan={9} className='text-center py-8 text-gray-500'>
+                <TableCell colSpan={10} className='text-center py-8 text-gray-500'>
                   No hearing screenings found
                 </TableCell>
               </tr>
@@ -203,6 +204,18 @@ const HearingScreeningsTable = ({
                     {screening.student_name || 'Unknown Student'}
                   </TableCell>
                   <TableCell>{screening.grade || 'N/A'}</TableCell>
+                  <TableCell>
+                    {screening.result ? (
+                      <Badge variant='secondary' className='text-xs'>
+                        {screening.result === 'absent' && 'Absent'}
+                        {screening.result === 'non_compliant' && 'Non Compliant'}
+                        {screening.result === 'complex_needs' && 'Complex Needs'}
+                        {screening.result === 'results_uncertain' && 'Results Uncertain'}
+                      </Badge>
+                    ) : (
+                      '-'
+                    )}
+                  </TableCell>
                   <TableCell>
                     <div className='text-xs space-y-1'>
                       <div>Vol: {formatValue(screening.right_volume_db, screening.right_ear_volume_result, 'ml')}</div>

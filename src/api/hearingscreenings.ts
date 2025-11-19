@@ -20,6 +20,7 @@ interface RawHearingScreening {
   left_ear_compliance_result: string | null
   right_ear_result: string | null
   left_ear_result: string | null
+  result: string | null
   clinical_notes: string | null
   referral_notes: string | null
   created_at: string
@@ -119,8 +120,7 @@ const transformHearingScreening = (screening: RawHearingScreening): Screening =>
       ? `${screening.users.first_name} ${screening.users.last_name}`
       : 'Unknown Screener',
     slp_id: screening.screener_id,
-    result: getHearingResult(screening),
-    screening_result: getHearingResult(screening),
+    result: screening.result,
     referral_notes: screening.referral_notes || '',
     clinical_notes: screening.clinical_notes || '',
     // Hearing-specific fields
@@ -293,6 +293,7 @@ export const hearingScreeningsApi = {
     left_compliance?: number | null
     clinical_notes?: string | null
     referral_notes?: string | null
+    result?: string | null
   }): Promise<Screening> => {
     try {
       // Validate required fields
@@ -312,6 +313,7 @@ export const hearingScreeningsApi = {
         left_compliance: data.left_compliance ?? null,
         clinical_notes: data.clinical_notes || null,
         referral_notes: data.referral_notes || null,
+        result: data.result || null,
       }
 
       const { data: newScreening, error } = await supabase
@@ -390,6 +392,7 @@ export const hearingScreeningsApi = {
       left_compliance: number | null
       clinical_notes: string | null
       referral_notes: string | null
+      result: string | null
     }>
   ): Promise<Screening> => {
     try {

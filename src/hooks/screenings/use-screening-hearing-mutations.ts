@@ -17,6 +17,7 @@ export const useCreateHearingScreening = () => {
       left_compliance?: number | null
       clinical_notes?: string | null
       referral_notes?: string | null
+      result?: string | null
     }) => hearingScreeningsApi.createHearingScreening(data),
     onSuccess: () => {
       // Invalidate and refetch hearing screenings queries
