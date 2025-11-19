@@ -1,4 +1,12 @@
-import { Home, BarChart3, Building2, GraduationCap, HandHeart, Stethoscope } from 'lucide-react'
+import {
+  Home,
+  BarChart3,
+  Building2,
+  GraduationCap,
+  HandHeart,
+  Stethoscope,
+  Ear,
+} from 'lucide-react'
 import { Location } from 'react-router-dom'
 import { LucideIcon } from 'lucide-react'
 
@@ -49,6 +57,14 @@ export const getNavigationGroups = (
         (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screenings`),
     },
     {
+      title: 'Hearing Screenings',
+      url: useSchoolRoutes ? `/school/${currentSchool.id}/screenings/hearing` : '/screenings/hearing',
+      icon: Ear,
+      isActive:
+        location.pathname === '/screenings/hearing' ||
+        (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screenings/hearing`),
+    },
+    {
       title: 'Speech Reports',
       url: useSchoolRoutes
         ? `/school/${currentSchool.id}/speech-screening-reports`
@@ -61,9 +77,7 @@ export const getNavigationGroups = (
     },
     {
       title: 'Monthly Meetings',
-      url: useSchoolRoutes
-        ? `/school/${currentSchool.id}/monthly-meetings`
-        : '/monthly-meetings',
+      url: useSchoolRoutes ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings',
       icon: Building2,
       isActive:
         location.pathname === '/monthly-meetings' ||

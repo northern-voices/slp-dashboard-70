@@ -12,6 +12,15 @@ interface RawHearingScreening {
   left_volume_db: number | null
   left_pressure: number | null
   left_compliance: number | null
+  right_ear_volume_result: string | null
+  right_ear_pressure_result: string | null
+  right_ear_compliance_result: string | null
+  left_ear_volume_result: string | null
+  left_ear_pressure_result: string | null
+  left_ear_compliance_result: string | null
+  right_ear_result: string | null
+  left_ear_result: string | null
+  result: string | null
   clinical_notes: string | null
   referral_notes: string | null
   created_at: string
@@ -22,6 +31,10 @@ interface RawHearingScreening {
     last_name: string
     school_id: string
     student_id: string
+    schools: {
+      id: string
+      name: string
+    } | null
   } | null
   school_grades: {
     id: string
@@ -96,44 +109,55 @@ const getUserOrganizationSchools = async (organizationId: string): Promise<strin
 }
 
 // Transform raw hearing screening data to unified Screening interface
-const transformHearingScreening = (screening: RawHearingScreening): Screening => ({
-  id: screening.id,
-  student_id: screening.students?.student_id || '',
-  student_name: screening.students
-    ? `${screening.students.first_name} ${screening.students.last_name}`
-    : 'Unknown Student',
-  grade: screening.school_grades?.grade_level || '',
-  date: screening.created_at?.split('T')[0] || '',
-  screening_date: screening.created_at?.split('T')[0] || '',
-  screening_type: 'initial',
-  screener: screening.users
-    ? `${screening.users.first_name} ${screening.users.last_name}`
-    : 'Unknown Screener',
-  slp_id: screening.screener_id,
-  result: getHearingResult(screening),
-  screening_result: getHearingResult(screening),
-  referral_notes: screening.referral_notes || '',
-  clinical_notes: screening.clinical_notes || '',
-  // Hearing-specific fields
-  right_volume_db: screening.right_volume_db,
-  right_pressure: screening.right_pressure,
-  right_compliance: screening.right_compliance,
-  left_volume_db: screening.left_volume_db,
-  left_pressure: screening.left_pressure,
-  left_compliance: screening.left_compliance,
-  created_at: screening.created_at,
-  updated_at: screening.updated_at,
-  school_id: screening.students?.school_id || '',
-  grade_id: screening.grade_id,
-  screener_id: screening.screener_id,
-  academic_year: screening.school_grades?.academic_year || '',
-})
+const transformHearingScreening = (screening: RawHearingScreening): Screening => {
+  return {
+    id: screening.id,
+    student_id: screening.students?.student_id || '',
+    student_name: screening.students
+      ? `${screening.students.first_name} ${screening.students.last_name}`
+      : 'Unknown Student',
+    grade: screening.school_grades?.grade_level || '',
+    date: screening.created_at?.split('T')[0] || '',
+    screening_date: screening.created_at?.split('T')[0] || '',
+    screening_type: 'initial',
+    screener: screening.users
+      ? `${screening.users.first_name} ${screening.users.last_name}`
+      : 'Unknown Screener',
+    slp_id: screening.screener_id,
+    result: screening.result,
+    school_name: screening.students?.schools?.name || 'Unknown School',
+    referral_notes: screening.referral_notes || '',
+    clinical_notes: screening.clinical_notes || '',
+    // Hearing-specific fields
+    right_volume_db: screening.right_volume_db,
+    right_pressure: screening.right_pressure,
+    right_compliance: screening.right_compliance,
+    left_volume_db: screening.left_volume_db,
+    left_pressure: screening.left_pressure,
+    left_compliance: screening.left_compliance,
+    right_ear_volume_result: screening.right_ear_volume_result,
+    right_ear_pressure_result: screening.right_ear_pressure_result,
+    right_ear_compliance_result: screening.right_ear_compliance_result,
+    left_ear_volume_result: screening.left_ear_volume_result,
+    left_ear_pressure_result: screening.left_ear_pressure_result,
+    left_ear_compliance_result: screening.left_ear_compliance_result,
+    right_ear_result: screening.right_ear_result,
+    left_ear_result: screening.left_ear_result,
+    created_at: screening.created_at,
+    updated_at: screening.updated_at,
+    school_id: screening.students?.school_id || '',
+    grade_id: screening.grade_id,
+    screener_id: screening.screener_id,
+    academic_year: screening.school_grades?.academic_year || '',
+  }
+}
 
 export const hearingScreeningsApi = {
   getHearingScreeningsList: async (
     currentUserId?: string,
     userRole?: 'admin' | 'slp' | 'supervisor',
-    organizationId?: string
+    organizationId?: string,
+    schoolId?: string
   ): Promise<Screening[]> => {
     try {
       // Get organization schools if organizationId is provided
@@ -142,7 +166,7 @@ export const hearingScreeningsApi = {
         organizationSchoolIds = await getUserOrganizationSchools(organizationId)
       }
 
-      // Build base query
+      // Build base query - using * to get all columns
       let query = supabase.from('hearing_screenings').select(
         `
           *,
@@ -151,7 +175,11 @@ export const hearingScreeningsApi = {
             first_name,
             last_name,
             school_id,
-            student_id
+            student_id,
+            schools (
+              id,
+              name
+            )
           ),
           school_grades (
             id,
@@ -178,7 +206,12 @@ export const hearingScreeningsApi = {
 
       const transformedData: Screening[] = (data || []).map(transformHearingScreening)
 
-      // Filter by organization schools if provided
+      // Filter by specific school if provided (takes priority)
+      if (schoolId) {
+        return transformedData.filter(screening => screening.school_id === schoolId)
+      }
+
+      // Otherwise filter by organization schools if provided
       if (organizationSchoolIds.length > 0) {
         return transformedData.filter(screening =>
           organizationSchoolIds.includes(screening.school_id)
@@ -203,7 +236,26 @@ export const hearingScreeningsApi = {
         .from('hearing_screenings')
         .select(
           `
-          *,
+          id,
+          student_id,
+          screener_id,
+          grade_id,
+          right_volume_db,
+          right_pressure,
+          right_compliance,
+          left_volume_db,
+          left_pressure,
+          left_compliance,
+          right_ear_volume_result,
+          right_ear_pressure_result,
+          right_ear_compliance_result,
+          left_ear_volume_result,
+          left_ear_pressure_result,
+          left_ear_compliance_result,
+          clinical_notes,
+          referral_notes,
+          created_at,
+          updated_at,
           students (
             id,
             first_name,
@@ -256,6 +308,7 @@ export const hearingScreeningsApi = {
     left_compliance?: number | null
     clinical_notes?: string | null
     referral_notes?: string | null
+    result?: string | null
   }): Promise<Screening> => {
     try {
       // Validate required fields
@@ -267,14 +320,15 @@ export const hearingScreeningsApi = {
         student_id: data.student_id,
         screener_id: data.screener_id,
         grade_id: data.grade_id,
-        right_volume_db: data.right_volume_db || null,
-        right_pressure: data.right_pressure || null,
-        right_compliance: data.right_compliance || null,
-        left_volume_db: data.left_volume_db || null,
-        left_pressure: data.left_pressure || null,
-        left_compliance: data.left_compliance || null,
+        right_volume_db: data.right_volume_db ?? null,
+        right_pressure: data.right_pressure ?? null,
+        right_compliance: data.right_compliance ?? null,
+        left_volume_db: data.left_volume_db ?? null,
+        left_pressure: data.left_pressure ?? null,
+        left_compliance: data.left_compliance ?? null,
         clinical_notes: data.clinical_notes || null,
         referral_notes: data.referral_notes || null,
+        result: data.result || null,
       }
 
       const { data: newScreening, error } = await supabase
@@ -282,7 +336,26 @@ export const hearingScreeningsApi = {
         .insert(insertData)
         .select(
           `
-        *,
+        id,
+        student_id,
+        screener_id,
+        grade_id,
+        right_volume_db,
+        right_pressure,
+        right_compliance,
+        left_volume_db,
+        left_pressure,
+        left_compliance,
+        right_ear_volume_result,
+        right_ear_pressure_result,
+        right_ear_compliance_result,
+        left_ear_volume_result,
+        left_ear_pressure_result,
+        left_ear_compliance_result,
+        clinical_notes,
+        referral_notes,
+        created_at,
+        updated_at,
         students (
           id,
           first_name,
@@ -334,6 +407,7 @@ export const hearingScreeningsApi = {
       left_compliance: number | null
       clinical_notes: string | null
       referral_notes: string | null
+      result: string | null
     }>
   ): Promise<Screening> => {
     try {
@@ -343,7 +417,26 @@ export const hearingScreeningsApi = {
         .eq('id', id)
         .select(
           `
-        *,
+        id,
+        student_id,
+        screener_id,
+        grade_id,
+        right_volume_db,
+        right_pressure,
+        right_compliance,
+        left_volume_db,
+        left_pressure,
+        left_compliance,
+        right_ear_volume_result,
+        right_ear_pressure_result,
+        right_ear_compliance_result,
+        left_ear_volume_result,
+        left_ear_pressure_result,
+        left_ear_compliance_result,
+        clinical_notes,
+        referral_notes,
+        created_at,
+        updated_at,
         students (
           id,
           first_name,

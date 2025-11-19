@@ -12,6 +12,10 @@ export interface ScreeningFormData {
   screening_type: 'initial' | 'progress'
   screening_date: string
   form_type: 'speech' | 'hearing' | 'progress'
+  selected_grade?: string
+  result?: string
+  clinical_notes?: string
+  referral_notes?: string
 
   // Speech screening specific fields
   speech_data?: {
@@ -25,12 +29,21 @@ export interface ScreeningFormData {
 
   // Hearing screening specific fields
   hearing_data?: {
-    pure_tone_results: {
-      right_ear: Record<string, number>
-      left_ear: Record<string, number>
-    }
-    tympanometry_results: string
-    observations: string
+    tympanometry_results:
+      | {
+          right_ear: {
+            vol: number | null
+            comp: number | null
+            press: number | null
+          }
+          left_ear: {
+            vol: number | null
+            comp: number | null
+            press: number | null
+          }
+        }
+      | string
+    observations?: string
   }
 
   // Progress screening specific fields
