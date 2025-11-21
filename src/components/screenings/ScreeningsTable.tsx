@@ -269,7 +269,11 @@ const ScreeningsTable = ({
       if (qualifiesForSpeechProgramFilter === 'qualified') {
         matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === true
       } else if (qualifiesForSpeechProgramFilter === 'not_in_program') {
-        matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === false
+        matchesQualifiesForSpeechProgram =
+          metadata?.qualifies_for_speech_program === false &&
+          !metadata?.sub &&
+          !metadata?.paused &&
+          !metadata?.graduated
       } else if (qualifiesForSpeechProgramFilter === 'sub') {
         matchesQualifiesForSpeechProgram = metadata?.sub === true
       } else if (qualifiesForSpeechProgramFilter === 'paused') {
