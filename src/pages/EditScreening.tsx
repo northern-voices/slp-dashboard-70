@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Screening } from '@/types/database'
@@ -24,7 +24,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ChevronLeft, FileText, Calendar, Save } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { ChevronLeft, FileText, Calendar, Save, Edit } from 'lucide-react'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
 import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
@@ -37,6 +45,7 @@ import { format } from 'date-fns'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { studentsApi } from '@/api/students'
 import { speechScreeningsApi } from '@/api/speechscreenings'
+import { useQueryClient } from '@tanstack/react-query'
 
 const EditScreeningContent = () => {
   const { screeningId } = useParams<{
@@ -45,15 +54,22 @@ const EditScreeningContent = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { userProfile, currentSchool } = useOrganization()
-  const [screening, setScreening] = React.useState<Screening | null>(null)
-  const [screeningGrade, setScreeningGrade] = React.useState<string>('N/A')
-  const [studentCurrentGrade, setStudentCurrentGrade] = React.useState<string | null>(null)
-  const [gradesMatch, setGradesMatch] = React.useState<boolean>(true)
-  const [loading, setLoading] = React.useState(false)
-  const [saving, setSaving] = React.useState(false)
-  const [studentData, setStudentData] = React.useState<any>(null)
+  const [screening, setScreening] = useState<Screening | null>(null)
+  const [screeningGrade, setScreeningGrade] = useState<string>('N/A')
+  const [studentCurrentGrade, setStudentCurrentGrade] = useState<string | null>(null)
+  const [gradesMatch, setGradesMatch] = useState<boolean>(true)
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [studentData, setStudentData] = useState(null)
+  const [isEditingStudent, setIsEditingStudent] = useState(false)
+  const [editedFirstName, setEditedFirstName] = useState('')
+  const [editedLastName, setEditedLastName] = useState('')
+  const [editedGradeId, setEditedGradeId] = useState<string>('')
+  const [availableGrades, setAvailableGrades] = useState<SchoolGrade[]>([])
+  const [isLoadingGrades, setIsLoadingGrades] = useState(false)
   const updateSpeechScreening = useUpdateSpeechScreening()
   const updateStudent = useUpdateStudent()
+  const queryClient = useQueryClient()
 
   const form = useForm<{
     screening_type: string
@@ -148,7 +164,7 @@ const EditScreeningContent = () => {
     },
   })
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (screeningId) {
       const fetchScreening = async () => {
         setLoading(true)
@@ -161,6 +177,17 @@ const EditScreeningContent = () => {
 
           if (screeningData) {
             setScreening(screeningData)
+
+            // Fetch student data first (needed for editing)
+            let student = null
+            if (screeningData.student_id) {
+              try {
+                student = await studentsApi.getStudent(screeningData.student_id)
+                setStudentData(student) // Store student data for later use
+              } catch (error) {
+                console.error('Error fetching student:', error)
+              }
+            }
 
             // Fetch grades for the school
             if (currentSchool?.id) {
@@ -176,19 +203,14 @@ const EditScreeningContent = () => {
                 }
 
                 // Fetch student's current grade to compare
-                if (screeningData.student_id) {
-                  const student = await studentsApi.getStudentByStudentId(screeningData.student_id)
-                  setStudentData(student) // Store student data for later use
+                if (student?.current_grade_id) {
+                  const studentGradeObj = grades.find(g => g.id === student.current_grade_id)
+                  if (studentGradeObj) {
+                    setStudentCurrentGrade(studentGradeObj.grade_level)
 
-                  if (student?.current_grade_id) {
-                    const studentGradeObj = grades.find(g => g.id === student.current_grade_id)
-                    if (studentGradeObj) {
-                      setStudentCurrentGrade(studentGradeObj.grade_level)
-
-                      // Check if grades match
-                      if (student.current_grade_id !== screeningData.grade_id) {
-                        setGradesMatch(false)
-                      }
+                    // Check if grades match
+                    if (student.current_grade_id !== screeningData.grade_id) {
+                      setGradesMatch(false)
                     }
                   }
                 }
@@ -402,6 +424,123 @@ const EditScreeningContent = () => {
     }
   }
 
+  const handleEditStudent = () => {
+    if (!studentData) {
+      toast({
+        title: 'Error',
+        description: 'Student data not loaded yet. Please try again.',
+        variant: 'destructive',
+      })
+      return
+    }
+    setEditedFirstName(studentData.first_name)
+    setEditedLastName(studentData.last_name)
+    setEditedGradeId(studentData.current_grade_id || '')
+    setIsEditingStudent(true)
+
+    // Fetch available grades for the student's school
+    if (currentSchool?.id) {
+      setIsLoadingGrades(true)
+      schoolGradesApi
+        .getSchoolGradesBySchool(currentSchool.id)
+        .then(grades => {
+          setAvailableGrades(grades)
+        })
+        .catch(error => {
+          console.error('Error fetching grades:', error)
+          toast({
+            title: 'Error',
+            description: 'Failed to load available grades.',
+            variant: 'destructive',
+          })
+        })
+        .finally(() => {
+          setIsLoadingGrades(false)
+        })
+    }
+  }
+
+  const handleSaveStudent = async () => {
+    if (!studentData?.id || !editedFirstName.trim() || !editedLastName.trim()) {
+      toast({
+        title: 'Error',
+        description: 'First name and last name are required.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    try {
+      await updateStudent.mutateAsync({
+        id: studentData.id,
+        studentData: {
+          first_name: editedFirstName.trim(),
+          last_name: editedLastName.trim(),
+          current_grade_id: editedGradeId || undefined,
+        },
+      })
+
+      // Update local student data
+      const updatedStudent = {
+        ...studentData,
+        first_name: editedFirstName.trim(),
+        last_name: editedLastName.trim(),
+        current_grade_id: editedGradeId || null,
+      }
+      setStudentData(updatedStudent)
+
+      // Update screening state to reflect new student name
+      if (screening) {
+        setScreening({
+          ...screening,
+          student_name: `${editedFirstName.trim()} ${editedLastName.trim()}`,
+        })
+      }
+
+      // Update student current grade display
+      if (editedGradeId) {
+        const selectedGrade = availableGrades.find(g => g.id === editedGradeId)
+        if (selectedGrade) {
+          setStudentCurrentGrade(selectedGrade.grade_level)
+          // Check if grades match
+          if (screening?.grade_id !== editedGradeId) {
+            setGradesMatch(false)
+          } else {
+            setGradesMatch(true)
+          }
+        }
+      } else {
+        setStudentCurrentGrade(null)
+        setGradesMatch(screening?.grade_id ? false : true)
+      }
+
+      // Invalidate React Query cache
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+      queryClient.invalidateQueries({ queryKey: ['students', studentData.id] })
+
+      setIsEditingStudent(false)
+      toast({
+        title: 'Student updated',
+        description: 'Student information has been successfully updated.',
+      })
+    } catch (error) {
+      console.error('Error updating student:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to update student information. Please try again.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleCancelEditStudent = () => {
+    setIsEditingStudent(false)
+    setEditedFirstName('')
+    setEditedLastName('')
+    setEditedGradeId('')
+    setAvailableGrades([])
+  }
+
   if (loading) {
     return <LoadingSpinner />
   }
@@ -472,30 +611,42 @@ const EditScreeningContent = () => {
                   </CardHeader>
                   <CardContent className='space-y-4'>
                     <div className='mb-4 py-3 px-5 bg-blue-50 rounded-lg border border-blue-200'>
-                      <div className='flex items-center gap-2'>
-                        <span className='text-sm font-medium text-blue-900'>Student Name:</span>
-                        <span className='text-sm font-semibold text-blue-800'>
-                          {screening.student_name}
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-2 mt-1'>
-                        <span className='text-sm font-medium text-blue-900'>
-                          {gradesMatch ? 'Grade:' : 'Screening Grade:'}
-                        </span>
-                        <span className='text-sm font-semibold text-blue-800'>
-                          {screeningGrade}
-                        </span>
-                      </div>
-                      {!gradesMatch && studentCurrentGrade && (
-                        <div className='flex items-center gap-2 mt-1'>
-                          <span className='text-sm font-medium text-blue-900'>
-                            Student Current Grade:
-                          </span>
-                          <span className='text-sm font-semibold text-blue-800'>
-                            {studentCurrentGrade}
-                          </span>
+                      <div className='flex items-center justify-between'>
+                        <div className='flex-1'>
+                          <div className='flex items-center gap-2'>
+                            <span className='text-sm font-medium text-blue-900'>Student Name:</span>
+                            <span className='text-sm font-semibold text-blue-800'>
+                              {screening.student_name}
+                            </span>
+                          </div>
+                          <div className='flex items-center gap-2 mt-1'>
+                            <span className='text-sm font-medium text-blue-900'>
+                              {gradesMatch ? 'Grade:' : 'Screening Grade:'}
+                            </span>
+                            <span className='text-sm font-semibold text-blue-800'>
+                              {screeningGrade}
+                            </span>
+                          </div>
+                          {!gradesMatch && studentCurrentGrade && (
+                            <div className='flex items-center gap-2 mt-1'>
+                              <span className='text-sm font-medium text-blue-900'>
+                                Student Current Grade:
+                              </span>
+                              <span className='text-sm font-semibold text-blue-800'>
+                                {studentCurrentGrade}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      )}
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={handleEditStudent}
+                          className='ml-4'>
+                          <Edit className='w-4 h-4 mr-2' />
+                          Edit Student
+                        </Button>
+                      </div>
                     </div>
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                       <div>
@@ -591,6 +742,69 @@ const EditScreeningContent = () => {
             </div>
           </div>
         </div>
+
+        {/* Edit Student Dialog */}
+        <Dialog
+          open={isEditingStudent}
+          onOpenChange={open => {
+            if (!open) {
+              handleCancelEditStudent()
+            }
+          }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Student Information</DialogTitle>
+              <DialogDescription>
+                Update the student's first name, last name, and current grade below.
+              </DialogDescription>
+            </DialogHeader>
+            <div className='space-y-4 py-4'>
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>First Name</label>
+                <Input
+                  value={editedFirstName}
+                  onChange={e => setEditedFirstName(e.target.value)}
+                  placeholder='First Name'
+                />
+              </div>
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>Last Name</label>
+                <Input
+                  value={editedLastName}
+                  onChange={e => setEditedLastName(e.target.value)}
+                  placeholder='Last Name'
+                />
+              </div>
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>Current Grade</label>
+                {isLoadingGrades ? (
+                  <div className='flex items-center justify-center py-2'>
+                    <LoadingSpinner size='sm' />
+                  </div>
+                ) : (
+                  <Select value={editedGradeId || undefined} onValueChange={setEditedGradeId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder='Select grade (optional)' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableGrades.map(grade => (
+                        <SelectItem key={grade.id} value={grade.id}>
+                          {grade.grade_level} ({grade.academic_year})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant='outline' onClick={handleCancelEditStudent}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveStudent}>Save Changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </SidebarInset>
     </SidebarProvider>
   )
