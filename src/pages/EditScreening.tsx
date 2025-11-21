@@ -403,6 +403,17 @@ const EditScreeningContent = () => {
         }
       }
 
+      // Invalidate React Query cache to refetch screenings
+      // This will invalidate all screenings queries including useScreenings() and useScreeningsBySchool()
+      queryClient.invalidateQueries({ queryKey: ['screenings'] })
+      // Also invalidate speech screenings queries
+      queryClient.invalidateQueries({ queryKey: ['speech-screenings'] })
+      // Invalidate student-specific screenings if we have student data
+      if (studentData?.id) {
+        queryClient.invalidateQueries({ queryKey: ['screenings', 'by-student', studentData.id] })
+        queryClient.invalidateQueries({ queryKey: ['speech-screenings', 'by-student', studentData.id] })
+      }
+
       toast({
         title: 'Success',
         description: isLatestScreening
@@ -517,6 +528,9 @@ const EditScreeningContent = () => {
       // Invalidate React Query cache
       queryClient.invalidateQueries({ queryKey: ['students'] })
       queryClient.invalidateQueries({ queryKey: ['students', studentData.id] })
+      // Also invalidate screenings since student name/grade changed
+      queryClient.invalidateQueries({ queryKey: ['screenings'] })
+      queryClient.invalidateQueries({ queryKey: ['speech-screenings'] })
 
       setIsEditingStudent(false)
       toast({
