@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import ScreeningDetailsModal from '../screening-history/ScreeningDetailsModal'
+import HearingScreeningDetailsModal from '../screening-history/HearingScreeningDetailsModal'
 import SendReportsModal from '@/components/screenings/SendReportsModal'
 import { Screening } from '@/types/database'
 import { useScreenings, useScreeningsByStudent } from '@/hooks/screenings/use-screenings'
@@ -57,6 +58,7 @@ const ScreeningsList = ({
 }: ScreeningsListProps) => {
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isHearingModalOpen, setIsHearingModalOpen] = useState(false)
   const [sortField, setSortField] = useState<'date' | 'screener' | 'grade' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
@@ -66,8 +68,189 @@ const ScreeningsList = ({
   // Only fetch if studentId is provided
   const { data: allScreenings, isLoading, error } = useScreeningsByStudent(studentId || '')
 
-  // Apply filters to the screenings
-  const filteredScreenings = (allScreenings || []).filter(screening => {
+  // Separate screenings by type
+  const speechScreenings = (allScreenings || []).filter(
+    screening => screening.source_table === 'speech'
+  )
+  const hearingScreenings = (allScreenings || []).filter(
+    screening => screening.source_table === 'hearing'
+  )
+
+  // Apply filters to the speech screenings
+  const filteredSpeechScreenings = speechScreenings.filter(screening => {
+    const matchesSearch =
+      screening.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      screening.screener?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesType = filterType === 'all' || screening.screening_type === filterType
+    const matchesStatus =
+      filterStatus === 'all' ||
+      screening.result === filterStatus ||
+      screening.screening_result === filterStatus
+
+    // Apply date range filter
+    let matchesDateRange = true
+    if (dateRangeFilter !== 'all') {
+      const screeningDate = new Date(screening.created_at)
+      const now = new Date()
+
+      switch (dateRangeFilter) {
+        case 'today': {
+          const screeningLocalDate = screeningDate.toLocaleDateString()
+          const nowLocalDate = now.toLocaleDateString()
+          matchesDateRange = screeningLocalDate === nowLocalDate
+          break
+        }
+        case 'week': {
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+          matchesDateRange = screeningDate >= weekAgo
+          break
+        }
+        case 'month': {
+          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+          matchesDateRange = screeningDate >= monthAgo
+          break
+        }
+        case 'quarter': {
+          const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+          matchesDateRange = screeningDate >= quarterAgo
+          break
+        }
+        case 'school_year': {
+          const currentDate = new Date()
+          const currentYear = currentDate.getFullYear()
+          const currentMonth = currentDate.getMonth()
+
+          let schoolYearStart: Date
+          if (currentMonth >= 8) {
+            schoolYearStart = new Date(currentYear, 8, 1)
+          } else {
+            schoolYearStart = new Date(currentYear - 1, 8, 1)
+          }
+
+          matchesDateRange = screeningDate >= schoolYearStart
+          break
+        }
+      }
+    }
+
+    // Apply qualifies for speech program filter
+    let matchesQualifiesForSpeechProgram = true
+    if (qualifiesForSpeechProgramFilter !== 'all') {
+      const metadata = screening.error_patterns?.screening_metadata
+
+      if (qualifiesForSpeechProgramFilter === 'qualified') {
+        matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === true
+      } else if (qualifiesForSpeechProgramFilter === 'not_in_program') {
+        matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === false
+      } else if (qualifiesForSpeechProgramFilter === 'sub') {
+        matchesQualifiesForSpeechProgram = metadata?.sub === true
+      } else if (qualifiesForSpeechProgramFilter === 'paused') {
+        matchesQualifiesForSpeechProgram = metadata?.paused === true
+      } else if (qualifiesForSpeechProgramFilter === 'graduated') {
+        matchesQualifiesForSpeechProgram = metadata?.graduated === true
+      }
+    }
+
+    // Apply grade filter
+    let matchesGrade = true
+    if (gradeFilter !== 'all') {
+      matchesGrade = screening.grade === gradeFilter
+    }
+
+    // Apply vocabulary support filter
+    let matchesVocabularySupport = true
+    if (vocabularySupportFilter !== 'all') {
+      const vocabularySupport = screening.vocabulary_support
+      matchesVocabularySupport = vocabularySupport === (vocabularySupportFilter === 'true')
+    }
+
+    // Apply CAS filter
+    let matchesCAS = true
+    if (casFilter !== 'all') {
+      const suspectedCAS = screening.error_patterns?.add_areas_of_concern?.suspected_cas
+      if (casFilter === 'has_text') {
+        matchesCAS = suspectedCAS !== null && suspectedCAS !== undefined && suspectedCAS !== ''
+      } else if (casFilter === 'no_text') {
+        matchesCAS =
+          !suspectedCAS ||
+          suspectedCAS === null ||
+          suspectedCAS === undefined ||
+          suspectedCAS === ''
+      }
+    }
+
+    // Apply language comprehension filter
+    let matchesLanguageComprehension = true
+    if (languageComprehensionFilter !== 'all') {
+      const languageComprehension =
+        screening.error_patterns?.add_areas_of_concern?.language_comprehension
+      if (languageComprehensionFilter === 'concern') {
+        matchesLanguageComprehension =
+          languageComprehension !== null &&
+          languageComprehension !== undefined &&
+          languageComprehension !== ''
+      } else if (languageComprehensionFilter === 'no_concern') {
+        matchesLanguageComprehension =
+          !languageComprehension ||
+          languageComprehension === null ||
+          languageComprehension === undefined ||
+          languageComprehension === ''
+      }
+    }
+
+    // Apply priority rescreen filter
+    let matchesPriorityRescreen = true
+    if (priorityRescreenFilter !== 'all') {
+      const priorityRescreen = screening.error_patterns?.attendance?.priority_re_screen
+      if (priorityRescreenFilter === 'true') {
+        matchesPriorityRescreen = priorityRescreen === true
+      } else if (priorityRescreenFilter === 'false') {
+        matchesPriorityRescreen =
+          priorityRescreen === false || priorityRescreen === null || priorityRescreen === undefined
+      }
+    }
+
+    // Apply recommendations filter
+    let matchesRecommendations = true
+    if (recommendationsFilter !== 'all') {
+      const hasReferralNotes = screening.referral_notes && screening.referral_notes.trim() !== ''
+
+      if (recommendationsFilter === 'has_referral_notes') {
+        matchesRecommendations = hasReferralNotes
+      } else if (recommendationsFilter === 'no_referral_notes') {
+        matchesRecommendations = !hasReferralNotes
+      }
+    }
+
+    // Apply clinical notes filter
+    let matchesClinicalNotes = true
+    if (clinicalNotesFilter !== 'all') {
+      const hasClinicalNotes = screening.clinical_notes && screening.clinical_notes.trim() !== ''
+      if (clinicalNotesFilter === 'has_notes') {
+        matchesClinicalNotes = hasClinicalNotes
+      } else if (clinicalNotesFilter === 'no_notes') {
+        matchesClinicalNotes = !hasClinicalNotes
+      }
+    }
+
+    return (
+      matchesSearch &&
+      matchesType &&
+      matchesStatus &&
+      matchesDateRange &&
+      matchesQualifiesForSpeechProgram &&
+      matchesGrade &&
+      matchesVocabularySupport &&
+      matchesCAS &&
+      matchesLanguageComprehension &&
+      matchesPriorityRescreen &&
+      matchesRecommendations &&
+      matchesClinicalNotes
+    )
+  })
+
+  // Apply filters to the hearing screenings
+  const filteredHearingScreenings = hearingScreenings.filter(screening => {
     const matchesSearch =
       screening.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       screening.screener?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -241,11 +424,20 @@ const ScreeningsList = ({
 
   const handleViewDetails = (screening: Screening) => {
     setSelectedScreening(screening)
-    setIsModalOpen(true)
+    if (screening.source_table === 'hearing') {
+      setIsHearingModalOpen(true)
+    } else {
+      setIsModalOpen(true)
+    }
   }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
+    setSelectedScreening(null)
+  }
+
+  const handleCloseHearingModal = () => {
+    setIsHearingModalOpen(false)
     setSelectedScreening(null)
   }
 
@@ -254,8 +446,36 @@ const ScreeningsList = ({
     setIsEmailModalOpen(true)
   }
 
-  // Sort screenings
-  const sortedScreenings = [...filteredScreenings].sort((a, b) => {
+  // Sort speech screenings
+  const sortedSpeechScreenings = [...filteredSpeechScreenings].sort((a, b) => {
+    if (!sortOrder || !sortField) return 0
+
+    let comparison = 0
+
+    switch (sortField) {
+      case 'date': {
+        const dateA = parseDateSafely(a.date).getTime()
+        const dateB = parseDateSafely(b.date).getTime()
+        comparison = dateA - dateB
+        break
+      }
+      case 'screener': {
+        comparison = (a.screener || '').localeCompare(b.screener || '')
+        break
+      }
+      case 'grade': {
+        const gradeA = a.grade || ''
+        const gradeB = b.grade || ''
+        comparison = gradeA.localeCompare(gradeB)
+        break
+      }
+    }
+
+    return sortOrder === 'asc' ? comparison : -comparison
+  })
+
+  // Sort hearing screenings
+  const sortedHearingScreenings = [...filteredHearingScreenings].sort((a, b) => {
     if (!sortOrder || !sortField) return 0
 
     let comparison = 0
@@ -353,6 +573,28 @@ const ScreeningsList = ({
     return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
   }
 
+  // Helper functions for hearing screenings
+  const formatValue = (
+    value: number | null | undefined,
+    result: string | null | undefined,
+    unit: string
+  ) => {
+    if (result === 'Immeasurable' || value === null || value === undefined) {
+      return 'Immeasurable'
+    }
+    return `${value} ${unit}`
+  }
+
+  const getResultBadgeColor = (result: string | null | undefined) => {
+    if (!result || result === '-') return ''
+    const normalizedResult = result.toLowerCase()
+    if (normalizedResult === 'normal') return 'bg-green-100 text-green-800 border-green-200'
+    if (normalizedResult === 'high' || normalizedResult === 'low')
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    if (normalizedResult === 'immeasurable') return 'bg-gray-100 text-gray-600 border-gray-200'
+    return 'bg-gray-100 text-gray-600 border-gray-200'
+  }
+
   const hasFilters =
     Boolean(searchTerm) ||
     filterType !== 'all' ||
@@ -387,7 +629,10 @@ const ScreeningsList = ({
     )
   }
 
-  if (filteredScreenings.length === 0) {
+  // Check if there are any screenings at all
+  const totalFilteredScreenings = filteredSpeechScreenings.length + filteredHearingScreenings.length
+
+  if (totalFilteredScreenings === 0) {
     return (
       <div className='text-center py-8'>
         <p className='text-gray-500'>
@@ -404,15 +649,13 @@ const ScreeningsList = ({
     )
   }
 
-  return (
-    <>
-      <div className='space-y-4'>
-        {/* <div className='flex justify-end mb-3'>
-          <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
-            {filteredScreenings.length} screening{filteredScreenings.length !== 1 ? 's' : ''} found
-          </span>
-        </div> */}
+  // Helper function to render speech screening table
+  const renderSpeechScreeningsTable = (screenings: Screening[]) => {
+    if (screenings.length === 0) return null
 
+    return (
+      <div className='space-y-4 mb-8'>
+        <h3 className='text-lg font-semibold text-gray-800'>Speech Screenings</h3>
         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <ResponsiveTable className='w-full'>
             <TableHeader>
@@ -450,7 +693,7 @@ const ScreeningsList = ({
               </tr>
             </TableHeader>
             <TableBody>
-              {sortedScreenings.map(screening => (
+              {screenings.map(screening => (
                 <ResponsiveTableRow
                   key={screening.id}
                   mobileCardContent={
@@ -544,10 +787,261 @@ const ScreeningsList = ({
           </ResponsiveTable>
         </div>
       </div>
+    )
+  }
+
+  // Helper function to render hearing screening table
+  const renderHearingScreeningsTable = (screenings: Screening[]) => {
+    if (screenings.length === 0) return null
+
+    return (
+      <div className='space-y-4 mb-8'>
+        <h3 className='text-lg font-semibold text-gray-800'>Hearing Screenings</h3>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <ResponsiveTable className='w-full'>
+            <TableHeader>
+              <tr>
+                <TableHead className='w-[150px]'>
+                  <Button
+                    variant='ghost'
+                    onClick={() => handleSort('screener')}
+                    className='h-auto p-0 font-medium hover:bg-transparent'>
+                    Screener
+                    <span className='ml-1'>{getSortIcon('screener')}</span>
+                  </Button>
+                </TableHead>
+                <TableHead className='min-w-[220px]'>Right Ear</TableHead>
+                <TableHead className='min-w-[220px]'>Left Ear</TableHead>
+                <TableHead className='flex-1'>Results</TableHead>
+                <TableHead className='w-12'></TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {screenings.map(screening => (
+                <ResponsiveTableRow key={screening.id}>
+                  <TableCell className='py-4'>
+                    <div className='space-y-1'>
+                      <div className='font-semibold text-sm text-gray-900'>
+                        {screening.screener || 'Unknown Screener'}
+                      </div>
+                      <div className='text-xs text-gray-600'>
+                        {format(parseDateSafely(screening.date), 'MMM d, yyyy')}
+                      </div>
+                      {screening.result && (
+                        <Badge variant='secondary' className='text-xs mt-1'>
+                          {screening.result === 'absent' && 'Absent'}
+                          {screening.result === 'non_compliant' && 'Non Compliant'}
+                          {screening.result === 'complex_needs' && 'Complex Needs'}
+                          {screening.result === 'results_uncertain' && 'Results Uncertain'}
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className='py-4 px-4'>
+                    <div className='space-y-0 divide-y divide-gray-200'>
+                      <div className='flex items-center py-2'>
+                        <div className='flex items-center gap-2 flex-1'>
+                          <span className='text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded'>
+                            Vol
+                          </span>
+                          <span className='text-sm font-semibold text-gray-900'>
+                            {formatValue(
+                              screening.right_volume_db,
+                              screening.right_ear_volume_result,
+                              'ml'
+                            )}
+                          </span>
+                        </div>
+                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
+                        <div className='flex-1'>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(screening.right_ear_volume_result)}`}>
+                            {screening.right_ear_volume_result || '-'}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className='flex items-center py-2'>
+                        <div className='flex items-center gap-2 flex-1'>
+                          <span className='text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded'>
+                            Comp
+                          </span>
+                          <span className='text-sm font-semibold text-gray-900'>
+                            {formatValue(
+                              screening.right_compliance,
+                              screening.right_ear_compliance_result,
+                              'ml'
+                            )}
+                          </span>
+                        </div>
+                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
+                        <div className='flex-1'>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(screening.right_ear_compliance_result)}`}>
+                            {screening.right_ear_compliance_result || '-'}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className='flex items-center py-2'>
+                        <div className='flex items-center gap-2 flex-1'>
+                          <span className='text-xs font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded'>
+                            Press
+                          </span>
+                          <span className='text-sm font-semibold text-gray-900'>
+                            {formatValue(
+                              screening.right_pressure,
+                              screening.right_ear_pressure_result,
+                              'daPa'
+                            )}
+                          </span>
+                        </div>
+                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
+                        <div className='flex-1'>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(screening.right_ear_pressure_result)}`}>
+                            {screening.right_ear_pressure_result || '-'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className='py-4 px-4'>
+                    <div className='space-y-0 divide-y divide-gray-200'>
+                      <div className='flex items-center py-2'>
+                        <div className='flex items-center gap-2 flex-1'>
+                          <span className='text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded'>
+                            Vol
+                          </span>
+                          <span className='text-sm font-semibold text-gray-900'>
+                            {formatValue(
+                              screening.left_volume_db,
+                              screening.left_ear_volume_result,
+                              'ml'
+                            )}
+                          </span>
+                        </div>
+                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
+                        <div className='flex-1'>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(screening.left_ear_volume_result)}`}>
+                            {screening.left_ear_volume_result || '-'}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className='flex items-center py-2'>
+                        <div className='flex items-center gap-2 flex-1'>
+                          <span className='text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded'>
+                            Comp
+                          </span>
+                          <span className='text-sm font-semibold text-gray-900'>
+                            {formatValue(
+                              screening.left_compliance,
+                              screening.left_ear_compliance_result,
+                              'ml'
+                            )}
+                          </span>
+                        </div>
+                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
+                        <div className='flex-1'>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(screening.left_ear_compliance_result)}`}>
+                            {screening.left_ear_compliance_result || '-'}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className='flex items-center py-2'>
+                        <div className='flex items-center gap-2 flex-1'>
+                          <span className='text-xs font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded'>
+                            Press
+                          </span>
+                          <span className='text-sm font-semibold text-gray-900'>
+                            {formatValue(
+                              screening.left_pressure,
+                              screening.left_ear_pressure_result,
+                              'daPa'
+                            )}
+                          </span>
+                        </div>
+                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
+                        <div className='flex-1'>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(screening.left_ear_pressure_result)}`}>
+                            {screening.left_ear_pressure_result || '-'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className='py-4 px-3'>
+                    <div className='space-y-3'>
+                      {/* Right Ear Result */}
+                      <div className='border-l-2 border-gray-300 pl-2 py-1'>
+                        <div className='flex items-center gap-1.5 mb-1'>
+                          <span className='text-xs font-semibold text-gray-700'>R</span>
+                          <span className='text-xs text-gray-500'>Right</span>
+                        </div>
+                        <div className='text-xs text-gray-600 leading-relaxed'>
+                          {screening.right_ear_result || '-'}
+                        </div>
+                      </div>
+                      {/* Left Ear Result */}
+                      <div className='border-l-2 border-gray-300 pl-2 py-1'>
+                        <div className='flex items-center gap-1.5 mb-1'>
+                          <span className='text-xs font-semibold text-gray-700'>L</span>
+                          <span className='text-xs text-gray-500'>Left</span>
+                        </div>
+                        <div className='text-xs text-gray-600 leading-relaxed'>
+                          {screening.left_ear_result || '-'}
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant='ghost' size='sm'>
+                          <MoreHorizontal className='w-4 h-4' />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align='end' className='bg-white'>
+                        <DropdownMenuItem onClick={() => handleViewDetails(screening)}>
+                          <Eye className='w-4 h-4 mr-2' />
+                          View Details
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </ResponsiveTableRow>
+              ))}
+            </TableBody>
+          </ResponsiveTable>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div className='space-y-4'>
+        {/* Render Speech Screenings Section */}
+        {renderSpeechScreeningsTable(sortedSpeechScreenings)}
+
+        {/* Render Hearing Screenings Section */}
+        {renderHearingScreeningsTable(sortedHearingScreenings)}
+      </div>
 
       <ScreeningDetailsModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        screening={selectedScreening}
+      />
+
+      <HearingScreeningDetailsModal
+        isOpen={isHearingModalOpen}
+        onClose={handleCloseHearingModal}
         screening={selectedScreening}
       />
 
