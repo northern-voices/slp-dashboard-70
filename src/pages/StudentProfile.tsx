@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { Student } from '@/types/database'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import ErrorMessage from '@/components/common/ErrorMessage'
@@ -18,8 +18,13 @@ import StudentPageMonthlyMeetingsTable from '@/components/monthly-meetings/Stude
 const StudentProfileContent = () => {
   const { studentId, schoolId } = useParams<{ studentId: string; schoolId: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { userProfile, currentSchool } = useOrganization()
   const { toast } = useToast()
+
+  // Check if we came from screenings
+  const fromScreenings = location.state?.from === 'screenings'
+  const fromHearingScreenings = location.state?.from === 'hearing-screenings'
 
   // Determine which school to fetch students from
   const targetSchoolId = schoolId || currentSchool?.id
@@ -73,10 +78,27 @@ const StudentProfileContent = () => {
   }
 
   const handleNavigateBack = () => {
-    if (schoolId) {
-      navigate(`/school/${schoolId}/students`)
+    // If user came from hearing screenings, go back to hearing screenings
+    if (fromHearingScreenings) {
+      if (schoolId) {
+        navigate(`/school/${schoolId}/screenings/hearing`)
+      } else {
+        navigate('/screenings/hearing')
+      }
+    } else if (fromScreenings) {
+      // If user came from speech screenings, go back to screenings
+      if (schoolId) {
+        navigate(`/school/${schoolId}/screenings`)
+      } else {
+        navigate('/screenings')
+      }
     } else {
-      navigate('/students')
+      // Otherwise, go to students list
+      if (schoolId) {
+        navigate(`/school/${schoolId}/students`)
+      } else {
+        navigate('/students')
+      }
     }
   }
 
