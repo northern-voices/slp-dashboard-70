@@ -114,7 +114,6 @@ const ScreeningsTable = ({
 
   const navigate = useNavigate()
 
-  // Use React Query to fetch screenings data
   // If currentSchool is provided, use the school-specific query, otherwise fetch all
   const {
     data: allScreeningsData,
@@ -164,7 +163,6 @@ const ScreeningsTable = ({
       return
     }
 
-    // Create students map - map by UUID only
     const studentsMapping = new Map<string, Student>()
     students.forEach(student => {
       studentsMapping.set(student.id, student)
