@@ -27,14 +27,14 @@ const StudentDetailPagination = ({
   return (
     <div className="flex items-center justify-between mb-6 px-1">
       <div className="flex items-center space-x-3">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onNavigateBack} 
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onNavigateBack}
           className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
-          Back to Students
+          Back
         </Button>
         
         <div className="h-4 w-px bg-gray-300" />
