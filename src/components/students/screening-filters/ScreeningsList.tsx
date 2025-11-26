@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import ScreeningDetailsModal from '../screening-history/ScreeningDetailsModal'
+import SendReportsModal from '@/components/screenings/SendReportsModal'
 import { Screening } from '@/types/database'
 import { useScreenings, useScreeningsByStudent } from '@/hooks/screenings/use-screenings'
-import { Loader2, Eye, MoreHorizontal, ChevronUp, ChevronDown } from 'lucide-react'
+import { Loader2, Eye, MoreHorizontal, ChevronUp, ChevronDown, Mail } from 'lucide-react'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -58,6 +59,8 @@ const ScreeningsList = ({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [sortField, setSortField] = useState<'date' | 'screener' | 'grade' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
+  const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
 
   // Use React Query to fetch screenings data for the specific student
   // Only fetch if studentId is provided
@@ -244,6 +247,11 @@ const ScreeningsList = ({
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setSelectedScreening(null)
+  }
+
+  const handleEmailReport = (screening: Screening) => {
+    setScreeningToEmail(screening)
+    setIsEmailModalOpen(true)
   }
 
   // Sort screenings
@@ -460,6 +468,10 @@ const ScreeningsList = ({
                               <Eye className='w-4 h-4 mr-2' />
                               View Details
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEmailReport(screening)}>
+                              <Mail className='w-4 h-4 mr-2' />
+                              Send Report
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -519,6 +531,10 @@ const ScreeningsList = ({
                           <Eye className='w-4 h-4 mr-2' />
                           View Details
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEmailReport(screening)}>
+                          <Mail className='w-4 h-4 mr-2' />
+                          Send Report
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -533,6 +549,12 @@ const ScreeningsList = ({
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         screening={selectedScreening}
+      />
+
+      <SendReportsModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        screening={screeningToEmail}
       />
     </>
   )
