@@ -41,7 +41,7 @@ export const getNavigationGroups = (
         (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}`),
     },
     {
-      title: 'Students',
+      title: 'Student Profiles',
       url: useSchoolRoutes ? `/school/${currentSchool.id}/students` : '/students',
       icon: GraduationCap,
       isActive:
@@ -58,7 +58,9 @@ export const getNavigationGroups = (
     },
     {
       title: 'Hearing Screenings',
-      url: useSchoolRoutes ? `/school/${currentSchool.id}/screenings/hearing` : '/screenings/hearing',
+      url: useSchoolRoutes
+        ? `/school/${currentSchool.id}/screenings/hearing`
+        : '/screenings/hearing',
       icon: Ear,
       isActive:
         location.pathname === '/screenings/hearing' ||
