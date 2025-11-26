@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Eye, Download, Trash2, MoreHorizontal, ChevronUp, ChevronDown } from 'lucide-react'
+import { Eye, Download, Trash2, MoreHorizontal, ChevronUp, ChevronDown, User } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +31,8 @@ import {
 import { format } from 'date-fns'
 import { useHearingScreenings } from '@/hooks/screenings/use-hearing-screenings'
 import { useDeleteHearingScreening } from '@/hooks/screenings/use-screening-hearing-mutations'
-import { Screening } from '@/types/database'
+import { Screening, Student } from '@/types/database'
+import { useStudentsBySchool } from '@/hooks/students/use-students'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -56,14 +58,34 @@ const HearingScreeningsTable = ({
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [screeningToDelete, setScreeningToDelete] = useState<Screening | null>(null)
+  const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
   const { currentSchool } = useOrganization()
   const { toast } = useToast()
+  const navigate = useNavigate()
 
   // Fetch hearing screenings from backend filtered by current school
   const { data: screenings = [], isLoading } = useHearingScreenings(currentSchool?.id)
 
+  // Fetch students for the school
+  const { data: students = [] } = useStudentsBySchool(currentSchool?.id)
+
   // Delete mutation
   const deleteScreeningMutation = useDeleteHearingScreening()
+
+  // Create students map
+  useEffect(() => {
+    if (!currentSchool?.id) {
+      setStudentsMap(new Map())
+      return
+    }
+
+    // Create students map - map by UUID only
+    const studentsMapping = new Map<string, Student>()
+    students.forEach(student => {
+      studentsMapping.set(student.id, student)
+    })
+    setStudentsMap(studentsMapping)
+  }, [currentSchool?.id, students])
 
   // Apply filters
   const filteredScreenings = screenings.filter(screening => {
@@ -152,6 +174,33 @@ const HearingScreeningsTable = ({
   const handleViewDetails = (screening: Screening) => {
     setSelectedScreening(screening)
     setIsDetailsModalOpen(true)
+  }
+
+  const handleViewStudent = (screening: Screening) => {
+    // Find student by comparing screening.student_id with both student.id and student.student_id
+    const student = students.find(
+      s => s.id === screening.student_id || s.student_id === screening.student_id
+    )
+
+    if (!student) {
+      toast({
+        title: 'Error',
+        description: 'Student not found',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Navigate using student.id (UUID)
+    if (currentSchool?.id) {
+      navigate(`/school/${currentSchool.id}/students/${student.id}`, {
+        state: { from: 'hearing-screenings' },
+      })
+    } else {
+      navigate(`/students/${student.id}`, {
+        state: { from: 'hearing-screenings' },
+      })
+    }
   }
 
   const handleDeleteClick = (screening: Screening) => {
@@ -409,6 +458,10 @@ const HearingScreeningsTable = ({
                         <DropdownMenuItem onClick={() => handleViewDetails(screening)}>
                           <Eye className='w-4 h-4 mr-2' />
                           View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewStudent(screening)}>
+                          <User className='w-4 h-4 mr-2' />
+                          View Student
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Download className='w-4 h-4 mr-2' />

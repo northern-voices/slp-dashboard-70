@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,7 @@ import {
   Mail,
   Plus,
   List,
+  User,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -110,6 +112,8 @@ const ScreeningsTable = ({
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
   const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
 
+  const navigate = useNavigate()
+
   // Use React Query to fetch screenings data
   // If currentSchool is provided, use the school-specific query, otherwise fetch all
   const {
@@ -160,13 +164,10 @@ const ScreeningsTable = ({
       return
     }
 
-    // Create students map - map by BOTH UUID and formatted student_id
+    // Create students map - map by UUID only
     const studentsMapping = new Map<string, Student>()
     students.forEach(student => {
-      // Map by UUID (student.id)
       studentsMapping.set(student.id, student)
-      // Also map by formatted student_id (e.g., "TS-uuid")
-      studentsMapping.set(student.student_id, student)
     })
     setStudentsMap(studentsMapping)
   }, [currentSchool?.id, students])
@@ -603,6 +604,31 @@ const ScreeningsTable = ({
     setIsEmailModalOpen(true)
   }
 
+  const handleViewStudent = (screening: Screening) => {
+    const student = students.find(
+      s => s.id === screening.student_id || s.student_id === screening.student_id
+    )
+
+    if (!student) {
+      toast({
+        title: 'Error',
+        description: 'Student not found',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (currentSchool?.id) {
+      navigate(`/school/${currentSchool.id}/students/${student.id}`, {
+        state: { from: 'screenings' },
+      })
+    } else {
+      navigate(`/students/${student.id}`, {
+        state: { from: 'screenings' },
+      })
+    }
+  }
+
   const handleResultChange = (screening: Screening, newResult: string) => {
     if (screening.source_table === 'speech') {
       setUpdatingScreeningId(screening.id)
@@ -1011,6 +1037,10 @@ const ScreeningsTable = ({
                               <Eye className='w-4 h-4 mr-2' />
                               View Details
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleViewStudent(screening)}>
+                              <User className='w-4 h-4 mr-2' />
+                              View Student
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEmailReport(screening)}>
                               <Mail className='w-4 h-4 mr-2' />
                               Send Report
@@ -1119,6 +1149,10 @@ const ScreeningsTable = ({
                         <DropdownMenuItem onClick={() => handleViewDetails(screening)}>
                           <Eye className='w-4 h-4 mr-2' />
                           View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewStudent(screening)}>
+                          <User className='w-4 h-4 mr-2' />
+                          View Student
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleEmailReport(screening)}>
                           <Mail className='w-4 h-4 mr-2' />
