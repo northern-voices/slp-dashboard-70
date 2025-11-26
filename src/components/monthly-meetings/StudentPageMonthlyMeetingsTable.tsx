@@ -61,7 +61,7 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
     <Card>
       <CardHeader>
         <div className='flex items-center justify-between'>
-          <CardTitle className='text-lg font-semibold'>Monthly Meetings History</CardTitle>
+          <CardTitle className='text-2xl font-semibold'>Monthly Meetings History</CardTitle>
           {meetings.length > 0 && (
             <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
               {meetings.length} meeting{meetings.length !== 1 ? 's' : ''}
