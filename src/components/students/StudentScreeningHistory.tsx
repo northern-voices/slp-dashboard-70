@@ -40,7 +40,7 @@ const StudentScreeningHistory = ({
     <Card>
       <CardHeader>
         <div className='flex items-center justify-between'>
-          <CardTitle className='text-lg font-semibold'>Screening History</CardTitle>
+          <CardTitle className='text-2xl font-semibold'>Screening History</CardTitle>
           {screenings.length > 0 && (
             <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
               {screenings.length} screening{screenings.length !== 1 ? 's' : ''}
