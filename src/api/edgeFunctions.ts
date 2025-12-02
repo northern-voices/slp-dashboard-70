@@ -192,4 +192,25 @@ export const edgeFunctionsApi = {
       throw error
     }
   },
+
+  async generateHearingReport(hearingScreeningId: string, overrideEmail: string) {
+    try {
+      const { data, error } = await supabase.functions.invoke('swift-handler', {
+        body: {
+          hearing_screening_id: hearingScreeningId,
+          override_email: overrideEmail,
+        },
+      })
+
+      if (error) {
+        console.error('Error:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Failed to send hearing screen report:', error)
+      throw error
+    }
+  },
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { edgeFunctionsApi } from '@/api/edgeFunctions'
 
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
 import { CheckCircle, Mail, User, Send, Eye, BookOpen, Plus, List, XCircle } from 'lucide-react'
@@ -75,10 +76,11 @@ const HearingStudentReports = () => {
     setEmailMessage('')
 
     try {
-      // TODO: Implement hearing report email functionality
-      // For now, show success message
+      // Call the hearing report edge function
+      await edgeFunctionsApi.generateHearingReport(selectedScreening.id, recipientEmail)
+
       setModalType('success')
-      setModalMessage(`Hearing screening report will be sent to ${recipientEmail}`)
+      setModalMessage(`Reports sent successfully to ${recipientEmail}`)
       setIsSuccessModalOpen(true)
     } catch (error) {
       console.error('Error sending email:', error)
