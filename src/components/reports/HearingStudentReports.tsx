@@ -5,17 +5,7 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
-import {
-  CheckCircle,
-  Mail,
-  User,
-  Send,
-  Eye,
-  BookOpen,
-  Plus,
-  List,
-  XCircle,
-} from 'lucide-react'
+import { CheckCircle, Mail, User, Send, Eye, BookOpen, Plus, List, XCircle } from 'lucide-react'
 import { Student } from '@/types/database'
 
 import { Input } from '@/components/ui/input'
@@ -507,17 +497,59 @@ const HearingScreeningsTable = ({
                         <div className='text-xs'>
                           <span className='font-medium'>Right Ear:</span>
                           <div className='mt-1 space-y-1'>
-                            <p>Vol: {formatValue(screening.right_volume_db, screening.right_ear_volume_result, 'ml')}</p>
-                            <p>Comp: {formatValue(screening.right_compliance, screening.right_ear_compliance_result, 'ml')}</p>
-                            <p>Press: {formatValue(screening.right_pressure, screening.right_ear_pressure_result, 'daPa')}</p>
+                            <p>
+                              Vol:{' '}
+                              {formatValue(
+                                screening.right_volume_db,
+                                screening.right_ear_volume_result,
+                                'ml'
+                              )}
+                            </p>
+                            <p>
+                              Comp:{' '}
+                              {formatValue(
+                                screening.right_compliance,
+                                screening.right_ear_compliance_result,
+                                'ml'
+                              )}
+                            </p>
+                            <p>
+                              Press:{' '}
+                              {formatValue(
+                                screening.right_pressure,
+                                screening.right_ear_pressure_result,
+                                'daPa'
+                              )}
+                            </p>
                           </div>
                         </div>
                         <div className='text-xs'>
                           <span className='font-medium'>Left Ear:</span>
                           <div className='mt-1 space-y-1'>
-                            <p>Vol: {formatValue(screening.left_volume_db, screening.left_ear_volume_result, 'ml')}</p>
-                            <p>Comp: {formatValue(screening.left_compliance, screening.left_ear_compliance_result, 'ml')}</p>
-                            <p>Press: {formatValue(screening.left_pressure, screening.left_ear_pressure_result, 'daPa')}</p>
+                            <p>
+                              Vol:{' '}
+                              {formatValue(
+                                screening.left_volume_db,
+                                screening.left_ear_volume_result,
+                                'ml'
+                              )}
+                            </p>
+                            <p>
+                              Comp:{' '}
+                              {formatValue(
+                                screening.left_compliance,
+                                screening.left_ear_compliance_result,
+                                'ml'
+                              )}
+                            </p>
+                            <p>
+                              Press:{' '}
+                              {formatValue(
+                                screening.left_pressure,
+                                screening.left_ear_pressure_result,
+                                'daPa'
+                              )}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -546,22 +578,49 @@ const HearingScreeningsTable = ({
                     <div className='space-y-1 text-xs'>
                       <div className='flex items-center gap-2'>
                         <span className='font-medium text-blue-700'>Vol:</span>
-                        <span>{formatValue(screening.right_volume_db, screening.right_ear_volume_result, 'ml')}</span>
-                        <Badge className={`text-xs ${getResultBadgeColor(screening.right_ear_volume_result)}`}>
+                        <span>
+                          {formatValue(
+                            screening.right_volume_db,
+                            screening.right_ear_volume_result,
+                            'ml'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.right_ear_volume_result
+                          )}`}>
                           {screening.right_ear_volume_result || '-'}
                         </Badge>
                       </div>
                       <div className='flex items-center gap-2'>
                         <span className='font-medium text-purple-700'>Comp:</span>
-                        <span>{formatValue(screening.right_compliance, screening.right_ear_compliance_result, 'ml')}</span>
-                        <Badge className={`text-xs ${getResultBadgeColor(screening.right_ear_compliance_result)}`}>
+                        <span>
+                          {formatValue(
+                            screening.right_compliance,
+                            screening.right_ear_compliance_result,
+                            'ml'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.right_ear_compliance_result
+                          )}`}>
                           {screening.right_ear_compliance_result || '-'}
                         </Badge>
                       </div>
                       <div className='flex items-center gap-2'>
                         <span className='font-medium text-teal-700'>Press:</span>
-                        <span>{formatValue(screening.right_pressure, screening.right_ear_pressure_result, 'daPa')}</span>
-                        <Badge className={`text-xs ${getResultBadgeColor(screening.right_ear_pressure_result)}`}>
+                        <span>
+                          {formatValue(
+                            screening.right_pressure,
+                            screening.right_ear_pressure_result,
+                            'daPa'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.right_ear_pressure_result
+                          )}`}>
                           {screening.right_ear_pressure_result || '-'}
                         </Badge>
                       </div>
@@ -571,22 +630,49 @@ const HearingScreeningsTable = ({
                     <div className='space-y-1 text-xs'>
                       <div className='flex items-center gap-2'>
                         <span className='font-medium text-blue-700'>Vol:</span>
-                        <span>{formatValue(screening.left_volume_db, screening.left_ear_volume_result, 'ml')}</span>
-                        <Badge className={`text-xs ${getResultBadgeColor(screening.left_ear_volume_result)}`}>
+                        <span>
+                          {formatValue(
+                            screening.left_volume_db,
+                            screening.left_ear_volume_result,
+                            'ml'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.left_ear_volume_result
+                          )}`}>
                           {screening.left_ear_volume_result || '-'}
                         </Badge>
                       </div>
                       <div className='flex items-center gap-2'>
                         <span className='font-medium text-purple-700'>Comp:</span>
-                        <span>{formatValue(screening.left_compliance, screening.left_ear_compliance_result, 'ml')}</span>
-                        <Badge className={`text-xs ${getResultBadgeColor(screening.left_ear_compliance_result)}`}>
+                        <span>
+                          {formatValue(
+                            screening.left_compliance,
+                            screening.left_ear_compliance_result,
+                            'ml'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.left_ear_compliance_result
+                          )}`}>
                           {screening.left_ear_compliance_result || '-'}
                         </Badge>
                       </div>
                       <div className='flex items-center gap-2'>
                         <span className='font-medium text-teal-700'>Press:</span>
-                        <span>{formatValue(screening.left_pressure, screening.left_ear_pressure_result, 'daPa')}</span>
-                        <Badge className={`text-xs ${getResultBadgeColor(screening.left_ear_pressure_result)}`}>
+                        <span>
+                          {formatValue(
+                            screening.left_pressure,
+                            screening.left_ear_pressure_result,
+                            'daPa'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.left_ear_pressure_result
+                          )}`}>
                           {screening.left_ear_pressure_result || '-'}
                         </Badge>
                       </div>
