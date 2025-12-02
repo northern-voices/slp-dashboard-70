@@ -19,8 +19,8 @@ import GenerateGoalSheet from './pages/student/GenerateGoalSheet'
 import Screenings from './pages/Screenings'
 import Reports from './pages/Reports'
 import SchoolWideReports from './pages/SchoolWideReports'
-import IndividualReports from './pages/IndividualReports'
-import ReportDetail from './pages/ReportDetail'
+import SpeechReports from './pages/SpeechReports'
+import HearingReports from './pages/HearingReports'
 import Management from './pages/Management'
 import Profile from './pages/Profile'
 import Notifications from './pages/Notifications'
@@ -286,17 +286,17 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
-                      <IndividualReports />
+                      <SpeechReports />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/speech-screening-reports/:reportId'
+                path='/speech-screening-reports/hearing'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
-                      <ReportDetail />
+                      <HearingReports />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
@@ -536,17 +536,17 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
-                      <IndividualReports />
+                      <SpeechReports />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path='/school/:schoolId/speech-screening-reports/:reportId'
+                path='/school/:schoolId/speech-screening-reports/hearing'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
-                      <ReportDetail />
+                      <HearingReports />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }

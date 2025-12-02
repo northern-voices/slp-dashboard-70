@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import IndividualStudentReports from '@/components/reports/IndividualStudentReports'
 
-const IndividualReportsContent = () => {
+const SpeechReportsContent = () => {
   const navigate = useNavigate()
 
   return (
@@ -42,4 +42,4 @@ const IndividualReportsContent = () => {
   )
 }
 
-export default IndividualReportsContent
+export default SpeechReportsContent
