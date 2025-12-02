@@ -282,7 +282,7 @@ const App = () => (
                 }
               />
               <Route
-                path='/speech-screening-reports/individual'
+                path='/speech-screening-reports/speech'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
@@ -532,7 +532,7 @@ const App = () => (
                 }
               />
               <Route
-                path='/school/:schoolId/speech-screening-reports/individual'
+                path='/school/:schoolId/speech-screening-reports/speech'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
