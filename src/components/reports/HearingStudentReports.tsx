@@ -3,32 +3,20 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { edgeFunctionsApi } from '@/api/edgeFunctions'
 
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
-import {
-  CheckCircle,
-  Target,
-  Mail,
-  User,
-  Send,
-  Eye,
-  TrendingUp,
-  BookOpen,
-  Plus,
-  List,
-  XCircle,
-} from 'lucide-react'
+import { CheckCircle, Mail, User, Send, Eye, BookOpen, Plus, List, XCircle } from 'lucide-react'
 import { Student } from '@/types/database'
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
+import { useHearingScreeningsByStudent } from '@/hooks/screenings/use-hearing-screenings'
 import { Screening } from '@/types/database'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
-import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
+import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
 import {
   ResponsiveTable,
   ResponsiveTableRow,
@@ -37,10 +25,9 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
-import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
-const IndividualStudentReports = () => {
+const HearingStudentReports = () => {
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
   const { user } = useAuth()
@@ -70,25 +57,11 @@ const IndividualStudentReports = () => {
 
   const getAvailableReports = () => {
     return [
-      // TODO: Leave commented for now until Lisa decides what to do
-      // {
-      //   value: 'progress-report',
-      //   label: 'Progress Report',
-      //   description: 'Comprehensive progress summary showing achievements and therapy outcomes',
-      //   icon: TrendingUp,
-      // },
       {
-        value: 'student-report',
-        label: 'Student Report',
-        description: 'Detailed student assessment and performance overview',
+        value: 'hearing-report',
+        label: 'Hearing Screening Report',
+        description: 'Detailed hearing screening assessment and results overview',
         icon: BookOpen,
-      },
-      {
-        value: 'goal-sheet',
-        label: 'Goal Sheet',
-        description:
-          'Individualized goal tracking sheet with specific objectives and progress metrics',
-        icon: Target,
       },
     ]
   }
@@ -103,26 +76,12 @@ const IndividualStudentReports = () => {
     setEmailMessage('')
 
     try {
-      // Process each selected report type
-      for (const reportType of selectedReports) {
-        if (reportType === 'progress-report') {
-          await edgeFunctionsApi.studentProgressReport(selectedScreening.id, recipientEmail)
-        } else if (reportType === 'student-report') {
-          await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
-        } else if (reportType === 'goal-sheet') {
-          await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
-        } else {
-          console.warn(`Unknown report type: ${reportType}`)
-          continue // skip to next iteration
-        }
-      }
+      // Call the hearing report edge function
+      await edgeFunctionsApi.generateHearingReport(selectedScreening.id, recipientEmail)
 
-      // Show success modal if any reports were processed
-      if (selectedReports.length > 0) {
-        setModalType('success')
-        setModalMessage(`Reports sent successfully to ${recipientEmail}`)
-        setIsSuccessModalOpen(true)
-      }
+      setModalType('success')
+      setModalMessage(`Reports sent successfully to ${recipientEmail}`)
+      setIsSuccessModalOpen(true)
     } catch (error) {
       console.error('Error sending email:', error)
       setModalType('error')
@@ -200,12 +159,12 @@ const IndividualStudentReports = () => {
           </div>
         )}
 
-        {/* Speech Screens Table */}
+        {/* Hearing Screenings Table */}
         <div className='space-y-3'>
           {selectedStudent && (
             <div className='space-y-3'>
               <h3 className='text-xl font-medium text-gray-700'>Screenings</h3>
-              <SpeechScreeningsTable
+              <HearingScreeningsTable
                 studentId={selectedStudent.id}
                 selectedScreening={selectedScreening}
                 onSelectScreening={handleSelectScreening}
@@ -343,7 +302,7 @@ const IndividualStudentReports = () => {
         </div>
       )}
 
-      <ScreeningDetailsModal
+      <HearingScreeningDetailsModal
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
         screening={selectedScreeningForDetails}
@@ -405,8 +364,8 @@ const IndividualStudentReports = () => {
   )
 }
 
-// Speech Screenings Table Component
-const SpeechScreeningsTable = ({
+// Hearing Screenings Table Component
+const HearingScreeningsTable = ({
   studentId,
   selectedScreening,
   onSelectScreening,
@@ -417,9 +376,9 @@ const SpeechScreeningsTable = ({
   onSelectScreening: (screening: Screening | null) => void
   onViewDetails: (screening: Screening) => void
 }) => {
-  const { data: screeningsData, isLoading, error } = useSpeechScreeningsByStudent(studentId)
+  const { data: screeningsData, isLoading, error } = useHearingScreeningsByStudent(studentId)
 
-  // Get speech screenings for the student
+  // Get hearing screenings for the student
   const studentScreenings = screeningsData || []
 
   if (isLoading) {
@@ -437,57 +396,30 @@ const SpeechScreeningsTable = ({
   if (studentScreenings.length === 0) {
     return (
       <div className='text-sm text-gray-500 text-center py-4'>
-        No speech screenings found for this student.
+        No hearing screenings found for this student.
       </div>
     )
   }
 
-  const getResultBadge = (result: string | undefined) => {
-    if (!result) return <Badge variant='secondary'>No Result</Badge>
-
-    const config = SCREENING_RESULTS[result.toLowerCase() as keyof typeof SCREENING_RESULTS]
-    if (!config) return <Badge variant='secondary'>{result}</Badge>
-
-    return <Badge className={`${config.color} font-medium`}>{config.label}</Badge>
+  const formatValue = (
+    value: number | null | undefined,
+    result: string | null | undefined,
+    unit: string
+  ) => {
+    if (result === 'Immeasurable' || value === null || value === undefined) {
+      return 'Immeasurable'
+    }
+    return `${value} ${unit}`
   }
 
-  const getQualificationBadge = (screening: Screening) => {
-    const metadata = screening.error_patterns?.screening_metadata
-    const noConsent = screening.result === 'non_registered_no_consent'
-
-    if (noConsent) {
-      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
-    }
-
-    // Read from screening metadata not student program status
-    const graduated = metadata?.graduated || false
-    const paused = metadata?.paused || false
-    const sub = metadata?.sub || false
-    const qualifies = metadata?.qualifies_for_speech_program || false
-
-    if (graduated) {
-      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-    }
-    if (paused) {
-      return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
-    }
-    if (sub) {
-      return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
-    }
-    if (qualifies) {
-      return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
-    }
-
-    // If none of the above, check if they explicitly don't qualify
-    if (qualifies === false && !sub && !graduated && !paused) {
-      return (
-        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
-          Not In Program
-        </Badge>
-      )
-    }
-
-    return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
+  const getResultBadgeColor = (result: string | null | undefined) => {
+    if (!result || result === '-') return ''
+    const normalizedResult = result.toLowerCase()
+    if (normalizedResult === 'normal') return 'bg-green-100 text-green-800 border-green-200'
+    if (normalizedResult === 'high' || normalizedResult === 'low')
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    if (normalizedResult === 'immeasurable') return 'bg-gray-100 text-gray-600 border-gray-200'
+    return 'bg-gray-100 text-gray-600 border-gray-200'
   }
 
   return (
@@ -531,10 +463,9 @@ const SpeechScreeningsTable = ({
               <tr>
                 <TableHead className='w-12'></TableHead>
                 <TableHead className='w-1/6 min-w-[100px]'>Date</TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
-                <TableHead className='w-1/6 min-w-[80px]'>Grade</TableHead>
+                <TableHead className='min-w-[200px]'>Right Ear</TableHead>
+                <TableHead className='min-w-[200px]'>Left Ear</TableHead>
                 <TableHead className='w-12'></TableHead>
               </tr>
             </TableHeader>
@@ -559,21 +490,70 @@ const SpeechScreeningsTable = ({
                           <Eye className='w-4 h-4' />
                         </Button>
                       </div>
-                      <div className='flex items-center gap-2'>
-                        {getResultBadge(screening.result || screening.screening_result)}
-                      </div>
-                      <div className='flex items-center gap-2'>
-                        {getQualificationBadge(screening)}
-                      </div>
-                      <div className='text-sm text-gray-600 space-y-1'>
+                      <div className='text-sm text-gray-600'>
                         <p>
                           <span className='font-medium'>Screener:</span> {screening.screener}
                         </p>
-                        {screening.grade && (
-                          <p>
-                            <span className='font-medium'>Grade:</span> {screening.grade}
-                          </p>
-                        )}
+                      </div>
+                      <div className='space-y-2'>
+                        <div className='text-xs'>
+                          <span className='font-medium'>Right Ear:</span>
+                          <div className='mt-1 space-y-1'>
+                            <p>
+                              Vol:{' '}
+                              {formatValue(
+                                screening.right_volume_db,
+                                screening.right_ear_volume_result,
+                                'ml'
+                              )}
+                            </p>
+                            <p>
+                              Comp:{' '}
+                              {formatValue(
+                                screening.right_compliance,
+                                screening.right_ear_compliance_result,
+                                'ml'
+                              )}
+                            </p>
+                            <p>
+                              Press:{' '}
+                              {formatValue(
+                                screening.right_pressure,
+                                screening.right_ear_pressure_result,
+                                'daPa'
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className='text-xs'>
+                          <span className='font-medium'>Left Ear:</span>
+                          <div className='mt-1 space-y-1'>
+                            <p>
+                              Vol:{' '}
+                              {formatValue(
+                                screening.left_volume_db,
+                                screening.left_ear_volume_result,
+                                'ml'
+                              )}
+                            </p>
+                            <p>
+                              Comp:{' '}
+                              {formatValue(
+                                screening.left_compliance,
+                                screening.left_ear_compliance_result,
+                                'ml'
+                              )}
+                            </p>
+                            <p>
+                              Press:{' '}
+                              {formatValue(
+                                screening.left_pressure,
+                                screening.left_ear_pressure_result,
+                                'daPa'
+                              )}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   }>
@@ -592,27 +572,112 @@ const SpeechScreeningsTable = ({
                     </div>
                   </TableCell>
                   <TableCell className='max-w-0'>
-                    <div className='truncate'>
-                      {getResultBadge(screening.result || screening.screening_result)}
-                    </div>
-                  </TableCell>
-                  <TableCell className='max-w-0'>
-                    <div className='truncate'>{getQualificationBadge(screening)}</div>
-                  </TableCell>
-                  <TableCell className='max-w-0'>
                     <div className='truncate' title={screening.screener}>
                       {screening.screener}
                     </div>
                   </TableCell>
-                  <TableCell className='max-w-0'>
-                    <div className='truncate' title={screening.grade || 'No grade'}>
-                      {screening.grade ? (
-                        <div className='text-xs text-gray-500 bg-gray-200 px-3 py-1 rounded-lg inline-block'>
-                          {screening.grade}
-                        </div>
-                      ) : (
-                        '-'
-                      )}
+                  <TableCell className='py-4 px-4'>
+                    <div className='space-y-1 text-xs'>
+                      <div className='flex items-center gap-2'>
+                        <span className='font-medium text-blue-700'>Vol:</span>
+                        <span>
+                          {formatValue(
+                            screening.right_volume_db,
+                            screening.right_ear_volume_result,
+                            'ml'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.right_ear_volume_result
+                          )}`}>
+                          {screening.right_ear_volume_result || '-'}
+                        </Badge>
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        <span className='font-medium text-purple-700'>Comp:</span>
+                        <span>
+                          {formatValue(
+                            screening.right_compliance,
+                            screening.right_ear_compliance_result,
+                            'ml'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.right_ear_compliance_result
+                          )}`}>
+                          {screening.right_ear_compliance_result || '-'}
+                        </Badge>
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        <span className='font-medium text-teal-700'>Press:</span>
+                        <span>
+                          {formatValue(
+                            screening.right_pressure,
+                            screening.right_ear_pressure_result,
+                            'daPa'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.right_ear_pressure_result
+                          )}`}>
+                          {screening.right_ear_pressure_result || '-'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className='py-4 px-4'>
+                    <div className='space-y-1 text-xs'>
+                      <div className='flex items-center gap-2'>
+                        <span className='font-medium text-blue-700'>Vol:</span>
+                        <span>
+                          {formatValue(
+                            screening.left_volume_db,
+                            screening.left_ear_volume_result,
+                            'ml'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.left_ear_volume_result
+                          )}`}>
+                          {screening.left_ear_volume_result || '-'}
+                        </Badge>
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        <span className='font-medium text-purple-700'>Comp:</span>
+                        <span>
+                          {formatValue(
+                            screening.left_compliance,
+                            screening.left_ear_compliance_result,
+                            'ml'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.left_ear_compliance_result
+                          )}`}>
+                          {screening.left_ear_compliance_result || '-'}
+                        </Badge>
+                      </div>
+                      <div className='flex items-center gap-2'>
+                        <span className='font-medium text-teal-700'>Press:</span>
+                        <span>
+                          {formatValue(
+                            screening.left_pressure,
+                            screening.left_ear_pressure_result,
+                            'daPa'
+                          )}
+                        </span>
+                        <Badge
+                          className={`text-xs ${getResultBadgeColor(
+                            screening.left_ear_pressure_result
+                          )}`}>
+                          {screening.left_ear_pressure_result || '-'}
+                        </Badge>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -634,4 +699,4 @@ const SpeechScreeningsTable = ({
   )
 }
 
-export default IndividualStudentReports
+export default HearingStudentReports
