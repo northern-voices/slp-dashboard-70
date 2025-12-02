@@ -2,7 +2,7 @@ import React from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import ReportsPageContent from '@/components/features/reports/ReportsPageContent'
 
 const ReportsContent = () => {
