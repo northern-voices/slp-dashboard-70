@@ -2,9 +2,9 @@ import React from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
-import IndividualStudentReports from '@/components/reports/IndividualStudentReports'
+import SpeechStudentReports from '@/components/reports/SpeechStudentReports'
 
-const IndividualReportsContent = () => {
+const SpeechReportsContent = () => {
   const navigate = useNavigate()
 
   return (
@@ -25,7 +25,7 @@ const IndividualReportsContent = () => {
 
           <div className='space-y-1 sm:space-y-2'>
             <h1 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900'>
-              Individual Student Reports
+              Speech Reports
             </h1>
             <p className='text-sm sm:text-base text-gray-600'>
               Generate screening reports for specific students
@@ -33,13 +33,13 @@ const IndividualReportsContent = () => {
           </div>
         </div>
 
-        {/* Individual Student Reports Form */}
+        {/* Speech Student Reports Form */}
         <div className='w-full max-w-full'>
-          <IndividualStudentReports />
+          <SpeechStudentReports />
         </div>
       </div>
     </div>
   )
 }
 
-export default IndividualReportsContent
+export default SpeechReportsContent

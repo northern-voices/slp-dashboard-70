@@ -2,10 +2,10 @@ import React from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import ReportsPageContent from '@/components/features/reports/ReportsPageContent'
+import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
+import SpeechReportsContent from '@/components/features/reports/SpeechReportsContent'
 
-const ReportsContent = () => {
+const SpeechReportsMain = () => {
   const { userProfile } = useOrganization()
 
   const userRole = userProfile?.role || 'slp'
@@ -22,7 +22,7 @@ const ReportsContent = () => {
           <Header userRole={userRole} userName={userName} userProfile={userProfile} />
 
           <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8 overflow-x-hidden max-w-full'>
-            <ReportsPageContent />
+            <SpeechReportsContent />
           </main>
         </SidebarInset>
       </div>
@@ -30,8 +30,8 @@ const ReportsContent = () => {
   )
 }
 
-const Reports = () => {
-  return <ReportsContent />
+const SpeechReports = () => {
+  return <SpeechReportsMain />
 }
 
-export default Reports
+export default SpeechReports
