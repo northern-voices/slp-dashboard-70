@@ -2,7 +2,7 @@ import React from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
-import IndividualStudentReports from '@/components/reports/IndividualStudentReports'
+import SpeechStudentReports from '@/components/reports/SpeechStudentReports'
 
 const SpeechReportsContent = () => {
   const navigate = useNavigate()
@@ -33,9 +33,9 @@ const SpeechReportsContent = () => {
           </div>
         </div>
 
-        {/* Individual Student Reports Form */}
+        {/* Speech Student Reports Form */}
         <div className='w-full max-w-full'>
-          <IndividualStudentReports />
+          <SpeechStudentReports />
         </div>
       </div>
     </div>

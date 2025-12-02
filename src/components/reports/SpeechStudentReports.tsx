@@ -40,7 +40,7 @@ import {
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
-const IndividualStudentReports = () => {
+const SpeechStudentReports = () => {
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
   const { user } = useAuth()
@@ -634,4 +634,4 @@ const SpeechScreeningsTable = ({
   )
 }
 
-export default IndividualStudentReports
+export default SpeechStudentReports
