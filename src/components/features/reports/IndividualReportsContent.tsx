@@ -25,7 +25,7 @@ const IndividualReportsContent = () => {
 
           <div className='space-y-1 sm:space-y-2'>
             <h1 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900'>
-              Individual Student Reports
+              Speech Reports
             </h1>
             <p className='text-sm sm:text-base text-gray-600'>
               Generate screening reports for specific students

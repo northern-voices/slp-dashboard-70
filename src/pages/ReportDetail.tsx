@@ -43,22 +43,8 @@ const ReportDetailPageContent = () => {
                   onClick={() => navigate('/speech-screening-reports')}
                   className='flex items-center gap-2'>
                   <ArrowLeft className='w-4 h-4' />
-                  Back to Reports
+                  Back
                 </Button>
-
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink href='/speech-screening-reports'>
-                        Speech Screening Reports
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>Report Details</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
               </div>
 
               {/* Report Detail Content */}
