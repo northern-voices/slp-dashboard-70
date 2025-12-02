@@ -2,6 +2,7 @@ import React from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
+import HearingStudentReports from '@/components/reports/HearingStudentReports'
 
 interface HearingReportsContentProps {
   reportId?: string
@@ -36,10 +37,9 @@ const HearingReportsContent = ({ reportId }: HearingReportsContentProps) => {
           </div>
         </div>
 
-        {/* Main Content Area */}
+        {/* Hearing Student Reports Form */}
         <div className='w-full max-w-full'>
-          {/* Report content will go here */}
-          <p className='text-gray-500'>Hearing reports functionality coming soon...</p>
+          <HearingStudentReports />
         </div>
       </div>
     </div>
