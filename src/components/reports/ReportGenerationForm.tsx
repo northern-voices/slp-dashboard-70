@@ -95,6 +95,15 @@ const ReportGenerationForm = () => {
       tooltip:
         'Summarizes school-wide speech screenings, showing qualified students, subs, and recommendations to guide follow-up and planning.',
     },
+    {
+      value: 'hearing-reports',
+      label: 'School Wide Hearing Reports',
+      description:
+        'Generate comprehensive hearing screening reports for all students with hearing screenings',
+      icon: Volume2,
+      tooltip:
+        'Creates detailed hearing screening reports with tympanometry results, ear canal volume, compliance, and pressure measurements for all students.',
+    },
     // {
     //   value: 'progress-reports',
     //   label: 'School Wide Progress Reports',
@@ -138,6 +147,12 @@ const ReportGenerationForm = () => {
           data.academicYear,
           data.email
         )
+      } else if (data.reportType === 'hearing-reports') {
+        result = await edgeFunctionsApi.schoolWideHearingReports(
+          currentSchool.id,
+          data.academicYear,
+          data.email
+        )
       } else {
         console.warn(`Unknown report type: ${data.reportType}`)
       }
@@ -152,10 +167,36 @@ const ReportGenerationForm = () => {
         } is being generated. You'll receive an email at ${data.email} when it's ready.`
       )
       setIsSuccessModalOpen(true)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error generating report:', error)
+
+      // Provide specific error messages based on report type
       setModalType('error')
-      setModalMessage('Failed to generate report. Please try again.')
+
+      if (data.reportType === 'hearing-reports') {
+        setModalMessage(
+          `No hearing screenings found for the ${data.academicYear} academic year. Please ensure hearing screenings have been completed before generating this report.`
+        )
+      } else if (data.reportType === 'student-reports') {
+        setModalMessage(
+          `No speech screenings found for the ${data.academicYear} academic year. Please ensure speech screenings have been completed before generating this report.`
+        )
+      } else if (data.reportType === 'goal-sheets') {
+        setModalMessage(
+          `No student data available for goal sheets in the ${data.academicYear} academic year. Please ensure students have been screened before generating goal sheets.`
+        )
+      } else if (data.reportType === 'school-summary-report') {
+        setModalMessage(
+          `No screening data found for the ${data.academicYear} academic year. Please ensure screenings have been completed before generating the school summary report.`
+        )
+      } else if (data.reportType === 'progress-reports') {
+        setModalMessage(
+          `No progress data found for the ${data.academicYear} academic year. Please ensure student progress has been tracked before generating this report.`
+        )
+      } else {
+        setModalMessage('Failed to generate report. Please try again.')
+      }
+
       setIsSuccessModalOpen(true)
     }
   }

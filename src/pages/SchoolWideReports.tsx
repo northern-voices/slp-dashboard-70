@@ -1,19 +1,10 @@
-import React from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
 import ReportGenerationForm from '@/components/reports/ReportGenerationForm'
 const SchoolWideReportsContent = () => {
   const { userProfile } = useOrganization()
