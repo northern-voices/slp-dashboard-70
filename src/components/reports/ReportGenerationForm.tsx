@@ -167,10 +167,20 @@ const ReportGenerationForm = () => {
         } is being generated. You'll receive an email at ${data.email} when it's ready.`
       )
       setIsSuccessModalOpen(true)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error generating report:', error)
-      setModalType('error')
-      setModalMessage('Failed to generate report. Please try again.')
+
+      // Check if it's a hearing reports error with no data
+      if (data.reportType === 'hearing-reports') {
+        setModalType('error')
+        setModalMessage(
+          `No hearing screenings found for the ${data.academicYear} academic year. Please ensure hearing screenings have been completed before generating this report.`
+        )
+      } else {
+        setModalType('error')
+        setModalMessage('Failed to generate report. Please try again.')
+      }
+
       setIsSuccessModalOpen(true)
     }
   }
