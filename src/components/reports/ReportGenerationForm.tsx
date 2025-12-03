@@ -95,6 +95,15 @@ const ReportGenerationForm = () => {
       tooltip:
         'Summarizes school-wide speech screenings, showing qualified students, subs, and recommendations to guide follow-up and planning.',
     },
+    {
+      value: 'hearing-reports',
+      label: 'School Wide Hearing Reports',
+      description:
+        'Generate comprehensive hearing screening reports for all students with hearing screenings',
+      icon: Volume2,
+      tooltip:
+        'Creates detailed hearing screening reports with tympanometry results, ear canal volume, compliance, and pressure measurements for all students.',
+    },
     // {
     //   value: 'progress-reports',
     //   label: 'School Wide Progress Reports',
@@ -134,6 +143,12 @@ const ReportGenerationForm = () => {
         )
       } else if (data.reportType === 'school-summary-report') {
         result = await edgeFunctionsApi.schoolSummaryReport(
+          currentSchool.id,
+          data.academicYear,
+          data.email
+        )
+      } else if (data.reportType === 'hearing-reports') {
+        result = await edgeFunctionsApi.schoolWideHearingReports(
           currentSchool.id,
           data.academicYear,
           data.email
