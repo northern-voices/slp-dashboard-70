@@ -170,14 +170,30 @@ const ReportGenerationForm = () => {
     } catch (error: unknown) {
       console.error('Error generating report:', error)
 
-      // Check if it's a hearing reports error with no data
+      // Provide specific error messages based on report type
+      setModalType('error')
+
       if (data.reportType === 'hearing-reports') {
-        setModalType('error')
         setModalMessage(
           `No hearing screenings found for the ${data.academicYear} academic year. Please ensure hearing screenings have been completed before generating this report.`
         )
+      } else if (data.reportType === 'student-reports') {
+        setModalMessage(
+          `No speech screenings found for the ${data.academicYear} academic year. Please ensure speech screenings have been completed before generating this report.`
+        )
+      } else if (data.reportType === 'goal-sheets') {
+        setModalMessage(
+          `No student data available for goal sheets in the ${data.academicYear} academic year. Please ensure students have been screened before generating goal sheets.`
+        )
+      } else if (data.reportType === 'school-summary-report') {
+        setModalMessage(
+          `No screening data found for the ${data.academicYear} academic year. Please ensure screenings have been completed before generating the school summary report.`
+        )
+      } else if (data.reportType === 'progress-reports') {
+        setModalMessage(
+          `No progress data found for the ${data.academicYear} academic year. Please ensure student progress has been tracked before generating this report.`
+        )
       } else {
-        setModalType('error')
         setModalMessage('Failed to generate report. Please try again.')
       }
 
