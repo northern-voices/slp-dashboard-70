@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Eye, Download, Trash2, MoreHorizontal, ChevronUp, ChevronDown, User } from 'lucide-react'
+import { Eye, Mail, Trash2, MoreHorizontal, ChevronUp, ChevronDown, User } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +35,7 @@ import { Screening, Student } from '@/types/database'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
+import SendReportsModal from '@/components/screenings/SendReportsModal'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 
@@ -58,6 +59,8 @@ const HearingScreeningsTable = ({
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [screeningToDelete, setScreeningToDelete] = useState<Screening | null>(null)
+  const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
   const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
   const { currentSchool } = useOrganization()
   const { toast } = useToast()
@@ -174,6 +177,11 @@ const HearingScreeningsTable = ({
   const handleViewDetails = (screening: Screening) => {
     setSelectedScreening(screening)
     setIsDetailsModalOpen(true)
+  }
+
+  const handleSendReport = (screening: Screening) => {
+    setScreeningToEmail(screening)
+    setIsEmailModalOpen(true)
   }
 
   const handleViewStudent = (screening: Screening) => {
@@ -463,9 +471,9 @@ const HearingScreeningsTable = ({
                           <User className='w-4 h-4 mr-2' />
                           View Student
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Download className='w-4 h-4 mr-2' />
-                          Export Report
+                        <DropdownMenuItem onClick={() => handleSendReport(screening)}>
+                          <Mail className='w-4 h-4 mr-2' />
+                          Send Report
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className='text-red-600'
@@ -488,6 +496,13 @@ const HearingScreeningsTable = ({
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
         screening={selectedScreening}
+      />
+
+      {/* Send Reports Modal */}
+      <SendReportsModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        screening={screeningToEmail}
       />
 
       {/* Delete Confirmation Dialog */}

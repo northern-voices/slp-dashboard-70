@@ -128,6 +128,7 @@ const transformHearingScreening = (screening: RawHearingScreening): Screening =>
     school_name: screening.students?.schools?.name || 'Unknown School',
     referral_notes: screening.referral_notes || '',
     clinical_notes: screening.clinical_notes || '',
+    source_table: 'hearing',
     // Hearing-specific fields
     right_volume_db: screening.right_volume_db,
     right_pressure: screening.right_pressure,

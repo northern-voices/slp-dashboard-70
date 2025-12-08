@@ -30,39 +30,52 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
   const [modalMessage, setModalMessage] = useState('')
 
   // Pre-fill email with current user's email when modal opens
+  // Auto-select hearing report if it's a hearing screening
   useEffect(() => {
     if (isOpen && user?.email && !recipientEmail) {
       setRecipientEmail(user.email)
     }
-  }, [isOpen, user?.email])
+
+    // Auto-select hearing report for hearing screenings
+    if (isOpen && screening?.source_table === 'hearing' && selectedReports.length === 0) {
+      setSelectedReports(['hearing-report'])
+    }
+  }, [isOpen, user?.email, screening])
 
   const handleSendEmail = async () => {
-    if (!recipientEmail || selectedReports.length === 0 || !screening) {
+    if (!recipientEmail || !screening) {
+      return
+    }
+
+    const isHearingScreening = screening.source_table === 'hearing'
+
+    if (!isHearingScreening && selectedReports.length === 0) {
       return
     }
 
     setIsEmailLoading(true)
 
     try {
-      // Process each selected report type
-      for (const reportType of selectedReports) {
-        if (reportType === 'student-report') {
-          await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmail)
-        } else if (reportType === 'goal-sheet') {
-          await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmail)
-        } else {
-          console.warn(`Unknown report type: ${reportType}`)
-          continue
+      if (isHearingScreening) {
+        await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmail)
+      } else {
+        for (const reportType of selectedReports) {
+          if (reportType === 'student-report') {
+            await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmail)
+          } else if (reportType === 'goal-sheet') {
+            await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmail)
+          } else {
+            console.warn(`Unknown report type: ${reportType}`)
+            continue
+          }
         }
       }
 
       // Show success modal
-      if (selectedReports.length > 0) {
-        setModalType('success')
-        setModalMessage(`Reports sent successfully to ${recipientEmail}`)
-        setIsSuccessModalOpen(true)
-        onClose()
-      }
+      setModalType('success')
+      setModalMessage(`Reports sent successfully to ${recipientEmail}`)
+      setIsSuccessModalOpen(true)
+      onClose()
     } catch (error) {
       console.error('Error sending email:', error)
       setModalType('error')
@@ -88,6 +101,21 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
   }
 
   const getAvailableReports = () => {
+    const isHearingScreening = screening?.source_table === 'hearing'
+
+    if (isHearingScreening) {
+      // For hearing screenings, show only the hearing report option
+      return [
+        {
+          value: 'hearing-report',
+          label: 'Hearing Screening Report',
+          description: 'Detailed hearing screening assessment and results overview',
+          icon: BookOpen,
+        },
+      ]
+    }
+
+    // For speech screenings, show the speech report options
     return [
       {
         value: 'student-report',
@@ -98,7 +126,8 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
       {
         value: 'goal-sheet',
         label: 'Goal Sheet',
-        description: 'Individualized goal tracking sheet with specific objectives and progress metrics',
+        description:
+          'Individualized goal tracking sheet with specific objectives and progress metrics',
         icon: Target,
       },
     ]
@@ -202,7 +231,12 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                 variant='default'
                 size='sm'
                 className='w-full h-9 bg-blue-600 hover:bg-blue-700 text-white'
-                disabled={!recipientEmail || selectedReports.length === 0 || isEmailLoading}>
+                disabled={
+                  !recipientEmail ||
+                  !screening ||
+                  (screening.source_table !== 'hearing' && selectedReports.length === 0) ||
+                  isEmailLoading
+                }>
                 <Send className='w-4 h-4 mr-2' />
                 {isEmailLoading ? 'Sending...' : 'Send Reports'}
               </Button>
