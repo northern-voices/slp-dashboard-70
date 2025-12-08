@@ -855,7 +855,9 @@ const ScreeningsList = ({
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
                           <Badge
-                            className={`text-xs ${getResultBadgeColor(screening.right_ear_volume_result)}`}>
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.right_ear_volume_result
+                            )}`}>
                             {screening.right_ear_volume_result || '-'}
                           </Badge>
                         </div>
@@ -877,7 +879,9 @@ const ScreeningsList = ({
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
                           <Badge
-                            className={`text-xs ${getResultBadgeColor(screening.right_ear_compliance_result)}`}>
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.right_ear_compliance_result
+                            )}`}>
                             {screening.right_ear_compliance_result || '-'}
                           </Badge>
                         </div>
@@ -899,7 +903,9 @@ const ScreeningsList = ({
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
                           <Badge
-                            className={`text-xs ${getResultBadgeColor(screening.right_ear_pressure_result)}`}>
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.right_ear_pressure_result
+                            )}`}>
                             {screening.right_ear_pressure_result || '-'}
                           </Badge>
                         </div>
@@ -924,7 +930,9 @@ const ScreeningsList = ({
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
                           <Badge
-                            className={`text-xs ${getResultBadgeColor(screening.left_ear_volume_result)}`}>
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.left_ear_volume_result
+                            )}`}>
                             {screening.left_ear_volume_result || '-'}
                           </Badge>
                         </div>
@@ -946,7 +954,9 @@ const ScreeningsList = ({
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
                           <Badge
-                            className={`text-xs ${getResultBadgeColor(screening.left_ear_compliance_result)}`}>
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.left_ear_compliance_result
+                            )}`}>
                             {screening.left_ear_compliance_result || '-'}
                           </Badge>
                         </div>
@@ -968,7 +978,9 @@ const ScreeningsList = ({
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
                           <Badge
-                            className={`text-xs ${getResultBadgeColor(screening.left_ear_pressure_result)}`}>
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.left_ear_pressure_result
+                            )}`}>
                             {screening.left_ear_pressure_result || '-'}
                           </Badge>
                         </div>
