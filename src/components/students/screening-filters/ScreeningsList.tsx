@@ -1023,6 +1023,10 @@ const ScreeningsList = ({
                           <Eye className='w-4 h-4 mr-2' />
                           View Details
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEmailReport(screening)}>
+                          <Mail className='w-4 h-4 mr-2' />
+                          Send Report
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
