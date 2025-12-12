@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -9,8 +10,10 @@ import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector'
 import RecentActivity from '@/components/RecentActivity'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import SchoolInfoCard from '@/components/SchoolInfoCard'
+import AddTeamMemberModal from '@/components/AddTeamMemberModal'
 
 const DashboardContent = () => {
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
   const { userProfile, currentSchool, isLoading } = useOrganization()
 
   const userRole = userProfile?.role || 'slp'
@@ -18,7 +21,7 @@ const DashboardContent = () => {
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
 
-  const dummySchoolData = {
+  const [schoolData, setSchoolData] = useState({
     schoolName: 'Northern Voices Elementary',
     schoolPhone: '(907) 555-0123',
     primarySLP: {
@@ -52,6 +55,18 @@ const DashboardContent = () => {
         email: 'david.thompson@nvschools.edu',
       },
     ],
+  })
+
+  const handleAddMember = (member: { name: string; role: string; email: string }) => {
+    const newMember = {
+      id: schoolData.schoolTeam.length + 1,
+      ...member,
+    }
+
+    setSchoolData(prev => ({
+      ...prev,
+      schoolTeam: [...prev.schoolTeam, newMember],
+    }))
   }
 
   if (isLoading) {
@@ -111,10 +126,11 @@ const DashboardContent = () => {
             <div className='max-w-7xl mx-auto'>
               <div className='space-y-8'>
                 <SchoolInfoCard
-                  schoolName={dummySchoolData.schoolName}
-                  schoolPhone={dummySchoolData.schoolPhone}
-                  primarySLP={dummySchoolData.primarySLP}
-                  schoolTeam={dummySchoolData.schoolTeam}
+                  schoolName={schoolData.schoolName}
+                  schoolPhone={schoolData.schoolPhone}
+                  primarySLP={schoolData.primarySLP}
+                  schoolTeam={schoolData.schoolTeam}
+                  onAddMember={() => setIsAddMemberModalOpen(true)}
                 />
 
                 {userRole === 'slp' ? (
@@ -135,6 +151,12 @@ const DashboardContent = () => {
           </main>
         </SidebarInset>
       </div>
+
+      <AddTeamMemberModal
+        open={isAddMemberModalOpen}
+        onOpenChange={setIsAddMemberModalOpen}
+        onAddMember={handleAddMember}
+      />
     </SidebarProvider>
   )
 }

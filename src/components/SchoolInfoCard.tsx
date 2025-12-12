@@ -1,6 +1,7 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { School, Phone, UserCircle, Users, Mail } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { School, Phone, UserCircle, Users, Mail, Plus } from 'lucide-react'
 
 interface TeamMember {
   id: number
@@ -93,14 +94,24 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
 
         {/* School Team */}
         <div className='pt-3 border-t border-gray-100'>
-          <div className='flex items-start space-x-3 mb-4'>
-            <div className='w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0'>
-              <Users className='w-5 h-5 text-purple-600' />
+          <div className='flex justify-between'>
+            <div className='flex items-center justify-center space-x-3 mb-4'>
+              <div className='w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0'>
+                <Users className='w-5 h-5 text-purple-600' />
+              </div>
+              <div>
+                <p className='text-sm font-medium text-gray-600'>School Team</p>
+                <p className='text-xs text-gray-500 mt-0.5'>{schoolTeam.length} members</p>
+              </div>
             </div>
-            <div>
-              <p className='text-sm font-medium text-gray-600'>School Team</p>
-              <p className='text-xs text-gray-500 mt-0.5'>{schoolTeam.length} members</p>
-            </div>
+
+            <Button
+              onClick={onAddMember}
+              size='sm'
+              className='bg-brand hover:bg-brand/90 text-white h-8 px-3 rounded-lg text-xs font-medium flex flex-row items-center'>
+              <Plus className='w-3.5 h-3.5 mr-1' />
+              Add Member
+            </Button>
           </div>
 
           <div className='space-y-2'>
