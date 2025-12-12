@@ -118,9 +118,9 @@ const DashboardContent = () => {
                   onAddMember={() => setIsAddMemberModalOpen(true)}
                 />
 
-                <QuickActions />
+                {/* <QuickActions />
                 <DashboardStats />
-                <RecentActivity />
+                <RecentActivity /> */}
               </div>
             </div>
           </main>
