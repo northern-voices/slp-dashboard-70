@@ -1,4 +1,3 @@
-import React from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -9,6 +8,7 @@ import SLPQuickActions from '@/components/slp/SLPQuickActions'
 import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector'
 import RecentActivity from '@/components/RecentActivity'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import SchoolInfoCard from '@/components/SchoolInfoCard'
 
 const DashboardContent = () => {
   const { userProfile, currentSchool, isLoading } = useOrganization()
@@ -17,6 +17,42 @@ const DashboardContent = () => {
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
+
+  const dummySchoolData = {
+    schoolName: 'Northern Voices Elementary',
+    schoolPhone: '(907) 555-0123',
+    primarySLP: {
+      name: 'Dr. Sarah Johnson',
+      email: 'sarah.johnson@nvschools.edu',
+      phone: '(907) 555-0124',
+    },
+    schoolTeam: [
+      {
+        id: 1,
+        name: 'Emily Carter',
+        role: 'Speech Therapist',
+        email: 'emily.carter@nvschools.edu',
+      },
+      {
+        id: 2,
+        name: 'Michael Rodriguez',
+        role: 'Audiologist',
+        email: 'michael.rodriguez@nvschools.edu',
+      },
+      {
+        id: 3,
+        name: 'Jennifer Lee',
+        role: 'Special Education Coordinator',
+        email: 'jennifer.lee@nvschools.edu',
+      },
+      {
+        id: 4,
+        name: 'David Thompson',
+        role: 'Speech Assistant',
+        email: 'david.thompson@nvschools.edu',
+      },
+    ],
+  }
 
   if (isLoading) {
     return (
@@ -74,6 +110,13 @@ const DashboardContent = () => {
             {/* Dashboard Content */}
             <div className='max-w-7xl mx-auto'>
               <div className='space-y-8'>
+                <SchoolInfoCard
+                  schoolName={dummySchoolData.schoolName}
+                  schoolPhone={dummySchoolData.schoolPhone}
+                  primarySLP={dummySchoolData.primarySLP}
+                  schoolTeam={dummySchoolData.schoolTeam}
+                />
+
                 {userRole === 'slp' ? (
                   <>
                     <SLPQuickActions />
