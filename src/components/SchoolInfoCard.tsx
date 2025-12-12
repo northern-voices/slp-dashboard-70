@@ -20,6 +20,7 @@ interface SchoolInfoCardProps {
   schoolPhone: string
   primarySLP: PrimarySLP
   schoolTeam: TeamMember[]
+  onAddMember?: () => void
 }
 
 const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
@@ -27,6 +28,7 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
   schoolPhone,
   primarySLP,
   schoolTeam,
+  onAddMember,
 }) => {
   return (
     <Card className='bg-white border border-gray-100 shadow-sm rounded-xl'>
