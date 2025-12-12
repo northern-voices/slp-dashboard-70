@@ -33,31 +33,31 @@ const DashboardContent = () => {
       {
         id: 1,
         name: 'Emily Carter',
-        role: 'Speech Therapist',
+        roles: ['Speech Therapist', 'Educator'],
         email: 'emily.carter@nvschools.edu',
       },
       {
         id: 2,
         name: 'Michael Rodriguez',
-        role: 'Audiologist',
+        roles: ['OT'],
         email: 'michael.rodriguez@nvschools.edu',
       },
       {
         id: 3,
         name: 'Jennifer Lee',
-        role: 'Special Education Coordinator',
+        roles: ['SSS Coordinator', 'Inclusive Supports Teacher'],
         email: 'jennifer.lee@nvschools.edu',
       },
       {
         id: 4,
         name: 'David Thompson',
-        role: 'Speech Assistant',
+        roles: ['Speech EA'],
         email: 'david.thompson@nvschools.edu',
       },
     ],
   })
 
-  const handleAddMember = (member: { name: string; role: string; email: string }) => {
+  const handleAddMember = (member: { name: string; roles: string[]; email: string }) => {
     const newMember = {
       id: schoolData.schoolTeam.length + 1,
       ...member,

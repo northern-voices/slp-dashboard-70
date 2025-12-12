@@ -6,7 +6,7 @@ import { School, Phone, UserCircle, Users, Mail, Plus } from 'lucide-react'
 interface TeamMember {
   id: number
   name: string
-  role: string
+  roles: string[]
   email: string
 }
 
@@ -124,7 +124,15 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
                 <div className='flex items-start justify-between'>
                   <div className='flex-1'>
                     <p className='text-sm font-semibold text-gray-900'>{member.name}</p>
-                    <p className='text-xs text-gray-600 mt-0.5'>{member.role}</p>
+                    <div className='flex flex-wrap gap-1 mt-1.5'>
+                      {member.roles.map((role, index) => (
+                        <span
+                          key={index}
+                          className='inline-block px-2 py-0.5 rounded-md bg-purple-100 text-purple-700 text-xs font-medium'>
+                          {role}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div className='flex items-center space-x-2 text-xs text-gray-500 mt-2'>
