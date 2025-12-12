@@ -24,6 +24,27 @@ interface SchoolInfoCardProps {
   onAddMember?: () => void
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  director: 'Director',
+  sss_coordinator: 'SSS Coordinator',
+  principal: 'Principal',
+  vice_principal: 'Vice Principal',
+  inclusive_supports_teacher: 'Inclusive Supports Teacher',
+  speech_ea: 'Speech EA',
+  non_designated_ea: 'Non-Designated EA',
+  educator: 'Educator',
+  ot: 'OT',
+  slp_supplemental: 'SLP (supplemental contract)',
+  pt: 'PT',
+  ed_psych: 'Ed Psych',
+  jp_liaison: 'JP Liaison',
+  learning_support_teacher: 'Learning Support Teacher LST',
+}
+
+const getRoleLabel = (value: string): string => {
+  return ROLE_LABELS[value] || value
+}
+
 const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
   schoolName,
   schoolPhone,
@@ -125,11 +146,11 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
                   <div className='flex-1'>
                     <p className='text-sm font-semibold text-gray-900'>{member.name}</p>
                     <div className='flex flex-wrap gap-1 mt-1.5'>
-                      {member.roles.map((role, index) => (
+                      {member.roles.map((roleValue, index) => (
                         <span
                           key={index}
                           className='inline-block px-2 py-0.5 rounded-md bg-purple-100 text-purple-700 text-xs font-medium'>
-                          {role}
+                          {getRoleLabel(roleValue)}
                         </span>
                       ))}
                     </div>

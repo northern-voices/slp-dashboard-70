@@ -27,21 +27,26 @@ interface AddTeamMemberModalProps {
 }
 
 const AVAILABLE_ROLES = [
-  'Director',
-  'SSS Coordinator',
-  'Principal',
-  'Vice Principal',
-  'Inclusive Supports Teacher',
-  'Speech EA',
-  'Non-Designated EA',
-  'Educator',
-  'OT',
-  'SLP (supplemental contract)',
-  'PT',
-  'Ed Psych',
-  'JP Liaison',
-  'Learning Support Teacher LST',
+  { value: 'director', label: 'Director' },
+  { value: 'sss_coordinator', label: 'SSS Coordinator' },
+  { value: 'principal', label: 'Principal' },
+  { value: 'vice_principal', label: 'Vice Principal' },
+  { value: 'inclusive_supports_teacher', label: 'Inclusive Supports Teacher' },
+  { value: 'speech_ea', label: 'Speech EA' },
+  { value: 'non_designated_ea', label: 'Non-Designated EA' },
+  { value: 'educator', label: 'Educator' },
+  { value: 'ot', label: 'OT' },
+  { value: 'slp_supplemental', label: 'SLP (supplemental contract)' },
+  { value: 'pt', label: 'PT' },
+  { value: 'ed_psych', label: 'Ed Psych' },
+  { value: 'jp_liaison', label: 'JP Liaison' },
+  { value: 'learning_support_teacher', label: 'Learning Support Teacher LST' },
 ]
+
+const getRoleLabel = (value: string): string => {
+  const role = AVAILABLE_ROLES.find(r => r.value === value)
+  return role ? role.label : value
+}
 
 const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
   open,
@@ -80,10 +85,12 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
     }))
   }
 
-  const handleRoleToggle = (role: string) => {
+  const handleRoleToggle = (roleValue: string) => {
     setFormData(prev => ({
       ...prev,
-      roles: prev.roles.includes(role) ? prev.roles.filter(r => r !== role) : [...prev.roles, role],
+      roles: prev.roles.includes(roleValue)
+        ? prev.roles.filter(r => r !== roleValue)
+        : [...prev.roles, roleValue],
     }))
   }
 
@@ -142,16 +149,16 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                       {formData.roles.length === 0 ? (
                         <span className='text-gray-500 text-sm'>Select roles...</span>
                       ) : (
-                        formData.roles.map(role => (
+                        formData.roles.map(roleValue => (
                           <span
-                            key={role}
+                            key={roleValue}
                             className='inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 text-xs font-medium'>
-                            {role}
+                            {getRoleLabel(roleValue)}
                             <button
                               type='button'
                               onClick={e => {
                                 e.stopPropagation()
-                                handleRemoveRole(role)
+                                handleRemoveRole(roleValue)
                               }}
                               className='hover:bg-purple-200 rounded-full p-0.5'>
                               <X className='w-3 h-3' />
@@ -168,15 +175,15 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                     <div className='space-y-1'>
                       {AVAILABLE_ROLES.map(role => (
                         <div
-                          key={role}
+                          key={role.value}
                           className='flex items-center space-x-2 p-2 rounded-md hover:bg-gray-50 cursor-pointer'
-                          onClick={() => handleRoleToggle(role)}>
+                          onClick={() => handleRoleToggle(role.value)}>
                           <Checkbox
-                            checked={formData.roles.includes(role)}
-                            onCheckedChange={() => handleRoleToggle(role)}
+                            checked={formData.roles.includes(role.value)}
+                            onCheckedChange={() => handleRoleToggle(role.value)}
                           />
                           <label className='text-sm text-gray-700 cursor-pointer flex-1'>
-                            {role}
+                            {role.label}
                           </label>
                         </div>
                       ))}
