@@ -60,7 +60,7 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
             <School className='w-4 h-4 text-brand' />
           </div>
           <div>
-            <CardTitle className='text-lg font-semibold text-gray-900 tracking-tight'>
+            <CardTitle className='text-xl font-semibold text-gray-900 tracking-tight'>
               School Information
             </CardTitle>
           </div>
