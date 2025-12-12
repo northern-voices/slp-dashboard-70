@@ -94,8 +94,8 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
 
         {/* School Team */}
         <div className='pt-3 border-t border-gray-100'>
-          <div className='flex justify-between'>
-            <div className='flex items-center justify-center space-x-3 mb-4'>
+          <div className='flex items-center justify-between mb-4'>
+            <div className='flex items-start space-x-3'>
               <div className='w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0'>
                 <Users className='w-5 h-5 text-purple-600' />
               </div>
@@ -108,9 +108,11 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
             <Button
               onClick={onAddMember}
               size='sm'
-              className='bg-brand hover:bg-brand/90 text-white h-8 px-3 rounded-lg text-xs font-medium flex flex-row items-center'>
-              <Plus className='w-3.5 h-3.5 mr-1' />
-              Add Member
+              className='bg-brand hover:bg-brand/90 text-white h-8 px-3 rounded-lg text-xs font-medium'>
+              <div className='flex items-center space-x-1.5'>
+                <Plus className='w-3.5 h-3.5' />
+                <span className='leading-none'>Add Member</span>
+              </div>
             </Button>
           </div>
 
