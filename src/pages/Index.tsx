@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import DashboardStats from '@/components/DashboardStats'
-import QuickActions from '@/components/QuickActions'
-import RecentActivity from '@/components/RecentActivity'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import SchoolInfoCard from '@/components/SchoolInfoCard'
 import AddTeamMemberModal from '@/components/AddTeamMemberModal'
+
+// import DashboardStats from '@/components/DashboardStats'
+// import QuickActions from '@/components/QuickActions'
+// import RecentActivity from '@/components/RecentActivity'
 
 const DashboardContent = () => {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)

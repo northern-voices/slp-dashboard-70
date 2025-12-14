@@ -149,3 +149,16 @@ export interface Report {
   status: 'draft' | 'final' | 'reviewed'
   generated_at: string
 }
+
+export interface SchoolStaff {
+  id: string
+  school_id: string
+  first_name: string
+  last_name: string
+  role: string
+  email: string | null
+  phone: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
