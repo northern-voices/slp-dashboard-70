@@ -5,7 +5,9 @@ import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import SchoolInfoCard from '@/components/SchoolInfoCard'
 import AddTeamMemberModal from '@/components/AddTeamMemberModal'
-
+import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
+import { supabase } from '@/lib/supabase'
+import { useQueryClient } from '@tanstack/react-query'
 // import DashboardStats from '@/components/DashboardStats'
 // import QuickActions from '@/components/QuickActions'
 // import RecentActivity from '@/components/RecentActivity'
@@ -13,67 +15,69 @@ import AddTeamMemberModal from '@/components/AddTeamMemberModal'
 const DashboardContent = () => {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
   const { userProfile, currentSchool, isLoading } = useOrganization()
+  const queryClient = useQueryClient()
+
+  const {
+    data: schoolData,
+    isLoading: isLoadingSchool,
+    error: schoolError,
+  } = useSchoolDetails(currentSchool)
 
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
 
-  const [schoolData, setSchoolData] = useState({
-    schoolName: 'Northern Voices Elementary',
-    schoolPhone: '(907) 555-0123',
-    primarySLP: {
-      name: 'Dr. Sarah Johnson',
-      email: 'sarah.johnson@nvschools.edu',
-      phone: '(907) 555-0124',
-    },
-    schoolTeam: [
-      {
-        id: 1,
-        name: 'Emily Carter',
-        roles: ['educator', 'speech_ea'],
-        email: 'emily.carter@nvschools.edu',
-      },
-      {
-        id: 2,
-        name: 'Michael Rodriguez',
-        roles: ['ot'],
-        email: 'michael.rodriguez@nvschools.edu',
-      },
-      {
-        id: 3,
-        name: 'Jennifer Lee',
-        roles: ['sss_coordinator', 'inclusive_supports_teacher'],
-        email: 'jennifer.lee@nvschools.edu',
-      },
-      {
-        id: 4,
-        name: 'David Thompson',
-        roles: ['speech_ea'],
-        email: 'david.thompson@nvschools.edu',
-      },
-    ],
-  })
-
-  const handleAddMember = (member: { name: string; roles: string[]; email: string }) => {
-    const newMember = {
-      id: schoolData.schoolTeam.length + 1,
-      ...member,
+  const handleAddMember = async (member: { name: string; roles: string[]; email: string }) => {
+    if (!currentSchool) {
+      console.error('No school selected')
+      return
     }
 
-    setSchoolData(prev => ({
-      ...prev,
-      schoolTeam: [...prev.schoolTeam, newMember],
-    }))
+    try {
+      const nameParts = member.name.trim().split(' ')
+      const firstName = nameParts[0] || ''
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      const { error } = await supabase.from('school_staff').insert({
+        school_id: currentSchool.id,
+        first_name: firstName,
+        last_name: lastName,
+        role: member.roles[0],
+        email: member.email,
+        phone: null,
+        is_active: true,
+      })
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool.id] })
+
+      console.log('Team member added successfully')
+    } catch (error) {
+      console.error('Error adding team member:', error)
+    }
   }
 
-  if (isLoading) {
+  if (isLoading || isLoadingSchool) {
     return (
       <div className='min-h-screen flex w-full bg-gray-25'>
         <div className='flex-1 flex items-center justify-center'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4'></div>
             <p className='text-gray-600 text-sm'>Loading dashboard...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (schoolError) {
+    return (
+      <div className='min-h-screen flex w-full bg-gray-25'>
+        <div className='flex-1 flex items-center justify-center'>
+          <div className='text-center'>
+            <p className='text-red-600 text-sm'>Error loading school data</p>
           </div>
         </div>
       </div>

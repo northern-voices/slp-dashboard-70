@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { School, Phone, UserCircle, Users, Mail, Plus } from 'lucide-react'
 
 interface TeamMember {
-  id: number
+  id: string
   name: string
   roles: string[]
   email: string
