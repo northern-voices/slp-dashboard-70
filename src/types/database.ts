@@ -134,6 +134,7 @@ export interface School {
   principal_name: string
   principal_email: string
   phone: string
+  primary_slp_id?: string | null
   created_at: string
   updated_at: string
 }
