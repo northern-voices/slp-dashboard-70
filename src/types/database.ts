@@ -156,7 +156,7 @@ export interface SchoolStaff {
   school_id: string
   first_name: string
   last_name: string
-  role: string
+  roles: string[]
   email: string | null
   phone: string | null
   is_active: boolean

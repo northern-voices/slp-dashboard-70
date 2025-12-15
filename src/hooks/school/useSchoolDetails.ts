@@ -69,7 +69,7 @@ export const useSchoolDetails = (currentSchool: School | null) => {
       const transformedStaff: SchoolTeamMember[] = (staffMembers || []).map(staff => ({
         id: staff.id,
         name: `${staff.first_name} ${staff.last_name}`,
-        roles: [staff.role],
+        roles: staff.roles,
         email: staff.email || '',
       }))
 

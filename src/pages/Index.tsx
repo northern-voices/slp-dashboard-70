@@ -44,7 +44,7 @@ const DashboardContent = () => {
         school_id: currentSchool.id,
         first_name: firstName,
         last_name: lastName,
-        role: member.roles[0],
+        roles: member.roles,
         email: member.email,
         phone: null,
         is_active: true,
