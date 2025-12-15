@@ -93,28 +93,28 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
   return (
     <Card className='bg-white border border-gray-100 shadow-sm rounded-xl'>
       <CardHeader className='pb-4'>
-        <div className='flex items-center space-x-3'>
-          <div className='w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center'>
-            <School className='w-4 h-4 text-brand' />
-          </div>
-          <div>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center space-x-3'>
+            <div className='w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center'>
+              <School className='w-4 h-4 text-brand' />
+            </div>
             <CardTitle className='text-xl font-semibold text-gray-900 tracking-tight'>
               School Information
             </CardTitle>
           </div>
+          {onEdit && (
+            <Button
+              onClick={onEdit}
+              size='sm'
+              variant='outline'
+              className='border-gray-200 hover:bg-gray-50 text-gray-700 h-8 px-3 rounded-lg text-xs font-medium'>
+              <div className='flex items-center space-x-1.5'>
+                <Edit className='w-3.5 h-3.5' />
+                <span className='leading-none'>Edit Details</span>
+              </div>
+            </Button>
+          )}
         </div>
-        {onEdit && (
-          <Button
-            onClick={onEdit}
-            size='sm'
-            variant='outline'
-            className='border-gray-200 hover:bg-gray-50 text-gray-700 h-8 px-3 rounded-lg text-xs font-medium'>
-            <div className='flex items-center space-x-1.5'>
-              <Edit className='w-3.5h h-3.5' />
-              <span className='leading-none'>Edit Details</span>
-            </div>
-          </Button>
-        )}
       </CardHeader>
       <CardContent className='pt-0 space-y-6'>
         {/* School Basic Info */}
