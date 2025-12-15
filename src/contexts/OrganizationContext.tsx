@@ -169,6 +169,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         principal_name: school.principal_name || '',
         principal_email: school.principal_email || '',
         phone: school.phone || '',
+        primary_slp_id: school.primary_slp_id || null,
         created_at: school.created_at,
         updated_at: school.updated_at,
       }))
