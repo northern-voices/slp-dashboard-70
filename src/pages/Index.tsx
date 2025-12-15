@@ -5,7 +5,11 @@ import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import SchoolInfoCard from '@/components/SchoolInfoCard'
 import AddTeamMemberModal from '@/components/AddTeamMemberModal'
+import EditSchoolDetailsModal, {
+  SchoolDetailsFormData,
+} from '@/components/dashboard/EditSchoolDetailsModal'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
+import { useAvailableSLPs } from '@/hooks/school/useAvailableSLPs'
 import { supabase } from '@/lib/supabase'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -15,7 +19,11 @@ import { toast } from 'sonner'
 
 const DashboardContent = () => {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
-  const { userProfile, currentSchool, isLoading } = useOrganization()
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+
+  const { userProfile, currentSchool, isLoading, currentOrganization, refreshData } =
+    useOrganization()
   const queryClient = useQueryClient()
 
   const {
@@ -23,6 +31,10 @@ const DashboardContent = () => {
     isLoading: isLoadingSchool,
     error: schoolError,
   } = useSchoolDetails(currentSchool)
+
+  const { data: availableSLPs = [], isLoading: isLoadingSLPs } = useAvailableSLPs(
+    currentOrganization?.id
+  )
 
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
@@ -58,6 +70,41 @@ const DashboardContent = () => {
     } catch (error) {
       console.error('Error adding team member:', error)
       toast.error('Failed to add team member. Please try again.')
+    }
+  }
+
+  const handleSaveSchoolDetails = async (data: SchoolDetailsFormData) => {
+    if (!currentSchool) {
+      toast.error('No school selected')
+      return
+    }
+
+    setIsSaving(true)
+
+    try {
+      const { error } = await supabase
+        .from('schools')
+        .update({
+          name: data.schoolName,
+          phone: data.schoolPhone || null,
+          primary_slp_id: data.primarySLPId,
+        })
+        .eq('id', currentSchool.id)
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-edits', currentSchool.id] })
+      queryClient.invalidateQueries({ queryKey: ['organization-data'] })
+
+      await refreshData()
+
+      toast.success('School details updated successfully')
+      setIsEditModalOpen(false)
+    } catch (error) {
+      console.error('Error updating school details', error)
+      toast.error('Failed to update school details. Please try again')
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -123,6 +170,7 @@ const DashboardContent = () => {
                   primarySLP={schoolData.primarySLP}
                   schoolTeam={schoolData.schoolTeam}
                   onAddMember={() => setIsAddMemberModalOpen(true)}
+                  onEdit={() => setIsEditModalOpen(true)}
                 />
 
                 {/* <QuickActions />
@@ -139,6 +187,21 @@ const DashboardContent = () => {
         onOpenChange={setIsAddMemberModalOpen}
         onAddMember={handleAddMember}
       />
+
+      {currentSchool && schoolData && (
+        <EditSchoolDetailsModal
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          onSave={handleSaveSchoolDetails}
+          initialData={{
+            schoolName: schoolData.schoolName,
+            schoolPhone: schoolData.schoolPhone,
+            primarySLPId: currentSchool.primary_slp_id || null,
+          }}
+          availableSLPs={availableSLPs}
+          isSaving={isSaving}
+        />
+      )}
     </SidebarProvider>
   )
 }

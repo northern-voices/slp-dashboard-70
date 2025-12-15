@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { School, Phone, UserCircle, Users, Mail, Plus, AlertCircle } from 'lucide-react'
+import { School, Phone, UserCircle, Users, Mail, Plus, AlertCircle, Edit } from 'lucide-react'
 
 interface TeamMember {
   id: string
@@ -22,6 +22,7 @@ interface SchoolInfoCardProps {
   primarySLP: PrimarySLP
   schoolTeam: TeamMember[]
   onAddMember?: () => void
+  onEdit?: () => void
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -51,6 +52,7 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
   primarySLP,
   schoolTeam,
   onAddMember,
+  onEdit,
 }) => {
   const hasSchoolName = schoolName && schoolName.trim() !== ''
   const hasSchoolPhone = schoolPhone && schoolPhone.trim() !== ''
@@ -101,6 +103,18 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
             </CardTitle>
           </div>
         </div>
+        {onEdit && (
+          <Button
+            onClick={onEdit}
+            size='sm'
+            variant='outline'
+            className='border-gray-200 hover:bg-gray-50 text-gray-700 h-8 px-3 rounded-lg text-xs font-medium'>
+            <div className='flex items-center space-x-1.5'>
+              <Edit className='w-3.5h h-3.5' />
+              <span className='leading-none'>Edit Details</span>
+            </div>
+          </Button>
+        )}
       </CardHeader>
       <CardContent className='pt-0 space-y-6'>
         {/* School Basic Info */}
