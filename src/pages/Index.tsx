@@ -8,6 +8,7 @@ import AddTeamMemberModal from '@/components/AddTeamMemberModal'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { supabase } from '@/lib/supabase'
 import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 // import DashboardStats from '@/components/DashboardStats'
 // import QuickActions from '@/components/QuickActions'
 // import RecentActivity from '@/components/RecentActivity'
@@ -53,9 +54,10 @@ const DashboardContent = () => {
 
       queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool.id] })
 
-      console.log('Team member added successfully')
+      toast.success('Team member added successfully')
     } catch (error) {
       console.error('Error adding team member:', error)
+      toast.error('Failed to add team member. Please try again.')
     }
   }
 
