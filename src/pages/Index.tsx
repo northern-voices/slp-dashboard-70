@@ -41,7 +41,12 @@ const DashboardContent = () => {
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
 
-  const handleAddMember = async (member: { name: string; roles: string[]; email: string }) => {
+  const handleAddMember = async (member: {
+    name: string
+    roles: string[]
+    email: string
+    phone: string
+  }) => {
     if (!currentSchool) {
       console.error('No school selected')
       return
@@ -58,7 +63,7 @@ const DashboardContent = () => {
         last_name: lastName,
         roles: member.roles,
         email: member.email,
-        phone: null,
+        phone: member.phone,
         is_active: true,
       })
 
