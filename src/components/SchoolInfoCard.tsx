@@ -8,6 +8,7 @@ interface TeamMember {
   name: string
   roles: string[]
   email: string
+  phone: string
 }
 
 interface PrimarySLP {
@@ -239,6 +240,12 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
                     <Mail className='w-3 h-3' />
                     <span>{member.email}</span>
                   </div>
+                  {member.phone && (
+                    <div className='flex items-center space-x-2 text-xs text-gray-500 mt-2'>
+                      <Phone className='w-3 h-3' />
+                      <span>{member.phone || 'No phone'}</span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

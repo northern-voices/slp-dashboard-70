@@ -220,7 +220,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
             {/* Phone field */}
             <div className='space-y-2'>
               <Label htmlFor='phone' className='text-sm font-medium text-gray-700'>
-                Phone Number <span className='text-red-500'>*</span>
+                Phone Number
               </Label>
               <Input
                 id='phone'
@@ -229,7 +229,6 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                 value={formData.phone}
                 onChange={e => handleChange('phone', e.target.value)}
                 className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'
-                required
               />
             </div>
           </div>

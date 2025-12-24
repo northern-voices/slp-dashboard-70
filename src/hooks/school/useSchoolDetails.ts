@@ -13,6 +13,7 @@ interface SchoolTeamMember {
   name: string
   roles: string[]
   email: string
+  phone: string
 }
 
 interface SchoolDetailsData {
@@ -71,6 +72,7 @@ export const useSchoolDetails = (currentSchool: School | null) => {
         name: `${staff.first_name} ${staff.last_name}`,
         roles: staff.roles,
         email: staff.email || '',
+        phone: staff.phone || '',
       }))
 
       return {
