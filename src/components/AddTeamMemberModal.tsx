@@ -18,6 +18,7 @@ interface TeamMember {
   name: string
   roles: string[]
   email: string
+  phone: string
 }
 
 interface AddTeamMemberModalProps {
@@ -57,13 +58,14 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
     name: '',
     roles: [],
     email: '',
+    phone: '',
   })
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.name || formData.roles.length === 0 || !formData.email) {
+    if (!formData.name || formData.roles.length === 0 || !formData.email || !formData.phone) {
       return
     }
 
@@ -73,6 +75,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
       name: '',
       roles: [],
       email: '',
+      phone: '',
     })
 
     onOpenChange(false)
@@ -209,6 +212,22 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                 placeholder='e.g., emily.carter@nvschools.edu'
                 value={formData.email}
                 onChange={e => handleChange('email', e.target.value)}
+                className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'
+                required
+              />
+            </div>
+
+            {/* Phone field */}
+            <div className='space-y-2'>
+              <Label htmlFor='phone' className='text-sm font-medium text-gray-700'>
+                Phone Number <span className='text-red-500'>*</span>
+              </Label>
+              <Input
+                id='phone'
+                type='tel'
+                placeholder='e.g., (555) 123-4567'
+                value={formData.phone}
+                onChange={e => handleChange('phone', e.target.value)}
                 className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'
                 required
               />
