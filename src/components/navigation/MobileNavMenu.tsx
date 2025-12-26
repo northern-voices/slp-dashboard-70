@@ -9,7 +9,7 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import SchoolSelector from '@/components/SchoolSelector'
 import { getNavigationGroups } from '@/components/sidebar/sidebarNavigationData'
 import { cn } from '@/lib/utils'
-import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector'
+// import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector'
 import { SLPProfile } from '@/types/database'
 
 interface MobileNavMenuProps {
@@ -23,7 +23,7 @@ interface MobileNavMenuProps {
 // Helper component to safely render school selector
 const SafeSchoolSelector = ({ userRole }: { userRole: 'admin' | 'slp' | 'supervisor' }) => {
   if (userRole === 'slp') {
-    return <SLPSchoolSelector />
+    return ''
   } else {
     return <SchoolSelector />
   }

@@ -134,6 +134,7 @@ export interface School {
   principal_name: string
   principal_email: string
   phone: string
+  primary_slp_id?: string | null
   created_at: string
   updated_at: string
 }
@@ -148,4 +149,17 @@ export interface Report {
   follow_up_date?: string
   status: 'draft' | 'final' | 'reviewed'
   generated_at: string
+}
+
+export interface SchoolStaff {
+  id: string
+  school_id: string
+  first_name: string
+  last_name: string
+  roles: string[]
+  email: string | null
+  phone: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }

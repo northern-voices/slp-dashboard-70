@@ -1,4 +1,15 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
+import { useUpdateSpeechScreening } from '@/hooks/screenings/use-screening-mutations'
+import { useStudent } from '@/hooks/students/use-students'
+import { useToast } from '@/hooks/use-toast'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import ScreeningDetailsModal from '../screening-history/ScreeningDetailsModal'
 import HearingScreeningDetailsModal from '../screening-history/HearingScreeningDetailsModal'
 import SendReportsModal from '@/components/screenings/SendReportsModal'
@@ -63,6 +74,8 @@ const ScreeningsList = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
+  const [updatingScreeningId, setUpdatingScreeningId] = useState<string | null>(null)
+  const [updatingProgramId, setUpdatingProgramId] = useState<string | null>(null)
 
   // Use React Query to fetch screenings data for the specific student
   // Only fetch if studentId is provided
@@ -75,6 +88,255 @@ const ScreeningsList = ({
   const hearingScreenings = (allScreenings || []).filter(
     screening => screening.source_table === 'hearing'
   )
+
+  const { mutate: updateSpeechScreening } = useUpdateSpeechScreening()
+  const { mutate: updateStudent } = useUpdateStudent()
+  const { toast } = useToast()
+  const { data: student } = useStudent(studentId || '')
+
+  const handleResultChange = (screening: Screening, newResult: string) => {
+    if (screening.source_table === 'speech') {
+      setUpdatingScreeningId(screening.id)
+      updateSpeechScreening(
+        {
+          id: screening.id,
+          data: { result: newResult },
+        },
+        {
+          onSuccess: () => {
+            setUpdatingScreeningId(null)
+            toast({
+              title: 'Result updated',
+              description: `Successfully updated result for ${screening.student_name}`,
+              variant: 'default',
+            })
+          },
+          onError: error => {
+            setUpdatingScreeningId(null)
+            toast({
+              title: 'Error updating result',
+              description: error.message || 'Failed to update result',
+              variant: 'destructive',
+            })
+          },
+        }
+      )
+    }
+  }
+
+  type ProgramStatus = 'none' | 'qualified' | 'not_in_program' | 'sub' | 'paused' | 'graduated'
+
+  const handleProgramChange = (screening: Screening, newProgram: ProgramStatus) => {
+    if (screening.source_table === 'speech') {
+      setUpdatingProgramId(screening.id)
+
+      // Check if we have the student data
+      if (!student) {
+        toast({
+          title: 'Error updating program qualification',
+          description: 'Student not found',
+          variant: 'destructive',
+        })
+        setUpdatingProgramId(null)
+        return
+      }
+
+      const currentErrorPatterns = screening.error_patterns || {}
+      const currentMetadata = currentErrorPatterns.screening_metadata || {}
+
+      const cleanErrorPatterns = {
+        articulation: currentErrorPatterns.articulation || {},
+        add_areas_of_concern: currentErrorPatterns.add_areas_of_concern || {},
+        attendance: currentErrorPatterns.attendance || {},
+        additional_observations: currentErrorPatterns.additional_observations || '',
+        screening_metadata: {
+          ...currentMetadata,
+          qualifies_for_speech_program: newProgram === 'qualified',
+          sub: newProgram === 'sub',
+          graduated: newProgram === 'graduated',
+          paused: newProgram === 'paused',
+        },
+      }
+
+      // Check if this is the most recent screening for the student
+      const studentScreenings = speechScreenings.filter(
+        s => s.student_id === screening.student_id && s.source_table === 'speech'
+      )
+      const mostRecentScreening = studentScreenings.sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )[0]
+      const isLatestScreening = mostRecentScreening?.id === screening.id
+
+      const mappedProgramStatus = newProgram === 'not_in_program' ? 'none' : newProgram
+
+      // Update the screening first
+      updateSpeechScreening(
+        {
+          id: screening.id,
+          data: {
+            error_patterns: cleanErrorPatterns,
+          },
+        },
+        {
+          onSuccess: () => {
+            // Only update the student's program_status if this is the latest screening
+            if (isLatestScreening) {
+              updateStudent(
+                {
+                  id: student.id,
+                  studentData: { program_status: mappedProgramStatus },
+                },
+                {
+                  onSuccess: () => {
+                    setUpdatingProgramId(null)
+                    toast({
+                      title: 'Program qualification updated',
+                      description: `Successfully updated program qualification for ${screening.student_name}`,
+                      variant: 'default',
+                    })
+                  },
+                  onError: error => {
+                    setUpdatingProgramId(null)
+                    toast({
+                      title: 'Warning',
+                      description: 'Screening updated but failed to update student program status',
+                      variant: 'destructive',
+                    })
+                  },
+                }
+              )
+            } else {
+              // For older screenings, just show success without updating student
+              setUpdatingProgramId(null)
+              toast({
+                title: 'Program qualification updated',
+                description: `Successfully updated program qualification for this screening (historical record)`,
+                variant: 'default',
+              })
+            }
+          },
+          onError: error => {
+            setUpdatingProgramId(null)
+            toast({
+              title: 'Error updating program qualification',
+              description: error.message || 'Failed to update program status',
+              variant: 'destructive',
+            })
+          },
+        }
+      )
+    }
+  }
+
+  const getProgramValue = (screening: Screening): string => {
+    const metadata = screening.error_patterns?.screening_metadata
+
+    if (metadata?.graduated) return 'graduated'
+    if (metadata?.paused) return 'paused'
+    if (metadata?.sub) return 'sub'
+    if (metadata?.qualifies_for_speech_program) return 'qualified'
+    if (metadata?.qualifies_for_speech_program === false) return 'not_in_program'
+
+    return 'none'
+  }
+
+  const getProgramSelector = (screening: Screening) => {
+    if (screening.source_table === 'speech') {
+      const isThisScreeningUpdating = updatingProgramId === screening.id
+      const noConsent = screening.result === 'non_registered_no_consent'
+
+      if (noConsent) {
+        return getQualificationBadge(screening)
+      }
+
+      return (
+        <Select
+          value={getProgramValue(screening)}
+          onValueChange={value => handleProgramChange(screening, value as ProgramStatus)}
+          disabled={isThisScreeningUpdating}>
+          <SelectTrigger className='w-full h-8 border-none p-0 hover:bg-transparent focus:ring-0'>
+            <SelectValue placeholder='Select program'>
+              <div className='flex items-center gap-2'>
+                {isThisScreeningUpdating && (
+                  <Loader2 className='w-3 h-3 animate-spin text-blue-600' />
+                )}
+                {getQualificationBadge(screening)}
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {programOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )
+    }
+
+    return getQualificationBadge(screening)
+  }
+
+  const getResultSelector = (screening: Screening) => {
+    if (screening.source_table === 'speech') {
+      const isThisScreeningUpdating = updatingScreeningId === screening.id
+
+      return (
+        <Select
+          value={screening.result || ''}
+          onValueChange={value => handleResultChange(screening, value)}
+          disabled={isThisScreeningUpdating}>
+          <SelectTrigger className='w-full h-8 border-none p-0 hover:bg-transparent focus:ring-0'>
+            <SelectValue placeholder='Select result'>
+              <div className='flex items-center gap-2'>
+                {isThisScreeningUpdating && (
+                  <Loader2 className='w-3 h-3 animate-spin text-blue-600' />
+                )}
+                {screening.result ? (
+                  getResultBadge(screening.result)
+                ) : (
+                  <Badge className='bg-gray-100 text-gray-800 font-medium'>Select result</Badge>
+                )}
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {resultOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )
+    }
+
+    return getResultBadge(screening.result)
+  }
+
+  // Add the options arrays
+  const resultOptions = [
+    { value: 'no_errors', label: 'No Errors' },
+    { value: 'age_appropriate', label: 'Age Appropriate' },
+    { value: 'monitor', label: 'Monitor' },
+    { value: 'mild', label: 'Mild' },
+    { value: 'moderate', label: 'Moderate' },
+    { value: 'severe', label: 'Severe' },
+    { value: 'profound', label: 'Profound' },
+    { value: 'complex_needs', label: 'Complex Needs' },
+    { value: 'unable_to_screen', label: 'Non-Compliant' },
+    { value: 'absent', label: 'Absent' },
+    { value: 'non_registered_no_consent', label: 'No Consent' },
+  ]
+
+  const programOptions = [
+    { value: 'qualified', label: 'Qualifies' },
+    { value: 'not_in_program', label: 'Not In Program' },
+    { value: 'sub', label: 'Sub' },
+    { value: 'paused', label: 'Pause' },
+    { value: 'graduated', label: 'Graduated' },
+  ]
 
   // Apply filters to the speech screenings
   const filteredSpeechScreenings = speechScreenings.filter(screening => {
@@ -718,12 +980,8 @@ const ScreeningsList = ({
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-                      <div className='flex items-center gap-2'>
-                        {getResultBadge(screening.result)}
-                      </div>
-                      <div className='flex items-center gap-2'>
-                        {getQualificationBadge(screening)}
-                      </div>
+                      <div className='flex items-center gap-2'>{getResultSelector(screening)}</div>
+                      <div className='flex items-center gap-2'>{getProgramSelector(screening)}</div>
                       <div className='text-sm text-gray-600 space-y-1'>
                         <p>
                           <span className='font-medium'>Date:</span>{' '}
@@ -745,10 +1003,10 @@ const ScreeningsList = ({
                     </div>
                   </TableCell>
                   <TableCell className='max-w-0'>
-                    <div className='w-full min-w-[120px]'>{getResultBadge(screening.result)}</div>
+                    <div className='w-full min-w-[120px]'>{getResultSelector(screening)}</div>
                   </TableCell>
                   <TableCell className='max-w-0'>
-                    <div className='w-full min-w-[120px]'>{getQualificationBadge(screening)}</div>
+                    <div className='w-full min-w-[120px]'>{getProgramSelector(screening)}</div>
                   </TableCell>
                   <TableCell className='max-w-0'>
                     <div className='truncate' title={screening.grade || 'No grade'}>

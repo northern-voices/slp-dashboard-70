@@ -1,30 +1,233 @@
-import React from 'react'
+import { useState } from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import DashboardStats from '@/components/DashboardStats'
-import QuickActions from '@/components/QuickActions'
-import SLPDashboardStats from '@/components/slp/SLPDashboardStats'
-import SLPQuickActions from '@/components/slp/SLPQuickActions'
-import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector'
-import RecentActivity from '@/components/RecentActivity'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import SchoolInfoCard from '@/components/SchoolInfoCard'
+import AddTeamMemberModal from '@/components/AddTeamMemberModal'
+import EditTeamMemberModal from '@/components/EditTeamMemberModal'
+import { useSchoolActivities } from '@/hooks/school/useSchoolActivities'
+import ActivityLogCard from '@/components/dashboard/ActivityLogCard'
+import AddActivityModal from '@/components/dashboard/AddActivityModal'
+import EditSchoolDetailsModal, {
+  SchoolDetailsFormData,
+} from '@/components/dashboard/EditSchoolDetailsModal'
+import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
+import { useAvailableSLPs } from '@/hooks/school/useAvailableSLPs'
+import { supabase } from '@/lib/supabase'
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+// import DashboardStats from '@/components/DashboardStats'
+// import QuickActions from '@/components/QuickActions'
+// import RecentActivity from '@/components/RecentActivity'
 
 const DashboardContent = () => {
-  const { userProfile, currentSchool, isLoading } = useOrganization()
+  const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false)
+  const [editingMember, setEditingMember] = useState<{
+    id: string
+    name: string
+    roles: string[]
+    email: string
+    phone: string
+  } | null>(null)
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isAddActivityModalOpen, setIsAddActivityModalOpen] = useState(false)
+
+  const { userProfile, currentSchool, isLoading, currentOrganization, refreshData } =
+    useOrganization()
+  const queryClient = useQueryClient()
+
+  const {
+    data: schoolData,
+    isLoading: isLoadingSchool,
+    error: schoolError,
+  } = useSchoolDetails(currentSchool)
+
+  const { data: availableSLPs = [], isLoading: isLoadingSLPs } = useAvailableSLPs(
+    currentOrganization?.id
+  )
+
+  const { data: activities = [], isLoading: isLoadingActivities } =
+    useSchoolActivities(currentSchool)
 
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
 
-  if (isLoading) {
+  const handleAddMember = async (member: {
+    name: string
+    roles: string[]
+    email: string
+    phone: string
+  }) => {
+    if (!currentSchool) {
+      console.error('No school selected')
+      return
+    }
+
+    try {
+      const nameParts = member.name.trim().split(' ')
+      const firstName = nameParts[0] || ''
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      const { error } = await supabase.from('school_staff').insert({
+        school_id: currentSchool.id,
+        first_name: firstName,
+        last_name: lastName,
+        roles: member.roles,
+        email: member.email,
+        phone: member.phone,
+        is_active: true,
+      })
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool.id] })
+
+      toast.success('Team member added successfully')
+    } catch (error) {
+      console.error('Error adding team member:', error)
+      toast.error('Failed to add team member. Please try again.')
+    }
+  }
+
+  const handleSaveSchoolDetails = async (data: SchoolDetailsFormData) => {
+    if (!currentSchool) {
+      toast.error('No school selected')
+      return
+    }
+
+    setIsSaving(true)
+
+    try {
+      const { error } = await supabase
+        .from('schools')
+        .update({
+          name: data.schoolName,
+          phone: data.schoolPhone || null,
+          primary_slp_id: data.primarySLPId,
+        })
+        .eq('id', currentSchool.id)
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-edits', currentSchool.id] })
+      queryClient.invalidateQueries({ queryKey: ['organization-data'] })
+
+      await refreshData()
+
+      toast.success('School details updated successfully')
+      setIsEditModalOpen(false)
+    } catch (error) {
+      console.error('Error updating school details', error)
+      toast.error('Failed to update school details. Please try again')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleEditMember = (member: {
+    id: string
+    name: string
+    roles: string[]
+    email: string
+    phone: string
+  }) => {
+    setEditingMember(member)
+    setIsEditMemberModalOpen(true)
+  }
+
+  const handleUpdateMember = async (member: {
+    id: string
+    name: string
+    roles: string[]
+    email: string
+    phone: string
+  }) => {
+    if (!currentSchool) {
+      console.error('No school selected')
+      return
+    }
+
+    try {
+      const nameParts = member.name.trim().split(' ')
+      const firstName = nameParts[0] || ''
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      const { error } = await supabase
+        .from('school_staff')
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          roles: member.roles,
+          email: member.email,
+          phone: member.phone,
+        })
+        .eq('id', member.id)
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool.id] })
+
+      toast.success('Team member updated successfully')
+    } catch (error) {
+      console.error('Error updating team member:', error)
+      toast.error('Failed to update team member. Please try again.')
+    }
+  }
+
+  const handleAddActivity = async (activity: {
+    activity_type: string
+    activity_date: string
+    notes: string
+  }) => {
+    if (!currentSchool || !userProfile) {
+      console.error('No school or user selected')
+      return
+    }
+
+    try {
+      const { error } = await supabase.from('school_activities').insert({
+        school_id: currentSchool.id,
+        activity_type: activity.activity_type,
+        activity_date: activity.activity_date,
+        notes: activity.notes || null,
+        created_by: userProfile.id,
+      })
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-activities', currentSchool.id] })
+
+      toast.success('Activity added successfully')
+    } catch (error) {
+      console.error('Error adding activity:', error)
+      toast.error('Failed to add activity. Please try again.')
+    }
+  }
+
+  if (isLoading || isLoadingSchool) {
     return (
       <div className='min-h-screen flex w-full bg-gray-25'>
         <div className='flex-1 flex items-center justify-center'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4'></div>
             <p className='text-gray-600 text-sm'>Loading dashboard...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (schoolError) {
+    return (
+      <div className='min-h-screen flex w-full bg-gray-25'>
+        <div className='flex-1 flex items-center justify-center'>
+          <div className='text-center'>
+            <p className='text-red-600 text-sm'>Error loading school data</p>
           </div>
         </div>
       </div>
@@ -59,39 +262,65 @@ const DashboardContent = () => {
               </div>
             </div>
 
-            {/* School Selector for SLPs */}
-            {userRole === 'slp' && (
-              <div className='max-w-7xl mx-auto mb-8'>
-                <div className='max-w-md'>
-                  <label className='block text-sm font-medium text-gray-700 mb-2'>
-                    Select School
-                  </label>
-                  <SLPSchoolSelector />
-                </div>
-              </div>
-            )}
-
             {/* Dashboard Content */}
-            <div className='max-w-7xl mx-auto'>
-              <div className='space-y-8'>
-                {userRole === 'slp' ? (
-                  <>
-                    <SLPQuickActions />
-                    <SLPDashboardStats />
-                    <RecentActivity />
-                  </>
-                ) : (
-                  <>
-                    <QuickActions />
-                    <DashboardStats />
-                    <RecentActivity />
-                  </>
-                )}
-              </div>
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8'>
+              <SchoolInfoCard
+                schoolName={schoolData.schoolName}
+                schoolPhone={schoolData.schoolPhone}
+                primarySLP={schoolData.primarySLP}
+                schoolTeam={schoolData.schoolTeam}
+                onAddMember={() => setIsAddMemberModalOpen(true)}
+                onEdit={() => setIsEditModalOpen(true)}
+                onEditMember={handleEditMember}
+              />
+
+              <ActivityLogCard
+                activities={activities}
+                onAddActivity={() => setIsAddActivityModalOpen(true)}
+              />
+
+              {/* <QuickActions />
+                <DashboardStats />
+                <RecentActivity /> */}
             </div>
           </main>
         </SidebarInset>
       </div>
+
+      {/* Modals */}
+      <AddTeamMemberModal
+        open={isAddMemberModalOpen}
+        onOpenChange={setIsAddMemberModalOpen}
+        onAddMember={handleAddMember}
+      />
+
+      <EditTeamMemberModal
+        open={isEditMemberModalOpen}
+        onOpenChange={setIsEditMemberModalOpen}
+        onUpdateMember={handleUpdateMember}
+        member={editingMember}
+      />
+
+      <AddActivityModal
+        open={isAddActivityModalOpen}
+        onOpenChange={setIsAddActivityModalOpen}
+        onAddActivity={handleAddActivity}
+      />
+
+      {currentSchool && schoolData && (
+        <EditSchoolDetailsModal
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          onSave={handleSaveSchoolDetails}
+          initialData={{
+            schoolName: schoolData.schoolName,
+            schoolPhone: schoolData.schoolPhone,
+            primarySLPId: currentSchool.primary_slp_id || null,
+          }}
+          availableSLPs={availableSLPs}
+          isSaving={isSaving}
+        />
+      )}
     </SidebarProvider>
   )
 }
