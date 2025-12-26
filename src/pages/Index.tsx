@@ -263,27 +263,25 @@ const DashboardContent = () => {
             </div>
 
             {/* Dashboard Content */}
-            <div className='max-w-7xl mx-auto'>
-              <div className='space-y-8'>
-                <SchoolInfoCard
-                  schoolName={schoolData.schoolName}
-                  schoolPhone={schoolData.schoolPhone}
-                  primarySLP={schoolData.primarySLP}
-                  schoolTeam={schoolData.schoolTeam}
-                  onAddMember={() => setIsAddMemberModalOpen(true)}
-                  onEdit={() => setIsEditModalOpen(true)}
-                  onEditMember={handleEditMember}
-                />
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8'>
+              <SchoolInfoCard
+                schoolName={schoolData.schoolName}
+                schoolPhone={schoolData.schoolPhone}
+                primarySLP={schoolData.primarySLP}
+                schoolTeam={schoolData.schoolTeam}
+                onAddMember={() => setIsAddMemberModalOpen(true)}
+                onEdit={() => setIsEditModalOpen(true)}
+                onEditMember={handleEditMember}
+              />
 
-                <ActivityLogCard
-                  activities={activities}
-                  onAddActivity={() => setIsAddActivityModalOpen(true)}
-                />
+              <ActivityLogCard
+                activities={activities}
+                onAddActivity={() => setIsAddActivityModalOpen(true)}
+              />
 
-                {/* <QuickActions />
+              {/* <QuickActions />
                 <DashboardStats />
                 <RecentActivity /> */}
-              </div>
             </div>
           </main>
         </SidebarInset>
