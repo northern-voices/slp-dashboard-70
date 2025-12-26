@@ -71,12 +71,15 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
     }))
   }
 
-  const handleRoleToggle = (roleValue: string) => {
+  const handleRoleToggle = (roleValue: string, checked: boolean | 'indeterminate') => {
     setFormData(prev => ({
       ...prev,
-      roles: prev.roles.includes(roleValue)
-        ? prev.roles.filter(r => r !== roleValue)
-        : [...prev.roles, roleValue],
+      roles:
+        checked && checked !== 'indeterminate'
+          ? prev.roles.includes(roleValue)
+            ? prev.roles
+            : [...prev.roles, roleValue]
+          : prev.roles.filter(r => r !== roleValue),
     }))
   }
 
@@ -162,7 +165,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
                   <Checkbox
                     id={`role-${role.value}`}
                     checked={formData.roles.includes(role.value)}
-                    onCheckedChange={() => handleRoleToggle(role.value)}
+                    onCheckedChange={checked => handleRoleToggle(role.value, checked)}
                     className='border-gray-300'
                   />
                   <Label
