@@ -6,6 +6,9 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import SchoolInfoCard from '@/components/SchoolInfoCard'
 import AddTeamMemberModal from '@/components/AddTeamMemberModal'
 import EditTeamMemberModal from '@/components/EditTeamMemberModal'
+import { useSchoolActivities } from '@/hooks/school/useSchoolActivities'
+import ActivityLogCard from '@/components/dashboard/ActivityLogCard'
+import AddActivityModal from '@/components/dashboard/AddActivityModal'
 import EditSchoolDetailsModal, {
   SchoolDetailsFormData,
 } from '@/components/dashboard/EditSchoolDetailsModal'
@@ -30,6 +33,7 @@ const DashboardContent = () => {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isAddActivityModalOpen, setIsAddActivityModalOpen] = useState(false)
 
   const { userProfile, currentSchool, isLoading, currentOrganization, refreshData } =
     useOrganization()
@@ -44,6 +48,9 @@ const DashboardContent = () => {
   const { data: availableSLPs = [], isLoading: isLoadingSLPs } = useAvailableSLPs(
     currentOrganization?.id
   )
+
+  const { data: activities = [], isLoading: isLoadingActivities } =
+    useSchoolActivities(currentSchool)
 
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
@@ -172,6 +179,36 @@ const DashboardContent = () => {
     }
   }
 
+  const handleAddActivity = async (activity: {
+    activity_type: string
+    activity_date: string
+    notes: string
+  }) => {
+    if (!currentSchool || !userProfile) {
+      console.error('No school or user selected')
+      return
+    }
+
+    try {
+      const { error } = await supabase.from('school_activities').insert({
+        school_id: currentSchool.id,
+        activity_type: activity.activity_type,
+        activity_date: activity.activity_date,
+        notes: activity.notes || null,
+        created_by: userProfile.id,
+      })
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-activities', currentSchool.id] })
+
+      toast.success('Activity added successfully')
+    } catch (error) {
+      console.error('Error adding activity:', error)
+      toast.error('Failed to add activity. Please try again.')
+    }
+  }
+
   if (isLoading || isLoadingSchool) {
     return (
       <div className='min-h-screen flex w-full bg-gray-25'>
@@ -238,6 +275,11 @@ const DashboardContent = () => {
                   onEditMember={handleEditMember}
                 />
 
+                <ActivityLogCard
+                  activities={activities}
+                  onAddActivity={() => setIsAddActivityModalOpen(true)}
+                />
+
                 {/* <QuickActions />
                 <DashboardStats />
                 <RecentActivity /> */}
@@ -247,6 +289,7 @@ const DashboardContent = () => {
         </SidebarInset>
       </div>
 
+      {/* Modals */}
       <AddTeamMemberModal
         open={isAddMemberModalOpen}
         onOpenChange={setIsAddMemberModalOpen}
@@ -258,6 +301,12 @@ const DashboardContent = () => {
         onOpenChange={setIsEditMemberModalOpen}
         onUpdateMember={handleUpdateMember}
         member={editingMember}
+      />
+
+      <AddActivityModal
+        open={isAddActivityModalOpen}
+        onOpenChange={setIsAddActivityModalOpen}
+        onAddActivity={handleAddActivity}
       />
 
       {currentSchool && schoolData && (
