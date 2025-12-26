@@ -24,6 +24,7 @@ interface SchoolInfoCardProps {
   schoolTeam: TeamMember[]
   onAddMember?: () => void
   onEdit?: () => void
+  onEditMember: (member: TeamMember) => void
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -54,6 +55,7 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
   schoolTeam,
   onAddMember,
   onEdit,
+  onEditMember,
 }) => {
   const hasSchoolName = schoolName && schoolName.trim() !== ''
   const hasSchoolPhone = schoolPhone && schoolPhone.trim() !== ''
@@ -221,7 +223,7 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
               {schoolTeam.map(member => (
                 <div
                   key={member.id}
-                  className='bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors duration-150'>
+                  className='bg-gray-50 rounded-lg p-3 transition-colors duration-150'>
                   <div className='flex items-start justify-between'>
                     <div className='flex-1'>
                       <p className='text-sm font-semibold text-gray-900'>{member.name}</p>
@@ -235,6 +237,13 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
                         ))}
                       </div>
                     </div>
+                    <Button
+                      onClick={() => onEditMember?.(member)}
+                      size='sm'
+                      variant='ghost'
+                      className='h-7 w-7 p-0 hover:bg-gray-200 ml-2'>
+                      <Edit className='w-3.5 h-3.5 text-gray-600' />
+                    </Button>
                   </div>
                   <div className='flex items-center space-x-2 text-xs text-gray-500 mt-2'>
                     <Mail className='w-3 h-3' />

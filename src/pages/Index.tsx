@@ -5,6 +5,7 @@ import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import SchoolInfoCard from '@/components/SchoolInfoCard'
 import AddTeamMemberModal from '@/components/AddTeamMemberModal'
+import EditTeamMemberModal from '@/components/EditTeamMemberModal'
 import EditSchoolDetailsModal, {
   SchoolDetailsFormData,
 } from '@/components/dashboard/EditSchoolDetailsModal'
@@ -18,6 +19,14 @@ import { toast } from 'sonner'
 // import RecentActivity from '@/components/RecentActivity'
 
 const DashboardContent = () => {
+  const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false)
+  const [editingMember, setEditingMember] = useState<{
+    id: string
+    name: string
+    roles: string[]
+    email: string
+    phone: string
+  } | null>(null)
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -113,6 +122,56 @@ const DashboardContent = () => {
     }
   }
 
+  const handleEditMember = (member: {
+    id: string
+    name: string
+    roles: string[]
+    email: string
+    phone: string
+  }) => {
+    setEditingMember(member)
+    setIsEditMemberModalOpen(true)
+  }
+
+  const handleUpdateMember = async (member: {
+    id: string
+    name: string
+    roles: string[]
+    email: string
+    phone: string
+  }) => {
+    if (!currentSchool) {
+      console.error('No school selected')
+      return
+    }
+
+    try {
+      const nameParts = member.name.trim().split('')
+      const firstName = nameParts[0] || ''
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      const { error } = await supabase
+        .from('school_staff')
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          roles: member.roles,
+          email: member.email,
+          phone: member.phone,
+        })
+        .eq('id', member.id)
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool.id] })
+
+      toast.success('Team member updated successfully')
+    } catch (error) {
+      console.error('Error updating team member:', error)
+      toast.error('Failed to update team member. Please try again.')
+    }
+  }
+
   if (isLoading || isLoadingSchool) {
     return (
       <div className='min-h-screen flex w-full bg-gray-25'>
@@ -176,6 +235,7 @@ const DashboardContent = () => {
                   schoolTeam={schoolData.schoolTeam}
                   onAddMember={() => setIsAddMemberModalOpen(true)}
                   onEdit={() => setIsEditModalOpen(true)}
+                  onEditMember={handleEditMember}
                 />
 
                 {/* <QuickActions />
@@ -191,6 +251,13 @@ const DashboardContent = () => {
         open={isAddMemberModalOpen}
         onOpenChange={setIsAddMemberModalOpen}
         onAddMember={handleAddMember}
+      />
+
+      <EditTeamMemberModal
+        open={isEditMemberModalOpen}
+        onOpenChange={setIsEditMemberModalOpen}
+        onUpdateMember={handleUpdateMember}
+        member={editingMember}
       />
 
       {currentSchool && schoolData && (
