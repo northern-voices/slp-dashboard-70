@@ -16,7 +16,7 @@ import SchoolDetailsModal from '@/components/management/SchoolDetailsModal'
 import SchoolsTabContent from '@/components/management/SchoolsTabContent'
 import UsersTabContent from '@/components/management/UsersTabContent'
 import SettingsTabContent from '@/components/management/SettingsTabContent'
-import SLPSchoolBrowser from '@/components/slp/SLPSchoolBrowser'
+// import SLPSchoolBrowser from '@/components/slp/SLPSchoolBrowser'
 import { useManagement } from '@/hooks/useManagement'
 
 const ManagementContent = () => {
@@ -84,7 +84,7 @@ const ManagementContent = () => {
                 </p>
               </div>
 
-              <SLPSchoolBrowser />
+              {/* <SLPSchoolBrowser /> */}
             </main>
           </SidebarInset>
         </div>
