@@ -19,6 +19,10 @@ const HearingScreeningsContent = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [dateRangeFilter, setDateRangeFilter] = useState('school_year')
   const [gradeFilter, setGradeFilter] = useState('all')
+  const [resultFilter, setResultFilter] = useState('all')
+  const [referralNotesFilter, setReferralNotesFilter] = useState('all')
+  const [nonCompliantFilter, setNonCompliantFilter] = useState('all')
+  const [complexNeedsFilter, setComplexNeedsFilter] = useState('all')
   const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
 
   const { data: screenings = [], isLoading } = useHearingScreenings(currentSchool?.id)
@@ -86,12 +90,24 @@ const HearingScreeningsContent = () => {
                   setDateRangeFilter={setDateRangeFilter}
                   gradeFilter={gradeFilter}
                   setGradeFilter={setGradeFilter}
+                  resultFilter={resultFilter}
+                  setResultFilter={setResultFilter}
+                  referralNotesFilter={referralNotesFilter}
+                  setReferralNotesFilter={setReferralNotesFilter}
+                  nonCompliantFilter={nonCompliantFilter}
+                  setNonCompliantFilter={setNonCompliantFilter}
+                  complexNeedsFilter={complexNeedsFilter}
+                  setComplexNeedsFilter={setComplexNeedsFilter}
                 />
 
                 <HearingScreeningsTable
                   searchTerm={searchTerm}
                   dateRangeFilter={dateRangeFilter}
                   gradeFilter={gradeFilter}
+                  resultFilter={resultFilter}
+                  referralNotesFilter={referralNotesFilter}
+                  nonCompliantFilter={nonCompliantFilter}
+                  complexNeedsFilter={complexNeedsFilter}
                   selectedScreenings={selectedScreenings}
                   setSelectedScreenings={setSelectedScreenings}
                 />
