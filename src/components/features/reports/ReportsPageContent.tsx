@@ -77,6 +77,24 @@ const ReportsPageContent = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* School Wide Hearing Reports Button */}
+              <Card
+                className='bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer'
+                onClick={() => navigate('school-wide-hearing')}>
+                <CardContent className='px-6 py-3'>
+                  <div className='flex items-center gap-4'>
+                    <div className='w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0'>
+                      <Ear className='w-6 h-6 text-blue-600' />
+                    </div>
+                    <div className='flex-1'>
+                      <h3 className='text-lg font-semibold text-gray-900'>
+                        School Wide Hearing Reports
+                      </h3>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
