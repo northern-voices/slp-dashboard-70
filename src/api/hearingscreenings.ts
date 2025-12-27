@@ -48,50 +48,6 @@ interface RawHearingScreening {
   } | null
 }
 
-// Helper function to determine hearing screening result
-const getHearingResult = (
-  screening: RawHearingScreening
-):
-  | 'absent'
-  | 'age_appropriate'
-  | 'complex_needs'
-  | 'mild'
-  | 'mild_moderate'
-  | 'moderate'
-  | 'monitor'
-  | 'non_registered_no_consent'
-  | 'passed'
-  | 'profound'
-  | 'severe'
-  | 'severe_profound'
-  | 'unable_to_screen' => {
-  // Basic logic - you may want to implement more sophisticated rules
-  if (screening.right_volume_db === null && screening.left_volume_db === null) {
-    return 'non_registered_no_consent' // No Response
-  }
-
-  // Simple pass/fail logic - adjust thresholds as needed
-  const rightFail = screening.right_volume_db !== null && screening.right_volume_db > 25
-  const leftFail = screening.left_volume_db !== null && screening.left_volume_db > 25
-
-  if (rightFail || leftFail) {
-    // Determine severity based on volume levels
-    const maxVolume = Math.max(screening.right_volume_db || 0, screening.left_volume_db || 0)
-
-    if (maxVolume > 70) {
-      return 'severe_profound'
-    } else if (maxVolume > 55) {
-      return 'severe'
-    } else if (maxVolume > 40) {
-      return 'moderate'
-    } else {
-      return 'mild'
-    }
-  }
-
-  return 'passed' // Passed
-}
-
 // Helper function to get user's organization schools
 const getUserOrganizationSchools = async (organizationId: string): Promise<string[]> => {
   try {
