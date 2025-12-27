@@ -38,10 +38,10 @@ const SchoolWideReportsContent = () => {
               {/* Page Header */}
               <div className='space-y-1 sm:space-y-2'>
                 <h1 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900'>
-                  School Wide Reports
+                  School Wide Speech Reports
                 </h1>
                 <p className='text-sm sm:text-base text-gray-600'>
-                  Generate comprehensive school-wide reports for students
+                  Generate comprehensive school-wide speech reports for students
                 </p>
               </div>
 

@@ -63,14 +63,16 @@ const ReportsPageContent = () => {
               {/* School Wide Reports Button */}
               <Card
                 className='bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md transition-shadow cursor-pointer'
-                onClick={() => navigate('school-wide')}>
+                onClick={() => navigate('school-wide-speech')}>
                 <CardContent className='px-6 py-3'>
                   <div className='flex items-center gap-4'>
                     <div className='w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0'>
                       <FileText className='w-6 h-6 text-green-600' />
                     </div>
                     <div className='flex-1'>
-                      <h3 className='text-lg font-semibold text-gray-900'>School Wide Reports</h3>
+                      <h3 className='text-lg font-semibold text-gray-900'>
+                        School Wide Speech Reports
+                      </h3>
                     </div>
                   </div>
                 </CardContent>
