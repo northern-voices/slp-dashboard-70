@@ -119,7 +119,7 @@ export const hearingScreeningsApi = {
     try {
       // Get organization schools if organizationId is provided
       let organizationSchoolIds: string[] = []
-      if (organizationId) {
+      if (organizationId && !schoolId) {
         organizationSchoolIds = await getUserOrganizationSchools(organizationId)
       }
 
@@ -127,7 +127,7 @@ export const hearingScreeningsApi = {
       let query = supabase.from('hearing_screenings').select(
         `
           *,
-          students (
+          students!inner(
             id,
             first_name,
             last_name,
@@ -157,23 +157,17 @@ export const hearingScreeningsApi = {
         query = query.eq('screener_id', currentUserId)
       }
 
+      if (schoolId) {
+        query = query.eq('students.school_id', schoolId)
+      } else if (organizationSchoolIds.length > 0) {
+        query = query.in('students.school_id', organizationSchoolIds)
+      }
+
       const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) throw error
 
       const transformedData: Screening[] = (data || []).map(transformHearingScreening)
-
-      // Filter by specific school if provided (takes priority)
-      if (schoolId) {
-        return transformedData.filter(screening => screening.school_id === schoolId)
-      }
-
-      // Otherwise filter by organization schools if provided
-      if (organizationSchoolIds.length > 0) {
-        return transformedData.filter(screening =>
-          organizationSchoolIds.includes(screening.school_id)
-        )
-      }
 
       return transformedData
     } catch (error) {
