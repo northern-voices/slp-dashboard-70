@@ -22,42 +22,6 @@ export const useScreenings = () => {
   })
 }
 
-export const useSpeechScreenings = () => {
-  const { user } = useAuth()
-  const { userProfile, currentOrganization } = useOrganization()
-
-  return useQuery({
-    queryKey: ['speech-screenings', user?.id, userProfile?.role, currentOrganization?.id],
-    queryFn: () =>
-      screeningsApi.getSpeechScreeningsList(
-        user?.id,
-        userProfile?.role as 'admin' | 'slp',
-        currentOrganization?.id
-      ),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    enabled: !!user && !!userProfile && !!currentOrganization,
-  })
-}
-
-export const useHearingScreenings = () => {
-  const { user } = useAuth()
-  const { userProfile, currentOrganization } = useOrganization()
-
-  return useQuery({
-    queryKey: ['hearing-screenings', user?.id, userProfile?.role, currentOrganization?.id],
-    queryFn: () =>
-      screeningsApi.getHearingScreeningsList(
-        user?.id,
-        userProfile?.role as 'admin' | 'slp',
-        currentOrganization?.id
-      ),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    enabled: !!user && !!userProfile && !!currentOrganization,
-  })
-}
-
 export const useRecentScreeningsBySchool = (schoolId?: string, days: number = 7) => {
   const { user } = useAuth()
   const { userProfile } = useOrganization()
@@ -93,10 +57,7 @@ export const useRecentScreeningsBySchool = (schoolId?: string, days: number = 7)
   })
 }
 
-export const useScreeningsBySchool = (
-  schoolId?: string,
-  dateFilter?: 'all' | 'school_year'
-) => {
+export const useScreeningsBySchool = (schoolId?: string, dateFilter?: 'all' | 'school_year') => {
   const { user } = useAuth()
   const { userProfile } = useOrganization()
 

@@ -95,15 +95,6 @@ const ReportGenerationForm = () => {
       tooltip:
         'Summarizes school-wide speech screenings, showing qualified students, subs, and recommendations to guide follow-up and planning.',
     },
-    {
-      value: 'hearing-reports',
-      label: 'School Wide Hearing Reports',
-      description:
-        'Generate comprehensive hearing screening reports for all students with hearing screenings',
-      icon: Volume2,
-      tooltip:
-        'Creates detailed hearing screening reports with tympanometry results, ear canal volume, compliance, and pressure measurements for all students.',
-    },
     // {
     //   value: 'progress-reports',
     //   label: 'School Wide Progress Reports',
@@ -147,12 +138,6 @@ const ReportGenerationForm = () => {
           data.academicYear,
           data.email
         )
-      } else if (data.reportType === 'hearing-reports') {
-        result = await edgeFunctionsApi.schoolWideHearingReports(
-          currentSchool.id,
-          data.academicYear,
-          data.email
-        )
       } else {
         console.warn(`Unknown report type: ${data.reportType}`)
       }
@@ -173,11 +158,7 @@ const ReportGenerationForm = () => {
       // Provide specific error messages based on report type
       setModalType('error')
 
-      if (data.reportType === 'hearing-reports') {
-        setModalMessage(
-          `No hearing screenings found for the ${data.academicYear} academic year. Please ensure hearing screenings have been completed before generating this report.`
-        )
-      } else if (data.reportType === 'student-reports') {
+      if (data.reportType === 'student-reports') {
         setModalMessage(
           `No speech screenings found for the ${data.academicYear} academic year. Please ensure speech screenings have been completed before generating this report.`
         )

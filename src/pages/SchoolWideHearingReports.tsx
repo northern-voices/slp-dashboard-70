@@ -5,14 +5,16 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import ReportGenerationForm from '@/components/reports/ReportGenerationForm'
-const SchoolWideReportsContent = () => {
+import HearingReportGenerationForm from '@/components/reports/HearingReportGenerationForm'
+
+const SchoolWideHearingReportsContent = () => {
   const { userProfile } = useOrganization()
   const navigate = useNavigate()
   const userRole = userProfile?.role || 'slp'
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
+
   return (
     <SidebarProvider>
       <div className='min-h-screen flex w-full bg-gray-25 overflow-hidden'>
@@ -38,16 +40,16 @@ const SchoolWideReportsContent = () => {
               {/* Page Header */}
               <div className='space-y-1 sm:space-y-2'>
                 <h1 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900'>
-                  School Wide Speech Reports
+                  School Wide Hearing Reports
                 </h1>
                 <p className='text-sm sm:text-base text-gray-600'>
-                  Generate comprehensive school-wide speech reports for students
+                  Generate comprehensive school-wide hearing screening reports for students
                 </p>
               </div>
 
               {/* Report Generation Form */}
               <div className='w-full max-w-full'>
-                <ReportGenerationForm />
+                <HearingReportGenerationForm />
               </div>
             </div>
           </main>
@@ -56,7 +58,9 @@ const SchoolWideReportsContent = () => {
     </SidebarProvider>
   )
 }
-const GenerateReport = () => {
-  return <SchoolWideReportsContent />
+
+const SchoolWideHearingReports = () => {
+  return <SchoolWideHearingReportsContent />
 }
-export default GenerateReport
+
+export default SchoolWideHearingReports

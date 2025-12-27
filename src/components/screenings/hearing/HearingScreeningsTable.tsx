@@ -43,6 +43,10 @@ interface HearingScreeningsTableProps {
   searchTerm: string
   dateRangeFilter: string
   gradeFilter: string
+  resultFilter: string
+  referralNotesFilter: string
+  nonCompliantFilter: string
+  complexNeedsFilter: string
   selectedScreenings: Screening[]
   setSelectedScreenings: (screenings: Screening[]) => void
 }
@@ -51,6 +55,10 @@ const HearingScreeningsTable = ({
   searchTerm,
   dateRangeFilter,
   gradeFilter,
+  resultFilter,
+  referralNotesFilter,
+  nonCompliantFilter,
+  complexNeedsFilter,
   selectedScreenings,
   setSelectedScreenings,
 }: HearingScreeningsTableProps) => {
@@ -98,7 +106,45 @@ const HearingScreeningsTable = ({
 
     const matchesGrade = gradeFilter === 'all' || screening.grade === gradeFilter
 
-    return matchesSearch && matchesGrade
+    // Result filter
+    let matchesResult = true
+    if (resultFilter === 'passed') {
+      // Passed = not absent and no referral notes
+      matchesResult =
+        screening.result !== 'absent' &&
+        (!screening.referral_notes || screening.referral_notes.trim() === '')
+    } else if (resultFilter === 'referred') {
+      // Referred = has referral notes
+      matchesResult = screening.referral_notes && screening.referral_notes.trim().length > 0
+    } else if (resultFilter === 'absent') {
+      matchesResult = screening.result === 'absent'
+    }
+
+    // Referral notes filter
+    const matchesReferralNotes =
+      referralNotesFilter === 'all' ||
+      (referralNotesFilter === 'has_notes' &&
+        screening.referral_notes &&
+        screening.referral_notes.trim().length > 0)
+
+    // Non-compliant filter
+    const matchesNonCompliant =
+      nonCompliantFilter === 'all' ||
+      (nonCompliantFilter === 'true' && screening.result === 'non_compliant')
+
+    // Complex needs filter
+    const matchesComplexNeeds =
+      complexNeedsFilter === 'all' ||
+      (complexNeedsFilter === 'true' && screening.result === 'complex_needs')
+
+    return (
+      matchesSearch &&
+      matchesGrade &&
+      matchesResult &&
+      matchesReferralNotes &&
+      matchesNonCompliant &&
+      matchesComplexNeeds
+    )
   })
 
   // Apply sorting
@@ -149,7 +195,11 @@ const HearingScreeningsTable = ({
     }
   }
 
-  const formatValue = (value: number | null | undefined, result: string | null | undefined, unit: string) => {
+  const formatValue = (
+    value: number | null | undefined,
+    result: string | null | undefined,
+    unit: string
+  ) => {
     if (result === 'Immeasurable' || value === null || value === undefined) {
       return 'Immeasurable'
     }
@@ -169,7 +219,8 @@ const HearingScreeningsTable = ({
     if (!result || result === '-') return ''
     const normalizedResult = result.toLowerCase()
     if (normalizedResult === 'normal') return 'bg-green-100 text-green-800 border-green-200'
-    if (normalizedResult === 'high' || normalizedResult === 'low') return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    if (normalizedResult === 'high' || normalizedResult === 'low')
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200'
     if (normalizedResult === 'immeasurable') return 'bg-gray-100 text-gray-600 border-gray-200'
     return 'bg-gray-100 text-gray-600 border-gray-200'
   }
@@ -320,9 +371,7 @@ const HearingScreeningsTable = ({
                       <div className='font-semibold text-sm text-gray-900'>
                         {screening.student_name || 'Unknown Student'}
                       </div>
-                      <div className='text-xs text-gray-600'>
-                        Grade: {screening.grade || 'N/A'}
-                      </div>
+                      <div className='text-xs text-gray-600'>Grade: {screening.grade || 'N/A'}</div>
                       {screening.result && (
                         <Badge variant='secondary' className='text-xs mt-1'>
                           {screening.result === 'absent' && 'Absent'}
@@ -337,14 +386,23 @@ const HearingScreeningsTable = ({
                     <div className='space-y-0 divide-y divide-gray-200'>
                       <div className='flex items-center py-2'>
                         <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded'>Vol</span>
+                          <span className='text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded'>
+                            Vol
+                          </span>
                           <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(screening.right_volume_db, screening.right_ear_volume_result, 'ml')}
+                            {formatValue(
+                              screening.right_volume_db,
+                              screening.right_ear_volume_result,
+                              'ml'
+                            )}
                           </span>
                         </div>
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
-                          <Badge className={`text-xs ${getResultBadgeColor(screening.right_ear_volume_result)}`}>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.right_ear_volume_result
+                            )}`}>
                             {screening.right_ear_volume_result || '-'}
                           </Badge>
                         </div>
@@ -352,14 +410,23 @@ const HearingScreeningsTable = ({
 
                       <div className='flex items-center py-2'>
                         <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded'>Comp</span>
+                          <span className='text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded'>
+                            Comp
+                          </span>
                           <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(screening.right_compliance, screening.right_ear_compliance_result, 'ml')}
+                            {formatValue(
+                              screening.right_compliance,
+                              screening.right_ear_compliance_result,
+                              'ml'
+                            )}
                           </span>
                         </div>
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
-                          <Badge className={`text-xs ${getResultBadgeColor(screening.right_ear_compliance_result)}`}>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.right_ear_compliance_result
+                            )}`}>
                             {screening.right_ear_compliance_result || '-'}
                           </Badge>
                         </div>
@@ -367,14 +434,23 @@ const HearingScreeningsTable = ({
 
                       <div className='flex items-center py-2'>
                         <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded'>Press</span>
+                          <span className='text-xs font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded'>
+                            Press
+                          </span>
                           <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(screening.right_pressure, screening.right_ear_pressure_result, 'daPa')}
+                            {formatValue(
+                              screening.right_pressure,
+                              screening.right_ear_pressure_result,
+                              'daPa'
+                            )}
                           </span>
                         </div>
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
-                          <Badge className={`text-xs ${getResultBadgeColor(screening.right_ear_pressure_result)}`}>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.right_ear_pressure_result
+                            )}`}>
                             {screening.right_ear_pressure_result || '-'}
                           </Badge>
                         </div>
@@ -385,14 +461,23 @@ const HearingScreeningsTable = ({
                     <div className='space-y-0 divide-y divide-gray-200'>
                       <div className='flex items-center py-2'>
                         <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded'>Vol</span>
+                          <span className='text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded'>
+                            Vol
+                          </span>
                           <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(screening.left_volume_db, screening.left_ear_volume_result, 'ml')}
+                            {formatValue(
+                              screening.left_volume_db,
+                              screening.left_ear_volume_result,
+                              'ml'
+                            )}
                           </span>
                         </div>
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
-                          <Badge className={`text-xs ${getResultBadgeColor(screening.left_ear_volume_result)}`}>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.left_ear_volume_result
+                            )}`}>
                             {screening.left_ear_volume_result || '-'}
                           </Badge>
                         </div>
@@ -400,14 +485,23 @@ const HearingScreeningsTable = ({
 
                       <div className='flex items-center py-2'>
                         <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded'>Comp</span>
+                          <span className='text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded'>
+                            Comp
+                          </span>
                           <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(screening.left_compliance, screening.left_ear_compliance_result, 'ml')}
+                            {formatValue(
+                              screening.left_compliance,
+                              screening.left_ear_compliance_result,
+                              'ml'
+                            )}
                           </span>
                         </div>
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
-                          <Badge className={`text-xs ${getResultBadgeColor(screening.left_ear_compliance_result)}`}>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.left_ear_compliance_result
+                            )}`}>
                             {screening.left_ear_compliance_result || '-'}
                           </Badge>
                         </div>
@@ -415,14 +509,23 @@ const HearingScreeningsTable = ({
 
                       <div className='flex items-center py-2'>
                         <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded'>Press</span>
+                          <span className='text-xs font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded'>
+                            Press
+                          </span>
                           <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(screening.left_pressure, screening.left_ear_pressure_result, 'daPa')}
+                            {formatValue(
+                              screening.left_pressure,
+                              screening.left_ear_pressure_result,
+                              'daPa'
+                            )}
                           </span>
                         </div>
                         <div className='h-6 w-px bg-gray-300 mx-3'></div>
                         <div className='flex-1'>
-                          <Badge className={`text-xs ${getResultBadgeColor(screening.left_ear_pressure_result)}`}>
+                          <Badge
+                            className={`text-xs ${getResultBadgeColor(
+                              screening.left_ear_pressure_result
+                            )}`}>
                             {screening.left_ear_pressure_result || '-'}
                           </Badge>
                         </div>
