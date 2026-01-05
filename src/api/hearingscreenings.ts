@@ -48,50 +48,6 @@ interface RawHearingScreening {
   } | null
 }
 
-// Helper function to determine hearing screening result
-const getHearingResult = (
-  screening: RawHearingScreening
-):
-  | 'absent'
-  | 'age_appropriate'
-  | 'complex_needs'
-  | 'mild'
-  | 'mild_moderate'
-  | 'moderate'
-  | 'monitor'
-  | 'non_registered_no_consent'
-  | 'passed'
-  | 'profound'
-  | 'severe'
-  | 'severe_profound'
-  | 'unable_to_screen' => {
-  // Basic logic - you may want to implement more sophisticated rules
-  if (screening.right_volume_db === null && screening.left_volume_db === null) {
-    return 'non_registered_no_consent' // No Response
-  }
-
-  // Simple pass/fail logic - adjust thresholds as needed
-  const rightFail = screening.right_volume_db !== null && screening.right_volume_db > 25
-  const leftFail = screening.left_volume_db !== null && screening.left_volume_db > 25
-
-  if (rightFail || leftFail) {
-    // Determine severity based on volume levels
-    const maxVolume = Math.max(screening.right_volume_db || 0, screening.left_volume_db || 0)
-
-    if (maxVolume > 70) {
-      return 'severe_profound'
-    } else if (maxVolume > 55) {
-      return 'severe'
-    } else if (maxVolume > 40) {
-      return 'moderate'
-    } else {
-      return 'mild'
-    }
-  }
-
-  return 'passed' // Passed
-}
-
 // Helper function to get user's organization schools
 const getUserOrganizationSchools = async (organizationId: string): Promise<string[]> => {
   try {
@@ -163,7 +119,7 @@ export const hearingScreeningsApi = {
     try {
       // Get organization schools if organizationId is provided
       let organizationSchoolIds: string[] = []
-      if (organizationId) {
+      if (organizationId && !schoolId) {
         organizationSchoolIds = await getUserOrganizationSchools(organizationId)
       }
 
@@ -171,7 +127,7 @@ export const hearingScreeningsApi = {
       let query = supabase.from('hearing_screenings').select(
         `
           *,
-          students (
+          students!inner(
             id,
             first_name,
             last_name,
@@ -201,23 +157,17 @@ export const hearingScreeningsApi = {
         query = query.eq('screener_id', currentUserId)
       }
 
+      if (schoolId) {
+        query = query.eq('students.school_id', schoolId)
+      } else if (organizationSchoolIds.length > 0) {
+        query = query.in('students.school_id', organizationSchoolIds)
+      }
+
       const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) throw error
 
       const transformedData: Screening[] = (data || []).map(transformHearingScreening)
-
-      // Filter by specific school if provided (takes priority)
-      if (schoolId) {
-        return transformedData.filter(screening => screening.school_id === schoolId)
-      }
-
-      // Otherwise filter by organization schools if provided
-      if (organizationSchoolIds.length > 0) {
-        return transformedData.filter(screening =>
-          organizationSchoolIds.includes(screening.school_id)
-        )
-      }
 
       return transformedData
     } catch (error) {

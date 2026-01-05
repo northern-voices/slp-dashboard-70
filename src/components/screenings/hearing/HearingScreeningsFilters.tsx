@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { GRADE_MAPPING } from '@/constants/app'
 
 interface HearingScreeningsFiltersProps {
   searchTerm: string
@@ -20,6 +21,14 @@ interface HearingScreeningsFiltersProps {
   setDateRangeFilter: (value: string) => void
   gradeFilter: string
   setGradeFilter: (value: string) => void
+  resultFilter: string
+  setResultFilter: (value: string) => void
+  referralNotesFilter: string
+  setReferralNotesFilter: (value: string) => void
+  nonCompliantFilter: string
+  setNonCompliantFilter: (value: string) => void
+  complexNeedsFilter: string
+  setComplexNeedsFilter: (value: string) => void
 }
 
 const HearingScreeningsFilters = ({
@@ -29,18 +38,36 @@ const HearingScreeningsFilters = ({
   setDateRangeFilter,
   gradeFilter,
   setGradeFilter,
+  resultFilter,
+  setResultFilter,
+  referralNotesFilter,
+  setReferralNotesFilter,
+  nonCompliantFilter,
+  setNonCompliantFilter,
+  complexNeedsFilter,
+  setComplexNeedsFilter,
 }: HearingScreeningsFiltersProps) => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
   // Check if any filters are active
   const hasActiveFilters =
-    searchTerm || dateRangeFilter !== 'school_year' || gradeFilter !== 'all'
+    searchTerm ||
+    dateRangeFilter !== 'school_year' ||
+    gradeFilter !== 'all' ||
+    resultFilter !== 'all' ||
+    referralNotesFilter !== 'all' ||
+    nonCompliantFilter !== 'all' ||
+    complexNeedsFilter !== 'all'
 
   // Clear all filters
   const clearAllFilters = () => {
     setSearchTerm('')
     setDateRangeFilter('school_year')
     setGradeFilter('all')
+    setResultFilter('all')
+    setReferralNotesFilter('all')
+    setNonCompliantFilter('all')
+    setComplexNeedsFilter('all')
   }
 
   // Get active filter count
@@ -49,6 +76,10 @@ const HearingScreeningsFilters = ({
     if (searchTerm) count++
     if (dateRangeFilter !== 'school_year') count++
     if (gradeFilter !== 'all') count++
+    if (resultFilter !== 'all') count++
+    if (referralNotesFilter !== 'all') count++
+    if (nonCompliantFilter !== 'all') count++
+    if (complexNeedsFilter !== 'all') count++
     return count
   }
 
@@ -134,15 +165,79 @@ const HearingScreeningsFilters = ({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value='all'>All Grades</SelectItem>
-                      <SelectItem value='Kindergarten'>Kindergarten</SelectItem>
-                      <SelectItem value='1st Grade'>1st Grade</SelectItem>
-                      <SelectItem value='2nd Grade'>2nd Grade</SelectItem>
-                      <SelectItem value='3rd Grade'>3rd Grade</SelectItem>
-                      <SelectItem value='4th Grade'>4th Grade</SelectItem>
-                      <SelectItem value='5th Grade'>5th Grade</SelectItem>
-                      <SelectItem value='6th Grade'>6th Grade</SelectItem>
+                      {GRADE_MAPPING.map(grade => (
+                        <SelectItem key={grade.value} value={grade.value}>
+                          {grade.display}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium text-gray-700'>Result</label>
+                  <Select value={resultFilter} onValueChange={setResultFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder='All Results' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='all'>All Results</SelectItem>
+                      <SelectItem value='passed'>Passed</SelectItem>
+                      <SelectItem value='referred'>Referred</SelectItem>
+                      <SelectItem value='absent'>Absent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Quick Filters Section */}
+              <div className='border-t border-gray-200 pt-4'>
+                <h4 className='text-sm font-semibold text-gray-700 mb-3'>Quick Filters</h4>
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
+                  <div className='flex items-center space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors'>
+                    <input
+                      type='checkbox'
+                      id='referral_notes_filter'
+                      checked={referralNotesFilter === 'has_notes'}
+                      onChange={e => setReferralNotesFilter(e.target.checked ? 'has_notes' : 'all')}
+                      className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                    />
+                    <label
+                      htmlFor='referral_notes_filter'
+                      className='text-sm font-medium text-gray-700 cursor-pointer'>
+                      Has Referral Notes
+                    </label>
+                  </div>
+
+                  <div className='flex items-center space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors'>
+                    <input
+                      type='checkbox'
+                      id='non_compliant_filter'
+                      checked={nonCompliantFilter === 'true'}
+                      onChange={e => setNonCompliantFilter(e.target.checked ? 'true' : 'all')}
+                      className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                    />
+                    <label
+                      htmlFor='non_compliant_filter'
+                      className='text-sm font-medium text-gray-700 cursor-pointer'>
+                      Non-Compliant
+                    </label>
+                  </div>
+
+                  <div className='flex items-center space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors'>
+                    <input
+                      type='checkbox'
+                      id='complex_needs_filter'
+                      checked={complexNeedsFilter === 'true'}
+                      onChange={e => setComplexNeedsFilter(e.target.checked ? 'true' : 'all')}
+                      className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                    />
+                    <label
+                      htmlFor='complex_needs_filter'
+                      className='text-sm font-medium text-gray-700 cursor-pointer'>
+                      Complex Needs
+                    </label>
+                  </div>
                 </div>
               </div>
             </CardContent>

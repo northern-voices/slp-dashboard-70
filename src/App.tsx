@@ -19,6 +19,7 @@ import GenerateGoalSheet from './pages/student/GenerateGoalSheet'
 import Screenings from './pages/Screenings'
 import Reports from './pages/Reports'
 import SchoolWideReports from './pages/SchoolWideReports'
+import SchoolWideHearingReports from './pages/SchoolWideHearingReports'
 import SpeechReports from './pages/SpeechReports'
 import HearingReports from './pages/HearingReports'
 import Management from './pages/Management'
@@ -272,11 +273,21 @@ const App = () => (
                 }
               />
               <Route
-                path='/speech-screening-reports/school-wide'
+                path='/speech-screening-reports/school-wide-speech'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
                       <SchoolWideReports />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/speech-screening-reports/school-wide-hearing'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <SchoolWideHearingReports />
                     </SchoolRouter>
                   </ProtectedRoute>
                 }
@@ -521,8 +532,20 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+
               <Route
-                path='/school/:schoolId/speech-screening-reports/school-wide'
+                path='/school/:schoolId/speech-screening-reports/school-wide-hearing'
+                element={
+                  <ProtectedRoute>
+                    <SchoolRouter>
+                      <SchoolWideHearingReports />
+                    </SchoolRouter>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path='/school/:schoolId/speech-screening-reports/school-wide-speech'
                 element={
                   <ProtectedRoute>
                     <SchoolRouter>
