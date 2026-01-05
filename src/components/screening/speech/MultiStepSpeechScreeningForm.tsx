@@ -163,11 +163,14 @@ const MultiStepSpeechScreeningForm = ({
 
   // Helper function to determine program_status from form data
   const determineProgramStatus = (formData: Record<string, unknown>): string => {
+    const noConsentData = (formData.no_consent as Record<string, unknown>) || {}
+    const noConsent = (noConsentData.isNoConsent as boolean) || false
     const graduated = (formData.graduated as boolean) || false
     const paused = (formData.paused as boolean) || false
     const sub = (formData.sub as boolean) || false
     const qualifies = (formData.qualifies_for_speech_program as boolean) || false
 
+    if (noConsent) return 'no_consent'
     if (graduated) return 'graduated'
     if (paused) return 'paused'
     if (sub) return 'sub'
@@ -449,7 +452,12 @@ const MultiStepSpeechScreeningForm = ({
           />
         )
       case 2:
-        return <SpeechScreeningStep2 form={form as unknown as UseFormReturn} selectedStudent={selectedStudent} />
+        return (
+          <SpeechScreeningStep2
+            form={form as unknown as UseFormReturn}
+            selectedStudent={selectedStudent}
+          />
+        )
       default:
         return null
     }

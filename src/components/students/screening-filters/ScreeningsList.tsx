@@ -124,7 +124,14 @@ const ScreeningsList = ({
     }
   }
 
-  type ProgramStatus = 'none' | 'qualified' | 'not_in_program' | 'sub' | 'paused' | 'graduated'
+  type ProgramStatus =
+    | 'none'
+    | 'qualified'
+    | 'not_in_program'
+    | 'sub'
+    | 'paused'
+    | 'graduated'
+    | 'no_consent'
 
   const handleProgramChange = (screening: Screening, newProgram: ProgramStatus) => {
     if (screening.source_table === 'speech') {
@@ -143,12 +150,17 @@ const ScreeningsList = ({
 
       const currentErrorPatterns = screening.error_patterns || {}
       const currentMetadata = currentErrorPatterns.screening_metadata || {}
+      const currentConsent = currentErrorPatterns.consent || {}
 
       const cleanErrorPatterns = {
         articulation: currentErrorPatterns.articulation || {},
         add_areas_of_concern: currentErrorPatterns.add_areas_of_concern || {},
         attendance: currentErrorPatterns.attendance || {},
         additional_observations: currentErrorPatterns.additional_observations || '',
+        consent: {
+          ...currentConsent,
+          no_consent: newProgram === 'no_consent',
+        },
         screening_metadata: {
           ...currentMetadata,
           qualifies_for_speech_program: newProgram === 'qualified',
@@ -230,7 +242,9 @@ const ScreeningsList = ({
 
   const getProgramValue = (screening: Screening): string => {
     const metadata = screening.error_patterns?.screening_metadata
+    const consent = screening.error_patterns?.consent
 
+    if (consent?.no_consent) return 'no_consent'
     if (metadata?.graduated) return 'graduated'
     if (metadata?.paused) return 'paused'
     if (metadata?.sub) return 'sub'
@@ -243,11 +257,6 @@ const ScreeningsList = ({
   const getProgramSelector = (screening: Screening) => {
     if (screening.source_table === 'speech') {
       const isThisScreeningUpdating = updatingProgramId === screening.id
-      const noConsent = screening.result === 'non_registered_no_consent'
-
-      if (noConsent) {
-        return getQualificationBadge(screening)
-      }
 
       return (
         <Select
@@ -336,6 +345,7 @@ const ScreeningsList = ({
     { value: 'sub', label: 'Sub' },
     { value: 'paused', label: 'Pause' },
     { value: 'graduated', label: 'Graduated' },
+    { value: 'no_consent', label: 'No Consent' },
   ]
 
   // Apply filters to the speech screenings
@@ -399,17 +409,25 @@ const ScreeningsList = ({
     let matchesQualifiesForSpeechProgram = true
     if (qualifiesForSpeechProgramFilter !== 'all') {
       const metadata = screening.error_patterns?.screening_metadata
+      const consent = screening.error_patterns?.consent
 
       if (qualifiesForSpeechProgramFilter === 'qualified') {
         matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === true
       } else if (qualifiesForSpeechProgramFilter === 'not_in_program') {
-        matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === false
+        matchesQualifiesForSpeechProgram =
+          metadata?.qualifies_for_speech_program === false &&
+          !metadata?.sub &&
+          !metadata?.paused &&
+          !metadata?.graduated &&
+          !consent?.no_consent
       } else if (qualifiesForSpeechProgramFilter === 'sub') {
         matchesQualifiesForSpeechProgram = metadata?.sub === true
       } else if (qualifiesForSpeechProgramFilter === 'paused') {
         matchesQualifiesForSpeechProgram = metadata?.paused === true
       } else if (qualifiesForSpeechProgramFilter === 'graduated') {
         matchesQualifiesForSpeechProgram = metadata?.graduated === true
+      } else if (qualifiesForSpeechProgramFilter === 'no_consent') {
+        matchesQualifiesForSpeechProgram = consent?.no_consent === true
       }
     }
 
@@ -572,17 +590,25 @@ const ScreeningsList = ({
     let matchesQualifiesForSpeechProgram = true
     if (qualifiesForSpeechProgramFilter !== 'all') {
       const metadata = screening.error_patterns?.screening_metadata
+      const consent = screening.error_patterns?.consent
 
       if (qualifiesForSpeechProgramFilter === 'qualified') {
         matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === true
       } else if (qualifiesForSpeechProgramFilter === 'not_in_program') {
-        matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === false
+        matchesQualifiesForSpeechProgram =
+          metadata?.qualifies_for_speech_program === false &&
+          !metadata?.sub &&
+          !metadata?.paused &&
+          !metadata?.graduated &&
+          !consent?.no_consent
       } else if (qualifiesForSpeechProgramFilter === 'sub') {
         matchesQualifiesForSpeechProgram = metadata?.sub === true
       } else if (qualifiesForSpeechProgramFilter === 'paused') {
         matchesQualifiesForSpeechProgram = metadata?.paused === true
       } else if (qualifiesForSpeechProgramFilter === 'graduated') {
         matchesQualifiesForSpeechProgram = metadata?.graduated === true
+      } else if (qualifiesForSpeechProgramFilter === 'no_consent') {
+        matchesQualifiesForSpeechProgram = consent?.no_consent === true
       }
     }
 
@@ -799,17 +825,18 @@ const ScreeningsList = ({
 
   const getQualificationBadge = (screening: Screening) => {
     const metadata = screening.error_patterns?.screening_metadata
-    const noConsent = screening.result === 'non_registered_no_consent'
+    const consent = screening.error_patterns?.consent
 
-    if (noConsent) {
-      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
-    }
-
+    // Read program status from error_patterns
+    const noConsent = consent?.no_consent || false
     const graduated = metadata?.graduated || false
     const paused = metadata?.paused || false
     const sub = metadata?.sub || false
     const qualifies = metadata?.qualifies_for_speech_program || false
 
+    if (noConsent) {
+      return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
+    }
     if (graduated) {
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
     }
@@ -824,7 +851,7 @@ const ScreeningsList = ({
     }
 
     // If none of the above, check if they explicitly don't qualify
-    if (qualifies === false && !sub && !graduated && !paused) {
+    if (qualifies === false && !sub && !graduated && !paused && !noConsent) {
       return (
         <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
           Not In Program
