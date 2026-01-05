@@ -245,21 +245,19 @@ const DashboardContent = () => {
           <main className='flex-1 px-6 py-8 pb-8'>
             {/* Page Header */}
             <div className='mb-8'>
-              <div className='max-w-7xl mx-auto'>
-                <h1 className='text-2xl font-semibold text-gray-900 tracking-tight mb-2'>
-                  {userRole === 'slp'
-                    ? 'My Dashboard'
-                    : currentSchool
-                    ? `${currentSchool.name} Dashboard`
-                    : 'Dashboard'}
-                </h1>
-                <p className='text-gray-600 text-sm leading-relaxed'>
-                  Welcome back, {userName}.
-                  {userRole === 'slp'
-                    ? ' Select a school and start managing screenings.'
-                    : ' Start new assessments and manage your speech & language screenings.'}
-                </p>
-              </div>
+              <h1 className='text-2xl font-semibold text-gray-900 tracking-tight mb-2'>
+                {userRole === 'slp'
+                  ? 'My Dashboard'
+                  : currentSchool
+                  ? `${currentSchool.name} Dashboard`
+                  : 'Dashboard'}
+              </h1>
+              <p className='text-gray-600 text-sm leading-relaxed'>
+                Welcome back, {userName}.
+                {userRole === 'slp'
+                  ? ' Select a school and start managing screenings.'
+                  : ' Start new assessments and manage your speech & language screenings.'}
+              </p>
             </div>
 
             {/* Dashboard Content */}
