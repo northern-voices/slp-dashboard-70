@@ -13,7 +13,6 @@ import {
 import ScreeningDetailsModal from '../screening-history/ScreeningDetailsModal'
 import HearingScreeningDetailsModal from '../screening-history/HearingScreeningDetailsModal'
 import SendReportsModal from '@/components/screenings/SendReportsModal'
-import { Screening } from '@/types/database'
 import { useScreenings, useScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import { Loader2, Eye, MoreHorizontal, ChevronUp, ChevronDown, Mail } from 'lucide-react'
 import { parseDateSafely } from '@/utils/dateUtils'
@@ -35,6 +34,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { format } from 'date-fns'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
+import { Screening } from '@/types/database'
+import { ErrorPatterns } from '@/types/screening-form'
 
 interface ScreeningsListProps {
   studentId?: string
@@ -148,14 +149,16 @@ const ScreeningsList = ({
         return
       }
 
-      const currentErrorPatterns = screening.error_patterns || {}
+      const currentErrorPatterns: Partial<ErrorPatterns> = screening.error_patterns || {}
       const currentMetadata = currentErrorPatterns.screening_metadata || {}
       const currentConsent = currentErrorPatterns.consent || {}
 
-      const cleanErrorPatterns = {
-        articulation: currentErrorPatterns.articulation || {},
-        add_areas_of_concern: currentErrorPatterns.add_areas_of_concern || {},
-        attendance: currentErrorPatterns.attendance || {},
+      const cleanErrorPatterns: Partial<ErrorPatterns> = {
+        articulation: currentErrorPatterns.articulation || ({} as ErrorPatterns['articulation']),
+        add_areas_of_concern:
+          currentErrorPatterns.add_areas_of_concern ||
+          ({} as ErrorPatterns['add_areas_of_concern']),
+        attendance: currentErrorPatterns.attendance || ({} as ErrorPatterns['attendance']),
         additional_observations: currentErrorPatterns.additional_observations || '',
         consent: {
           ...currentConsent,
@@ -167,7 +170,7 @@ const ScreeningsList = ({
           sub: newProgram === 'sub',
           graduated: newProgram === 'graduated',
           paused: newProgram === 'paused',
-        },
+        } as ErrorPatterns['screening_metadata'],
       }
 
       // Check if this is the most recent screening for the student
@@ -186,7 +189,7 @@ const ScreeningsList = ({
         {
           id: screening.id,
           data: {
-            error_patterns: cleanErrorPatterns,
+            error_patterns: cleanErrorPatterns as ErrorPatterns,
           },
         },
         {

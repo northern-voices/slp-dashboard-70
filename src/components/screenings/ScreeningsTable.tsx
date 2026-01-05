@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { ErrorPatterns } from '@/types/screening-form'
 import { useNavigate } from 'react-router-dom'
 import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { Badge } from '@/components/ui/badge'
@@ -691,14 +692,16 @@ const ScreeningsTable = ({
       }
 
       // Update the screening's error_patterns.screening_metadata
-      const currentErrorPatterns = screening.error_patterns || {}
+      const currentErrorPatterns = screening.error_patterns || ({} as ErrorPatterns)
       const currentMetadata = currentErrorPatterns.screening_metadata || {}
       const currentConsent = currentErrorPatterns.consent || {}
 
-      const cleanErrorPatterns = {
-        articulation: currentErrorPatterns.articulation || {},
-        add_areas_of_concern: currentErrorPatterns.add_areas_of_concern || {},
-        attendance: currentErrorPatterns.attendance || {},
+      const cleanErrorPatterns: Partial<ErrorPatterns> = {
+        articulation: currentErrorPatterns.articulation || ({} as ErrorPatterns['articulation']),
+        add_areas_of_concern:
+          currentErrorPatterns.add_areas_of_concern ||
+          ({} as ErrorPatterns['add_areas_of_concern']),
+        attendance: currentErrorPatterns.attendance || ({} as ErrorPatterns['attendance']),
         additional_observations: currentErrorPatterns.additional_observations || '',
         consent: {
           ...currentConsent,
@@ -710,7 +713,7 @@ const ScreeningsTable = ({
           sub: newProgram === 'sub',
           graduated: newProgram === 'graduated',
           paused: newProgram === 'paused',
-        },
+        } as ErrorPatterns['screening_metadata'],
       }
 
       // Check if this is the most recent screening for the student
@@ -727,7 +730,7 @@ const ScreeningsTable = ({
         {
           id: screening.id,
           data: {
-            error_patterns: cleanErrorPatterns,
+            error_patterns: cleanErrorPatterns as ErrorPatterns,
           },
         },
         {
