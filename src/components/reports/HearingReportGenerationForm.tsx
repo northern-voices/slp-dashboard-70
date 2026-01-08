@@ -27,9 +27,10 @@ import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { CheckCircle, XCircle, Plus, List } from 'lucide-react'
+import { Volume2, TrendingUp, CheckCircle, XCircle, Plus, List } from 'lucide-react'
 
 const reportSchema = z.object({
+  reportType: z.string().min(1, 'Please select a report type'),
   academicYear: z.string().min(1, 'Please select an academic year'),
   email: z.string().email('Please enter a valid email address'),
 })
@@ -56,35 +57,75 @@ const HearingReportGenerationForm = () => {
   const form = useForm<ReportFormData>({
     resolver: zodResolver(reportSchema),
     defaultValues: {
+      reportType: '',
       academicYear: currentAcademicYear,
       email: '',
     },
   })
 
+  const hearingReports = [
+    {
+      value: 'school-wide-hearing-reports',
+      label: 'School Wide Hearing Reports',
+      description: 'Create detailed hearing screening reports for all students',
+      icon: Volume2,
+      tooltip:
+        'Produces comprehensive hearing screening reports for all students in the selected academic year.',
+    },
+    {
+      value: 'school-summary-hearing-report',
+      label: 'School Summary Hearing Report',
+      description: 'Generate a school-wide summary of hearing screenings',
+      icon: TrendingUp,
+      tooltip: 'Summarizes school-wide hearing screenings with aggregate data and recommendations.',
+    },
+  ]
+
   const isSubmitting = form.formState.isSubmitting
 
   const onSubmit = async (data: ReportFormData) => {
     try {
-      const result = await edgeFunctionsApi.schoolWideHearingReports(
-        currentSchool.id,
-        data.academicYear,
-        data.email
-      )
+      let result
+      if (data.reportType === 'school-wide-hearing-reports') {
+        result = await edgeFunctionsApi.schoolWideHearingReports(
+          currentSchool.id,
+          data.academicYear,
+          data.email
+        )
+      } else if (data.reportType === 'school-summary-hearing-report') {
+        result = await edgeFunctionsApi.schoolSummaryHearingReport(
+          currentSchool.id,
+          data.academicYear,
+          data.email
+        )
+      }
 
       console.log(result, 'result')
 
       setModalType('success')
       setModalMessage(
-        `Your School Wide Hearing Reports is being generated. You'll receive an email at ${data.email} when it's ready.`
+        `Your ${
+          hearingReports.find(type => type.value === data.reportType)?.label
+        } is being generated. You'll receive an email at ${data.email} when it's ready.`
       )
       setIsSuccessModalOpen(true)
     } catch (error: unknown) {
       console.error('Error generating hearing report:', error)
 
       setModalType('error')
-      setModalMessage(
-        `No hearing screenings found for the ${data.academicYear} academic year. Please ensure hearing screenings have been completed before generating this report.`
-      )
+
+      if (data.reportType === 'school-wide-hearing-reports') {
+        setModalMessage(
+          `No hearing screenings found for the ${data.academicYear} academic year. Please ensure hearing screenings have been completed before generating this report.`
+        )
+      } else if (data.reportType === 'school-summary-hearing-report') {
+        setModalMessage(
+          `No hearing screening data found for the ${data.academicYear} academic year. Please ensure screenings have been completed before generating the school summary report.`
+        )
+      } else {
+        setModalMessage('Failed to generate report. Please try again.')
+      }
+
       setIsSuccessModalOpen(true)
     }
   }
@@ -149,6 +190,87 @@ const HearingReportGenerationForm = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='reportType'
+                render={({ field }) => (
+                  <FormItem className='space-y-3'>
+                    <FormLabel className='text-sm font-medium text-gray-700'>
+                      Select Type of Report
+                    </FormLabel>
+                    <FormControl>
+                      <div className='space-y-4'>
+                        <div className='space-y-3'>
+                          <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
+                            {hearingReports.map(type => {
+                              const Icon = type.icon
+                              const isSelected = field.value === type.value
+                              return (
+                                <Tooltip key={type.value}>
+                                  <TooltipTrigger asChild>
+                                    <div
+                                      onClick={() => {
+                                        if (isSelected) {
+                                          field.onChange('')
+                                        } else {
+                                          field.onChange(type.value)
+                                        }
+                                      }}
+                                      className={`
+                            relative cursor-pointer rounded-lg border-2 p-3 sm:p-4 transition-all duration-200 w-full
+                            ${
+                              isSelected
+                                ? 'border-blue-600 bg-blue-50 shadow-sm'
+                                : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                            }
+                          `}>
+                                      <div className='flex items-start space-x-3 w-full'>
+                                        <div
+                                          className={`
+                              flex-shrink-0 p-2 rounded-lg
+                              ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}
+                            `}>
+                                          <Icon className='w-4 h-4' />
+                                        </div>
+                                        <div className='flex-1 min-w-0 overflow-hidden'>
+                                          <h3
+                                            className={`
+                                text-sm font-medium leading-tight truncate
+                                ${isSelected ? 'text-blue-900' : 'text-gray-900'}
+                              `}>
+                                            {type.label}
+                                          </h3>
+                                          <p
+                                            className={`
+                                text-xs mt-1 leading-tight
+                                ${isSelected ? 'text-blue-700' : 'text-gray-500'}
+                              `}>
+                                            {type.description}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      {isSelected && (
+                                        <div className='absolute top-2 right-2'>
+                                          <div className='w-2 h-2 bg-blue-600 rounded-full'></div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent side='top' className='max-w-xs'>
+                                    <p>{type.tooltip}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
