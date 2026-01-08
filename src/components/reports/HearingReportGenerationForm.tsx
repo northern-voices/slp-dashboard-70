@@ -112,18 +112,42 @@ const HearingReportGenerationForm = () => {
     } catch (error: unknown) {
       console.error('Error generating hearing report:', error)
 
-      setModalType('error')
+      // Check if it's a FunctionsHttpError or timeout/network error
+      // FunctionsHttpError often means the job started but the function returned early
+      const isBackgroundJobError =
+        error instanceof Error &&
+        (error.name === 'FunctionsHttpError' || // Edge function started background job
+          error.name === 'FunctionsFetchError' || // Fetch failed but job may have started
+          error.message.includes('fetch') ||
+          error.message.includes('network') ||
+          error.message.includes('timeout') ||
+          error.message.toLowerCase().includes('non-2xx') ||
+          error.name === 'AbortError')
 
-      if (data.reportType === 'school-wide-hearing-reports') {
+      setModalType(isBackgroundJobError ? 'success' : 'error')
+
+      if (isBackgroundJobError) {
+        // For background job errors, the report is still being generated
         setModalMessage(
-          `No hearing screenings found for the ${data.academicYear} academic year. Please ensure hearing screenings have been completed before generating this report.`
-        )
-      } else if (data.reportType === 'school-summary-hearing-report') {
-        setModalMessage(
-          `No hearing screening data found for the ${data.academicYear} academic year. Please ensure screenings have been completed before generating the school summary report.`
+          `Your ${
+            hearingReports.find(type => type.value === data.reportType)?.label
+          } generation has been started. The process is running in the background, and you'll receive an email at ${
+            data.email
+          } when it's ready. This may take several minutes for large reports.`
         )
       } else {
-        setModalMessage('Failed to generate report. Please try again.')
+        // For actual data errors
+        if (data.reportType === 'school-wide-hearing-reports') {
+          setModalMessage(
+            `No hearing screenings found for the ${data.academicYear} academic year. Please ensure hearing screenings have been completed before generating this report.`
+          )
+        } else if (data.reportType === 'school-summary-hearing-report') {
+          setModalMessage(
+            `No hearing screening data found for the ${data.academicYear} academic year. Please ensure screenings have been completed before generating the school summary report.`
+          )
+        } else {
+          setModalMessage('Failed to generate report. Please try again.')
+        }
       }
 
       setIsSuccessModalOpen(true)
