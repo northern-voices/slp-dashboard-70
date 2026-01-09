@@ -87,7 +87,7 @@ const ScreeningsContent = () => {
                   </Button>
                 </div>
 
-                <ScreeningStats />
+                <ScreeningStats onFilterClick={setQualifiesForSpeechProgramFilter} />
               </div>
 
               <div className='space-y-6'>
