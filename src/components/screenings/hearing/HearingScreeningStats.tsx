@@ -15,20 +15,35 @@ const HearingScreeningStats = ({
 }: HearingScreeningStatsProps) => {
   const hearingScreenings = screenings.filter(s => s.source_table === 'hearing')
 
+  const isPassedEar = (earResult: string | null | undefined) => {
+    if (!earResult) return false
+    return (
+      earResult.startsWith('Type A ') ||
+      earResult.startsWith('Type AS ') ||
+      earResult.startsWith('Type AD ')
+    )
+  }
+
   const totalScreenings = hearingScreenings.length
 
   const absentScreenings = hearingScreenings.filter(s => s.result === 'absent').length
 
-  const referredScreenings = hearingScreenings.filter(
-    s => s.referral_notes && s.referral_notes.trim().length > 0
-  ).length
-
   const passedScreenings = hearingScreenings.filter(screening => {
-    const isNotAbsent = screening.result !== 'absent'
-    const hasNoReferralNotes =
-      !screening.referral_notes || screening.referral_notes.trim().length === 0
+    if (screening.result === 'absent') return false
 
-    return isNotAbsent && hasNoReferralNotes
+    const rightEarPassed = isPassedEar(screening.right_ear_result)
+    const leftEarPassed = isPassedEar(screening.left_ear_result)
+
+    return rightEarPassed && leftEarPassed
+  }).length
+
+  const referredScreenings = hearingScreenings.filter(screening => {
+    if (screening.result === 'absent') return false
+
+    const rightEarPassed = isPassedEar(screening.right_ear_result)
+    const leftEarPassed = isPassedEar(screening.left_ear_result)
+
+    return !(rightEarPassed && leftEarPassed)
   }).length
 
   const handleCardClick = (filterValue: string) => {
