@@ -473,7 +473,9 @@ const ScreeningsTable = ({
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
     }
     if (paused) {
-      return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
+      return (
+        <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause/Away</Badge>
+      )
     }
     if (sub) {
       return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
@@ -816,7 +818,7 @@ const ScreeningsTable = ({
     { value: 'qualified', label: 'Qualifies' },
     { value: 'not_in_program', label: 'Not In Program' },
     { value: 'sub', label: 'Sub' },
-    { value: 'paused', label: 'Pause' },
+    { value: 'paused', label: 'Pause/Away' },
     // { value: 'not_set', label: 'Not Set' },
     { value: 'graduated', label: 'Graduated' },
     { value: 'no_consent', label: 'Qualifies - No Consent' },
