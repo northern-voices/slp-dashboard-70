@@ -3,7 +3,12 @@ import { Calendar, CheckCircle, Clock, FileText } from 'lucide-react'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
-const ScreeningStats = () => {
+interface ScreeningStatsProps {
+  onFilterClick?: (filterValue: string) => void
+  onClearAllFilters?: () => void
+}
+
+const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProps) => {
   const { currentSchool } = useOrganization()
 
   // Use school-specific query when a school is selected
@@ -11,17 +16,17 @@ const ScreeningStats = () => {
     data: allScreeningsData,
     isLoading: isLoadingAll,
     isFetching: isFetchingAll,
-    error: errorAll
+    error: errorAll,
   } = useScreenings()
   const {
     data: schoolScreeningsData,
     isLoading: isLoadingSchool,
     isFetching: isFetchingSchool,
-    error: errorSchool
+    error: errorSchool,
   } = useScreeningsBySchool(currentSchool?.id, 'school_year')
 
   // Determine which data to use
-  const schoolScreenings = currentSchool ? (schoolScreeningsData || []) : (allScreeningsData || [])
+  const schoolScreenings = currentSchool ? schoolScreeningsData || [] : allScreeningsData || []
   const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
   const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
   const error = currentSchool ? errorSchool : errorAll
@@ -31,7 +36,10 @@ const ScreeningStats = () => {
     const studentId = screening.student_id
     const existingScreening = acc.get(studentId)
 
-    if (!existingScreening || new Date(screening.created_at) > new Date(existingScreening.created_at)) {
+    if (
+      !existingScreening ||
+      new Date(screening.created_at) > new Date(existingScreening.created_at)
+    ) {
       acc.set(studentId, screening)
     }
 
@@ -55,6 +63,18 @@ const ScreeningStats = () => {
     qualifiedScreenings: qualifiedScreenings.length,
     subsScreenings: subsScreenings.length,
     scheduledScreenings: graduatedScreenings.length,
+  }
+
+  const handleCardClick = (filterValue: string) => {
+    if (onFilterClick) {
+      onFilterClick(filterValue)
+    }
+  }
+
+  const handleClearAll = () => {
+    if (onClearAllFilters) {
+      onClearAllFilters()
+    }
   }
 
   if (isLoading) {
@@ -92,7 +112,8 @@ const ScreeningStats = () => {
 
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
-      <Card>
+      {/* Total Screenings*/}
+      <Card className='cursor-pointer hover:bg-gray-50 transition-colors' onClick={handleClearAll}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Total Screenings</CardTitle>
           <FileText className='h-4 w-4 text-muted-foreground' />
@@ -102,7 +123,10 @@ const ScreeningStats = () => {
         </CardContent>
       </Card>
 
-      <Card>
+      {/* Qualified */}
+      <Card
+        className='cursor-pointer hover:bg-gray-50 transition-colors'
+        onClick={() => handleCardClick('qualified')}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Qualified</CardTitle>
           <CheckCircle className='h-4 w-4 text-muted-foreground' />
@@ -112,7 +136,10 @@ const ScreeningStats = () => {
         </CardContent>
       </Card>
 
-      <Card>
+      {/* Subs */}
+      <Card
+        className='cursor-pointer hover:bg-gray-50 transition-colors'
+        onClick={() => handleCardClick('sub')}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Subs</CardTitle>
           <Clock className='h-4 w-4 text-muted-foreground' />
@@ -122,7 +149,10 @@ const ScreeningStats = () => {
         </CardContent>
       </Card>
 
-      <Card>
+      {/* Graduated */}
+      <Card
+        className='cursor-pointer hover:bg-gray-50 transition-colors'
+        onClick={() => handleCardClick('graduated')}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Graduated</CardTitle>
           <Calendar className='h-4 w-4 text-muted-foreground' />
