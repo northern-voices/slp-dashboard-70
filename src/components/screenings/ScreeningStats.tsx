@@ -5,9 +5,10 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface ScreeningStatsProps {
   onFilterClick?: (filterValue: string) => void
+  onClearAllFilters?: () => void
 }
 
-const ScreeningStats = ({ onFilterClick }: ScreeningStatsProps) => {
+const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProps) => {
   const { currentSchool } = useOrganization()
 
   // Use school-specific query when a school is selected
@@ -70,6 +71,12 @@ const ScreeningStats = ({ onFilterClick }: ScreeningStatsProps) => {
     }
   }
 
+  const handleClearAll = () => {
+    if (onClearAllFilters) {
+      onClearAllFilters()
+    }
+  }
+
   if (isLoading) {
     return (
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
@@ -105,8 +112,8 @@ const ScreeningStats = ({ onFilterClick }: ScreeningStatsProps) => {
 
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
-      {/* Total Screenings - Not clickable */}
-      <Card>
+      {/* Total Screenings*/}
+      <Card className='cursor-pointer hover:bg-gray-50 transition-colors' onClick={handleClearAll}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Total Screenings</CardTitle>
           <FileText className='h-4 w-4 text-muted-foreground' />
@@ -116,7 +123,7 @@ const ScreeningStats = ({ onFilterClick }: ScreeningStatsProps) => {
         </CardContent>
       </Card>
 
-      {/* Qualified - Clickable */}
+      {/* Qualified */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
         onClick={() => handleCardClick('qualified')}>
@@ -129,7 +136,7 @@ const ScreeningStats = ({ onFilterClick }: ScreeningStatsProps) => {
         </CardContent>
       </Card>
 
-      {/* Subs - Clickable */}
+      {/* Subs */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
         onClick={() => handleCardClick('sub')}>
@@ -142,7 +149,7 @@ const ScreeningStats = ({ onFilterClick }: ScreeningStatsProps) => {
         </CardContent>
       </Card>
 
-      {/* Graduated - Clickable */}
+      {/* Graduated */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
         onClick={() => handleCardClick('graduated')}>

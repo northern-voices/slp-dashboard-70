@@ -34,6 +34,20 @@ const ScreeningsContent = () => {
   const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
 
+  const clearAllFilters = () => {
+    setSearchTerm('')
+    setResultFilter('all')
+    setDateRangeFilter('school_year')
+    setGradeFilter('all')
+    setQualifiesForSpeechProgramFilter('all')
+    setVocabularySupportFilter('all')
+    setCasFilter('all')
+    setLanguageComprehensionFilter('all')
+    setPriorityRescreenFilter('all')
+    setRecommendationsFilter('all')
+    setClinicalNotesFilter('all')
+  }
+
   const handleBulkAction = (action: string) => {
     console.log(`Performing ${action} on selected screenings:`, selectedScreenings)
     // Implement bulk actions like:
@@ -87,7 +101,10 @@ const ScreeningsContent = () => {
                   </Button>
                 </div>
 
-                <ScreeningStats onFilterClick={setQualifiesForSpeechProgramFilter} />
+                <ScreeningStats
+                  onFilterClick={setQualifiesForSpeechProgramFilter}
+                  onClearAllFilters={clearAllFilters}
+                />
               </div>
 
               <div className='space-y-6'>
