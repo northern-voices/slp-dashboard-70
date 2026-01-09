@@ -152,10 +152,10 @@ export const hearingScreeningsApi = {
       )
 
       // Apply filters based on user role
-      if (userRole === 'slp' && currentUserId) {
-        // SLPs can only see their own screenings within their organization
-        query = query.eq('screener_id', currentUserId)
-      }
+      // if (userRole === 'slp' && currentUserId) {
+      //   // SLPs can only see their own screenings within their organization
+      //   query = query.eq('screener_id', currentUserId)
+      // }
 
       if (schoolId) {
         query = query.eq('students.school_id', schoolId)
@@ -232,10 +232,10 @@ export const hearingScreeningsApi = {
         .eq('student_id', studentId)
 
       // Apply filters based on user role
-      if (userRole === 'slp' && currentUserId) {
-        // SLPs can only see their own screenings
-        query = query.eq('screener_id', currentUserId)
-      }
+      // if (userRole === 'slp' && currentUserId) {
+      //   // SLPs can only see their own screenings
+      //   query = query.eq('screener_id', currentUserId)
+      // }
 
       const { data, error } = await query.order('created_at', { ascending: false })
 
