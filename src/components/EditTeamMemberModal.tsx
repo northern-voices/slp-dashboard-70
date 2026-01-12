@@ -89,13 +89,13 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.name || formData.roles.length === 0 || !formData.email || !formData.phone) {
+    if (!formData.name || formData.roles.length === 0 || !formData.email) {
       return
     }
 
     onUpdateMember({
       ...formData,
-      phone: unformatPhoneNumber(formData.phone),
+      phone: formData.phone ? unformatPhoneNumber(formData.phone) : '',
     })
     onOpenChange(false)
   }
@@ -147,7 +147,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
           {/* Phone Field */}
           <div className='space-y-2'>
             <Label htmlFor='phone' className='text-sm font-medium text-gray-700'>
-              Phone Number <span className='text-red-500'>*</span>
+              Phone Number
             </Label>
             <Input
               id='phone'
@@ -157,7 +157,6 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
               onChange={e => handleChange('phone', formatPhoneNumber(e.target.value))}
               className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
               maxLength={14}
-              required
             />
           </div>
 
@@ -199,9 +198,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
             <Button
               type='submit'
               className='text-white bg-brand hover:bg-brand/90'
-              disabled={
-                !formData.name || formData.roles.length === 0 || !formData.email || !formData.phone
-              }>
+              disabled={!formData.name || formData.roles.length === 0 || !formData.email}>
               Save Changes
             </Button>
           </DialogFooter>

@@ -68,13 +68,13 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.name || formData.roles.length === 0 || !formData.email || !formData.phone) {
+    if (!formData.name || formData.roles.length === 0 || !formData.email) {
       return
     }
 
     onAddMember({
       ...formData,
-      phone: unformatPhoneNumber(formData.phone),
+      phone: formData.phone ? unformatPhoneNumber(formData.phone) : '',
     })
 
     setFormData({
