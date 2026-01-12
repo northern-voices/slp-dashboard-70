@@ -19,3 +19,12 @@ export const formatPhoneNumber = (value: string): string => {
     return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`
   }
 }
+
+/**
+ * Removes all formatting from a phone number, leaving only digits
+ * @param value - The formatted phone number
+ * @returns Phone number with only digits
+ */
+export const unformatPhoneNumber = (value: string): string => {
+  return value.replace(/\D/g, '')
+}
