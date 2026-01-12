@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { formatPhoneNumber } from '@/utils/formatters'
 import {
   Dialog,
   DialogContent,
@@ -106,7 +107,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className='space-y-6 py-4'>
+        <form onSubmit={handleSubmit} className='py-4 space-y-6'>
           {/* Name Field */}
           <div className='space-y-2'>
             <Label htmlFor='name' className='text-sm font-medium text-gray-700'>
@@ -117,7 +118,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
               placeholder='e.g., John Smith'
               value={formData.name}
               onChange={e => handleChange('name', e.target.value)}
-              className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'
+              className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
               required
             />
           </div>
@@ -133,7 +134,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
               placeholder='e.g., john.smith@school.com'
               value={formData.email}
               onChange={e => handleChange('email', e.target.value)}
-              className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'
+              className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
               required
             />
           </div>
@@ -148,8 +149,9 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
               type='tel'
               placeholder='e.g., (555) 123-4567'
               value={formData.phone}
-              onChange={e => handleChange('phone', e.target.value)}
-              className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'
+              onChange={e => handleChange('phone', formatPhoneNumber(e.target.value))}
+              className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
+              maxLength={14}
               required
             />
           </div>
@@ -159,7 +161,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
             <Label className='text-sm font-medium text-gray-700'>
               Role(s) <span className='text-red-500'>*</span>
             </Label>
-            <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-4 border border-gray-200 rounded-lg bg-gray-50'>
+            <div className='grid grid-cols-1 gap-3 p-4 overflow-y-auto border border-gray-200 rounded-lg sm:grid-cols-2 max-h-60 bg-gray-50'>
               {ROLE_OPTIONS.map(role => (
                 <div key={role.value} className='flex items-center space-x-2'>
                   <Checkbox
@@ -170,7 +172,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
                   />
                   <Label
                     htmlFor={`role-${role.value}`}
-                    className='text-sm text-gray-700 cursor-pointer font-normal'>
+                    className='text-sm font-normal text-gray-700 cursor-pointer'>
                     {role.label}
                   </Label>
                 </div>
@@ -191,7 +193,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
             </Button>
             <Button
               type='submit'
-              className='bg-brand hover:bg-brand/90 text-white'
+              className='text-white bg-brand hover:bg-brand/90'
               disabled={
                 !formData.name || formData.roles.length === 0 || !formData.email || !formData.phone
               }>

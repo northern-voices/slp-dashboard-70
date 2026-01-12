@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { formatPhoneNumber } from '@/utils/formatters'
 import {
   Dialog,
   DialogContent,
@@ -68,8 +69,8 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-[500px]'>
         <DialogHeader>
-          <div className='flex items-center space-x-3 mb-2'>
-            <div className='w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center'>
+          <div className='flex items-center mb-2 space-x-3'>
+            <div className='flex items-center justify-center w-10 h-10 bg-blue-50 rounded-xl'>
               <Edit className='w-5 h-5 text-blue-600' />
             </div>
             <DialogTitle>Edit School Details</DialogTitle>
@@ -80,7 +81,7 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className='space-y-5 py-4'>
+          <div className='py-4 space-y-5'>
             {/* School Name Field */}
             <div className='space-y-2'>
               <Label htmlFor='schoolName' className='text-sm font-medium text-gray-700'>
@@ -91,7 +92,7 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
                 placeholder='e.g., Northern Voices Elementary'
                 value={formData.schoolName}
                 onChange={e => handleChange('schoolName', e.target.value)}
-                className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'
+                className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
                 required
               />
             </div>
@@ -106,8 +107,9 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
                 type='tel'
                 placeholder='e.g., (907) 555-0123'
                 value={formData.schoolPhone}
-                onChange={e => handleChange('schoolPhone', e.target.value)}
-                className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'
+                onChange={e => handleChange('schoolPhone', formatPhoneNumber(e.target.value))}
+                className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
+                maxLength={14}
               />
             </div>
 
@@ -121,7 +123,7 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
                 onValueChange={value =>
                   handleChange('primarySLPId', value === 'none' ? null : value)
                 }>
-                <SelectTrigger className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'>
+                <SelectTrigger className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'>
                   <SelectValue placeholder='Select primary SLP...' />
                 </SelectTrigger>
                 <SelectContent>
@@ -142,13 +144,13 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
               variant='outline'
               onClick={() => onOpenChange(false)}
               disabled={isSaving}
-              className='rounded-lg border-gray-200 hover:bg-gray-50 leading-none'>
+              className='leading-none border-gray-200 rounded-lg hover:bg-gray-50'>
               Cancel
             </Button>
             <Button
               type='submit'
               disabled={isSaving}
-              className='bg-brand hover:bg-brand/90 text-white rounded-lg leading-none'>
+              className='leading-none text-white rounded-lg bg-brand hover:bg-brand/90'>
               {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
