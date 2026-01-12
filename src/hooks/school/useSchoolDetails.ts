@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { School } from '@/types/database'
+import { formatPhoneNumber } from '@/utils/formatters'
 
 interface PrimarySLP {
   name: string
@@ -50,7 +51,7 @@ export const useSchoolDetails = (currentSchool: School | null) => {
           primarySLPData = {
             name: `${slpUser.first_name} ${slpUser.last_name}`,
             email: slpUser.email,
-            phone: currentSchool.phone || '',
+            phone: currentSchool.phone ? formatPhoneNumber(currentSchool.phone) : '',
           }
         }
       }
@@ -72,12 +73,12 @@ export const useSchoolDetails = (currentSchool: School | null) => {
         name: `${staff.first_name} ${staff.last_name}`,
         roles: staff.roles,
         email: staff.email || '',
-        phone: staff.phone || '',
+        phone: staff.phone ? formatPhoneNumber(staff.phone) : '',
       }))
 
       return {
         schoolName: currentSchool.name,
-        schoolPhone: currentSchool.phone || '',
+        schoolPhone: currentSchool.phone ? formatPhoneNumber(currentSchool.phone) : '',
         primarySLP: primarySLPData,
         schoolTeam: transformedStaff,
       }
