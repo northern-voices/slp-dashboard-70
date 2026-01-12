@@ -186,7 +186,8 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                       {AVAILABLE_ROLES.map(role => (
                         <div
                           key={role.value}
-                          className='flex items-center p-2 space-x-2 rounded-md cursor-pointer hover:bg-gray-50'>
+                          className='flex items-center p-2 space-x-2 rounded-md cursor-pointer hover:bg-gray-50'
+                          onClick={() => handleRoleToggle(role.value)}>
                           <Checkbox
                             checked={formData.roles.includes(role.value)}
                             onCheckedChange={() => handleRoleToggle(role.value)}
