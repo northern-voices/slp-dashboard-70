@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { formatPhoneNumber } from '@/utils/formatters'
+import { formatPhoneNumber, unformatPhoneNumber } from '@/utils/formatters'
 import {
   Dialog,
   DialogContent,
@@ -70,7 +70,10 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
       return
     }
 
-    onAddMember(formData)
+    onAddMember({
+      ...formData,
+      phone: unformatPhoneNumber(formData.phone),
+    })
 
     setFormData({
       name: '',

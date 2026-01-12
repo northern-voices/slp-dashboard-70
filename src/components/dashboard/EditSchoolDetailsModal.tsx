@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { formatPhoneNumber } from '@/utils/formatters'
+import { formatPhoneNumber, unformatPhoneNumber } from '@/utils/formatters'
 import {
   Dialog,
   DialogContent,
@@ -55,7 +55,10 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await onSave(formData)
+    await onSave({
+      ...formData,
+      schoolPhone: unformatPhoneNumber(formData.schoolPhone),
+    })
   }
 
   const handleChange = (field: keyof SchoolDetailsFormData, value: string) => {

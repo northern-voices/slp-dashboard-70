@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { formatPhoneNumber } from '@/utils/formatters'
+import { formatPhoneNumber, unformatPhoneNumber } from '@/utils/formatters'
 import {
   Dialog,
   DialogContent,
@@ -91,7 +91,10 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
       return
     }
 
-    onUpdateMember(formData)
+    onUpdateMember({
+      ...formData,
+      phone: unformatPhoneNumber(formData.phone),
+    })
     onOpenChange(false)
   }
 
