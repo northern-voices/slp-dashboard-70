@@ -29,6 +29,7 @@ interface AddTeamMemberModalProps {
 }
 
 const AVAILABLE_ROLES = [
+  { value: 'superintendent', label: 'Superintendent' },
   { value: 'director', label: 'Director' },
   { value: 'sss_coordinator', label: 'SSS Coordinator' },
   { value: 'principal', label: 'Principal' },
@@ -43,6 +44,7 @@ const AVAILABLE_ROLES = [
   { value: 'ed_psych', label: 'Ed Psych' },
   { value: 'jp_liaison', label: 'JP Liaison' },
   { value: 'learning_support_teacher', label: 'Learning Support Teacher LST' },
+  { value: 'resource_teacher', label: 'Resource Teacher' },
 ]
 
 const getRoleLabel = (value: string): string => {
