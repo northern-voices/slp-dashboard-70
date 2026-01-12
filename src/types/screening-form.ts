@@ -1,3 +1,4 @@
+import { AnyARecord } from 'node:dns'
 import { z } from 'zod'
 
 // Dynamic schema factory function
@@ -74,6 +75,9 @@ export interface ErrorPatterns {
     sub?: boolean
     graduated?: boolean
     paused?: boolean
+  }
+  consent?: {
+    no_consent?: boolean
   }
   add_areas_of_concern: {
     voice: string | null

@@ -98,6 +98,15 @@ const HearingScreeningsTable = ({
     setStudentsMap(studentsMapping)
   }, [currentSchool?.id, students])
 
+  const isPassedEar = (earResult: string | null | undefined) => {
+    if (!earResult) return false
+    return (
+      earResult.startsWith('Type A ') ||
+      earResult.startsWith('Type AS ') ||
+      earResult.startsWith('Type AD ')
+    )
+  }
+
   // Apply filters
   const filteredScreenings = screenings.filter(screening => {
     const matchesSearch =
@@ -106,16 +115,18 @@ const HearingScreeningsTable = ({
 
     const matchesGrade = gradeFilter === 'all' || screening.grade === gradeFilter
 
-    // Result filter
+    // Result filter - updated logic
     let matchesResult = true
     if (resultFilter === 'passed') {
-      // Passed = not absent and no referral notes
-      matchesResult =
-        screening.result !== 'absent' &&
-        (!screening.referral_notes || screening.referral_notes.trim() === '')
+      // Passed = both ears have Type A, AS, or AD
+      const rightEarPassed = isPassedEar(screening.right_ear_result)
+      const leftEarPassed = isPassedEar(screening.left_ear_result)
+      matchesResult = screening.result !== 'absent' && rightEarPassed && leftEarPassed
     } else if (resultFilter === 'referred') {
-      // Referred = has referral notes
-      matchesResult = screening.referral_notes && screening.referral_notes.trim().length > 0
+      // Referred = not absent and doesn't meet passed criteria
+      const rightEarPassed = isPassedEar(screening.right_ear_result)
+      const leftEarPassed = isPassedEar(screening.left_ear_result)
+      matchesResult = screening.result !== 'absent' && !(rightEarPassed && leftEarPassed)
     } else if (resultFilter === 'absent') {
       matchesResult = screening.result === 'absent'
     }

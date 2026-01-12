@@ -38,6 +38,16 @@ const HearingScreeningsContent = () => {
     }
   }
 
+  const clearAllFilters = () => {
+    setSearchTerm('')
+    setDateRangeFilter('school_year')
+    setGradeFilter('all')
+    setResultFilter('all')
+    setReferralNotesFilter('all')
+    setNonCompliantFilter('all')
+    setComplexNeedsFilter('all')
+  }
+
   if (isLoading) {
     return (
       <SidebarProvider>
@@ -79,7 +89,11 @@ const HearingScreeningsContent = () => {
                   </Button>
                 </div>
 
-                <HearingScreeningStats screenings={screenings} />
+                <HearingScreeningStats
+                  screenings={screenings}
+                  onFilterClick={setResultFilter}
+                  onClearAllFilters={clearAllFilters}
+                />
               </div>
 
               <div className='space-y-6'>
