@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { School } from '@/types/database'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -35,8 +36,14 @@ const DashboardContent = () => {
   const [isSaving, setIsSaving] = useState(false)
   const [isAddActivityModalOpen, setIsAddActivityModalOpen] = useState(false)
 
-  const { userProfile, currentSchool, isLoading, currentOrganization, refreshData } =
-    useOrganization()
+  const {
+    userProfile,
+    currentSchool,
+    isLoading,
+    currentOrganization,
+    refreshData,
+    setCurrentSchool,
+  } = useOrganization()
   const queryClient = useQueryClient()
 
   const {
@@ -114,10 +121,38 @@ const DashboardContent = () => {
 
       if (error) throw error
 
-      queryClient.invalidateQueries({ queryKey: ['school-edits', currentSchool.id] })
-      queryClient.invalidateQueries({ queryKey: ['organization-data'] })
+      // Fetch the fresh school data
+      const { data: updatedSchoolData, error: fetchError } = await supabase
+        .from('schools')
+        .select('*')
+        .eq('id', currentSchool.id)
+        .single()
 
-      await refreshData()
+      if (fetchError) throw fetchError
+
+      // update currentSchool
+      if (updatedSchoolData) {
+        const updatedSchool: School = {
+          id: updatedSchoolData.id,
+          organization_id: updatedSchoolData.organization_id,
+          name: updatedSchoolData.name,
+          address: updatedSchoolData.street_address,
+          city: updatedSchoolData.city,
+          state: updatedSchoolData.region || '',
+          zip: updatedSchoolData.postal_code || '',
+          principal_name: updatedSchoolData.principal_name || '',
+          principal_email: updatedSchoolData.principal_email || '',
+          phone: updatedSchoolData.phone || '',
+          primary_slp_id: updatedSchoolData.primary_slp_id || null,
+          created_at: updatedSchoolData.created_at,
+          updated_at: updatedSchoolData.updated_at,
+        }
+        setCurrentSchool(updatedSchool)
+      }
+
+      // Wait a bit for React to re-render with the new currentSchool then invalidate and refetch
+      await new Promise(resolve => setTimeout(resolve, 100))
+      await queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool.id] })
 
       toast.success('School details updated successfully')
       setIsEditModalOpen(false)
