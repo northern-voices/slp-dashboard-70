@@ -178,13 +178,15 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className='w-[460px] p-0' align='start'>
-                  <div className='max-h-[300px] overflow-y-auto p-2'>
+                  <div
+                    className='max-h-[300px] overflow-y-auto p-2'
+                    onTouchMove={e => e.stopPropagation()}
+                    onWheel={e => e.stopPropagation()}>
                     <div className='space-y-1'>
                       {AVAILABLE_ROLES.map(role => (
                         <div
                           key={role.value}
-                          className='flex items-center p-2 space-x-2 rounded-md cursor-pointer hover:bg-gray-50'
-                          onClick={() => handleRoleToggle(role.value)}>
+                          className='flex items-center p-2 space-x-2 rounded-md cursor-pointer hover:bg-gray-50'>
                           <Checkbox
                             checked={formData.roles.includes(role.value)}
                             onCheckedChange={() => handleRoleToggle(role.value)}
