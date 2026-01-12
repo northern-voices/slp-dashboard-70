@@ -45,6 +45,8 @@ const ROLE_OPTIONS = [
   { value: 'jp_liaison', label: 'JP Liaison' },
   { value: 'learning_support_teacher', label: 'Learning Support Teacher LST' },
   { value: 'resource_teacher', label: 'Resource Teacher' },
+  { value: 'social_emotional', label: 'Social/Emotional' },
+  { value: 'headstart_teacher', label: 'Headstart Teacher' },
 ]
 
 const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
