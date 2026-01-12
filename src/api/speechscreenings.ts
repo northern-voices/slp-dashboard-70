@@ -100,10 +100,10 @@ export const speechScreeningsApi = {
       )
 
       // Apply filters based on user role
-      if (userRole === 'slp' && currentUserId) {
-        // SLPs can only see their own screenings within their organization
-        query = query.eq('screener_id', currentUserId)
-      }
+      // if (userRole === 'slp' && currentUserId) {
+      //   // SLPs can only see their own screenings within their organization
+      //   query = query.eq('screener_id', currentUserId)
+      // }
 
       const { data: initialData, error } = await query
         .order('created_at', { ascending: false })
@@ -252,10 +252,10 @@ export const speechScreeningsApi = {
         .eq('student_id', studentId)
 
       // Apply filters based on user role
-      if (userRole === 'slp' && currentUserId) {
-        // SLPs can only see their own screenings
-        query = query.eq('screener_id', currentUserId)
-      }
+      // if (userRole === 'slp' && currentUserId) {
+      //   // SLPs can only see their own screenings
+      //   query = query.eq('screener_id', currentUserId)
+      // }
 
       const { data, error } = await query.order('created_at', { ascending: false })
 
@@ -671,10 +671,10 @@ export const speechScreeningsApi = {
       }
 
       // Apply filters based on user role
-      if (userRole === 'slp' && currentUserId) {
-        // SLPs can only see their own screenings
-        query = query.eq('screener_id', currentUserId)
-      }
+      // if (userRole === 'slp' && currentUserId) {
+      //   // SLPs can only see their own screenings
+      //   query = query.eq('screener_id', currentUserId)
+      // }
 
       const { data, error } = await query.order('created_at', { ascending: false })
 
