@@ -42,7 +42,7 @@ const CreateMonthlyMeetingContent = () => {
 
   const createMonthlyMeetings = useCreateMonthlyMeeting()
   const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
-    currentSchool?.id
+    currentSchool?.id,
   )
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
   const { user } = useAuth()
@@ -337,7 +337,7 @@ const CreateMonthlyMeetingContent = () => {
                           className={cn(
                             'min-h-[42px] w-full rounded-md border border-input bg-background',
                             'px-3 py-2 text-sm ring-offset-background',
-                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
+                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
                           )}>
                           <div className='flex flex-wrap gap-2'>
                             {/* Display existing attendees as badges */}
@@ -449,6 +449,12 @@ const CreateMonthlyMeetingContent = () => {
                         ? `${selectedStudent.first_name} ${selectedStudent.last_name}`
                         : ''}
                     </DialogTitle>
+                    {selectedStudent?.grade && (
+                      <p className='text-sm text-gray-500'>
+                        Grade:{' '}
+                        {GRADE_MAPPING[selectedStudent.grade]?.display || selectedStudent.grade}
+                      </p>
+                    )}
                   </DialogHeader>
                   <div className='space-y-4 py-4'>
                     <div className='space-y-2'>
@@ -459,7 +465,7 @@ const CreateMonthlyMeetingContent = () => {
                         min='0'
                         value={
                           selectedStudent?.id
-                            ? studentData[selectedStudent.id]?.sessions_attended ?? ''
+                            ? (studentData[selectedStudent.id]?.sessions_attended ?? '')
                             : ''
                         }
                         onChange={e => {
