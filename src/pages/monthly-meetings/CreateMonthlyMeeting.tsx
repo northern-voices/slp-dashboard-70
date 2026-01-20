@@ -465,38 +465,50 @@ const CreateMonthlyMeetingContent = () => {
                         {GRADE_MAPPING[selectedStudent.grade]?.display || selectedStudent.grade}
                       </p>
                     )}
-                    {isLoadingScreenings ? (
-                      <p className='text-sm text-gray-400'>Loading screening info...</p>
-                    ) : mostRecentScreening ? (
-                      <div className='mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200'>
-                        <div className='flex items-center justify-between mb-2'>
-                          <div className='flex items-center gap-2'>
-                            <span className='text-sm font-medium text-gray-700'>
-                              Last Screening
-                            </span>
-                            <Badge
-                              className={
-                                mostRecentScreening.source_table === 'speech'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-purple-100 text-purple-800'
-                              }>
-                              {mostRecentScreening.source_table === 'speech' ? 'Speech' : 'Hearing'}
-                            </Badge>
-                          </div>
-                          <Button
-                            variant='outline'
-                            size='sm'
-                            className='h-7 text-xs border-gray-200 text-gray-700 hover:bg-gray-50'
-                            onClick={() => setShowScreeningModal(true)}>
-                            <Eye className='w-3 h-3 mr-1' />
-                            View More Details
-                          </Button>
+                    <div
+                      className='mt-3 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200
+  shadow-sm'>
+                      {/* Header row */}
+                      <div className='flex items-center justify-between mb-3'>
+                        <div className='flex items-center gap-2'>
+                          <div
+                            className={cn(
+                              'w-2 h-2 rounded-full',
+                              mostRecentScreening.source_table === 'speech'
+                                ? 'bg-blue-500'
+                                : 'bg-purple-500',
+                            )}
+                          />
+                          <span className='text-sm font-semibold text-gray-800'>
+                            Last Screening
+                          </span>
+                          <Badge
+                            className={cn(
+                              'text-xs font-medium',
+                              mostRecentScreening.source_table === 'speech'
+                                ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                                : 'bg-purple-100 text-purple-700 border border-purple-200',
+                            )}>
+                            {mostRecentScreening.source_table === 'speech' ? 'Speech' : 'Hearing'}
+                          </Badge>
                         </div>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          className='h-8 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                          onClick={() => setShowScreeningModal(true)}>
+                          <Eye className='w-3.5 h-3.5 mr-1.5' />
+                          View Details
+                        </Button>
+                      </div>
 
-                        <div className='flex flex-col gap-1 text-sm'>
-                          <div className='flex items-center gap-1 text-gray-500'>
-                            <Calendar className='w-3 h-3' />
-                            <span>
+                      {/* Metadata grid */}
+                      <div className='grid grid-cols-2 gap-3 text-sm'>
+                        <div className='flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100'>
+                          <Calendar className='w-4 h-4 text-gray-400' />
+                          <div>
+                            <p className='text-xs text-gray-500'>Date</p>
+                            <p className='font-medium text-gray-700'>
                               {new Date(
                                 mostRecentScreening.screening_date ||
                                   mostRecentScreening.created_at,
@@ -505,33 +517,42 @@ const CreateMonthlyMeetingContent = () => {
                                 day: 'numeric',
                                 year: 'numeric',
                               })}
-                            </span>
-                          </div>
-                          <div className='flex items-center gap-1 text-gray-500'>
-                            <User className='w-3 h-3' />
-                            <span>{mostRecentScreening.screener || 'Unknown'}</span>
+                            </p>
                           </div>
                         </div>
-
-                        {/* Speech screening summary */}
-                        {mostRecentScreening.source_table === 'speech' &&
-                          mostRecentScreening.result && (
-                            <div className='mt-2 pt-2 border-t border-gray-200'>
-                              <div className='flex items-center gap-2 text-xs'>
-                                <span className='font-medium text-gray-700'>Result:</span>
-                                <Badge variant='secondary' className='text-xs'>
-                                  {mostRecentScreening.result
-                                    .split('_')
-                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                                    .join(' ')}
-                                </Badge>
-                              </div>
-                            </div>
-                          )}
+                        <div className='flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100'>
+                          <User className='w-4 h-4 text-gray-400' />
+                          <div>
+                            <p className='text-xs text-gray-500'>Screener</p>
+                            <p className='font-medium text-gray-700'>
+                              {mostRecentScreening.screener || 'Unknown'}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    ) : (
-                      <p className='text-sm text-gray-400 mt-2'>No screenings on record</p>
-                    )}
+
+                      {/* Result section for speech screenings */}
+                      {mostRecentScreening.source_table === 'speech' &&
+                        mostRecentScreening.result && (
+                          <div className='mt-3 pt-3 border-t border-gray-100'>
+                            <div className='flex items-center gap-2'>
+                              <span className='text-xs text-gray-500'>Result:</span>
+                              <Badge
+                                className={cn(
+                                  'text-xs font-medium',
+                                  mostRecentScreening.result.includes('pass')
+                                    ? 'bg-green-100 text-green-700 border border-green-200'
+                                    : 'bg-amber-100 text-amber-700 border border-amber-200',
+                                )}>
+                                {mostRecentScreening.result
+                                  .split('_')
+                                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                  .join(' ')}
+                              </Badge>
+                            </div>
+                          </div>
+                        )}
+                    </div>
                   </DialogHeader>
 
                   <div className='space-y-4 py-4'>
