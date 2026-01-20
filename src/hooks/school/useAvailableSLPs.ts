@@ -13,7 +13,7 @@ export const useAvailableSLPs = (organizationId: string | undefined) => {
         .from('users')
         .select('id, first_name, last_name, email')
         .eq('organization_id', organizationId)
-        .eq('role', 'slp')
+        .in('role', ['slp', 'super_admin', 'admin'])
         .eq('is_active', true)
         .order('first_name')
 

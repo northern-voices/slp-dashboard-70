@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { School } from '@/types/database'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -35,8 +36,14 @@ const DashboardContent = () => {
   const [isSaving, setIsSaving] = useState(false)
   const [isAddActivityModalOpen, setIsAddActivityModalOpen] = useState(false)
 
-  const { userProfile, currentSchool, isLoading, currentOrganization, refreshData } =
-    useOrganization()
+  const {
+    userProfile,
+    currentSchool,
+    isLoading,
+    currentOrganization,
+    refreshData,
+    setCurrentSchool,
+  } = useOrganization()
   const queryClient = useQueryClient()
 
   const {
@@ -114,10 +121,38 @@ const DashboardContent = () => {
 
       if (error) throw error
 
-      queryClient.invalidateQueries({ queryKey: ['school-edits', currentSchool.id] })
-      queryClient.invalidateQueries({ queryKey: ['organization-data'] })
+      // Fetch the fresh school data
+      const { data: updatedSchoolData, error: fetchError } = await supabase
+        .from('schools')
+        .select('*')
+        .eq('id', currentSchool.id)
+        .single()
 
-      await refreshData()
+      if (fetchError) throw fetchError
+
+      // update currentSchool
+      if (updatedSchoolData) {
+        const updatedSchool: School = {
+          id: updatedSchoolData.id,
+          organization_id: updatedSchoolData.organization_id,
+          name: updatedSchoolData.name,
+          address: updatedSchoolData.street_address,
+          city: updatedSchoolData.city,
+          state: updatedSchoolData.region || '',
+          zip: updatedSchoolData.postal_code || '',
+          principal_name: updatedSchoolData.principal_name || '',
+          principal_email: updatedSchoolData.principal_email || '',
+          phone: updatedSchoolData.phone || '',
+          primary_slp_id: updatedSchoolData.primary_slp_id || null,
+          created_at: updatedSchoolData.created_at,
+          updated_at: updatedSchoolData.updated_at,
+        }
+        setCurrentSchool(updatedSchool)
+      }
+
+      // Wait a bit for React to re-render with the new currentSchool then invalidate and refetch
+      await new Promise(resolve => setTimeout(resolve, 100))
+      await queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool.id] })
 
       toast.success('School details updated successfully')
       setIsEditModalOpen(false)
@@ -179,6 +214,26 @@ const DashboardContent = () => {
     }
   }
 
+  const handleDeleteMember = async (memberId: string) => {
+    if (!currentSchool) {
+      console.error('No school selected')
+      return
+    }
+
+    try {
+      const { error } = await supabase.from('school_staff').delete().eq('id', memberId)
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool.id] })
+
+      toast.success('Team member removed successfully')
+    } catch (error) {
+      console.error('Error deleting team member:', error)
+      toast.error('Failed to remove team member. Please try again.')
+    }
+  }
+
   const handleAddActivity = async (activity: {
     activity_type: string
     activity_date: string
@@ -211,11 +266,11 @@ const DashboardContent = () => {
 
   if (isLoading || isLoadingSchool) {
     return (
-      <div className='min-h-screen flex w-full bg-gray-25'>
-        <div className='flex-1 flex items-center justify-center'>
+      <div className='flex w-full min-h-screen bg-gray-25'>
+        <div className='flex items-center justify-center flex-1'>
           <div className='text-center'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4'></div>
-            <p className='text-gray-600 text-sm'>Loading dashboard...</p>
+            <div className='w-8 h-8 mx-auto mb-4 border-b-2 rounded-full animate-spin border-brand'></div>
+            <p className='text-sm text-gray-600'>Loading dashboard...</p>
           </div>
         </div>
       </div>
@@ -224,10 +279,10 @@ const DashboardContent = () => {
 
   if (schoolError) {
     return (
-      <div className='min-h-screen flex w-full bg-gray-25'>
-        <div className='flex-1 flex items-center justify-center'>
+      <div className='flex w-full min-h-screen bg-gray-25'>
+        <div className='flex items-center justify-center flex-1'>
           <div className='text-center'>
-            <p className='text-red-600 text-sm'>Error loading school data</p>
+            <p className='text-sm text-red-600'>Error loading school data</p>
           </div>
         </div>
       </div>
@@ -236,7 +291,7 @@ const DashboardContent = () => {
 
   return (
     <SidebarProvider>
-      <div className='min-h-screen flex w-full bg-gray-25'>
+      <div className='flex w-full min-h-screen bg-gray-25'>
         <AppSidebar userRole={userRole} userName={userName} />
 
         <SidebarInset className='flex-1'>
@@ -245,14 +300,14 @@ const DashboardContent = () => {
           <main className='flex-1 px-6 py-8 pb-8'>
             {/* Page Header */}
             <div className='mb-8'>
-              <h1 className='text-2xl font-semibold text-gray-900 tracking-tight mb-2'>
+              <h1 className='mb-2 text-2xl font-semibold tracking-tight text-gray-900'>
                 {userRole === 'slp'
                   ? 'My Dashboard'
                   : currentSchool
                   ? `${currentSchool.name} Dashboard`
                   : 'Dashboard'}
               </h1>
-              <p className='text-gray-600 text-sm leading-relaxed'>
+              <p className='text-sm leading-relaxed text-gray-600'>
                 Welcome back, {userName}.
                 {userRole === 'slp'
                   ? ' Select a school and start managing screenings.'
@@ -261,7 +316,7 @@ const DashboardContent = () => {
             </div>
 
             {/* Dashboard Content */}
-            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8'>
+            <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8'>
               <SchoolInfoCard
                 schoolName={schoolData.schoolName}
                 schoolPhone={schoolData.schoolPhone}
@@ -270,6 +325,7 @@ const DashboardContent = () => {
                 onAddMember={() => setIsAddMemberModalOpen(true)}
                 onEdit={() => setIsEditModalOpen(true)}
                 onEditMember={handleEditMember}
+                onDeleteMember={handleDeleteMember}
               />
 
               <ActivityLogCard

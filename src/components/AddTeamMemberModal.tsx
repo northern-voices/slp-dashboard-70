@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { formatPhoneNumber, unformatPhoneNumber } from '@/utils/formatters'
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,7 @@ interface AddTeamMemberModalProps {
 }
 
 const AVAILABLE_ROLES = [
+  { value: 'superintendent', label: 'Superintendent' },
   { value: 'director', label: 'Director' },
   { value: 'sss_coordinator', label: 'SSS Coordinator' },
   { value: 'principal', label: 'Principal' },
@@ -42,6 +44,9 @@ const AVAILABLE_ROLES = [
   { value: 'ed_psych', label: 'Ed Psych' },
   { value: 'jp_liaison', label: 'JP Liaison' },
   { value: 'learning_support_teacher', label: 'Learning Support Teacher LST' },
+  { value: 'resource_teacher', label: 'Resource Teacher' },
+  { value: 'social_emotional', label: 'Social/Emotional' },
+  { value: 'headstart_teacher', label: 'Headstart Teacher' },
 ]
 
 const getRoleLabel = (value: string): string => {
@@ -65,11 +70,14 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.name || formData.roles.length === 0 || !formData.email || !formData.phone) {
+    if (!formData.name || formData.roles.length === 0 || !formData.email) {
       return
     }
 
-    onAddMember(formData)
+    onAddMember({
+      ...formData,
+      phone: formData.phone ? unformatPhoneNumber(formData.phone) : '',
+    })
 
     setFormData({
       name: '',
@@ -108,8 +116,8 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-[500px]'>
         <DialogHeader>
-          <div className='flex items-center space-x-3 mb-2'>
-            <div className='w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center'>
+          <div className='flex items-center mb-2 space-x-3'>
+            <div className='flex items-center justify-center w-10 h-10 bg-purple-50 rounded-xl'>
               <UserPlus className='w-5 h-5 text-purple-600' />
             </div>
             <DialogTitle>Add Team Member</DialogTitle>
@@ -120,7 +128,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className='space-y-5 py-4'>
+          <div className='py-4 space-y-5'>
             {/* Name Field */}
             <div className='space-y-2'>
               <Label htmlFor='name' className='text-sm font-medium text-gray-700'>
@@ -131,7 +139,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                 placeholder='e.g., Emily Carter'
                 value={formData.name}
                 onChange={e => handleChange('name', e.target.value)}
-                className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'
+                className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
                 required
               />
             </div>
@@ -150,7 +158,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                     className='w-full justify-between h-auto min-h-[40px] rounded-lg border-gray-200 hover:bg-gray-50 text-left font-normal'>
                     <div className='flex flex-wrap gap-1.5'>
                       {formData.roles.length === 0 ? (
-                        <span className='text-gray-500 text-sm'>Select roles...</span>
+                        <span className='text-sm text-gray-500'>Select roles...</span>
                       ) : (
                         formData.roles.map(roleValue => (
                           <span
@@ -170,22 +178,25 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                         ))
                       )}
                     </div>
-                    <ChevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                    <ChevronDown className='w-4 h-4 ml-2 opacity-50 shrink-0' />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className='w-[460px] p-0' align='start'>
-                  <div className='max-h-[300px] overflow-y-auto p-2'>
+                  <div
+                    className='max-h-[300px] overflow-y-auto p-2'
+                    onTouchMove={e => e.stopPropagation()}
+                    onWheel={e => e.stopPropagation()}>
                     <div className='space-y-1'>
                       {AVAILABLE_ROLES.map(role => (
                         <div
                           key={role.value}
-                          className='flex items-center space-x-2 p-2 rounded-md hover:bg-gray-50 cursor-pointer'
+                          className='flex items-center p-2 space-x-2 rounded-md cursor-pointer hover:bg-gray-50'
                           onClick={() => handleRoleToggle(role.value)}>
                           <Checkbox
                             checked={formData.roles.includes(role.value)}
                             onCheckedChange={() => handleRoleToggle(role.value)}
                           />
-                          <label className='text-sm text-gray-700 cursor-pointer flex-1'>
+                          <label className='flex-1 text-sm text-gray-700 cursor-pointer'>
                             {role.label}
                           </label>
                         </div>
@@ -195,7 +206,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                 </PopoverContent>
               </Popover>
               {formData.roles.length > 0 && (
-                <p className='text-xs text-gray-500 mt-1'>
+                <p className='mt-1 text-xs text-gray-500'>
                   {formData.roles.length} role{formData.roles.length !== 1 ? 's' : ''} selected
                 </p>
               )}
@@ -212,7 +223,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                 placeholder='e.g., emily.carter@nvschools.edu'
                 value={formData.email}
                 onChange={e => handleChange('email', e.target.value)}
-                className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'
+                className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
                 required
               />
             </div>
@@ -227,8 +238,9 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                 type='tel'
                 placeholder='e.g., (555) 123-4567'
                 value={formData.phone}
-                onChange={e => handleChange('phone', e.target.value)}
-                className='h-10 rounded-lg border-gray-200 focus:border-brand focus:ring-brand'
+                onChange={e => handleChange('phone', formatPhoneNumber(e.target.value))}
+                className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
+                maxLength={14}
               />
             </div>
           </div>
@@ -238,12 +250,12 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
               type='button'
               variant='outline'
               onClick={() => onOpenChange(false)}
-              className='rounded-lg border-gray-200 hover:bg-gray-50 leading-none'>
+              className='leading-none border-gray-200 rounded-lg hover:bg-gray-50'>
               Cancel
             </Button>
             <Button
               type='submit'
-              className='bg-brand hover:bg-brand/90 text-white rounded-lg leading-none'>
+              className='leading-none text-white rounded-lg bg-brand hover:bg-brand/90'>
               Add Member
             </Button>
           </DialogFooter>

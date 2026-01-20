@@ -1,7 +1,27 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { School, Phone, UserCircle, Users, Mail, Plus, AlertCircle, Edit } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  School,
+  Phone,
+  UserCircle,
+  Users,
+  Mail,
+  Plus,
+  AlertCircle,
+  Edit,
+  Trash2,
+} from 'lucide-react'
 
 interface TeamMember {
   id: string
@@ -25,6 +45,7 @@ interface SchoolInfoCardProps {
   onAddMember?: () => void
   onEdit?: () => void
   onEditMember: (member: TeamMember) => void
+  onDeleteMember: (memberId: string) => void
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -56,34 +77,47 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
   onAddMember,
   onEdit,
   onEditMember,
+  onDeleteMember,
 }) => {
+  const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null)
   const hasSchoolName = schoolName && schoolName.trim() !== ''
   const hasSchoolPhone = schoolPhone && schoolPhone.trim() !== ''
   const hasPrimarySLP = primarySLP?.name && primarySLP.name !== 'Not assigned'
   const hasTeamMembers = schoolTeam && schoolTeam.length > 0
+
+  const handleDeleteClick = (member: TeamMember) => {
+    setMemberToDelete(member)
+  }
+
+  const handleConfirmDelete = () => {
+    if (memberToDelete) {
+      onDeleteMember(memberToDelete.id)
+      setMemberToDelete(null)
+    }
+  }
 
   if (!hasSchoolName && !hasSchoolPhone && !hasPrimarySLP && !hasTeamMembers) {
     return (
       <Card className='bg-white border border-gray-100 shadow-sm rounded-xl'>
         <CardHeader className='pb-4'>
           <div className='flex items-center space-x-3'>
-            <div className='w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center'>
+            <div className='flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50'>
               <School className='w-4 h-4 text-brand' />
             </div>
             <div>
-              <CardTitle className='text-xl font-semibold text-gray-900 tracking-tight'>
+              <CardTitle className='text-xl font-semibold tracking-tight text-gray-900'>
                 School Information
               </CardTitle>
             </div>
           </div>
         </CardHeader>
         <CardContent className='pt-0'>
-          <div className='flex flex-col items-center justify-center py-12 px-4'>
-            <div className='w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4'>
+          <div className='flex flex-col items-center justify-center px-4 py-12'>
+            <div className='flex items-center justify-center w-16 h-16 mb-4 bg-gray-100 rounded-full'>
               <School className='w-8 h-8 text-gray-400' />
             </div>
-            <h3 className='text-lg font-semibold text-gray-900 mb-2'>No School Selected</h3>
-            <p className='text-sm text-gray-500 text-center max-w-md'>
+            <h3 className='mb-2 text-lg font-semibold text-gray-900'>No School Selected</h3>
+            <p className='max-w-md text-sm text-center text-gray-500'>
               Please select a school from the dropdown above to view school information and team
               members.
             </p>
@@ -94,196 +128,230 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
   }
 
   return (
-    <Card className='bg-white border border-gray-100 shadow-sm rounded-xl'>
-      <CardHeader className='pb-4'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center space-x-3'>
-            <div className='w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center'>
-              <School className='w-4 h-4 text-brand' />
-            </div>
-            <CardTitle className='text-xl font-semibold text-gray-900 tracking-tight'>
-              School Information
-            </CardTitle>
-          </div>
-          {onEdit && (
-            <Button
-              onClick={onEdit}
-              size='sm'
-              variant='outline'
-              className='border-gray-200 hover:bg-gray-50 text-gray-700 h-8 px-3 rounded-lg text-xs font-medium'>
-              <div className='flex items-center space-x-1.5'>
-                <Edit className='w-3.5 h-3.5' />
-                <span className='leading-none'>Edit Details</span>
+    <>
+      <Card className='bg-white border border-gray-100 shadow-sm rounded-xl'>
+        <CardHeader className='pb-4'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center space-x-3'>
+              <div className='flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50'>
+                <School className='w-4 h-4 text-brand' />
               </div>
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className='pt-0 space-y-6'>
-        {/* School Basic Info */}
-        <div className='space-y-3'>
-          <div className='flex items-start space-x-3'>
-            <div className='w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5'>
-              <School className='w-5 h-5 text-brand' />
+              <CardTitle className='text-xl font-semibold tracking-tight text-gray-900'>
+                School Information
+              </CardTitle>
             </div>
-            <div className='flex-1'>
-              <p className='text-sm font-medium text-gray-600'>School Name</p>
-              {hasSchoolName ? (
-                <p className='text-base font-semibold text-gray-900 mt-1'>{schoolName}</p>
-              ) : (
-                <div className='flex items-center space-x-2 mt-1'>
-                  <AlertCircle className='w-4 h-4 text-gray-400' />
-                  <p className='text-sm text-gray-400 italic'>Not available</p>
+            {onEdit && (
+              <Button
+                onClick={onEdit}
+                size='sm'
+                variant='outline'
+                className='h-8 px-3 text-xs font-medium text-gray-700 border-gray-200 rounded-lg hover:bg-gray-50'>
+                <div className='flex items-center space-x-1.5'>
+                  <Edit className='w-3.5 h-3.5' />
+                  <span className='leading-none'>Edit Details</span>
                 </div>
-              )}
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className='pt-0 space-y-6'>
+          {/* School Basic Info */}
+          <div className='space-y-3'>
+            <div className='flex items-start space-x-3'>
+              <div className='w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5'>
+                <School className='w-5 h-5 text-brand' />
+              </div>
+              <div className='flex-1'>
+                <p className='text-sm font-medium text-gray-600'>School Name</p>
+                {hasSchoolName ? (
+                  <p className='mt-1 text-base font-semibold text-gray-900'>{schoolName}</p>
+                ) : (
+                  <div className='flex items-center mt-1 space-x-2'>
+                    <AlertCircle className='w-4 h-4 text-gray-400' />
+                    <p className='text-sm italic text-gray-400'>Not available</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className='flex items-start space-x-3'>
+              <div className='w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5'>
+                <Phone className='w-5 h-5 text-emerald-600' />
+              </div>
+              <div className='flex-1'>
+                <p className='text-sm font-medium text-gray-600'>Phone Number</p>
+                {hasSchoolPhone ? (
+                  <p className='mt-1 text-base font-semibold text-gray-900'>{schoolPhone}</p>
+                ) : (
+                  <div className='flex items-center mt-1 space-x-2'>
+                    <AlertCircle className='w-4 h-4 text-gray-400' />
+                    <p className='text-sm italic text-gray-400'>Not available</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className='flex items-start space-x-3'>
-            <div className='w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5'>
-              <Phone className='w-5 h-5 text-emerald-600' />
-            </div>
-            <div className='flex-1'>
-              <p className='text-sm font-medium text-gray-600'>Phone Number</p>
-              {hasSchoolPhone ? (
-                <p className='text-base font-semibold text-gray-900 mt-1'>{schoolPhone}</p>
-              ) : (
-                <div className='flex items-center space-x-2 mt-1'>
-                  <AlertCircle className='w-4 h-4 text-gray-400' />
-                  <p className='text-sm text-gray-400 italic'>Not available</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Primary SLP */}
-        <div className='pt-3 border-t border-gray-100'>
-          <div className='flex items-start space-x-3'>
-            <div className='w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5'>
-              <UserCircle className='w-5 h-5 text-indigo-600' />
-            </div>
-            <div className='flex-1'>
-              <p className='text-sm font-medium text-gray-600 mb-2'>Primary SLP</p>
-              {hasPrimarySLP ? (
-                <div className='bg-gray-50 rounded-lg p-3 space-y-1.5'>
-                  <p className='text-base font-semibold text-gray-900'>{primarySLP.name}</p>
-                  <div className='flex items-center space-x-2 text-sm text-gray-600'>
-                    <Mail className='w-3.5 h-3.5' />
-                    <span>{primarySLP.email || 'No email'}</span>
-                  </div>
-                  <div className='flex items-center space-x-2 text-sm text-gray-600'>
-                    <Phone className='w-3.5 h-3.5' />
-                    <span>{primarySLP.phone || 'No phone'}</span>
-                  </div>
-                </div>
-              ) : (
-                <div className='bg-amber-50 border border-amber-100 rounded-lg p-4'>
-                  <div className='flex items-start space-x-3'>
-                    <AlertCircle className='w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5' />
-                    <div>
-                      <p className='text-sm font-medium text-amber-900'>No Primary SLP Assigned</p>
-                      <p className='text-xs text-amber-700 mt-1'>
-                        Contact your administrator to assign a primary SLP to this school.
-                      </p>
+          {/* Primary SLP */}
+          <div className='pt-3 border-t border-gray-100'>
+            <div className='flex items-start space-x-3'>
+              <div className='w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5'>
+                <UserCircle className='w-5 h-5 text-indigo-600' />
+              </div>
+              <div className='flex-1'>
+                <p className='mb-2 text-sm font-medium text-gray-600'>Primary SLP</p>
+                {hasPrimarySLP ? (
+                  <div className='bg-gray-50 rounded-lg p-3 space-y-1.5'>
+                    <p className='text-base font-semibold text-gray-900'>{primarySLP.name}</p>
+                    <div className='flex items-center space-x-2 text-sm text-gray-600'>
+                      <Mail className='w-3.5 h-3.5' />
+                      <span>{primarySLP.email || 'No email'}</span>
+                    </div>
+                    <div className='flex items-center space-x-2 text-sm text-gray-600'>
+                      <Phone className='w-3.5 h-3.5' />
+                      <span>{primarySLP.phone || 'No phone'}</span>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* School Team */}
-        <div className='pt-3 border-t border-gray-100'>
-          <div className='flex items-center justify-between mb-4'>
-            <div className='flex items-start space-x-3'>
-              <div className='w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0'>
-                <Users className='w-5 h-5 text-purple-600' />
-              </div>
-              <div>
-                <p className='text-sm font-medium text-gray-600'>School Team</p>
-                <p className='text-xs text-gray-500 mt-0.5'>{schoolTeam.length} members</p>
-              </div>
-            </div>
-
-            <Button
-              onClick={onAddMember}
-              size='sm'
-              className='bg-brand hover:bg-brand/90 text-white h-8 px-3 rounded-lg text-xs font-medium'>
-              <div className='flex items-center space-x-1.5'>
-                <Plus className='w-3.5 h-3.5' />
-                <span className='leading-none'>Add Member</span>
-              </div>
-            </Button>
-          </div>
-
-          {hasTeamMembers ? (
-            <div className='space-y-2'>
-              {schoolTeam.map(member => (
-                <div
-                  key={member.id}
-                  className='bg-gray-50 rounded-lg p-3 transition-colors duration-150'>
-                  <div className='flex items-start justify-between'>
-                    <div className='flex-1'>
-                      <p className='text-sm font-semibold text-gray-900'>{member.name}</p>
-                      <div className='flex flex-wrap gap-1 mt-1.5'>
-                        {member.roles.map((roleValue, index) => (
-                          <span
-                            key={index}
-                            className='inline-block px-2 py-0.5 rounded-md bg-purple-100 text-purple-700 text-xs font-medium'>
-                            {getRoleLabel(roleValue)}
-                          </span>
-                        ))}
+                ) : (
+                  <div className='p-4 border rounded-lg bg-amber-50 border-amber-100'>
+                    <div className='flex items-start space-x-3'>
+                      <AlertCircle className='w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5' />
+                      <div>
+                        <p className='text-sm font-medium text-amber-900'>
+                          No Primary SLP Assigned
+                        </p>
+                        <p className='mt-1 text-xs text-amber-700'>
+                          Contact your administrator to assign a primary SLP to this school.
+                        </p>
                       </div>
                     </div>
-                    <Button
-                      onClick={() => onEditMember?.(member)}
-                      size='sm'
-                      variant='ghost'
-                      className='h-7 w-7 p-0 hover:bg-gray-200 ml-2'>
-                      <Edit className='w-3.5 h-3.5 text-gray-600' />
-                    </Button>
                   </div>
-                  <div className='flex items-center space-x-2 text-xs text-gray-500 mt-2'>
-                    <Mail className='w-3 h-3' />
-                    <span>{member.email}</span>
-                  </div>
-                  {member.phone && (
-                    <div className='flex items-center space-x-2 text-xs text-gray-500 mt-2'>
-                      <Phone className='w-3 h-3' />
-                      <span>{member.phone || 'No phone'}</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className='bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg p-6'>
-              <div className='flex flex-col items-center justify-center text-center'>
-                <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3'>
-                  <Users className='w-6 h-6 text-gray-400' />
-                </div>
-                <h4 className='text-sm font-semibold text-gray-900 mb-1'>No Team Members Yet</h4>
-                <p className='text-xs text-gray-500 mb-4 max-w-xs'>
-                  Get started by adding your first team member to this school.
-                </p>
-                <Button
-                  onClick={onAddMember}
-                  size='sm'
-                  variant='outline'
-                  className='border-gray-300 hover:bg-gray-50 text-gray-700 h-8 px-4 rounded-lg text-xs font-medium'>
-                  <div className='flex items-center space-x-1.5'>
-                    <Plus className='w-3.5 h-3.5' />
-                    <span>Add First Member</span>
-                  </div>
-                </Button>
+                )}
               </div>
             </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+
+          {/* School Team */}
+          <div className='pt-3 border-t border-gray-100'>
+            <div className='flex items-center justify-between mb-4'>
+              <div className='flex items-start space-x-3'>
+                <div className='flex items-center justify-center flex-shrink-0 w-10 h-10 bg-purple-50 rounded-xl'>
+                  <Users className='w-5 h-5 text-purple-600' />
+                </div>
+                <div>
+                  <p className='text-sm font-medium text-gray-600'>School Team</p>
+                  <p className='text-xs text-gray-500 mt-0.5'>{schoolTeam.length} members</p>
+                </div>
+              </div>
+
+              <Button
+                onClick={onAddMember}
+                size='sm'
+                className='h-8 px-3 text-xs font-medium text-white rounded-lg bg-brand hover:bg-brand/90'>
+                <div className='flex items-center space-x-1.5'>
+                  <Plus className='w-3.5 h-3.5' />
+                  <span className='leading-none'>Add Member</span>
+                </div>
+              </Button>
+            </div>
+
+            {hasTeamMembers ? (
+              <div className='space-y-2'>
+                {schoolTeam.map(member => (
+                  <div
+                    key={member.id}
+                    className='p-3 transition-colors duration-150 rounded-lg bg-gray-50'>
+                    <div className='flex items-start justify-between'>
+                      <div className='flex-1'>
+                        <p className='text-sm font-semibold text-gray-900'>{member.name}</p>
+                        <div className='flex flex-wrap gap-1 mt-1.5'>
+                          {member.roles.map((roleValue, index) => (
+                            <span
+                              key={index}
+                              className='inline-block px-2 py-0.5 rounded-md bg-purple-100 text-purple-700 text-xs font-medium'>
+                              {getRoleLabel(roleValue)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className='flex items-center gap-1 ml-2'>
+                        <Button
+                          onClick={() => onEditMember?.(member)}
+                          size='sm'
+                          variant='ghost'
+                          className='p-0 h-7 w-7 hover:bg-gray-200'>
+                          <Edit className='w-3.5 h-3.5 text-gray-600' />
+                        </Button>
+                        <Button
+                          onClick={() => handleDeleteClick(member)}
+                          size='sm'
+                          variant='ghost'
+                          className='p-0 h-7 w-7 hover:bg-red-100'>
+                          <Trash2 className='w-3.5 h-3.5 text-red-600' />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className='flex items-center mt-2 space-x-2 text-xs text-gray-500'>
+                      <Mail className='w-3 h-3' />
+                      <span>{member.email}</span>
+                    </div>
+                    {member.phone && (
+                      <div className='flex items-center mt-2 space-x-2 text-xs text-gray-500'>
+                        <Phone className='w-3 h-3' />
+                        <span>{member.phone || 'No phone'}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className='p-6 border-2 border-gray-200 border-dashed rounded-lg bg-gray-50'>
+                <div className='flex flex-col items-center justify-center text-center'>
+                  <div className='flex items-center justify-center w-12 h-12 mb-3 bg-gray-100 rounded-full'>
+                    <Users className='w-6 h-6 text-gray-400' />
+                  </div>
+                  <h4 className='mb-1 text-sm font-semibold text-gray-900'>No Team Members Yet</h4>
+                  <p className='max-w-xs mb-4 text-xs text-gray-500'>
+                    Get started by adding your first team member to this school.
+                  </p>
+                  <Button
+                    onClick={onAddMember}
+                    size='sm'
+                    variant='outline'
+                    className='h-8 px-4 text-xs font-medium text-gray-700 border-gray-300 rounded-lg hover:bg-gray-50'>
+                    <div className='flex items-center space-x-1.5'>
+                      <Plus className='w-3.5 h-3.5' />
+                      <span>Add First Member</span>
+                    </div>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!memberToDelete} onOpenChange={() => setMemberToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Team Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove <strong>{memberToDelete?.name}</strong> from the
+              school team? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className='bg-red-600 hover:bg-red-700'>
+              Remove Member
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
 
