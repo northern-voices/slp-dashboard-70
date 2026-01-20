@@ -6,7 +6,7 @@ import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, Calendar, X } from 'lucide-react'
+import { ChevronLeft, Calendar, X, Eye, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -16,6 +16,10 @@ import { useToast } from '@/hooks/use-toast'
 import { useCreateMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useGetUsers } from '@/hooks/users/use-users'
+import { useScreeningsByStudent } from '@/hooks/screenings'
+import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
+import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
+import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
 import { GRADE_MAPPING } from '@/constants/app'
 import {
   Select,
@@ -36,13 +40,21 @@ import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMe
 
 const CreateMonthlyMeetingContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showStudentModal, setShowStudentModal] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [studentData, setStudentData] = useState<
+    Record<string, { sessions_attended: number | null; meeting_notes: string }>
+  >({})
+  const [attendeeInput, setAttendeeInput] = useState('')
+  const [showScreeningModal, setShowScreeningModal] = useState(false)
+
   const navigate = useNavigate()
   const { toast } = useToast()
   const { userProfile, currentSchool } = useOrganization()
 
   const createMonthlyMeetings = useCreateMonthlyMeeting()
   const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
-    currentSchool?.id
+    currentSchool?.id,
   )
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
   const { user } = useAuth()
@@ -66,12 +78,11 @@ const CreateMonthlyMeetingContent = () => {
     action_plan: '',
   })
 
-  const [showStudentModal, setShowStudentModal] = useState(false)
-  const [selectedStudent, setSelectedStudent] = useState(null)
-  const [studentData, setStudentData] = useState<
-    Record<string, { sessions_attended: number | null; meeting_notes: string }>
-  >({})
-  const [attendeeInput, setAttendeeInput] = useState('')
+  const { data: studentScreenings = [], isLoading: isLoadingScreenings } = useScreeningsByStudent(
+    selectedStudent?.id,
+  )
+
+  const mostRecentScreening = studentScreenings[0]
 
   const handleAddAttendee = () => {
     const trimmedInput = attendeeInput.trim()
@@ -337,7 +348,7 @@ const CreateMonthlyMeetingContent = () => {
                           className={cn(
                             'min-h-[42px] w-full rounded-md border border-input bg-background',
                             'px-3 py-2 text-sm ring-offset-background',
-                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
+                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
                           )}>
                           <div className='flex flex-wrap gap-2'>
                             {/* Display existing attendees as badges */}
@@ -449,7 +460,19 @@ const CreateMonthlyMeetingContent = () => {
                         ? `${selectedStudent.first_name} ${selectedStudent.last_name}`
                         : ''}
                     </DialogTitle>
+                    {selectedStudent?.grade && (
+                      <p className='text-sm text-gray-500'>
+                        Grade:{' '}
+                        {GRADE_MAPPING[selectedStudent.grade]?.display || selectedStudent.grade}
+                      </p>
+                    )}
+
+                    <LastScreeningCard
+                      screening={mostRecentScreening}
+                      onViewDetails={() => setShowScreeningModal(true)}
+                    />
                   </DialogHeader>
+
                   <div className='space-y-4 py-4'>
                     <div className='space-y-2'>
                       <Label htmlFor='modal_sessions_attended'>Sessions Attended</Label>
@@ -459,7 +482,7 @@ const CreateMonthlyMeetingContent = () => {
                         min='0'
                         value={
                           selectedStudent?.id
-                            ? studentData[selectedStudent.id]?.sessions_attended ?? ''
+                            ? (studentData[selectedStudent.id]?.sessions_attended ?? '')
                             : ''
                         }
                         onChange={e => {
@@ -530,6 +553,23 @@ const CreateMonthlyMeetingContent = () => {
                     </Button>
                   </DialogFooter>
                 </DialogContent>
+
+                {/* Screening Details */}
+                {mostRecentScreening?.source_table === 'speech' && (
+                  <ScreeningDetailsModal
+                    isOpen={showScreeningModal}
+                    onClose={() => setShowScreeningModal(false)}
+                    screening={mostRecentScreening}
+                  />
+                )}
+
+                {mostRecentScreening?.source_table === 'hearing' && (
+                  <HearingScreeningDetailsModal
+                    isOpen={showScreeningModal}
+                    onClose={() => setShowScreeningModal(false)}
+                    screening={mostRecentScreening}
+                  />
+                )}
               </Dialog>
             </div>
           </div>
