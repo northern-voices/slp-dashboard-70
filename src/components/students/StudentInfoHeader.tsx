@@ -443,7 +443,7 @@ const StudentInfoHeader = ({
                   <h1 className='text-2xl font-semibold text-gray-900'>
                     {localStudent.first_name} {localStudent.last_name}
                   </h1>
-                  <p className='text-gray-600'>Student ID: {localStudent.student_id}</p>
+                  {/* <p className='text-gray-600'>Student ID: {localStudent.student_id}</p> */}
                 </div>
               </div>
 
