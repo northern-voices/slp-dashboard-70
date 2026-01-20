@@ -83,14 +83,14 @@ const ScreeningBulkActions = ({
           </div>
 
           <div className='flex items-center gap-2'>
-            <Button
+            {/* <Button
               variant='outline'
               size='sm'
               onClick={handleExport}
               className='text-blue-700 border-blue-300 hover:bg-blue-100'>
               <Download className='w-4 h-4 mr-2' />
               Export
-            </Button>
+            </Button> */}
             <Button
               variant='outline'
               size='sm'
@@ -99,14 +99,14 @@ const ScreeningBulkActions = ({
               <Mail className='w-4 h-4 mr-2' />
               Email Reports
             </Button>
-            <Button
+            {/* <Button
               variant='outline'
               size='sm'
               onClick={handleStatusUpdate}
               className='text-blue-700 border-blue-300 hover:bg-blue-100'>
               <RefreshCw className='w-4 h-4 mr-2' />
               Update Status
-            </Button>
+            </Button> */}
             <Button
               variant='outline'
               size='sm'
