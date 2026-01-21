@@ -118,25 +118,25 @@ const ReportGenerationForm = () => {
         result = await edgeFunctionsApi.schoolWideStudentProgressReport(
           currentSchool.id,
           data.academicYear,
-          data.email
+          data.email,
         )
       } else if (data.reportType === 'goal-sheets') {
         result = await edgeFunctionsApi.schoolWideStudentGoalSheets(
           currentSchool.id,
           data.academicYear,
-          data.email
+          data.email,
         )
       } else if (data.reportType === 'student-reports') {
         result = await edgeFunctionsApi.schoolWideSendStudentReports(
           currentSchool.id,
           data.academicYear,
-          data.email
+          data.email,
         )
       } else if (data.reportType === 'school-summary-report') {
         result = await edgeFunctionsApi.schoolSummaryReport(
           currentSchool.id,
           data.academicYear,
-          data.email
+          data.email,
         )
       } else {
         console.warn(`Unknown report type: ${data.reportType}`)
@@ -149,7 +149,7 @@ const ReportGenerationForm = () => {
       setModalMessage(
         `Your ${
           screeningReports.find(type => type.value === data.reportType)?.label
-        } is being generated. You'll receive an email at ${data.email} when it's ready.`
+        } is being generated. You'll receive an email at ${data.email} when it's ready.`,
       )
       setIsSuccessModalOpen(true)
     } catch (error: unknown) {
@@ -160,19 +160,19 @@ const ReportGenerationForm = () => {
 
       if (data.reportType === 'student-reports') {
         setModalMessage(
-          `No speech screenings found for the ${data.academicYear} academic year. Please ensure speech screenings have been completed before generating this report.`
+          `No speech screenings found for the ${data.academicYear} academic year. Please ensure speech screenings have been completed before generating this report.`,
         )
       } else if (data.reportType === 'goal-sheets') {
         setModalMessage(
-          `No student data available for goal sheets in the ${data.academicYear} academic year. Please ensure students have been screened before generating goal sheets.`
+          `No student data available for goal sheets in the ${data.academicYear} academic year. Please ensure students have been screened before generating goal sheets.`,
         )
       } else if (data.reportType === 'school-summary-report') {
         setModalMessage(
-          `No screening data found for the ${data.academicYear} academic year. Please ensure screenings have been completed before generating the school summary report.`
+          `No screening data found for the ${data.academicYear} academic year. Please ensure screenings have been completed before generating the school summary report.`,
         )
       } else if (data.reportType === 'progress-reports') {
         setModalMessage(
-          `No progress data found for the ${data.academicYear} academic year. Please ensure student progress has been tracked before generating this report.`
+          `No progress data found for the ${data.academicYear} academic year. Please ensure student progress has been tracked before generating this report.`,
         )
       } else {
         setModalMessage('Failed to generate report. Please try again.')
