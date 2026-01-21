@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Screening } from '@/types/database'
 import ExportScreeningsModal from './ExportScreeningsModal'
 import SendReportsModal from './SendReportsModal'
+import BulkSendReportsModal from './BulkSendReportsModal'
 import DeleteScreeningsModal from './DeleteScreeningsModal'
 import StatusUpdateModal from './StatusUpdateModal'
 
@@ -124,6 +125,13 @@ const ScreeningBulkActions = ({
         onClose={() => setShowExportModal(false)}
         selectedScreenings={selectedScreenings}
         onExport={handleActionComplete}
+      />
+
+      <BulkSendReportsModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        selectedScreenings={selectedScreenings}
+        onSend={handleActionComplete}
       />
 
       {/* <SendReportsModal
