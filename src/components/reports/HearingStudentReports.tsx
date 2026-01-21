@@ -39,7 +39,7 @@ const HearingStudentReports = () => {
   const [customMessage, setCustomMessage] = useState('')
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [selectedScreeningForDetails, setSelectedScreeningForDetails] = useState<Screening | null>(
-    null
+    null,
   )
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -270,8 +270,8 @@ const HearingStudentReports = () => {
                 emailStatus === 'success'
                   ? 'bg-green-50 border-green-200 text-green-800'
                   : emailStatus === 'error'
-                  ? 'bg-red-50 border-red-200 text-red-800'
-                  : 'bg-blue-50 border-blue-200 text-blue-800'
+                    ? 'bg-red-50 border-red-200 text-red-800'
+                    : 'bg-blue-50 border-blue-200 text-blue-800'
               }`}>
               <div className='flex items-center gap-2'>
                 {emailStatus === 'success' && <CheckCircle className='w-4 h-4' />}
@@ -404,7 +404,7 @@ const HearingScreeningsTable = ({
   const formatValue = (
     value: number | null | undefined,
     result: string | null | undefined,
-    unit: string
+    unit: string,
   ) => {
     if (result === 'Immeasurable' || value === null || value === undefined) {
       return 'Immeasurable'
@@ -504,7 +504,7 @@ const HearingScreeningsTable = ({
                               {formatValue(
                                 screening.right_volume_db,
                                 screening.right_ear_volume_result,
-                                'ml'
+                                'ml',
                               )}
                             </p>
                             <p>
@@ -512,7 +512,7 @@ const HearingScreeningsTable = ({
                               {formatValue(
                                 screening.right_compliance,
                                 screening.right_ear_compliance_result,
-                                'ml'
+                                'ml',
                               )}
                             </p>
                             <p>
@@ -520,7 +520,7 @@ const HearingScreeningsTable = ({
                               {formatValue(
                                 screening.right_pressure,
                                 screening.right_ear_pressure_result,
-                                'daPa'
+                                'daPa',
                               )}
                             </p>
                           </div>
@@ -533,7 +533,7 @@ const HearingScreeningsTable = ({
                               {formatValue(
                                 screening.left_volume_db,
                                 screening.left_ear_volume_result,
-                                'ml'
+                                'ml',
                               )}
                             </p>
                             <p>
@@ -541,7 +541,7 @@ const HearingScreeningsTable = ({
                               {formatValue(
                                 screening.left_compliance,
                                 screening.left_ear_compliance_result,
-                                'ml'
+                                'ml',
                               )}
                             </p>
                             <p>
@@ -549,7 +549,7 @@ const HearingScreeningsTable = ({
                               {formatValue(
                                 screening.left_pressure,
                                 screening.left_ear_pressure_result,
-                                'daPa'
+                                'daPa',
                               )}
                             </p>
                           </div>
@@ -584,12 +584,12 @@ const HearingScreeningsTable = ({
                           {formatValue(
                             screening.right_volume_db,
                             screening.right_ear_volume_result,
-                            'ml'
+                            'ml',
                           )}
                         </span>
                         <Badge
                           className={`text-xs ${getResultBadgeColor(
-                            screening.right_ear_volume_result
+                            screening.right_ear_volume_result,
                           )}`}>
                           {screening.right_ear_volume_result || '-'}
                         </Badge>
@@ -600,12 +600,12 @@ const HearingScreeningsTable = ({
                           {formatValue(
                             screening.right_compliance,
                             screening.right_ear_compliance_result,
-                            'ml'
+                            'ml',
                           )}
                         </span>
                         <Badge
                           className={`text-xs ${getResultBadgeColor(
-                            screening.right_ear_compliance_result
+                            screening.right_ear_compliance_result,
                           )}`}>
                           {screening.right_ear_compliance_result || '-'}
                         </Badge>
@@ -616,12 +616,12 @@ const HearingScreeningsTable = ({
                           {formatValue(
                             screening.right_pressure,
                             screening.right_ear_pressure_result,
-                            'daPa'
+                            'daPa',
                           )}
                         </span>
                         <Badge
                           className={`text-xs ${getResultBadgeColor(
-                            screening.right_ear_pressure_result
+                            screening.right_ear_pressure_result,
                           )}`}>
                           {screening.right_ear_pressure_result || '-'}
                         </Badge>
@@ -636,12 +636,12 @@ const HearingScreeningsTable = ({
                           {formatValue(
                             screening.left_volume_db,
                             screening.left_ear_volume_result,
-                            'ml'
+                            'ml',
                           )}
                         </span>
                         <Badge
                           className={`text-xs ${getResultBadgeColor(
-                            screening.left_ear_volume_result
+                            screening.left_ear_volume_result,
                           )}`}>
                           {screening.left_ear_volume_result || '-'}
                         </Badge>
@@ -652,12 +652,12 @@ const HearingScreeningsTable = ({
                           {formatValue(
                             screening.left_compliance,
                             screening.left_ear_compliance_result,
-                            'ml'
+                            'ml',
                           )}
                         </span>
                         <Badge
                           className={`text-xs ${getResultBadgeColor(
-                            screening.left_ear_compliance_result
+                            screening.left_ear_compliance_result,
                           )}`}>
                           {screening.left_ear_compliance_result || '-'}
                         </Badge>
@@ -668,12 +668,12 @@ const HearingScreeningsTable = ({
                           {formatValue(
                             screening.left_pressure,
                             screening.left_ear_pressure_result,
-                            'daPa'
+                            'daPa',
                           )}
                         </span>
                         <Badge
                           className={`text-xs ${getResultBadgeColor(
-                            screening.left_ear_pressure_result
+                            screening.left_ear_pressure_result,
                           )}`}>
                           {screening.left_ear_pressure_result || '-'}
                         </Badge>

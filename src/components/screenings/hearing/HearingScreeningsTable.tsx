@@ -38,6 +38,7 @@ import HearingScreeningDetailsModal from '@/components/students/screening-histor
 import SendReportsModal from '@/components/screenings/SendReportsModal'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
+import ScreeningBulkActions from '@/components/screenings/ScreeningBulkActions'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -209,7 +210,7 @@ const HearingScreeningsTable = ({
   const formatValue = (
     value: number | null | undefined,
     result: string | null | undefined,
-    unit: string
+    unit: string,
   ) => {
     if (result === 'Immeasurable' || value === null || value === undefined) {
       return 'Immeasurable'
@@ -249,7 +250,7 @@ const HearingScreeningsTable = ({
   const handleViewStudent = (screening: Screening) => {
     // Find student by comparing screening.student_id with both student.id and student.student_id
     const student = students.find(
-      s => s.id === screening.student_id || s.student_id === screening.student_id
+      s => s.id === screening.student_id || s.student_id === screening.student_id,
     )
 
     if (!student) {
@@ -298,6 +299,8 @@ const HearingScreeningsTable = ({
     }
   }
 
+  const handleBulkAction = (action: string) => {}
+
   const handleDeleteCancel = () => {
     setScreeningToDelete(null)
   }
@@ -321,6 +324,18 @@ const HearingScreeningsTable = ({
 
   return (
     <div className='space-y-4'>
+      {selectedScreenings.length > 0 && (
+        <ScreeningBulkActions
+          selectedCount={selectedScreenings.length}
+          selectedScreenings={selectedScreenings.map(s => ({
+            ...s,
+            source_table: 'hearing',
+          }))}
+          onBulkAction={handleBulkAction}
+          onClearSelection={() => setSelectedScreenings([])}
+        />
+      )}
+
       <div className='flex justify-end mb-3'>
         <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
           {sortedScreenings.length} screening{sortedScreenings.length !== 1 ? 's' : ''} found
@@ -404,7 +419,7 @@ const HearingScreeningsTable = ({
                             {formatValue(
                               screening.right_volume_db,
                               screening.right_ear_volume_result,
-                              'ml'
+                              'ml',
                             )}
                           </span>
                         </div>
@@ -412,7 +427,7 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_volume_result
+                              screening.right_ear_volume_result,
                             )}`}>
                             {screening.right_ear_volume_result || '-'}
                           </Badge>
@@ -428,7 +443,7 @@ const HearingScreeningsTable = ({
                             {formatValue(
                               screening.right_compliance,
                               screening.right_ear_compliance_result,
-                              'ml'
+                              'ml',
                             )}
                           </span>
                         </div>
@@ -436,7 +451,7 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_compliance_result
+                              screening.right_ear_compliance_result,
                             )}`}>
                             {screening.right_ear_compliance_result || '-'}
                           </Badge>
@@ -452,7 +467,7 @@ const HearingScreeningsTable = ({
                             {formatValue(
                               screening.right_pressure,
                               screening.right_ear_pressure_result,
-                              'daPa'
+                              'daPa',
                             )}
                           </span>
                         </div>
@@ -460,7 +475,7 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_pressure_result
+                              screening.right_ear_pressure_result,
                             )}`}>
                             {screening.right_ear_pressure_result || '-'}
                           </Badge>
@@ -479,7 +494,7 @@ const HearingScreeningsTable = ({
                             {formatValue(
                               screening.left_volume_db,
                               screening.left_ear_volume_result,
-                              'ml'
+                              'ml',
                             )}
                           </span>
                         </div>
@@ -487,7 +502,7 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_volume_result
+                              screening.left_ear_volume_result,
                             )}`}>
                             {screening.left_ear_volume_result || '-'}
                           </Badge>
@@ -503,7 +518,7 @@ const HearingScreeningsTable = ({
                             {formatValue(
                               screening.left_compliance,
                               screening.left_ear_compliance_result,
-                              'ml'
+                              'ml',
                             )}
                           </span>
                         </div>
@@ -511,7 +526,7 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_compliance_result
+                              screening.left_ear_compliance_result,
                             )}`}>
                             {screening.left_ear_compliance_result || '-'}
                           </Badge>
@@ -527,7 +542,7 @@ const HearingScreeningsTable = ({
                             {formatValue(
                               screening.left_pressure,
                               screening.left_ear_pressure_result,
-                              'daPa'
+                              'daPa',
                             )}
                           </span>
                         </div>
@@ -535,7 +550,7 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_pressure_result
+                              screening.left_ear_pressure_result,
                             )}`}>
                             {screening.left_ear_pressure_result || '-'}
                           </Badge>
