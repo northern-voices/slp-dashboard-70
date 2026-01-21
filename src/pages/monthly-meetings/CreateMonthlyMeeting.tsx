@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useCreateMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useGetUsers } from '@/hooks/users/use-users'
-import { useScreeningsByStudent } from '@/hooks/screenings'
+import { useSpeechScreeningsByStudent } from '@/hooks/screenings'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
 import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
@@ -78,9 +78,8 @@ const CreateMonthlyMeetingContent = () => {
     action_plan: '',
   })
 
-  const { data: studentScreenings = [], isLoading: isLoadingScreenings } = useScreeningsByStudent(
-    selectedStudent?.id,
-  )
+  const { data: studentScreenings = [], isLoading: isLoadingScreenings } =
+    useSpeechScreeningsByStudent(selectedStudent?.id)
 
   const mostRecentScreening = studentScreenings[0]
 
@@ -557,14 +556,6 @@ const CreateMonthlyMeetingContent = () => {
                 {/* Screening Details */}
                 {mostRecentScreening?.source_table === 'speech' && (
                   <ScreeningDetailsModal
-                    isOpen={showScreeningModal}
-                    onClose={() => setShowScreeningModal(false)}
-                    screening={mostRecentScreening}
-                  />
-                )}
-
-                {mostRecentScreening?.source_table === 'hearing' && (
-                  <HearingScreeningDetailsModal
                     isOpen={showScreeningModal}
                     onClose={() => setShowScreeningModal(false)}
                     screening={mostRecentScreening}
