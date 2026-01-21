@@ -36,8 +36,10 @@ const BulkSendReportsModal = ({
   const [resultType, setResultType] = useState<'success' | 'error'>('success')
   const [resultMessage, setResultMessage] = useState('')
 
+  const isHearingOnly = selectedScreenings.every(s => s.source_table === 'hearing')
+
   const handleSendReports = async () => {
-    if (!recipientEmail || selectedReports.length === 0) return
+    if (!recipientEmail || (!isHearingOnly && selectedReports.length === 0)) return
 
     setIsLoading(true)
     setProgress({ current: 0, total: selectedScreenings.length })
@@ -138,47 +140,60 @@ const BulkSendReportsModal = ({
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
             <Mail className='w-5 h-5' />
-            Send Reports for {selectedScreenings.length} Screening(s)
+            Send {isHearingOnly ? 'Hearing' : ''} Reports for {selectedScreenings.length}{' '}
+            Screening(s)
           </DialogTitle>
         </DialogHeader>
 
         <div className='space-y-4'>
-          {/* Report Selection */}
-          <div className='space-y-3'>
-            <Label>Select Report Type(s)</Label>
-            <div className='grid grid-cols-1 gap-3'>
-              {reportOptions.map(report => {
-                const Icon = report.icon
-                const isSelected = selectedReports.includes(report.value)
-                return (
-                  <div
-                    key={report.value}
-                    onClick={() => {
-                      if (isSelected) {
-                        setSelectedReports(selectedReports.filter(r => r !== report.value))
-                      } else {
-                        setSelectedReports([...selectedReports, report.value])
-                      }
-                    }}
-                    className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
-                      isSelected
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}>
-                    <div className='flex items-center gap-3'>
-                      <Icon
-                        className={`w-5 h-5 ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}
-                      />
-                      <div>
-                        <p className='font-medium'>{report.label}</p>
-                        <p className='text-sm text-gray-500'>{report.description}</p>
+          {/* Only show report selection for speech screenings */}
+          {!isHearingOnly && (
+            <div className='space-y-3'>
+              <Label>Select Report Type(s)</Label>
+              <div className='grid grid-cols-1 gap-3'>
+                {reportOptions.map(report => {
+                  const Icon = report.icon
+                  const isSelected = selectedReports.includes(report.value)
+                  return (
+                    <div
+                      key={report.value}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedReports(selectedReports.filter(r => r !== report.value))
+                        } else {
+                          setSelectedReports([...selectedReports, report.value])
+                        }
+                      }}
+                      className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                        isSelected
+                          ? 'border-blue-600 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}>
+                      <div className='flex items-center gap-3'>
+                        <Icon
+                          className={`w-5 h-5 ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}
+                        />
+                        <div>
+                          <p className='font-medium'>{report.label}</p>
+                          <p className='text-sm text-gray-500'>{report.description}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Show info for hearing screenings */}
+          {isHearingOnly && (
+            <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
+              <p className='text-sm text-blue-800'>
+                Hearing reports will be generated and sent for {selectedScreenings.length}{' '}
+                screening(s).
+              </p>
+            </div>
+          )}
 
           {/* Email Input */}
           <div className='space-y-2'>
@@ -206,7 +221,9 @@ const BulkSendReportsModal = ({
             </Button>
             <Button
               onClick={handleSendReports}
-              disabled={!recipientEmail || selectedReports.length === 0 || isLoading}>
+              disabled={
+                !recipientEmail || (!isHearingOnly && selectedReports.length === 0) || isLoading
+              }>
               {isLoading ? (
                 <Loader2 className='w-4 h-4 mr-2 animate-spin' />
               ) : (
