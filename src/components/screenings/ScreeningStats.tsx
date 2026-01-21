@@ -31,38 +31,29 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
   const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
   const error = currentSchool ? errorSchool : errorAll
 
-  // Get the latest screening for each student
-  const latestScreeningsByStudent = schoolScreenings.reduce((acc, screening) => {
-    const studentId = screening.student_id
-    const existingScreening = acc.get(studentId)
-
-    if (
-      !existingScreening ||
-      new Date(screening.created_at) > new Date(existingScreening.created_at)
-    ) {
-      acc.set(studentId, screening)
-    }
-
-    return acc
-  }, new Map())
-
-  const latestScreenings = Array.from(latestScreeningsByStudent.values())
-
-  const qualifiedScreenings = latestScreenings.filter(
-    s => s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true
+  const graduatedStudentIds = new Set(
+    schoolScreenings
+      .filter(s => s.error_patterns?.screening_metadata?.graduated === true)
+      .map(s => s.student_id),
   )
-  const subsScreenings = latestScreenings.filter(
-    s => s.error_patterns?.screening_metadata?.sub === true
+
+  const qualifiedStudentIds = new Set(
+    schoolScreenings
+      .filter(s => s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true)
+      .map(s => s.student_id),
   )
-  const graduatedScreenings = latestScreenings.filter(
-    s => s.error_patterns?.screening_metadata?.graduated === true
+
+  const subStudentIds = new Set(
+    schoolScreenings
+      .filter(s => s.error_patterns?.screening_metadata?.sub === true)
+      .map(s => s.student_id),
   )
 
   const stats = {
     totalScreenings: schoolScreenings.length,
-    qualifiedScreenings: qualifiedScreenings.length,
-    subsScreenings: subsScreenings.length,
-    scheduledScreenings: graduatedScreenings.length,
+    qualifiedScreenings: qualifiedStudentIds.size,
+    subsScreenings: subStudentIds.size,
+    graduatedScreenings: graduatedStudentIds.size,
   }
 
   const handleCardClick = (filterValue: string) => {
@@ -158,7 +149,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
           <Calendar className='h-4 w-4 text-muted-foreground' />
         </CardHeader>
         <CardContent>
-          <div className='text-2xl font-bold'>{stats.scheduledScreenings}</div>
+          <div className='text-2xl font-bold'>{stats.graduatedScreenings}</div>
         </CardContent>
       </Card>
     </div>
