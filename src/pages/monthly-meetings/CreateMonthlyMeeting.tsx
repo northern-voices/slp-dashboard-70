@@ -16,9 +16,8 @@ import { useToast } from '@/hooks/use-toast'
 import { useCreateMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useGetUsers } from '@/hooks/users/use-users'
-import { useScreeningsByStudent } from '@/hooks/screenings'
+import { useSpeechScreeningsByStudent } from '@/hooks/screenings'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
-import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
 import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
 import { GRADE_MAPPING } from '@/constants/app'
 import {
@@ -78,9 +77,8 @@ const CreateMonthlyMeetingContent = () => {
     action_plan: '',
   })
 
-  const { data: studentScreenings = [], isLoading: isLoadingScreenings } = useScreeningsByStudent(
-    selectedStudent?.id,
-  )
+  const { data: studentScreenings = [], isLoading: isLoadingScreenings } =
+    useSpeechScreeningsByStudent(selectedStudent?.id)
 
   const mostRecentScreening = studentScreenings[0]
 
@@ -467,10 +465,25 @@ const CreateMonthlyMeetingContent = () => {
                       </p>
                     )}
 
-                    <LastScreeningCard
-                      screening={mostRecentScreening}
-                      onViewDetails={() => setShowScreeningModal(true)}
-                    />
+                    {isLoadingScreenings ? (
+                      <div className='mt-3 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 shadow-sm animate-pulse'>
+                        <div className='flex items-center justify-between'>
+                          <div className='flex items-center gap-2'>
+                            <div className='w-2 h-2 rounded-full bg-gray-300' />
+                            <div className='h-4 w-24 bg-gray-200 rounded' />
+                            <div className='h-5 w-20 bg-gray-200 rounded-full' />
+                          </div>
+                          <div className='h-8 w-32 bg-gray-200 rounded' />
+                        </div>
+                      </div>
+                    ) : mostRecentScreening ? (
+                      <LastScreeningCard
+                        screening={mostRecentScreening}
+                        onViewDetails={() => setShowScreeningModal(true)}
+                      />
+                    ) : (
+                      <p className='mt-3 text-sm text-gray-400'>No speech screenings on record</p>
+                    )}
                   </DialogHeader>
 
                   <div className='space-y-4 py-4'>
@@ -555,16 +568,8 @@ const CreateMonthlyMeetingContent = () => {
                 </DialogContent>
 
                 {/* Screening Details */}
-                {mostRecentScreening?.source_table === 'speech' && (
+                {mostRecentScreening && (
                   <ScreeningDetailsModal
-                    isOpen={showScreeningModal}
-                    onClose={() => setShowScreeningModal(false)}
-                    screening={mostRecentScreening}
-                  />
-                )}
-
-                {mostRecentScreening?.source_table === 'hearing' && (
-                  <HearingScreeningDetailsModal
                     isOpen={showScreeningModal}
                     onClose={() => setShowScreeningModal(false)}
                     screening={mostRecentScreening}
