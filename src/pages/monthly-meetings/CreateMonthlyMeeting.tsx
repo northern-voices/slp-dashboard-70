@@ -15,10 +15,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useCreateMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
+import { useMonthlyMeetingsByStudent } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
 import { useGetUsers } from '@/hooks/users/use-users'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
-import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
 import { GRADE_MAPPING } from '@/constants/app'
 import {
   Select,
@@ -36,6 +36,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMeetingStudentTable'
+import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
+import LastMeetingCard from '@/components/monthly-meetings/LastMeetingCard'
+import MonthlyMeetingDetailsModal from './MonthlyMeetingDetailsModal'
 
 const CreateMonthlyMeetingContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -46,6 +49,7 @@ const CreateMonthlyMeetingContent = () => {
   >({})
   const [attendeeInput, setAttendeeInput] = useState('')
   const [showScreeningModal, setShowScreeningModal] = useState(false)
+  const [showMeetingModal, setShowMeetingModal] = useState(false)
 
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -81,6 +85,12 @@ const CreateMonthlyMeetingContent = () => {
     useSpeechScreeningsByStudent(selectedStudent?.id)
 
   const mostRecentScreening = studentScreenings[0]
+
+  const { data: studentMeetings = [], isLoading: isLoadingMeetings } = useMonthlyMeetingsByStudent(
+    selectedStudent?.id,
+  )
+
+  const mostRecentMeeting = studentMeetings[0]
 
   const handleAddAttendee = () => {
     const trimmedInput = attendeeInput.trim()
@@ -482,7 +492,41 @@ const CreateMonthlyMeetingContent = () => {
                         onViewDetails={() => setShowScreeningModal(true)}
                       />
                     ) : (
-                      <p className='mt-3 text-sm text-gray-400'>No speech screenings on record</p>
+                      <div className='mt-3 p-4 bg-gray-50/50 rounded-xl border border-dashed border-gray-200'>
+                        <div className='flex items-center gap-2'>
+                          <div className='w-2 h-2 rounded-full bg-gray-300' />
+                          <span className='text-sm text-gray-400'>
+                            No speech screenings on record
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {isLoadingMeetings ? (
+                      <div className='mt-3 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 shadow-sm animate-pulse'>
+                        <div className='flex items-center justify-between'>
+                          <div className='flex items-center gap-2'>
+                            <div className='w-2 h-2 rounded-full bg-gray-300' />
+                            <div className='h-4 w-24 bg-gray-200 rounded' />
+                            <div className='h-5 w-20 bg-gray-200 rounded-full' />
+                          </div>
+                          <div className='h-8 w-32 bg-gray-200 rounded' />
+                        </div>
+                      </div>
+                    ) : mostRecentMeeting ? (
+                      <LastMeetingCard
+                        meeting={mostRecentMeeting}
+                        onViewDetails={() => setShowMeetingModal(true)}
+                      />
+                    ) : (
+                      <div className='mt-3 p-4 bg-gray-50/50 rounded-xl border border-dashed border-gray-200'>
+                        <div className='flex items-center gap-2'>
+                          <div className='w-2 h-2 rounded-full bg-gray-300' />
+                          <span className='text-sm text-gray-400'>
+                            No monthly meetings on record
+                          </span>
+                        </div>
+                      </div>
                     )}
                   </DialogHeader>
 
@@ -573,6 +617,15 @@ const CreateMonthlyMeetingContent = () => {
                     isOpen={showScreeningModal}
                     onClose={() => setShowScreeningModal(false)}
                     screening={mostRecentScreening}
+                  />
+                )}
+
+                {/* Meeting Details Modal */}
+                {mostRecentMeeting && (
+                  <MonthlyMeetingDetailsModal
+                    isOpen={showMeetingModal}
+                    onClose={() => setShowMeetingModal(false)}
+                    meeting={mostRecentMeeting}
                   />
                 )}
               </Dialog>
