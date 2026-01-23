@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
@@ -39,37 +39,45 @@ import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMe
 import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
 import LastMeetingCard from '@/components/monthly-meetings/LastMeetingCard'
 import MonthlyMeetingDetailsModal from './MonthlyMeetingDetailsModal'
+import { useDraft } from '@/hooks/use-draft'
+
+interface MeetingFormData {
+  meeting_title: string
+  facilitator_id: string
+  attendees: string[]
+  meeting_date: string
+  additional_notes: string
+  action_plan: string
+}
+
+interface DraftData {
+  formData: MeetingFormData
+  studentData: Record<string, { sessions_attended: number | null; meeting_notes: string }>
+}
 
 const CreateMonthlyMeetingContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showStudentModal, setShowStudentModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState(null)
-  const [studentData, setStudentData] = useState<
-    Record<string, { sessions_attended: number | null; meeting_notes: string }>
-  >({})
   const [attendeeInput, setAttendeeInput] = useState('')
   const [showScreeningModal, setShowScreeningModal] = useState(false)
   const [showMeetingModal, setShowMeetingModal] = useState(false)
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false)
 
   const navigate = useNavigate()
   const { toast } = useToast()
   const { userProfile, currentSchool } = useOrganization()
-
-  const createMonthlyMeetings = useCreateMonthlyMeeting()
-  const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
-    currentSchool?.id,
-  )
-  const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
   const { user } = useAuth()
 
-  const [formData, setFormData] = useState({
+  // Initial form data
+  const getInitialFormData = (): MeetingFormData => ({
     meeting_title: (() => {
       const today = new Date()
       const monthName = today.toLocaleDateString('en-US', { month: 'long' })
       return `${monthName} Monthly Meeting`
     })(),
     facilitator_id: user?.id || '',
-    attendees: [] as string[],
+    attendees: [],
     meeting_date: (() => {
       const today = new Date()
       const year = today.getFullYear()
@@ -80,6 +88,57 @@ const CreateMonthlyMeetingContent = () => {
     additional_notes: '',
     action_plan: '',
   })
+
+  const draftKey = `monthly-meeting-draft-${currentSchool?.id || 'no-school'}`
+  const {
+    data: draftData,
+    setData: setDraftData,
+    hasDraft,
+    isDirty,
+    loadDraft,
+    clearDraft,
+    discardDraft,
+  } = useDraft<DraftData>({
+    key: draftKey,
+    initialData: {
+      formData: getInitialFormData(),
+      studentData: {},
+    },
+  })
+
+  const formData = draftData.formData
+  const studentData = draftData.studentData
+
+  // Show restore dialog if draft exists on mount
+  useEffect(() => {
+    if (hasDraft) {
+      setShowRestoreDialog(true)
+    }
+  }, [hasDraft])
+
+  // Helper to update formData
+  const setFormData = (updater: MeetingFormData | ((prev: MeetingFormData) => MeetingFormData)) => {
+    setDraftData(prev => ({
+      ...prev,
+      formData: typeof updater === 'function' ? updater(prev.formData) : updater,
+    }))
+  }
+
+  // Helper to update studentData
+  const setStudentData = (
+    updater: typeof studentData | ((prev: typeof studentData) => typeof studentData),
+  ) => {
+    setDraftData(prev => ({
+      ...prev,
+      studentData: typeof updater === 'function' ? updater(prev.studentData) : updater,
+    }))
+  }
+
+  const createMonthlyMeetings = useCreateMonthlyMeeting()
+  const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
+    currentSchool?.id,
+  )
+  const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
 
   const { data: studentScreenings = [], isLoading: isLoadingScreenings } =
     useSpeechScreeningsByStudent(selectedStudent?.id)
@@ -205,6 +264,9 @@ const CreateMonthlyMeetingContent = () => {
 
     createMonthlyMeetings.mutate(submitData, {
       onSuccess: () => {
+        // Clear draft on successful submission
+        clearDraft()
+
         toast({
           title: 'Monthly Meeting Saved',
           description: 'The monthly meeting has been successfully saved.',
@@ -231,6 +293,13 @@ const CreateMonthlyMeetingContent = () => {
   }
 
   const handleCancel = () => {
+    if (isDirty) {
+      const confirmLeave = window.confirm(
+        'You have unsaved changes. Your draft will be saved automatically. Are you sure you want to leave?',
+      )
+      if (!confirmLeave) return
+    }
+
     if (currentSchool?.id) {
       navigate(`/school/${currentSchool.id}/monthly-meetings`)
     } else {
@@ -629,6 +698,39 @@ const CreateMonthlyMeetingContent = () => {
                     meeting={mostRecentMeeting}
                   />
                 )}
+              </Dialog>
+
+              {/* Draft Restore Dialog */}
+              <Dialog open={showRestoreDialog} onOpenChange={setShowRestoreDialog}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Restore Draft?</DialogTitle>
+                  </DialogHeader>
+                  <p className='text-sm text-gray-600'>
+                    You have an unsaved draft from a previous session. Would you like to restore it?
+                  </p>
+                  <DialogFooter>
+                    <Button
+                      variant='outline'
+                      onClick={() => {
+                        discardDraft()
+                        setShowRestoreDialog(false)
+                      }}>
+                      Discard Draft
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        loadDraft()
+                        setShowRestoreDialog(false)
+                        toast({
+                          title: 'Draft Restored',
+                          description: 'Your previous draft has been restored.',
+                        })
+                      }}>
+                      Restore Draft
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
               </Dialog>
             </div>
           </div>
