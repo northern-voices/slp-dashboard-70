@@ -63,6 +63,8 @@ const CreateMonthlyMeetingContent = () => {
   const [showScreeningModal, setShowScreeningModal] = useState(false)
   const [showMeetingModal, setShowMeetingModal] = useState(false)
   const [showRestoreDialog, setShowRestoreDialog] = useState(false)
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
 
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -292,18 +294,26 @@ const CreateMonthlyMeetingContent = () => {
     })
   }
 
-  const handleCancel = () => {
+  const handleNavigateAway = (destination: string) => {
     if (isDirty) {
-      const confirmLeave = window.confirm(
-        'You have unsaved changes. Your draft will be saved automatically. Are you sure you want to leave?',
-      )
-      if (!confirmLeave) return
-    }
-
-    if (currentSchool?.id) {
-      navigate(`/school/${currentSchool.id}/monthly-meetings`)
+      setPendingNavigation(destination)
+      setShowLeaveDialog(true)
     } else {
-      navigate('/monthly-meetings')
+      navigate(destination)
+    }
+  }
+
+  const handleCancel = () => {
+    const destination = currentSchool?.id
+      ? `/school/${currentSchool.id}/monthly-meetings`
+      : '/monthly-meetings'
+    handleNavigateAway(destination)
+  }
+
+  const confirmLeave = () => {
+    setShowLeaveDialog(false)
+    if (pendingNavigation) {
+      navigate(pendingNavigation)
     }
   }
 
@@ -728,6 +738,63 @@ const CreateMonthlyMeetingContent = () => {
                         })
                       }}>
                       Restore Draft
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Leave Confirmation Dialog */}
+              <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+                <DialogContent className='sm:max-w-md'>
+                  <DialogHeader>
+                    <DialogTitle className='flex items-center gap-2'>
+                      <div className='p-2 rounded-full bg-amber-100'>
+                        <svg
+                          className='w-5 h-5 text-amber-600'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'>
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732
+  4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
+                          />
+                        </svg>
+                      </div>
+                      Unsaved Changes
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className='py-4'>
+                    <p className='text-sm text-gray-600'>
+                      You have unsaved changes that will be saved as a draft. You can continue
+                      editing later by returning to this page.
+                    </p>
+                    <div className='mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100'>
+                      <p className='text-sm text-blue-700 flex items-center gap-2'>
+                        <svg
+                          className='w-4 h-4 flex-shrink-0'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'>
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                          />
+                        </svg>
+                        Your draft will be automatically saved.
+                      </p>
+                    </div>
+                  </div>
+                  <DialogFooter className='flex gap-2 sm:gap-0'>
+                    <Button variant='outline' onClick={() => setShowLeaveDialog(false)}>
+                      Keep Editing
+                    </Button>
+                    <Button variant='default' onClick={confirmLeave}>
+                      Save Draft & Leave
                     </Button>
                   </DialogFooter>
                 </DialogContent>
