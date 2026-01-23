@@ -415,13 +415,14 @@ const CreateMonthlyMeetingContent = () => {
                       </div>
 
                       <div className='space-y-2'>
-                        <Label htmlFor='additional_notes'>Additional Notes</Label>
+                        {/* This was originally additional notes but was requested by client to be changed to meeting notes */}
+                        <Label htmlFor='additional_notes'>Meeting Notes</Label>
                         <Textarea
                           id='additional_notes'
                           name='additional_notes'
                           value={formData.additional_notes}
                           onChange={handleInputChange}
-                          placeholder='Additional notes to be added...'
+                          placeholder='Meeting notes to be added...'
                           rows={4}
                         />
                       </div>
