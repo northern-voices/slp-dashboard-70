@@ -138,7 +138,9 @@ const MonthlyMeetingsStudentTable = ({
         )
       case 'paused':
         return (
-          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
+          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
+            Pause/Away
+          </Badge>
         )
       case 'sub':
         return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
@@ -171,7 +173,7 @@ const MonthlyMeetingsStudentTable = ({
   const filteredStudents = students
     .filter(student => {
       const status = getProgramStatus(student)
-      const isQualifiedOrSub = status === 'sub' || status === 'qualified'
+      const isQualifiedOrSub = status === 'sub' || status === 'qualified' || status === 'paused'
       const hasScreening = studentsWithScreenings.has(student.id)
       return isQualifiedOrSub && hasScreening
     })
@@ -203,7 +205,7 @@ const MonthlyMeetingsStudentTable = ({
       } else if (sortField === 'program_status') {
         const statusA = getProgramStatus(a)
         const statusB = getProgramStatus(b)
-        const statusOrder = { qualified: 0, sub: 1 }
+        const statusOrder = { qualified: 0, sub: 1, paused: 2 }
         comparison = statusOrder[statusA] - statusOrder[statusB]
       }
 
