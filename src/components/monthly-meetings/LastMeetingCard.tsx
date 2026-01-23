@@ -31,11 +31,13 @@ const LastMeetingCard = ({ meeting, onViewDetails }: LastMeetingCardProps) => {
         <div className='flex items-center gap-2'>
           <div className='w-2 h-2 rounded-full bg-green-500' />
           <span className='text-sm font-semibold text-gray-800'>Last Meeting</span>
-          {sessionsAttended !== null && sessionsAttended !== undefined && (
-            <Badge className='text-xs font-medium bg-green-100 text-green-700 border border-green-200'>
-              {sessionsAttended} {sessionsAttended === 1 ? 'Session' : 'Sessions'}
-            </Badge>
-          )}
+          <Badge className='text-xs font-medium bg-green-100 text-green-700 border border-green-200'>
+            {new Date(meeting.meeting_date).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </Badge>
         </div>
         <Button
           variant='ghost'
@@ -47,27 +49,15 @@ const LastMeetingCard = ({ meeting, onViewDetails }: LastMeetingCardProps) => {
         </Button>
       </div>
 
-      {/* Details row */}
-      <div className='flex flex-col gap-1 mt-2 text-sm'>
-        <div className='flex items-center gap-1 text-gray-500'>
-          <Calendar className='w-3 h-3' />
+      {/* Facilitator row */}
+      {meeting.facilitator && (
+        <div className='flex items-center gap-1 mt-2 text-sm text-gray-500'>
+          <Users className='w-3 h-3' />
           <span>
-            {new Date(meeting.meeting_date).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            })}
+            {meeting.facilitator.first_name} {meeting.facilitator.last_name}
           </span>
         </div>
-        {meeting.facilitator && (
-          <div className='flex items-center gap-1 text-gray-500'>
-            <Users className='w-3 h-3' />
-            <span>
-              {meeting.facilitator.first_name} {meeting.facilitator.last_name}
-            </span>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   )
 }
