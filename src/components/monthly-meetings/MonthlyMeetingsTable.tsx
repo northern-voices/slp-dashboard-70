@@ -44,6 +44,7 @@ import { useDeleteMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-me
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
 import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
+import MonthlyMeetingBulkActions from '@/components/monthly-meetings/MonthlyMeetingBulkActions'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 
 interface MonthlyMeetingsTableProps {
@@ -62,7 +63,7 @@ const MonthlyMeetingsTable = ({
   const [sortField, setSortField] = useState<'meeting_date' | 'meeting_title' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [selectedMeetingForDetails, setSelectedMeetingForDetails] = useState<MonthlyMeeting | null>(
-    null
+    null,
   )
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [meetingToDelete, setMeetingToDelete] = useState<MonthlyMeeting | null>(null)
@@ -81,7 +82,7 @@ const MonthlyMeetingsTable = ({
     error,
   } = useMonthlyMeetingsBySchool(
     currentSchool?.id,
-    dateRangeFilter === 'school_year' || dateRangeFilter === 'all' ? dateRangeFilter : 'all'
+    dateRangeFilter === 'school_year' || dateRangeFilter === 'all' ? dateRangeFilter : 'all',
   )
 
   // Debug logging
@@ -102,7 +103,7 @@ const MonthlyMeetingsTable = ({
       meeting.student_updates?.some(
         update =>
           update.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          update.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+          update.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()),
       )
 
     // Filter by facilitator
@@ -317,6 +318,7 @@ const MonthlyMeetingsTable = ({
 
   const isAllSelected =
     filteredMeetings.length > 0 && selectedMeetings.length === filteredMeetings.length
+  const isSomeSelected = selectedMeetings.length > 0
 
   if (isLoading) {
     return (
@@ -336,6 +338,14 @@ const MonthlyMeetingsTable = ({
 
   return (
     <div className='space-y-4'>
+      {isSomeSelected && (
+        <MonthlyMeetingBulkActions
+          selectedCount={selectedMeetings.length}
+          selectedMeetings={selectedMeetings}
+          onClearSelection={() => setSelectedMeetings([])}
+        />
+      )}
+
       <div className='flex justify-end mb-3'>
         <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
           {filteredMeetings.length} meeting{filteredMeetings.length !== 1 ? 's' : ''} found
