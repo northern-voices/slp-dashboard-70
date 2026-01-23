@@ -492,7 +492,14 @@ const CreateMonthlyMeetingContent = () => {
                         onViewDetails={() => setShowScreeningModal(true)}
                       />
                     ) : (
-                      <p className='mt-3 text-sm text-gray-400'>No speech screenings on record</p>
+                      <div className='mt-3 p-4 bg-gray-50/50 rounded-xl border border-dashed border-gray-200'>
+                        <div className='flex items-center gap-2'>
+                          <div className='w-2 h-2 rounded-full bg-gray-300' />
+                          <span className='text-sm text-gray-400'>
+                            No speech screenings on record
+                          </span>
+                        </div>
+                      </div>
                     )}
 
                     {isLoadingMeetings ? (
@@ -512,7 +519,14 @@ const CreateMonthlyMeetingContent = () => {
                         onViewDetails={() => setShowMeetingModal(true)}
                       />
                     ) : (
-                      <p className='mt-3 text-sm text-gray-400'>No monthly meetings on record</p>
+                      <div className='mt-3 p-4 bg-gray-50/50 rounded-xl border border-dashed border-gray-200'>
+                        <div className='flex items-center gap-2'>
+                          <div className='w-2 h-2 rounded-full bg-gray-300' />
+                          <span className='text-sm text-gray-400'>
+                            No monthly meetings on record
+                          </span>
+                        </div>
+                      </div>
                     )}
                   </DialogHeader>
 
