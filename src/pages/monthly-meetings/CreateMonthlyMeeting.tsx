@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
@@ -39,37 +39,47 @@ import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMe
 import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
 import LastMeetingCard from '@/components/monthly-meetings/LastMeetingCard'
 import MonthlyMeetingDetailsModal from './MonthlyMeetingDetailsModal'
+import { useDraft } from '@/hooks/use-draft'
+
+interface MeetingFormData {
+  meeting_title: string
+  facilitator_id: string
+  attendees: string[]
+  meeting_date: string
+  additional_notes: string
+  action_plan: string
+}
+
+interface DraftData {
+  formData: MeetingFormData
+  studentData: Record<string, { sessions_attended: number | null; meeting_notes: string }>
+}
 
 const CreateMonthlyMeetingContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showStudentModal, setShowStudentModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState(null)
-  const [studentData, setStudentData] = useState<
-    Record<string, { sessions_attended: number | null; meeting_notes: string }>
-  >({})
   const [attendeeInput, setAttendeeInput] = useState('')
   const [showScreeningModal, setShowScreeningModal] = useState(false)
   const [showMeetingModal, setShowMeetingModal] = useState(false)
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false)
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
 
   const navigate = useNavigate()
   const { toast } = useToast()
   const { userProfile, currentSchool } = useOrganization()
-
-  const createMonthlyMeetings = useCreateMonthlyMeeting()
-  const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
-    currentSchool?.id,
-  )
-  const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
   const { user } = useAuth()
 
-  const [formData, setFormData] = useState({
+  // Initial form data
+  const getInitialFormData = (): MeetingFormData => ({
     meeting_title: (() => {
       const today = new Date()
       const monthName = today.toLocaleDateString('en-US', { month: 'long' })
       return `${monthName} Monthly Meeting`
     })(),
     facilitator_id: user?.id || '',
-    attendees: [] as string[],
+    attendees: [],
     meeting_date: (() => {
       const today = new Date()
       const year = today.getFullYear()
@@ -80,6 +90,57 @@ const CreateMonthlyMeetingContent = () => {
     additional_notes: '',
     action_plan: '',
   })
+
+  const draftKey = `monthly-meeting-draft-${currentSchool?.id || 'no-school'}`
+  const {
+    data: draftData,
+    setData: setDraftData,
+    hasDraft,
+    isDirty,
+    loadDraft,
+    clearDraft,
+    discardDraft,
+  } = useDraft<DraftData>({
+    key: draftKey,
+    initialData: {
+      formData: getInitialFormData(),
+      studentData: {},
+    },
+  })
+
+  const formData = draftData.formData
+  const studentData = draftData.studentData
+
+  // Show restore dialog if draft exists on mount
+  useEffect(() => {
+    if (hasDraft) {
+      setShowRestoreDialog(true)
+    }
+  }, [hasDraft])
+
+  // Helper to update formData
+  const setFormData = (updater: MeetingFormData | ((prev: MeetingFormData) => MeetingFormData)) => {
+    setDraftData(prev => ({
+      ...prev,
+      formData: typeof updater === 'function' ? updater(prev.formData) : updater,
+    }))
+  }
+
+  // Helper to update studentData
+  const setStudentData = (
+    updater: typeof studentData | ((prev: typeof studentData) => typeof studentData),
+  ) => {
+    setDraftData(prev => ({
+      ...prev,
+      studentData: typeof updater === 'function' ? updater(prev.studentData) : updater,
+    }))
+  }
+
+  const createMonthlyMeetings = useCreateMonthlyMeeting()
+  const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
+    currentSchool?.id,
+  )
+  const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
 
   const { data: studentScreenings = [], isLoading: isLoadingScreenings } =
     useSpeechScreeningsByStudent(selectedStudent?.id)
@@ -205,6 +266,9 @@ const CreateMonthlyMeetingContent = () => {
 
     createMonthlyMeetings.mutate(submitData, {
       onSuccess: () => {
+        // Clear draft on successful submission
+        clearDraft()
+
         toast({
           title: 'Monthly Meeting Saved',
           description: 'The monthly meeting has been successfully saved.',
@@ -230,11 +294,26 @@ const CreateMonthlyMeetingContent = () => {
     })
   }
 
-  const handleCancel = () => {
-    if (currentSchool?.id) {
-      navigate(`/school/${currentSchool.id}/monthly-meetings`)
+  const handleNavigateAway = (destination: string) => {
+    if (isDirty) {
+      setPendingNavigation(destination)
+      setShowLeaveDialog(true)
     } else {
-      navigate('/monthly-meetings')
+      navigate(destination)
+    }
+  }
+
+  const handleCancel = () => {
+    const destination = currentSchool?.id
+      ? `/school/${currentSchool.id}/monthly-meetings`
+      : '/monthly-meetings'
+    handleNavigateAway(destination)
+  }
+
+  const confirmLeave = () => {
+    setShowLeaveDialog(false)
+    if (pendingNavigation) {
+      navigate(pendingNavigation)
     }
   }
 
@@ -629,6 +708,96 @@ const CreateMonthlyMeetingContent = () => {
                     meeting={mostRecentMeeting}
                   />
                 )}
+              </Dialog>
+
+              {/* Draft Restore Dialog */}
+              <Dialog open={showRestoreDialog} onOpenChange={setShowRestoreDialog}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Restore Draft?</DialogTitle>
+                  </DialogHeader>
+                  <p className='text-sm text-gray-600'>
+                    You have an unsaved draft from a previous session. Would you like to restore it?
+                  </p>
+                  <DialogFooter>
+                    <Button
+                      variant='outline'
+                      onClick={() => {
+                        discardDraft()
+                        setShowRestoreDialog(false)
+                      }}>
+                      Discard Draft
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        loadDraft()
+                        setShowRestoreDialog(false)
+                        toast({
+                          title: 'Draft Restored',
+                          description: 'Your previous draft has been restored.',
+                        })
+                      }}>
+                      Restore Draft
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Leave Confirmation Dialog */}
+              <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+                <DialogContent className='sm:max-w-md'>
+                  <DialogHeader>
+                    <DialogTitle className='flex items-center gap-2'>
+                      <div className='p-2 rounded-full bg-amber-100'>
+                        <svg
+                          className='w-5 h-5 text-amber-600'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'>
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732
+  4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
+                          />
+                        </svg>
+                      </div>
+                      Unsaved Changes
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className='py-4'>
+                    <p className='text-sm text-gray-600'>
+                      You have unsaved changes that will be saved as a draft. You can continue
+                      editing later by returning to this page.
+                    </p>
+                    <div className='mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100'>
+                      <p className='text-sm text-blue-700 flex items-center gap-2'>
+                        <svg
+                          className='w-4 h-4 flex-shrink-0'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'>
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                          />
+                        </svg>
+                        Your draft will be automatically saved.
+                      </p>
+                    </div>
+                  </div>
+                  <DialogFooter className='flex gap-2 sm:gap-0'>
+                    <Button variant='outline' onClick={() => setShowLeaveDialog(false)}>
+                      Keep Editing
+                    </Button>
+                    <Button variant='default' onClick={confirmLeave}>
+                      Save Draft & Leave
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
               </Dialog>
             </div>
           </div>
