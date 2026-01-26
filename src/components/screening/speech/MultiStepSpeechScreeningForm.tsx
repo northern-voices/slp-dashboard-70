@@ -12,6 +12,8 @@ import ProgressIndicator from '../shared/ProgressIndicator'
 import SpeechScreeningStep1 from './steps/SpeechScreeningStep1'
 import SpeechScreeningStep2 from './steps/SpeechScreeningStep2'
 import SubmissionConfirmationModal from '../SubmissionConfirmationModal'
+import { useOnlineStatus } from '@/hooks/use-online-status'
+import { offlineQueue } from '@/services/offline-queue'
 
 interface MultiStepSpeechScreeningFormProps {
   onSubmit?: (data: unknown) => void
@@ -38,6 +40,7 @@ const MultiStepSpeechScreeningForm = ({
   const { toast } = useToast()
   const createScreening = useCreateSpeechScreening()
   const updateStudent = useUpdateStudent()
+  const isOnline = useOnlineStatus()
 
   // Grade ID will be set through backend validation in handleSubmit
   // No default grade ID needed - it will come from existing or newly created grade records
@@ -162,7 +165,7 @@ const MultiStepSpeechScreeningForm = ({
   }
 
   // Helper function to determine program_status from form data
-  const determineProgramStatus = (formData: Record<string, unknown>): string => {
+  const determineProgramStatus = (formData: Record<string, unknown>): Student['program_status'] => {
     const noConsentData = (formData.no_consent as Record<string, unknown>) || {}
     const noConsent = (noConsentData.isNoConsent as boolean) || false
     const graduated = (formData.graduated as boolean) || false
@@ -209,11 +212,13 @@ const MultiStepSpeechScreeningForm = ({
       return
     }
 
-    // Validate grade availability for the selected student's school
-    let validatedGradeId = selectedGradeId // Use existing grade ID if available
-    let validatedSchoolId = gradeSchoolId // Use existing school ID if available
+    // For offline submissions, skip grade validation and use existing selectedGradeId
+    // For online submissions, validate/create grade as before
+    let validatedGradeId = selectedGradeId
+    let validatedSchoolId = gradeSchoolId
 
-    if (selectedStudent && selectedGrade && currentSchool) {
+    // Only do grade validation if online
+    if (isOnline && selectedStudent && selectedGrade && currentSchool) {
       try {
         const academicYear =
           (formData.academic_year as string) ||
@@ -225,44 +230,34 @@ const MultiStepSpeechScreeningForm = ({
         const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
           currentSchool.id,
           selectedGrade,
-          academicYear
+          academicYear,
         )
 
         if (!gradeAvailability.exists) {
           try {
-            // Create new school grade since it doesn't exist
             const newGrade = await schoolGradesApi.createSchoolGrade({
               school_id: currentSchool.id,
               grade_level: selectedGrade,
               academic_year: academicYear,
             })
 
-            // Use the validated grade ID directly for this submission
             validatedGradeId = newGrade.id
             validatedSchoolId = newGrade.school_id
-
-            // Also update state for future submissions
             setSelectedGradeId(newGrade.id)
             setGradeSchoolId(newGrade.school_id)
           } catch (createError) {
             console.error('Failed to create new grade:', createError)
-            // Continue with submission even if grade creation fails
-            // The backend should handle this gracefully
           }
         } else {
-          // Use the validated grade ID directly for this submission
           if (gradeAvailability.grade?.id && gradeAvailability.grade?.school_id) {
             validatedGradeId = gradeAvailability.grade.id
             validatedSchoolId = gradeAvailability.grade.school_id
-
-            // Also update state for future submissions
             setSelectedGradeId(gradeAvailability.grade.id)
             setGradeSchoolId(gradeAvailability.grade.school_id)
           }
         }
       } catch (error) {
         console.error('Grade validation error:', error)
-        // Continue with submission even if validation fails
       }
     }
 
@@ -273,25 +268,19 @@ const MultiStepSpeechScreeningForm = ({
     const noConsent = (formData.no_consent as Record<string, unknown>) || {}
 
     const screeningData = {
-      // Direct column matches - only send fields that the API expects
       student_id: selectedStudent?.id || '',
-      grade_id: validatedGradeId, // Use the validated grade ID from the validation process
+      grade_id: validatedGradeId,
       screener_id: user?.id || '',
       result: formAbsent
         ? 'absent'
         : formNoConsent
-        ? 'non_registered_no_consent'
-        : (formData.speech_screen_result as string) || '',
+          ? 'non_registered_no_consent'
+          : (formData.speech_screen_result as string) || '',
       vocabulary_support: (formData.vocabulary_support_recommended as boolean) || false,
       clinical_notes: (formData.clinical_notes as string) || '',
       referral_notes: (formData.referral_notes as string) || '',
-
-      // Structured error_patterns to match existing format + new data
       error_patterns: {
-        // === EXISTING FORMAT (maintain compatibility) ===
         additional_observations: (formData.other_notes as string) || '',
-
-        // === ADDITIONAL DATA (organized in logical groups) ===
         articulation: {
           soundErrors:
             (articulation.soundErrors as Array<{
@@ -307,18 +296,15 @@ const MultiStepSpeechScreeningForm = ({
             (formData.general_articulation_notes as string) ||
             '',
         },
-
         attendance: {
           absent: formAbsent,
           absence_notes: (absent.notes as string) || '',
           priority_re_screen: (formData.priority_re_screen as boolean) || false,
         },
-
         consent: {
           no_consent: formNoConsent,
           no_consent_notes: (noConsent.notes as string) || '',
         },
-
         screening_metadata: {
           academic_year:
             (formData.academic_year as string) ||
@@ -335,7 +321,6 @@ const MultiStepSpeechScreeningForm = ({
           sub: (formData.sub as boolean) || false,
           graduated: (formData.graduated as boolean) || false,
         },
-
         add_areas_of_concern: {
           language_comprehension: (areasOfConcern.language_comprehension as string) || null,
           language_expression: (areasOfConcern.language_expression as string) || null,
@@ -352,6 +337,43 @@ const MultiStepSpeechScreeningForm = ({
       },
     }
 
+    // If offline, queue the submission
+    if (!isOnline) {
+      // Validate we have required fields before queuing
+      if (!screeningData.student_id || !screeningData.screener_id || !screeningData.grade_id) {
+        toast({
+          title: 'Cannot save offline',
+          description: 'Missing required data. Please ensure student and grade are selected.',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      offlineQueue.add(
+        formData,
+        {
+          student_id: screeningData.student_id,
+          screener_id: screeningData.screener_id,
+          grade_id: screeningData.grade_id,
+          error_patterns: screeningData.error_patterns,
+          result: screeningData.result,
+          vocabulary_support: screeningData.vocabulary_support,
+          clinical_notes: screeningData.clinical_notes,
+          referral_notes: screeningData.referral_notes,
+        },
+        selectedStudent?.id,
+      )
+
+      toast({
+        title: 'Saved offline',
+        description: 'Screening will be submitted when you go back online.',
+      })
+
+      setShowSubmissionModal(true)
+      return
+    }
+
+    // Online - submit normally
     createScreening.mutate(screeningData, {
       onSuccess: () => {
         // After creating the screening, update the student's program_status
@@ -369,8 +391,6 @@ const MultiStepSpeechScreeningForm = ({
               },
               onError: error => {
                 console.error('Failed to update student program status:', error)
-                // Still show the success modal even if student update fails
-                // The screening was created successfully
                 setShowSubmissionModal(true)
                 toast({
                   title: 'Warning',
@@ -378,12 +398,48 @@ const MultiStepSpeechScreeningForm = ({
                   variant: 'destructive',
                 })
               },
-            }
+            },
           )
         } else {
-          // No student selected, just show the modal
           setShowSubmissionModal(true)
         }
+      },
+      onError: error => {
+        // If online submission fails, queue it for later
+        console.error('Submission failed, queuing for later:', error)
+
+        // Validate submission before queing
+        if (!screeningData.student_id || !!screeningData.screener_id || !!screeningData.grade_id) {
+          toast({
+            title: 'Submission failed',
+            description: 'Missing required data. Please try again when online.',
+            variant: 'destructive',
+          })
+
+          return
+        }
+
+        offlineQueue.add(
+          formData,
+          {
+            student_id: screeningData.student_id,
+            screener_id: screeningData.screener_id,
+            grade_id: screeningData.grade_id,
+            error_patterns: screeningData.error_patterns,
+            result: screeningData.result,
+            vocabulary_support: screeningData.vocabulary_support,
+            clinical_notes: screeningData.clinical_notes,
+            referral_notes: screeningData.referral_notes,
+          },
+          selectedStudent?.id,
+        )
+
+        toast({
+          title: 'Saved for later',
+          description: 'Submission failed. Will retry when connection improves.',
+        })
+
+        setShowSubmissionModal(true)
       },
     })
   }
@@ -516,8 +572,8 @@ const MultiStepSpeechScreeningForm = ({
                   {createScreening.isPending
                     ? 'Creating...'
                     : isAbsent
-                    ? 'Submit Absent Screening'
-                    : 'Submit No Consent Screening'}
+                      ? 'Submit Absent Screening'
+                      : 'Submit No Consent Screening'}
                 </Button>
               ) : (
                 <Button
