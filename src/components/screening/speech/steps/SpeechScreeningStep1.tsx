@@ -135,13 +135,21 @@ const SpeechScreeningStep1 = ({
   const availableGradeIds = React.useMemo(() => {
     if (!selectedGrade) return []
 
-    // Get current academic year and generate range (1 year before, current, 4 years ahead)
-    const currentYear = new Date().getFullYear()
+    // Calculate current academic year correctly
+    const currentDate = new Date()
+    const currentYear = currentDate.getFullYear()
+    const currentMonth = currentDate.getMonth() // 0-indexed (Jan = 0)
+
+    // Academic year starts in August/September
+    // Jan-July = previous year's academic year
+    const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+
+    // Generate range of academic years
     const academicYears = []
-    academicYears.push(`${currentYear - 1}-${currentYear}`)
-    academicYears.push(`${currentYear}-${currentYear + 1}`)
+    academicYears.push(`${academicYearStart - 1}-${academicYearStart}`)
+    academicYears.push(`${academicYearStart}-${academicYearStart + 1}`)
     for (let i = 1; i <= 4; i++) {
-      academicYears.push(`${currentYear + i}-${currentYear + i + 1}`)
+      academicYears.push(`${academicYearStart + i}-${academicYearStart + i + 1}`)
     }
 
     let filteredGrades: typeof schoolGrades = []
@@ -189,8 +197,12 @@ const SpeechScreeningStep1 = ({
   // Set default grade ID when academic year options are available
   useEffect(() => {
     if (selectedGrade && availableGradeIds.length > 0) {
-      const currentYear = new Date().getFullYear()
-      const currentAcademicYear = `${currentYear}-${currentYear + 1}`
+      // Calculate current academic year correctly
+      const currentDate = new Date()
+      const currentYear = currentDate.getFullYear()
+      const currentMonth = currentDate.getMonth()
+      const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+      const currentAcademicYear = `${academicYearStart}-${academicYearStart + 1}`
 
       const matchingGrade = availableGradeIds.find(g => g.academic_year === currentAcademicYear)
 
@@ -283,8 +295,11 @@ const SpeechScreeningStep1 = ({
               </Label>
               <Select
                 value={(() => {
-                  const currentYear = new Date().getFullYear()
-                  const currentAcademicYear = `${currentYear}-${currentYear + 1}`
+                  const currentDate = new Date()
+                  const currentYear = currentDate.getFullYear()
+                  const currentMonth = currentDate.getMonth()
+                  const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+                  const currentAcademicYear = `${academicYearStart}-${academicYearStart + 1}`
                   return currentAcademicYear
                 })()}
                 onValueChange={handleAcademicYearChange}>
