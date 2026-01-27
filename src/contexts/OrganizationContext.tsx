@@ -40,14 +40,17 @@ interface OrganizationProviderProps {
 export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ children }) => {
   const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null)
   const [userProfile, setUserProfile] = useState<SLPProfile | null>(null)
-  const [availableSchools, setAvailableSchools] = useState<School[]>([])
+  const [availableSchools, setAvailableSchoolsState] = useLocalStorage<School[]>(
+    'availableSchools',
+    [],
+  )
   const [isLoading, setIsLoading] = useState(true)
   const [isInitialized, setIsInitialized] = useState(false)
 
   // Use localStorage to persist the selected school
   const [currentSchool, setCurrentSchoolState] = useLocalStorage<School | null>(
     'selectedSchool',
-    null
+    null,
   )
 
   // Store the setter function in a ref to prevent recreation
@@ -80,7 +83,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
           `
           *,
           organization:organizations(*)
-        `
+        `,
         )
         .eq('id', user.id)
         .single()
@@ -174,7 +177,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         updated_at: school.updated_at,
       }))
 
-      setAvailableSchools(transformedSchools)
+      setAvailableSchoolsState(transformedSchools)
 
       // Validate and restore persisted school if it exists
       // Use the current value from state, not the parameter
@@ -189,11 +192,6 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
       setIsInitialized(true)
     } catch (error) {
       console.error('Error loading organization data:', error)
-      // Reset states on error
-      setCurrentOrganization(null)
-      setUserProfile(null)
-      setAvailableSchools([])
-      clearCurrentSchool()
       setIsInitialized(true)
     } finally {
       setIsLoading(false)
@@ -212,7 +210,6 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
     if (!user) {
       setCurrentOrganization(null)
       setUserProfile(null)
-      setAvailableSchools([])
       clearCurrentSchool()
       setIsLoading(false)
       setIsInitialized(false)
@@ -241,7 +238,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
       setCurrentSchool,
       clearCurrentSchool,
       refreshData,
-    ]
+    ],
   )
 
   return <OrganizationContext.Provider value={value}>{children}</OrganizationContext.Provider>

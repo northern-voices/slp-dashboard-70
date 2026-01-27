@@ -1,6 +1,24 @@
 import { useQuery } from '@tanstack/react-query'
 import { studentsApi } from '@/api/students'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { Student } from '@/types/database'
+
+const getStudentsCache = (key: string): Student[] => {
+  try {
+    const cached = localStorage.getItem(key)
+    return cached ? JSON.parse(cached) : []
+  } catch {
+    return []
+  }
+}
+
+const setStudentsCache = (key: string, students: Student[]) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(students))
+  } catch (error) {
+    console.error('Failed to cache students:', error)
+  }
+}
 
 export const useStudents = () => {
   const { currentOrganization } = useOrganization()
@@ -16,13 +34,21 @@ export const useStudents = () => {
 
 export const useStudentsByGrade = (gradeLevel: string) => {
   const { currentSchool } = useOrganization()
+  const cacheKey = `cached_students_grade_${currentSchool?.id}_${gradeLevel}`
 
   return useQuery({
     queryKey: ['students', 'by-grade', gradeLevel, currentSchool?.id],
-    queryFn: () => studentsApi.getStudentsByGrade(gradeLevel, currentSchool?.id),
+    queryFn: async () => {
+      const students = await studentsApi.getStudentsByGrade(gradeLevel, currentSchool?.id)
+      // Cache for offline use
+      setStudentsCache(cacheKey, students)
+      return students
+    },
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
     enabled: !!gradeLevel && !!currentSchool?.id,
+    // Return cached data when offline or while loading
+    placeholderData: gradeLevel && currentSchool?.id ? getStudentsCache(cacheKey) : [],
   })
 }
 
@@ -37,12 +63,21 @@ export const useStudent = (studentId?: string) => {
 }
 
 export const useStudentsBySchool = (schoolId?: string) => {
+  const cacheKey = `cached_students_school_${schoolId}`
+
   return useQuery({
     queryKey: ['students', 'by-school', schoolId],
-    queryFn: () => studentsApi.getStudentsBySchool(schoolId!),
+    queryFn: async () => {
+      const students = await studentsApi.getStudentsBySchool(schoolId!)
+      // Cache for offline use
+      setStudentsCache(cacheKey, students)
+      return students
+    },
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
     enabled: !!schoolId,
+    // Return cached data when offline or while loading
+    placeholderData: schoolId ? getStudentsCache(cacheKey) : [],
   })
 }
 
