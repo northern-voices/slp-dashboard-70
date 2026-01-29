@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState } from 'react'
 import { useOnlineStatus } from './use-online-status'
 import { offlineQueue } from '@/services/offline-queue'
 import { speechScreeningsApi } from '@/api/speechscreenings'
+import { schoolGradesApi } from '@/api/schoolGrades'
 import { useToast } from './use-toast'
 
 export function useOfflineSync() {
@@ -24,7 +25,39 @@ export function useOfflineSync() {
 
     for (const item of pending) {
       try {
-        await speechScreeningsApi.createSpeechScreening(item.apiPayload)
+        let gradeId = item.apiPayload.grade_id
+
+        // If no grade_id but we have gradeInfo, check/create the grade first
+        if (!gradeId && item.gradeInfo) {
+          const { school_id, grade_level, academic_year } = item.gradeInfo
+
+          const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
+            school_id,
+            grade_level,
+            academic_year,
+          )
+
+          if (gradeAvailability.exists && gradeAvailability.grade?.id) {
+            gradeId = gradeAvailability.grade.id
+          } else {
+            // Create the grade
+            const newGrade = await schoolGradesApi.createSchoolGrade({
+              school_id,
+              grade_level,
+              academic_year,
+            })
+            gradeId = newGrade.id
+          }
+        }
+
+        if (!gradeId) {
+          console.error('Could not resolve grade_id for screening:', item.id)
+          failCount++
+          continue
+        }
+
+        // Submit with resolved grade_id
+        await speechScreeningsApi.createSpeechScreening({ ...item.apiPayload, grade_id: gradeId })
         offlineQueue.remove(item.id)
         successCount++
       } catch (error) {

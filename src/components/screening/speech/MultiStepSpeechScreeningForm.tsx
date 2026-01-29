@@ -49,10 +49,12 @@ const MultiStepSpeechScreeningForm = ({
     mode: 'onSubmit',
     reValidateMode: 'onSubmit',
     defaultValues: {
-      // Step 1 fields
       academic_year: (() => {
-        const currentYear = new Date().getFullYear()
-        return `${currentYear}-${currentYear + 1}`
+        const currentDate = new Date()
+        const currentYear = currentDate.getFullYear()
+        const currentMonth = currentDate.getMonth()
+        const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+        return `${academicYearStart}-${academicYearStart + 1}`
       })(),
       absent: {
         isAbsent: false,
@@ -223,8 +225,11 @@ const MultiStepSpeechScreeningForm = ({
         const academicYear =
           (formData.academic_year as string) ||
           (() => {
-            const currentYear = new Date().getFullYear()
-            return `${currentYear}-${currentYear + 1}`
+            const currentDate = new Date()
+            const currentYear = currentDate.getFullYear()
+            const currentMonth = currentDate.getMonth()
+            const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+            return `${academicYearStart}-${academicYearStart + 1}`
           })()
 
         const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
@@ -309,8 +314,11 @@ const MultiStepSpeechScreeningForm = ({
           academic_year:
             (formData.academic_year as string) ||
             (() => {
-              const currentYear = new Date().getFullYear()
-              return `${currentYear}-${currentYear + 1}`
+              const currentDate = new Date()
+              const currentYear = currentDate.getFullYear()
+              const currentMonth = currentDate.getMonth()
+              const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+              return `${academicYearStart}-${academicYearStart + 1}`
             })(),
           screening_type: (formData.screening_type as string) || 'initial',
           screening_date:
@@ -340,14 +348,33 @@ const MultiStepSpeechScreeningForm = ({
     // If offline, queue the submission
     if (!isOnline) {
       // Validate we have required fields before queuing
-      if (!screeningData.student_id || !screeningData.screener_id || !screeningData.grade_id) {
+      if (!screeningData.student_id || !screeningData.screener_id) {
         toast({
           title: 'Cannot save offline',
-          description: 'Missing required data. Please ensure student and grade are selected.',
+          description: 'Missing required data. Please ensure student is selected.',
           variant: 'destructive',
         })
         return
       }
+
+      if (!screeningData.grade_id && (!currentSchool?.id || !selectedGrade)) {
+        toast({
+          title: 'Cannot save offline',
+          description: 'Missing grade information. Please ensure grade is selected.',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      const academicYear =
+        (formData.academic_year as string) ||
+        (() => {
+          const currentDate = new Date()
+          const currentYear = currentDate.getFullYear()
+          const currentMonth = currentDate.getMonth()
+          const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+          return `${academicYearStart}-${academicYearStart + 1}`
+        })()
 
       offlineQueue.add(
         formData,
@@ -362,6 +389,14 @@ const MultiStepSpeechScreeningForm = ({
           referral_notes: screeningData.referral_notes,
         },
         selectedStudent?.id,
+        // Pass grade info for creating grade when syncing
+        !screeningData.grade_id
+          ? {
+              school_id: currentSchool!.id,
+              grade_level: selectedGrade,
+              academic_year: academicYear,
+            }
+          : undefined,
       )
 
       toast({
@@ -409,15 +444,33 @@ const MultiStepSpeechScreeningForm = ({
         console.error('Submission failed, queuing for later:', error)
 
         // Validate submission before queing
-        if (!screeningData.student_id || !!screeningData.screener_id || !!screeningData.grade_id) {
+        if (!screeningData.student_id || !screeningData.screener_id) {
           toast({
             title: 'Submission failed',
-            description: 'Missing required data. Please try again when online.',
+            description: 'Missing required data. Please try again.',
             variant: 'destructive',
           })
-
           return
         }
+
+        if (!screeningData.grade_id && (!currentSchool?.id || !selectedGrade)) {
+          toast({
+            title: 'Submission failed',
+            description: 'Missing grade information. Please try again.',
+            variant: 'destructive',
+          })
+          return
+        }
+
+        const academicYear =
+          (formData.academic_year as string) ||
+          (() => {
+            const currentDate = new Date()
+            const currentYear = currentDate.getFullYear()
+            const currentMonth = currentDate.getMonth()
+            const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+            return `${academicYearStart}-${academicYearStart + 1}`
+          })()
 
         offlineQueue.add(
           formData,
@@ -432,6 +485,14 @@ const MultiStepSpeechScreeningForm = ({
             referral_notes: screeningData.referral_notes,
           },
           selectedStudent?.id,
+          // Pass gradeInfo for creating grade when syncing
+          !screeningData.grade_id
+            ? {
+                school_id: currentSchool!.id,
+                grade_level: selectedGrade,
+                academic_year: academicYear,
+              }
+            : undefined,
         )
 
         toast({

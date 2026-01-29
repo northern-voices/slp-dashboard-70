@@ -6,13 +6,18 @@ export interface PendingSpeechScreening {
   apiPayload: {
     student_id: string
     screener_id: string
-    grade_id: string
+    grade_id?: string
     error_patterns?: ErrorPatterns | null
     result?: string | null
     vocabulary_support?: boolean
     suspected_cas?: boolean
     clinical_notes?: string | null
     referral_notes?: string | null
+  }
+  gradeInfo?: {
+    school_id: string
+    grade_level: string
+    academic_year: string
   }
   studentId: string | undefined
   createdAt: string
@@ -34,11 +39,13 @@ export const offlineQueue = {
     formData: Record<string, unknown>,
     apiPayload: PendingSpeechScreening['apiPayload'],
     studentId: string | undefined,
+    gradeInfo?: PendingSpeechScreening['gradeInfo'],
   ): PendingSpeechScreening {
     const pending: PendingSpeechScreening = {
       id: crypto.randomUUID(),
       formData,
       apiPayload,
+      gradeInfo,
       studentId,
       createdAt: new Date().toISOString(),
     }
