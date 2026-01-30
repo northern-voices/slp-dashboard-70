@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -8,11 +9,14 @@ import { Plus } from 'lucide-react'
 import ScreeningStats from '@/components/screenings/ScreeningStats'
 import ScreeningsFilters from '@/components/screenings/ScreeningsFilters'
 import ScreeningsTable from '@/components/screenings/ScreeningsTable'
-import CreateScreeningModal from '@/components/screenings/CreateScreeningModal'
 import { Screening } from '@/types/database'
 
 const ScreeningsContent = () => {
   const { currentSchool } = useOrganization()
+  const navigate = useNavigate()
+
+  const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
+
   const [searchTerm, setSearchTerm] = useState('')
 
   // Basic filters
@@ -30,9 +34,6 @@ const ScreeningsContent = () => {
   // Notes and recommendations filters
   const [recommendationsFilter, setRecommendationsFilter] = useState('all')
   const [clinicalNotesFilter, setClinicalNotesFilter] = useState('all')
-
-  const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
-  const [showCreateModal, setShowCreateModal] = useState(false)
 
   const clearAllFilters = () => {
     setSearchTerm('')
@@ -94,7 +95,7 @@ const ScreeningsContent = () => {
                     </p>
                   </div>
                   <Button
-                    onClick={() => setShowCreateModal(true)}
+                    onClick={() => navigate(`/screening/speech`)}
                     className='bg-blue-600 hover:bg-blue-700'>
                     <Plus className='w-4 h-4 mr-2' />
                     Create Screening
@@ -155,8 +156,6 @@ const ScreeningsContent = () => {
           </div>
         </SidebarInset>
       </div>
-
-      <CreateScreeningModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />
     </SidebarProvider>
   )
 }

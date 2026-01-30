@@ -46,10 +46,10 @@ const SpeechScreeningStep1 = ({
 
   // Use local state for immediate UI response, sync with form
   const [localAbsentValue, setLocalAbsentValue] = useState<boolean>(
-    () => (form.getValues('absent.isAbsent') as boolean) || false
+    () => (form.getValues('absent.isAbsent') as boolean) || false,
   )
   const [localNoConsentValue, setLocalNoConsentValue] = useState<boolean>(
-    () => (form.getValues('no_consent.isNoConsent') as boolean) || false
+    () => (form.getValues('no_consent.isNoConsent') as boolean) || false,
   )
 
   // Memoized handler for absent checkbox to prevent unnecessary re-renders
@@ -81,7 +81,7 @@ const SpeechScreeningStep1 = ({
       // Notify parent component of the change
       onAbsentChange?.(checked)
     },
-    [form, onAbsentChange, localNoConsentValue]
+    [form, onAbsentChange, localNoConsentValue],
   )
 
   // Memoized handler for no consent checkbox to prevent unnecessary re-renders
@@ -115,7 +115,7 @@ const SpeechScreeningStep1 = ({
       // Notify parent component of the change
       onNoConsentChange?.(checked)
     },
-    [form, onAbsentChange, onNoConsentChange, localAbsentValue]
+    [form, onAbsentChange, onNoConsentChange, localAbsentValue],
   )
 
   // Sync local state with form state on mount
@@ -135,13 +135,21 @@ const SpeechScreeningStep1 = ({
   const availableGradeIds = React.useMemo(() => {
     if (!selectedGrade) return []
 
-    // Get current academic year and generate range (1 year before, current, 4 years ahead)
-    const currentYear = new Date().getFullYear()
+    // Calculate current academic year correctly
+    const currentDate = new Date()
+    const currentYear = currentDate.getFullYear()
+    const currentMonth = currentDate.getMonth() // 0-indexed (Jan = 0)
+
+    // Academic year starts in August/September
+    // Jan-July = previous year's academic year
+    const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+
+    // Generate range of academic years
     const academicYears = []
-    academicYears.push(`${currentYear - 1}-${currentYear}`)
-    academicYears.push(`${currentYear}-${currentYear + 1}`)
+    academicYears.push(`${academicYearStart - 1}-${academicYearStart}`)
+    academicYears.push(`${academicYearStart}-${academicYearStart + 1}`)
     for (let i = 1; i <= 4; i++) {
-      academicYears.push(`${currentYear + i}-${currentYear + i + 1}`)
+      academicYears.push(`${academicYearStart + i}-${academicYearStart + i + 1}`)
     }
 
     let filteredGrades: typeof schoolGrades = []
@@ -155,13 +163,16 @@ const SpeechScreeningStep1 = ({
     }
 
     // Remove duplicates based on academic_year
-    const uniqueGrades = filteredGrades.reduce((acc, current) => {
-      const existing = acc.find(item => item.academic_year === current.academic_year)
-      if (!existing) {
-        acc.push(current)
-      }
-      return acc
-    }, [] as typeof filteredGrades)
+    const uniqueGrades = filteredGrades.reduce(
+      (acc, current) => {
+        const existing = acc.find(item => item.academic_year === current.academic_year)
+        if (!existing) {
+          acc.push(current)
+        }
+        return acc
+      },
+      [] as typeof filteredGrades,
+    )
 
     const sortedGrades = uniqueGrades.sort((a, b) => b.academic_year.localeCompare(a.academic_year))
 
@@ -183,6 +194,24 @@ const SpeechScreeningStep1 = ({
     return sortedGrades.sort((a, b) => a.academic_year.localeCompare(b.academic_year))
   }, [schoolGrades, selectedGrade])
 
+  // Set default grade ID when academic year options are available
+  useEffect(() => {
+    if (selectedGrade && availableGradeIds.length > 0) {
+      // Calculate current academic year correctly
+      const currentDate = new Date()
+      const currentYear = currentDate.getFullYear()
+      const currentMonth = currentDate.getMonth()
+      const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+      const currentAcademicYear = `${academicYearStart}-${academicYearStart + 1}`
+
+      const matchingGrade = availableGradeIds.find(g => g.academic_year === currentAcademicYear)
+
+      if (matchingGrade && !matchingGrade.id.startsWith('placeholder-')) {
+        onGradeIdChange(matchingGrade.id)
+      }
+    }
+  }, [selectedGrade, availableGradeIds, onGradeIdChange])
+
   // Reset student selection when grade level changes
   // Grade ID will be set during form submission through backend validation
   const handleGradeChange = (grade: string) => {
@@ -195,8 +224,15 @@ const SpeechScreeningStep1 = ({
   // Handler for academic year selection
   // Grade ID validation and creation will be handled during form submission
   const handleAcademicYearChange = async (academicYear: string) => {
-    // Clear grade ID - it will be validated and set during form submission
-    onGradeIdChange('')
+    const matchingGrade = availableGradeIds.find(g => g.academic_year === academicYear)
+
+    if (matchingGrade && !matchingGrade.id.startsWith('placeholder-')) {
+      onGradeIdChange(matchingGrade.id)
+    } else {
+      onGradeIdChange('')
+    }
+
+    form.setValue('academic_year', academicYear)
   }
 
   return (
@@ -259,8 +295,11 @@ const SpeechScreeningStep1 = ({
               </Label>
               <Select
                 value={(() => {
-                  const currentYear = new Date().getFullYear()
-                  const currentAcademicYear = `${currentYear}-${currentYear + 1}`
+                  const currentDate = new Date()
+                  const currentYear = currentDate.getFullYear()
+                  const currentMonth = currentDate.getMonth()
+                  const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+                  const currentAcademicYear = `${academicYearStart}-${academicYearStart + 1}`
                   return currentAcademicYear
                 })()}
                 onValueChange={handleAcademicYearChange}>
