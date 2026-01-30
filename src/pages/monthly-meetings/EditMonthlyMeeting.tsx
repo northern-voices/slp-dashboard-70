@@ -21,10 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
-import {
-  useUpdateMonthlyMeeting,
-  useGetMonthlyMeetingById,
-} from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
+import { useUpdateMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useGetUsers } from '@/hooks/users/use-users'
 import { GRADE_MAPPING } from '@/constants/app'
@@ -53,21 +50,53 @@ import {
 } from '@/components/ui/dialog'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { useSpeechScreeningsByStudent } from '@/hooks/screenings'
+import { useMonthlyMeetingsByStudent } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
+import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
+import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
+import LastMeetingCard from '@/components/monthly-meetings/LastMeetingCard'
+import MonthlyMeetingDetailsModal from './MonthlyMeetingDetailsModal'
 
 const EditMonthlyMeetingContent = () => {
-  const { meetingId } = useParams<{ meetingId: string }>()
+  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
+  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
+  const [showStudentModal, setShowStudentModal] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [studentData, setStudentData] = useState<
+    Record<string, { sessions_attended: number | null; meeting_notes: string }>
+  >({})
+  const [attendeeInput, setAttendeeInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [showScreeningModal, setShowScreeningModal] = useState(false)
+  const [showMeetingModal, setShowMeetingModal] = useState(false)
+
   const navigate = useNavigate()
   const { toast } = useToast()
+
+  const { meetingId } = useParams<{ meetingId: string }>()
   const { userProfile, currentSchool } = useOrganization()
 
   const updateMonthlyMeeting = useUpdateMonthlyMeeting()
   const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
-    currentSchool?.id
+    currentSchool?.id,
   )
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
   const { user } = useAuth()
+
+  const { data: studentScreenings = [], isLoading: isLoadingScreenings } =
+    useSpeechScreeningsByStudent(selectedStudent?.id)
+
+  const mostRecentScreening = studentScreenings[0]
+
+  const { data: studentMeetings = [], isLoading: isLoadingMeetings } = useMonthlyMeetingsByStudent(
+    selectedStudent?.id,
+  )
+
+  const mostRecentMeeting = studentMeetings[0]
 
   const [formData, setFormData] = useState({
     meeting_title: '',
@@ -77,18 +106,6 @@ const EditMonthlyMeetingContent = () => {
     additional_notes: '',
     action_plan: '',
   })
-
-  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
-  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
-  const [showStudentModal, setShowStudentModal] = useState(false)
-  const [selectedStudent, setSelectedStudent] = useState<any>(null)
-  const [studentData, setStudentData] = useState<
-    Record<string, { sessions_attended: number | null; meeting_notes: string }>
-  >({})
-  const [attendeeInput, setAttendeeInput] = useState('')
 
   // Fetch meeting data on mount
   useEffect(() => {
@@ -212,7 +229,7 @@ const EditMonthlyMeetingContent = () => {
     : 'Dr. Sarah Johnson'
 
   // Helper function to get student's current grade
-  const getStudentGrade = (student: any): string => {
+  const getStudentGrade = (student): string => {
     if (student.current_grade_id) {
       const grade = gradesMap.get(student.current_grade_id)
       if (grade) {
@@ -355,7 +372,7 @@ const EditMonthlyMeetingContent = () => {
           })
           setIsSubmitting(false)
         },
-      }
+      },
     )
   }
 
@@ -378,11 +395,11 @@ const EditMonthlyMeetingContent = () => {
 
   return (
     <SidebarProvider>
-      <div className='min-h-screen flex w-full'>
+      <div className='flex w-full min-h-screen'>
         <AppSidebar />
         <SidebarInset>
           <Header userRole={userRole} userName={userName} />
-          <div className='flex-1 bg-gray-25 p-4 md:p-6 lg:p-8'>
+          <div className='flex-1 p-4 bg-gray-25 md:p-6 lg:p-8'>
             <div className='max-w-4xl mx-auto'>
               <div className='flex items-center gap-4 mb-6'>
                 <Button
@@ -393,7 +410,7 @@ const EditMonthlyMeetingContent = () => {
                   <ChevronLeft className='w-4 h-4 mr-1' />
                   Back to Monthly Meetings
                 </Button>
-                <div className='h-4 w-px bg-gray-300' />
+                <div className='w-px h-4 bg-gray-300' />
                 <h1 className='text-2xl font-semibold text-gray-900'>Edit Monthly Meeting</h1>
               </div>
 
@@ -408,7 +425,7 @@ const EditMonthlyMeetingContent = () => {
                   <form onSubmit={handleSubmit} className='space-y-6'>
                     <div className='space-y-4'>
                       <div className='grid grid-cols-3 gap-4'>
-                        <div className='space-y-2 col-span-2'>
+                        <div className='col-span-2 space-y-2'>
                           <Label htmlFor='meeting_title'>Meeting Title *</Label>
                           <Input
                             id='meeting_title'
@@ -461,7 +478,7 @@ const EditMonthlyMeetingContent = () => {
                           className={cn(
                             'min-h-[42px] w-full rounded-md border border-input bg-background',
                             'px-3 py-2 text-sm ring-offset-background',
-                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
+                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
                           )}>
                           <div className='flex flex-wrap gap-2'>
                             {formData.attendees.map((attendee, index) => (
@@ -474,7 +491,7 @@ const EditMonthlyMeetingContent = () => {
                                   type='button'
                                   onClick={() => handleRemoveAttendee(attendee)}
                                   className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
-                                  <X className='h-3 w-3' />
+                                  <X className='w-3 h-3' />
                                 </button>
                               </Badge>
                             ))}
@@ -502,12 +519,12 @@ const EditMonthlyMeetingContent = () => {
                       {/* Students Table Section - Same as Create */}
                       <div className='space-y-2'>
                         <Label>Students</Label>
-                        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+                        <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
                           {isLoadingStudents ? (
                             <div className='flex items-center justify-center py-8'>
                               <div className='text-center'>
-                                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
-                                <p className='text-gray-600 text-sm'>Loading students...</p>
+                                <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin'></div>
+                                <p className='text-sm text-gray-600'>Loading students...</p>
                               </div>
                             </div>
                           ) : (
@@ -530,8 +547,12 @@ const EditMonthlyMeetingContent = () => {
                                     const gradeA = getStudentGrade(a)
                                     const gradeB = getStudentGrade(b)
 
-                                    const indexA = GRADE_MAPPING.findIndex(g => gradeA.includes(g.value))
-                                    const indexB = GRADE_MAPPING.findIndex(g => gradeB.includes(g.value))
+                                    const indexA = GRADE_MAPPING.findIndex(g =>
+                                      gradeA.includes(g.value),
+                                    )
+                                    const indexB = GRADE_MAPPING.findIndex(g =>
+                                      gradeB.includes(g.value),
+                                    )
 
                                     if (indexA === -1 && indexB === -1) {
                                       comparison = 0
@@ -610,7 +631,7 @@ const EditMonthlyMeetingContent = () => {
                                                 month: 'short',
                                                 day: 'numeric',
                                                 year: 'numeric',
-                                              }
+                                              },
                                             )}
                                           </TableCell>
                                           <TableCell className='text-center'>
@@ -622,13 +643,13 @@ const EditMonthlyMeetingContent = () => {
                                                 setSelectedStudent(student)
                                                 setShowStudentModal(true)
                                               }}
-                                              className='h-8 w-8 p-0'>
-                                              <UserPlus className='h-4 w-4' />
+                                              className='w-8 h-8 p-0'>
+                                              <UserPlus className='w-4 h-4' />
                                             </Button>
                                           </TableCell>
                                           <TableCell className='text-center'>
                                             {hasStudentData(student.id) && (
-                                              <CheckCircle2 className='h-5 w-5 text-green-600 mx-auto' />
+                                              <CheckCircle2 className='w-5 h-5 mx-auto text-green-600' />
                                             )}
                                           </TableCell>
                                         </ResponsiveTableRow>
@@ -677,7 +698,7 @@ const EditMonthlyMeetingContent = () => {
                                             setCurrentPage(prev => Math.max(1, prev - 1))
                                           }
                                           disabled={currentPage === 1}
-                                          className='h-9 w-9 p-0'>
+                                          className='p-0 h-9 w-9'>
                                           &larr;
                                         </Button>
                                         <Button
@@ -688,7 +709,7 @@ const EditMonthlyMeetingContent = () => {
                                             setCurrentPage(prev => Math.min(totalPages, prev + 1))
                                           }
                                           disabled={currentPage === totalPages}
-                                          className='h-9 w-9 p-0'>
+                                          className='p-0 h-9 w-9'>
                                           &rarr;
                                         </Button>
                                       </div>
@@ -696,7 +717,7 @@ const EditMonthlyMeetingContent = () => {
                                   </div>
                                 </div>
                               ) : (
-                                <div className='text-center py-8 text-gray-500 text-sm'>
+                                <div className='py-8 text-sm text-center text-gray-500'>
                                   No students with Sub or Qualifies status found for this school.
                                 </div>
                               )
@@ -759,8 +780,62 @@ const EditMonthlyMeetingContent = () => {
                         ? `${selectedStudent.first_name} ${selectedStudent.last_name}`
                         : ''}
                     </DialogTitle>
+
+                    {isLoadingScreenings ? (
+                      <div className='p-4 mt-3 border border-gray-200 shadow-sm bg-gradient-to-br from-gray-50 to-white rounded-xl animate-pulse'>
+                        <div className='flex items-center justify-between'>
+                          <div className='flex items-center gap-2'>
+                            <div className='w-2 h-2 bg-gray-300 rounded-full' />
+                            <div className='w-24 h-4 bg-gray-200 rounded' />
+                            <div className='w-20 h-5 bg-gray-200 rounded-full' />
+                          </div>
+                          <div className='w-32 h-8 bg-gray-200 rounded' />
+                        </div>
+                      </div>
+                    ) : mostRecentScreening ? (
+                      <LastScreeningCard
+                        screening={mostRecentScreening}
+                        onViewDetails={() => setShowScreeningModal(true)}
+                      />
+                    ) : (
+                      <div className='p-4 mt-3 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
+                        <div className='flex items-center gap-2'>
+                          <div className='w-2 h-2 bg-gray-300 rounded-full' />
+                          <span className='text-sm text-gray-400'>
+                            No speech screenings on record
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {isLoadingMeetings ? (
+                      <div className='p-4 mt-3 border border-gray-200 shadow-sm bg-gradient-to-br from-gray-50 to-white rounded-xl animate-pulse'>
+                        <div className='flex items-center justify-between'>
+                          <div className='flex items-center gap-2'>
+                            <div className='w-2 h-2 bg-gray-300 rounded-full' />
+                            <div className='w-24 h-4 bg-gray-200 rounded' />
+                            <div className='w-20 h-5 bg-gray-200 rounded-full' />
+                          </div>
+                          <div className='w-32 h-8 bg-gray-200 rounded' />
+                        </div>
+                      </div>
+                    ) : mostRecentMeeting ? (
+                      <LastMeetingCard
+                        meeting={mostRecentMeeting}
+                        onViewDetails={() => setShowMeetingModal(true)}
+                      />
+                    ) : (
+                      <div className='p-4 mt-3 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
+                        <div className='flex items-center gap-2'>
+                          <div className='w-2 h-2 bg-gray-300 rounded-full' />
+                          <span className='text-sm text-gray-400'>
+                            No monthly meetings on record
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </DialogHeader>
-                  <div className='space-y-4 py-4'>
+                  <div className='py-4 space-y-4'>
                     <div className='space-y-2'>
                       <Label htmlFor='modal_sessions_attended'>Sessions Attended</Label>
                       <Input
@@ -769,7 +844,7 @@ const EditMonthlyMeetingContent = () => {
                         min='0'
                         value={
                           selectedStudent?.id
-                            ? studentData[selectedStudent.id]?.sessions_attended ?? ''
+                            ? (studentData[selectedStudent.id]?.sessions_attended ?? '')
                             : ''
                         }
                         onChange={e => {
@@ -840,6 +915,24 @@ const EditMonthlyMeetingContent = () => {
                     </Button>
                   </DialogFooter>
                 </DialogContent>
+
+                {/* Screening Details */}
+                {mostRecentScreening && (
+                  <ScreeningDetailsModal
+                    isOpen={showScreeningModal}
+                    onClose={() => setShowScreeningModal(false)}
+                    screening={mostRecentScreening}
+                  />
+                )}
+
+                {/* Meeting Details Modal */}
+                {mostRecentMeeting && (
+                  <MonthlyMeetingDetailsModal
+                    isOpen={showMeetingModal}
+                    onClose={() => setShowMeetingModal(false)}
+                    meeting={mostRecentMeeting}
+                  />
+                )}
               </Dialog>
             </div>
           </div>
