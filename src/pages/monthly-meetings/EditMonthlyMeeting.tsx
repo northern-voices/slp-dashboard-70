@@ -586,8 +586,8 @@ const EditMonthlyMeetingContent = () => {
                                   <ResponsiveTable className='w-full'>
                                     <TableHeader>
                                       <tr>
-                                        <TableHead className='w-1/4 min-w-[200px]'>Name</TableHead>
-                                        <TableHead className='w-1/6 min-w-[100px]'>
+                                        <TableHead className='w-1/3'>Name</TableHead>
+                                        <TableHead className='w-1/3'>
                                           <Button
                                             type='button'
                                             variant='ghost'
@@ -597,7 +597,7 @@ const EditMonthlyMeetingContent = () => {
                                             <span className='ml-1'>{getSortIcon('grade')}</span>
                                           </Button>
                                         </TableHead>
-                                        <TableHead className='w-1/5 min-w-[150px]'>
+                                        <TableHead className='w-1/3'>
                                           <Button
                                             type='button'
                                             variant='ghost'
@@ -608,9 +608,6 @@ const EditMonthlyMeetingContent = () => {
                                               {getSortIcon('program_status')}
                                             </span>
                                           </Button>
-                                        </TableHead>
-                                        <TableHead className='w-1/6 min-w-[120px]'>
-                                          Date Created
                                         </TableHead>
                                         <TableHead className='w-[60px] text-center'></TableHead>
                                         <TableHead className='w-[60px] text-center'></TableHead>
@@ -624,16 +621,6 @@ const EditMonthlyMeetingContent = () => {
                                           </TableCell>
                                           <TableCell>{getStudentGrade(student)}</TableCell>
                                           <TableCell>{getQualificationBadge(student)}</TableCell>
-                                          <TableCell>
-                                            {new Date(student.created_at).toLocaleDateString(
-                                              'en-US',
-                                              {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                year: 'numeric',
-                                              },
-                                            )}
-                                          </TableCell>
                                           <TableCell className='text-center'>
                                             <Button
                                               type='button'
