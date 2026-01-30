@@ -21,10 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
-import {
-  useUpdateMonthlyMeeting,
-  useGetMonthlyMeetingById,
-} from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
+import { useUpdateMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useGetUsers } from '@/hooks/users/use-users'
 import { GRADE_MAPPING } from '@/constants/app'
@@ -53,21 +50,53 @@ import {
 } from '@/components/ui/dialog'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { useSpeechScreeningsByStudent } from '@/hooks/screenings'
+import { useMonthlyMeetingsByStudent } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
+import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
+import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
+import LastMeetingCard from '@/components/monthly-meetings/LastMeetingCard'
+import MonthlyMeetingDetailsModal from './MonthlyMeetingDetailsModal'
 
 const EditMonthlyMeetingContent = () => {
-  const { meetingId } = useParams<{ meetingId: string }>()
+  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
+  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
+  const [showStudentModal, setShowStudentModal] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [studentData, setStudentData] = useState<
+    Record<string, { sessions_attended: number | null; meeting_notes: string }>
+  >({})
+  const [attendeeInput, setAttendeeInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [showScreeningModal, setShowScreeningModal] = useState(false)
+  const [showMeetingModal, setShowMeetingModal] = useState(false)
+
   const navigate = useNavigate()
   const { toast } = useToast()
+
+  const { meetingId } = useParams<{ meetingId: string }>()
   const { userProfile, currentSchool } = useOrganization()
 
   const updateMonthlyMeeting = useUpdateMonthlyMeeting()
   const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
-    currentSchool?.id
+    currentSchool?.id,
   )
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
   const { user } = useAuth()
+
+  const { data: studentScreenings = [], isLoading: isLoadingScreenings } =
+    useSpeechScreeningsByStudent(selectedStudent?.id)
+
+  const mostRecentScreening = studentScreenings[0]
+
+  const { data: studentMeetings = [], isLoading: isLoadingMeetings } = useMonthlyMeetingsByStudent(
+    selectedStudent?.id,
+  )
+
+  const mostRecentMeeting = studentMeetings[0]
 
   const [formData, setFormData] = useState({
     meeting_title: '',
@@ -77,18 +106,6 @@ const EditMonthlyMeetingContent = () => {
     additional_notes: '',
     action_plan: '',
   })
-
-  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
-  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
-  const [showStudentModal, setShowStudentModal] = useState(false)
-  const [selectedStudent, setSelectedStudent] = useState<any>(null)
-  const [studentData, setStudentData] = useState<
-    Record<string, { sessions_attended: number | null; meeting_notes: string }>
-  >({})
-  const [attendeeInput, setAttendeeInput] = useState('')
 
   // Fetch meeting data on mount
   useEffect(() => {
@@ -212,7 +229,7 @@ const EditMonthlyMeetingContent = () => {
     : 'Dr. Sarah Johnson'
 
   // Helper function to get student's current grade
-  const getStudentGrade = (student: any): string => {
+  const getStudentGrade = (student): string => {
     if (student.current_grade_id) {
       const grade = gradesMap.get(student.current_grade_id)
       if (grade) {
@@ -355,7 +372,7 @@ const EditMonthlyMeetingContent = () => {
           })
           setIsSubmitting(false)
         },
-      }
+      },
     )
   }
 
@@ -372,17 +389,13 @@ const EditMonthlyMeetingContent = () => {
     return data && (data.sessions_attended !== null || data.meeting_notes.trim() !== '')
   }
 
-  if (isLoading) {
-    return <LoadingSpinner />
-  }
-
   return (
     <SidebarProvider>
-      <div className='min-h-screen flex w-full'>
+      <div className='flex w-full min-h-screen'>
         <AppSidebar />
         <SidebarInset>
           <Header userRole={userRole} userName={userName} />
-          <div className='flex-1 bg-gray-25 p-4 md:p-6 lg:p-8'>
+          <div className='flex-1 p-4 bg-gray-25 md:p-6 lg:p-8'>
             <div className='max-w-4xl mx-auto'>
               <div className='flex items-center gap-4 mb-6'>
                 <Button
@@ -393,7 +406,7 @@ const EditMonthlyMeetingContent = () => {
                   <ChevronLeft className='w-4 h-4 mr-1' />
                   Back to Monthly Meetings
                 </Button>
-                <div className='h-4 w-px bg-gray-300' />
+                <div className='w-px h-4 bg-gray-300' />
                 <h1 className='text-2xl font-semibold text-gray-900'>Edit Monthly Meeting</h1>
               </div>
 
@@ -405,347 +418,350 @@ const EditMonthlyMeetingContent = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleSubmit} className='space-y-6'>
-                    <div className='space-y-4'>
-                      <div className='grid grid-cols-3 gap-4'>
-                        <div className='space-y-2 col-span-2'>
-                          <Label htmlFor='meeting_title'>Meeting Title *</Label>
-                          <Input
-                            id='meeting_title'
-                            name='meeting_title'
-                            value={formData.meeting_title}
-                            onChange={handleInputChange}
-                            placeholder='e.g., October Monthly Progress Review'
-                            required
-                          />
-                        </div>
-                        <div className='space-y-2'>
-                          <Label htmlFor='meeting_date'>Date *</Label>
-                          <Input
-                            id='meeting_date'
-                            name='meeting_date'
-                            type='date'
-                            value={formData.meeting_date}
-                            onChange={handleInputChange}
-                            required
-                          />
-                        </div>
+                  {isLoading ? (
+                    <div className='flex items-center justify-center py-16'>
+                      <div className='text-center'>
+                        <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin'></div>
+                        <p className='text-sm text-gray-600'>Loading meeting data...</p>
                       </div>
-
-                      <div className='space-y-2'>
-                        <Label htmlFor='facilitator_id'>Meeting Facilitator</Label>
-                        <Select
-                          value={formData.facilitator_id}
-                          onValueChange={value =>
-                            setFormData(prev => ({ ...prev, facilitator_id: value }))
-                          }
-                          disabled={isLoadingUsers}>
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder={isLoadingUsers ? 'Loading...' : 'Select a facilitator'}
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmit} className='space-y-6'>
+                      <div className='space-y-4'>
+                        <div className='grid grid-cols-3 gap-4'>
+                          <div className='col-span-2 space-y-2'>
+                            <Label htmlFor='meeting_title'>Meeting Title *</Label>
+                            <Input
+                              id='meeting_title'
+                              name='meeting_title'
+                              value={formData.meeting_title}
+                              onChange={handleInputChange}
+                              placeholder='e.g., October Monthly Progress Review'
+                              required
                             />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {users.map(user => (
-                              <SelectItem key={user.id} value={user.id}>
-                                {user.first_name} {user.last_name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className='space-y-2'>
-                        <Label htmlFor='attendees'>Attendees *</Label>
-                        <div
-                          className={cn(
-                            'min-h-[42px] w-full rounded-md border border-input bg-background',
-                            'px-3 py-2 text-sm ring-offset-background',
-                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
-                          )}>
-                          <div className='flex flex-wrap gap-2'>
-                            {formData.attendees.map((attendee, index) => (
-                              <Badge
-                                key={index}
-                                variant='secondary'
-                                className='flex items-center gap-1 px-2 py-1'>
-                                <span>{attendee}</span>
-                                <button
-                                  type='button'
-                                  onClick={() => handleRemoveAttendee(attendee)}
-                                  className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
-                                  <X className='h-3 w-3' />
-                                </button>
-                              </Badge>
-                            ))}
-
-                            <input
-                              type='text'
-                              id='attendees'
-                              value={attendeeInput}
-                              onChange={e => setAttendeeInput(e.target.value)}
-                              onKeyDown={handleAttendeeKeyDown}
-                              onBlur={handleAddAttendee}
-                              placeholder={
-                                formData.attendees.length === 0 ? 'Type name and press Enter' : ''
-                              }
-                              className='flex-1 min-w-[120px] outline-none bg-transparent'
+                          </div>
+                          <div className='space-y-2'>
+                            <Label htmlFor='meeting_date'>Date *</Label>
+                            <Input
+                              id='meeting_date'
+                              name='meeting_date'
+                              type='date'
+                              value={formData.meeting_date}
+                              onChange={handleInputChange}
+                              required
                             />
                           </div>
                         </div>
-                        <p className='text-sm text-gray-500'>
-                          Type a name and press Enter to add. Click the × or hit Backspace to
-                          remove.
-                        </p>
-                      </div>
 
-                      {/* Students Table Section - Same as Create */}
-                      <div className='space-y-2'>
-                        <Label>Students</Label>
-                        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-                          {isLoadingStudents ? (
-                            <div className='flex items-center justify-center py-8'>
-                              <div className='text-center'>
-                                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
-                                <p className='text-gray-600 text-sm'>Loading students...</p>
-                              </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='facilitator_id'>Meeting Facilitator</Label>
+                          <Select
+                            value={formData.facilitator_id}
+                            onValueChange={value =>
+                              setFormData(prev => ({ ...prev, facilitator_id: value }))
+                            }
+                            disabled={isLoadingUsers}>
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={isLoadingUsers ? 'Loading...' : 'Select a facilitator'}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {users.map(user => (
+                                <SelectItem key={user.id} value={user.id}>
+                                  {user.first_name} {user.last_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className='space-y-2'>
+                          <Label htmlFor='attendees'>Attendees *</Label>
+                          <div
+                            className={cn(
+                              'min-h-[42px] w-full rounded-md border border-input bg-background',
+                              'px-3 py-2 text-sm ring-offset-background',
+                              'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+                            )}>
+                            <div className='flex flex-wrap gap-2'>
+                              {formData.attendees.map((attendee, index) => (
+                                <Badge
+                                  key={index}
+                                  variant='secondary'
+                                  className='flex items-center gap-1 px-2 py-1'>
+                                  <span>{attendee}</span>
+                                  <button
+                                    type='button'
+                                    onClick={() => handleRemoveAttendee(attendee)}
+                                    className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
+                                    <X className='w-3 h-3' />
+                                  </button>
+                                </Badge>
+                              ))}
+
+                              <input
+                                type='text'
+                                id='attendees'
+                                value={attendeeInput}
+                                onChange={e => setAttendeeInput(e.target.value)}
+                                onKeyDown={handleAttendeeKeyDown}
+                                onBlur={handleAddAttendee}
+                                placeholder={
+                                  formData.attendees.length === 0 ? 'Type name and press Enter' : ''
+                                }
+                                className='flex-1 min-w-[120px] outline-none bg-transparent'
+                              />
                             </div>
-                          ) : (
-                            (() => {
-                              const filteredStudents = students
-                                .filter(student => {
-                                  const status = getProgramStatus(student)
-                                  return status === 'sub' || status === 'qualified'
-                                })
-                                .sort((a, b) => {
-                                  if (!sortField || !sortOrder) {
-                                    const dateA = new Date(a.created_at).getTime()
-                                    const dateB = new Date(b.created_at).getTime()
-                                    return dateB - dateA
-                                  }
+                          </div>
+                          <p className='text-sm text-gray-500'>
+                            Type a name and press Enter to add. Click the × or hit Backspace to
+                            remove.
+                          </p>
+                        </div>
 
-                                  let comparison = 0
-
-                                  if (sortField === 'grade') {
-                                    const gradeA = getStudentGrade(a)
-                                    const gradeB = getStudentGrade(b)
-
-                                    const indexA = GRADE_MAPPING.findIndex(g => gradeA.includes(g.value))
-                                    const indexB = GRADE_MAPPING.findIndex(g => gradeB.includes(g.value))
-
-                                    if (indexA === -1 && indexB === -1) {
-                                      comparison = 0
-                                    } else if (indexA === -1) {
-                                      comparison = 1
-                                    } else if (indexB === -1) {
-                                      comparison = -1
-                                    } else {
-                                      comparison = indexA - indexB
+                        {/* Students Table Section - Same as Create */}
+                        <div className='space-y-2'>
+                          <Label>Students</Label>
+                          <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
+                            {isLoadingStudents ? (
+                              <div className='flex items-center justify-center py-8'>
+                                <div className='text-center'>
+                                  <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin'></div>
+                                  <p className='text-sm text-gray-600'>Loading students...</p>
+                                </div>
+                              </div>
+                            ) : (
+                              (() => {
+                                const filteredStudents = students
+                                  .filter(student => {
+                                    const status = getProgramStatus(student)
+                                    return status === 'sub' || status === 'qualified'
+                                  })
+                                  .sort((a, b) => {
+                                    if (!sortField || !sortOrder) {
+                                      const dateA = new Date(a.created_at).getTime()
+                                      const dateB = new Date(b.created_at).getTime()
+                                      return dateB - dateA
                                     }
-                                  } else if (sortField === 'program_status') {
-                                    const statusA = getProgramStatus(a)
-                                    const statusB = getProgramStatus(b)
-                                    const statusOrder = { qualified: 0, sub: 1 }
-                                    comparison = statusOrder[statusA] - statusOrder[statusB]
-                                  }
 
-                                  return sortOrder === 'asc' ? comparison : -comparison
-                                })
+                                    let comparison = 0
 
-                              const totalStudents = filteredStudents.length
-                              const effectiveItemsPerPage =
-                                itemsPerPage === 'all' ? totalStudents : itemsPerPage
-                              const totalPages = Math.ceil(totalStudents / effectiveItemsPerPage)
-                              const startIndex = (currentPage - 1) * effectiveItemsPerPage
-                              const endIndex = startIndex + effectiveItemsPerPage
-                              const paginatedStudents = filteredStudents.slice(startIndex, endIndex)
+                                    if (sortField === 'grade') {
+                                      const gradeA = getStudentGrade(a)
+                                      const gradeB = getStudentGrade(b)
 
-                              return filteredStudents.length > 0 ? (
-                                <div className='space-y-4'>
-                                  <ResponsiveTable className='w-full'>
-                                    <TableHeader>
-                                      <tr>
-                                        <TableHead className='w-1/4 min-w-[200px]'>Name</TableHead>
-                                        <TableHead className='w-1/6 min-w-[100px]'>
-                                          <Button
-                                            type='button'
-                                            variant='ghost'
-                                            onClick={() => handleSort('grade')}
-                                            className='h-auto p-0 font-medium hover:bg-transparent'>
-                                            Grade
-                                            <span className='ml-1'>{getSortIcon('grade')}</span>
-                                          </Button>
-                                        </TableHead>
-                                        <TableHead className='w-1/5 min-w-[150px]'>
-                                          <Button
-                                            type='button'
-                                            variant='ghost'
-                                            onClick={() => handleSort('program_status')}
-                                            className='h-auto p-0 font-medium hover:bg-transparent'>
-                                            Program Status
-                                            <span className='ml-1'>
-                                              {getSortIcon('program_status')}
-                                            </span>
-                                          </Button>
-                                        </TableHead>
-                                        <TableHead className='w-1/6 min-w-[120px]'>
-                                          Date Created
-                                        </TableHead>
-                                        <TableHead className='w-[60px] text-center'></TableHead>
-                                        <TableHead className='w-[60px] text-center'></TableHead>
-                                      </tr>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {paginatedStudents.map(student => (
-                                        <ResponsiveTableRow key={student.id}>
-                                          <TableCell>
-                                            {student.first_name} {student.last_name}
-                                          </TableCell>
-                                          <TableCell>{getStudentGrade(student)}</TableCell>
-                                          <TableCell>{getQualificationBadge(student)}</TableCell>
-                                          <TableCell>
-                                            {new Date(student.created_at).toLocaleDateString(
-                                              'en-US',
-                                              {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                year: 'numeric',
-                                              }
-                                            )}
-                                          </TableCell>
-                                          <TableCell className='text-center'>
+                                      const indexA = GRADE_MAPPING.findIndex(g =>
+                                        gradeA.includes(g.value),
+                                      )
+                                      const indexB = GRADE_MAPPING.findIndex(g =>
+                                        gradeB.includes(g.value),
+                                      )
+
+                                      if (indexA === -1 && indexB === -1) {
+                                        comparison = 0
+                                      } else if (indexA === -1) {
+                                        comparison = 1
+                                      } else if (indexB === -1) {
+                                        comparison = -1
+                                      } else {
+                                        comparison = indexA - indexB
+                                      }
+                                    } else if (sortField === 'program_status') {
+                                      const statusA = getProgramStatus(a)
+                                      const statusB = getProgramStatus(b)
+                                      const statusOrder = { qualified: 0, sub: 1 }
+                                      comparison = statusOrder[statusA] - statusOrder[statusB]
+                                    }
+
+                                    return sortOrder === 'asc' ? comparison : -comparison
+                                  })
+
+                                const totalStudents = filteredStudents.length
+                                const effectiveItemsPerPage =
+                                  itemsPerPage === 'all' ? totalStudents : itemsPerPage
+                                const totalPages = Math.ceil(totalStudents / effectiveItemsPerPage)
+                                const startIndex = (currentPage - 1) * effectiveItemsPerPage
+                                const endIndex = startIndex + effectiveItemsPerPage
+                                const paginatedStudents = filteredStudents.slice(
+                                  startIndex,
+                                  endIndex,
+                                )
+
+                                return filteredStudents.length > 0 ? (
+                                  <div className='space-y-4'>
+                                    <ResponsiveTable className='w-full'>
+                                      <TableHeader>
+                                        <tr>
+                                          <TableHead className='w-1/3'>Name</TableHead>
+                                          <TableHead className='w-1/3'>
                                             <Button
                                               type='button'
-                                              size='sm'
-                                              variant='outline'
-                                              onClick={() => {
-                                                setSelectedStudent(student)
-                                                setShowStudentModal(true)
-                                              }}
-                                              className='h-8 w-8 p-0'>
-                                              <UserPlus className='h-4 w-4' />
+                                              variant='ghost'
+                                              onClick={() => handleSort('grade')}
+                                              className='h-auto p-0 font-medium hover:bg-transparent'>
+                                              Grade
+                                              <span className='ml-1'>{getSortIcon('grade')}</span>
                                             </Button>
-                                          </TableCell>
-                                          <TableCell className='text-center'>
-                                            {hasStudentData(student.id) && (
-                                              <CheckCircle2 className='h-5 w-5 text-green-600 mx-auto' />
-                                            )}
-                                          </TableCell>
-                                        </ResponsiveTableRow>
-                                      ))}
-                                    </TableBody>
-                                  </ResponsiveTable>
+                                          </TableHead>
+                                          <TableHead className='w-1/3'>
+                                            <Button
+                                              type='button'
+                                              variant='ghost'
+                                              onClick={() => handleSort('program_status')}
+                                              className='h-auto p-0 font-medium hover:bg-transparent'>
+                                              Program Status
+                                              <span className='ml-1'>
+                                                {getSortIcon('program_status')}
+                                              </span>
+                                            </Button>
+                                          </TableHead>
+                                          <TableHead className='w-[60px] text-center'></TableHead>
+                                          <TableHead className='w-[60px] text-center'></TableHead>
+                                        </tr>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {paginatedStudents.map(student => (
+                                          <ResponsiveTableRow key={student.id}>
+                                            <TableCell>
+                                              {student.first_name} {student.last_name}
+                                            </TableCell>
+                                            <TableCell>{getStudentGrade(student)}</TableCell>
+                                            <TableCell>{getQualificationBadge(student)}</TableCell>
+                                            <TableCell className='text-center'>
+                                              <Button
+                                                type='button'
+                                                size='sm'
+                                                variant='outline'
+                                                onClick={() => {
+                                                  setSelectedStudent(student)
+                                                  setShowStudentModal(true)
+                                                }}
+                                                className='w-8 h-8 p-0'>
+                                                <UserPlus className='w-4 h-4' />
+                                              </Button>
+                                            </TableCell>
+                                            <TableCell className='text-center'>
+                                              {hasStudentData(student.id) && (
+                                                <CheckCircle2 className='w-5 h-5 mx-auto text-green-600' />
+                                              )}
+                                            </TableCell>
+                                          </ResponsiveTableRow>
+                                        ))}
+                                      </TableBody>
+                                    </ResponsiveTable>
 
-                                  {/* Pagination Controls */}
-                                  <div className='flex items-center justify-between px-4 py-3 border-t border-gray-200'>
-                                    <div className='flex items-center gap-2'>
-                                      <Label
-                                        htmlFor='itemsPerPage'
-                                        className='text-sm text-gray-600'>
-                                        Rows per page:
-                                      </Label>
-                                      <Select
-                                        value={itemsPerPage.toString()}
-                                        onValueChange={value => {
-                                          setItemsPerPage(value === 'all' ? 'all' : Number(value))
-                                          setCurrentPage(1)
-                                        }}>
-                                        <SelectTrigger id='itemsPerPage' className='w-[80px] h-9'>
-                                          <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value='5'>5</SelectItem>
-                                          <SelectItem value='10'>10</SelectItem>
-                                          <SelectItem value='20'>20</SelectItem>
-                                          <SelectItem value='50'>50</SelectItem>
-                                          <SelectItem value='all'>All</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
+                                    {/* Pagination Controls */}
+                                    <div className='flex items-center justify-between px-4 py-3 border-t border-gray-200'>
+                                      <div className='flex items-center gap-2'>
+                                        <Label
+                                          htmlFor='itemsPerPage'
+                                          className='text-sm text-gray-600'>
+                                          Rows per page:
+                                        </Label>
+                                        <Select
+                                          value={itemsPerPage.toString()}
+                                          onValueChange={value => {
+                                            setItemsPerPage(value === 'all' ? 'all' : Number(value))
+                                            setCurrentPage(1)
+                                          }}>
+                                          <SelectTrigger id='itemsPerPage' className='w-[80px] h-9'>
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value='5'>5</SelectItem>
+                                            <SelectItem value='10'>10</SelectItem>
+                                            <SelectItem value='20'>20</SelectItem>
+                                            <SelectItem value='50'>50</SelectItem>
+                                            <SelectItem value='all'>All</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
 
-                                    <div className='flex items-center gap-2'>
-                                      <span className='text-sm text-gray-600'>
-                                        Showing {startIndex + 1}-{Math.min(endIndex, totalStudents)}{' '}
-                                        of {totalStudents}
-                                      </span>
-                                      <div className='flex gap-1'>
-                                        <Button
-                                          type='button'
-                                          variant='outline'
-                                          size='sm'
-                                          onClick={() =>
-                                            setCurrentPage(prev => Math.max(1, prev - 1))
-                                          }
-                                          disabled={currentPage === 1}
-                                          className='h-9 w-9 p-0'>
-                                          &larr;
-                                        </Button>
-                                        <Button
-                                          type='button'
-                                          variant='outline'
-                                          size='sm'
-                                          onClick={() =>
-                                            setCurrentPage(prev => Math.min(totalPages, prev + 1))
-                                          }
-                                          disabled={currentPage === totalPages}
-                                          className='h-9 w-9 p-0'>
-                                          &rarr;
-                                        </Button>
+                                      <div className='flex items-center gap-2'>
+                                        <span className='text-sm text-gray-600'>
+                                          Showing {startIndex + 1}-
+                                          {Math.min(endIndex, totalStudents)} of {totalStudents}
+                                        </span>
+                                        <div className='flex gap-1'>
+                                          <Button
+                                            type='button'
+                                            variant='outline'
+                                            size='sm'
+                                            onClick={() =>
+                                              setCurrentPage(prev => Math.max(1, prev - 1))
+                                            }
+                                            disabled={currentPage === 1}
+                                            className='p-0 h-9 w-9'>
+                                            &larr;
+                                          </Button>
+                                          <Button
+                                            type='button'
+                                            variant='outline'
+                                            size='sm'
+                                            onClick={() =>
+                                              setCurrentPage(prev => Math.min(totalPages, prev + 1))
+                                            }
+                                            disabled={currentPage === totalPages}
+                                            className='p-0 h-9 w-9'>
+                                            &rarr;
+                                          </Button>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              ) : (
-                                <div className='text-center py-8 text-gray-500 text-sm'>
-                                  No students with Sub or Qualifies status found for this school.
-                                </div>
-                              )
-                            })()
-                          )}
+                                ) : (
+                                  <div className='py-8 text-sm text-center text-gray-500'>
+                                    No students with Sub or Qualifies status found for this school.
+                                  </div>
+                                )
+                              })()
+                            )}
+                          </div>
+                        </div>
+
+                        <div className='space-y-2'>
+                          <Label htmlFor='additional_notes'>Additional Notes</Label>
+                          <Textarea
+                            id='additional_notes'
+                            name='additional_notes'
+                            value={formData.additional_notes}
+                            onChange={handleInputChange}
+                            placeholder='Additional notes to be added...'
+                            rows={4}
+                          />
+                        </div>
+
+                        <div className='space-y-2'>
+                          <Label htmlFor='action_plan'>Action Plan</Label>
+                          <Textarea
+                            id='action_plan'
+                            name='action_plan'
+                            value={formData.action_plan}
+                            onChange={handleInputChange}
+                            placeholder='Action plan and next steps...'
+                            rows={4}
+                          />
                         </div>
                       </div>
 
-                      <div className='space-y-2'>
-                        <Label htmlFor='additional_notes'>Additional Notes</Label>
-                        <Textarea
-                          id='additional_notes'
-                          name='additional_notes'
-                          value={formData.additional_notes}
-                          onChange={handleInputChange}
-                          placeholder='Additional notes to be added...'
-                          rows={4}
-                        />
+                      <div className='flex justify-end gap-3 pt-4'>
+                        <Button
+                          type='button'
+                          variant='outline'
+                          onClick={handleCancel}
+                          disabled={isSubmitting}>
+                          Cancel
+                        </Button>
+                        <Button
+                          type='submit'
+                          className='bg-blue-600 hover:bg-blue-700'
+                          disabled={isSubmitting}>
+                          {isSubmitting ? 'Updating...' : 'Update Meeting'}
+                        </Button>
                       </div>
-
-                      <div className='space-y-2'>
-                        <Label htmlFor='action_plan'>Action Plan</Label>
-                        <Textarea
-                          id='action_plan'
-                          name='action_plan'
-                          value={formData.action_plan}
-                          onChange={handleInputChange}
-                          placeholder='Action plan and next steps...'
-                          rows={4}
-                        />
-                      </div>
-                    </div>
-
-                    <div className='flex justify-end gap-3 pt-4'>
-                      <Button
-                        type='button'
-                        variant='outline'
-                        onClick={handleCancel}
-                        disabled={isSubmitting}>
-                        Cancel
-                      </Button>
-                      <Button
-                        type='submit'
-                        className='bg-blue-600 hover:bg-blue-700'
-                        disabled={isSubmitting}>
-                        {isSubmitting ? 'Updating...' : 'Update Meeting'}
-                      </Button>
-                    </div>
-                  </form>
+                    </form>
+                  )}
                 </CardContent>
               </Card>
 
@@ -759,8 +775,62 @@ const EditMonthlyMeetingContent = () => {
                         ? `${selectedStudent.first_name} ${selectedStudent.last_name}`
                         : ''}
                     </DialogTitle>
+
+                    {isLoadingScreenings ? (
+                      <div className='p-4 mt-3 border border-gray-200 shadow-sm bg-gradient-to-br from-gray-50 to-white rounded-xl animate-pulse'>
+                        <div className='flex items-center justify-between'>
+                          <div className='flex items-center gap-2'>
+                            <div className='w-2 h-2 bg-gray-300 rounded-full' />
+                            <div className='w-24 h-4 bg-gray-200 rounded' />
+                            <div className='w-20 h-5 bg-gray-200 rounded-full' />
+                          </div>
+                          <div className='w-32 h-8 bg-gray-200 rounded' />
+                        </div>
+                      </div>
+                    ) : mostRecentScreening ? (
+                      <LastScreeningCard
+                        screening={mostRecentScreening}
+                        onViewDetails={() => setShowScreeningModal(true)}
+                      />
+                    ) : (
+                      <div className='p-4 mt-3 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
+                        <div className='flex items-center gap-2'>
+                          <div className='w-2 h-2 bg-gray-300 rounded-full' />
+                          <span className='text-sm text-gray-400'>
+                            No speech screenings on record
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {isLoadingMeetings ? (
+                      <div className='p-4 mt-3 border border-gray-200 shadow-sm bg-gradient-to-br from-gray-50 to-white rounded-xl animate-pulse'>
+                        <div className='flex items-center justify-between'>
+                          <div className='flex items-center gap-2'>
+                            <div className='w-2 h-2 bg-gray-300 rounded-full' />
+                            <div className='w-24 h-4 bg-gray-200 rounded' />
+                            <div className='w-20 h-5 bg-gray-200 rounded-full' />
+                          </div>
+                          <div className='w-32 h-8 bg-gray-200 rounded' />
+                        </div>
+                      </div>
+                    ) : mostRecentMeeting ? (
+                      <LastMeetingCard
+                        meeting={mostRecentMeeting}
+                        onViewDetails={() => setShowMeetingModal(true)}
+                      />
+                    ) : (
+                      <div className='p-4 mt-3 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
+                        <div className='flex items-center gap-2'>
+                          <div className='w-2 h-2 bg-gray-300 rounded-full' />
+                          <span className='text-sm text-gray-400'>
+                            No monthly meetings on record
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </DialogHeader>
-                  <div className='space-y-4 py-4'>
+                  <div className='py-4 space-y-4'>
                     <div className='space-y-2'>
                       <Label htmlFor='modal_sessions_attended'>Sessions Attended</Label>
                       <Input
@@ -769,7 +839,7 @@ const EditMonthlyMeetingContent = () => {
                         min='0'
                         value={
                           selectedStudent?.id
-                            ? studentData[selectedStudent.id]?.sessions_attended ?? ''
+                            ? (studentData[selectedStudent.id]?.sessions_attended ?? '')
                             : ''
                         }
                         onChange={e => {
@@ -840,6 +910,24 @@ const EditMonthlyMeetingContent = () => {
                     </Button>
                   </DialogFooter>
                 </DialogContent>
+
+                {/* Screening Details */}
+                {mostRecentScreening && (
+                  <ScreeningDetailsModal
+                    isOpen={showScreeningModal}
+                    onClose={() => setShowScreeningModal(false)}
+                    screening={mostRecentScreening}
+                  />
+                )}
+
+                {/* Meeting Details Modal */}
+                {mostRecentMeeting && (
+                  <MonthlyMeetingDetailsModal
+                    isOpen={showMeetingModal}
+                    onClose={() => setShowMeetingModal(false)}
+                    meeting={mostRecentMeeting}
+                  />
+                )}
               </Dialog>
             </div>
           </div>
