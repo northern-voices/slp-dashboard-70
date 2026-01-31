@@ -325,11 +325,11 @@ const CreateMonthlyMeetingContent = () => {
 
   return (
     <SidebarProvider>
-      <div className='min-h-screen flex w-full'>
+      <div className='flex w-full min-h-screen'>
         <AppSidebar />
         <SidebarInset>
           <Header userRole={userRole} userName={userName} />
-          <div className='flex-1 bg-gray-25 p-4 md:p-6 lg:p-8'>
+          <div className='flex-1 p-4 bg-gray-25 md:p-6 lg:p-8'>
             <div className='max-w-4xl mx-auto'>
               <div className='flex items-center gap-4 mb-6'>
                 <Button
@@ -340,7 +340,7 @@ const CreateMonthlyMeetingContent = () => {
                   <ChevronLeft className='w-4 h-4 mr-1' />
                   Back to Monthly Meetings
                 </Button>
-                <div className='h-4 w-px bg-gray-300' />
+                <div className='w-px h-4 bg-gray-300' />
                 <h1 className='text-2xl font-semibold text-gray-900'>Create Monthly Meeting</h1>
               </div>
 
@@ -355,7 +355,7 @@ const CreateMonthlyMeetingContent = () => {
                   <form onSubmit={handleSubmit} className='space-y-6'>
                     <div className='space-y-4'>
                       <div className='grid grid-cols-3 gap-4'>
-                        <div className='space-y-2 col-span-2'>
+                        <div className='col-span-2 space-y-2'>
                           <Label htmlFor='meeting_title'>Meeting Title *</Label>
                           <Input
                             id='meeting_title'
@@ -449,7 +449,7 @@ const CreateMonthlyMeetingContent = () => {
                                   type='button'
                                   onClick={() => handleRemoveAttendee(attendee)}
                                   className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
-                                  <X className='h-3 w-3' />
+                                  <X className='w-3 h-3' />
                                 </button>
                               </Badge>
                             ))}
@@ -479,7 +479,7 @@ const CreateMonthlyMeetingContent = () => {
                       <div className='space-y-2'>
                         <Label>Students</Label>
 
-                        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+                        <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
                           <MonthlyMeetingsStudentTable
                             students={students}
                             isLoading={isLoadingStudents}
@@ -519,20 +519,41 @@ const CreateMonthlyMeetingContent = () => {
                       />
                     </div>
 
-                    <div className='flex justify-end gap-3 pt-4'>
-                      <Button
-                        type='button'
-                        variant='outline'
-                        onClick={handleCancel}
-                        disabled={isSubmitting}>
-                        Cancel
-                      </Button>
-                      <Button
-                        type='submit'
-                        className='bg-blue-600 hover:bg-blue-700'
-                        disabled={isSubmitting}>
-                        {isSubmitting ? 'Saving...' : 'Save Meeting Notes'}
-                      </Button>
+                    <div className='flex justify-between pt-4'>
+                      <div>
+                        {isDirty && (
+                          <Button
+                            type='button'
+                            variant='ghost'
+                            onClick={() => {
+                              discardDraft()
+                              toast({
+                                title: 'Draft Discarded',
+                                description: 'Your draft has been discarded.',
+                              })
+                            }}
+                            disabled={isSubmitting}
+                            className='text-red-600 hover:text-red-700 hover:bg-red-50'>
+                            Discard Draft
+                          </Button>
+                        )}
+                      </div>
+
+                      <div className='flex gap-3'>
+                        <Button
+                          type='button'
+                          variant='outline'
+                          onClick={handleCancel}
+                          disabled={isSubmitting}>
+                          Cancel
+                        </Button>
+                        <Button
+                          type='submit'
+                          className='bg-blue-600 hover:bg-blue-700'
+                          disabled={isSubmitting}>
+                          {isSubmitting ? 'Saving...' : 'Save Meeting Notes'}
+                        </Button>
+                      </div>
                     </div>
                   </form>
                 </CardContent>
@@ -556,14 +577,14 @@ const CreateMonthlyMeetingContent = () => {
                     )}
 
                     {isLoadingScreenings ? (
-                      <div className='mt-3 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 shadow-sm animate-pulse'>
+                      <div className='p-4 mt-3 border border-gray-200 shadow-sm bg-gradient-to-br from-gray-50 to-white rounded-xl animate-pulse'>
                         <div className='flex items-center justify-between'>
                           <div className='flex items-center gap-2'>
-                            <div className='w-2 h-2 rounded-full bg-gray-300' />
-                            <div className='h-4 w-24 bg-gray-200 rounded' />
-                            <div className='h-5 w-20 bg-gray-200 rounded-full' />
+                            <div className='w-2 h-2 bg-gray-300 rounded-full' />
+                            <div className='w-24 h-4 bg-gray-200 rounded' />
+                            <div className='w-20 h-5 bg-gray-200 rounded-full' />
                           </div>
-                          <div className='h-8 w-32 bg-gray-200 rounded' />
+                          <div className='w-32 h-8 bg-gray-200 rounded' />
                         </div>
                       </div>
                     ) : mostRecentScreening ? (
@@ -572,9 +593,9 @@ const CreateMonthlyMeetingContent = () => {
                         onViewDetails={() => setShowScreeningModal(true)}
                       />
                     ) : (
-                      <div className='mt-3 p-4 bg-gray-50/50 rounded-xl border border-dashed border-gray-200'>
+                      <div className='p-4 mt-3 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
                         <div className='flex items-center gap-2'>
-                          <div className='w-2 h-2 rounded-full bg-gray-300' />
+                          <div className='w-2 h-2 bg-gray-300 rounded-full' />
                           <span className='text-sm text-gray-400'>
                             No speech screenings on record
                           </span>
@@ -583,14 +604,14 @@ const CreateMonthlyMeetingContent = () => {
                     )}
 
                     {isLoadingMeetings ? (
-                      <div className='mt-3 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 shadow-sm animate-pulse'>
+                      <div className='p-4 mt-3 border border-gray-200 shadow-sm bg-gradient-to-br from-gray-50 to-white rounded-xl animate-pulse'>
                         <div className='flex items-center justify-between'>
                           <div className='flex items-center gap-2'>
-                            <div className='w-2 h-2 rounded-full bg-gray-300' />
-                            <div className='h-4 w-24 bg-gray-200 rounded' />
-                            <div className='h-5 w-20 bg-gray-200 rounded-full' />
+                            <div className='w-2 h-2 bg-gray-300 rounded-full' />
+                            <div className='w-24 h-4 bg-gray-200 rounded' />
+                            <div className='w-20 h-5 bg-gray-200 rounded-full' />
                           </div>
-                          <div className='h-8 w-32 bg-gray-200 rounded' />
+                          <div className='w-32 h-8 bg-gray-200 rounded' />
                         </div>
                       </div>
                     ) : mostRecentMeeting ? (
@@ -599,9 +620,9 @@ const CreateMonthlyMeetingContent = () => {
                         onViewDetails={() => setShowMeetingModal(true)}
                       />
                     ) : (
-                      <div className='mt-3 p-4 bg-gray-50/50 rounded-xl border border-dashed border-gray-200'>
+                      <div className='p-4 mt-3 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
                         <div className='flex items-center gap-2'>
-                          <div className='w-2 h-2 rounded-full bg-gray-300' />
+                          <div className='w-2 h-2 bg-gray-300 rounded-full' />
                           <span className='text-sm text-gray-400'>
                             No monthly meetings on record
                           </span>
@@ -610,7 +631,7 @@ const CreateMonthlyMeetingContent = () => {
                     )}
                   </DialogHeader>
 
-                  <div className='space-y-4 py-4'>
+                  <div className='py-4 space-y-4'>
                     <div className='space-y-2'>
                       <Label htmlFor='modal_sessions_attended'>Sessions Attended</Label>
                       <Input
@@ -771,10 +792,10 @@ const CreateMonthlyMeetingContent = () => {
                       You have unsaved changes that will be saved as a draft. You can continue
                       editing later by returning to this page.
                     </p>
-                    <div className='mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100'>
-                      <p className='text-sm text-blue-700 flex items-center gap-2'>
+                    <div className='p-3 mt-3 border border-blue-100 rounded-lg bg-blue-50'>
+                      <p className='flex items-center gap-2 text-sm text-blue-700'>
                         <svg
-                          className='w-4 h-4 flex-shrink-0'
+                          className='flex-shrink-0 w-4 h-4'
                           fill='none'
                           stroke='currentColor'
                           viewBox='0 0 24 24'>
