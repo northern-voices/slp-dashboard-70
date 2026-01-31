@@ -74,19 +74,31 @@ export const useStudent = (studentId?: string) => {
 }
 
 export const useStudentsBySchool = (schoolId?: string) => {
+  const isOnline = useOnlineStatus()
   const cacheKey = `cached_students_school_${schoolId}`
 
   return useQuery({
     queryKey: ['students', 'by-school', schoolId],
     queryFn: async () => {
-      const students = await studentsApi.getStudentsBySchool(schoolId!)
-      // Cache for offline use
-      setStudentsCache(cacheKey, students)
-      return students
+      const cached = getStudentsCache(cacheKey)
+
+      try {
+        const students = await studentsApi.getStudentsBySchool(schoolId!)
+        // Cache for offline use
+        setStudentsCache(cacheKey, students)
+        return students
+      } catch (error) {
+        // On network error, fall back to cache
+        if (cached.length > 0) {
+          return cached
+        }
+        throw error
+      }
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
     enabled: !!schoolId,
+    retry: isOnline ? 3 : false,
     // Return cached data when offline or while loading
     placeholderData: schoolId ? getStudentsCache(cacheKey) : [],
   })
