@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { studentsApi } from '@/api/students'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Student } from '@/types/database'
+import { useOnlineStatus } from '@/hooks/use-online-status'
 
 const getStudentsCache = (key: string): Student[] => {
   try {
@@ -34,20 +35,30 @@ export const useStudents = () => {
 
 export const useStudentsByGrade = (gradeLevel: string) => {
   const { currentSchool } = useOrganization()
+  const isOnline = useOnlineStatus()
   const cacheKey = `cached_students_grade_${currentSchool?.id}_${gradeLevel}`
 
   return useQuery({
     queryKey: ['students', 'by-grade', gradeLevel, currentSchool?.id],
     queryFn: async () => {
-      const students = await studentsApi.getStudentsByGrade(gradeLevel, currentSchool?.id)
-      // Cache for offline use
-      setStudentsCache(cacheKey, students)
-      return students
+      const cached = getStudentsCache(cacheKey)
+
+      try {
+        const students = await studentsApi.getStudentsByGrade(gradeLevel, currentSchool?.id)
+        setStudentsCache(cacheKey, students)
+        return students
+      } catch (error) {
+        // On network error, fall back to cache
+        if (cached.length > 0) {
+          return cached
+        }
+        throw error
+      }
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
     enabled: !!gradeLevel && !!currentSchool?.id,
-    // Return cached data when offline or while loading
+    retry: isOnline ? 3 : false,
     placeholderData: gradeLevel && currentSchool?.id ? getStudentsCache(cacheKey) : [],
   })
 }
