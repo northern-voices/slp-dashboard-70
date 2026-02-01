@@ -76,3 +76,39 @@ export const useDeleteStudent = () => {
     },
   })
 }
+
+export const useTransferStudent = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (params: {
+      studentId: string
+      fromSchoolId: string
+      toSchoolId: string
+      fromGradeId: string | null
+      toGradeId: string | null
+      transferredBy: string
+      transferDate?: string
+      reason?: string
+    }) => studentsApi.transferStudent(params),
+    onSuccess: (_, variables) => {
+      // Invalidate student queries
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+      queryClient.invalidateQueries({ queryKey: ['students', variables.studentId] })
+      // Invalidate both old and new school student lists
+      queryClient.invalidateQueries({ queryKey: ['students', 'school', variables.fromSchoolId] })
+      queryClient.invalidateQueries({ queryKey: ['students', 'school', variables.toSchoolId] })
+    },
+  })
+}
+
+export const useStudentTransferHistory = (studentId: string) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => studentsApi.getStudentTransferHistory(studentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-transfers', studentId] })
+    },
+  })
+}
