@@ -503,7 +503,7 @@ export const studentsApi = {
       if (transferError) throw transferError
 
       // 2. Update the student's school and grade
-      const { data: updatedStudent, erro: updateError } = await supabase
+      const { data: updatedStudent, error: updateError } = await supabase
         .from('students')
         .update({
           school_id: toSchoolId,
