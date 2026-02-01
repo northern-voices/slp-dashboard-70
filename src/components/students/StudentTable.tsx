@@ -291,7 +291,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         activeSchool.id,
         data.first_name,
         data.last_name,
-        data.date_of_birth
+        data.date_of_birth,
       )
 
       if (duplicate) {
@@ -365,7 +365,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   variant: 'destructive',
                 })
               },
-            }
+            },
           )
         },
         onError: error => {
@@ -376,7 +376,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
             variant: 'destructive',
           })
         },
-      }
+      },
     )
   }
 
