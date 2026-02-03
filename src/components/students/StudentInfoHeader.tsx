@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -49,6 +50,7 @@ import {
   X,
   Trash2,
   TrendingUp,
+  ArrowRightLeft,
 } from 'lucide-react'
 import type { Student } from '@/types/database'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -56,6 +58,7 @@ import { useToast } from '@/hooks/use-toast'
 import { studentsApi } from '@/api/students'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useQueryClient } from '@tanstack/react-query'
+import TransferStudentDialog from './TransferStudentDialog'
 
 interface StudentInfoHeaderProps {
   student?: Student | null
@@ -85,6 +88,7 @@ const StudentInfoHeader = ({
   const [editedGradeId, setEditedGradeId] = useState<string>('')
   const [availableGrades, setAvailableGrades] = useState<SchoolGrade[]>([])
   const [isLoadingGrades, setIsLoadingGrades] = useState(false)
+  const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
   const [currentGrade, setCurrentGrade] = useState<SchoolGrade | null>(null)
   const [isLoadingCurrentGrade, setIsLoadingCurrentGrade] = useState(false)
   const [studentNotes, setStudentNotes] = useState<
@@ -103,6 +107,8 @@ const StudentInfoHeader = ({
   const [isLoadingNotes, setIsLoadingNotes] = useState(false)
   const { toast } = useToast()
   const queryClient = useQueryClient()
+
+  const navigate = useNavigate()
 
   // Update local student when prop changes
   useEffect(() => {
@@ -448,6 +454,12 @@ const StudentInfoHeader = ({
               </div>
 
               <div className='flex items-center space-x-2 flex-wrap gap-2'>
+                {/* Transfer Button */}
+                <Button variant='outline' size='sm' onClick={() => setIsTransferDialogOpen(true)}>
+                  <ArrowRightLeft className='w-4 h-4 mr-2' />
+                  Transfer
+                </Button>
+
                 {/* Edit Button */}
                 <Button variant='outline' size='sm' onClick={handleEditName}>
                   <Edit className='w-4 h-4 mr-2' />
@@ -721,6 +733,16 @@ const StudentInfoHeader = ({
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Transfer Student Dialog */}
+        {localStudent && (
+          <TransferStudentDialog
+            student={localStudent}
+            open={isTransferDialogOpen}
+            onOpenChange={setIsTransferDialogOpen}
+            onSuccess={() => navigate('/students')}
+          />
+        )}
       </CardContent>
     </Card>
   )
