@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -106,6 +107,8 @@ const StudentInfoHeader = ({
   const [isLoadingNotes, setIsLoadingNotes] = useState(false)
   const { toast } = useToast()
   const queryClient = useQueryClient()
+
+  const navigate = useNavigate()
 
   // Update local student when prop changes
   useEffect(() => {
@@ -737,6 +740,7 @@ const StudentInfoHeader = ({
             student={localStudent}
             open={isTransferDialogOpen}
             onOpenChange={setIsTransferDialogOpen}
+            onSuccess={() => navigate('/students')}
           />
         )}
       </CardContent>
