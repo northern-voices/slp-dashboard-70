@@ -100,7 +100,7 @@ export const studentsApi = {
               grade_level
             )
           )
-        `
+        `,
         )
         .eq('school_id', schoolId)
         .order('last_name', { ascending: true })
@@ -196,7 +196,7 @@ export const studentsApi = {
     schoolId: string,
     firstName: string,
     lastName: string,
-    dateOfBirth?: string
+    dateOfBirth?: string,
   ): Promise<Student | null> => {
     try {
       if (!schoolId || !firstName || !lastName) {
@@ -301,7 +301,7 @@ export const studentsApi = {
       date_of_birth?: string
       qualifies_for_program: boolean
       current_grade_id?: string
-    }>
+    }>,
   ): Promise<Student> => {
     try {
       const { data, error } = await supabase
@@ -383,7 +383,7 @@ export const studentsApi = {
 
   // Get all notes for a student
   getStudentNotes: async (
-    studentId: string
+    studentId: string,
   ): Promise<
     Array<{
       id: string
@@ -411,7 +411,7 @@ export const studentsApi = {
             first_name,
             last_name
           )
-        `
+        `,
         )
         .eq('student_id', studentId)
         .order('created_at', { ascending: false })
@@ -457,6 +457,96 @@ export const studentsApi = {
       if (error) throw error
     } catch (error) {
       console.error('Error deleting student note:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Transfer a student to a different school
+   * - Creates a record in student_transfers for audit trail
+   * - Updates the student's school_id and current_grade_id
+   */
+  transferStudent: async (params: {
+    studentId: string
+    fromSchoolId: string
+    toSchoolId: string
+    fromGradeId: string | null
+    toGradeId: string | null
+    transferredBy: string
+    transferDate?: string
+    reason?: string
+  }): Promise<Student> => {
+    try {
+      const {
+        studentId,
+        fromSchoolId,
+        toSchoolId,
+        fromGradeId,
+        toGradeId,
+        transferredBy,
+        transferDate,
+        reason,
+      } = params
+
+      // 1. Create the transfer record for audit trail
+      const { error: transferError } = await supabase.from('student_transfers').insert({
+        student_id: studentId,
+        from_school_id: fromSchoolId,
+        to_school_id: toSchoolId,
+        from_grade_id: fromGradeId,
+        to_grade_id: toGradeId,
+        transferred_by: transferredBy,
+        transfer_date: transferDate || new Date().toISOString().split('T')[0],
+        reason: reason || null,
+      })
+
+      if (transferError) throw transferError
+
+      // 2. Update the student's school and grade
+      const { data: updatedStudent, error: updateError } = await supabase
+        .from('students')
+        .update({
+          school_id: toSchoolId,
+          current_grade_id: toGradeId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', studentId)
+        .select()
+        .single()
+
+      if (updateError) throw updateError
+
+      return updatedStudent
+    } catch (error) {
+      console.error('Error transferring student:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get transfer history for a student
+   */
+  getStudentTransferHistory: async (studentId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('student_transfers')
+        .select(
+          `*,
+        from_school:schools!from_school_id (id, name),
+        to_school:schools!to_school_id (id, name),
+        from_grade:school_grades!from_grade_id (id, grade_level, academic_year),
+        to_grade:school_grades!to_grade_id (id, grade_level, academic_year),
+        transferred_by_user:users!transferred_by (id, first_name, last_name)
+      `,
+        )
+        .eq('student_id', studentId)
+        .order('transfer_date', { ascending: false })
+
+      if (error) throw error
+
+      return data
+    } catch (error) {
+      console.error('Error fetching student transfer history:', error)
       throw error
     }
   },
