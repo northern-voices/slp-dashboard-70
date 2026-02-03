@@ -1,6 +1,7 @@
 import { Screening } from '@/types/database'
 import { speechScreeningsApi } from './speechscreenings'
 import { hearingScreeningsApi } from './hearingscreenings'
+import { UserRole } from '@/types/database'
 
 // Re-export individual APIs for direct access
 export { speechScreeningsApi } from './speechscreenings'
@@ -27,8 +28,8 @@ export const screeningsApi = {
   // Get all screenings (both speech and hearing)
   getScreeningsList: async (
     currentUserId?: string,
-    userRole?: 'admin' | 'slp',
-    organizationId?: string
+    userRole?: UserRole,
+    organizationId?: string,
   ): Promise<Screening[]> => {
     try {
       // Get organization schools if organizationId is provided
@@ -52,13 +53,13 @@ export const screeningsApi = {
       // Filter by organization schools if provided
       if (organizationSchoolIds.length > 0) {
         allScreenings = allScreenings.filter(screening =>
-          organizationSchoolIds.includes(screening.school_id)
+          organizationSchoolIds.includes(screening.school_id),
         )
       }
 
       // Sort by date
       allScreenings.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       )
 
       return allScreenings

@@ -19,6 +19,8 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useStudent } from '@/hooks/students/use-students'
+import { UserRole } from '@/types/database'
+
 const SpeechScreeningContent = () => {
   const { studentId } = useParams<{
     studentId: string
@@ -64,9 +66,9 @@ const SpeechScreeningContent = () => {
     return (
       <div className='min-h-screen flex w-full bg-gray-25'>
         <SidebarProvider>
-          <AppSidebar userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+          <AppSidebar userRole={userRole as UserRole} userName={userName} />
           <SidebarInset>
-            <Header userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+            <Header userRole={userRole as UserRole} userName={userName} />
             <main className='flex-1 p-4 md:p-6 lg:p-8'>
               <div className='flex justify-center items-center h-64'>
                 <LoadingSpinner size='lg' />
@@ -81,9 +83,9 @@ const SpeechScreeningContent = () => {
   return (
     <div className='min-h-screen flex w-full bg-gray-25'>
       <SidebarProvider>
-        <AppSidebar userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+        <AppSidebar userRole={userRole as UserRole} userName={userName} />
         <SidebarInset>
-          <Header userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+          <Header userRole={userRole as UserRole} userName={userName} />
           <main className='flex-1 p-4 md:p-6 lg:p-8'>
             {/* Breadcrumb Navigation */}
             <div className='mb-6'>

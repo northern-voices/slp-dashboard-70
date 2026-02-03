@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { UserRole } from '@/types/database'
 
 export interface User {
   id: string
@@ -6,7 +7,7 @@ export interface User {
   email: string
   first_name: string
   last_name: string
-  role: 'admin' | 'slp' | 'supervisor'
+  role: UserRole
   is_active: boolean
   email_verified_at: string | null
   created_at: string
@@ -34,14 +35,11 @@ const getUserOrganizationSchools = async (organizationId: string): Promise<strin
 export const usersApi = {
   getUsers: async (
     currentUserId?: string,
-    userRole?: 'admin' | 'slp' | 'supervisor',
-    organizationId?: string
+    userRole?: UserRole,
+    organizationId?: string,
   ): Promise<User[]> => {
     try {
-      let query = supabase
-        .from('users')
-        .select('*')
-        .eq('is_active', true) // Only get active users
+      let query = supabase.from('users').select('*').eq('is_active', true) // Only get active users
 
       // Filter by organization if provided
       if (organizationId) {

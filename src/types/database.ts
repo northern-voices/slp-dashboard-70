@@ -1,5 +1,7 @@
 import { ErrorPatterns } from './screening-form'
 
+export type UserRole = 'super_admin' | 'admin' | 'slp' | 'hearing_technician'
+
 export interface Organization {
   id: string
   name: string
@@ -18,7 +20,7 @@ export interface UserProfile {
   first_name: string
   last_name: string
   email: string
-  role: 'admin' | 'slp' | 'supervisor'
+  role: UserRole
   school_id: string
   organization_id?: string
   created_at: string
@@ -32,7 +34,7 @@ export interface SLPProfile {
   first_name: string
   last_name: string
   email: string
-  role: 'admin' | 'slp' | 'supervisor'
+  role: UserRole
   license_number?: string
   phone?: string
   specializations?: string[]

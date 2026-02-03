@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { usersApi, User } from '@/api/users'
+import { UserRole } from '@/types/database'
 
 export const useGetUsersByOrganization = (organizationId?: string) => {
   const { user } = useAuth()
@@ -9,8 +10,7 @@ export const useGetUsersByOrganization = (organizationId?: string) => {
 
   return useQuery<User[], Error>({
     queryKey: ['users', 'by-organization', organizationId, user?.id, userProfile?.role],
-    queryFn: () =>
-      usersApi.getUsers(user?.id, userProfile?.role as 'admin' | 'slp' | 'supervisor', organizationId),
+    queryFn: () => usersApi.getUsers(user?.id, userProfile?.role as UserRole, organizationId),
     enabled: !!user?.id && !!organizationId,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
@@ -23,11 +23,7 @@ export const useGetUsers = () => {
   return useQuery<User[], Error>({
     queryKey: ['users', user?.id, userProfile?.role, currentOrganization?.id],
     queryFn: () =>
-      usersApi.getUsers(
-        user?.id,
-        userProfile?.role as 'admin' | 'slp' | 'supervisor',
-        currentOrganization?.id
-      ),
+      usersApi.getUsers(user?.id, userProfile?.role as UserRole, currentOrganization?.id),
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
