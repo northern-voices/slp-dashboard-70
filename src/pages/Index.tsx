@@ -53,13 +53,15 @@ const DashboardContent = () => {
   } = useSchoolDetails(currentSchool)
 
   const { data: availableSLPs = [], isLoading: isLoadingSLPs } = useAvailableSLPs(
-    currentOrganization?.id
+    currentOrganization?.id,
   )
 
   const { data: activities = [], isLoading: isLoadingActivities } =
     useSchoolActivities(currentSchool)
 
   const userRole = userProfile?.role || 'slp'
+  const canEditSchoolDetails = userRole === 'admin' || userRole === 'super_admin'
+
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'
@@ -102,6 +104,11 @@ const DashboardContent = () => {
   }
 
   const handleSaveSchoolDetails = async (data: SchoolDetailsFormData) => {
+    if (!canEditSchoolDetails) {
+      toast.error('Only admins can edit school details')
+      return
+    }
+
     if (!currentSchool) {
       toast.error('No school selected')
       return
@@ -304,8 +311,8 @@ const DashboardContent = () => {
                 {userRole === 'slp'
                   ? 'My Dashboard'
                   : currentSchool
-                  ? `${currentSchool.name} Dashboard`
-                  : 'Dashboard'}
+                    ? `${currentSchool.name} Dashboard`
+                    : 'Dashboard'}
               </h1>
               <p className='text-sm leading-relaxed text-gray-600'>
                 Welcome back, {userName}.
