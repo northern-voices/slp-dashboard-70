@@ -30,6 +30,12 @@ const ACTIVITY_TYPE_LABELS: Record<string, string> = {
 
 const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActivity }) => {
   const formatDate = (dateString: string) => {
+    console.log('--- Date Debug ---')
+    console.log('Raw from DB:', dateString)
+    console.log('With new Date():', new Date(dateString).toLocaleDateString('en-US'))
+    console.log('With parseDateSafely():', parseDateSafely(dateString).toLocaleDateString('en-US'))
+    console.log('User timezone:', Intl.DateTimeFormat().resolvedOptions().timeZone)
+
     const date = parseDateSafely(dateString)
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
