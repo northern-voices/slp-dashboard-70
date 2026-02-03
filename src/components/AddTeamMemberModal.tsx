@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { TEAM_MEMBER_ROLES, getTeamRoleLabel } from '@/constants/teamRoles'
 import { formatPhoneNumber, unformatPhoneNumber } from '@/utils/formatters'
 import {
   Dialog,
@@ -26,32 +27,6 @@ interface AddTeamMemberModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onAddMember: (member: TeamMember) => void
-}
-
-const AVAILABLE_ROLES = [
-  { value: 'superintendent', label: 'Superintendent' },
-  { value: 'director', label: 'Director' },
-  { value: 'sss_coordinator', label: 'SSS Coordinator' },
-  { value: 'principal', label: 'Principal' },
-  { value: 'vice_principal', label: 'Vice Principal' },
-  { value: 'inclusive_supports_teacher', label: 'Inclusive Supports Teacher' },
-  { value: 'speech_ea', label: 'Speech EA' },
-  { value: 'non_designated_ea', label: 'Non-Designated EA' },
-  { value: 'educator', label: 'Educator' },
-  { value: 'ot', label: 'OT' },
-  { value: 'slp_supplemental', label: 'SLP (supplemental contract)' },
-  { value: 'pt', label: 'PT' },
-  { value: 'ed_psych', label: 'Ed Psych' },
-  { value: 'jp_liaison', label: 'JP Liaison' },
-  { value: 'learning_support_teacher', label: 'Learning Support Teacher LST' },
-  { value: 'resource_teacher', label: 'Resource Teacher' },
-  { value: 'social_emotional', label: 'Social/Emotional' },
-  { value: 'headstart_teacher', label: 'Headstart Teacher' },
-]
-
-const getRoleLabel = (value: string): string => {
-  const role = AVAILABLE_ROLES.find(r => r.value === value)
-  return role ? role.label : value
 }
 
 const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
@@ -164,7 +139,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                           <span
                             key={roleValue}
                             className='inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 text-xs font-medium'>
-                            {getRoleLabel(roleValue)}
+                            {getTeamRoleLabel(roleValue)}
                             <button
                               type='button'
                               onClick={e => {
@@ -187,7 +162,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                     onTouchMove={e => e.stopPropagation()}
                     onWheel={e => e.stopPropagation()}>
                     <div className='space-y-1'>
-                      {AVAILABLE_ROLES.map(role => (
+                      {TEAM_MEMBER_ROLES.map(role => (
                         <div
                           key={role.value}
                           className='flex items-center p-2 space-x-2 rounded-md cursor-pointer hover:bg-gray-50'
