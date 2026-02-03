@@ -6,9 +6,10 @@ import SidebarHeader from './sidebar/SidebarHeader'
 import SidebarFooter from './sidebar/SidebarFooter'
 import SidebarNavigationGroup from './sidebar/SidebarNavigationGroup'
 import { getNavigationGroups } from './sidebar/sidebarNavigationData'
+import { UserRole } from '@/types/database'
 
 interface AppSidebarProps {
-  userRole?: 'admin' | 'slp' | 'supervisor'
+  userRole?: UserRole
   userName?: string
   className?: string
 }
@@ -25,7 +26,7 @@ const AppSidebar = ({
     location,
     userRole,
     userProfile as unknown as Record<string, unknown>,
-    currentSchool
+    currentSchool,
   )
 
   return (

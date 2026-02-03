@@ -15,6 +15,7 @@ import { useStudent } from '@/hooks/students/use-students'
 import { useCreateHearingScreening } from '@/hooks/screenings/use-screening-hearing-mutations'
 import { useAuth } from '@/contexts/AuthContext'
 import { schoolGradesApi } from '@/api/schoolGrades'
+import { UserRole } from '@/types/database'
 
 const HearingScreeningContent = () => {
   const { studentId } = useParams<{
@@ -32,8 +33,6 @@ const HearingScreeningContent = () => {
   const createHearingScreening = useCreateHearingScreening()
 
   const handleSubmit = async (screeningData: ScreeningFormData) => {
-    console.log('Hearing screening submitted:', screeningData)
-
     // Validate required data
     // If a result is selected (absent, non_compliant, etc.), we don't need tympanometry data
     const hasResult = screeningData.result && screeningData.result !== ''
@@ -78,7 +77,7 @@ const HearingScreeningContent = () => {
         const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
           currentSchool.id,
           screeningData.selected_grade,
-          academicYear
+          academicYear,
         )
 
         if (!gradeAvailability.exists) {
@@ -135,9 +134,10 @@ const HearingScreeningContent = () => {
 
     // Only process tympanometry data if it exists
     if (screeningData.hearing_data?.tympanometry_results) {
-      tympData = typeof screeningData.hearing_data.tympanometry_results === 'string'
-        ? null
-        : screeningData.hearing_data.tympanometry_results
+      tympData =
+        typeof screeningData.hearing_data.tympanometry_results === 'string'
+          ? null
+          : screeningData.hearing_data.tympanometry_results
     }
 
     const apiData = {
@@ -201,9 +201,9 @@ const HearingScreeningContent = () => {
     return (
       <div className='min-h-screen flex w-full bg-gray-25'>
         <SidebarProvider>
-          <AppSidebar userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+          <AppSidebar userRole={userRole as UserRole} userName={userName} />
           <SidebarInset>
-            <Header userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+            <Header userRole={userRole as UserRole} userName={userName} />
             <main className='flex-1 p-4 md:p-6 lg:p-8'>
               <div className='flex justify-center items-center h-64'>
                 <LoadingSpinner size='lg' />
@@ -217,9 +217,9 @@ const HearingScreeningContent = () => {
   return (
     <div className='min-h-screen flex w-full bg-gray-25'>
       <SidebarProvider>
-        <AppSidebar userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+        <AppSidebar userRole={userRole as UserRole} userName={userName} />
         <SidebarInset>
-          <Header userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+          <Header userRole={userRole as UserRole} userName={userName} />
           <main className='flex-1 p-4 md:p-6 lg:p-8'>
             {/* Breadcrumb Navigation */}
             <div className='mb-6'>

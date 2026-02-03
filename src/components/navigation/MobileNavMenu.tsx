@@ -11,17 +11,18 @@ import { getNavigationGroups } from '@/components/sidebar/sidebarNavigationData'
 import { cn } from '@/lib/utils'
 // import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector'
 import { SLPProfile } from '@/types/database'
+import { UserRole } from '@/types/database'
 
 interface MobileNavMenuProps {
   isOpen: boolean
   onClose: () => void
-  userRole?: 'admin' | 'slp' | 'supervisor'
+  userRole?: UserRole
   userName?: string
   userProfile?: SLPProfile
 }
 
 // Helper component to safely render school selector
-const SafeSchoolSelector = ({ userRole }: { userRole: 'admin' | 'slp' | 'supervisor' }) => {
+const SafeSchoolSelector = ({ userRole }: { userRole: UserRole }) => {
   if (userRole === 'slp') {
     return ''
   } else {
@@ -43,7 +44,7 @@ const MobileNavMenu = ({
   const navigationGroups = getNavigationGroups(
     location,
     userRole,
-    userProfile as unknown as Record<string, unknown>
+    userProfile as unknown as Record<string, unknown>,
   )
   const initials = userName
     .split(' ')
@@ -55,12 +56,10 @@ const MobileNavMenu = ({
       .map(n => n[0])
       .join('') || 'ORG'
 
-  const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {
+  const getRoleDisplayName = (role: UserRole) => {
     switch (role) {
       case 'admin':
         return 'Administrator'
-      case 'supervisor':
-        return 'Supervisor'
       case 'slp':
       default:
         return 'Speech-Language Pathologist'
@@ -114,12 +113,12 @@ const MobileNavMenu = ({
                           'flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px]',
                           item.isActive
                             ? 'bg-blue-50 text-blue-700 shadow-sm'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
                         )}>
                         <item.icon
                           className={cn(
                             'w-5 h-5',
-                            item.isActive ? 'text-blue-600' : 'text-gray-400'
+                            item.isActive ? 'text-blue-600' : 'text-gray-400',
                           )}
                         />
                         <span>{item.title}</span>

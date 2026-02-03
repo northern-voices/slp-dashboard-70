@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { formatPhoneNumber, unformatPhoneNumber } from '@/utils/formatters'
+import { validationUtils } from '@/utils/validationUtils'
 import {
   Dialog,
   DialogContent,
@@ -48,13 +49,27 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
   isSaving = false,
 }) => {
   const [formData, setFormData] = useState<SchoolDetailsFormData>(initialData)
+  const [phoneError, setPhoneError] = useState<string | null>(null)
 
   useEffect(() => {
-    setFormData(initialData)
-  }, [initialData])
+    if (open) {
+      setFormData(initialData)
+      setPhoneError(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate phone number if provided
+    if (formData.schoolPhone && !validationUtils.isValidPhoneNumber(formData.schoolPhone)) {
+      setPhoneError('Please enter a valid phone number')
+      return
+    }
+
+    setPhoneError(null)
+
     await onSave({
       ...formData,
       schoolPhone: unformatPhoneNumber(formData.schoolPhone),
@@ -110,10 +125,14 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
                 type='tel'
                 placeholder='e.g., (907) 555-0123'
                 value={formData.schoolPhone}
-                onChange={e => handleChange('schoolPhone', formatPhoneNumber(e.target.value))}
+                onChange={e => {
+                  setPhoneError(null)
+                  handleChange('schoolPhone', formatPhoneNumber(e.target.value))
+                }}
                 className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
                 maxLength={14}
               />
+              {phoneError && <p className='text-xs text-red-500'>{phoneError}</p>}
             </div>
 
             {/* Primary SLP Field */}

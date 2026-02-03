@@ -17,6 +17,7 @@ import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationCo
 import { Draft } from '@/types/draft'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
+import { UserRole } from '@/types/database'
 
 // Mock drafts data - replace with actual API call
 const mockDrafts: Draft[] = [
@@ -126,9 +127,9 @@ const DraftsContent = () => {
   return (
     <div className='min-h-screen flex w-full bg-gray-25'>
       <SidebarProvider>
-        <AppSidebar userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+        <AppSidebar userRole={userRole as UserRole} userName={userName} />
         <SidebarInset>
-          <Header userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+          <Header userRole={userRole as UserRole} userName={userName} />
           <main className='flex-1 p-4 md:p-6 lg:p-8'>
             {/* Breadcrumb Navigation */}
             <div className='mb-6'>
