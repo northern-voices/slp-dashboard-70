@@ -48,7 +48,6 @@ const TransferStudentDialog = ({
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>('')
   const [selectedGradeLevel, setSelectedGradeLevel] = useState<string>('')
   const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>('')
-  const [transferDate, setTransferDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [reason, setReason] = useState<string>('')
   const [isTransferring, setIsTransferring] = useState(false)
 
@@ -96,7 +95,6 @@ const TransferStudentDialog = ({
       setSelectedGradeLevel('')
       setSelectedAcademicYear('')
       setReason('')
-      setTransferDate(new Date().toISOString().split('T')[0])
     }
   }, [open])
 
@@ -154,7 +152,7 @@ const TransferStudentDialog = ({
           fromGradeId: student.current_grade_id || null,
           toGradeId: toGradeId,
           transferredBy: user.id,
-          transferDate: transferDate,
+          transferDate: new Date().toISOString().split('T')[0],
           reason: reason || undefined,
         },
         {
@@ -268,16 +266,6 @@ const TransferStudentDialog = ({
               </Select>
             </div>
           )}
-
-          {/* Transfer Date */}
-          <div className='space-y-2'>
-            <label className='text-sm font-medium text-gray-700'>Transfer Date</label>
-            <Input
-              type='date'
-              value={transferDate}
-              onChange={e => setTransferDate(e.target.value)}
-            />
-          </div>
 
           {/* Reason (Optional) */}
           <div className='space-y-2'>
