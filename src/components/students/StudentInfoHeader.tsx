@@ -729,16 +729,16 @@ const StudentInfoHeader = ({
               <Button onClick={handleSaveName}>Save Changes</Button>
             </DialogFooter>
           </DialogContent>
-
-          {/* Transfer Student Dialog */}
-          {localStudent && (
-            <TransferStudentDialog
-              student={localStudent}
-              open={isTransferDialogOpen}
-              onOpenChange={setIsTransferDialogOpen}
-            />
-          )}
         </Dialog>
+
+        {/* Transfer Student Dialog */}
+        {localStudent && (
+          <TransferStudentDialog
+            student={localStudent}
+            open={isTransferDialogOpen}
+            onOpenChange={setIsTransferDialogOpen}
+          />
+        )}
       </CardContent>
     </Card>
   )
