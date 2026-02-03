@@ -1,6 +1,7 @@
 import { Calendar, Eye, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { parseDateSafely } from '@/utils/dateUtils'
 
 interface LastMeetingCardProps {
   meeting: {
@@ -25,14 +26,14 @@ const LastMeetingCard = ({ meeting, onViewDetails }: LastMeetingCardProps) => {
   const sessionsAttended = studentUpdate?.sessions_attended
 
   return (
-    <div className='mt-3 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 shadow-sm'>
+    <div className='p-4 mt-3 border border-gray-200 shadow-sm bg-gradient-to-br from-gray-50 to-white rounded-xl'>
       {/* Header row */}
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-2'>
-          <div className='w-2 h-2 rounded-full bg-green-500' />
+          <div className='w-2 h-2 bg-green-500 rounded-full' />
           <span className='text-sm font-semibold text-gray-800'>Last Meeting</span>
-          <Badge className='text-xs font-medium bg-green-100 text-green-700 border border-green-200'>
-            {new Date(meeting.meeting_date).toLocaleDateString('en-US', {
+          <Badge className='text-xs font-medium text-green-700 bg-green-100 border border-green-200'>
+            {parseDateSafely(meeting.meeting_date).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
               year: 'numeric',

@@ -9,6 +9,7 @@ import { Calendar, User, FileText, X, Users, Edit2, Save, XCircle } from 'lucide
 import { format } from 'date-fns'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { parseDateSafely } from '@/utils/dateUtils'
 
 interface MonthlyMeetingDetailsModalProps {
   isOpen: boolean
@@ -96,25 +97,25 @@ const MonthlyMeetingDetailsModal = ({
 
         <div className='space-y-6'>
           {/* Header Information */}
-          <div className='flex flex-col md:flex-row md:justify-between gap-6 p-4 bg-gray-50 rounded-lg'>
+          <div className='flex flex-col gap-6 p-4 rounded-lg md:flex-row md:justify-between bg-gray-50'>
             <div className='md:w-2/3'>
-              <h3 className='font-medium text-gray-900 mb-2'>Meeting Information</h3>
+              <h3 className='mb-2 font-medium text-gray-900'>Meeting Information</h3>
               <div className='space-y-2'>
                 <div className='flex items-center gap-2'>
                   <FileText className='w-4 h-4 text-gray-500' />
-                  <span className='font-medium text-lg'>{meeting.meeting_title}</span>
+                  <span className='text-lg font-medium'>{meeting.meeting_title}</span>
                 </div>
                 <div className='flex items-center gap-2 ml-6'>
                   <Calendar className='w-4 h-4 text-gray-500' />
                   <span className='text-sm text-gray-600'>
-                    {format(new Date(meeting.meeting_date), 'EEEE, MMMM d, yyyy')}
+                    {format(parseDateSafely(meeting.meeting_date), 'EEEE, MMMM d, yyyy')}
                   </span>
                 </div>
               </div>
             </div>
 
             <div className='md:w-1/3'>
-              <h3 className='font-medium text-gray-900 mb-2'>Facilitator</h3>
+              <h3 className='mb-2 font-medium text-gray-900'>Facilitator</h3>
               <div className='space-y-1'>
                 <div className='flex items-center gap-2'>
                   <User className='w-4 h-4 text-gray-500' />
@@ -139,7 +140,7 @@ const MonthlyMeetingDetailsModal = ({
               </div>
               <div className='flex flex-wrap gap-2'>
                 {meeting.attendees.map((attendee, index) => (
-                  <Badge key={index} className='bg-blue-100 text-blue-800 font-medium'>
+                  <Badge key={index} className='font-medium text-blue-800 bg-blue-100'>
                     {attendee}
                   </Badge>
                 ))}
@@ -155,9 +156,9 @@ const MonthlyMeetingDetailsModal = ({
               </h3>
               <div className='grid grid-cols-1 gap-4'>
                 {meeting.student_updates.map((update, index) => (
-                  <div key={index} className='p-4 bg-gray-50 rounded-lg border border-gray-200'>
+                  <div key={index} className='p-4 border border-gray-200 rounded-lg bg-gray-50'>
                     {/* Student Header */}
-                    <div className='flex items-center gap-2 flex-wrap mb-4'>
+                    <div className='flex flex-wrap items-center gap-2 mb-4'>
                       <User className='w-4 h-4 text-gray-500' />
                       <span className='font-medium text-gray-900'>
                         {update.student?.first_name} {update.student?.last_name}
@@ -168,7 +169,7 @@ const MonthlyMeetingDetailsModal = ({
                         </Badge>
                       )}
                       {update.student?.program_status === 'sub' && (
-                        <Badge className='bg-orange-100 text-orange-800 text-xs'>Sub</Badge>
+                        <Badge className='text-xs text-orange-800 bg-orange-100'>Sub</Badge>
                       )}
                     </div>
 
@@ -179,12 +180,12 @@ const MonthlyMeetingDetailsModal = ({
                         <h5 className='text-xs font-semibold text-gray-600'>Sessions Attended:</h5>
                         {update.sessions_attended !== null &&
                         update.sessions_attended !== undefined ? (
-                          <Badge className='bg-blue-100 text-blue-800 w-fit'>
+                          <Badge className='text-blue-800 bg-blue-100 w-fit'>
                             {update.sessions_attended}{' '}
                             {update.sessions_attended === 1 ? 'session' : 'sessions'}
                           </Badge>
                         ) : (
-                          <span className='text-sm text-gray-500 italic'>Not recorded</span>
+                          <span className='text-sm italic text-gray-500'>Not recorded</span>
                         )}
                       </div>
 
@@ -196,7 +197,7 @@ const MonthlyMeetingDetailsModal = ({
                             {update.meeting_notes}
                           </p>
                         ) : (
-                          <p className='text-sm text-gray-500 italic'>No notes recorded</p>
+                          <p className='text-sm italic text-gray-500'>No notes recorded</p>
                         )}
                       </div>
                     </div>
@@ -210,7 +211,7 @@ const MonthlyMeetingDetailsModal = ({
           {meeting.additional_notes && (
             <div className='space-y-4'>
               <h3 className='font-medium text-gray-900'>Additional Notes</h3>
-              <div className='p-4 bg-gray-50 rounded-lg border border-gray-200'>
+              <div className='p-4 border border-gray-200 rounded-lg bg-gray-50'>
                 <p className='text-sm text-gray-700 whitespace-pre-wrap'>
                   {meeting.additional_notes}
                 </p>
@@ -222,7 +223,7 @@ const MonthlyMeetingDetailsModal = ({
           {meeting.action_plan && (
             <div className='space-y-4'>
               <h3 className='font-medium text-gray-900'>Action Plan</h3>
-              <div className='p-4 bg-gray-50 rounded-lg border border-gray-200'>
+              <div className='p-4 border border-gray-200 rounded-lg bg-gray-50'>
                 <p className='text-sm text-gray-700 whitespace-pre-wrap'>{meeting.action_plan}</p>
               </div>
             </div>
