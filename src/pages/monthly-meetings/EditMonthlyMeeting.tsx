@@ -96,7 +96,7 @@ const EditMonthlyMeetingContent = () => {
     selectedStudent?.id,
   )
 
-  const mostRecentMeeting = studentMeetings[0]
+  const mostRecentMeeting = studentMeetings.find(m => m.id !== meetingId)
 
   const [formData, setFormData] = useState({
     meeting_title: '',
