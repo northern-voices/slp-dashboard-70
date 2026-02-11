@@ -58,7 +58,7 @@ const LastMeetingCard = ({ meeting, onViewDetails }: LastMeetingCardProps) => {
         <Button
           variant='outline'
           size='sm'
-          className='w-full h-8 text-xs text-green-600 border-green-200 hover:bg-green-50'
+          className='w-full h-8 text-xs hover:text-green-600 hover:border-green-200 hover:bg-green-50'
           onClick={onViewDetails}>
           <Eye className='w-3.5 h-3.5 mr-1.5' />
           View Details
