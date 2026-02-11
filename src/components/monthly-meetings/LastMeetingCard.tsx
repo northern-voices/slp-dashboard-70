@@ -26,39 +26,44 @@ const LastMeetingCard = ({ meeting, onViewDetails }: LastMeetingCardProps) => {
   const sessionsAttended = studentUpdate?.sessions_attended
 
   return (
-    <div className='p-4 mt-3 border border-gray-200 shadow-sm bg-gradient-to-br from-gray-50 to-white rounded-xl'>
-      {/* Header row */}
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-2'>
-          <div className='w-2 h-2 bg-green-500 rounded-full' />
-          <span className='text-sm font-semibold text-gray-800'>Last Meeting</span>
-          <Badge className='text-xs font-medium text-green-700 bg-green-100 border border-green-200'>
-            {parseDateSafely(meeting.meeting_date).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            })}
-          </Badge>
+    <div
+      className='flex flex-col h-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm
+  overflow-hidden relative'>
+      <div className='flex items-center gap-2 mb-3'>
+        <div className='flex items-center justify-center w-6 h-6 rounded-full bg-green-50'>
+          <Calendar className='w-3 h-3 text-green-600' />
         </div>
+        <span className='text-xs font-semibold uppercase tracking-wide text-gray-500'>
+          Last Meeting
+        </span>
+      </div>
+      <div className='space-y-2 mb-3'>
+        <Badge className='text-xs font-medium text-green-700 bg-green-100 border border-green-200'>
+          {parseDateSafely(meeting.meeting_date).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+        </Badge>
+        {meeting.facilitator && (
+          <div className='flex items-center gap-1.5 text-xs text-gray-500'>
+            <Users className='w-3 h-3' />
+            <span>
+              {meeting.facilitator.first_name} {meeting.facilitator.last_name}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className='mt-auto'>
         <Button
-          variant='ghost'
+          variant='outline'
           size='sm'
-          className='h-8 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+          className='w-full h-8 text-xs text-green-600 border-green-200 hover:bg-green-50'
           onClick={onViewDetails}>
           <Eye className='w-3.5 h-3.5 mr-1.5' />
-          View More Details
+          View Details
         </Button>
       </div>
-
-      {/* Facilitator row */}
-      {meeting.facilitator && (
-        <div className='flex items-center gap-1 mt-2 text-sm text-gray-500'>
-          <Users className='w-3 h-3' />
-          <span>
-            {meeting.facilitator.first_name} {meeting.facilitator.last_name}
-          </span>
-        </div>
-      )}
     </div>
   )
 }
