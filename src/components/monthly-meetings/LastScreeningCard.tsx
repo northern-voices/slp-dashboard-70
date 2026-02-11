@@ -32,24 +32,29 @@ const LastScreeningCard = ({ screening, onViewDetails }: LastScreeningCardProps)
 
   return (
     <div
-      className='mt-3 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200
-  shadow-sm'>
-      {/* Header row */}
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-2'>
-          <div className='w-2 h-2 rounded-full bg-blue-500' />
-          <span className='text-sm font-semibold text-gray-800'>Last Screening</span>
-          <Badge className={cn('text-xs font-medium', getResultBadgeStyle(screening.result))}>
-            {formatResult(screening.result)}
-          </Badge>
+      className='flex flex-col h-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm
+  overflow-hidden relative'>
+      <div className='flex items-center gap-2 mb-3'>
+        <div className='flex items-center justify-center w-6 h-6 rounded-full bg-blue-50'>
+          <Eye className='w-3 h-3 text-blue-600' />
         </div>
+        <span className='text-xs font-semibold uppercase tracking-wide text-gray-500'>
+          Last Screening
+        </span>
+      </div>
+      <div className='mb-3'>
+        <Badge className={cn('text-xs font-medium', getResultBadgeStyle(screening.result))}>
+          {formatResult(screening.result)}
+        </Badge>
+      </div>
+      <div className='mt-auto'>
         <Button
-          variant='ghost'
+          variant='outline'
           size='sm'
-          className='h-8 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+          className='w-full h-8 text-xs hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50'
           onClick={onViewDetails}>
           <Eye className='w-3.5 h-3.5 mr-1.5' />
-          View More Details
+          View Details
         </Button>
       </div>
     </div>
