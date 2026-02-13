@@ -108,8 +108,26 @@ const HearingScreeningsTable = ({
     )
   }
 
+  // When a result filter is active, only show the latest screening per student
+  const screeningsToFilter = useMemo(() => {
+    if (resultFilter === 'all') return screenings
+
+    const latestByStudent = new Map<string, Screening>()
+    screenings.forEach(screening => {
+      const studentId = screening.student_id
+      if (!studentId) return
+
+      const existing = latestByStudent.get(studentId)
+      if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
+        latestByStudent.set(studentId, screening)
+      }
+    })
+
+    return Array.from(latestByStudent.values())
+  }, [screenings, resultFilter])
+
   // Apply filters
-  const filteredScreenings = screenings.filter(screening => {
+  const filteredScreenings = screeningsToFilter.filter(screening => {
     const matchesSearch =
       screening.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       screening.screener?.toLowerCase().includes(searchTerm.toLowerCase())
