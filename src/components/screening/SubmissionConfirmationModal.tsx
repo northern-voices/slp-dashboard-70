@@ -15,6 +15,7 @@ interface SubmissionConfirmationModalProps {
   onNewScreening: () => void
   onGoToDashboard: () => void
   studentName?: string
+  screeningType?: 'speech' | 'hearing'
 }
 
 const SubmissionConfirmationModal: React.FC<SubmissionConfirmationModalProps> = ({
@@ -22,7 +23,10 @@ const SubmissionConfirmationModal: React.FC<SubmissionConfirmationModalProps> = 
   onNewScreening,
   onGoToDashboard,
   studentName,
+  screeningType = 'speech',
 }) => {
+  const label = screeningType === 'hearing' ? 'Hearing' : 'Speech'
+
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent className='mx-auto'>
@@ -39,8 +43,8 @@ const SubmissionConfirmationModal: React.FC<SubmissionConfirmationModalProps> = 
             </DialogTitle>
             <DialogDescription className='text-gray-600 text-base leading-relaxed'>
               {studentName
-                ? `Speech screening for ${studentName} has been recorded successfully.`
-                : 'Your speech screening has been recorded successfully.'}
+                ? `${label} screening for ${studentName} has been recorded successfully.`
+                : `Your ${label.toLowerCase()} screening has been recorded successfully.`}
             </DialogDescription>
           </div>
 
