@@ -163,15 +163,6 @@ const HearingScreeningContent = () => {
         title: 'Hearing Screening completed',
         description: 'Hearing screening has been recorded successfully.',
       })
-
-      // Navigate back to appropriate page
-      if (studentId) {
-        navigate(`/students/${studentId}`)
-      } else if (currentSchool) {
-        navigate(`/school/${currentSchool.id}/screenings/hearing`)
-      } else {
-        navigate('/screenings/hearing')
-      }
     } catch (error) {
       console.error('Error creating hearing screening:', error)
       toast({
@@ -265,6 +256,14 @@ const HearingScreeningContent = () => {
                   onSubmit={handleSubmit}
                   onCancel={handleCancel}
                   existingStudent={student}
+                  onNewScreening={() => {}}
+                  onGoToDashboard={() => {
+                    if (currentSchool) {
+                      navigate(`/school/${currentSchool.id}/screenings/hearing`)
+                    } else {
+                      navigate('/screenings/hearing')
+                    }
+                  }}
                 />
               </div>
             </div>

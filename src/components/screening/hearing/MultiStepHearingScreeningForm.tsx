@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Student } from '@/types/database'
 import { ScreeningFormData } from '@/types/screening'
 import HearingScreeningStep1 from './steps/HearingScreeningStep1'
+import SubmissionConfirmationModal from '../SubmissionConfirmationModal'
 
 interface HearingScreeningFormValues {
   screening_type: string
@@ -20,18 +21,40 @@ interface HearingScreeningFormValues {
 }
 
 interface MultiStepHearingScreeningFormProps {
-  onSubmit: (data: ScreeningFormData) => void
+  onSubmit: (data: ScreeningFormData) => Promise<void>
   onCancel: () => void
+  onNewScreening?: () => void
+  onGoToDashboard?: () => void
   existingStudent?: Student | null
 }
 
 const MultiStepHearingScreeningForm = ({
   onSubmit,
   onCancel,
+  onNewScreening,
+  onGoToDashboard,
   existingStudent,
 }: MultiStepHearingScreeningFormProps) => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null)
   const [selectedGrade, setSelectedGrade] = useState(existingStudent?.grade || '')
+  const [showSubmissionModal, setShowSubmissionModal] = useState(false)
+
+  const handleNewScreening = () => {
+    setShowSubmissionModal(false)
+    form.reset()
+    setSelectedStudent(null)
+    setSelectedGrade('')
+    if (onNewScreening) {
+      onNewScreening()
+    }
+  }
+
+  const handleGoToDashboard = () => {
+    setShowSubmissionModal(false)
+    if (onGoToDashboard) {
+      onGoToDashboard()
+    }
+  }
 
   const form = useForm<HearingScreeningFormValues>({
     defaultValues: {
@@ -57,7 +80,7 @@ const MultiStepHearingScreeningForm = ({
     return isNaN(num) ? null : num
   }
 
-  const handleSubmit = data => {
+  const handleSubmit = async data => {
     const screeningData: ScreeningFormData = {
       screening_type: data.screening_type,
       student_id: selectedStudent?.id || '',
@@ -86,7 +109,12 @@ const MultiStepHearingScreeningForm = ({
       follow_up_required: false,
     }
 
-    onSubmit(screeningData)
+    try {
+      await onSubmit(screeningData)
+      setShowSubmissionModal(true)
+    } catch (error) {
+      console.error('Failed to submit hearing screening:', error)
+    }
   }
 
   const hasScreeningResult = form.watch('screening_result')
@@ -124,6 +152,16 @@ const MultiStepHearingScreeningForm = ({
           </div>
         </div>
       </form>
+
+      <SubmissionConfirmationModal
+        isOpen={showSubmissionModal}
+        onNewScreening={handleNewScreening}
+        onGoToDashboard={handleGoToDashboard}
+        screeningType='hearing'
+        studentName={
+          selectedStudent ? `${selectedStudent.first_name} ${selectedStudent.last_name}` : undefined
+        }
+      />
     </div>
   )
 }
