@@ -230,9 +230,8 @@ const HearingScreeningsTable = ({
     result: string | null | undefined,
     unit: string,
   ) => {
-    if (result === 'Immeasurable' || value === null || value === undefined) {
-      return 'Immeasurable'
-    }
+    if (result === 'Immeasurable') return 'Immeasurable'
+    if (value === null || value === undefined) return 'N/A'
     return `${value} ${unit}`
   }
 
