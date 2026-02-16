@@ -870,7 +870,9 @@ const ScreeningsList = ({
     value: number | null | undefined,
     result: string | null | undefined,
     unit: string,
+    screeningResult?: string | null,
   ) => {
+    if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
     if (result === 'Immeasurable') return 'Immeasurable'
     if (value === null || value === undefined) return 'N/A'
     return `${value} ${unit}`
@@ -884,6 +886,14 @@ const ScreeningsList = ({
       return 'bg-yellow-100 text-yellow-800 border-yellow-200'
     if (normalizedResult === 'immeasurable') return 'bg-gray-100 text-gray-600 border-gray-200'
     return 'bg-gray-100 text-gray-600 border-gray-200'
+  }
+
+  const formatResultBadge = (
+    result: string | null | undefined,
+    screeningResult?: string | null,
+  ): string => {
+    if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
+    return result || '-'
   }
 
   const hasFilters =
@@ -1136,6 +1146,7 @@ const ScreeningsList = ({
                               screening.right_volume_db,
                               screening.right_ear_volume_result,
                               'ml',
+                              screening.result,
                             )}
                           </span>
                         </div>
@@ -1145,7 +1156,7 @@ const ScreeningsList = ({
                             className={`text-xs ${getResultBadgeColor(
                               screening.right_ear_volume_result,
                             )}`}>
-                            {screening.right_ear_volume_result || '-'}
+                            {formatResultBadge(screening.right_ear_volume_result, screening.result)}
                           </Badge>
                         </div>
                       </div>
@@ -1160,6 +1171,7 @@ const ScreeningsList = ({
                               screening.right_compliance,
                               screening.right_ear_compliance_result,
                               'ml',
+                              screening.result,
                             )}
                           </span>
                         </div>
@@ -1169,7 +1181,10 @@ const ScreeningsList = ({
                             className={`text-xs ${getResultBadgeColor(
                               screening.right_ear_compliance_result,
                             )}`}>
-                            {screening.right_ear_compliance_result || '-'}
+                            {formatResultBadge(
+                              screening.right_ear_compliance_result,
+                              screening.result,
+                            )}
                           </Badge>
                         </div>
                       </div>
@@ -1184,6 +1199,7 @@ const ScreeningsList = ({
                               screening.right_pressure,
                               screening.right_ear_pressure_result,
                               'daPa',
+                              screening.result,
                             )}
                           </span>
                         </div>
@@ -1193,7 +1209,10 @@ const ScreeningsList = ({
                             className={`text-xs ${getResultBadgeColor(
                               screening.right_ear_pressure_result,
                             )}`}>
-                            {screening.right_ear_pressure_result || '-'}
+                            {formatResultBadge(
+                              screening.right_ear_pressure_result,
+                              screening.result,
+                            )}
                           </Badge>
                         </div>
                       </div>
@@ -1211,6 +1230,7 @@ const ScreeningsList = ({
                               screening.left_volume_db,
                               screening.left_ear_volume_result,
                               'ml',
+                              screening.result,
                             )}
                           </span>
                         </div>
@@ -1220,7 +1240,7 @@ const ScreeningsList = ({
                             className={`text-xs ${getResultBadgeColor(
                               screening.left_ear_volume_result,
                             )}`}>
-                            {screening.left_ear_volume_result || '-'}
+                            {formatResultBadge(screening.left_ear_volume_result, screening.result)}
                           </Badge>
                         </div>
                       </div>
@@ -1235,6 +1255,7 @@ const ScreeningsList = ({
                               screening.left_compliance,
                               screening.left_ear_compliance_result,
                               'ml',
+                              screening.result,
                             )}
                           </span>
                         </div>
@@ -1244,7 +1265,10 @@ const ScreeningsList = ({
                             className={`text-xs ${getResultBadgeColor(
                               screening.left_ear_compliance_result,
                             )}`}>
-                            {screening.left_ear_compliance_result || '-'}
+                            {formatResultBadge(
+                              screening.left_ear_compliance_result,
+                              screening.result,
+                            )}
                           </Badge>
                         </div>
                       </div>
@@ -1259,6 +1283,7 @@ const ScreeningsList = ({
                               screening.left_pressure,
                               screening.left_ear_pressure_result,
                               'daPa',
+                              screening.result,
                             )}
                           </span>
                         </div>
@@ -1268,7 +1293,10 @@ const ScreeningsList = ({
                             className={`text-xs ${getResultBadgeColor(
                               screening.left_ear_pressure_result,
                             )}`}>
-                            {screening.left_ear_pressure_result || '-'}
+                            {formatResultBadge(
+                              screening.left_ear_pressure_result,
+                              screening.result,
+                            )}
                           </Badge>
                         </div>
                       </div>
