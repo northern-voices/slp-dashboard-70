@@ -1,6 +1,7 @@
 import { Screening } from '@/types/database'
 import { speechScreeningsApi } from './speechscreenings'
 import { hearingScreeningsApi } from './hearingscreenings'
+import { supabase } from '@/lib/supabase'
 import { UserRole } from '@/types/database'
 
 // Re-export individual APIs for direct access
@@ -10,7 +11,6 @@ export { hearingScreeningsApi } from './hearingscreenings'
 // Helper function to get user's organization schools
 const getUserOrganizationSchools = async (organizationId: string): Promise<string[]> => {
   try {
-    const { supabase } = await import('@/lib/supabase')
     const { data: schools, error } = await supabase
       .from('schools')
       .select('id')
