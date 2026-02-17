@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { monthlyMeetingsApi } from '@/api/monthlymeetings'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -120,7 +121,6 @@ const EditMonthlyMeetingContent = () => {
 
         // Temporary: fetch from list and find by ID
         // You should create a proper API endpoint for fetching a single meeting
-        const { monthlyMeetingsApi } = await import('@/api/monthlymeetings')
         const meetings = await monthlyMeetingsApi.getMonthlyMeetingsList()
         const meeting = meetings.find(m => m.id === meetingId)
 
