@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { MoreHorizontal } from 'lucide-react'
+import { parseDateSafely } from '@/utils/dateUtils'
 
 interface StudentPageMonthlyMeetingsTableProps {
   studentId?: string
@@ -33,7 +34,7 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
   const [selectedMeetingForDetails, setSelectedMeetingForDetails] = useState<MonthlyMeeting | null>(
-    null
+    null,
   )
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
@@ -63,7 +64,7 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
         <div className='flex items-center justify-between'>
           <CardTitle className='text-2xl font-semibold'>Monthly Meetings History</CardTitle>
           {meetings.length > 0 && (
-            <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
+            <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
               {meetings.length} meeting{meetings.length !== 1 ? 's' : ''}
             </span>
           )}
@@ -72,20 +73,20 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
       <CardContent>
         {isLoading ? (
           <div className='flex items-center justify-center py-12'>
-            <Loader2 className='w-8 h-8 animate-spin text-blue-600' />
+            <Loader2 className='w-8 h-8 text-blue-600 animate-spin' />
           </div>
         ) : error ? (
-          <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
-            <p className='text-red-800 text-sm'>Error loading monthly meetings: {error.message}</p>
+          <div className='p-4 border border-red-200 rounded-lg bg-red-50'>
+            <p className='text-sm text-red-800'>Error loading monthly meetings: {error.message}</p>
           </div>
         ) : meetings.length === 0 ? (
-          <div className='text-center py-8 text-gray-500 text-sm'>
+          <div className='py-8 text-sm text-center text-gray-500'>
             No monthly meetings found for this student.
           </div>
         ) : (
           <>
             <div className='overflow-x-auto'>
-              <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+              <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
                 <ResponsiveTable className='w-full'>
                   <TableHeader>
                     <tr>
@@ -100,7 +101,7 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
                     {meetings.map(meeting => {
                       // Find the student update for this specific student
                       const studentUpdate = meeting.student_updates?.find(
-                        update => update.student_id === studentId
+                        update => update.student_id === studentId,
                       )
 
                       return (
@@ -128,10 +129,10 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </div>
-                              <div className='text-sm text-gray-600 space-y-1'>
+                              <div className='space-y-1 text-sm text-gray-600'>
                                 <p>
                                   <span className='font-medium'>Date:</span>{' '}
-                                  {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
+                                  {format(parseDateSafely(meeting.meeting_date), 'MMM d, yyyy')}
                                 </p>
                                 <p>
                                   <span className='font-medium'>Sessions:</span>{' '}
@@ -153,7 +154,7 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
                             <div className='flex items-center gap-2'>
                               <Calendar className='w-4 h-4 text-gray-500' />
                               <span className='text-sm'>
-                                {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
+                                {format(parseDateSafely(meeting.meeting_date), 'MMM d, yyyy')}
                               </span>
                             </div>
                           </TableCell>
@@ -165,7 +166,7 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
                                 {studentUpdate.sessions_attended === 1 ? 'session' : 'sessions'}
                               </Badge>
                             ) : (
-                              <span className='text-sm text-gray-500 italic'>Not recorded</span>
+                              <span className='text-sm italic text-gray-500'>Not recorded</span>
                             )}
                           </TableCell>
                           <TableCell>

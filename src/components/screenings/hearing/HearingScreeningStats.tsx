@@ -15,6 +15,20 @@ const HearingScreeningStats = ({
 }: HearingScreeningStatsProps) => {
   const hearingScreenings = screenings.filter(s => s.source_table === 'hearing')
 
+  const latestByStudent = new Map<string, Screening>()
+
+  hearingScreenings.forEach(screening => {
+    const studentId = screening.student_id
+    if (!studentId) return
+
+    const existing = latestByStudent.get(studentId)
+    if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
+      latestByStudent.set(studentId, screening)
+    }
+  })
+
+  const latestScreenings = Array.from(latestByStudent.values())
+
   const isPassedEar = (earResult: string | null | undefined) => {
     if (!earResult) return false
     return (
@@ -26,9 +40,9 @@ const HearingScreeningStats = ({
 
   const totalScreenings = hearingScreenings.length
 
-  const absentScreenings = hearingScreenings.filter(s => s.result === 'absent').length
+  const absentScreenings = latestScreenings.filter(s => s.result === 'absent').length
 
-  const passedScreenings = hearingScreenings.filter(screening => {
+  const passedScreenings = latestScreenings.filter(screening => {
     if (screening.result === 'absent') return false
 
     const rightEarPassed = isPassedEar(screening.right_ear_result)
@@ -37,7 +51,7 @@ const HearingScreeningStats = ({
     return rightEarPassed && leftEarPassed
   }).length
 
-  const referredScreenings = hearingScreenings.filter(screening => {
+  const referredScreenings = latestScreenings.filter(screening => {
     if (screening.result === 'absent') return false
 
     const rightEarPassed = isPassedEar(screening.right_ear_result)

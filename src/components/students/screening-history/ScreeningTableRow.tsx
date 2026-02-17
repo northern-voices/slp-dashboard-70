@@ -4,13 +4,14 @@ import { Badge } from '@/components/ui/badge'
 import { Calendar, FileText, Eye } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { getStatusColor, getTypeDisplay } from './screeningUtils'
+import { parseDateSafely } from '@/utils/dateUtils'
 
 interface ScreeningTableRowProps {
   screening: Screening
 }
 
 const ScreeningTableRow = ({ screening }: ScreeningTableRowProps) => (
-  <tr className='border-b hover:bg-gray-50 transition-colors'>
+  <tr className='transition-colors border-b hover:bg-gray-50'>
     <td className='p-4'>
       <div className='flex items-center gap-2'>
         <Badge variant={getStatusColor(screening.status)} className='text-xs'>
@@ -22,7 +23,7 @@ const ScreeningTableRow = ({ screening }: ScreeningTableRowProps) => (
     <td className='p-4'>
       <div className='flex items-center gap-2 text-sm text-gray-600'>
         <Calendar className='w-4 h-4' />
-        <span>{new Date(screening.screening_date).toLocaleDateString()}</span>
+        <span>{parseDateSafely(screening.screening_date).toLocaleDateString()}</span>
       </div>
     </td>
     <td className='p-4'>

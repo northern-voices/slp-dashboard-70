@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Badge } from '@/components/ui/badge'
+import { parseDateSafely } from '@/utils/dateUtils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -166,7 +166,7 @@ const StudentInfoHeader = ({
 
   const getAgeFromBirthDate = (birthDate: string) => {
     const today = new Date()
-    const birth = new Date(birthDate)
+    const birth = parseDateSafely(birthDate)
     let age = today.getFullYear() - birth.getFullYear()
     const monthDiff = today.getMonth() - birth.getMonth()
 
@@ -178,7 +178,7 @@ const StudentInfoHeader = ({
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return parseDateSafely(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -426,7 +426,7 @@ const StudentInfoHeader = ({
     return (
       <Card className='mb-6'>
         <CardContent className='p-6'>
-          <div className='text-center py-8'>
+          <div className='py-8 text-center'>
             <p className='text-gray-600'>Student information not available</p>
           </div>
         </CardContent>
@@ -437,12 +437,12 @@ const StudentInfoHeader = ({
   return (
     <Card className='mb-6'>
       <CardContent className='p-6'>
-        <div className='flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6'>
+        <div className='flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between'>
           {/* Student Basic Info */}
           <div className='flex-1'>
-            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4'>
-              <div className='flex items-center space-x-3 mb-3 sm:mb-0'>
-                <div className='w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center'>
+            <div className='flex flex-col mb-4 sm:flex-row sm:items-center sm:justify-between'>
+              <div className='flex items-center mb-3 space-x-3 sm:mb-0'>
+                <div className='flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full'>
                   <User className='w-6 h-6 text-blue-600' />
                 </div>
                 <div>
@@ -453,7 +453,7 @@ const StudentInfoHeader = ({
                 </div>
               </div>
 
-              <div className='flex items-center space-x-2 flex-wrap gap-2'>
+              <div className='flex flex-wrap items-center gap-2 space-x-2'>
                 {/* Transfer Button */}
                 <Button variant='outline' size='sm' onClick={() => setIsTransferDialogOpen(true)}>
                   <ArrowRightLeft className='w-4 h-4 mr-2' />
@@ -469,13 +469,13 @@ const StudentInfoHeader = ({
             </div>
 
             {/* Student Details Grid */}
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
               <div className='flex items-start gap-2'>
-                <GraduationCap className='w-4 h-4 text-gray-400 mt-1' />
+                <GraduationCap className='w-4 h-4 mt-1 text-gray-400' />
                 <div>
                   <span className='text-sm font-medium text-gray-700'>Current Grade</span>
                   {isLoadingCurrentGrade ? (
-                    <div className='animate-pulse bg-gray-200 h-5 w-32 rounded mt-1'></div>
+                    <div className='w-32 h-5 mt-1 bg-gray-200 rounded animate-pulse'></div>
                   ) : (
                     <p className='text-sm text-gray-600'>
                       {currentGrade
@@ -488,7 +488,7 @@ const StudentInfoHeader = ({
 
               {localStudent.date_of_birth && (
                 <div className='flex items-start gap-2'>
-                  <Calendar className='w-4 h-4 text-gray-400 mt-1' />
+                  <Calendar className='w-4 h-4 mt-1 text-gray-400' />
                   <div>
                     <span className='text-sm font-medium text-gray-700'>Date of Birth</span>
                     <p className='text-sm text-gray-600'>
@@ -512,7 +512,7 @@ const StudentInfoHeader = ({
             </div>
 
             {/* Additional Info */}
-            <div className='mt-4 pt-4 border-t'>
+            <div className='pt-4 mt-4 border-t'>
               <div className='flex items-start gap-2'>
                 <div className='flex-1'>
                   {isEditingNotes ? (
@@ -524,7 +524,7 @@ const StudentInfoHeader = ({
                         className='min-h-[80px]'
                       />
                       <div className='flex gap-2'>
-                        <Button size='sm' onClick={handleSaveNotes} className='h-7 px-3'>
+                        <Button size='sm' onClick={handleSaveNotes} className='px-3 h-7'>
                           <Save className='w-3 h-3 mr-1' />
                           Save Note
                         </Button>
@@ -532,7 +532,7 @@ const StudentInfoHeader = ({
                           variant='outline'
                           size='sm'
                           onClick={handleCancelEdit}
-                          className='h-7 px-3'>
+                          className='px-3 h-7'>
                           <X className='w-3 h-3 mr-1' />
                           Cancel
                         </Button>
@@ -543,7 +543,7 @@ const StudentInfoHeader = ({
                       variant='outline'
                       size='sm'
                       onClick={handleEditNotes}
-                      className='w-full justify-start'>
+                      className='justify-start w-full'>
                       <Edit className='w-3 h-3 mr-2' />
                       Add a note
                     </Button>
@@ -553,15 +553,15 @@ const StudentInfoHeader = ({
 
               {/* Student Notes Table */}
               <div className='mt-6'>
-                <h3 className='text-sm font-medium text-gray-700 mb-3'>Note History</h3>
+                <h3 className='mb-3 text-sm font-medium text-gray-700'>Note History</h3>
                 {isLoadingNotes ? (
                   <div className='flex items-center justify-center py-8'>
                     <LoadingSpinner size='sm' />
                   </div>
                 ) : studentNotes.length === 0 ? (
-                  <p className='text-sm text-gray-500 text-center py-4'>No notes yet</p>
+                  <p className='py-4 text-sm text-center text-gray-500'>No notes yet</p>
                 ) : (
-                  <div className='border rounded-lg overflow-hidden'>
+                  <div className='overflow-hidden border rounded-lg'>
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -588,7 +588,7 @@ const StudentInfoHeader = ({
                                     <Button
                                       size='sm'
                                       onClick={() => handleSaveEditedNote(note.id)}
-                                      className='h-7 px-3'>
+                                      className='px-3 h-7'>
                                       <Save className='w-3 h-3 mr-1' />
                                       Save
                                     </Button>
@@ -596,7 +596,7 @@ const StudentInfoHeader = ({
                                       variant='outline'
                                       size='sm'
                                       onClick={handleCancelEditNote}
-                                      className='h-7 px-3'>
+                                      className='px-3 h-7'>
                                       <X className='w-3 h-3 mr-1' />
                                       Cancel
                                     </Button>
@@ -621,7 +621,7 @@ const StudentInfoHeader = ({
                                   variant='ghost'
                                   size='sm'
                                   onClick={() => handleEditNote(note.id, note.note_text)}
-                                  className='h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                                  className='w-8 h-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50'
                                   disabled={editingNoteId === note.id}>
                                   <Edit className='w-4 h-4' />
                                 </Button>
@@ -633,7 +633,7 @@ const StudentInfoHeader = ({
                                       variant='ghost'
                                       size='sm'
                                       onClick={() => setDeletingNoteId(note.id)}
-                                      className='h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50'
+                                      className='w-8 h-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50'
                                       disabled={editingNoteId === note.id}>
                                       <Trash2 className='w-4 h-4' />
                                     </Button>
@@ -686,7 +686,7 @@ const StudentInfoHeader = ({
                 Update the student's first name, last name, and current grade below.
               </DialogDescription>
             </DialogHeader>
-            <div className='space-y-4 py-4'>
+            <div className='py-4 space-y-4'>
               <div className='space-y-2'>
                 <label className='text-sm font-medium text-gray-700'>First Name</label>
                 <Input

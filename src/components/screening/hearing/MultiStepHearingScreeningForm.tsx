@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Student } from '@/types/database'
 import { ScreeningFormData } from '@/types/screening'
 import HearingScreeningStep1 from './steps/HearingScreeningStep1'
+import SubmissionConfirmationModal from '../SubmissionConfirmationModal'
 
 interface HearingScreeningFormValues {
   screening_type: string
@@ -20,18 +21,40 @@ interface HearingScreeningFormValues {
 }
 
 interface MultiStepHearingScreeningFormProps {
-  onSubmit: (data: ScreeningFormData) => void
+  onSubmit: (data: ScreeningFormData) => Promise<void>
   onCancel: () => void
+  onNewScreening?: () => void
+  onGoToDashboard?: () => void
   existingStudent?: Student | null
 }
 
 const MultiStepHearingScreeningForm = ({
   onSubmit,
   onCancel,
+  onNewScreening,
+  onGoToDashboard,
   existingStudent,
 }: MultiStepHearingScreeningFormProps) => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null)
   const [selectedGrade, setSelectedGrade] = useState(existingStudent?.grade || '')
+  const [showSubmissionModal, setShowSubmissionModal] = useState(false)
+
+  const handleNewScreening = () => {
+    setShowSubmissionModal(false)
+    form.reset()
+    setSelectedStudent(null)
+    setSelectedGrade('')
+    if (onNewScreening) {
+      onNewScreening()
+    }
+  }
+
+  const handleGoToDashboard = () => {
+    setShowSubmissionModal(false)
+    if (onGoToDashboard) {
+      onGoToDashboard()
+    }
+  }
 
   const form = useForm<HearingScreeningFormValues>({
     defaultValues: {
@@ -51,27 +74,31 @@ const MultiStepHearingScreeningForm = ({
     },
   })
 
-  const handleSubmit = data => {
+  const parseOrNull = (val: string | null): number | null => {
+    if (val === null || val === '') return null
+    const num = parseFloat(val)
+    return isNaN(num) ? null : num
+  }
+
+  const handleSubmit = async data => {
     const screeningData: ScreeningFormData = {
       screening_type: data.screening_type,
       student_id: selectedStudent?.id || '',
       screening_date: data.screening_date,
       form_type: 'hearing',
-      selected_grade: selectedGrade, // Pass the selected grade level
-      result: data.screening_result || undefined, // Include the result field
+      selected_grade: selectedGrade,
+      result: data.screening_result || undefined,
       hearing_data: {
         tympanometry_results: {
           right_ear: {
-            // Send null if immeasurable, otherwise parse the numeric value
-            vol: data.right_vol === null ? null : parseFloat(data.right_vol) || null,
-            comp: data.right_compliance === null ? null : parseFloat(data.right_compliance) || null,
-            press: data.right_press === null ? null : parseFloat(data.right_press) || null,
+            vol: parseOrNull(data.right_vol),
+            comp: parseOrNull(data.right_compliance),
+            press: parseOrNull(data.right_press),
           },
           left_ear: {
-            // Send null if immeasurable, otherwise parse the numeric value
-            vol: data.left_vol === null ? null : parseFloat(data.left_vol) || null,
-            comp: data.left_compliance === null ? null : parseFloat(data.left_compliance) || null,
-            press: data.left_press === null ? null : parseFloat(data.left_press) || null,
+            vol: parseOrNull(data.left_vol),
+            comp: parseOrNull(data.left_compliance),
+            press: parseOrNull(data.left_press),
           },
         },
       },
@@ -82,7 +109,12 @@ const MultiStepHearingScreeningForm = ({
       follow_up_required: false,
     }
 
-    onSubmit(screeningData)
+    try {
+      await onSubmit(screeningData)
+      setShowSubmissionModal(true)
+    } catch (error) {
+      console.error('Failed to submit hearing screening:', error)
+    }
   }
 
   const hasScreeningResult = form.watch('screening_result')
@@ -120,6 +152,16 @@ const MultiStepHearingScreeningForm = ({
           </div>
         </div>
       </form>
+
+      <SubmissionConfirmationModal
+        isOpen={showSubmissionModal}
+        onNewScreening={handleNewScreening}
+        onGoToDashboard={handleGoToDashboard}
+        screeningType='hearing'
+        studentName={
+          selectedStudent ? `${selectedStudent.first_name} ${selectedStudent.last_name}` : undefined
+        }
+      />
     </div>
   )
 }

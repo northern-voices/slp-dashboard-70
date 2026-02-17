@@ -19,9 +19,10 @@ import { useToast } from '@/hooks/use-toast'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { UserRole } from '@/types/database'
 
 interface HeaderProps {
-  userRole?: 'admin' | 'slp' | 'supervisor'
+  userRole?: UserRole
   userName?: string
   className?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,12 +53,10 @@ const Header = ({
   // const isDashboardPage = ['/', '/students', '/school-support', '/speech-screening-reports', '/management'].includes(location.pathname);
   // const shouldShowSubmitTicketButton = studentId || isDashboardPage;
 
-  const getRoleDisplayName = (role: 'admin' | 'slp' | 'supervisor') => {
+  const getRoleDisplayName = (role: UserRole) => {
     switch (role) {
       case 'admin':
         return 'Administrator'
-      case 'supervisor':
-        return 'Supervisor'
       case 'slp':
       default:
         return 'Speech-Language Pathologist'

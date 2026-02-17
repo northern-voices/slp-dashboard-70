@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useDeleteStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import StudentPageMonthlyMeetingsTable from '@/components/monthly-meetings/StudentPageMonthlyMeetingsTable'
+import { UserRole } from '@/types/database'
 
 const StudentProfileContent = () => {
   const { studentId, schoolId } = useParams<{ studentId: string; schoolId: string }>()
@@ -48,12 +49,12 @@ const StudentProfileContent = () => {
   const error = queryError
     ? 'Failed to load students.'
     : !targetSchoolId
-    ? 'No school context available.'
-    : !studentId
-    ? 'Student ID is required.'
-    : currentStudentIndex === -1 && allStudents.length > 0
-    ? 'Student not found in this school.'
-    : null
+      ? 'No school context available.'
+      : !studentId
+        ? 'Student ID is required.'
+        : currentStudentIndex === -1 && allStudents.length > 0
+          ? 'Student not found in this school.'
+          : null
 
   const handleNavigatePrevious = () => {
     if (currentStudentIndex > 0) {
@@ -183,7 +184,7 @@ const StudentProfileContent = () => {
             variant: 'destructive',
           })
         },
-      }
+      },
     )
   }
 
@@ -207,9 +208,9 @@ const StudentProfileContent = () => {
   return (
     <div className='min-h-screen flex w-full bg-gray-25'>
       <SidebarProvider>
-        <AppSidebar userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+        <AppSidebar userRole={userRole as UserRole} userName={userName} />
         <SidebarInset>
-          <Header userRole={userRole as 'admin' | 'slp' | 'supervisor'} userName={userName} />
+          <Header userRole={userRole as UserRole} userName={userName} />
           <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
             <StudentDetailPagination
               currentStudent={`${student.first_name} ${student.last_name}`}

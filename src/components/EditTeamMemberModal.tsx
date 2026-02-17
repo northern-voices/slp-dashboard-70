@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { TEAM_MEMBER_ROLES } from '@/constants/teamRoles'
 
 interface TeamMember {
   id: string
@@ -27,27 +28,6 @@ interface EditTeamMemberModalProps {
   onUpdateMember: (member: TeamMember) => void
   member: TeamMember | null
 }
-
-const ROLE_OPTIONS = [
-  { value: 'superintendent', label: 'Superintendent' },
-  { value: 'director', label: 'Director' },
-  { value: 'sss_coordinator', label: 'SSS Coordinator' },
-  { value: 'principal', label: 'Principal' },
-  { value: 'vice_principal', label: 'Vice Principal' },
-  { value: 'inclusive_supports_teacher', label: 'Inclusive Supports Teacher' },
-  { value: 'speech_ea', label: 'Speech EA' },
-  { value: 'non_designated_ea', label: 'Non-Designated EA' },
-  { value: 'educator', label: 'Educator' },
-  { value: 'ot', label: 'OT' },
-  { value: 'slp_supplemental', label: 'SLP (supplemental contract)' },
-  { value: 'pt', label: 'PT' },
-  { value: 'ed_psych', label: 'Ed Psych' },
-  { value: 'jp_liaison', label: 'JP Liaison' },
-  { value: 'learning_support_teacher', label: 'Learning Support Teacher LST' },
-  { value: 'resource_teacher', label: 'Resource Teacher' },
-  { value: 'social_emotional', label: 'Social/Emotional' },
-  { value: 'headstart_teacher', label: 'Headstart Teacher' },
-]
 
 const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
   open,
@@ -168,7 +148,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
               Role(s) <span className='text-red-500'>*</span>
             </Label>
             <div className='grid grid-cols-1 gap-3 p-4 overflow-y-auto border border-gray-200 rounded-lg sm:grid-cols-2 max-h-60 bg-gray-50'>
-              {ROLE_OPTIONS.map(role => (
+              {TEAM_MEMBER_ROLES.map(role => (
                 <div key={role.value} className='flex items-center space-x-2'>
                   <Checkbox
                     id={`role-${role.value}`}

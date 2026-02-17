@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { parseDateSafely } from '@/utils/dateUtils'
 import { School } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -100,7 +101,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     if (isLoadingGrades) {
       return (
         <div className='flex items-center gap-2'>
-          <div className='animate-pulse bg-gray-200 h-4 w-12 rounded'></div>
+          <div className='w-12 h-4 bg-gray-200 rounded animate-pulse'></div>
         </div>
       )
     }
@@ -390,7 +391,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       <div className='space-y-6'>
         <div className='flex items-center justify-center py-12'>
           <div className='text-center'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
+            <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin'></div>
             <p className='text-gray-600'>Loading students...</p>
           </div>
         </div>
@@ -401,9 +402,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   return (
     <div className='space-y-6'>
       {/* Header */}
-      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <div>
-          <h1 className='text-2xl lg:text-3xl font-semibold text-gray-900'>Students</h1>
+          <h1 className='text-2xl font-semibold text-gray-900 lg:text-3xl'>Students</h1>
           <p className='text-gray-600'>Manage student information and records</p>
         </div>
         <Button onClick={() => setShowAddModal(true)} className='flex items-center gap-2'>
@@ -435,20 +436,20 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
               <table className='w-full'>
                 <thead>
                   <tr className='border-b'>
-                    <th className='text-left p-4 font-medium'>Name</th>
-                    <th className='text-left p-4 font-medium'>Grade</th>
-                    <th className='text-left p-4 font-medium'>Program</th>
-                    <th className='text-left p-4 font-medium'>Date Created</th>
+                    <th className='p-4 font-medium text-left'>Name</th>
+                    <th className='p-4 font-medium text-left'>Grade</th>
+                    <th className='p-4 font-medium text-left'>Program</th>
+                    <th className='p-4 font-medium text-left'>Date Created</th>
                     {/* // TODO: Add date of birth (ask Lisa) */}
-                    {/* <th className='text-left p-4 font-medium'>Date of Birth</th> */}
-                    {/* <th className='text-left p-4 font-medium'>Actions</th> */}
+                    {/* <th className='p-4 font-medium text-left'>Date of Birth</th> */}
+                    {/* <th className='p-4 font-medium text-left'>Actions</th> */}
                   </tr>
                 </thead>
                 <tbody>
                   {filteredStudents.map(student => (
                     <tr
                       key={student.id}
-                      className='border-b hover:bg-gray-50 cursor-pointer transition-colors'
+                      className='transition-colors border-b cursor-pointer hover:bg-gray-50'
                       onClick={() => handleRowClick(student.id)}>
                       <td className='p-4'>
                         <div>
@@ -462,7 +463,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                       <td className='p-4'>{getStudentGrade(student)}</td>
                       <td className='p-4'>{getQualificationBadge(student)}</td>
                       <td className='p-4'>
-                        {new Date(student.created_at).toLocaleDateString('en-US', {
+                        {parseDateSafely(student.created_at).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
@@ -484,7 +485,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
               </table>
             </div>
           ) : (
-            <div className='text-center py-8 text-gray-500'>
+            <div className='py-8 text-center text-gray-500'>
               {searchTerm
                 ? 'No students found matching your search.'
                 : 'No students found. Add your first student to get started.'}
@@ -505,7 +506,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
           <Form {...newStudentForm}>
             <form onSubmit={newStudentForm.handleSubmit(handleAddStudent)} className='space-y-4'>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 <FormField
                   control={newStudentForm.control}
                   name='first_name'
@@ -549,7 +550,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                 )}
               />
 
-              <div className='flex justify-end space-x-2 pt-4'>
+              <div className='flex justify-end pt-4 space-x-2'>
                 <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>
                   Cancel
                 </Button>

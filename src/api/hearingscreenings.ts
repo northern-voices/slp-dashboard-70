@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Screening } from '@/types/database'
+import { UserRole } from '@/types/database'
 
 interface RawHearingScreening {
   id: string
@@ -112,9 +113,9 @@ const transformHearingScreening = (screening: RawHearingScreening): Screening =>
 export const hearingScreeningsApi = {
   getHearingScreeningsList: async (
     currentUserId?: string,
-    userRole?: 'admin' | 'slp' | 'supervisor',
+    userRole?: UserRole,
     organizationId?: string,
-    schoolId?: string
+    schoolId?: string,
   ): Promise<Screening[]> => {
     try {
       // Get organization schools if organizationId is provided
@@ -148,7 +149,7 @@ export const hearingScreeningsApi = {
             first_name,
             last_name
           )
-        `
+        `,
       )
 
       // Apply filters based on user role
@@ -179,7 +180,7 @@ export const hearingScreeningsApi = {
   getHearingScreeningsByStudent: async (
     studentId: string,
     currentUserId?: string,
-    userRole?: 'admin' | 'slp' | 'supervisor'
+    userRole?: UserRole,
   ): Promise<Screening[]> => {
     try {
       // Build base query for specific student
@@ -227,7 +228,7 @@ export const hearingScreeningsApi = {
             first_name,
             last_name
           )
-        `
+        `,
         )
         .eq('student_id', studentId)
 
@@ -327,7 +328,7 @@ export const hearingScreeningsApi = {
           first_name,
           last_name
         )
-      `
+      `,
         )
         .single()
 
@@ -362,7 +363,7 @@ export const hearingScreeningsApi = {
       clinical_notes: string | null
       referral_notes: string | null
       result: string | null
-    }>
+    }>,
   ): Promise<Screening> => {
     try {
       const { data: updatedScreening, error } = await supabase
@@ -408,7 +409,7 @@ export const hearingScreeningsApi = {
           first_name,
           last_name
         )
-      `
+      `,
         )
         .single()
 

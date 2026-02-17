@@ -2,6 +2,7 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Calendar, Plus, FileText } from 'lucide-react'
+import { parseDateSafely } from '@/utils/dateUtils'
 
 interface Activity {
   id: string
@@ -29,7 +30,13 @@ const ACTIVITY_TYPE_LABELS: Record<string, string> = {
 
 const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActivity }) => {
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    console.log('--- Date Debug ---')
+    console.log('Raw from DB:', dateString)
+    console.log('With new Date():', new Date(dateString).toLocaleDateString('en-US'))
+    console.log('With parseDateSafely():', parseDateSafely(dateString).toLocaleDateString('en-US'))
+    console.log('User timezone:', Intl.DateTimeFormat().resolvedOptions().timeZone)
+
+    const date = parseDateSafely(dateString)
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -42,11 +49,11 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActi
       <CardHeader className='pb-4'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center space-x-3'>
-            <div className='w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center'>
+            <div className='flex items-center justify-center w-8 h-8 rounded-lg bg-green-50'>
               <FileText className='w-4 h-4 text-green-600' />
             </div>
             <div>
-              <CardTitle className='text-xl font-semibold text-gray-900 tracking-tight'>
+              <CardTitle className='text-xl font-semibold tracking-tight text-gray-900'>
                 Activity Log
               </CardTitle>
               <p className='text-xs text-gray-500 mt-0.5'>
@@ -58,7 +65,7 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActi
           <Button
             onClick={onAddActivity}
             size='sm'
-            className='bg-brand hover:bg-brand/90 text-white h-8 px-3 rounded-lg text-xs font-medium'>
+            className='h-8 px-3 text-xs font-medium text-white rounded-lg bg-brand hover:bg-brand/90'>
             <div className='flex items-center space-x-1.5'>
               <Plus className='w-3.5 h-3.5' />
               <span className='leading-none'>Add Activity</span>
@@ -73,7 +80,7 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActi
             {activities.map(activity => (
               <div
                 key={activity.id}
-                className='bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors duration-150'>
+                className='p-3 transition-colors duration-150 rounded-lg bg-gray-50 hover:bg-gray-100'>
                 <div className='flex items-start justify-between'>
                   <div className='flex-1'>
                     <div className='flex items-center space-x-2'>
@@ -81,12 +88,12 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActi
                         {ACTIVITY_TYPE_LABELS[activity.activity_type] || activity.activity_type}
                       </span>
                     </div>
-                    <div className='flex items-center space-x-2 text-xs text-gray-500 mt-2'>
+                    <div className='flex items-center mt-2 space-x-2 text-xs text-gray-500'>
                       <Calendar className='w-3 h-3' />
                       <span>{formatDate(activity.activity_date)}</span>
                     </div>
                     {activity.notes && (
-                      <p className='text-sm text-gray-700 mt-2'>{activity.notes}</p>
+                      <p className='mt-2 text-sm text-gray-700'>{activity.notes}</p>
                     )}
                   </div>
                 </div>
@@ -94,13 +101,13 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActi
             ))}
           </div>
         ) : (
-          <div className='bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg p-6'>
+          <div className='p-6 border-2 border-gray-200 border-dashed rounded-lg bg-gray-50'>
             <div className='flex flex-col items-center justify-center text-center'>
-              <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3'>
+              <div className='flex items-center justify-center w-12 h-12 mb-3 bg-gray-100 rounded-full'>
                 <FileText className='w-6 h-6 text-gray-400' />
               </div>
-              <h4 className='text-sm font-semibold text-gray-900 mb-1'>No Activities Yet</h4>
-              <p className='text-xs text-gray-500 mb-4'>
+              <h4 className='mb-1 text-sm font-semibold text-gray-900'>No Activities Yet</h4>
+              <p className='mb-4 text-xs text-gray-500'>
                 Start logging school activities to keep track of your interactions.
               </p>
             </div>

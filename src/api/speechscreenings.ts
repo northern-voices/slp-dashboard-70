@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { Screening } from '@/types/database'
 import { ErrorPatterns } from '@/types/screening-form'
+import { UserRole } from '@/types/database'
 
 type SpeechScreeningResult = string
 
@@ -59,8 +60,8 @@ const getUserOrganizationSchools = async (organizationId: string): Promise<strin
 export const speechScreeningsApi = {
   getSpeechScreeningsList: async (
     currentUserId?: string,
-    userRole?: 'admin' | 'slp' | 'supervisor',
-    organizationId?: string
+    userRole?: UserRole,
+    organizationId?: string,
   ): Promise<Screening[]> => {
     try {
       // Get organization schools if organizationId is provided
@@ -96,7 +97,7 @@ export const speechScreeningsApi = {
             first_name,
             last_name
           )
-        `
+        `,
       )
 
       // Apply filters based on user role
@@ -117,11 +118,11 @@ export const speechScreeningsApi = {
       // If organization schools are specified, check if any are missing from the main query
       if (organizationSchoolIds.length > 0) {
         const presentSchoolIds = new Set(
-          (data || []).map((s: RawSpeechScreening) => s.students?.school_id).filter(Boolean)
+          (data || []).map((s: RawSpeechScreening) => s.students?.school_id).filter(Boolean),
         )
 
         const missingSchoolIds = organizationSchoolIds.filter(
-          schoolId => !presentSchoolIds.has(schoolId)
+          schoolId => !presentSchoolIds.has(schoolId),
         )
 
         // If any organization schools are missing, fetch them specifically
@@ -153,7 +154,7 @@ export const speechScreeningsApi = {
                 first_name,
                 last_name
               )
-            `
+            `,
             )
             .in('students.school_id', missingSchoolIds)
             .order('created_at', { ascending: false })
@@ -202,7 +203,7 @@ export const speechScreeningsApi = {
       // Filter by organization schools if provided
       if (organizationSchoolIds.length > 0) {
         return transformedData.filter(screening =>
-          organizationSchoolIds.includes(screening.school_id)
+          organizationSchoolIds.includes(screening.school_id),
         )
       }
 
@@ -216,7 +217,7 @@ export const speechScreeningsApi = {
   getSpeechScreeningsByStudent: async (
     studentId: string,
     currentUserId?: string,
-    userRole?: 'admin' | 'slp' | 'supervisor'
+    userRole?: UserRole,
   ): Promise<Screening[]> => {
     try {
       // Build base query for specific student
@@ -247,7 +248,7 @@ export const speechScreeningsApi = {
             first_name,
             last_name
           )
-        `
+        `,
         )
         .eq('student_id', studentId)
 
@@ -301,7 +302,7 @@ export const speechScreeningsApi = {
 
   getSpeechScreeningById: async (
     screeningId: string,
-    organizationId?: string
+    organizationId?: string,
   ): Promise<Screening | null> => {
     try {
       const { data, error } = await supabase
@@ -332,7 +333,7 @@ export const speechScreeningsApi = {
             first_name,
             last_name
           )
-        `
+        `,
         )
         .eq('id', screeningId)
         .single()
@@ -450,7 +451,7 @@ export const speechScreeningsApi = {
           first_name,
           last_name
         )
-      `
+      `,
         )
         .single()
 
@@ -524,7 +525,7 @@ export const speechScreeningsApi = {
       suspected_cas: boolean
       clinical_notes: string | null
       referral_notes: string | null
-    }>
+    }>,
   ): Promise<Screening> => {
     try {
       const { data: updatedScreening, error } = await supabase
@@ -552,7 +553,7 @@ export const speechScreeningsApi = {
           first_name,
           last_name
         )
-      `
+      `,
         )
         .single()
 
@@ -616,8 +617,8 @@ export const speechScreeningsApi = {
   getSpeechScreeningsBySchool: async (
     schoolId: string,
     currentUserId?: string,
-    userRole?: 'admin' | 'slp' | 'supervisor',
-    dateFilter?: 'all' | 'school_year'
+    userRole?: UserRole,
+    dateFilter?: 'all' | 'school_year',
   ): Promise<Screening[]> => {
     try {
       // Calculate school year start date (September 1st)
@@ -661,7 +662,7 @@ export const speechScreeningsApi = {
             first_name,
             last_name
           )
-        `
+        `,
         )
         .eq('students.school_id', schoolId)
 

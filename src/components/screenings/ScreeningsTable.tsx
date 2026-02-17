@@ -179,7 +179,7 @@ const ScreeningsTable = ({
     if (student?.current_grade_id) {
       // If grades are still loading, show loading indicator
       if (isLoadingGrades) {
-        return <Loader2 className='w-3 h-3 animate-spin text-gray-400 inline' />
+        return <Loader2 className='inline w-3 h-3 text-gray-400 animate-spin' />
       }
 
       const grade = gradesMap.get(student.current_grade_id)
@@ -214,7 +214,7 @@ const ScreeningsTable = ({
     // Apply date range filter
     let matchesDateRange = true
     if (dateRangeFilter !== 'all') {
-      const screeningDate = new Date(screening.created_at)
+      const screeningDate = parseDateSafely(screening.created_at)
       const now = new Date()
 
       switch (dateRangeFilter) {
@@ -520,11 +520,11 @@ const ScreeningsTable = ({
           value={getProgramValue(screening)}
           onValueChange={value => handleProgramChange(screening, value as ProgramStatus)}
           disabled={isThisScreeningUpdating}>
-          <SelectTrigger className='w-full h-8 border-none p-0 hover:bg-transparent focus:ring-0'>
+          <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
             <SelectValue placeholder='Select program'>
               <div className='flex items-center gap-2'>
                 {isThisScreeningUpdating && (
-                  <Loader2 className='w-3 h-3 animate-spin text-blue-600' />
+                  <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
                 )}
                 {getQualificationBadge(screening)}
               </div>
@@ -555,16 +555,16 @@ const ScreeningsTable = ({
           value={screening.result || ''}
           onValueChange={value => handleResultChange(screening, value)}
           disabled={isThisScreeningUpdating}>
-          <SelectTrigger className='w-full h-8 border-none p-0 hover:bg-transparent focus:ring-0'>
+          <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
             <SelectValue placeholder='Select result'>
               <div className='flex items-center gap-2'>
                 {isThisScreeningUpdating && (
-                  <Loader2 className='w-3 h-3 animate-spin text-blue-600' />
+                  <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
                 )}
                 {screening.result ? (
                   getResultBadge(screening.result)
                 ) : (
-                  <Badge className='bg-gray-100 text-gray-800 font-medium'>Select result</Badge>
+                  <Badge className='font-medium text-gray-800 bg-gray-100'>Select result</Badge>
                 )}
               </div>
             </SelectValue>
@@ -889,33 +889,33 @@ const ScreeningsTable = ({
     return (
       <div className='space-y-4'>
         <div className='flex justify-end mb-3'>
-          <div className='h-7 w-32 bg-gray-200 rounded-full animate-pulse'></div>
+          <div className='w-32 bg-gray-200 rounded-full h-7 animate-pulse'></div>
         </div>
 
-        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+        <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
           <ResponsiveTable className='w-full'>
             <TableHeader>
               <tr>
                 <TableHead className='w-12'>
-                  <div className='h-4 w-4 bg-gray-200 rounded animate-pulse'></div>
+                  <div className='w-4 h-4 bg-gray-200 rounded animate-pulse'></div>
                 </TableHead>
                 <TableHead className='w-1/4 min-w-[200px]'>
-                  <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                  <div className='w-20 h-4 bg-gray-200 rounded animate-pulse'></div>
                 </TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>
-                  <div className='h-4 w-16 bg-gray-200 rounded animate-pulse'></div>
+                  <div className='w-16 h-4 bg-gray-200 rounded animate-pulse'></div>
                 </TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>
-                  <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                  <div className='w-20 h-4 bg-gray-200 rounded animate-pulse'></div>
                 </TableHead>
                 <TableHead className='w-1/6 min-w-[80px]'>
-                  <div className='h-4 w-14 bg-gray-200 rounded animate-pulse'></div>
+                  <div className='h-4 bg-gray-200 rounded w-14 animate-pulse'></div>
                 </TableHead>
                 <TableHead className='w-1/6 min-w-[100px]'>
-                  <div className='h-4 w-12 bg-gray-200 rounded animate-pulse'></div>
+                  <div className='w-12 h-4 bg-gray-200 rounded animate-pulse'></div>
                 </TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>
-                  <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                  <div className='w-20 h-4 bg-gray-200 rounded animate-pulse'></div>
                 </TableHead>
               </tr>
             </TableHeader>
@@ -923,31 +923,31 @@ const ScreeningsTable = ({
               {[...Array(5)].map((_, i) => (
                 <tr key={i} className='border-b border-gray-200'>
                   <TableCell>
-                    <div className='h-4 w-4 bg-gray-200 rounded animate-pulse'></div>
+                    <div className='w-4 h-4 bg-gray-200 rounded animate-pulse'></div>
                   </TableCell>
                   <TableCell>
                     <div className='space-y-2'>
-                      <div className='h-4 w-32 bg-gray-200 rounded animate-pulse'></div>
-                      <div className='h-3 w-24 bg-gray-200 rounded animate-pulse'></div>
+                      <div className='w-32 h-4 bg-gray-200 rounded animate-pulse'></div>
+                      <div className='w-24 h-3 bg-gray-200 rounded animate-pulse'></div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className='h-6 w-20 bg-gray-200 rounded-full animate-pulse'></div>
+                    <div className='w-20 h-6 bg-gray-200 rounded-full animate-pulse'></div>
                   </TableCell>
                   <TableCell>
-                    <div className='h-6 w-24 bg-gray-200 rounded-full animate-pulse'></div>
+                    <div className='w-24 h-6 bg-gray-200 rounded-full animate-pulse'></div>
                   </TableCell>
                   <TableCell>
-                    <div className='h-4 w-8 bg-gray-200 rounded animate-pulse'></div>
+                    <div className='w-8 h-4 bg-gray-200 rounded animate-pulse'></div>
                   </TableCell>
                   <TableCell>
-                    <div className='h-4 w-20 bg-gray-200 rounded animate-pulse'></div>
+                    <div className='w-20 h-4 bg-gray-200 rounded animate-pulse'></div>
                   </TableCell>
                   <TableCell>
-                    <div className='h-4 w-24 bg-gray-200 rounded animate-pulse'></div>
+                    <div className='w-24 h-4 bg-gray-200 rounded animate-pulse'></div>
                   </TableCell>
                   <TableCell>
-                    <div className='h-8 w-8 bg-gray-200 rounded animate-pulse'></div>
+                    <div className='w-8 h-8 bg-gray-200 rounded animate-pulse'></div>
                   </TableCell>
                 </tr>
               ))}
@@ -962,10 +962,10 @@ const ScreeningsTable = ({
   if (error) {
     return (
       <div className='space-y-4'>
-        <div className='bg-white rounded-lg border border-gray-200 p-8'>
+        <div className='p-8 bg-white border border-gray-200 rounded-lg'>
           <div className='text-center'>
-            <p className='text-red-600 mb-2'>Error loading screenings</p>
-            <p className='text-gray-500 text-sm'>{error.message}</p>
+            <p className='mb-2 text-red-600'>Error loading screenings</p>
+            <p className='text-sm text-gray-500'>{error.message}</p>
           </div>
         </div>
       </div>
@@ -985,12 +985,12 @@ const ScreeningsTable = ({
         )}
 
         <div className='flex justify-end mb-3'>
-          <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
+          <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
             {filteredScreenings.length} screening{filteredScreenings.length !== 1 ? 's' : ''} found
           </span>
         </div>
 
-        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+        <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
           <ResponsiveTable className='w-full'>
             <TableHeader>
               <tr>
@@ -1081,7 +1081,7 @@ const ScreeningsTable = ({
                       </div>
                       <div className='flex items-center gap-'>{getResultSelector(screening)}</div>
                       <div className='flex items-center gap-2'>{getProgramSelector(screening)}</div>
-                      <div className='text-sm text-gray-600 space-y-1'>
+                      <div className='space-y-1 text-sm text-gray-600'>
                         <p>
                           <span className='font-medium'>Date:</span>{' '}
                           {new Date(screening.created_at).toLocaleDateString('en-US', {
@@ -1120,7 +1120,7 @@ const ScreeningsTable = ({
                   <TableCell className='max-w-0'>
                     <div className='truncate'>
                       <div
-                        className='font-medium text-base truncate'
+                        className='text-base font-medium truncate'
                         title={screening.student_name}>
                         {screening.student_name}
                       </div>
@@ -1198,7 +1198,7 @@ const ScreeningsTable = ({
           </ResponsiveTable>
 
           {filteredScreenings.length === 0 && (
-            <div className='text-center py-8'>
+            <div className='py-8 text-center'>
               <p className='text-gray-500'>No screenings found matching your criteria.</p>
             </div>
           )}

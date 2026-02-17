@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { monthlyMeetingsApi } from '@/api/monthlymeetings'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -96,7 +97,7 @@ const EditMonthlyMeetingContent = () => {
     selectedStudent?.id,
   )
 
-  const mostRecentMeeting = studentMeetings[0]
+  const mostRecentMeeting = studentMeetings.find(m => m.id !== meetingId)
 
   const [formData, setFormData] = useState({
     meeting_title: '',
@@ -120,7 +121,6 @@ const EditMonthlyMeetingContent = () => {
 
         // Temporary: fetch from list and find by ID
         // You should create a proper API endpoint for fetching a single meeting
-        const { monthlyMeetingsApi } = await import('@/api/monthlymeetings')
         const meetings = await monthlyMeetingsApi.getMonthlyMeetingsList()
         const meeting = meetings.find(m => m.id === meetingId)
 
@@ -776,59 +776,77 @@ const EditMonthlyMeetingContent = () => {
                         : ''}
                     </DialogTitle>
 
-                    {isLoadingScreenings ? (
-                      <div className='p-4 mt-3 border border-gray-200 shadow-sm bg-gradient-to-br from-gray-50 to-white rounded-xl animate-pulse'>
-                        <div className='flex items-center justify-between'>
-                          <div className='flex items-center gap-2'>
-                            <div className='w-2 h-2 bg-gray-300 rounded-full' />
-                            <div className='w-24 h-4 bg-gray-200 rounded' />
+                    <div className='grid grid-cols-2 gap-3 mt-3'>
+                      {isLoadingScreenings ? (
+                        <div
+                          className='flex flex-col h-full p-4 bg-white border border-gray-200
+  rounded-xl shadow-sm overflow-hidden animate-pulse'>
+                          <div className='flex items-center gap-2 mb-3'>
+                            <div className='w-6 h-6 rounded-full bg-gray-200' />
+                            <div className='w-24 h-3 bg-gray-200 rounded' />
+                          </div>
+                          <div className='mb-3'>
                             <div className='w-20 h-5 bg-gray-200 rounded-full' />
                           </div>
-                          <div className='w-32 h-8 bg-gray-200 rounded' />
+                          <div className='mt-auto'>
+                            <div className='w-full h-8 bg-gray-100 rounded-md' />
+                          </div>
                         </div>
-                      </div>
-                    ) : mostRecentScreening ? (
-                      <LastScreeningCard
-                        screening={mostRecentScreening}
-                        onViewDetails={() => setShowScreeningModal(true)}
-                      />
-                    ) : (
-                      <div className='p-4 mt-3 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
-                        <div className='flex items-center gap-2'>
-                          <div className='w-2 h-2 bg-gray-300 rounded-full' />
-                          <span className='text-sm text-gray-400'>
-                            No speech screenings on record
-                          </span>
+                      ) : mostRecentScreening ? (
+                        <LastScreeningCard
+                          screening={mostRecentScreening}
+                          onViewDetails={() => setShowScreeningModal(true)}
+                        />
+                      ) : (
+                        <div
+                          className='p-4 border border-gray-200 border-dashed bg-gray-50/50
+  rounded-xl'>
+                          <div className='flex items-center gap-2'>
+                            <div className='w-2 h-2 bg-gray-300 rounded-full' />
+                            <span className='text-sm text-gray-400'>
+                              No speech screenings on record
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {isLoadingMeetings ? (
-                      <div className='p-4 mt-3 border border-gray-200 shadow-sm bg-gradient-to-br from-gray-50 to-white rounded-xl animate-pulse'>
-                        <div className='flex items-center justify-between'>
+                      {isLoadingMeetings ? (
+                        <div
+                          className='flex flex-col h-full p-4 bg-white border border-gray-200
+  rounded-xl shadow-sm overflow-hidden animate-pulse'>
+                          <div className='flex items-center gap-2 mb-3'>
+                            <div className='w-6 h-6 rounded-full bg-gray-200' />
+                            <div className='w-24 h-3 bg-gray-200 rounded' />
+                          </div>
+                          <div className='space-y-2 mb-3'>
+                            <div className='w-28 h-5 bg-gray-200 rounded-full' />
+                            <div className='flex items-center gap-1.5'>
+                              <div className='w-3 h-3 bg-gray-200 rounded' />
+                              <div className='w-20 h-3 bg-gray-200 rounded' />
+                            </div>
+                          </div>
+                          <div className='mt-auto'>
+                            <div className='w-full h-8 bg-gray-100 rounded-md' />
+                          </div>
+                        </div>
+                      ) : mostRecentMeeting ? (
+                        <LastMeetingCard
+                          meeting={mostRecentMeeting}
+                          onViewDetails={() => setShowMeetingModal(true)}
+                        />
+                      ) : (
+                        <div
+                          className='p-4 border border-gray-200 border-dashed bg-gray-50/50
+  rounded-xl'>
                           <div className='flex items-center gap-2'>
                             <div className='w-2 h-2 bg-gray-300 rounded-full' />
-                            <div className='w-24 h-4 bg-gray-200 rounded' />
-                            <div className='w-20 h-5 bg-gray-200 rounded-full' />
+                            <span className='text-sm text-gray-400'>
+                              No monthly meetings on record
+                            </span>
                           </div>
-                          <div className='w-32 h-8 bg-gray-200 rounded' />
                         </div>
-                      </div>
-                    ) : mostRecentMeeting ? (
-                      <LastMeetingCard
-                        meeting={mostRecentMeeting}
-                        onViewDetails={() => setShowMeetingModal(true)}
-                      />
-                    ) : (
-                      <div className='p-4 mt-3 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
-                        <div className='flex items-center gap-2'>
-                          <div className='w-2 h-2 bg-gray-300 rounded-full' />
-                          <span className='text-sm text-gray-400'>
-                            No monthly meetings on record
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </DialogHeader>
                   <div className='py-4 space-y-4'>
                     <div className='space-y-2'>
