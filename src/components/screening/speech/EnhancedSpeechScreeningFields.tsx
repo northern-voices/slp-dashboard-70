@@ -725,24 +725,21 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const handleErrorPatternChange = (sound: string, pattern: string, checked: boolean) => {
     const currentPatterns = selectedErrorPatterns[sound] || []
 
-    // Global rule: "Other" is always exclusive - when selected, it disables all other patterns
-    if (pattern === 'Other') {
+    // Global rule: "Other" and "Stimulability" are always exclusive
+    if (pattern === 'Other' || pattern === 'Stimulability') {
       if (checked) {
-        // When selecting Other, clear all other patterns
         setSelectedErrorPatterns({
           ...selectedErrorPatterns,
-          [sound]: ['Other'],
+          [sound]: [pattern],
         })
       } else {
-        // When unchecking Other, clear it
         setSelectedErrorPatterns({
           ...selectedErrorPatterns,
           [sound]: [],
         })
-        // Clear notes when no patterns remain
         clearNotesForSound(sound)
       }
-      return // Exit early since Other handling is complete
+      return
     }
 
     // Handle Stopping pattern - clear stopping sounds when unchecked
@@ -1162,12 +1159,19 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                           const patternDisplay = patternObj.display
                           const currentPatterns = selectedErrorPatterns[sound] || []
 
-                          // Global rule: "Other" disables all other patterns when selected, and other patterns disable "Other"
-                          const isOtherSelected = currentPatterns.includes('Other')
-                          const isOtherPattern = pattern === 'Other'
-                          const hasOtherPatterns = currentPatterns.some(p => p !== 'Other')
-                          const isOtherDisabled = isOtherSelected && !isOtherPattern
-                          const isOtherCheckboxDisabled = hasOtherPatterns && isOtherPattern
+                          const isExclusive = (p: string) => p === 'Other' || p === 'Stimulability'
+
+                          const hasExclusiveSelected = currentPatterns.some(isExclusive)
+                          const isThisPatternExclusive = isExclusive(pattern)
+                          const hasNonExclusiveSelected = currentPatterns.some(p => !isExclusive(p))
+
+                          // If an exclusive pattern is selected, disable all non-exclusive patterns
+                          const isOtherDisabled =
+                            hasExclusiveSelected && !currentPatterns.includes(pattern)
+
+                          // If any non-exclusive pattern is selected, disable all exclusive patterns
+                          const isOtherCheckboxDisabled =
+                            hasNonExclusiveSelected && isThisPatternExclusive
 
                           // For 2 syllables and 3 syllables, implement mutual exclusion
                           const isSyllableSound = sound === '2 syllables' || sound === '3 syllables'
