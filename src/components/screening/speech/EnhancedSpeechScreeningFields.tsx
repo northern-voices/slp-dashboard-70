@@ -16,6 +16,7 @@ import {
   soundErrorPatterns,
   areasOfConcern,
   stoppingSoundOptions,
+  stimulabilityOptions,
 } from './EnhancedSpeechScreeningFieldData'
 
 interface EnhancedSpeechScreeningFieldsProps {
@@ -43,6 +44,7 @@ interface EnhancedSpeechScreeningFieldsProps {
           word: string
           errorPatterns: string[]
           stoppingSounds?: string[]
+          stimulabilityOptions?: string[]
           notes: string
           otherNotes?: string
         }>
@@ -70,6 +72,9 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [notesEnabled, setNotesEnabled] = useState<Record<string, boolean>>({})
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
   const [selectedStoppingSounds, setSelectedStoppingSounds] = useState<Record<string, string[]>>({})
+  const [selectedStimulabilityOptions, setSelectedStimulabilityOptions] = useState<
+    Record<string, string[]>
+  >({})
   const [initialized, setInitialized] = useState(false)
 
   // Initialize component state from form data when available (for editing existing screenings)
@@ -86,6 +91,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         const soundNotesData: Record<string, string> = {}
         const notesData: Record<string, string> = {}
         const notesEnabledData: Record<string, boolean> = {}
+        const stimulabilityOptionsData: Record<string, string[]> = {}
 
         errorPatterns.articulation.soundErrors.forEach(soundError => {
           if (soundError.errorPatterns) {
@@ -101,6 +107,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           if (soundError.otherNotes) {
             notesData[soundError.sound] = soundError.otherNotes
           }
+
+          if (soundError.stimulabilityOptions) {
+            stimulabilityOptionsData[soundError.sound] = soundError.stimulabilityOptions
+          }
         })
 
         setSelectedSounds(sounds)
@@ -109,6 +119,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         setSoundNotes(soundNotesData)
         setNotes(notesData)
         setNotesEnabled(notesEnabledData)
+        setSelectedStimulabilityOptions(stimulabilityOptionsData)
       }
 
       // Initialize areas of concern
@@ -582,6 +593,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         word: word,
         errorPatterns: selectedErrorPatterns[sound] || [],
         stoppingSounds: selectedStoppingSounds[sound] || [],
+        stimulabilityOptions: selectedStimulabilityOptions[sound] || [],
         notes: notes[sound] || '',
         otherNotes: otherNotes,
       }
@@ -593,7 +605,15 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     }
 
     form.setValue('error_patterns.articulation', articulationData)
-  }, [selectedSounds, selectedErrorPatterns, selectedStoppingSounds, soundNotes, notes, form])
+  }, [
+    selectedSounds,
+    selectedErrorPatterns,
+    selectedStoppingSounds,
+    selectedStimulabilityOptions,
+    soundNotes,
+    notes,
+    form,
+  ])
 
   const handleConcernChange = (concern: string, checked: boolean) => {
     if (checked) {
@@ -665,6 +685,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       const newStoppingSounds = { ...selectedStoppingSounds }
       delete newStoppingSounds[sound]
       setSelectedStoppingSounds(newStoppingSounds)
+
+      const newStimulabilityOptions = { ...selectedStimulabilityOptions }
+      delete newStimulabilityOptions[sound]
+      setSelectedStimulabilityOptions(newStimulabilityOptions)
     } else {
       setSelectedSounds([...selectedSounds, sound])
       // Notes are always available for every sound, but unchecked by default
@@ -722,6 +746,21 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
     }
   }
 
+  const handleStimulabilityOptionChange = (sound: string, option: string, checked: boolean) => {
+    if (checked) {
+      // Only allow one at a time
+      setSelectedStimulabilityOptions({
+        ...selectedStimulabilityOptions,
+        [sound]: [option],
+      })
+    } else {
+      setSelectedStimulabilityOptions({
+        ...selectedStimulabilityOptions,
+        [sound]: [],
+      })
+    }
+  }
+
   const handleErrorPatternChange = (sound: string, pattern: string, checked: boolean) => {
     const currentPatterns = selectedErrorPatterns[sound] || []
 
@@ -738,6 +777,13 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           [sound]: [],
         })
         clearNotesForSound(sound)
+        // Clear stimulability sub-options when unchecking Stimulability
+        if (pattern === 'Stimulability') {
+          setSelectedStimulabilityOptions({
+            ...selectedStimulabilityOptions,
+            [sound]: [],
+          })
+        }
       }
       return
     }
@@ -1412,6 +1458,46 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                                   </div>
                                 </div>
                               )}
+
+                              {/* Stimulability Options - show when Stimulability is selected */}
+                              {pattern === 'Stimulability' &&
+                                currentPatterns.includes('Stimulability') && (
+                                  <div className='ml-6 space-y-1'>
+                                    <div className='text-xs font-medium text-gray-700'>
+                                      Stimulable at:
+                                    </div>
+                                    <div className='grid grid-cols-2 gap-2'>
+                                      {stimulabilityOptions.map(option => {
+                                        const currentOptions =
+                                          selectedStimulabilityOptions[sound] || []
+                                        const isSelected = currentOptions.includes(option)
+                                        const isDisabled = currentOptions.length > 0 && !isSelected
+
+                                        return (
+                                          <div key={option} className='flex items-center space-x-2'>
+                                            <Checkbox
+                                              id={`${sound}-stimulability-${option}`}
+                                              checked={isSelected}
+                                              onCheckedChange={checked =>
+                                                handleStimulabilityOptionChange(
+                                                  sound,
+                                                  option,
+                                                  checked as boolean,
+                                                )
+                                              }
+                                              disabled={isDisabled}
+                                            />
+                                            <Label
+                                              htmlFor={`${sound}-stimulability-${option}`}
+                                              className={`text-xs font-medium ${isDisabled ? 'text-gray-400' : ''}`}>
+                                              {option}
+                                            </Label>
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
 
                               {/* Other Error Pattern input - show when "Other" is selected */}
                               {pattern === 'Other' && currentPatterns.includes('Other') && (
