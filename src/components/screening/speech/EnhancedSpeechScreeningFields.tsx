@@ -771,13 +771,18 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           ...selectedErrorPatterns,
           [sound]: [pattern],
         })
+        if (pattern === 'Stimulability') {
+          setSelectedStimulabilityOptions({
+            ...selectedStimulabilityOptions,
+            [sound]: ['Word'],
+          })
+        }
       } else {
         setSelectedErrorPatterns({
           ...selectedErrorPatterns,
           [sound]: [],
         })
         clearNotesForSound(sound)
-        // Clear stimulability sub-options when unchecking Stimulability
         if (pattern === 'Stimulability') {
           setSelectedStimulabilityOptions({
             ...selectedStimulabilityOptions,
