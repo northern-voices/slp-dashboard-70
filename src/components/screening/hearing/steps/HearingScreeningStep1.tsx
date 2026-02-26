@@ -224,7 +224,7 @@ const HearingScreeningStep1 = ({
                           </Label>
                           <Input
                             type='number'
-                            step='0.1'
+                            step='0.01'
                             placeholder='0.0'
                             {...form.register('right_vol')}
                             disabled={rightVolumeImmeasurable}
@@ -259,7 +259,7 @@ const HearingScreeningStep1 = ({
                           </Label>
                           <Input
                             type='number'
-                            step='0.1'
+                            step='0.01'
                             placeholder='0.0'
                             {...form.register('right_compliance')}
                             disabled={rightComplianceImmeasurable}
@@ -334,7 +334,7 @@ const HearingScreeningStep1 = ({
                           </Label>
                           <Input
                             type='number'
-                            step='0.1'
+                            step='0.01'
                             placeholder='0.0'
                             {...form.register('left_vol')}
                             disabled={leftVolumeImmeasurable}
@@ -367,7 +367,7 @@ const HearingScreeningStep1 = ({
                           </Label>
                           <Input
                             type='number'
-                            step='0.1'
+                            step='0.01'
                             placeholder='0.0'
                             {...form.register('left_compliance')}
                             disabled={leftComplianceImmeasurable}
