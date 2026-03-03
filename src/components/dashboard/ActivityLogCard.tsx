@@ -1,7 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar, Plus, FileText } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Calendar, Plus, FileText, Trash2, User } from 'lucide-react'
 import { parseDateSafely } from '@/utils/dateUtils'
 
 interface Activity {
@@ -10,11 +20,16 @@ interface Activity {
   activity_date: string
   notes: string | null
   created_at: string
+  creator: {
+    first_name: string
+    last_name: string
+  } | null
 }
 
 interface ActivityLogCardProps {
   activities: Activity[]
   onAddActivity: () => void
+  onDeleteActivity?: (activityId: string) => void
 }
 
 const ACTIVITY_TYPE_LABELS: Record<string, string> = {
@@ -28,7 +43,13 @@ const ACTIVITY_TYPE_LABELS: Record<string, string> = {
   consult_outside_providers: 'Consult: Outside Service Providers',
 }
 
-const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActivity }) => {
+const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
+  activities,
+  onAddActivity,
+  onDeleteActivity,
+}) => {
+  const [activityToDeleteId, setActivityToDeleteId] = useState<string | null>(null)
+
   const formatDate = (dateString: string) => {
     console.log('--- Date Debug ---')
     console.log('Raw from DB:', dateString)
@@ -87,6 +108,15 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActi
                       <span className='inline-block px-2 py-0.5 rounded-md bg-green-100 text-green-700 text-xs font-medium'>
                         {ACTIVITY_TYPE_LABELS[activity.activity_type] || activity.activity_type}
                       </span>
+
+                      {activity.creator && (
+                        <div className='flex items-center space-x-1.5 text-xs text-gray-400'>
+                          <User className='w-3 h-3' />
+                          <span>
+                            {activity.creator.first_name} {activity.creator.last_name}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className='flex items-center mt-2 space-x-2 text-xs text-gray-500'>
                       <Calendar className='w-3 h-3' />
@@ -96,6 +126,16 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActi
                       <p className='mt-2 text-sm text-gray-700'>{activity.notes}</p>
                     )}
                   </div>
+                  {onDeleteActivity && (
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      className='shrink-0 ml-2 h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50'
+                      onClick={() => setActivityToDeleteId(activity.id)}
+                      aria-label='Delete activity'>
+                      <Trash2 className='w-4 h-4' />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
@@ -114,6 +154,34 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActi
           </div>
         )}
       </CardContent>
+
+      <AlertDialog
+        open={!!activityToDeleteId}
+        onOpenChange={open => !open && setActivityToDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Activity</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this activity? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setActivityToDeleteId(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (activityToDeleteId && onDeleteActivity) {
+                  onDeleteActivity(activityToDeleteId)
+                  setActivityToDeleteId(null)
+                }
+              }}
+              className='bg-red-600 hover:bg-red-700'>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   )
 }

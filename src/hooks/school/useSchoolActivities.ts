@@ -11,6 +11,10 @@ interface SchoolActivity {
   created_by: string
   created_at: string
   updated_at: string
+  creator: {
+    first_name: string
+    last_name: string
+  } | null
 }
 
 export const useSchoolActivities = (currentSchool: School | null) => {
@@ -23,7 +27,7 @@ export const useSchoolActivities = (currentSchool: School | null) => {
 
       const { data, error } = await supabase
         .from('school_activities')
-        .select('*')
+        .select('*, creator:users!school_activities_created_by_fkey(first_name, last_name)')
         .eq('school_id', currentSchool.id)
 
       if (error) {

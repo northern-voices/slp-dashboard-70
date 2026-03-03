@@ -98,3 +98,5 @@ export const GRADE_MAPPING = [
   { display: '11/12', value: '11/12' },
   { display: '12', value: '12' },
 ] as const
+
+export const HEARING_GRADE_MAPPING = [...GRADE_MAPPING, { display: 'Staff', value: 'Staff' }]

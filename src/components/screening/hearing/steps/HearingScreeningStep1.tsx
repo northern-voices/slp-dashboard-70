@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { User, Volume2, FileText, X } from 'lucide-react'
 import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
-import { GRADE_MAPPING } from '@/constants/app'
+import { HEARING_GRADE_MAPPING } from '@/constants/app'
 
 interface HearingScreeningFormValues {
   screening_type: string
@@ -78,7 +78,7 @@ const HearingScreeningStep1 = ({
                 <SelectValue placeholder='Select grade' />
               </SelectTrigger>
               <SelectContent>
-                {GRADE_MAPPING.map(grade => (
+                {HEARING_GRADE_MAPPING.map(grade => (
                   <SelectItem key={grade.value} value={grade.value}>
                     {grade.display}
                   </SelectItem>
@@ -224,7 +224,7 @@ const HearingScreeningStep1 = ({
                           </Label>
                           <Input
                             type='number'
-                            step='0.1'
+                            step='0.01'
                             placeholder='0.0'
                             {...form.register('right_vol')}
                             disabled={rightVolumeImmeasurable}
@@ -259,7 +259,7 @@ const HearingScreeningStep1 = ({
                           </Label>
                           <Input
                             type='number'
-                            step='0.1'
+                            step='0.01'
                             placeholder='0.0'
                             {...form.register('right_compliance')}
                             disabled={rightComplianceImmeasurable}
@@ -334,7 +334,7 @@ const HearingScreeningStep1 = ({
                           </Label>
                           <Input
                             type='number'
-                            step='0.1'
+                            step='0.01'
                             placeholder='0.0'
                             {...form.register('left_vol')}
                             disabled={leftVolumeImmeasurable}
@@ -367,7 +367,7 @@ const HearingScreeningStep1 = ({
                           </Label>
                           <Input
                             type='number'
-                            step='0.1'
+                            step='0.01'
                             placeholder='0.0'
                             {...form.register('left_compliance')}
                             disabled={leftComplianceImmeasurable}
