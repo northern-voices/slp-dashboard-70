@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useDraft } from '@/hooks/use-draft'
 import { useParams, useNavigate } from 'react-router-dom'
 import { monthlyMeetingsApi } from '@/api/monthlymeetings'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
@@ -49,7 +50,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings'
 import { useMonthlyMeetingsByStudent } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
@@ -57,6 +57,20 @@ import ScreeningDetailsModal from '@/components/students/screening-history/Scree
 import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
 import LastMeetingCard from '@/components/monthly-meetings/LastMeetingCard'
 import MonthlyMeetingDetailsModal from './MonthlyMeetingDetailsModal'
+
+interface MeetingFormData {
+  meeting_title: string
+  facilitator_id: string
+  attendees: string[]
+  meeting_date: string
+  additional_notes: string
+  action_plan: string
+}
+
+interface DraftData {
+  formData: MeetingFormData
+  studentData: Record<string, { sessions_attended: number | null; meeting_notes: string }>
+}
 
 const EditMonthlyMeetingContent = () => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
@@ -66,14 +80,16 @@ const EditMonthlyMeetingContent = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
   const [showStudentModal, setShowStudentModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState(null)
-  const [studentData, setStudentData] = useState<
-    Record<string, { sessions_attended: number | null; meeting_notes: string }>
-  >({})
   const [attendeeInput, setAttendeeInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [showScreeningModal, setShowScreeningModal] = useState(false)
   const [showMeetingModal, setShowMeetingModal] = useState(false)
+
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false)
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+  const [originalData, setOriginalData] = useState<DraftData | null>(null)
 
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -83,7 +99,7 @@ const EditMonthlyMeetingContent = () => {
 
   const updateMonthlyMeeting = useUpdateMonthlyMeeting()
   const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
-    currentSchool?.id,
+    currentSchool?.id
   )
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
   const { user } = useAuth()
@@ -94,19 +110,53 @@ const EditMonthlyMeetingContent = () => {
   const mostRecentScreening = studentScreenings[0]
 
   const { data: studentMeetings = [], isLoading: isLoadingMeetings } = useMonthlyMeetingsByStudent(
-    selectedStudent?.id,
+    selectedStudent?.id
   )
 
   const mostRecentMeeting = studentMeetings.find(m => m.id !== meetingId)
 
-  const [formData, setFormData] = useState({
-    meeting_title: '',
-    facilitator_id: user?.id || '',
-    attendees: [] as string[],
-    meeting_date: '',
-    additional_notes: '',
-    action_plan: '',
+  const draftKey = `monthly-meeting-edit-draft-${meetingId}`
+  const {
+    data: draftData,
+    setData: setDraftData,
+    hasDraft,
+    isDirty,
+    loadDraft,
+    clearDraft,
+  } = useDraft<DraftData>({
+    key: draftKey,
+    initialData: {
+      formData: {
+        meeting_title: '',
+        facilitator_id: user?.id || '',
+        attendees: [],
+        meeting_date: '',
+        additional_notes: '',
+        action_plan: '',
+      },
+      studentData: {},
+    },
   })
+
+  const formData = draftData.formData
+  const studentData = draftData.studentData
+
+  // Wrapper helpers — keep the same call-site API as before
+  const setFormData = (updater: MeetingFormData | ((prev: MeetingFormData) => MeetingFormData)) => {
+    setDraftData(prev => ({
+      ...prev,
+      formData: typeof updater === 'function' ? updater(prev.formData) : updater,
+    }))
+  }
+
+  const setStudentData = (
+    updater: typeof studentData | ((prev: typeof studentData) => typeof studentData)
+  ) => {
+    setDraftData(prev => ({
+      ...prev,
+      studentData: typeof updater === 'function' ? updater(prev.studentData) : updater,
+    }))
+  }
 
   // Fetch meeting data on mount
   useEffect(() => {
@@ -129,30 +179,42 @@ const EditMonthlyMeetingContent = () => {
         }
 
         // Populate form with existing data
-        setFormData({
+        const fetchedFormData: MeetingFormData = {
           meeting_title: meeting.meeting_title || '',
           facilitator_id: meeting.facilitator_id || user?.id || '',
           attendees: meeting.attendees || [],
           meeting_date: meeting.meeting_date ? meeting.meeting_date.split('T')[0] : '',
           additional_notes: meeting.additional_notes || '',
           action_plan: meeting.action_plan || '',
-        })
+        }
 
-        // Populate student data if exists
+        const fetchedStudentData: Record<
+          string,
+          { sessions_attended: number | null; meeting_notes: string }
+        > = {}
         if (meeting.student_updates && meeting.student_updates.length > 0) {
-          const studentDataMap: Record<
-            string,
-            { sessions_attended: number | null; meeting_notes: string }
-          > = {}
-
           meeting.student_updates.forEach(update => {
-            studentDataMap[update.student_id] = {
+            fetchedStudentData[update.student_id] = {
               sessions_attended: update.sessions_attended,
               meeting_notes: update.meeting_notes || '',
             }
           })
+        }
 
-          setStudentData(studentDataMap)
+        const fetchedDraft: DraftData = {
+          formData: fetchedFormData,
+          studentData: fetchedStudentData,
+        }
+
+        // Read localStorage directly so we don't rely on stale closure of hasDraft
+        const savedDraft = localStorage.getItem(draftKey)
+        if (savedDraft) {
+          setOriginalData(fetchedDraft)
+          setShowRestoreDialog(true)
+        } else {
+          setOriginalData(fetchedDraft)
+          setDraftData(fetchedDraft)
+          clearDraft()
         }
       } catch (error) {
         console.error('Failed to fetch meeting:', error)
@@ -351,6 +413,7 @@ const EditMonthlyMeetingContent = () => {
       { id: meetingId!, data: submitData },
       {
         onSuccess: () => {
+          clearDraft()
           toast({
             title: 'Monthly Meeting Updated',
             description: 'The monthly meeting has been successfully updated.',
@@ -372,15 +435,27 @@ const EditMonthlyMeetingContent = () => {
           })
           setIsSubmitting(false)
         },
-      },
+      }
     )
   }
 
   const handleCancel = () => {
-    if (currentSchool?.id) {
-      navigate(`/school/${currentSchool.id}/monthly-meetings`)
+    const destination = currentSchool?.id
+      ? `/school/${currentSchool.id}/monthly-meetings`
+      : '/monthly-meetings'
+
+    if (isDirty) {
+      setPendingNavigation(destination)
+      setShowLeaveDialog(true)
     } else {
-      navigate('/monthly-meetings')
+      navigate(destination)
+    }
+  }
+
+  const confirmLeave = () => {
+    setShowLeaveDialog(false)
+    if (pendingNavigation) {
+      navigate(pendingNavigation)
     }
   }
 
@@ -482,7 +557,7 @@ const EditMonthlyMeetingContent = () => {
                             className={cn(
                               'min-h-[42px] w-full rounded-md border border-input bg-background',
                               'px-3 py-2 text-sm ring-offset-background',
-                              'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+                              'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
                             )}>
                             <div className='flex flex-wrap gap-2'>
                               {formData.attendees.map((attendee, index) => (
@@ -552,10 +627,10 @@ const EditMonthlyMeetingContent = () => {
                                       const gradeB = getStudentGrade(b)
 
                                       const indexA = GRADE_MAPPING.findIndex(g =>
-                                        gradeA.includes(g.value),
+                                        gradeA.includes(g.value)
                                       )
                                       const indexB = GRADE_MAPPING.findIndex(g =>
-                                        gradeB.includes(g.value),
+                                        gradeB.includes(g.value)
                                       )
 
                                       if (indexA === -1 && indexB === -1) {
@@ -585,7 +660,7 @@ const EditMonthlyMeetingContent = () => {
                                 const endIndex = startIndex + effectiveItemsPerPage
                                 const paginatedStudents = filteredStudents.slice(
                                   startIndex,
-                                  endIndex,
+                                  endIndex
                                 )
 
                                 return filteredStudents.length > 0 ? (
@@ -745,20 +820,44 @@ const EditMonthlyMeetingContent = () => {
                         </div>
                       </div>
 
-                      <div className='flex justify-end gap-3 pt-4'>
-                        <Button
-                          type='button'
-                          variant='outline'
-                          onClick={handleCancel}
-                          disabled={isSubmitting}>
-                          Cancel
-                        </Button>
-                        <Button
-                          type='submit'
-                          className='bg-blue-600 hover:bg-blue-700'
-                          disabled={isSubmitting}>
-                          {isSubmitting ? 'Updating...' : 'Update Meeting'}
-                        </Button>
+                      <div className='flex justify-between pt-4'>
+                        <div>
+                          {isDirty && (
+                            <Button
+                              type='button'
+                              variant='ghost'
+                              onClick={() => {
+                                if (originalData) {
+                                  // Reset to API data, not empty initialData
+                                  setDraftData(originalData)
+                                  clearDraft()
+                                }
+                                toast({
+                                  title: 'Draft Discarded',
+                                  description: 'Your changes have been discarded.',
+                                })
+                              }}
+                              disabled={isSubmitting}
+                              className='text-red-600 hover:text-red-700 hover:bg-red-50'>
+                              Discard Changes
+                            </Button>
+                          )}
+                        </div>
+                        <div className='flex gap-3'>
+                          <Button
+                            type='button'
+                            variant='outline'
+                            onClick={handleCancel}
+                            disabled={isSubmitting}>
+                            Cancel
+                          </Button>
+                          <Button
+                            type='submit'
+                            className='bg-blue-600 hover:bg-blue-700'
+                            disabled={isSubmitting}>
+                            {isSubmitting ? 'Updating...' : 'Update Meeting'}
+                          </Button>
+                        </div>
                       </div>
                     </form>
                   )}
@@ -951,6 +1050,98 @@ const EditMonthlyMeetingContent = () => {
           </div>
         </SidebarInset>
       </div>
+
+      <Dialog open={showRestoreDialog} onOpenChange={setShowRestoreDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Restore Draft?</DialogTitle>
+          </DialogHeader>
+          <p className='text-sm text-gray-600'>
+            You have unsaved changes from a previous session. Would you like to restore them?
+          </p>
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => {
+                if (originalData) {
+                  setDraftData(originalData)
+                  clearDraft()
+                }
+                setShowRestoreDialog(false)
+              }}>
+              Discard Draft
+            </Button>
+            <Button
+              onClick={() => {
+                loadDraft()
+                setShowRestoreDialog(false)
+                toast({
+                  title: 'Draft Restored',
+                  description: 'Your previous changes have been restored.',
+                })
+              }}>
+              Restore Draft
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Leave Confirmation Dialog */}
+      <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <DialogContent className='sm:max-w-md'>
+          <DialogHeader>
+            <DialogTitle className='flex items-center gap-2'>
+              <div className='p-2 rounded-full bg-amber-100'>
+                <svg
+                  className='w-5 h-5 text-amber-600'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732
+  4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
+                  />
+                </svg>
+              </div>
+              Unsaved Changes
+            </DialogTitle>
+          </DialogHeader>
+          <div className='py-4'>
+            <p className='text-sm text-gray-600'>
+              You have unsaved changes that will be saved as a draft. You can continue editing later
+              by returning to this page.
+            </p>
+            <div className='p-3 mt-3 border border-blue-100 rounded-lg bg-blue-50'>
+              <p className='flex items-center gap-2 text-sm text-blue-700'>
+                <svg
+                  className='flex-shrink-0 w-4 h-4'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                  />
+                </svg>
+                Your draft will be automatically saved.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className='flex gap-2 sm:gap-0'>
+            <Button variant='outline' onClick={() => setShowLeaveDialog(false)}>
+              Keep Editing
+            </Button>
+            <Button variant='default' onClick={confirmLeave}>
+              Save Draft & Leave
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   )
 }
