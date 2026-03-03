@@ -1,7 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar, Plus, FileText } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Calendar, Plus, FileText, Trash2 } from 'lucide-react'
 import { parseDateSafely } from '@/utils/dateUtils'
 
 interface Activity {
@@ -15,6 +25,7 @@ interface Activity {
 interface ActivityLogCardProps {
   activities: Activity[]
   onAddActivity: () => void
+  onDeleteActivity?: (activityId: string) => void
 }
 
 const ACTIVITY_TYPE_LABELS: Record<string, string> = {
@@ -28,7 +39,13 @@ const ACTIVITY_TYPE_LABELS: Record<string, string> = {
   consult_outside_providers: 'Consult: Outside Service Providers',
 }
 
-const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActivity }) => {
+const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
+  activities,
+  onAddActivity,
+  onDeleteActivity,
+}) => {
+  const [activityToDeleteId, setActivityToDeleteId] = useState<string | null>(null)
+
   const formatDate = (dateString: string) => {
     console.log('--- Date Debug ---')
     console.log('Raw from DB:', dateString)
@@ -96,6 +113,16 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActi
                       <p className='mt-2 text-sm text-gray-700'>{activity.notes}</p>
                     )}
                   </div>
+                  {onDeleteActivity && (
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      className='shrink-0 ml-2 h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50'
+                      onClick={() => setActivityToDeleteId(activity.id)}
+                      aria-label='Delete activity'>
+                      <Trash2 className='w-4 h-4' />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
@@ -114,6 +141,34 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({ activities, onAddActi
           </div>
         )}
       </CardContent>
+
+      <AlertDialog
+        open={!!activityToDeleteId}
+        onOpenChange={open => !open && setActivityToDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Activity</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this activity? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setActivityToDeleteId(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (activityToDeleteId && onDeleteActivity) {
+                  onDeleteActivity(activityToDeleteId)
+                  setActivityToDeleteId(null)
+                }
+              }}
+              className='bg-red-600 hover:bg-red-700'>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   )
 }

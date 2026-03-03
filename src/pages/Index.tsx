@@ -271,6 +271,26 @@ const DashboardContent = () => {
     }
   }
 
+  const handleDeleteActivity = async (activityId: string) => {
+    if (!currentSchool) {
+      console.error('No school selected')
+      return
+    }
+
+    try {
+      const { error } = await supabase.from('school_activities').delete().eq('id', activityId)
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-activities', currentSchool.id] })
+
+      toast.success('Activity removed successfully')
+    } catch (error) {
+      console.error('Error deleting activity:', error)
+      toast.error('Failed to remove activity. Please try again.')
+    }
+  }
+
   if (isLoading || isLoadingSchool) {
     return (
       <div className='flex w-full min-h-screen bg-gray-25'>
@@ -338,6 +358,7 @@ const DashboardContent = () => {
               <ActivityLogCard
                 activities={activities}
                 onAddActivity={() => setIsAddActivityModalOpen(true)}
+                onDeleteActivity={handleDeleteActivity}
               />
 
               {/* <QuickActions />
