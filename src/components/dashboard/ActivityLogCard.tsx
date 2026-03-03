@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Calendar, Plus, FileText, Trash2 } from 'lucide-react'
+import { Calendar, Plus, FileText, Trash2, User } from 'lucide-react'
 import { parseDateSafely } from '@/utils/dateUtils'
 
 interface Activity {
@@ -20,6 +20,10 @@ interface Activity {
   activity_date: string
   notes: string | null
   created_at: string
+  creator: {
+    first_name: string
+    last_name: string
+  } | null
 }
 
 interface ActivityLogCardProps {
@@ -104,6 +108,15 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
                       <span className='inline-block px-2 py-0.5 rounded-md bg-green-100 text-green-700 text-xs font-medium'>
                         {ACTIVITY_TYPE_LABELS[activity.activity_type] || activity.activity_type}
                       </span>
+
+                      {activity.creator && (
+                        <div className='flex items-center space-x-1.5 text-xs text-gray-400'>
+                          <User className='w-3 h-3' />
+                          <span>
+                            {activity.creator.first_name} {activity.creator.last_name}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className='flex items-center mt-2 space-x-2 text-xs text-gray-500'>
                       <Calendar className='w-3 h-3' />
