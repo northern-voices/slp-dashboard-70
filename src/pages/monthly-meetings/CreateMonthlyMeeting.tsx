@@ -6,7 +6,7 @@ import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, Calendar, X, Eye, User } from 'lucide-react'
+import { ChevronLeft, Calendar, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -15,11 +15,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useCreateMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
-import { useMonthlyMeetingsByStudent } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
 import { useGetUsers } from '@/hooks/users/use-users'
-import { useSpeechScreeningsByStudent } from '@/hooks/screenings'
-import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
-import { GRADE_MAPPING } from '@/constants/app'
 import {
   Select,
   SelectContent,
@@ -28,18 +24,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
 import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMeetingStudentTable'
-import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
-import LastMeetingCard from '@/components/monthly-meetings/LastMeetingCard'
-import MonthlyMeetingDetailsModal from './MonthlyMeetingDetailsModal'
 import { useDraft } from '@/hooks/use-draft'
+import StudentDetailsModal from '@/components/monthly-meetings/StudentDetailsModal'
+import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog'
+import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
 
 interface MeetingFormData {
   meeting_title: string
@@ -60,8 +49,6 @@ const CreateMonthlyMeetingContent = () => {
   const [showStudentModal, setShowStudentModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [attendeeInput, setAttendeeInput] = useState('')
-  const [showScreeningModal, setShowScreeningModal] = useState(false)
-  const [showMeetingModal, setShowMeetingModal] = useState(false)
   const [showRestoreDialog, setShowRestoreDialog] = useState(false)
   const [showLeaveDialog, setShowLeaveDialog] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
@@ -141,17 +128,6 @@ const CreateMonthlyMeetingContent = () => {
     currentSchool?.id
   )
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
-
-  const { data: studentScreenings = [], isLoading: isLoadingScreenings } =
-    useSpeechScreeningsByStudent(selectedStudent?.id)
-
-  const mostRecentScreening = studentScreenings[0]
-
-  const { data: studentMeetings = [], isLoading: isLoadingMeetings } = useMonthlyMeetingsByStudent(
-    selectedStudent?.id
-  )
-
-  const mostRecentMeeting = studentMeetings[0]
 
   const handleAddAttendee = () => {
     const trimmedInput = attendeeInput.trim()
@@ -560,274 +536,40 @@ const CreateMonthlyMeetingContent = () => {
               </Card>
 
               {/* Student Details Modal */}
-              <Dialog open={showStudentModal} onOpenChange={setShowStudentModal}>
-                <DialogContent className='max-w-2xl'>
-                  <DialogHeader>
-                    <DialogTitle>
-                      Student Details:{' '}
-                      {selectedStudent
-                        ? `${selectedStudent.first_name} ${selectedStudent.last_name}`
-                        : ''}
-                    </DialogTitle>
-                    {selectedStudent?.grade && (
-                      <p className='text-sm text-gray-500'>
-                        Grade:{' '}
-                        {GRADE_MAPPING[selectedStudent.grade]?.display || selectedStudent.grade}
-                      </p>
-                    )}
-                    <div className='grid grid-cols-2 gap-3 mt-3'>
-                      {isLoadingScreenings ? (
-                        <div className='flex flex-col h-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden animate-pulse'>
-                          <div className='flex items-center gap-2 mb-3'>
-                            <div className='w-6 h-6 rounded-full bg-gray-200' />
-                            <div className='w-24 h-3 bg-gray-200 rounded' />
-                          </div>
-                          <div className='mb-3'>
-                            <div className='w-20 h-5 bg-gray-200 rounded-full' />
-                          </div>
-                          <div className='mt-auto'>
-                            <div className='w-full h-8 bg-gray-100 rounded-md' />
-                          </div>
-                        </div>
-                      ) : mostRecentScreening ? (
-                        <LastScreeningCard
-                          screening={mostRecentScreening}
-                          onViewDetails={() => setShowScreeningModal(true)}
-                        />
-                      ) : (
-                        <div className='p-4 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
-                          <div className='flex items-center gap-2'>
-                            <div className='w-2 h-2 bg-gray-300 rounded-full' />
-                            <span className='text-sm text-gray-400'>
-                              No speech screenings on record
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {isLoadingMeetings ? (
-                        <div className='flex flex-col h-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden animate-pulse'>
-                          <div className='flex items-center gap-2 mb-3'>
-                            <div className='w-6 h-6 rounded-full bg-gray-200' />
-                            <div className='w-24 h-3 bg-gray-200 rounded' />
-                          </div>
-                          <div className='space-y-2 mb-3'>
-                            <div className='w-28 h-5 bg-gray-200 rounded-full' />
-                            <div className='flex items-center gap-1.5'>
-                              <div className='w-3 h-3 bg-gray-200 rounded' />
-                              <div className='w-20 h-3 bg-gray-200 rounded' />
-                            </div>
-                          </div>
-                          <div className='mt-auto'>
-                            <div className='w-full h-8 bg-gray-100 rounded-md' />
-                          </div>
-                        </div>
-                      ) : mostRecentMeeting ? (
-                        <LastMeetingCard
-                          meeting={mostRecentMeeting}
-                          onViewDetails={() => setShowMeetingModal(true)}
-                        />
-                      ) : (
-                        <div className='p-4 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
-                          <div className='flex items-center gap-2'>
-                            <div className='w-2 h-2 bg-gray-300 rounded-full' />
-                            <span className='text-sm text-gray-400'>
-                              No monthly meetings on record
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </DialogHeader>
-
-                  <div className='py-4 space-y-4'>
-                    <div className='space-y-2'>
-                      <Label htmlFor='modal_sessions_attended'>Sessions Attended</Label>
-                      <Input
-                        id='modal_sessions_attended'
-                        type='number'
-                        min='0'
-                        value={
-                          selectedStudent?.id
-                            ? (studentData[selectedStudent.id]?.sessions_attended ?? '')
-                            : ''
-                        }
-                        onChange={e => {
-                          if (selectedStudent?.id) {
-                            const value = e.target.value === '' ? null : parseInt(e.target.value)
-                            setStudentData(prev => ({
-                              ...prev,
-                              [selectedStudent.id]: {
-                                ...prev[selectedStudent.id],
-                                sessions_attended: value,
-                                meeting_notes: prev[selectedStudent.id]?.meeting_notes || '',
-                              },
-                            }))
-                          }
-                        }}
-                        placeholder='Enter number of sessions attended'
-                      />
-                    </div>
-
-                    <div className='space-y-2'>
-                      <Label htmlFor='modal_meeting_notes'>Meeting Notes</Label>
-                      <Textarea
-                        id='modal_meeting_notes'
-                        value={
-                          selectedStudent?.id
-                            ? studentData[selectedStudent.id]?.meeting_notes || ''
-                            : ''
-                        }
-                        onChange={e => {
-                          if (selectedStudent?.id) {
-                            setStudentData(prev => ({
-                              ...prev,
-                              [selectedStudent.id]: {
-                                ...prev[selectedStudent.id],
-                                sessions_attended:
-                                  prev[selectedStudent.id]?.sessions_attended ?? null,
-                                meeting_notes: e.target.value,
-                              },
-                            }))
-                          }
-                        }}
-                        placeholder='Meeting notes for this student...'
-                        rows={6}
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      onClick={() => {
-                        setShowStudentModal(false)
-                        setSelectedStudent(null)
-                      }}>
-                      Close
-                    </Button>
-                    <Button
-                      type='button'
-                      onClick={() => {
-                        setShowStudentModal(false)
-                        setSelectedStudent(null)
-                        toast({
-                          title: 'Student Data Saved',
-                          description: `Data for ${selectedStudent?.first_name} ${selectedStudent?.last_name} has been saved.`,
-                        })
-                      }}>
-                      Save
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-
-                {/* Screening Details */}
-                {mostRecentScreening && (
-                  <ScreeningDetailsModal
-                    isOpen={showScreeningModal}
-                    onClose={() => setShowScreeningModal(false)}
-                    screening={mostRecentScreening}
-                  />
-                )}
-
-                {/* Meeting Details Modal */}
-                {mostRecentMeeting && (
-                  <MonthlyMeetingDetailsModal
-                    isOpen={showMeetingModal}
-                    onClose={() => setShowMeetingModal(false)}
-                    meeting={mostRecentMeeting}
-                  />
-                )}
-              </Dialog>
+              <StudentDetailsModal
+                open={showStudentModal}
+                onClose={() => {
+                  setShowStudentModal(false)
+                  setSelectedStudent(null)
+                }}
+                selectedStudent={selectedStudent}
+                studentData={studentData}
+                setStudentData={setStudentData}
+              />
 
               {/* Draft Restore Dialog */}
-              <Dialog open={showRestoreDialog} onOpenChange={setShowRestoreDialog}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Restore Draft?</DialogTitle>
-                  </DialogHeader>
-                  <p className='text-sm text-gray-600'>
-                    You have an unsaved draft from a previous session. Would you like to restore it?
-                  </p>
-                  <DialogFooter>
-                    <Button
-                      variant='outline'
-                      onClick={() => {
-                        discardDraft()
-                        setShowRestoreDialog(false)
-                      }}>
-                      Discard Draft
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        loadDraft()
-                        setShowRestoreDialog(false)
-                        toast({
-                          title: 'Draft Restored',
-                          description: 'Your previous draft has been restored.',
-                        })
-                      }}>
-                      Restore Draft
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <DraftRestoreDialog
+                open={showRestoreDialog}
+                onRestore={() => {
+                  loadDraft()
+                  setShowRestoreDialog(false)
+                  toast({
+                    title: 'Draft Restored',
+                    description: 'Your previous draft has been restored.',
+                  })
+                }}
+                onDiscard={() => {
+                  discardDraft()
+                  setShowRestoreDialog(false)
+                }}
+              />
 
               {/* Leave Confirmation Dialog */}
-              <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
-                <DialogContent className='sm:max-w-md'>
-                  <DialogHeader>
-                    <DialogTitle className='flex items-center gap-2'>
-                      <div className='p-2 rounded-full bg-amber-100'>
-                        <svg
-                          className='w-5 h-5 text-amber-600'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'>
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
-                          />
-                        </svg>
-                      </div>
-                      Unsaved Changes
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className='py-4'>
-                    <p className='text-sm text-gray-600'>
-                      You have unsaved changes that will be saved as a draft. You can continue
-                      editing later by returning to this page.
-                    </p>
-                    <div className='p-3 mt-3 border border-blue-100 rounded-lg bg-blue-50'>
-                      <p className='flex items-center gap-2 text-sm text-blue-700'>
-                        <svg
-                          className='flex-shrink-0 w-4 h-4'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'>
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-                          />
-                        </svg>
-                        Your draft will be automatically saved.
-                      </p>
-                    </div>
-                  </div>
-                  <DialogFooter className='flex gap-2 sm:gap-0'>
-                    <Button variant='outline' onClick={() => setShowLeaveDialog(false)}>
-                      Keep Editing
-                    </Button>
-                    <Button variant='default' onClick={confirmLeave}>
-                      Save Draft & Leave
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <UnsavedChangesDialog
+                open={showLeaveDialog}
+                onKeepEditing={() => setShowLeaveDialog(false)}
+                onLeave={confirmLeave}
+              />
             </div>
           </div>
         </SidebarInset>
