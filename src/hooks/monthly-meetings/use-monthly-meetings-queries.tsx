@@ -6,7 +6,7 @@ import { UserRole } from '@/types/database'
 
 export const useMonthlyMeetingsBySchool = (
   schoolId?: string,
-  dateFilter: 'all' | 'school_year' = 'school_year',
+  dateFilter: 'all' | 'school_year' = 'school_year'
 ) => {
   const { user } = useAuth()
   const { userProfile } = useOrganization()
@@ -21,7 +21,7 @@ export const useMonthlyMeetingsBySchool = (
         schoolId,
         user?.id,
         userProfile?.role as UserRole,
-        dateFilter,
+        dateFilter
       )
 
       return result
@@ -44,7 +44,7 @@ export const useMonthlyMeetingsByStudent = (studentId?: string) => {
       return monthlyMeetingsApi.getMonthlyMeetingsByStudent(
         studentId,
         user?.id,
-        userProfile?.role as UserRole,
+        userProfile?.role as UserRole
       )
     },
     enabled: !!studentId && !!user?.id,
@@ -62,9 +62,21 @@ export const useMonthlyMeetingsList = () => {
       monthlyMeetingsApi.getMonthlyMeetingsList(
         user?.id,
         userProfile?.role as UserRole,
-        currentOrganization?.id,
+        currentOrganization?.id
       ),
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
+  })
+}
+
+export const useGetMonthlyMeetingById = (meetingId?: string) => {
+  return useQuery<MonthlyMeeting, Error>({
+    queryKey: ['monthly-meetings', 'by-id', meetingId],
+    queryFn: () => {
+      if (!meetingId) throw new Error('Meeting ID is required')
+      return monthlyMeetingsApi.getById(meetingId)
+    },
+    enabled: !!meetingId,
+    staleTime: 1000 * 60 * 5,
   })
 }
