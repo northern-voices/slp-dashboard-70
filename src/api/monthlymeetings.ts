@@ -72,6 +72,8 @@ interface RawMonthlyMeeting {
       last_name: string
       student_id: string
       school_id: string
+      current_grade_id: string | null
+      program_status: string | null
       speech_screenings: Array<{
         created_at: string
         school_grades: {
