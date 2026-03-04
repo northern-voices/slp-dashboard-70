@@ -121,7 +121,7 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
 
     if (update.students?.speech_screenings && update.students.speech_screenings.length > 0) {
       const sortedScreenings = [...update.students.speech_screenings].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )
       mostRecentGrade = sortedScreenings[0]?.school_grades || null
     }
@@ -151,7 +151,7 @@ export const monthlyMeetingsApi = {
   getMonthlyMeetingsList: async (
     currentUserId?: string,
     userRole?: UserRole,
-    organizationId?: string,
+    organizationId?: string
   ): Promise<MonthlyMeeting[]> => {
     try {
       // Get organization schools if organizationId is provided
@@ -194,7 +194,7 @@ export const monthlyMeetingsApi = {
               )
             )
           )
-        `,
+        `
       )
 
       const { data, error } = await query.order('meeting_date', { ascending: false }).limit(10000)
@@ -211,8 +211,8 @@ export const monthlyMeetingsApi = {
             meeting.student_updates?.some(
               update =>
                 update.student?.school_id &&
-                organizationSchoolIds.includes(update.student.school_id),
-            ),
+                organizationSchoolIds.includes(update.student.school_id)
+            )
         )
       }
 
@@ -226,7 +226,7 @@ export const monthlyMeetingsApi = {
   getMonthlyMeetingsByStudent: async (
     studentId: string,
     currentUserId?: string,
-    userRole?: UserRole,
+    userRole?: UserRole
   ): Promise<MonthlyMeeting[]> => {
     try {
       // Query monthly meetings that have updates for this student
@@ -263,7 +263,7 @@ export const monthlyMeetingsApi = {
               )
             )
           )
-        `,
+        `
         )
         .eq('monthly_meeting_student_updates.student_id', studentId)
 
@@ -275,7 +275,7 @@ export const monthlyMeetingsApi = {
       const transformedData: MonthlyMeeting[] = (data || []).map(meeting => {
         // Filter student updates to only include this specific student
         const studentUpdates = meeting.monthly_meeting_student_updates.filter(
-          update => update.student_id === studentId,
+          update => update.student_id === studentId
         )
 
         return {
@@ -299,7 +299,7 @@ export const monthlyMeetingsApi = {
               update.students.speech_screenings.length > 0
             ) {
               const sortedScreenings = [...update.students.speech_screenings].sort(
-                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
               )
               mostRecentGrade = sortedScreenings[0]?.school_grades || null
             }
@@ -336,7 +336,7 @@ export const monthlyMeetingsApi = {
     schoolId: string,
     currentUserId?: string,
     userRole?: UserRole,
-    dateFilter?: 'all' | 'school_year',
+    dateFilter?: 'all' | 'school_year'
   ): Promise<MonthlyMeeting[]> => {
     try {
       // Calculate school year start date (September 1st)
@@ -385,7 +385,7 @@ export const monthlyMeetingsApi = {
               )
             )
           )
-        `,
+        `
       )
 
       // Apply date filter at database level (default to school year)
@@ -406,6 +406,51 @@ export const monthlyMeetingsApi = {
       console.error('Error fetching monthly meetings by school:', error)
       throw error
     }
+  },
+
+  getById: async (id: string): Promise<MonthlyMeeting> => {
+    const { data, error } = await supabase
+      .from('monthly_meetings')
+      .select(
+        `
+        *,
+        facilitator:users!facilitator_id (
+          id,
+          first_name,
+          last_name,
+          email
+        ),
+        monthly_meeting_student_updates (
+          id,
+          student_id,
+          sessions_attended,
+          meeting_notes,
+          students (
+            id,
+            first_name,
+            last_name,
+            student_id,
+            school_id,
+            current_grade_id,
+            program_status,
+            speech_screenings (
+              created_at,
+              school_grades (
+                id,
+                grade_level,
+                academic_year
+              )
+            )
+          )
+        )
+      `
+      )
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+
+    return transformMonthlyMeeting(data)
   },
 
   createMonthlyMeeting: async (data: {
@@ -520,7 +565,7 @@ export const monthlyMeetingsApi = {
               )
             )
           )
-        `,
+        `
         )
         .eq('id', newMeeting.id)
         .single()
@@ -549,7 +594,7 @@ export const monthlyMeetingsApi = {
         sessions_attended?: number | null
         meeting_notes?: string | null
       }>
-    }>,
+    }>
   ): Promise<MonthlyMeeting> => {
     try {
       // Extract student_updates from data
@@ -627,7 +672,7 @@ export const monthlyMeetingsApi = {
               )
             )
           )
-        `,
+        `
         )
         .eq('id', id)
         .single()
@@ -675,7 +720,7 @@ export const monthlyMeetingsApi = {
               )
             )
           )
-        `,
+        `
         )
         .single()
 
@@ -688,7 +733,7 @@ export const monthlyMeetingsApi = {
         newUpdate.students.speech_screenings.length > 0
       ) {
         const sortedScreenings = [...newUpdate.students.speech_screenings].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )
         mostRecentGrade = sortedScreenings[0]?.school_grades || null
       }
@@ -721,7 +766,7 @@ export const monthlyMeetingsApi = {
     data: Partial<{
       sessions_attended: number | null
       meeting_notes: string | null
-    }>,
+    }>
   ): Promise<StudentUpdate> => {
     try {
       const { data: updatedUpdate, error } = await supabase
@@ -746,7 +791,7 @@ export const monthlyMeetingsApi = {
               )
             )
           )
-        `,
+        `
         )
         .single()
 
@@ -759,7 +804,7 @@ export const monthlyMeetingsApi = {
         updatedUpdate.students.speech_screenings.length > 0
       ) {
         const sortedScreenings = [...updatedUpdate.students.speech_screenings].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )
         mostRecentGrade = sortedScreenings[0]?.school_grades || null
       }

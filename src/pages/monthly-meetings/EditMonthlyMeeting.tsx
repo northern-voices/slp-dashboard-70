@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useDraft } from '@/hooks/use-draft'
 import { useParams, useNavigate } from 'react-router-dom'
-import { monthlyMeetingsApi } from '@/api/monthlymeetings'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
@@ -30,6 +29,7 @@ import StudentDetailsModal from '@/components/monthly-meetings/StudentDetailsMod
 import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMeetingStudentTable'
 import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog'
 import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
+import { useGetMonthlyMeetingById } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
 
 interface MeetingFormData {
   meeting_title: string
@@ -50,8 +50,6 @@ const EditMonthlyMeetingContent = () => {
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [attendeeInput, setAttendeeInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-
   const [showRestoreDialog, setShowRestoreDialog] = useState(false)
   const [showLeaveDialog, setShowLeaveDialog] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
@@ -74,7 +72,6 @@ const EditMonthlyMeetingContent = () => {
   const {
     data: draftData,
     setData: setDraftData,
-    hasDraft,
     isDirty,
     loadDraft,
     clearDraft,
@@ -113,79 +110,59 @@ const EditMonthlyMeetingContent = () => {
     }))
   }
 
-  // Fetch meeting data on mount
+  // Fetch meeting data
+  const { data: meetingData, isLoading, isError } = useGetMonthlyMeetingById(meetingId)
+
   useEffect(() => {
-    const fetchMeetingData = async () => {
-      if (!meetingId) return
+    if (!meetingData) return
 
-      setIsLoading(true)
-      try {
-        // TODO: Replace this with actual API call to fetch single meeting
-        // For now, you'll need to implement useGetMonthlyMeetingById hook
-        // Example: const meeting = await monthlyMeetingsApi.getById(meetingId)
-
-        // Temporary: fetch from list and find by ID
-        // You should create a proper API endpoint for fetching a single meeting
-        const meetings = await monthlyMeetingsApi.getMonthlyMeetingsList()
-        const meeting = meetings.find(m => m.id === meetingId)
-
-        if (!meeting) {
-          throw new Error('Meeting not found')
-        }
-
-        // Populate form with existing data
-        const fetchedFormData: MeetingFormData = {
-          meeting_title: meeting.meeting_title || '',
-          facilitator_id: meeting.facilitator_id || user?.id || '',
-          attendees: meeting.attendees || [],
-          meeting_date: meeting.meeting_date ? meeting.meeting_date.split('T')[0] : '',
-          additional_notes: meeting.additional_notes || '',
-          action_plan: meeting.action_plan || '',
-        }
-
-        const fetchedStudentData: Record<
-          string,
-          { sessions_attended: number | null; meeting_notes: string }
-        > = {}
-        if (meeting.student_updates && meeting.student_updates.length > 0) {
-          meeting.student_updates.forEach(update => {
-            fetchedStudentData[update.student_id] = {
-              sessions_attended: update.sessions_attended,
-              meeting_notes: update.meeting_notes || '',
-            }
-          })
-        }
-
-        const fetchedDraft: DraftData = {
-          formData: fetchedFormData,
-          studentData: fetchedStudentData,
-        }
-
-        // Read localStorage directly so we don't rely on stale closure of hasDraft
-        const savedDraft = localStorage.getItem(draftKey)
-        if (savedDraft) {
-          setOriginalData(fetchedDraft)
-          setShowRestoreDialog(true)
-        } else {
-          setOriginalData(fetchedDraft)
-          setDraftData(fetchedDraft)
-          clearDraft()
-        }
-      } catch (error) {
-        console.error('Failed to fetch meeting:', error)
-        toast({
-          title: 'Error',
-          description: 'Failed to load meeting data',
-          variant: 'destructive',
-        })
-        handleCancel()
-      } finally {
-        setIsLoading(false)
-      }
+    const fetchedFormData: MeetingFormData = {
+      meeting_title: meetingData.meeting_title || '',
+      facilitator_id: meetingData.facilitator_id || user?.id || '',
+      attendees: meetingData.attendees || [],
+      meeting_date: meetingData.meeting_date ? meetingData.meeting_date.split('T')[0] : '',
+      additional_notes: meetingData.additional_notes || '',
+      action_plan: meetingData.action_plan || '',
     }
 
-    fetchMeetingData()
-  }, [meetingId, user?.id, toast])
+    const fetchedStudentData: Record<
+      string,
+      { sessions_attended: number | null; meeting_notes: string }
+    > = {}
+    if (meetingData.student_updates && meetingData.student_updates.length > 0) {
+      meetingData.student_updates.forEach(update => {
+        fetchedStudentData[update.student_id] = {
+          sessions_attended: update.sessions_attended,
+          meeting_notes: update.meeting_notes || '',
+        }
+      })
+    }
+
+    const fetched: DraftData = { formData: fetchedFormData, studentData: fetchedStudentData }
+
+    const savedDraft = localStorage.getItem(draftKey)
+    if (savedDraft) {
+      setOriginalData(fetched)
+      setShowRestoreDialog(true)
+    } else {
+      setOriginalData(fetched)
+      setDraftData(fetched)
+      clearDraft()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meetingData])
+
+  useEffect(() => {
+    if (isError) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load meeting data',
+        variant: 'destructive',
+      })
+      handleCancel()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isError])
 
   const handleAddAttendee = () => {
     const trimmedInput = attendeeInput.trim()
