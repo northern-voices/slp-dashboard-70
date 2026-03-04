@@ -128,7 +128,7 @@ const CreateMonthlyMeetingContent = () => {
 
   // Helper to update studentData
   const setStudentData = (
-    updater: typeof studentData | ((prev: typeof studentData) => typeof studentData),
+    updater: typeof studentData | ((prev: typeof studentData) => typeof studentData)
   ) => {
     setDraftData(prev => ({
       ...prev,
@@ -138,7 +138,7 @@ const CreateMonthlyMeetingContent = () => {
 
   const createMonthlyMeetings = useCreateMonthlyMeeting()
   const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
-    currentSchool?.id,
+    currentSchool?.id
   )
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
 
@@ -148,7 +148,7 @@ const CreateMonthlyMeetingContent = () => {
   const mostRecentScreening = studentScreenings[0]
 
   const { data: studentMeetings = [], isLoading: isLoadingMeetings } = useMonthlyMeetingsByStudent(
-    selectedStudent?.id,
+    selectedStudent?.id
   )
 
   const mostRecentMeeting = studentMeetings[0]
@@ -435,7 +435,7 @@ const CreateMonthlyMeetingContent = () => {
                           className={cn(
                             'min-h-[42px] w-full rounded-md border border-input bg-background',
                             'px-3 py-2 text-sm ring-offset-background',
-                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
                           )}>
                           <div className='flex flex-wrap gap-2'>
                             {/* Display existing attendees as badges */}
@@ -577,9 +577,7 @@ const CreateMonthlyMeetingContent = () => {
                     )}
                     <div className='grid grid-cols-2 gap-3 mt-3'>
                       {isLoadingScreenings ? (
-                        <div
-                          className='flex flex-col h-full p-4 bg-white border border-gray-200
-  rounded-xl shadow-sm overflow-hidden animate-pulse'>
+                        <div className='flex flex-col h-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden animate-pulse'>
                           <div className='flex items-center gap-2 mb-3'>
                             <div className='w-6 h-6 rounded-full bg-gray-200' />
                             <div className='w-24 h-3 bg-gray-200 rounded' />
@@ -597,9 +595,7 @@ const CreateMonthlyMeetingContent = () => {
                           onViewDetails={() => setShowScreeningModal(true)}
                         />
                       ) : (
-                        <div
-                          className='p-4 border border-gray-200 border-dashed bg-gray-50/50
-  rounded-xl'>
+                        <div className='p-4 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
                           <div className='flex items-center gap-2'>
                             <div className='w-2 h-2 bg-gray-300 rounded-full' />
                             <span className='text-sm text-gray-400'>
@@ -610,9 +606,7 @@ const CreateMonthlyMeetingContent = () => {
                       )}
 
                       {isLoadingMeetings ? (
-                        <div
-                          className='flex flex-col h-full p-4 bg-white border border-gray-200
-  rounded-xl shadow-sm overflow-hidden animate-pulse'>
+                        <div className='flex flex-col h-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden animate-pulse'>
                           <div className='flex items-center gap-2 mb-3'>
                             <div className='w-6 h-6 rounded-full bg-gray-200' />
                             <div className='w-24 h-3 bg-gray-200 rounded' />
@@ -634,9 +628,7 @@ const CreateMonthlyMeetingContent = () => {
                           onViewDetails={() => setShowMeetingModal(true)}
                         />
                       ) : (
-                        <div
-                          className='p-4 border border-gray-200 border-dashed bg-gray-50/50
-  rounded-xl'>
+                        <div className='p-4 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
                           <div className='flex items-center gap-2'>
                             <div className='w-2 h-2 bg-gray-300 rounded-full' />
                             <span className='text-sm text-gray-400'>
@@ -796,8 +788,7 @@ const CreateMonthlyMeetingContent = () => {
                             strokeLinecap='round'
                             strokeLinejoin='round'
                             strokeWidth={2}
-                            d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732
-  4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
+                            d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
                           />
                         </svg>
                       </div>
