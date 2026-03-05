@@ -104,6 +104,8 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
           targetPath = `/school/${currentSchool.id}/screening/speech`
         } else if (routePath === '/screening/hearing') {
           targetPath = `/school/${currentSchool.id}/screening/hearing`
+        } else if (routePath === '/screenings/hearing') {
+          targetPath = `/school/${currentSchool.id}/screenings/hearing`
         } else if (routePath === '/students') {
           targetPath = `/school/${currentSchool.id}/students`
         } else if (routePath === '/reports' || routePath === '/speech-screening-reports') {
