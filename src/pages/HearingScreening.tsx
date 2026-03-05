@@ -16,6 +16,7 @@ import { useCreateHearingScreening } from '@/hooks/screenings/use-screening-hear
 import { useAuth } from '@/contexts/AuthContext'
 import { schoolGradesApi } from '@/api/schoolGrades'
 import { UserRole } from '@/types/database'
+import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change'
 
 const HearingScreeningContent = () => {
   const { studentId } = useParams<{
@@ -25,6 +26,8 @@ const HearingScreeningContent = () => {
   const { toast } = useToast()
   const { userProfile, currentSchool } = useOrganization()
   const { user } = useAuth()
+
+  useRedirectOnSchoolChange('/screenings/hearing')
 
   // Use React Query hook to fetch student
   const { data: student = null, isLoading: loading } = useStudent(studentId)
@@ -77,7 +80,7 @@ const HearingScreeningContent = () => {
         const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
           currentSchool.id,
           screeningData.selected_grade,
-          academicYear,
+          academicYear
         )
 
         if (!gradeAvailability.exists) {
