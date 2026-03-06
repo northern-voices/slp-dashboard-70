@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { Screening } from '@/types/database'
-import { hearingScreeningsApi } from '@/api/hearingscreenings'
+import { format } from 'date-fns'
+import { useQueryClient } from '@tanstack/react-query'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,12 +21,10 @@ import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change
 import { FileText, Calendar, Save, Volume2, X } from 'lucide-react'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import { useUpdateHearingScreening } from '@/hooks/screenings/use-screening-hearing-mutations'
+import { useHearingScreeningById } from '@/hooks/screenings/use-hearing-screenings'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import { format } from 'date-fns'
-import { useQueryClient } from '@tanstack/react-query'
 
 interface HearingEditFormValues {
   right_vol: string
@@ -44,9 +42,6 @@ const EditHearingScreeningContent = () => {
   const { screeningId } = useParams<{ screeningId: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { userProfile } = useOrganization()
-  const [screening, setScreening] = useState<Screening | null>(null)
-  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
   // Immeasurable checkbox state
@@ -76,67 +71,31 @@ const EditHearingScreeningContent = () => {
     },
   })
 
+  const { data: screening, isLoading, isError } = useHearingScreeningById(screeningId)
+
   useEffect(() => {
-    if (!screeningId) return
+    if (!screening) return
 
-    const fetchScreening = async () => {
-      setLoading(true)
-      try {
-        const data = await hearingScreeningsApi.getHearingScreeningById(
-          screeningId,
-          userProfile?.organization_id
-        )
+    setRightVolImmeasurable(screening.right_volume_db === null)
+    setRightCompImmeasurable(screening.right_compliance === null)
+    setRightPressImmeasurable(screening.right_pressure === null)
+    setLeftVolImmeasurable(screening.left_volume_db === null)
+    setLeftCompImmeasurable(screening.left_compliance === null)
+    setLeftPressImmeasurable(screening.left_pressure === null)
 
-        if (!data) throw new Error('Screening not found')
-
-        setScreening(data)
-
-        // Pre-populate form with existing values
-        // right_volume_db is null when immeasurable
-        if (data.right_volume_db === null) {
-          setRightVolImmeasurable(true)
-        }
-        if (data.right_compliance === null) {
-          setRightCompImmeasurable(true)
-        }
-        if (data.right_pressure === null) {
-          setRightPressImmeasurable(true)
-        }
-        if (data.left_volume_db === null) {
-          setLeftVolImmeasurable(true)
-        }
-        if (data.left_compliance === null) {
-          setLeftCompImmeasurable(true)
-        }
-        if (data.left_pressure === null) {
-          setLeftPressImmeasurable(true)
-        }
-
-        form.reset({
-          right_vol: data.right_volume_db != null ? String(data.right_volume_db) : '',
-          right_compliance: data.right_compliance != null ? String(data.right_compliance) : '',
-          right_press: data.right_pressure != null ? String(data.right_pressure) : '',
-          left_vol: data.left_volume_db != null ? String(data.left_volume_db) : '',
-          left_compliance: data.left_compliance != null ? String(data.left_compliance) : '',
-          left_press: data.left_pressure != null ? String(data.left_pressure) : '',
-          result: data.result || '',
-          clinical_notes: data.clinical_notes || '',
-          referral_notes: data.referral_notes || '',
-        })
-      } catch (error) {
-        console.error('Failed to fetch hearing screening:', error)
-        toast({
-          title: 'Error',
-          description: 'Failed to load screening data',
-          variant: 'destructive',
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchScreening()
-  }, [screeningId, userProfile?.organization_id])
+    form.reset({
+      right_vol: screening.right_volume_db != null ? String(screening.right_volume_db) : '',
+      right_compliance:
+        screening.right_compliance != null ? String(screening.right_compliance) : '',
+      right_press: screening.right_pressure != null ? String(screening.right_pressure) : '',
+      left_vol: screening.left_volume_db != null ? String(screening.left_volume_db) : '',
+      left_compliance: screening.left_compliance != null ? String(screening.left_compliance) : '',
+      left_press: screening.left_pressure != null ? String(screening.left_pressure) : '',
+      result: screening.result || '',
+      clinical_notes: screening.clinical_notes || '',
+      referral_notes: screening.referral_notes || '',
+    })
+  }, [screening])
 
   const handleGoBack = () => navigate(-1)
 
@@ -208,7 +167,7 @@ const EditHearingScreeningContent = () => {
     }
   }
 
-  if (loading) return <LoadingSpinner />
+  if (isLoading) return <LoadingSpinner />
 
   if (!screening) {
     return (
