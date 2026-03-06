@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -30,11 +32,15 @@ const HearingScreeningDetailsModal = ({
   const [gradesMatch, setGradesMatch] = useState<boolean>(true)
   const [isLoadingGrades, setIsLoadingGrades] = useState(false)
 
+  const navigate = useNavigate()
+  const { currentSchool } = useOrganization()
+
   // Update currentScreening when screening prop changes
   useEffect(() => {
     setCurrentScreening(screening)
   }, [screening])
 
+  // TODO: Transform this query into a react query
   // Fetch grades and compare when modal opens
   useEffect(() => {
     const fetchGrades = async () => {
@@ -103,7 +109,7 @@ const HearingScreeningDetailsModal = ({
             ...prev,
             clinical_notes: clinicalNotesText,
           }
-        : null,
+        : null
     )
     // TODO: Implement update mutation for hearing screenings
     setIsEditingClinicalNotes(false)
@@ -127,10 +133,17 @@ const HearingScreeningDetailsModal = ({
             ...prev,
             referral_notes: referralNotesText,
           }
-        : null,
+        : null
     )
     // TODO: Implement update mutation for hearing screenings
     setIsEditingReferralNotes(false)
+  }
+
+  const handleEditScreening = () => {
+    if (!currentScreening) return
+    const basePath = currentSchool?.id ? `/school/${currentSchool.id}` : ''
+    navigate(`${basePath}/edit-hearing-screening/${currentScreening.id}`)
+    onClose()
   }
 
   const handleCancelReferralNotes = () => {
@@ -142,7 +155,7 @@ const HearingScreeningDetailsModal = ({
     value: number | null | undefined,
     result: string | null | undefined,
     unit: string,
-    screeningResult?: string | null,
+    screeningResult?: string | null
   ) => {
     if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
     if (result === 'Immeasurable') return 'Immeasurable'
@@ -168,7 +181,7 @@ const HearingScreeningDetailsModal = ({
 
   const formatResultBadge = (
     result: string | null | undefined,
-    screeningResult?: string | null,
+    screeningResult?: string | null
   ): string => {
     if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
     return result || '-'
@@ -183,9 +196,16 @@ const HearingScreeningDetailsModal = ({
               <FileText className='w-5 h-5' />
               Hearing Screening Details
             </DialogTitle>
-            <Button variant='ghost' size='sm' onClick={onClose}>
-              <X className='w-4 h-4' />
-            </Button>
+
+            <div className='flex items-center gap-2'>
+              <Button variant='outline' size='sm' onClick={handleEditScreening}>
+                <Edit2 className='w-4 h-4 mr-2' />
+                Edit Screening
+              </Button>
+              <Button variant='ghost' size='sm' onClick={onClose}>
+                <X className='w-4 h-4' />
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
@@ -269,14 +289,14 @@ const HearingScreeningDetailsModal = ({
                           currentScreening.right_volume_db,
                           currentScreening.right_ear_volume_result,
                           'ml',
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </span>
                       <Badge
                         className={getResultBadgeColor(currentScreening.right_ear_volume_result)}>
                         {formatResultBadge(
                           currentScreening.right_ear_volume_result,
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </Badge>
                     </div>
@@ -289,16 +309,16 @@ const HearingScreeningDetailsModal = ({
                           currentScreening.right_compliance,
                           currentScreening.right_ear_compliance_result,
                           'ml',
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </span>
                       <Badge
                         className={getResultBadgeColor(
-                          currentScreening.right_ear_compliance_result,
+                          currentScreening.right_ear_compliance_result
                         )}>
                         {formatResultBadge(
                           currentScreening.right_ear_compliance_result,
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </Badge>
                     </div>
@@ -311,14 +331,14 @@ const HearingScreeningDetailsModal = ({
                           currentScreening.right_pressure,
                           currentScreening.right_ear_pressure_result,
                           'daPa',
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </span>
                       <Badge
                         className={getResultBadgeColor(currentScreening.right_ear_pressure_result)}>
                         {formatResultBadge(
                           currentScreening.right_ear_pressure_result,
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </Badge>
                     </div>
@@ -346,14 +366,14 @@ const HearingScreeningDetailsModal = ({
                           currentScreening.left_volume_db,
                           currentScreening.left_ear_volume_result,
                           'ml',
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </span>
                       <Badge
                         className={getResultBadgeColor(currentScreening.left_ear_volume_result)}>
                         {formatResultBadge(
                           currentScreening.left_ear_volume_result,
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </Badge>
                     </div>
@@ -366,16 +386,16 @@ const HearingScreeningDetailsModal = ({
                           currentScreening.left_compliance,
                           currentScreening.left_ear_compliance_result,
                           'ml',
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </span>
                       <Badge
                         className={getResultBadgeColor(
-                          currentScreening.left_ear_compliance_result,
+                          currentScreening.left_ear_compliance_result
                         )}>
                         {formatResultBadge(
                           currentScreening.left_ear_compliance_result,
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </Badge>
                     </div>
@@ -388,14 +408,14 @@ const HearingScreeningDetailsModal = ({
                           currentScreening.left_pressure,
                           currentScreening.left_ear_pressure_result,
                           'daPa',
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </span>
                       <Badge
                         className={getResultBadgeColor(currentScreening.left_ear_pressure_result)}>
                         {formatResultBadge(
                           currentScreening.left_ear_pressure_result,
-                          currentScreening.result,
+                          currentScreening.result
                         )}
                       </Badge>
                     </div>
