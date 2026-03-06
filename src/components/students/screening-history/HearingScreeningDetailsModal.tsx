@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { useSchoolGradesBySchool } from '@/hooks/use-school-grades'
 import { useNavigate } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -10,8 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { User, FileText, X, Edit2, Save, XCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { Screening } from '@/types/database'
-import { schoolGradesApi } from '@/api/schoolGrades'
-import { studentsApi } from '@/api/students'
+import { useStudentByStudentId } from '@/hooks/students'
 
 interface HearingScreeningDetailsModalProps {
   isOpen: boolean
@@ -42,12 +40,7 @@ const HearingScreeningDetailsModal = ({
     isOpen ? screening?.school_id : undefined
   )
 
-  const { data: student } = useQuery({
-    queryKey: ['student-by-student-id', screening?.student_id],
-    queryFn: () => studentsApi.getStudentByStudentId(screening!.student_id),
-    enabled: !!screening?.student_id && isOpen,
-    staleTime: 5 * 60 * 1000,
-  })
+  const { data: student } = useStudentByStudentId(isOpen ? screening?.student_id : undefined)
 
   const screeningGrade = grades.find(g => g.id === screening?.grade_id)?.grade_level ?? 'N/A'
   const studentCurrentGrade = student?.current_grade_id
