@@ -2,16 +2,9 @@ import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ScreeningFormData } from '@/types/screening'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from '@/components/ui/breadcrumb'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, FileText } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
 import MultiStepSpeechScreeningForm from '@/components/screening/speech/MultiStepSpeechScreeningForm'
@@ -20,6 +13,7 @@ import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useStudent } from '@/hooks/students/use-students'
 import { UserRole } from '@/types/database'
+import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change'
 
 const SpeechScreeningContent = () => {
   const { studentId } = useParams<{
@@ -28,6 +22,8 @@ const SpeechScreeningContent = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { userProfile } = useOrganization()
+
+  useRedirectOnSchoolChange('/screenings')
 
   // Use React Query hook to fetch student
   const { data: student = null, isLoading: loading } = useStudent(studentId)
