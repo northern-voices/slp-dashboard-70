@@ -38,6 +38,7 @@ import SpeechScreening from './pages/SpeechScreening'
 import HearingScreening from './pages/HearingScreening'
 import HearingScreenings from './pages/HearingScreenings'
 import EditScreening from './pages/EditScreening'
+import EditHearingScreening from './pages/EditHearingScreening'
 import Drafts from './pages/Drafts'
 import Logout from './components/auth/Logout'
 import MonthlyMeetings from './pages/monthly-meetings/MonthlyMeetings'
@@ -189,6 +190,18 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+
+                <Route
+                  path='/edit-hearing-screening/:screeningId'
+                  element={
+                    <ProtectedRoute>
+                      <SchoolRouter>
+                        <EditHearingScreening />
+                      </SchoolRouter>
+                    </ProtectedRoute>
+                  }
+                />
+
                 <Route
                   path='/students'
                   element={
@@ -476,6 +489,17 @@ const App = () => (
                     <ProtectedRoute>
                       <SchoolRouter>
                         <EditScreening />
+                      </SchoolRouter>
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path='/school/:schoolId/edit-hearing-screening/:screeningId'
+                  element={
+                    <ProtectedRoute>
+                      <SchoolRouter>
+                        <EditHearingScreening />
                       </SchoolRouter>
                     </ProtectedRoute>
                   }
