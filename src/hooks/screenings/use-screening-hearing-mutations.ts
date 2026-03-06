@@ -39,3 +39,31 @@ export const useDeleteHearingScreening = () => {
     },
   })
 }
+
+export const useUpdateHearingScreening = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string
+      data: Partial<{
+        right_volume_db: number | null
+        right_pressure: number | null
+        right_compliance: number | null
+        left_volume_db: number | null
+        left_pressure: number | null
+        left_compliance: number | null
+        clinical_notes: string | null
+        referral_notes: string | null
+        result: string | null
+      }>
+    }) => hearingScreeningsApi.updateHearingScreening(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['hearing-screenings'] })
+      queryClient.invalidateQueries({ queryKey: ['screenings'] })
+    },
+  })
+}
