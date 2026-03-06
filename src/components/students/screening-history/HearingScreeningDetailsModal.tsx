@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useSchoolGradesBySchool } from '@/hooks/use-school-grades'
 import { useNavigate } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -27,10 +29,6 @@ const HearingScreeningDetailsModal = ({
   const [clinicalNotesText, setClinicalNotesText] = useState('')
   const [referralNotesText, setReferralNotesText] = useState('')
   const [currentScreening, setCurrentScreening] = useState<Screening | null>(null)
-  const [screeningGrade, setScreeningGrade] = useState<string>('N/A')
-  const [studentCurrentGrade, setStudentCurrentGrade] = useState<string | null>(null)
-  const [gradesMatch, setGradesMatch] = useState<boolean>(true)
-  const [isLoadingGrades, setIsLoadingGrades] = useState(false)
 
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
@@ -40,59 +38,22 @@ const HearingScreeningDetailsModal = ({
     setCurrentScreening(screening)
   }, [screening])
 
-  // TODO: Transform this query into a react query
-  // Fetch grades and compare when modal opens
-  useEffect(() => {
-    const fetchGrades = async () => {
-      if (!screening || !isOpen) return
+  const { data: grades = [], isLoading: isLoadingGrades } = useSchoolGradesBySchool(
+    isOpen ? screening?.school_id : undefined
+  )
 
-      // Reset state
-      setScreeningGrade('N/A')
-      setStudentCurrentGrade(null)
-      setGradesMatch(true)
-      setIsLoadingGrades(true)
+  const { data: student } = useQuery({
+    queryKey: ['student-by-student-id', screening?.student_id],
+    queryFn: () => studentsApi.getStudentByStudentId(screening!.student_id),
+    enabled: !!screening?.student_id && isOpen,
+    staleTime: 5 * 60 * 1000,
+  })
 
-      if (!screening.school_id) {
-        setIsLoadingGrades(false)
-        return
-      }
-
-      try {
-        const grades = await schoolGradesApi.getSchoolGradesBySchool(screening.school_id)
-
-        // Get the screening's grade from grade_id
-        if (screening.grade_id) {
-          const screeningGradeObj = grades.find(g => g.id === screening.grade_id)
-          if (screeningGradeObj) {
-            setScreeningGrade(screeningGradeObj.grade_level)
-          }
-        }
-
-        // Fetch student's current grade to compare
-        if (screening.student_id) {
-          const student = await studentsApi.getStudentByStudentId(screening.student_id)
-
-          if (student?.current_grade_id) {
-            const studentGradeObj = grades.find(g => g.id === student.current_grade_id)
-            if (studentGradeObj) {
-              setStudentCurrentGrade(studentGradeObj.grade_level)
-
-              // Check if grades match
-              if (student.current_grade_id !== screening.grade_id) {
-                setGradesMatch(false)
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching grades:', error)
-      } finally {
-        setIsLoadingGrades(false)
-      }
-    }
-
-    fetchGrades()
-  }, [screening, isOpen])
+  const screeningGrade = grades.find(g => g.id === screening?.grade_id)?.grade_level ?? 'N/A'
+  const studentCurrentGrade = student?.current_grade_id
+    ? (grades.find(g => g.id === student.current_grade_id)?.grade_level ?? null)
+    : null
+  const gradesMatch = !student?.current_grade_id || student.current_grade_id === screening?.grade_id
 
   if (!currentScreening) return null
 
