@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import CreateScreeningModal from '@/components/screenings/CreateScreeningModal'
 import ScreeningStats from '@/components/screenings/ScreeningStats'
 import ScreeningsFilters from '@/components/screenings/ScreeningsFilters'
 import ScreeningsTable from '@/components/screenings/ScreeningsTable'
@@ -16,8 +17,8 @@ const ScreeningsContent = () => {
   const navigate = useNavigate()
 
   const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
-
   const [searchTerm, setSearchTerm] = useState('')
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   // Basic filters
   const [resultFilter, setResultFilter] = useState('all')
@@ -95,7 +96,7 @@ const ScreeningsContent = () => {
                     </p>
                   </div>
                   <Button
-                    onClick={() => navigate(`/screening/speech`)}
+                    onClick={() => setIsCreateModalOpen(true)}
                     className='bg-blue-600 hover:bg-blue-700'>
                     <Plus className='w-4 h-4 mr-2' />
                     Create Screening
@@ -156,6 +157,11 @@ const ScreeningsContent = () => {
           </div>
         </SidebarInset>
       </div>
+
+      <CreateScreeningModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </SidebarProvider>
   )
 }
