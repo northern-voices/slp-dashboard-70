@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { User, Mic, Volume2 } from 'lucide-react'
+import { User, Mic, RefreshCw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 interface CreateScreeningModalProps {
@@ -52,10 +51,10 @@ const CreateScreeningModal = ({ isOpen, onClose }: CreateScreeningModalProps) =>
               className='cursor-pointer hover:shadow-md transition-shadow'
               onClick={() => handleCreateScreening('rescreening')}>
               <CardHeader className='text-center'>
-                <div className='mx-auto mb-4 w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center'>
-                  <Volume2 className='w-6 h-6 text-teal-600' />
+                <div className='mx-auto mb-4 w-12 h-12 bg-teal-600 rounded-lg flex items-center justify-center'>
+                  <RefreshCw className='w-6 h-6 text-teal-600' />
                 </div>
-                <CardTitle>Hearing Screening</CardTitle>
+                <CardTitle>Rescreening</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className='text-center text-gray-600 mb-4'>
