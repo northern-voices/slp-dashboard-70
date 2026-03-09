@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { Student } from '@/types/database'
+import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import ErrorMessage from '@/components/common/ErrorMessage'
 import StudentInfoHeader from '@/components/students/StudentInfoHeader'
@@ -23,6 +22,8 @@ const StudentProfileContent = () => {
   const { userProfile, currentSchool } = useOrganization()
   const { toast } = useToast()
 
+  useRedirectOnSchoolChange('/students')
+
   // Check if we came from screenings
   const fromScreenings = location.state?.from === 'screenings'
   const fromHearingScreenings = location.state?.from === 'hearing-screenings'
@@ -30,7 +31,6 @@ const StudentProfileContent = () => {
   // Determine which school to fetch students from
   const targetSchoolId = schoolId || currentSchool?.id
 
-  // Use React Query hook to fetch students
   const {
     data: allStudents = [],
     isLoading: loading,
@@ -184,7 +184,7 @@ const StudentProfileContent = () => {
             variant: 'destructive',
           })
         },
-      },
+      }
     )
   }
 

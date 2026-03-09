@@ -4,14 +4,6 @@ import { useForm } from 'react-hook-form'
 import { Screening } from '@/types/database'
 import { screeningsApi } from '@/api/screenings'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -32,10 +24,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ChevronLeft, FileText, Calendar, Save, Edit } from 'lucide-react'
+import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change'
+import { FileText, Calendar, Save, Edit } from 'lucide-react'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import { useUpdateSpeechScreening } from '@/hooks/screenings/use-screening-mutations'
 import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
@@ -70,6 +63,8 @@ const EditScreeningContent = () => {
   const updateSpeechScreening = useUpdateSpeechScreening()
   const updateStudent = useUpdateStudent()
   const queryClient = useQueryClient()
+
+  useRedirectOnSchoolChange('/screenings')
 
   const form = useForm<{
     screening_type: string
@@ -411,7 +406,9 @@ const EditScreeningContent = () => {
       // Invalidate student-specific screenings if we have student data
       if (studentData?.id) {
         queryClient.invalidateQueries({ queryKey: ['screenings', 'by-student', studentData.id] })
-        queryClient.invalidateQueries({ queryKey: ['speech-screenings', 'by-student', studentData.id] })
+        queryClient.invalidateQueries({
+          queryKey: ['speech-screenings', 'by-student', studentData.id],
+        })
       }
 
       toast({
