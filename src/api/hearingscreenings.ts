@@ -115,7 +115,7 @@ export const hearingScreeningsApi = {
     currentUserId?: string,
     userRole?: UserRole,
     organizationId?: string,
-    schoolId?: string,
+    schoolId?: string
   ): Promise<Screening[]> => {
     try {
       // Get organization schools if organizationId is provided
@@ -149,7 +149,7 @@ export const hearingScreeningsApi = {
             first_name,
             last_name
           )
-        `,
+        `
       )
 
       // Apply filters based on user role
@@ -180,7 +180,7 @@ export const hearingScreeningsApi = {
   getHearingScreeningsByStudent: async (
     studentId: string,
     currentUserId?: string,
-    userRole?: UserRole,
+    userRole?: UserRole
   ): Promise<Screening[]> => {
     try {
       // Build base query for specific student
@@ -228,7 +228,7 @@ export const hearingScreeningsApi = {
             first_name,
             last_name
           )
-        `,
+        `
         )
         .eq('student_id', studentId)
 
@@ -247,6 +247,52 @@ export const hearingScreeningsApi = {
       return transformedData
     } catch (error) {
       console.error('Error fetching hearing screenings by student:', error)
+      throw error
+    }
+  },
+
+  getHearingScreeningById: async (
+    id: string,
+    organizationId?: string
+  ): Promise<Screening | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('hearing_screenings')
+        .select(
+          `
+          *,
+          students!inner(
+            id,
+            first_name,
+            last_name,
+            school_id,
+            student_id,
+            schools (
+              id,
+              name
+            )
+          ),
+          school_grades (
+            id,
+            grade_level,
+            academic_year
+          ),
+          users (
+            id,
+            first_name,
+            last_name
+          )
+        `
+        )
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
+      if (!data) return null
+
+      return transformHearingScreening(data)
+    } catch (error) {
+      console.error('Error fetching hearing screening by ID:', error)
       throw error
     }
   },
@@ -328,7 +374,7 @@ export const hearingScreeningsApi = {
           first_name,
           last_name
         )
-      `,
+      `
         )
         .single()
 
@@ -363,7 +409,7 @@ export const hearingScreeningsApi = {
       clinical_notes: string | null
       referral_notes: string | null
       result: string | null
-    }>,
+    }>
   ): Promise<Screening> => {
     try {
       const { data: updatedScreening, error } = await supabase
@@ -409,7 +455,7 @@ export const hearingScreeningsApi = {
           first_name,
           last_name
         )
-      `,
+      `
         )
         .single()
 
