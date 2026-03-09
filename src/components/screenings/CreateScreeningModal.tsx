@@ -13,7 +13,7 @@ interface CreateScreeningModalProps {
 const CreateScreeningModal = ({ isOpen, onClose }: CreateScreeningModalProps) => {
   const navigate = useNavigate()
 
-  const handleCreateScreening = (type: 'speech' | 'hearing') => {
+  const handleCreateScreening = (type: 'speech' | 'rescreening') => {
     onClose()
     navigate(`/screening/${type}`)
   }
@@ -50,7 +50,7 @@ const CreateScreeningModal = ({ isOpen, onClose }: CreateScreeningModalProps) =>
 
             <Card
               className='cursor-pointer hover:shadow-md transition-shadow'
-              onClick={() => handleCreateScreening('hearing')}>
+              onClick={() => handleCreateScreening('rescreening')}>
               <CardHeader className='text-center'>
                 <div className='mx-auto mb-4 w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center'>
                   <Volume2 className='w-6 h-6 text-teal-600' />
@@ -59,12 +59,12 @@ const CreateScreeningModal = ({ isOpen, onClose }: CreateScreeningModalProps) =>
               </CardHeader>
               <CardContent>
                 <p className='text-center text-gray-600 mb-4'>
-                  Perform individual hearing screening including pure tone testing and tympanometry
-                  assessment.
+                  Conduct a follow-up rescreening for students who require additional speech and
+                  language evaluation.
                 </p>
-                <Button className='w-full' onClick={() => handleCreateScreening('hearing')}>
+                <Button className='w-full' onClick={() => handleCreateScreening('rescreening')}>
                   <User className='w-4 h-4 mr-2' />
-                  Create Hearing Screening
+                  Create Rescreening
                 </Button>
               </CardContent>
             </Card>
