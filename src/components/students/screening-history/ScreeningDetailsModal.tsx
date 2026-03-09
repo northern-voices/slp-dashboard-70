@@ -125,7 +125,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
             ...prev,
             clinical_notes: clinicalNotesText,
           }
-        : null,
+        : null
     )
 
     updateSpeechScreening.mutate({
@@ -148,7 +148,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
               additional_observations: additionalObservationsText,
             },
           }
-        : null,
+        : null
     )
 
     updateSpeechScreening.mutate({
@@ -186,7 +186,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
             ...prev,
             referral_notes: referralNotesText,
           }
-        : null,
+        : null
     )
 
     updateSpeechScreening.mutate({
@@ -204,11 +204,14 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   }
 
   const handleEditScreening = () => {
-    if (currentSchool?.id) {
-      navigate(`/school/${currentSchool.id}/edit-screening/${screening.id}`)
+    const basePath = currentSchool?.id ? `/school/${currentSchool.id}` : ''
+
+    if (screening?.source_table === 'hearing') {
+      navigate(`${basePath}/edit-hearing-screening/${screening.id}`)
     } else {
-      navigate(`/edit-screening/${screening.id}`)
+      navigate(`${basePath}/edit-screening/${screening.id}`)
     }
+
     onClose()
   }
 
@@ -289,7 +292,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
               <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
                 {soundErrors
                   .filter(
-                    soundError => soundError.errorPatterns && soundError.errorPatterns.length > 0,
+                    soundError => soundError.errorPatterns && soundError.errorPatterns.length > 0
                   )
                   .map((soundError, index) => (
                     <div key={index} className='p-3 rounded-md bg-gray-50'>
@@ -367,7 +370,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
 
     const areas = currentScreening.error_patterns.add_areas_of_concern
     const areasWithData = Object.entries(areas).filter(
-      ([_, value]) => value !== null && value !== '',
+      ([_, value]) => value !== null && value !== ''
     )
 
     if (areasWithData.length === 0) return null
@@ -616,7 +619,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                 <div className='flex flex-wrap gap-2'>
                   {currentScreening.error_patterns.articulation.soundErrors
                     .filter(
-                      soundError => soundError.errorPatterns && soundError.errorPatterns.length > 0,
+                      soundError => soundError.errorPatterns && soundError.errorPatterns.length > 0
                     )
                     .map((soundError, index) => (
                       <Badge

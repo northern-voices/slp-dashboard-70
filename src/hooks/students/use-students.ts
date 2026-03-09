@@ -93,3 +93,12 @@ export const useStudentCountBySchool = (schoolId?: string) => {
     enabled: !!schoolId,
   })
 }
+
+export const useStudentByStudentId = (studentId?: string) => {
+  return useQuery({
+    queryKey: ['students', 'by-student-id', studentId],
+    queryFn: () => studentsApi.getStudentByStudentId(studentId!),
+    enabled: !!studentId,
+    staleTime: 5 * 60 * 1000,
+  })
+}

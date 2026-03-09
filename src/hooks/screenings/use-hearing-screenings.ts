@@ -21,7 +21,7 @@ export const useHearingScreenings = (schoolId?: string) => {
         user?.id,
         userProfile?.role as UserRole,
         currentOrganization?.id,
-        schoolId,
+        schoolId
       ),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
@@ -39,10 +39,23 @@ export const useHearingScreeningsByStudent = (studentId?: string) => {
       hearingScreeningsApi.getHearingScreeningsByStudent(
         studentId!,
         user?.id,
-        userProfile?.role as UserRole,
+        userProfile?.role as UserRole
       ),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     enabled: !!studentId && !!user && !!userProfile,
+  })
+}
+
+export const useHearingScreeningById = (screeningId?: string) => {
+  const { userProfile } = useOrganization()
+
+  return useQuery({
+    queryKey: ['hearing-screenings', 'by-id', screeningId],
+    queryFn: () =>
+      hearingScreeningsApi.getHearingScreeningById(screeningId!, userProfile?.organization_id),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: !!screeningId && !!userProfile,
   })
 }
