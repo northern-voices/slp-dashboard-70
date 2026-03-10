@@ -51,7 +51,7 @@ const CreateScreeningModal = ({ isOpen, onClose }: CreateScreeningModalProps) =>
               className='cursor-pointer hover:shadow-md transition-shadow'
               onClick={() => handleCreateScreening('rescreening')}>
               <CardHeader className='text-center'>
-                <div className='mx-auto mb-4 w-12 h-12 bg-teal-600 rounded-lg flex items-center justify-center'>
+                <div className='mx-auto mb-4 w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center'>
                   <RefreshCw className='w-6 h-6 text-teal-600' />
                 </div>
                 <CardTitle>Rescreening</CardTitle>
