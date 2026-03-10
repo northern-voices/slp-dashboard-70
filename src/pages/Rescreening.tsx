@@ -117,7 +117,7 @@ const RescreeningContent = () => {
               </div>
             </div>
 
-            {selectedStudent && latestScreening && (
+            {selectedStudent && (
               <div className='mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg'>
                 <div className='flex items-center justify-between mb-3'>
                   <div className='flex items-center gap-2'>
@@ -125,43 +125,51 @@ const RescreeningContent = () => {
                     <h2 className='text-sm font-semibold text-amber-800'>Latest Screening</h2>
                   </div>
 
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    onClick={() => setShowDetailsModal(true)}
-                    className='text-amber-700 border-amber-300 hover:bg-amber-100 text-sm'>
-                    <FileText className='w-3 h-3 mr-1' />
-                    View Full Details
-                  </Button>
+                  {latestScreening && (
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => setShowDetailsModal(true)}
+                      className='text-amber-700 border-amber-300 hover:bg-amber-100 text-sm'>
+                      <FileText className='w-3 h-3 mr-1' />
+                      View Full Details
+                    </Button>
+                  )}
                 </div>
 
-                <div className='grid grid-cols-2 md:grid-cols-4 gap-3 text-sm'>
-                  <div>
-                    <p className='text-xs text-amber-600 font-medium'>Date</p>
-                    <p className='text-amber-900'>
-                      {format(parseDateSafely(latestScreening.created_at), 'MMM d, yyyy')}
-                    </p>
-                  </div>
+                {latestScreening ? (
+                  <div className='grid grid-cols-2 md:grid-cols-4 gap-3 text-sm'>
+                    <div>
+                      <p className='text-xs text-amber-600 font-medium'>Date</p>
+                      <p className='text-amber-900'>
+                        {format(parseDateSafely(latestScreening.created_at), 'MMM d, yyyy')}
+                      </p>
+                    </div>
 
-                  <div>
-                    <p className='text-xs text-amber-600 font-medium'>Type</p>
-                    <p className='text-amber-900 capitalize'>
-                      {latestScreening.screening_type || '-'}
-                    </p>
-                  </div>
+                    <div>
+                      <p className='text-xs text-amber-600 font-medium'>Type</p>
+                      <p className='text-amber-900 capitalize'>
+                        {latestScreening.screening_type || '-'}
+                      </p>
+                    </div>
 
-                  <div>
-                    <p className='text-xs text-amber-600 font-medium'>Result</p>
-                    <Badge className='bg-amber-100 text-amber-800 text-xs mt-0.5'>
-                      {latestScreening.result?.replace(/_/g, ' ') || '-'}
-                    </Badge>
-                  </div>
+                    <div>
+                      <p className='text-xs text-amber-600 font-medium'>Result</p>
+                      <Badge className='bg-amber-100 text-amber-800 text-xs mt-0.5'>
+                        {latestScreening.result?.replace(/_/g, ' ') || '-'}
+                      </Badge>
+                    </div>
 
-                  <div>
-                    <p className='text-xs text-amber-600 font-medium'>Screener</p>
-                    <p className='text-amber-900'>{latestScreening.screener || '-'}</p>
+                    <div>
+                      <p className='text-xs text-amber-600 font-medium'>Screener</p>
+                      <p className='text-amber-900'>{latestScreening.screener || '-'}</p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <p className='text-sm text-amber-700'>
+                    No previous screenings found for this student
+                  </p>
+                )}
               </div>
             )}
 
