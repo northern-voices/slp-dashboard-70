@@ -20,6 +20,7 @@ interface MultiStepSpeechScreeningFormProps {
   onCancel: () => void
   existingStudent?: Student | null
   onStudentSelect?: (student: Student | null) => void
+  afterStudentContent?: React.ReactNode
 }
 
 const MultiStepSpeechScreeningForm = ({
@@ -27,6 +28,7 @@ const MultiStepSpeechScreeningForm = ({
   onCancel,
   existingStudent,
   onStudentSelect,
+  afterStudentContent,
 }: MultiStepSpeechScreeningFormProps) => {
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null)
@@ -589,6 +591,7 @@ const MultiStepSpeechScreeningForm = ({
             onGradeIdChange={setSelectedGradeId}
             onAbsentChange={setIsAbsent}
             onNoConsentChange={setIsNoConsent}
+            afterStudentContent={afterStudentContent}
           />
         )
       case 2:

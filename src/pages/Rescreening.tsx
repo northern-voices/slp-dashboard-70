@@ -81,6 +81,58 @@ const RescreeningContent = () => {
     )
   }
 
+  const renderLatestScreening = () => {
+    if (!selectedStudent) return null
+
+    return (
+      <div className='mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg'>
+        <div className='flex items-center justify-between mb-3'>
+          <div className='flex items-center gap-2'>
+            <ClipboardList className='w-4 h-4 text-amber-600' />
+            <h2 className='text-sm font-semibold text-amber-800'>Latest Screening</h2>
+          </div>
+          {latestScreening && (
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setShowDetailsModal(true)}
+              className='text-amber-700 border-amber-300 hover:bg-amber-100 text-sm'>
+              <FileText className='w-3 h-3 mr-1' />
+              View Full Details
+            </Button>
+          )}
+        </div>
+
+        {latestScreening ? (
+          <div className='grid grid-cols-2 md:grid-cols-4 gap-3 text-sm'>
+            <div>
+              <p className='text-xs text-amber-600 font-medium'>Date</p>
+              <p className='text-amber-900'>
+                {format(parseDateSafely(latestScreening.created_at), 'MMM d, yyyy')}
+              </p>
+            </div>
+            <div>
+              <p className='text-xs text-amber-600 font-medium'>Type</p>
+              <p className='text-amber-900 capitalize'>{latestScreening.screening_type || '-'}</p>
+            </div>
+            <div>
+              <p className='text-xs text-amber-600 font-medium'>Result</p>
+              <Badge className='bg-amber-100 text-amber-800 text-xs mt-0.5'>
+                {latestScreening.result?.replace(/_/g, ' ') || '-'}
+              </Badge>
+            </div>
+            <div>
+              <p className='text-xs text-amber-600 font-medium'>Screener</p>
+              <p className='text-amber-900'>{latestScreening.screener || '-'}</p>
+            </div>
+          </div>
+        ) : (
+          <p className='text-sm text-amber-700'>No previous screenings found for this student.</p>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className='min-h-screen flex w-full bg-gray-25'>
       <SidebarProvider>
@@ -117,62 +169,6 @@ const RescreeningContent = () => {
               </div>
             </div>
 
-            {selectedStudent && (
-              <div className='mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg'>
-                <div className='flex items-center justify-between mb-3'>
-                  <div className='flex items-center gap-2'>
-                    <ClipboardList className='w-4 h-4 text-amber-600' />
-                    <h2 className='text-sm font-semibold text-amber-800'>Latest Screening</h2>
-                  </div>
-
-                  {latestScreening && (
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      onClick={() => setShowDetailsModal(true)}
-                      className='text-amber-700 border-amber-300 hover:bg-amber-100 text-sm'>
-                      <FileText className='w-3 h-3 mr-1' />
-                      View Full Details
-                    </Button>
-                  )}
-                </div>
-
-                {latestScreening ? (
-                  <div className='grid grid-cols-2 md:grid-cols-4 gap-3 text-sm'>
-                    <div>
-                      <p className='text-xs text-amber-600 font-medium'>Date</p>
-                      <p className='text-amber-900'>
-                        {format(parseDateSafely(latestScreening.created_at), 'MMM d, yyyy')}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className='text-xs text-amber-600 font-medium'>Type</p>
-                      <p className='text-amber-900 capitalize'>
-                        {latestScreening.screening_type || '-'}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className='text-xs text-amber-600 font-medium'>Result</p>
-                      <Badge className='bg-amber-100 text-amber-800 text-xs mt-0.5'>
-                        {latestScreening.result?.replace(/_/g, ' ') || '-'}
-                      </Badge>
-                    </div>
-
-                    <div>
-                      <p className='text-xs text-amber-600 font-medium'>Screener</p>
-                      <p className='text-amber-900'>{latestScreening.screener || '-'}</p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className='text-sm text-amber-700'>
-                    No previous screenings found for this student
-                  </p>
-                )}
-              </div>
-            )}
-
             <div className='bg-white rounded-lg border border-gray-200 shadow-sm'>
               <div className='p-6'>
                 <MultiStepSpeechScreeningForm
@@ -180,6 +176,7 @@ const RescreeningContent = () => {
                   onCancel={handleCancel}
                   existingStudent={student}
                   onStudentSelect={setSelectedStudent}
+                  afterStudentContent={renderLatestScreening()}
                 />
               </div>
             </div>
