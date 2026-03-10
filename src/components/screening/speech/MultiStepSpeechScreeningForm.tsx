@@ -19,12 +19,14 @@ interface MultiStepSpeechScreeningFormProps {
   onSubmit?: (data: unknown) => void
   onCancel: () => void
   existingStudent?: Student | null
+  onStudentSelect?: (student: Student | null) => void
 }
 
 const MultiStepSpeechScreeningForm = ({
   onSubmit,
   onCancel,
   existingStudent,
+  onStudentSelect,
 }: MultiStepSpeechScreeningFormProps) => {
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null)
@@ -147,6 +149,11 @@ const MultiStepSpeechScreeningForm = ({
     // TODO: Implement draft saving functionality
   }
 
+  const handleStudentSelect = (student: Student | null) => {
+    setSelectedStudent(student)
+    onStudentSelect?.(student)
+  }
+
   const validateRequiredFields = (formData: Record<string, unknown>): string[] => {
     const errors: string[] = []
 
@@ -244,7 +251,7 @@ const MultiStepSpeechScreeningForm = ({
           const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
             currentSchool.id,
             selectedGrade,
-            academicYear,
+            academicYear
           )
 
           if (!gradeAvailability.exists) {
@@ -406,7 +413,7 @@ const MultiStepSpeechScreeningForm = ({
                 grade_level: selectedGrade,
                 academic_year: academicYear,
               }
-            : undefined,
+            : undefined
         )
 
         toast({
@@ -443,7 +450,7 @@ const MultiStepSpeechScreeningForm = ({
                     variant: 'destructive',
                   })
                 },
-              },
+              }
             )
           } else {
             setShowSubmissionModal(true)
@@ -502,7 +509,7 @@ const MultiStepSpeechScreeningForm = ({
                   grade_level: selectedGrade,
                   academic_year: academicYear,
                 }
-              : undefined,
+              : undefined
           )
 
           toast({
@@ -577,7 +584,7 @@ const MultiStepSpeechScreeningForm = ({
             form={form as unknown as UseFormReturn<Record<string, unknown>>}
             selectedStudent={selectedStudent}
             selectedGrade={selectedGrade}
-            onStudentSelect={setSelectedStudent}
+            onStudentSelect={handleStudentSelect}
             onGradeChange={setSelectedGrade}
             onGradeIdChange={setSelectedGradeId}
             onAbsentChange={setIsAbsent}

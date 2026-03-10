@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ScreeningFormData } from '@/types/screening'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
@@ -12,10 +12,18 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useStudent } from '@/hooks/students/use-students'
-import { UserRole } from '@/types/database'
+import { UserRole, Student } from '@/types/database'
 import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change'
+import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
+import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
+import { Badge } from '@/components/ui/badge'
+import { FileText, ClipboardList } from 'lucide-react'
+import { format } from 'date-fns'
+import { parseDateSafely } from '@/utils/dateUtils'
 
 const RescreeningContent = () => {
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
   const { studentId } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -24,6 +32,9 @@ const RescreeningContent = () => {
   useRedirectOnSchoolChange('/screenings')
 
   const { data: student = null, isLoading: loading } = useStudent(studentId)
+
+  const { data: studentScreenings = [] } = useSpeechScreeningsByStudent(selectedStudent?.id)
+  const latestScreening = studentScreenings[0] ?? null
 
   const handleSubmit = (screeningData: ScreeningFormData) => {
     toast({
@@ -106,16 +117,71 @@ const RescreeningContent = () => {
               </div>
             </div>
 
+            {selectedStudent && latestScreening && (
+              <div className='mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg'>
+                <div className='flex items-center justify-between mb-3'>
+                  <div className='flex items-center gap-2'>
+                    <ClipboardList className='w-4 h-4 text-amber-600' />
+                    <h2 className='text-sm font-semibold text-amber-800'>Latest Screening</h2>
+                  </div>
+
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={() => setShowDetailsModal(true)}
+                    className='text-amber-700 border-amber-300 hover:bg-amber-100 text-sm'>
+                    <FileText className='w-3 h-3 mr-1' />
+                    View Full Details
+                  </Button>
+                </div>
+
+                <div className='grid grid-cols-2 md:grid-cols-4 gap-3 text-sm'>
+                  <div>
+                    <p className='text-xs text-amber-600 font-medium'>Date</p>
+                    <p className='text-amber-900'>
+                      {format(parseDateSafely(latestScreening.created_at), 'MMM d, yyyy')}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className='text-xs text-amber-600 font-medium'>Type</p>
+                    <p className='text-amber-900 capitalize'>
+                      {latestScreening.screening_type || '-'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className='text-xs text-amber-600 font-medium'>Result</p>
+                    <Badge className='bg-amber-100 text-amber-800 text-xs mt-0.5'>
+                      {latestScreening.result?.replace(/_/g, ' ') || '-'}
+                    </Badge>
+                  </div>
+
+                  <div>
+                    <p className='text-xs text-amber-600 font-medium'>Screener</p>
+                    <p className='text-amber-900'>{latestScreening.screener || '-'}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className='bg-white rounded-lg border border-gray-200 shadow-sm'>
               <div className='p-6'>
                 <MultiStepSpeechScreeningForm
                   onSubmit={handleSubmit}
                   onCancel={handleCancel}
                   existingStudent={student}
+                  onStudentSelect={setSelectedStudent}
                 />
               </div>
             </div>
           </main>
+
+          <ScreeningDetailsModal
+            isOpen={showDetailsModal}
+            onClose={() => setShowDetailsModal(false)}
+            screening={latestScreening}
+          />
         </SidebarInset>
       </SidebarProvider>
     </div>
