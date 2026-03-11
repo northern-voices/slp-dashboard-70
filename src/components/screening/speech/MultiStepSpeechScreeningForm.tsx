@@ -14,6 +14,7 @@ import SpeechScreeningStep1 from './steps/SpeechScreeningStep1'
 import SpeechScreeningStep2 from './steps/SpeechScreeningStep2'
 import SubmissionConfirmationModal from '../SubmissionConfirmationModal'
 import { useOnlineStatus } from '@/hooks/use-online-status'
+import { ErrorPatterns, SpeechScreeningFormValues } from '@/types/screening-form'
 import { offlineQueue } from '@/services/offline-queue'
 
 interface MultiStepSpeechScreeningFormProps {
@@ -55,7 +56,7 @@ const MultiStepSpeechScreeningForm = ({
   // Grade ID will be set through backend validation in handleSubmit
   // No default grade ID needed - it will come from existing or newly created grade records
 
-  const form = useForm({
+  const form = useForm<SpeechScreeningFormValues>({
     mode: 'onSubmit',
     reValidateMode: 'onSubmit',
     defaultValues: {
@@ -127,11 +128,20 @@ const MultiStepSpeechScreeningForm = ({
   useEffect(() => {
     if (!initialScreeningData) return
 
-    console.log('useEffect fired, setting values from:', initialScreeningData)
-
-    const errorPatterns = initialScreeningData.error_patterns || {}
-    const articulation = errorPatterns.articulation || {}
-    const areasOfConcern = errorPatterns.add_areas_of_concern || {}
+    const errorPatterns = initialScreeningData.error_patterns
+    const articulation = errorPatterns?.articulation
+    const areasOfConcern = errorPatterns?.add_areas_of_concern || {
+      voice: null,
+      fluency: null,
+      literacy: null,
+      suspected_cas: null,
+      cleft_lip_palate: null,
+      reluctant_speaking: null,
+      language_expression: null,
+      language_comprehension: null,
+      known_pending_diagnoses: null,
+      pragmatics_social_communication: null,
+    }
 
     form.setValue('screening_type', 'rescreening')
     form.setValue('screening_date', new Date().toLocaleDateString('en-CA'))
@@ -162,7 +172,7 @@ const MultiStepSpeechScreeningForm = ({
         graduated: false,
       },
     })
-  }, [initialScreeningData])
+  }, [initialScreeningData, form])
 
   // Initialize states from form data if available
   useEffect(() => {
@@ -639,12 +649,7 @@ const MultiStepSpeechScreeningForm = ({
           />
         )
       case 2:
-        return (
-          <SpeechScreeningStep2
-            form={form as unknown as UseFormReturn}
-            selectedStudent={selectedStudent}
-          />
-        )
+        return <SpeechScreeningStep2 form={form} selectedStudent={selectedStudent} />
       default:
         return null
     }

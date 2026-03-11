@@ -1,4 +1,3 @@
-import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -14,9 +13,10 @@ import {
 import { Calendar } from 'lucide-react'
 import EnhancedSpeechScreeningFields from '../EnhancedSpeechScreeningFields'
 import { Student } from '@/types/database'
+import { SpeechScreeningFormValues } from '@/types/screening-form'
 
 interface SpeechScreeningStep2Props {
-  form: UseFormReturn
+  form: UseFormReturn<SpeechScreeningFormValues>
   selectedStudent: Student | null
 }
 

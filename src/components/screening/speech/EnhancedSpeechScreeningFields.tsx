@@ -17,49 +17,10 @@ import {
   areasOfConcern,
   stoppingSoundOptions,
 } from './EnhancedSpeechScreeningFieldData'
+import { SpeechScreeningFormValues, ErrorPatterns } from '@/types/screening-form'
 
 interface EnhancedSpeechScreeningFieldsProps {
-  form: UseFormReturn<{
-    screening_type: string
-    screening_date: string
-    clinical_notes: string
-    referral_notes: string
-    result: string
-    vocabulary_support: boolean
-    speech_screen_result: string
-    vocabulary_support_recommended: boolean
-    qualifies_for_speech_program: boolean
-    sub: boolean
-    graduated: boolean
-    error_patterns: {
-      attendance: {
-        absent: boolean
-        absence_notes: string
-        priority_re_screen: boolean
-      }
-      articulation: {
-        soundErrors: Array<{
-          sound: string
-          word: string
-          errorPatterns: string[]
-          stoppingSounds?: string[]
-          notes: string
-          otherNotes?: string
-        }>
-        articulationNotes: string
-      }
-      screening_metadata: {
-        screening_date: string
-        qualifies_for_speech_program: boolean
-        vocabulary_support_recommended: boolean
-        sub?: boolean
-        graduated?: boolean
-      }
-      add_areas_of_concern: Record<string, string | null>
-      additional_observations: string
-    }
-    general_articulation_notes?: string
-  }>
+  form: UseFormReturn<SpeechScreeningFormValues>
 }
 
 const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsProps) => {
@@ -607,7 +568,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   React.useEffect(() => {
     // Get current form data to preserve existing values
     const currentData = form.getValues('error_patterns.add_areas_of_concern') || {}
-    const areasOfConcernData = {}
+    const areasOfConcernData: Record<string, string | boolean | null> = {}
 
     // Initialize all fields
     areasOfConcern.forEach(concern => {
@@ -647,7 +608,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       // During initialization, keep whatever value was loaded (including non-null values)
     })
 
-    form.setValue('error_patterns.add_areas_of_concern', areasOfConcernData)
+    form.setValue(
+      'error_patterns.add_areas_of_concern',
+      areasOfConcernData as ErrorPatterns['add_areas_of_concern']
+    )
   }, [selectedConcerns, form, initialized])
 
   const handleSoundToggle = (sound: string) => {
@@ -1390,7 +1354,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                                               handleStoppingSoundChange(
                                                 sound,
                                                 stoppingSound,
-                                                checked as boolean,
+                                                checked as boolean
                                               )
                                             }
                                             disabled={isDisabled}
@@ -1611,7 +1575,19 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
                         ] || ''
                       }
                       onChange={e => {
-                        const current = form.watch('error_patterns.add_areas_of_concern') || {}
+                        const current = form.watch('error_patterns.add_areas_of_concern') || {
+                          voice: null,
+                          fluency: null,
+                          literacy: null,
+                          suspected_cas: null,
+                          cleft_lip_palate: null,
+                          reluctant_speaking: null,
+                          language_expression: null,
+                          language_comprehension: null,
+                          known_pending_diagnoses: null,
+                          pragmatics_social_communication: null,
+                        }
+
                         form.setValue('error_patterns.add_areas_of_concern', {
                           ...current,
                           [getFieldName(concern)]: e.target.value,
