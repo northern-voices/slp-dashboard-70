@@ -177,6 +177,7 @@ const RescreeningContent = () => {
                   existingStudent={student}
                   onStudentSelect={setSelectedStudent}
                   afterStudentContent={renderLatestScreening()}
+                  initialScreeningData={latestScreening}
                 />
               </div>
             </div>

@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import { schoolGradesApi } from '@/api/schoolGrades'
+import { Screening } from '@/types/database'
 import ProgressIndicator from '../shared/ProgressIndicator'
 import SpeechScreeningStep1 from './steps/SpeechScreeningStep1'
 import SpeechScreeningStep2 from './steps/SpeechScreeningStep2'
@@ -21,6 +22,7 @@ interface MultiStepSpeechScreeningFormProps {
   existingStudent?: Student | null
   onStudentSelect?: (student: Student | null) => void
   afterStudentContent?: React.ReactNode
+  initialScreeningData?: Screening | null
 }
 
 const MultiStepSpeechScreeningForm = ({
@@ -29,9 +31,11 @@ const MultiStepSpeechScreeningForm = ({
   existingStudent,
   onStudentSelect,
   afterStudentContent,
+  initialScreeningData,
 }: MultiStepSpeechScreeningFormProps) => {
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null)
+
   const [selectedGrade, setSelectedGrade] = useState<string>('')
   const [selectedGradeId, setSelectedGradeId] = useState<string>('')
   const [gradeSchoolId, setGradeSchoolId] = useState<string>('')
@@ -119,6 +123,46 @@ const MultiStepSpeechScreeningForm = ({
       },
     },
   })
+
+  useEffect(() => {
+    if (!initialScreeningData) return
+
+    console.log('useEffect fired, setting values from:', initialScreeningData)
+
+    const errorPatterns = initialScreeningData.error_patterns || {}
+    const articulation = errorPatterns.articulation || {}
+    const areasOfConcern = errorPatterns.add_areas_of_concern || {}
+
+    form.setValue('screening_type', 'rescreening')
+    form.setValue('screening_date', new Date().toLocaleDateString('en-CA'))
+    form.setValue('speech_screen_result', initialScreeningData.result || '')
+    form.setValue('clinical_notes', initialScreeningData.clinical_notes || '')
+    form.setValue('referral_notes', initialScreeningData.referral_notes || '')
+    form.setValue(
+      'vocabulary_support_recommended',
+      initialScreeningData.vocabulary_support || false
+    )
+    form.setValue('error_patterns', {
+      articulation: {
+        soundErrors: articulation.soundErrors || [],
+        articulationNotes: articulation.articulationNotes || '',
+      },
+      add_areas_of_concern: areasOfConcern,
+      attendance: {
+        absent: false,
+        absence_notes: '',
+        priority_re_screen: false,
+      },
+      additional_observations: errorPatterns.additional_observations || '',
+      screening_metadata: {
+        screening_date: new Date().toLocaleDateString('en-CA'),
+        qualifies_for_speech_program: false,
+        vocabulary_support_recommended: initialScreeningData.vocabulary_support || false,
+        sub: false,
+        graduated: false,
+      },
+    })
+  }, [initialScreeningData])
 
   // Initialize states from form data if available
   useEffect(() => {

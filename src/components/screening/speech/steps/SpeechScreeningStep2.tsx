@@ -54,6 +54,7 @@ const SpeechScreeningStep2 = ({ form, selectedStudent }: SpeechScreeningStep2Pro
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='initial'>Initial</SelectItem>
+                  <SelectItem value='rescreening'>Rescreening</SelectItem>
                   <SelectItem value='progress'>Progress</SelectItem>
                 </SelectContent>
               </Select>
