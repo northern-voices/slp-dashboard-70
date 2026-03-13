@@ -649,7 +649,13 @@ const MultiStepSpeechScreeningForm = ({
           />
         )
       case 2:
-        return <SpeechScreeningStep2 form={form} selectedStudent={selectedStudent} />
+        return (
+          <SpeechScreeningStep2
+            form={form}
+            selectedStudent={selectedStudent}
+            isRescreening={!!initialScreeningData}
+          />
+        )
       default:
         return null
     }
