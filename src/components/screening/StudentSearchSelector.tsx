@@ -109,11 +109,13 @@ const StudentSearchSelector = ({
       ? studentsBySchool.filter(student => {
           const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
           const search = searchValue.toLowerCase()
-          return fullName.includes(search) || student.student_id.toLowerCase().includes(search)
+          return (
+            fullName.includes(search) || (student.student_id ?? '').toLowerCase().includes(search)
+          )
         })
       : gradeFilter
-      ? studentsByGrade
-      : studentsBySchool
+        ? studentsByGrade
+        : studentsBySchool
     : []
 
   const isLoading = currentSchool ? (gradeFilter ? loadingByGrade : loadingBySchool) : false
@@ -366,8 +368,8 @@ const StudentSearchSelector = ({
               {selectedStudent
                 ? `${selectedStudent.first_name} ${selectedStudent.last_name}`
                 : currentSchool
-                ? 'Student Name'
-                : 'Select a school first...'}
+                  ? 'Student Name'
+                  : 'Select a school first...'}
             </span>
             <div className='flex items-center gap-1'>
               {selectedStudent && (
@@ -479,27 +481,25 @@ const StudentSearchSelector = ({
       {/* New Student Creation Dialog */}
       <Dialog
         open={showNewStudentForm}
-        onOpenChange={(open) => {
+        onOpenChange={open => {
           if (!open && !createStudentMutation.isPending && !updateStudentMutation.isPending) {
             handleCloseNewStudentForm()
           }
-        }}
-      >
+        }}>
         <DialogContent
           className='max-w-2xl max-h-[90vh] overflow-y-auto'
-          onPointerDownOutside={(e) => {
+          onPointerDownOutside={e => {
             // Prevent closing during mutation
             if (createStudentMutation.isPending || updateStudentMutation.isPending) {
               e.preventDefault()
             }
           }}
-          onInteractOutside={(e) => {
+          onInteractOutside={e => {
             // Prevent closing during mutation
             if (createStudentMutation.isPending || updateStudentMutation.isPending) {
               e.preventDefault()
             }
-          }}
-        >
+          }}>
           <DialogHeader>
             <DialogTitle className='flex items-center gap-2'>
               <UserPlus className='w-5 h-5' />
@@ -509,11 +509,11 @@ const StudentSearchSelector = ({
 
           <Form {...newStudentForm}>
             <form
-              onSubmit={(e) => {
+              onSubmit={e => {
                 e.preventDefault()
                 e.stopPropagation()
                 // Ensure the event doesn't bubble to parent forms
-                return newStudentForm.handleSubmit((data) => {
+                return newStudentForm.handleSubmit(data => {
                   handleCreateNewStudent(data, e)
                   return false
                 })(e)
