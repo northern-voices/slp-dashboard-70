@@ -100,7 +100,7 @@ export const studentsApi = {
               grade_level
             )
           )
-        `,
+        `
         )
         .eq('school_id', schoolId)
         .order('last_name', { ascending: true })
@@ -135,7 +135,7 @@ export const studentsApi = {
           return transformedStudents
         }
       } catch (filterError) {
-        // school_id filter failed, fall back to all students
+        console.error('Error in getStudentsBySchool transform:', filterError)
       }
 
       // Fallback: if school_id filter fails, return all students
@@ -143,6 +143,7 @@ export const studentsApi = {
       const { data, error } = await supabase
         .from('students')
         .select('*')
+        .eq('school_id', schoolId)
         .order('last_name', { ascending: true })
         .order('first_name', { ascending: true })
 
@@ -196,7 +197,7 @@ export const studentsApi = {
     schoolId: string,
     firstName: string,
     lastName: string,
-    dateOfBirth?: string,
+    dateOfBirth?: string
   ): Promise<Student | null> => {
     try {
       if (!schoolId || !firstName || !lastName) {
@@ -301,7 +302,7 @@ export const studentsApi = {
       date_of_birth?: string
       qualifies_for_program: boolean
       current_grade_id?: string
-    }>,
+    }>
   ): Promise<Student> => {
     try {
       const { data, error } = await supabase
@@ -383,7 +384,7 @@ export const studentsApi = {
 
   // Get all notes for a student
   getStudentNotes: async (
-    studentId: string,
+    studentId: string
   ): Promise<
     Array<{
       id: string
@@ -411,7 +412,7 @@ export const studentsApi = {
             first_name,
             last_name
           )
-        `,
+        `
         )
         .eq('student_id', studentId)
         .order('created_at', { ascending: false })
@@ -537,7 +538,7 @@ export const studentsApi = {
         from_grade:school_grades!from_grade_id (id, grade_level, academic_year),
         to_grade:school_grades!to_grade_id (id, grade_level, academic_year),
         transferred_by_user:users!transferred_by (id, first_name, last_name)
-      `,
+      `
         )
         .eq('student_id', studentId)
         .order('transfer_date', { ascending: false })
