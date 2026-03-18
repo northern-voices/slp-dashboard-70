@@ -19,7 +19,7 @@ const SpeechScreeningModal: React.FC<SpeechScreeningModalProps> = ({
   title = 'Speech Screening',
 }) => {
   const [isSubmitted, setIsSubmitted] = useState(false)
-  const handleSubmit = (formData: any) => {
+  const handleSubmit = formData => {
     if (onSubmit) {
       onSubmit(formData)
     }
