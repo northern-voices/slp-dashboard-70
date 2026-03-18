@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Student } from '@/types/database'
 import { ScreeningFormData } from '@/types/screening'
@@ -38,6 +39,8 @@ const MultiStepHearingScreeningForm = ({
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null)
   const [selectedGrade, setSelectedGrade] = useState(existingStudent?.grade || '')
   const [showSubmissionModal, setShowSubmissionModal] = useState(false)
+
+  const { toast } = useToast()
 
   const handleNewScreening = () => {
     setShowSubmissionModal(false)
@@ -81,6 +84,27 @@ const MultiStepHearingScreeningForm = ({
   }
 
   const handleSubmit = async data => {
+    const tympFields = [
+      data.right_vol,
+      data.right_compliance,
+      data.right_press,
+      data.left_vol,
+      data.left_compliance,
+      data.left_press,
+    ]
+
+    for (const val of tympFields) {
+      const num = parseFloat(val)
+      if (!isNaN(num) && Math.abs(num) >= 1000) {
+        toast({
+          title: 'Invalid value',
+          description: 'Tympanometry values must be less than 1000.',
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+
     const screeningData: ScreeningFormData = {
       screening_type: data.screening_type,
       student_id: selectedStudent?.id || '',
