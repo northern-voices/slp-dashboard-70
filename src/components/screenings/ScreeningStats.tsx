@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, CheckCircle, Clock, FileText } from 'lucide-react'
+import { Calendar, CheckCircle, Clock, FileText, Users } from 'lucide-react'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
@@ -11,7 +11,6 @@ interface ScreeningStatsProps {
 const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProps) => {
   const { currentSchool } = useOrganization()
 
-  // Use school-specific query when a school is selected
   const {
     data: allScreeningsData,
     isLoading: isLoadingAll,
@@ -25,7 +24,6 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
     error: errorSchool,
   } = useScreeningsBySchool(currentSchool?.id, 'school_year')
 
-  // Determine which data to use
   const schoolScreenings = currentSchool ? schoolScreeningsData || [] : allScreeningsData || []
   const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
   const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
@@ -49,11 +47,26 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
       .map(s => s.student_id)
   )
 
+  const pausedStudentIds = new Set(
+    schoolScreenings
+      .filter(s => s.error_patterns?.screening_metadata?.paused === true)
+      .map(s => s.student_id)
+  )
+
+  const caseloadStudentIds = new Set([
+    ...qualifiedStudentIds,
+    ...subStudentIds,
+    ...pausedStudentIds,
+    ...graduatedStudentIds,
+  ])
+
   const stats = {
     totalScreenings: schoolScreenings.length,
     qualifiedScreenings: qualifiedStudentIds.size,
     subsScreenings: subStudentIds.size,
+    pausedScreenings: pausedStudentIds.size,
     graduatedScreenings: graduatedStudentIds.size,
+    caseloadScreenings: caseloadStudentIds.size,
   }
 
   const handleCardClick = (filterValue: string) => {
@@ -71,7 +84,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
   if (isLoading) {
     return (
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
-        {[...Array(4)].map((_, i) => (
+        {[...Array(5)].map((_, i) => (
           <Card key={i}>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <div className='h-4 bg-gray-200 rounded animate-pulse w-24'></div>
@@ -102,7 +115,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
   }
 
   return (
-    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
+    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8'>
       {/* Total Screenings*/}
       <Card className='cursor-pointer hover:bg-gray-50 transition-colors' onClick={handleClearAll}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
@@ -150,6 +163,19 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.graduatedScreenings}</div>
+        </CardContent>
+      </Card>
+
+      {/* Caseload */}
+      <Card
+        className='cursor-pointer hover:bg-gray-50 transition-colors'
+        onClick={() => handleCardClick('caseload')}>
+        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+          <CardTitle className='text-sm font-medium'>Caseload</CardTitle>
+          <Users className='h-4 w-4 text-muted-foreground' />
+        </CardHeader>
+        <CardContent>
+          <div className='text-2xl font-bold'>{stats.caseloadScreenings}</div>
         </CardContent>
       </Card>
     </div>
