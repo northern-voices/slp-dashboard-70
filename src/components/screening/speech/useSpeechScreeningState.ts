@@ -13,11 +13,35 @@ import {
   isValidFinalKsCombination,
   isValidKGCombination,
   isValidTDCombination,
-  isValidLRCombination,
   isValidSZCombination,
   isValidArCombination,
   isValidOrCombination,
 } from './soundCombinationValidators'
+
+const validatorMap: Record<string, (patterns: string[]) => boolean> = {
+  'St-': isValidStCombination,
+  'Sp-': isValidSpCombination,
+  'Sn-': isValidSnCombination,
+  'Sm-': isValidSmCombination,
+  'Sk-': isValidSkCombination,
+  'Final -ts': isValidFinalTsCombination,
+  'Final -ps': isValidFinalPsCombination,
+  'Final -ks': isValidFinalKsCombination,
+  K: isValidKGCombination,
+  G: isValidKGCombination,
+  T: isValidTDCombination,
+  D: isValidTDCombination,
+  '-ar': isValidArCombination,
+  '-or': isValidOrCombination,
+  S: isValidSZCombination,
+  Z: isValidSZCombination,
+  Ch: isValidSZCombination,
+  Sh: isValidSZCombination,
+  J: isValidSZCombination,
+  F: isValidSZCombination,
+  V: isValidSZCombination,
+  th: isValidSZCombination,
+}
 
 export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormValues>) => {
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([])
@@ -307,417 +331,95 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
   const handleErrorPatternChange = (sound: string, pattern: string, checked: boolean) => {
     const currentPatterns = selectedErrorPatterns[sound] || []
 
-    // Global rule: "Other" and "Stimulability" are always exclusive
+    // Other and Stimulability are always exclusive
     if (pattern === 'Other' || pattern === 'Stimulability') {
       if (checked) {
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: [pattern],
-        })
+        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: [pattern] })
         if (pattern === 'Stimulability') {
-          setSelectedStimulabilityOptions({
-            ...selectedStimulabilityOptions,
-            [sound]: ['Word'],
-          })
+          setSelectedStimulabilityOptions({ ...selectedStimulabilityOptions, [sound]: ['Word'] })
         }
       } else {
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: [],
-        })
+        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: [] })
         clearNotesForSound(sound)
         if (pattern === 'Stimulability') {
-          setSelectedStimulabilityOptions({
-            ...selectedStimulabilityOptions,
-            [sound]: [],
+          setSelectedStimulabilityOptions({ ...selectedStimulabilityOptions, [sound]: [] })
+        }
+      }
+      return
+    }
+
+    // Clear stopping sounds when Stopping is unchecked
+    if (pattern === 'Stopping' && !checked) {
+      const newStoppingSounds = { ...selectedStoppingSounds }
+      delete newStoppingSounds[sound]
+      setSelectedStoppingSounds(newStoppingSounds)
+    }
+
+    // One at a time, clears notes on uncheck
+    if (['2 syllables', '3 syllables', 'M'].includes(sound)) {
+      if (checked) {
+        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: [pattern] })
+      } else {
+        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: [] })
+        clearNotesForSound(sound)
+      }
+      return
+    }
+
+    // One at a time, no notes
+    if (sound === 'L' || sound === 'R') {
+      setSelectedErrorPatterns({
+        ...selectedErrorPatterns,
+        [sound]: checked ? [pattern] : [],
+      })
+      return
+    }
+
+    // Omission is exclusive, other patterns can combine
+    if (['P', 'B', 'Final P', 'Final T', 'Final K'].includes(sound)) {
+      if (pattern === 'Omission') {
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: checked ? ['Omission'] : currentPatterns.filter(p => p !== 'Omission'),
+        })
+      } else {
+        if (checked) {
+          const patternsWithoutOmission = currentPatterns.filter(p => p !== 'Omission')
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: [...patternsWithoutOmission, pattern],
+          })
+        } else {
+          setSelectedErrorPatterns({
+            ...selectedErrorPatterns,
+            [sound]: currentPatterns.filter(p => p !== pattern),
           })
         }
       }
       return
     }
 
-    // Handle Stopping pattern - clear stopping sounds when unchecked
-    if (pattern === 'Stopping') {
-      if (!checked) {
-        // When unchecking Stopping, clear the stopping sounds
-        const newStoppingSounds = { ...selectedStoppingSounds }
-        delete newStoppingSounds[sound]
-        setSelectedStoppingSounds(newStoppingSounds)
+    // Validator-based sounds
+    if (validatorMap[sound]) {
+      if (checked) {
+        const newPatterns = [...currentPatterns, pattern]
+        if (validatorMap[sound](newPatterns)) {
+          setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: newPatterns })
+        }
+      } else {
+        setSelectedErrorPatterns({
+          ...selectedErrorPatterns,
+          [sound]: currentPatterns.filter(p => p !== pattern),
+        })
       }
+      return
     }
 
-    // For 2 syllables and 3 syllables, implement mutual exclusion
-    if (sound === '2 syllables' || sound === '3 syllables') {
-      if (checked) {
-        // When selecting a pattern, clear all others for this sound
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: [pattern],
-        })
-      } else {
-        // When unchecking, clear the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: [],
-        })
-        // Clear notes when no patterns remain
-        clearNotesForSound(sound)
-      }
-    } else if (sound === 'P' || sound === 'B' || sound === 'Final P') {
-      // For P, B, and Final P sounds: Omission is exclusive, Nasalization can be combined with other non-Omission patterns
-      if (pattern === 'Omission') {
-        if (checked) {
-          // When selecting Omission, clear all other patterns
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: ['Omission'],
-          })
-        } else {
-          // When unchecking Omission, clear it
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: currentPatterns.filter(p => p !== 'Omission'),
-          })
-        }
-      } else {
-        // For Nasalization pattern (Other is handled above)
-        if (checked) {
-          // If Omission is already selected, clear it first
-          const patternsWithoutOmission = currentPatterns.filter(p => p !== 'Omission')
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: [...patternsWithoutOmission, pattern],
-          })
-        } else {
-          // When unchecking, just remove the pattern
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: currentPatterns.filter(p => p !== pattern),
-          })
-        }
-      }
-    } else if (sound === 'M') {
-      // For M sound: Omission is exclusive (Other is handled above)
-      if (checked) {
-        // When selecting a pattern, clear all others for this sound
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: [pattern],
-        })
-      } else {
-        // When unchecking, clear the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: [],
-        })
-        // Clear notes when no patterns remain
-        clearNotesForSound(sound)
-      }
-    } else if (sound === 'Final T' || sound === 'Final K') {
-      // For Final T and Final K: Omission is exclusive, Backing/Nasalization can be combined
-      if (pattern === 'Omission') {
-        if (checked) {
-          // When selecting Omission, clear all other patterns
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: ['Omission'],
-          })
-        } else {
-          // When unchecking Omission, clear it
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: currentPatterns.filter(p => p !== 'Omission'),
-          })
-        }
-      } else {
-        // For Backing and Nasalization patterns (Other is handled above)
-        if (checked) {
-          // If Omission is already selected, clear it first
-          const patternsWithoutOmission = currentPatterns.filter(p => p !== 'Omission')
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: [...patternsWithoutOmission, pattern],
-          })
-        } else {
-          // When unchecking, just remove the pattern
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: currentPatterns.filter(p => p !== pattern),
-          })
-        }
-      }
-    } else if (sound === 'St-') {
-      // For St-: Allow specific combinations only
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidStCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === 'Sp-') {
-      // For Sp-: Allow specific combinations only
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidSpCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === 'Sn-') {
-      // For Sn-: Allow specific combinations only
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidSnCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === 'Sm-') {
-      // For Sm-: Allow specific combinations only
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidSmCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === 'Sk-') {
-      // For Sk-: Allow specific combinations only
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidSkCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === 'Final -ts') {
-      // For Final -ts: Allow specific combinations only
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidFinalTsCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === 'Final -ps') {
-      // For Final -ps: Allow specific combinations only
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidFinalPsCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === 'Final -ks') {
-      // For Final -ks: Allow specific combinations only
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidFinalKsCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === 'K' || sound === 'G') {
-      // For K and G: Allow specific combinations only
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidKGCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === 'T' || sound === 'D') {
-      // For T and D: Allow specific combinations only
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidTDCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === 'L' || sound === 'R') {
-      // For L and R: Allow only one pattern at a time (mutually exclusive)
-      if (checked) {
-        // When selecting a pattern, clear all others for this sound
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: [pattern],
-        })
-      } else {
-        // When unchecking, clear the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: [],
-        })
-      }
-    } else if (
-      sound === 'S' ||
-      sound === 'Z' ||
-      sound === 'Ch' ||
-      sound === 'Sh' ||
-      sound === 'J' ||
-      sound === 'F' ||
-      sound === 'V' ||
-      sound === 'th'
-    ) {
-      // For S, Z, Ch, Sh, J, F, V, th: Allow any combinations except 'Other' exclusivity
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidSZCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === '-ar') {
-      // For -ar: "Vowelization w" and "Vowelization y" are mutually exclusive
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidArCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else if (sound === '-or') {
-      // For -or: "Vowelization oh/w" and "Vowelization y" are mutually exclusive
-      if (checked) {
-        // Check if this combination is valid
-        const newPatterns = [...currentPatterns, pattern]
-        if (isValidOrCombination(newPatterns)) {
-          setSelectedErrorPatterns({
-            ...selectedErrorPatterns,
-            [sound]: newPatterns,
-          })
-        }
-      } else {
-        // When unchecking, just remove the pattern
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    } else {
-      // For other sounds, use the original logic but ensure Other is exclusive
-      if (checked) {
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: [...currentPatterns, pattern],
-        })
-      } else {
-        setSelectedErrorPatterns({
-          ...selectedErrorPatterns,
-          [sound]: currentPatterns.filter(p => p !== pattern),
-        })
-      }
-    }
+    // Default
+    setSelectedErrorPatterns({
+      ...selectedErrorPatterns,
+      [sound]: checked ? [...currentPatterns, pattern] : currentPatterns.filter(p => p !== pattern),
+    })
   }
 
   return {
