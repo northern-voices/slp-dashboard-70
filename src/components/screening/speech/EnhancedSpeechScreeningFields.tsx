@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -17,49 +17,10 @@ import {
   areasOfConcern,
   stoppingSoundOptions,
 } from './EnhancedSpeechScreeningFieldData'
+import { SpeechScreeningFormValues, ErrorPatterns } from '@/types/screening-form'
 
 interface EnhancedSpeechScreeningFieldsProps {
-  form: UseFormReturn<{
-    screening_type: string
-    screening_date: string
-    clinical_notes: string
-    referral_notes: string
-    result: string
-    vocabulary_support: boolean
-    speech_screen_result: string
-    vocabulary_support_recommended: boolean
-    qualifies_for_speech_program: boolean
-    sub: boolean
-    graduated: boolean
-    error_patterns: {
-      attendance: {
-        absent: boolean
-        absence_notes: string
-        priority_re_screen: boolean
-      }
-      articulation: {
-        soundErrors: Array<{
-          sound: string
-          word: string
-          errorPatterns: string[]
-          stoppingSounds?: string[]
-          notes: string
-          otherNotes?: string
-        }>
-        articulationNotes: string
-      }
-      screening_metadata: {
-        screening_date: string
-        qualifies_for_speech_program: boolean
-        vocabulary_support_recommended: boolean
-        sub?: boolean
-        graduated?: boolean
-      }
-      add_areas_of_concern: Record<string, string | null>
-      additional_observations: string
-    }
-    general_articulation_notes?: string
-  }>
+  form: UseFormReturn<SpeechScreeningFormValues>
 }
 
 const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsProps) => {
@@ -71,9 +32,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
   const [selectedStoppingSounds, setSelectedStoppingSounds] = useState<Record<string, string[]>>({})
   const [initialized, setInitialized] = useState(false)
+  const [areasOfConcernOpen, setAreasOfConcernOpen] = useState(false)
 
   // Initialize component state from form data when available (for editing existing screenings)
-  React.useEffect(() => {
+  useEffect(() => {
     const formData = form.getValues()
     const errorPatterns = formData?.error_patterns
 
@@ -566,7 +528,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   }
 
   // Create nested structure for articulation data
-  React.useEffect(() => {
+  useEffect(() => {
     const soundErrorsData = selectedSounds.map(sound => {
       const word = soundErrorPatterns[sound]?.word || ''
       const hasOtherPattern = selectedErrorPatterns[sound]?.includes('Other')
@@ -604,10 +566,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   }
 
   // Create areas of concern object structure
-  React.useEffect(() => {
+  useEffect(() => {
     // Get current form data to preserve existing values
     const currentData = form.getValues('error_patterns.add_areas_of_concern') || {}
-    const areasOfConcernData = {}
+    const areasOfConcernData: Record<string, string | boolean | null> = {}
 
     // Initialize all fields
     areasOfConcern.forEach(concern => {
@@ -647,7 +609,10 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
       // During initialization, keep whatever value was loaded (including non-null values)
     })
 
-    form.setValue('error_patterns.add_areas_of_concern', areasOfConcernData)
+    form.setValue(
+      'error_patterns.add_areas_of_concern',
+      areasOfConcernData as ErrorPatterns['add_areas_of_concern']
+    )
   }, [selectedConcerns, form, initialized])
 
   const handleSoundToggle = (sound: string) => {
@@ -1141,341 +1106,342 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
           <div>
             <Label className='text-base font-medium mb-3 block'>Sounds in Error</Label>
             <div className='grid grid-cols-3 md:grid-cols-6 gap-3'>
-              {articulationSounds.map(sound => (
-                <div key={sound} className='flex flex-col'>
-                  <button
-                    type='button'
-                    onClick={() => handleSoundToggle(sound)}
-                    className={`p-2 text-center border rounded-md transition-colors ${
-                      selectedSounds.includes(sound)
-                        ? 'bg-blue-100 border-blue-500 text-blue-700'
-                        : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
-                    }`}>
-                    {sound}
-                  </button>
-                  {selectedSounds.includes(sound) && (
-                    <>
-                      {/* Error Patterns for this sound */}
-                      <div className='mt-2 space-y-1'>
-                        {soundErrorPatterns[sound]?.patterns.map(patternObj => {
-                          const pattern = patternObj.value
-                          const patternDisplay = patternObj.display
-                          const currentPatterns = selectedErrorPatterns[sound] || []
+              {articulationSounds.map(sound => {
+                return (
+                  <div key={sound} className='flex flex-col'>
+                    <button
+                      type='button'
+                      onClick={() => handleSoundToggle(sound)}
+                      className={`p-2 text-center border rounded-md transition-colors ${
+                        selectedSounds.includes(sound)
+                          ? 'bg-blue-100 border-blue-500 text-blue-700'
+                          : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
+                      }`}>
+                      {sound}
+                    </button>
+                    {selectedSounds.includes(sound) && (
+                      <>
+                        {/* Error Patterns for this sound */}
+                        <div className='mt-2 space-y-1'>
+                          {soundErrorPatterns[sound]?.patterns.map(patternObj => {
+                            const pattern = patternObj.value
+                            const patternDisplay = patternObj.display
+                            const currentPatterns = selectedErrorPatterns[sound] || []
 
-                          // Global rule: "Other" disables all other patterns when selected, and other patterns disable "Other"
-                          const isOtherSelected = currentPatterns.includes('Other')
-                          const isOtherPattern = pattern === 'Other'
-                          const hasOtherPatterns = currentPatterns.some(p => p !== 'Other')
-                          const isOtherDisabled = isOtherSelected && !isOtherPattern
-                          const isOtherCheckboxDisabled = hasOtherPatterns && isOtherPattern
+                            // Global rule: "Other" disables all other patterns when selected, and other patterns disable "Other"
+                            const isOtherSelected = currentPatterns.includes('Other')
+                            const isOtherPattern = pattern === 'Other'
+                            const hasOtherPatterns = currentPatterns.some(p => p !== 'Other')
+                            const isOtherDisabled = isOtherSelected && !isOtherPattern
+                            const isOtherCheckboxDisabled = hasOtherPatterns && isOtherPattern
 
-                          // For 2 syllables and 3 syllables, implement mutual exclusion
-                          const isSyllableSound = sound === '2 syllables' || sound === '3 syllables'
-                          const isSyllableDisabled =
-                            isSyllableSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern)
-
-                          // For P, B, and Final P sounds: Omission disables others, Nasalization can be combined
-                          const isPBFinalPSound =
-                            sound === 'P' || sound === 'B' || sound === 'Final P'
-                          const isOmissionSelected = currentPatterns.includes('Omission')
-                          const isPBDisabled =
-                            isPBFinalPSound &&
-                            ((pattern === 'Omission' &&
+                            // For 2 syllables and 3 syllables, implement mutual exclusion
+                            const isSyllableSound =
+                              sound === '2 syllables' || sound === '3 syllables'
+                            const isSyllableDisabled =
+                              isSyllableSound &&
                               currentPatterns.length > 0 &&
-                              !currentPatterns.includes('Omission')) ||
-                              (pattern !== 'Omission' && isOmissionSelected))
+                              !currentPatterns.includes(pattern)
 
-                          // For M sound: Omission is exclusive
-                          const isMSound = sound === 'M'
-                          const isMDisabled =
-                            isMSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern)
+                            // For P, B, and Final P sounds: Omission disables others, Nasalization can be combined
+                            const isPBFinalPSound =
+                              sound === 'P' || sound === 'B' || sound === 'Final P'
+                            const isOmissionSelected = currentPatterns.includes('Omission')
+                            const isPBDisabled =
+                              isPBFinalPSound &&
+                              ((pattern === 'Omission' &&
+                                currentPatterns.length > 0 &&
+                                !currentPatterns.includes('Omission')) ||
+                                (pattern !== 'Omission' && isOmissionSelected))
 
-                          // For Final T and Final K: Omission disables others, Backing/Nasalization can be combined
-                          const isFinalTKSound = sound === 'Final T' || sound === 'Final K'
-                          const isFinalTKOmissionSelected = currentPatterns.includes('Omission')
-                          const isFinalTKDisabled =
-                            isFinalTKSound &&
-                            ((pattern === 'Omission' &&
+                            // For M sound: Omission is exclusive
+                            const isMSound = sound === 'M'
+                            const isMDisabled =
+                              isMSound &&
                               currentPatterns.length > 0 &&
-                              !currentPatterns.includes('Omission')) ||
-                              (pattern !== 'Omission' && isFinalTKOmissionSelected))
+                              !currentPatterns.includes(pattern)
 
-                          // For St-: Disable invalid combinations
-                          const isStSound = sound === 'St-'
-                          const isStDisabled =
-                            isStSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidStCombination([...currentPatterns, pattern])
+                            // For Final T and Final K: Omission disables others, Backing/Nasalization can be combined
+                            const isFinalTKSound = sound === 'Final T' || sound === 'Final K'
+                            const isFinalTKOmissionSelected = currentPatterns.includes('Omission')
+                            const isFinalTKDisabled =
+                              isFinalTKSound &&
+                              ((pattern === 'Omission' &&
+                                currentPatterns.length > 0 &&
+                                !currentPatterns.includes('Omission')) ||
+                                (pattern !== 'Omission' && isFinalTKOmissionSelected))
 
-                          // For Sp-: Disable invalid combinations
-                          const isSpSound = sound === 'Sp-'
-                          const isSpDisabled =
-                            isSpSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidSpCombination([...currentPatterns, pattern])
+                            // For St-: Disable invalid combinations
+                            const isStSound = sound === 'St-'
+                            const isStDisabled =
+                              isStSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidStCombination([...currentPatterns, pattern])
 
-                          // For Sn-: Disable invalid combinations
-                          const isSnSound = sound === 'Sn-'
-                          const isSnDisabled =
-                            isSnSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidSnCombination([...currentPatterns, pattern])
+                            // For Sp-: Disable invalid combinations
+                            const isSpSound = sound === 'Sp-'
+                            const isSpDisabled =
+                              isSpSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidSpCombination([...currentPatterns, pattern])
 
-                          // For Sm-: Disable invalid combinations
-                          const isSmSound = sound === 'Sm-'
-                          const isSmDisabled =
-                            isSmSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidSmCombination([...currentPatterns, pattern])
+                            // For Sn-: Disable invalid combinations
+                            const isSnSound = sound === 'Sn-'
+                            const isSnDisabled =
+                              isSnSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidSnCombination([...currentPatterns, pattern])
 
-                          // For Sk-: Disable invalid combinations
-                          const isSkSound = sound === 'Sk-'
-                          const isSkDisabled =
-                            isSkSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidSkCombination([...currentPatterns, pattern])
+                            // For Sm-: Disable invalid combinations
+                            const isSmSound = sound === 'Sm-'
+                            const isSmDisabled =
+                              isSmSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidSmCombination([...currentPatterns, pattern])
 
-                          // For Final -ts: Disable invalid combinations
-                          const isFinalTsSound = sound === 'Final -ts'
-                          const isFinalTsDisabled =
-                            isFinalTsSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidFinalTsCombination([...currentPatterns, pattern])
+                            // For Sk-: Disable invalid combinations
+                            const isSkSound = sound === 'Sk-'
+                            const isSkDisabled =
+                              isSkSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidSkCombination([...currentPatterns, pattern])
 
-                          // For Final -ps: Disable invalid combinations
-                          const isFinalPsSound = sound === 'Final -ps'
-                          const isFinalPsDisabled =
-                            isFinalPsSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidFinalPsCombination([...currentPatterns, pattern])
+                            // For Final -ts: Disable invalid combinations
+                            const isFinalTsSound = sound === 'Final -ts'
+                            const isFinalTsDisabled =
+                              isFinalTsSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidFinalTsCombination([...currentPatterns, pattern])
 
-                          // For Final -ks: Disable invalid combinations
-                          const isFinalKsSound = sound === 'Final -ks'
-                          const isFinalKsDisabled =
-                            isFinalKsSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidFinalKsCombination([...currentPatterns, pattern])
+                            // For Final -ps: Disable invalid combinations
+                            const isFinalPsSound = sound === 'Final -ps'
+                            const isFinalPsDisabled =
+                              isFinalPsSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidFinalPsCombination([...currentPatterns, pattern])
 
-                          // For K and G: Disable invalid combinations
-                          const isKGSound = sound === 'K' || sound === 'G'
-                          const isKGDisabled =
-                            isKGSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidKGCombination([...currentPatterns, pattern])
+                            // For Final -ks: Disable invalid combinations
+                            const isFinalKsSound = sound === 'Final -ks'
+                            const isFinalKsDisabled =
+                              isFinalKsSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidFinalKsCombination([...currentPatterns, pattern])
 
-                          // For T and D: Disable invalid combinations
-                          const isTDSound = sound === 'T' || sound === 'D'
-                          const isTDDisabled =
-                            isTDSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidTDCombination([...currentPatterns, pattern])
+                            // For K and G: Disable invalid combinations
+                            const isKGSound = sound === 'K' || sound === 'G'
+                            const isKGDisabled =
+                              isKGSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidKGCombination([...currentPatterns, pattern])
 
-                          // For L and R: Disable other patterns when one is selected
-                          const isLRSound = sound === 'L' || sound === 'R'
-                          const isLRDisabled =
-                            isLRSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern)
+                            // For T and D: Disable invalid combinations
+                            const isTDSound = sound === 'T' || sound === 'D'
+                            const isTDDisabled =
+                              isTDSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidTDCombination([...currentPatterns, pattern])
 
-                          // For S, Z, Ch, Sh, J, F, V, th: Disable only 'Other' exclusivity
-                          const isSZSound =
-                            sound === 'S' ||
-                            sound === 'Z' ||
-                            sound === 'Ch' ||
-                            sound === 'Sh' ||
-                            sound === 'J' ||
-                            sound === 'F' ||
-                            sound === 'V' ||
-                            sound === 'th'
-                          const isSZDisabled =
-                            isSZSound &&
-                            pattern === 'Other' &&
-                            currentPatterns.some(p => p !== 'Other') // Disable 'Other' if other patterns are selected
+                            // For L and R: Disable other patterns when one is selected
+                            const isLRSound = sound === 'L' || sound === 'R'
+                            const isLRDisabled =
+                              isLRSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern)
 
-                          // For -ar: Disable invalid combinations
-                          const isArSound = sound === '-ar'
-                          const isArDisabled =
-                            isArSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidArCombination([...currentPatterns, pattern])
+                            // For S, Z, Ch, Sh, J, F, V, th: Disable only 'Other' exclusivity
+                            const isSZSound =
+                              sound === 'S' ||
+                              sound === 'Z' ||
+                              sound === 'Ch' ||
+                              sound === 'Sh' ||
+                              sound === 'J' ||
+                              sound === 'F' ||
+                              sound === 'V' ||
+                              sound === 'th'
+                            const isSZDisabled =
+                              isSZSound &&
+                              pattern === 'Other' &&
+                              currentPatterns.some(p => p !== 'Other') // Disable 'Other' if other patterns are selected
 
-                          // For -or: Disable invalid combinations
-                          const isOrSound = sound === '-or'
-                          const isOrDisabled =
-                            isOrSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidOrCombination([...currentPatterns, pattern])
+                            // For -ar: Disable invalid combinations
+                            const isArSound = sound === '-ar'
+                            const isArDisabled =
+                              isArSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidArCombination([...currentPatterns, pattern])
 
-                          const isDisabled =
-                            isOtherDisabled ||
-                            isOtherCheckboxDisabled ||
-                            isSyllableDisabled ||
-                            isPBDisabled ||
-                            isMDisabled ||
-                            isFinalTKDisabled ||
-                            isStDisabled ||
-                            isSpDisabled ||
-                            isSnDisabled ||
-                            isSmDisabled ||
-                            isSkDisabled ||
-                            isFinalTsDisabled ||
-                            isFinalPsDisabled ||
-                            isFinalKsDisabled ||
-                            isKGDisabled ||
-                            isTDDisabled ||
-                            isLRDisabled ||
-                            isSZDisabled ||
-                            isArDisabled ||
-                            isOrDisabled
+                            // For -or: Disable invalid combinations
+                            const isOrSound = sound === '-or'
+                            const isOrDisabled =
+                              isOrSound &&
+                              currentPatterns.length > 0 &&
+                              !currentPatterns.includes(pattern) &&
+                              !isValidOrCombination([...currentPatterns, pattern])
 
-                          return (
-                            <div key={pattern} className='space-y-2'>
-                              <div className='flex items-center space-x-2'>
-                                <Checkbox
-                                  id={`${sound}-${pattern}`}
-                                  checked={currentPatterns.includes(pattern)}
-                                  onCheckedChange={checked =>
-                                    handleErrorPatternChange(sound, pattern, checked as boolean)
-                                  }
-                                  disabled={isDisabled}
-                                />
-                                <Label
-                                  htmlFor={`${sound}-${pattern}`}
-                                  className={`text-xs font-medium ${
-                                    isDisabled ? 'text-gray-400' : ''
-                                  }`}>
-                                  {patternDisplay}
-                                </Label>
-                              </div>
+                            const isDisabled =
+                              isOtherDisabled ||
+                              isOtherCheckboxDisabled ||
+                              isSyllableDisabled ||
+                              isPBDisabled ||
+                              isMDisabled ||
+                              isFinalTKDisabled ||
+                              isStDisabled ||
+                              isSpDisabled ||
+                              isSnDisabled ||
+                              isSmDisabled ||
+                              isSkDisabled ||
+                              isFinalTsDisabled ||
+                              isFinalPsDisabled ||
+                              isFinalKsDisabled ||
+                              isKGDisabled ||
+                              isTDDisabled ||
+                              isLRDisabled ||
+                              isSZDisabled ||
+                              isArDisabled ||
+                              isOrDisabled
 
-                              {/* Stopping Sound Options - show when Stopping is selected */}
-                              {pattern === 'Stopping' && currentPatterns.includes('Stopping') && (
-                                <div className='ml-6 space-y-1'>
-                                  <div className='text-xs font-medium text-gray-700'>
-                                    Stopping to:
-                                  </div>
-                                  <div className='grid grid-cols-3 gap-2'>
-                                    {stoppingSoundOptions.map(stoppingSound => {
-                                      const currentStoppingSounds =
-                                        selectedStoppingSounds[sound] || []
-                                      const isSelected =
-                                        currentStoppingSounds.includes(stoppingSound)
-                                      const isDisabled =
-                                        currentStoppingSounds.length > 0 && !isSelected
-
-                                      return (
-                                        <div
-                                          key={stoppingSound}
-                                          className='flex items-center space-x-2'>
-                                          <Checkbox
-                                            id={`${sound}-stopping-${stoppingSound}`}
-                                            checked={isSelected}
-                                            onCheckedChange={checked =>
-                                              handleStoppingSoundChange(
-                                                sound,
-                                                stoppingSound,
-                                                checked as boolean,
-                                              )
-                                            }
-                                            disabled={isDisabled}
-                                          />
-                                          <Label
-                                            htmlFor={`${sound}-stopping-${stoppingSound}`}
-                                            className={`text-xs font-medium ${
-                                              isDisabled ? 'text-gray-400' : ''
-                                            }`}>
-                                            {stoppingSound}
-                                          </Label>
-                                        </div>
-                                      )
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Other Error Pattern input - show when "Other" is selected */}
-                              {pattern === 'Other' && currentPatterns.includes('Other') && (
-                                <div className='mt-2'>
-                                  <Label className='text-xs font-medium text-gray-700 block mb-1'>
-                                    Other Error Pattern:
+                            return (
+                              <div key={pattern} className='space-y-2'>
+                                <div className='flex items-center space-x-2'>
+                                  <Checkbox
+                                    id={`${sound}-${pattern}`}
+                                    checked={currentPatterns.includes(pattern)}
+                                    onCheckedChange={checked =>
+                                      handleErrorPatternChange(sound, pattern, checked as boolean)
+                                    }
+                                    disabled={isDisabled}
+                                  />
+                                  <Label
+                                    htmlFor={`${sound}-${pattern}`}
+                                    className={`text-xs font-medium ${
+                                      isDisabled ? 'text-gray-400' : ''
+                                    }`}>
+                                    {patternDisplay}
                                   </Label>
-                                  <div className='flex items-center gap-2 text-xs'>
-                                    <span className='text-gray-600'>"</span>
-                                    <input
-                                      type='text'
-                                      value={soundNotes[sound] || ''}
-                                      onChange={e => handleSoundNoteChange(sound, e.target.value)}
-                                      className='px-2 py-1 border border-gray-300 rounded-sm text-xs w-20'
-                                    />
-                                    <span className='text-gray-600'>
-                                      " for {soundErrorPatterns[sound]?.word || sound}
-                                    </span>
-                                  </div>
                                 </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
 
-                      {/* Notes checkbox - always visible for every sound */}
-                      <div className='mt-1 space-y-2'>
-                        <div className='flex items-center space-x-2'>
-                          <Checkbox
-                            id={`${sound}-notes`}
-                            checked={notesEnabled[sound] || false}
-                            onCheckedChange={checked =>
-                              handleNotesToggle(sound, checked as boolean)
-                            }
-                          />
-                          <Label
-                            htmlFor={`${sound}-notes`}
-                            className='text-xs font-medium text-gray-700'>
-                            Notes (Private)
-                          </Label>
+                                {/* Stopping Sound Options - show when Stopping is selected */}
+                                {pattern === 'Stopping' && currentPatterns.includes('Stopping') && (
+                                  <div className='ml-6 space-y-1'>
+                                    <div className='text-xs font-medium text-gray-700'>
+                                      Stopping to:
+                                    </div>
+                                    <div className='grid grid-cols-3 gap-2'>
+                                      {stoppingSoundOptions.map(stoppingSound => {
+                                        const currentStoppingSounds =
+                                          selectedStoppingSounds[sound] || []
+                                        const isSelected =
+                                          currentStoppingSounds.includes(stoppingSound)
+
+                                        return (
+                                          <div
+                                            key={stoppingSound}
+                                            className='flex items-center space-x-2'>
+                                            <Checkbox
+                                              id={`${sound}-stopping-${stoppingSound}`}
+                                              checked={isSelected}
+                                              onCheckedChange={checked =>
+                                                handleStoppingSoundChange(
+                                                  sound,
+                                                  stoppingSound,
+                                                  checked as boolean
+                                                )
+                                              }
+                                              disabled={isDisabled}
+                                            />
+                                            <Label
+                                              htmlFor={`${sound}-stopping-${stoppingSound}`}
+                                              className={`text-xs font-medium ${
+                                                isDisabled ? 'text-gray-400' : ''
+                                              }`}>
+                                              {stoppingSound}
+                                            </Label>
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Other Error Pattern input - show when "Other" is selected */}
+                                {pattern === 'Other' && currentPatterns.includes('Other') && (
+                                  <div className='mt-2'>
+                                    <Label className='text-xs font-medium text-gray-700 block mb-1'>
+                                      Other Error Pattern:
+                                    </Label>
+                                    <div className='flex items-center gap-2 text-xs'>
+                                      <span className='text-gray-600'>"</span>
+                                      <input
+                                        type='text'
+                                        value={soundNotes[sound] || ''}
+                                        onChange={e => handleSoundNoteChange(sound, e.target.value)}
+                                        className={`px-2 py-1 border border-gray-300 rounded-sm text-xs w-20`}
+                                      />
+                                      <span className='text-gray-600'>
+                                        " for {soundErrorPatterns[sound]?.word || sound}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          })}
                         </div>
-                        {notesEnabled[sound] && (
-                          <div>
-                            <input
-                              type='text'
-                              placeholder='Notes for this sound...'
-                              value={notes[sound] || ''}
-                              onChange={e => handleNoteChange(sound, e.target.value)}
-                              className='text-xs px-3 py-2 border border-gray-300 rounded-sm w-full'
-                            />
-                          </div>
-                        )}
-                      </div>
 
-                      {/* Word example - now appears last, below Notes */}
-                      <div className='mt-1 text-xs text-gray-600'>
-                        Word: {soundErrorPatterns[sound]?.word}
-                        {selectedErrorPatterns[sound]?.includes('Other') && soundNotes[sound] && (
-                          <span className='ml-2 text-blue-600 font-medium'>
-                            → "{soundNotes[sound]} for {soundErrorPatterns[sound]?.word}"
-                          </span>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+                        {/* Notes checkbox - always visible for every sound */}
+                        <div className='mt-1 space-y-2'>
+                          <div className='flex items-center space-x-2'>
+                            <Checkbox
+                              id={`${sound}-notes`}
+                              checked={notesEnabled[sound] || false}
+                              onCheckedChange={checked =>
+                                handleNotesToggle(sound, checked as boolean)
+                              }
+                            />
+                            <Label
+                              htmlFor={`${sound}-notes`}
+                              className='text-xs font-medium text-gray-700'>
+                              Notes (Private)
+                            </Label>
+                          </div>
+                          {notesEnabled[sound] && (
+                            <div>
+                              <input
+                                type='text'
+                                placeholder='Notes for this sound...'
+                                value={notes[sound] || ''}
+                                onChange={e => handleNoteChange(sound, e.target.value)}
+                                className={`text-xs px-3 py-2 border border-gray-300 rounded-sm w-full`}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Word example - now appears last, below Notes */}
+                        <div className='mt-1 text-xs text-gray-600'>
+                          Word: {soundErrorPatterns[sound]?.word}
+                          {selectedErrorPatterns[sound]?.includes('Other') && soundNotes[sound] && (
+                            <span className='ml-2 text-blue-600 font-medium'>
+                              → "{soundNotes[sound]} for {soundErrorPatterns[sound]?.word}"
+                            </span>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
 
@@ -1584,49 +1550,70 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
       {/* Areas of Concern */}
       <Card>
-        <CardHeader>
-          <CardTitle>Additional Areas of Concern (Private)</CardTitle>
+        <CardHeader
+          className='cursor-pointer select-none'
+          onClick={() => setAreasOfConcernOpen(prev => !prev)}>
+          <CardTitle className='flex items-center justify-between'>
+            Additional Areas of Concern (Private)
+            <span className='text-lg font-normal text-muted-foreground'>
+              {areasOfConcernOpen ? '▲ Hide' : '▼ Show'}
+            </span>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className='space-y-6'>
-            {areasOfConcern.map(concern => (
-              <div key={concern} className='space-y-3'>
-                <div className='flex items-center space-x-2'>
-                  <Checkbox
-                    id={concern}
-                    checked={selectedConcerns.includes(concern)}
-                    onCheckedChange={checked => handleConcernChange(concern, checked as boolean)}
-                  />
-                  <Label htmlFor={concern} className='text-sm font-medium'>
-                    {concern}
-                  </Label>
-                </div>
-
-                {selectedConcerns.includes(concern) && (
-                  <div className='ml-6'>
-                    <Textarea
-                      value={
-                        form.watch('error_patterns.add_areas_of_concern')?.[
-                          getFieldName(concern)
-                        ] || ''
-                      }
-                      onChange={e => {
-                        const current = form.watch('error_patterns.add_areas_of_concern') || {}
-                        form.setValue('error_patterns.add_areas_of_concern', {
-                          ...current,
-                          [getFieldName(concern)]: e.target.value,
-                        })
-                      }}
-                      placeholder='Details...'
-                      rows={3}
-                      className='w-full'
+        {areasOfConcernOpen && (
+          <CardContent>
+            <div className='space-y-6'>
+              {areasOfConcern.map(concern => (
+                <div key={concern} className='space-y-3'>
+                  <div className='flex items-center space-x-2'>
+                    <Checkbox
+                      id={concern}
+                      checked={selectedConcerns.includes(concern)}
+                      onCheckedChange={checked => handleConcernChange(concern, checked as boolean)}
                     />
+                    <Label htmlFor={concern} className='text-sm font-medium'>
+                      {concern}
+                    </Label>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
+
+                  {selectedConcerns.includes(concern) && (
+                    <div className='ml-6'>
+                      <Textarea
+                        value={
+                          form.watch('error_patterns.add_areas_of_concern')?.[
+                            getFieldName(concern)
+                          ] || ''
+                        }
+                        onChange={e => {
+                          const current = form.watch('error_patterns.add_areas_of_concern') || {
+                            voice: null,
+                            fluency: null,
+                            literacy: null,
+                            suspected_cas: null,
+                            cleft_lip_palate: null,
+                            reluctant_speaking: null,
+                            language_expression: null,
+                            language_comprehension: null,
+                            known_pending_diagnoses: null,
+                            pragmatics_social_communication: null,
+                          }
+
+                          form.setValue('error_patterns.add_areas_of_concern', {
+                            ...current,
+                            [getFieldName(concern)]: e.target.value,
+                          })
+                        }}
+                        placeholder='Details...'
+                        rows={3}
+                        className='w-full'
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        )}
       </Card>
     </div>
   )

@@ -35,6 +35,7 @@ import AcceptInvitation from './pages/auth/AcceptInvitation'
 import Onboarding from './pages/Onboarding'
 import NotFound from './pages/NotFound'
 import SpeechScreening from './pages/SpeechScreening'
+import Rescreening from './pages/Rescreening'
 import HearingScreening from './pages/HearingScreening'
 import HearingScreenings from './pages/HearingScreenings'
 import EditScreening from './pages/EditScreening'
@@ -44,6 +45,7 @@ import Logout from './components/auth/Logout'
 import MonthlyMeetings from './pages/monthly-meetings/MonthlyMeetings'
 import CreateMonthlyMeeting from './pages/monthly-meetings/CreateMonthlyMeeting'
 import EditMonthlyMeeting from './pages/monthly-meetings/EditMonthlyMeeting'
+import { School } from 'lucide-react'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -160,6 +162,29 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+
+                <Route
+                  path='/screening/rescreening'
+                  element={
+                    <ProtectedRoute>
+                      <SchoolRouter>
+                        <Rescreening />
+                      </SchoolRouter>
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path='/screening/rescreening/:studentId'
+                  element={
+                    <ProtectedRoute>
+                      <SchoolRouter>
+                        <Rescreening />
+                      </SchoolRouter>
+                    </ProtectedRoute>
+                  }
+                />
+
                 <Route
                   path='/screenings/hearing'
                   element={
@@ -453,6 +478,29 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+
+                <Route
+                  path='/school/:schoolId/screening/rescreening'
+                  element={
+                    <ProtectedRoute>
+                      <SchoolRouter>
+                        <Rescreening />
+                      </SchoolRouter>
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path='/school/:schoolId/screening/rescreening/:studentId'
+                  element={
+                    <ProtectedRoute>
+                      <SchoolRouter>
+                        <Rescreening />
+                      </SchoolRouter>
+                    </ProtectedRoute>
+                  }
+                />
+
                 <Route
                   path='/school/:schoolId/screenings/hearing'
                   element={

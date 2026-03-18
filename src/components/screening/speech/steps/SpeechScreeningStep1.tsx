@@ -27,6 +27,7 @@ interface SpeechScreeningStep1Props {
   onGradeIdChange: (gradeId: string) => void
   onAbsentChange?: (isAbsent: boolean) => void
   onNoConsentChange?: (isNoConsent: boolean) => void
+  afterStudentContent?: React.ReactNode
 }
 
 const SpeechScreeningStep1 = ({
@@ -38,6 +39,7 @@ const SpeechScreeningStep1 = ({
   onGradeIdChange,
   onAbsentChange,
   onNoConsentChange,
+  afterStudentContent,
 }: SpeechScreeningStep1Props) => {
   const { currentSchool } = useOrganization()
 
@@ -46,10 +48,10 @@ const SpeechScreeningStep1 = ({
 
   // Use local state for immediate UI response, sync with form
   const [localAbsentValue, setLocalAbsentValue] = useState<boolean>(
-    () => (form.getValues('absent.isAbsent') as boolean) || false,
+    () => (form.getValues('absent.isAbsent') as boolean) || false
   )
   const [localNoConsentValue, setLocalNoConsentValue] = useState<boolean>(
-    () => (form.getValues('no_consent.isNoConsent') as boolean) || false,
+    () => (form.getValues('no_consent.isNoConsent') as boolean) || false
   )
 
   // Memoized handler for absent checkbox to prevent unnecessary re-renders
@@ -81,7 +83,7 @@ const SpeechScreeningStep1 = ({
       // Notify parent component of the change
       onAbsentChange?.(checked)
     },
-    [form, onAbsentChange, localNoConsentValue],
+    [form, onAbsentChange, localNoConsentValue]
   )
 
   // Memoized handler for no consent checkbox to prevent unnecessary re-renders
@@ -115,7 +117,7 @@ const SpeechScreeningStep1 = ({
       // Notify parent component of the change
       onNoConsentChange?.(checked)
     },
-    [form, onAbsentChange, onNoConsentChange, localAbsentValue],
+    [form, onAbsentChange, onNoConsentChange, localAbsentValue]
   )
 
   // Sync local state with form state on mount
@@ -171,7 +173,7 @@ const SpeechScreeningStep1 = ({
         }
         return acc
       },
-      [] as typeof filteredGrades,
+      [] as typeof filteredGrades
     )
 
     const sortedGrades = uniqueGrades.sort((a, b) => b.academic_year.localeCompare(a.academic_year))
@@ -262,7 +264,6 @@ const SpeechScreeningStep1 = ({
               </SelectContent>
             </Select>
           </div>
-
           {selectedGrade && (
             <div>
               <Label className='mb-3 block text-sm font-medium text-gray-700'>
@@ -277,7 +278,6 @@ const SpeechScreeningStep1 = ({
               </div>
             </div>
           )}
-
           {selectedStudent && (
             <div className='mt-6 p-4 bg-blue-50 rounded-lg'>
               <h4 className='text-sm font-semibold text-blue-900 mb-2'>Selected Student</h4>
@@ -287,6 +287,8 @@ const SpeechScreeningStep1 = ({
               <p className='text-xs text-blue-600 mt-1'>Grade: {selectedGrade}</p>
             </div>
           )}
+
+          {afterStudentContent}
 
           {selectedGrade && (
             <div>
@@ -316,7 +318,6 @@ const SpeechScreeningStep1 = ({
               </Select>
             </div>
           )}
-
           {/* Screening Status Checkboxes - Only show after grade is selected */}
           {selectedGrade && (
             <div className='space-y-3'>
