@@ -1,8 +1,8 @@
+import { useNavigate } from 'react-router-dom'
+import { User, Mic } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { User, Mic, RefreshCw } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 
 interface CreateScreeningModalProps {
   isOpen: boolean
@@ -12,9 +12,9 @@ interface CreateScreeningModalProps {
 const CreateScreeningModal = ({ isOpen, onClose }: CreateScreeningModalProps) => {
   const navigate = useNavigate()
 
-  const handleCreateScreening = (type: 'speech' | 'rescreening') => {
+  const handleCreateScreening = () => {
     onClose()
-    navigate(`/screening/${type}`)
+    navigate('/screening/speech')
   }
 
   return (
@@ -25,10 +25,10 @@ const CreateScreeningModal = ({ isOpen, onClose }: CreateScreeningModalProps) =>
         </DialogHeader>
 
         <div className='mt-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          <div className='mt-6'>
             <Card
               className='cursor-pointer hover:shadow-md transition-shadow'
-              onClick={() => handleCreateScreening('speech')}>
+              onClick={handleCreateScreening}>
               <CardHeader className='text-center'>
                 <div className='mx-auto mb-4 w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center'>
                   <Mic className='w-6 h-6 text-purple-600' />
@@ -40,14 +40,14 @@ const CreateScreeningModal = ({ isOpen, onClose }: CreateScreeningModalProps) =>
                   Conduct individual speech and language screening for articulation, language,
                   voice, and fluency assessment.
                 </p>
-                <Button className='w-full' onClick={() => handleCreateScreening('speech')}>
+                <Button className='w-full' onClick={handleCreateScreening}>
                   <User className='w-4 h-4 mr-2' />
                   Create Speech Screening
                 </Button>
               </CardContent>
             </Card>
 
-            <Card
+            {/* <Card
               className='cursor-pointer hover:shadow-md transition-shadow'
               onClick={() => handleCreateScreening('rescreening')}>
               <CardHeader className='text-center'>
@@ -66,7 +66,7 @@ const CreateScreeningModal = ({ isOpen, onClose }: CreateScreeningModalProps) =>
                   Create Rescreening
                 </Button>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
       </DialogContent>
