@@ -173,6 +173,7 @@ const HearingScreeningContent = () => {
         description: 'Failed to save hearing screening. Please try again.',
         variant: 'destructive',
       })
+      throw error
     }
   }
   const handleCancel = () => {
