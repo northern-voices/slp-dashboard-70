@@ -18,14 +18,9 @@ import { SpeechScreeningFormValues } from '@/types/screening-form'
 interface SpeechScreeningStep2Props {
   form: UseFormReturn<SpeechScreeningFormValues>
   selectedStudent: Student | null
-  isRescreening?: boolean
 }
 
-const SpeechScreeningStep2 = ({
-  form,
-  selectedStudent,
-  isRescreening,
-}: SpeechScreeningStep2Props) => {
+const SpeechScreeningStep2 = ({ form, selectedStudent }: SpeechScreeningStep2Props) => {
   return (
     <div className='space-y-6'>
       <Card>
@@ -53,10 +48,8 @@ const SpeechScreeningStep2 = ({
               </Label>
               <Select
                 value={form.watch('screening_type')}
-                onValueChange={value => form.setValue('screening_type', value)}
-                disabled={isRescreening}>
-                <SelectTrigger
-                  className={isRescreening ? 'bg-gray-50 cursor-not-allowed opacity-75' : ''}>
+                onValueChange={value => form.setValue('screening_type', value)}>
+                <SelectTrigger>
                   <SelectValue placeholder='Select screening type' />
                 </SelectTrigger>
                 <SelectContent>
@@ -81,7 +74,7 @@ const SpeechScreeningStep2 = ({
         </CardContent>
       </Card>
 
-      <EnhancedSpeechScreeningFields form={form} isRescreening={isRescreening} />
+      <EnhancedSpeechScreeningFields form={form} />
 
       <Card>
         <CardHeader>

@@ -21,13 +21,9 @@ import { SpeechScreeningFormValues, ErrorPatterns } from '@/types/screening-form
 
 interface EnhancedSpeechScreeningFieldsProps {
   form: UseFormReturn<SpeechScreeningFormValues>
-  isRescreening?: boolean
 }
 
-const EnhancedSpeechScreeningFields = ({
-  form,
-  isRescreening,
-}: EnhancedSpeechScreeningFieldsProps) => {
+const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsProps) => {
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([])
   const [selectedSounds, setSelectedSounds] = useState<string[]>([])
   const [soundNotes, setSoundNotes] = useState<Record<string, string>>({})
@@ -1110,21 +1106,16 @@ const EnhancedSpeechScreeningFields = ({
             <Label className='text-base font-medium mb-3 block'>Sounds in Error</Label>
             <div className='grid grid-cols-3 md:grid-cols-6 gap-3'>
               {articulationSounds.map(sound => {
-                const isPrefilledSound = isRescreening && selectedSounds.includes(sound)
                 return (
                   <div key={sound} className='flex flex-col'>
                     <button
                       type='button'
-                      disabled={isRescreening && selectedSounds.includes(sound)}
-                      onClick={() =>
-                        !(isRescreening && selectedSounds.includes(sound)) &&
-                        handleSoundToggle(sound)
-                      }
+                      onClick={() => !selectedSounds.includes(sound) && handleSoundToggle(sound)}
                       className={`p-2 text-center border rounded-md transition-colors ${
                         selectedSounds.includes(sound)
                           ? 'bg-blue-100 border-blue-500 text-blue-700'
                           : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
-                      } ${isRescreening && selectedSounds.includes(sound) ? 'cursor-not-allowed opacity-75' : ''}`}>
+                      }`}>
                       {sound}
                     </button>
                     {selectedSounds.includes(sound) && (
@@ -1297,10 +1288,7 @@ const EnhancedSpeechScreeningFields = ({
                               !currentPatterns.includes(pattern) &&
                               !isValidOrCombination([...currentPatterns, pattern])
 
-                            const isPrefilledSound = isRescreening && selectedSounds.includes(sound)
-
                             const isDisabled =
-                              isPrefilledSound ||
                               isOtherDisabled ||
                               isOtherCheckboxDisabled ||
                               isSyllableDisabled ||
@@ -1354,9 +1342,6 @@ const EnhancedSpeechScreeningFields = ({
                                           selectedStoppingSounds[sound] || []
                                         const isSelected =
                                           currentStoppingSounds.includes(stoppingSound)
-                                        const isDisabled =
-                                          isPrefilledSound ||
-                                          (currentStoppingSounds.length > 0 && !isSelected)
 
                                         return (
                                           <div
@@ -1400,9 +1385,7 @@ const EnhancedSpeechScreeningFields = ({
                                         type='text'
                                         value={soundNotes[sound] || ''}
                                         onChange={e => handleSoundNoteChange(sound, e.target.value)}
-                                        disabled={isPrefilledSound}
-                                        readOnly={isPrefilledSound}
-                                        className={`px-2 py-1 border border-gray-300 rounded-sm text-xs w-20 ${isPrefilledSound ? 'bg-gray-50 cursor-not-allowed opacity-75' : ''} `}
+                                        className={`px-2 py-1 border border-gray-300 rounded-sm text-xs w-20`}
                                       />
                                       <span className='text-gray-600'>
                                         " for {soundErrorPatterns[sound]?.word || sound}
@@ -1424,7 +1407,6 @@ const EnhancedSpeechScreeningFields = ({
                               onCheckedChange={checked =>
                                 handleNotesToggle(sound, checked as boolean)
                               }
-                              disabled={isPrefilledSound}
                             />
                             <Label
                               htmlFor={`${sound}-notes`}
@@ -1439,9 +1421,7 @@ const EnhancedSpeechScreeningFields = ({
                                 placeholder='Notes for this sound...'
                                 value={notes[sound] || ''}
                                 onChange={e => handleNoteChange(sound, e.target.value)}
-                                disabled={isPrefilledSound}
-                                readOnly={isPrefilledSound}
-                                className={`text-xs px-3 py-2 border border-gray-300 rounded-sm w-full ${isPrefilledSound ? 'bg-gray-50 cursor-not-allowed opacity-75' : ''}`}
+                                className={`text-xs px-3 py-2 border border-gray-300 rounded-sm w-full`}
                               />
                             </div>
                           )}
