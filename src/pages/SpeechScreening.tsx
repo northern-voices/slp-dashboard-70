@@ -61,8 +61,17 @@ const SpeechScreeningContent = () => {
     return new Date(month < 7 ? year - 1 : year, 7, 1)
   }
 
+  const getPreviousAcademicYearStart = () => {
+    const now = new Date()
+    const month = now.getMonth()
+    const year = now.getFullYear()
+    const currentYearStart = month < 7 ? year - 1 : year
+    return new Date(currentYearStart - 1, 7, 1)
+  }
+
   const isPreviousYearScreening = latestScreening
-    ? new Date(latestScreening.created_at) < getCurrentAcademicYearStart()
+    ? new Date(latestScreening.created_at) >= getPreviousAcademicYearStart() &&
+      new Date(latestScreening.created_at) < getCurrentAcademicYearStart()
     : false
 
   const handleCancel = () => {
