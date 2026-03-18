@@ -4,7 +4,7 @@ import { ScreeningFormData } from '@/types/screening'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, FileText, ClipboardList } from 'lucide-react'
+import { ChevronLeft, FileText, ClipboardList, Info, RefreshCw } from 'lucide-react'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
 import MultiStepSpeechScreeningForm from '@/components/screening/speech/MultiStepSpeechScreeningForm'
@@ -118,14 +118,23 @@ const SpeechScreeningContent = () => {
             <h2 className='text-sm font-semibold text-amber-800'>Latest Screening</h2>
           </div>
           {latestScreening && (
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => setShowDetailsModal(true)}
-              className='text-amber-700 border-amber-300 hover:bg-amber-100 text-sm'>
-              <FileText className='w-3 h-3 mr-1' />
-              View Full Details
-            </Button>
+            <div className={`flex items-center gap-2`}>
+              {isPreviousYearScreening ? (
+                <div className='flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full'>
+                  <RefreshCw className='w-3 h-3 text-green-600' />
+                  <p className='text-xs font-medium text-green-700'>
+                    Previous school year — will be treated as a rescreening
+                  </p>
+                </div>
+              ) : (
+                <div className='flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full'>
+                  <Info className='w-3 h-3 text-blue-600' />
+                  <p className='text-xs font-medium text-blue-700'>
+                    Not from the previous school year — will be treated as a new screening
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
