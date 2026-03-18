@@ -32,6 +32,7 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
   const [selectedErrorPatterns, setSelectedErrorPatterns] = useState<Record<string, string[]>>({})
   const [selectedStoppingSounds, setSelectedStoppingSounds] = useState<Record<string, string[]>>({})
   const [initialized, setInitialized] = useState(false)
+  const [areasOfConcernOpen, setAreasOfConcernOpen] = useState(false)
 
   // Initialize component state from form data when available (for editing existing screenings)
   useEffect(() => {
@@ -1549,61 +1550,70 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
 
       {/* Areas of Concern */}
       <Card>
-        <CardHeader>
-          <CardTitle>Additional Areas of Concern (Private)</CardTitle>
+        <CardHeader
+          className='cursor-pointer select-none'
+          onClick={() => setAreasOfConcernOpen(prev => !prev)}>
+          <CardTitle className='flex items-center justify-between'>
+            Additional Areas of Concern (Private)
+            <span className='text-lg font-normal text-muted-foreground'>
+              {areasOfConcernOpen ? '▲ Hide' : '▼ Show'}
+            </span>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className='space-y-6'>
-            {areasOfConcern.map(concern => (
-              <div key={concern} className='space-y-3'>
-                <div className='flex items-center space-x-2'>
-                  <Checkbox
-                    id={concern}
-                    checked={selectedConcerns.includes(concern)}
-                    onCheckedChange={checked => handleConcernChange(concern, checked as boolean)}
-                  />
-                  <Label htmlFor={concern} className='text-sm font-medium'>
-                    {concern}
-                  </Label>
-                </div>
-
-                {selectedConcerns.includes(concern) && (
-                  <div className='ml-6'>
-                    <Textarea
-                      value={
-                        form.watch('error_patterns.add_areas_of_concern')?.[
-                          getFieldName(concern)
-                        ] || ''
-                      }
-                      onChange={e => {
-                        const current = form.watch('error_patterns.add_areas_of_concern') || {
-                          voice: null,
-                          fluency: null,
-                          literacy: null,
-                          suspected_cas: null,
-                          cleft_lip_palate: null,
-                          reluctant_speaking: null,
-                          language_expression: null,
-                          language_comprehension: null,
-                          known_pending_diagnoses: null,
-                          pragmatics_social_communication: null,
-                        }
-
-                        form.setValue('error_patterns.add_areas_of_concern', {
-                          ...current,
-                          [getFieldName(concern)]: e.target.value,
-                        })
-                      }}
-                      placeholder='Details...'
-                      rows={3}
-                      className='w-full'
+        {areasOfConcernOpen && (
+          <CardContent>
+            <div className='space-y-6'>
+              {areasOfConcern.map(concern => (
+                <div key={concern} className='space-y-3'>
+                  <div className='flex items-center space-x-2'>
+                    <Checkbox
+                      id={concern}
+                      checked={selectedConcerns.includes(concern)}
+                      onCheckedChange={checked => handleConcernChange(concern, checked as boolean)}
                     />
+                    <Label htmlFor={concern} className='text-sm font-medium'>
+                      {concern}
+                    </Label>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
+
+                  {selectedConcerns.includes(concern) && (
+                    <div className='ml-6'>
+                      <Textarea
+                        value={
+                          form.watch('error_patterns.add_areas_of_concern')?.[
+                            getFieldName(concern)
+                          ] || ''
+                        }
+                        onChange={e => {
+                          const current = form.watch('error_patterns.add_areas_of_concern') || {
+                            voice: null,
+                            fluency: null,
+                            literacy: null,
+                            suspected_cas: null,
+                            cleft_lip_palate: null,
+                            reluctant_speaking: null,
+                            language_expression: null,
+                            language_comprehension: null,
+                            known_pending_diagnoses: null,
+                            pragmatics_social_communication: null,
+                          }
+
+                          form.setValue('error_patterns.add_areas_of_concern', {
+                            ...current,
+                            [getFieldName(concern)]: e.target.value,
+                          })
+                        }}
+                        placeholder='Details...'
+                        rows={3}
+                        className='w-full'
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        )}
       </Card>
     </div>
   )
