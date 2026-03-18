@@ -34,19 +34,19 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
   const graduatedStudentIds = new Set(
     schoolScreenings
       .filter(s => s.error_patterns?.screening_metadata?.graduated === true)
-      .map(s => s.student_id),
+      .map(s => s.student_id)
   )
 
   const qualifiedStudentIds = new Set(
     schoolScreenings
       .filter(s => s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true)
-      .map(s => s.student_id),
+      .map(s => s.student_id)
   )
 
   const subStudentIds = new Set(
     schoolScreenings
       .filter(s => s.error_patterns?.screening_metadata?.sub === true)
-      .map(s => s.student_id),
+      .map(s => s.student_id)
   )
 
   const stats = {
