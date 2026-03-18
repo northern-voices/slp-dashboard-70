@@ -25,6 +25,73 @@ import {
   isValidOrCombination,
 } from './soundCombinationValidators'
 
+const computePatternDisabled = (
+  sound: string,
+  pattern: string,
+  currentPatterns: string[]
+): boolean => {
+  const isExclusive = (p: string) => p === 'Other' || p === 'Stimulability'
+  const hasExclusiveSelected = currentPatterns.some(isExclusive)
+  const isThisPatternExclusive = isExclusive(pattern)
+  const hasNonExclusiveSelected = currentPatterns.some(p => !isExclusive(p))
+
+  if (hasExclusiveSelected && !currentPatterns.includes(pattern)) return true
+  if (hasNonExclusiveSelected && isThisPatternExclusive) return true
+
+  const isSyllableSound = sound === '2 syllables' || sound === '3 syllables'
+  if (isSyllableSound && currentPatterns.length > 0 && !currentPatterns.includes(pattern))
+    return true
+
+  const isOmissionSelected = currentPatterns.includes('Omission')
+  if (sound === 'P' || sound === 'B' || sound === 'Final P') {
+    if (pattern === 'Omission' && currentPatterns.length > 0 && !isOmissionSelected) return true
+    if (pattern !== 'Omission' && isOmissionSelected) return true
+  }
+
+  if (sound === 'M' && currentPatterns.length > 0 && !currentPatterns.includes(pattern)) return true
+
+  if (sound === 'Final T' || sound === 'Final K') {
+    if (pattern === 'Omission' && currentPatterns.length > 0 && !isOmissionSelected) return true
+    if (pattern !== 'Omission' && isOmissionSelected) return true
+  }
+
+  const clusterSounds: Record<string, (p: string[]) => boolean> = {
+    'St-': isValidStCombination,
+    'Sp-': isValidSpCombination,
+    'Sn-': isValidSnCombination,
+    'Sm-': isValidSmCombination,
+    'Sk-': isValidSkCombination,
+    'Final -ts': isValidFinalTsCombination,
+    'Final -ps': isValidFinalPsCombination,
+    'Final -ks': isValidFinalKsCombination,
+    K: isValidKGCombination,
+    G: isValidKGCombination,
+    T: isValidTDCombination,
+    D: isValidTDCombination,
+    '-ar': isValidArCombination,
+    '-or': isValidOrCombination,
+  }
+
+  if (clusterSounds[sound]) {
+    if (
+      currentPatterns.length > 0 &&
+      !currentPatterns.includes(pattern) &&
+      !clusterSounds[sound]([...currentPatterns, pattern])
+    )
+      return true
+  }
+
+  if (sound === 'L' || sound === 'R') {
+    if (currentPatterns.length > 0 && !currentPatterns.includes(pattern)) return true
+  }
+
+  const szSounds = ['S', 'Z', 'Ch', 'Sh', 'J', 'F', 'V', 'th']
+  if (szSounds.includes(sound) && pattern === 'Other' && currentPatterns.some(p => p !== 'Other'))
+    return true
+
+  return false
+}
+
 interface ArticulationCardProps {
   form: UseFormReturn<SpeechScreeningFormValues>
   selectedSounds: string[]
@@ -92,158 +159,7 @@ const ArticulationCard = ({
                           const patternDisplay = patternObj.display
                           const currentPatterns = selectedErrorPatterns[sound] || []
 
-                          const isExclusive = (p: string) => p === 'Other' || p === 'Stimulability'
-
-                          const hasExclusiveSelected = currentPatterns.some(isExclusive)
-                          const isThisPatternExclusive = isExclusive(pattern)
-                          const hasNonExclusiveSelected = currentPatterns.some(p => !isExclusive(p))
-
-                          const isOtherDisabled =
-                            hasExclusiveSelected && !currentPatterns.includes(pattern)
-                          const isOtherCheckboxDisabled =
-                            hasNonExclusiveSelected && isThisPatternExclusive
-
-                          const isSyllableSound = sound === '2 syllables' || sound === '3 syllables'
-                          const isSyllableDisabled =
-                            isSyllableSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern)
-
-                          const isPBFinalPSound =
-                            sound === 'P' || sound === 'B' || sound === 'Final P'
-                          const isOmissionSelected = currentPatterns.includes('Omission')
-                          const isPBDisabled =
-                            isPBFinalPSound &&
-                            ((pattern === 'Omission' &&
-                              currentPatterns.length > 0 &&
-                              !currentPatterns.includes('Omission')) ||
-                              (pattern !== 'Omission' && isOmissionSelected))
-
-                          const isMSound = sound === 'M'
-                          const isMDisabled =
-                            isMSound &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern)
-
-                          const isFinalTKSound = sound === 'Final T' || sound === 'Final K'
-                          const isFinalTKOmissionSelected = currentPatterns.includes('Omission')
-                          const isFinalTKDisabled =
-                            isFinalTKSound &&
-                            ((pattern === 'Omission' &&
-                              currentPatterns.length > 0 &&
-                              !currentPatterns.includes('Omission')) ||
-                              (pattern !== 'Omission' && isFinalTKOmissionSelected))
-
-                          const isStDisabled =
-                            sound === 'St-' &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidStCombination([...currentPatterns, pattern])
-
-                          const isSpDisabled =
-                            sound === 'Sp-' &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidSpCombination([...currentPatterns, pattern])
-
-                          const isSnDisabled =
-                            sound === 'Sn-' &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidSnCombination([...currentPatterns, pattern])
-
-                          const isSmDisabled =
-                            sound === 'Sm-' &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidSmCombination([...currentPatterns, pattern])
-
-                          const isSkDisabled =
-                            sound === 'Sk-' &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidSkCombination([...currentPatterns, pattern])
-
-                          const isFinalTsDisabled =
-                            sound === 'Final -ts' &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidFinalTsCombination([...currentPatterns, pattern])
-
-                          const isFinalPsDisabled =
-                            sound === 'Final -ps' &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidFinalPsCombination([...currentPatterns, pattern])
-
-                          const isFinalKsDisabled =
-                            sound === 'Final -ks' &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidFinalKsCombination([...currentPatterns, pattern])
-
-                          const isKGDisabled =
-                            (sound === 'K' || sound === 'G') &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidKGCombination([...currentPatterns, pattern])
-
-                          const isTDDisabled =
-                            (sound === 'T' || sound === 'D') &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidTDCombination([...currentPatterns, pattern])
-
-                          const isLRDisabled =
-                            (sound === 'L' || sound === 'R') &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern)
-
-                          const isSZDisabled =
-                            (sound === 'S' ||
-                              sound === 'Z' ||
-                              sound === 'Ch' ||
-                              sound === 'Sh' ||
-                              sound === 'J' ||
-                              sound === 'F' ||
-                              sound === 'V' ||
-                              sound === 'th') &&
-                            pattern === 'Other' &&
-                            currentPatterns.some(p => p !== 'Other')
-
-                          const isArDisabled =
-                            sound === '-ar' &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidArCombination([...currentPatterns, pattern])
-
-                          const isOrDisabled =
-                            sound === '-or' &&
-                            currentPatterns.length > 0 &&
-                            !currentPatterns.includes(pattern) &&
-                            !isValidOrCombination([...currentPatterns, pattern])
-
-                          const isDisabled =
-                            isOtherDisabled ||
-                            isOtherCheckboxDisabled ||
-                            isSyllableDisabled ||
-                            isPBDisabled ||
-                            isMDisabled ||
-                            isFinalTKDisabled ||
-                            isStDisabled ||
-                            isSpDisabled ||
-                            isSnDisabled ||
-                            isSmDisabled ||
-                            isSkDisabled ||
-                            isFinalTsDisabled ||
-                            isFinalPsDisabled ||
-                            isFinalKsDisabled ||
-                            isKGDisabled ||
-                            isTDDisabled ||
-                            isLRDisabled ||
-                            isSZDisabled ||
-                            isArDisabled ||
-                            isOrDisabled
+                          const isDisabled = computePatternDisabled(sound, pattern, currentPatterns)
 
                           return (
                             <div key={pattern} className='space-y-2'>
