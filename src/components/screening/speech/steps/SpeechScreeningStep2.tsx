@@ -1,4 +1,5 @@
 import { UseFormReturn } from 'react-hook-form'
+import { Screening } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -18,9 +19,14 @@ import { SpeechScreeningFormValues } from '@/types/screening-form'
 interface SpeechScreeningStep2Props {
   form: UseFormReturn<SpeechScreeningFormValues>
   selectedStudent: Student | null
+  initialScreeningData?: Screening | null
 }
 
-const SpeechScreeningStep2 = ({ form, selectedStudent }: SpeechScreeningStep2Props) => {
+const SpeechScreeningStep2 = ({
+  form,
+  selectedStudent,
+  initialScreeningData,
+}: SpeechScreeningStep2Props) => {
   return (
     <div className='space-y-6'>
       <Card>
@@ -80,6 +86,16 @@ const SpeechScreeningStep2 = ({ form, selectedStudent }: SpeechScreeningStep2Pro
           <CardTitle>Clinical Notes (Private)</CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
+          {initialScreeningData?.clinical_notes && (
+            <div className='rounded-md border border-blue-200 bg-blue-50 p-3'>
+              <p className='text-xs font-semibold text-blue-700 mb-1'>
+                Previous Clinical Observations
+              </p>
+              <p className='text-sm text-blue-900 whitespace-pre-wrap'>
+                {initialScreeningData.clinical_notes}
+              </p>
+            </div>
+          )}
           <div>
             <Label htmlFor='clinical_notes'>Clinical Observations</Label>
             <Textarea
@@ -88,12 +104,12 @@ const SpeechScreeningStep2 = ({ form, selectedStudent }: SpeechScreeningStep2Pro
               rows={4}
               className='mt-2'
               onKeyDown={e => {
+                // Allow Ctrl+Enter for new lines
                 if (e.key === 'Enter' && e.ctrlKey) {
-                  // Allow Ctrl+Enter for new lines
                   return
                 }
                 if (e.key === 'Enter') {
-                  e.stopPropagation() // Prevent form submission
+                  e.stopPropagation()
                 }
               }}
             />
@@ -106,6 +122,16 @@ const SpeechScreeningStep2 = ({ form, selectedStudent }: SpeechScreeningStep2Pro
           <CardTitle>Recommendations and referrals (Reports)</CardTitle>
         </CardHeader>
         <CardContent>
+          {initialScreeningData?.referral_notes && (
+            <div className='rounded-md border border-blue-200 bg-blue-50 p-3 mb-3'>
+              <p className='text-xs font-semibold text-blue-700 mb-1'>
+                Previous Recommendations & Referrals
+              </p>
+              <p className='text-sm text-blue-900 whitespace-pre-wrap'>
+                {initialScreeningData.referral_notes}
+              </p>
+            </div>
+          )}
           <Textarea
             {...form.register('referral_notes')}
             placeholder='Enter recommendations and referrals...'

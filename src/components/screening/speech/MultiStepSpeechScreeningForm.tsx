@@ -146,8 +146,8 @@ const MultiStepSpeechScreeningForm = ({
     form.setValue('screening_type', 'rescreening')
     form.setValue('screening_date', new Date().toLocaleDateString('en-CA'))
     form.setValue('speech_screen_result', initialScreeningData.result || '')
-    form.setValue('clinical_notes', initialScreeningData.clinical_notes || '')
-    form.setValue('referral_notes', initialScreeningData.referral_notes || '')
+    form.setValue('clinical_notes', '')
+    form.setValue('referral_notes', '')
     form.setValue(
       'vocabulary_support_recommended',
       initialScreeningData.vocabulary_support || false
@@ -649,7 +649,13 @@ const MultiStepSpeechScreeningForm = ({
           />
         )
       case 2:
-        return <SpeechScreeningStep2 form={form} selectedStudent={selectedStudent} />
+        return (
+          <SpeechScreeningStep2
+            form={form}
+            selectedStudent={selectedStudent}
+            initialScreeningData={initialScreeningData}
+          />
+        )
       default:
         return null
     }
