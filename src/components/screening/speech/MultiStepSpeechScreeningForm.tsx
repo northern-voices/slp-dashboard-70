@@ -143,7 +143,7 @@ const MultiStepSpeechScreeningForm = ({
       pragmatics_social_communication: null,
     }
 
-    form.setValue('screening_type', 'rescreening')
+    form.setValue('screening_type', 'progress')
     form.setValue('screening_date', new Date().toLocaleDateString('en-CA'))
     form.setValue('speech_screen_result', initialScreeningData.result || '')
     form.setValue('clinical_notes', '')
