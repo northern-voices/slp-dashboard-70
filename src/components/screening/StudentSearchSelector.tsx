@@ -549,7 +549,7 @@ const StudentSearchSelector = ({
                 />
               </div>
 
-              <FormField
+              {/* <FormField
                 control={newStudentForm.control}
                 name='date_of_birth'
                 render={({ field }) => (
@@ -561,7 +561,7 @@ const StudentSearchSelector = ({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <div className='flex justify-end space-x-2 pt-4'>
                 <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>
