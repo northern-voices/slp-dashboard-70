@@ -1,4 +1,3 @@
-import { AnyARecord } from 'node:dns'
 import { z } from 'zod'
 
 // Dynamic schema factory function
@@ -65,6 +64,7 @@ export interface ErrorPatterns {
       word: string
       errorPatterns: string[]
       stoppingSounds?: string[]
+      stimulabilityOptions?: string[]
     }>
     articulationNotes: string
   }
@@ -92,4 +92,32 @@ export interface ErrorPatterns {
     pragmatics_social_communication: string | null
   }
   additional_observations: string
+}
+
+export interface SpeechScreeningFormValues {
+  screening_type: string
+  screening_date: string
+  clinical_notes: string
+  referral_notes: string
+  result: string
+  vocabulary_support: boolean
+  speech_screen_result: string
+  vocabulary_support_recommended: boolean
+  qualifies_for_speech_program: boolean
+  sub: boolean
+  graduated: boolean
+  error_patterns: ErrorPatterns
+  general_articulation_notes?: string
+
+  academic_year: string
+  priority_re_screen: boolean
+  other_notes: string
+  absent: {
+    isAbsent: boolean
+    notes: string
+  }
+  no_consent: {
+    isNoConsent: boolean
+    notes: string
+  }
 }
