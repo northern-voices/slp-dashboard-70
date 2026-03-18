@@ -80,7 +80,10 @@ const MultiStepHearingScreeningForm = ({
   const parseOrNull = (val: string | null): number | null => {
     if (val === null || val === '') return null
     const num = parseFloat(val)
-    return isNaN(num) ? null : num
+    if (isNaN(num)) return null
+    const decimalPlaces = (val.split('.')[1] || '').length
+    const precision = decimalPlaces >= 4 ? 4 : 2
+    return Math.round(num * Math.pow(10, precision)) / Math.pow(10, precision)
   }
 
   const handleSubmit = async data => {
