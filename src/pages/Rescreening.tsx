@@ -33,7 +33,9 @@ const RescreeningContent = () => {
 
   const { data: student = null, isLoading: loading } = useStudent(studentId)
 
-  const { data: studentScreenings = [] } = useSpeechScreeningsByStudent(selectedStudent?.id)
+  const { data: studentScreenings = [] } = useSpeechScreeningsByStudent(
+    selectedStudent?.id || student?.id
+  )
   const latestScreening = studentScreenings[0] ?? null
 
   const handleSubmit = (screeningData: ScreeningFormData) => {
@@ -82,7 +84,8 @@ const RescreeningContent = () => {
   }
 
   const renderLatestScreening = () => {
-    if (!selectedStudent) return null
+    if (!selectedStudent && !student) return null
+    const programStatus = selectedStudent?.program_status || student?.program_status
 
     return (
       <div className='mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg'>
@@ -104,7 +107,24 @@ const RescreeningContent = () => {
         </div>
 
         {latestScreening ? (
-          <div className='grid grid-cols-2 md:grid-cols-4 gap-3 text-sm'>
+          <div className='grid grid-cols-2 md:grid-cols-5 gap-3 text-sm'>
+            <div>
+              <p className='text-xs text-amber-600 font-medium'>Program Status</p>
+              <Badge
+                className={`text-xs mt-0.5 ${
+                  programStatus === 'qualified'
+                    ? 'bg-green-100 text-green-800'
+                    : programStatus === 'sub'
+                      ? 'bg-blue-100 text-blue-800'
+                      : programStatus === 'no_consent'
+                        ? 'bg-gray-100 text-gray-800'
+                        : 'bg-amber-100 text-amber-800'
+                }`}>
+                {programStatus === 'no_consent'
+                  ? 'No Consent'
+                  : programStatus?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || '-'}
+              </Badge>
+            </div>
             <div>
               <p className='text-xs text-amber-600 font-medium'>Date</p>
               <p className='text-amber-900'>
@@ -118,7 +138,9 @@ const RescreeningContent = () => {
             <div>
               <p className='text-xs text-amber-600 font-medium'>Result</p>
               <Badge className='bg-amber-100 text-amber-800 text-xs mt-0.5'>
-                {latestScreening.result?.replace(/_/g, ' ') || '-'}
+                {latestScreening.result
+                  ?.replace(/_/g, ' ')
+                  .replace(/\b\w/g, c => c.toUpperCase()) || '-'}
               </Badge>
             </div>
             <div>
