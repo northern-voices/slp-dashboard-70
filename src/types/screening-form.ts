@@ -64,6 +64,7 @@ export interface ErrorPatterns {
       word: string
       errorPatterns: string[]
       stoppingSounds?: string[]
+      stimulabilityOptions?: string[]
     }>
     articulationNotes: string
   }
