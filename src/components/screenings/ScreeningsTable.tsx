@@ -67,7 +67,7 @@ interface ScreeningsTableProps {
   searchTerm: string
   resultFilter: string
   dateRangeFilter: string
-  qualifiesForSpeechProgramFilter: string
+  qualifiesForSpeechProgramFilter: string[]
   vocabularySupportFilter: string
   casFilter: string
   gradeFilter: string
@@ -261,31 +261,26 @@ const ScreeningsTable = ({
     // Apply qualifies for speech program filter
     // Apply qualifies for speech program filter
     let matchesQualifiesForSpeechProgram = true
-    if (qualifiesForSpeechProgramFilter !== 'all') {
+    if (qualifiesForSpeechProgramFilter.length > 0) {
       const metadata = screening.error_patterns?.screening_metadata
       const consent = screening.error_patterns?.consent
 
-      if (qualifiesForSpeechProgramFilter === 'qualified') {
-        matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === true
-      } else if (qualifiesForSpeechProgramFilter === 'not_in_program') {
-        matchesQualifiesForSpeechProgram =
-          metadata?.qualifies_for_speech_program === false &&
-          !metadata?.sub &&
-          !metadata?.paused &&
-          !metadata?.graduated &&
-          !consent?.no_consent
-      } else if (qualifiesForSpeechProgramFilter === 'sub') {
-        matchesQualifiesForSpeechProgram = metadata?.sub === true
-      } else if (qualifiesForSpeechProgramFilter === 'paused') {
-        matchesQualifiesForSpeechProgram = metadata?.paused === true
-      } else if (qualifiesForSpeechProgramFilter === 'graduated') {
-        matchesQualifiesForSpeechProgram = metadata?.graduated === true
-      } else if (qualifiesForSpeechProgramFilter === 'caseload') {
-        matchesQualifiesForSpeechProgram =
-          metadata?.qualifies_for_speech_program === true || metadata?.sub === true
-      } else if (qualifiesForSpeechProgramFilter === 'no_consent') {
-        matchesQualifiesForSpeechProgram = consent?.no_consent === true
-      }
+      matchesQualifiesForSpeechProgram = qualifiesForSpeechProgramFilter.some(filter => {
+        if (filter === 'qualified') return metadata?.qualifies_for_speech_program === true
+        if (filter === 'not_in_program')
+          return (
+            metadata?.qualifies_for_speech_program === false &&
+            !metadata?.sub &&
+            !metadata?.paused &&
+            !metadata?.graduated &&
+            !consent?.no_consent
+          )
+        if (filter === 'sub') return metadata?.sub === true
+        if (filter === 'paused') return metadata?.paused === true
+        if (filter === 'graduated') return metadata?.graduated === true
+        if (filter === 'no_consent') return consent?.no_consent === true
+        return false
+      })
     }
 
     // Apply grade filter

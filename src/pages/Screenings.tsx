@@ -26,7 +26,9 @@ const ScreeningsContent = () => {
   const [gradeFilter, setGradeFilter] = useState('all')
 
   // Speech program filters
-  const [qualifiesForSpeechProgramFilter, setQualifiesForSpeechProgramFilter] = useState('all')
+  const [qualifiesForSpeechProgramFilter, setQualifiesForSpeechProgramFilter] = useState<string[]>(
+    []
+  )
   const [vocabularySupportFilter, setVocabularySupportFilter] = useState('all')
   const [casFilter, setCasFilter] = useState('all')
   const [languageComprehensionFilter, setLanguageComprehensionFilter] = useState('all')
@@ -41,7 +43,7 @@ const ScreeningsContent = () => {
     setResultFilter('all')
     setDateRangeFilter('school_year')
     setGradeFilter('all')
-    setQualifiesForSpeechProgramFilter('all')
+    setQualifiesForSpeechProgramFilter([])
     setVocabularySupportFilter('all')
     setCasFilter('all')
     setLanguageComprehensionFilter('all')

@@ -4,7 +4,7 @@ import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-scr
 import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface ScreeningStatsProps {
-  onFilterClick?: (filterValue: string) => void
+  onFilterClick?: (filterValues: string[]) => void
   onClearAllFilters?: () => void
 }
 
@@ -66,9 +66,9 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
     caseloadScreenings: caseloadStudentIds.size,
   }
 
-  const handleCardClick = (filterValue: string) => {
+  const handleCardClick = (filterValues: string[]) => {
     if (onFilterClick) {
-      onFilterClick(filterValue)
+      onFilterClick(filterValues)
     }
   }
 
@@ -127,7 +127,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
       {/* Qualified */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
-        onClick={() => handleCardClick('qualified')}>
+        onClick={() => handleCardClick(['qualified'])}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Qualified</CardTitle>
           <CheckCircle className='h-4 w-4 text-muted-foreground' />
@@ -140,7 +140,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
       {/* Subs */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
-        onClick={() => handleCardClick('sub')}>
+        onClick={() => handleCardClick(['sub'])}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Subs</CardTitle>
           <Clock className='h-4 w-4 text-muted-foreground' />
@@ -153,7 +153,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
       {/* Graduated */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
-        onClick={() => handleCardClick('graduated')}>
+        onClick={() => handleCardClick(['graduated'])}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Graduated</CardTitle>
           <Calendar className='h-4 w-4 text-muted-foreground' />
@@ -166,7 +166,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
       {/* Caseload */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
-        onClick={() => handleCardClick('caseload')}>
+        onClick={() => handleCardClick(['qualified', 'sub'])}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Caseload</CardTitle>
           <Users className='h-4 w-4 text-muted-foreground' />
