@@ -29,6 +29,8 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
   const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
   const error = currentSchool ? errorSchool : errorAll
 
+  const allScreenedStudentIds = new Set(schoolScreenings.map(s => s.student_id))
+
   const graduatedStudentIds = new Set(
     schoolScreenings
       .filter(s => s.error_patterns?.screening_metadata?.graduated === true)
@@ -53,15 +55,10 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
       .map(s => s.student_id)
   )
 
-  const caseloadStudentIds = new Set([
-    ...qualifiedStudentIds,
-    ...subStudentIds,
-    ...pausedStudentIds,
-    ...graduatedStudentIds,
-  ])
+  const caseloadStudentIds = new Set([...qualifiedStudentIds, ...subStudentIds])
 
   const stats = {
-    totalScreenings: schoolScreenings.length,
+    totalScreenings: allScreenedStudentIds.size,
     qualifiedScreenings: qualifiedStudentIds.size,
     subsScreenings: subStudentIds.size,
     pausedScreenings: pausedStudentIds.size,

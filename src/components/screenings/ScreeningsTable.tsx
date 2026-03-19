@@ -130,7 +130,7 @@ const ScreeningsTable = ({
     error: errorSchool,
   } = useScreeningsBySchool(
     currentSchool?.id,
-    dateRangeFilter === 'school_year' ? 'school_year' : 'all',
+    dateRangeFilter === 'school_year' ? 'school_year' : 'all'
   )
 
   // Use mutation hooks
@@ -283,6 +283,9 @@ const ScreeningsTable = ({
         matchesQualifiesForSpeechProgram = metadata?.paused === true
       } else if (qualifiesForSpeechProgramFilter === 'graduated') {
         matchesQualifiesForSpeechProgram = metadata?.graduated === true
+      } else if (qualifiesForSpeechProgramFilter === 'caseload') {
+        matchesQualifiesForSpeechProgram =
+          metadata?.qualifies_for_speech_program === true || metadata?.sub === true
       } else if (qualifiesForSpeechProgramFilter === 'no_consent') {
         matchesQualifiesForSpeechProgram = consent?.no_consent === true
       }
@@ -612,7 +615,7 @@ const ScreeningsTable = ({
 
   const handleViewStudent = (screening: Screening) => {
     const student = students.find(
-      s => s.id === screening.student_id || s.student_id === screening.student_id,
+      s => s.id === screening.student_id || s.student_id === screening.student_id
     )
 
     if (!student) {
@@ -660,7 +663,7 @@ const ScreeningsTable = ({
               variant: 'destructive',
             })
           },
-        },
+        }
       )
     } else {
       // Handle hearing screenings update here if needed
@@ -724,10 +727,10 @@ const ScreeningsTable = ({
 
       // Check if this is the most recent screening for the student
       const studentScreenings = schoolScreenings.filter(
-        s => s.student_id === screening.student_id && s.source_table === 'speech',
+        s => s.student_id === screening.student_id && s.source_table === 'speech'
       )
       const mostRecentScreening = studentScreenings.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )[0]
       const isLatestScreening = mostRecentScreening?.id === screening.id
 
@@ -765,7 +768,7 @@ const ScreeningsTable = ({
                       variant: 'destructive',
                     })
                   },
-                },
+                }
               )
             } else {
               // For older screenings, just show success without updating student
@@ -785,7 +788,7 @@ const ScreeningsTable = ({
               variant: 'destructive',
             })
           },
-        },
+        }
       )
     } else {
       // Handle hearing screenings update here if needed
@@ -862,7 +865,7 @@ const ScreeningsTable = ({
               variant: 'destructive',
             })
           },
-        },
+        }
       )
     } else {
       toast({
