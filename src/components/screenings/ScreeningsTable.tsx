@@ -458,11 +458,7 @@ const ScreeningsTable = ({
     const qualifies = metadata?.qualifies_for_speech_program || false
 
     if (noConsent) {
-      return (
-        <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>
-          Qualifies - No Consent
-        </Badge>
-      )
+      return <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     }
     if (graduated) {
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
