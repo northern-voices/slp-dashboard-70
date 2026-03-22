@@ -29,36 +29,59 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
   const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
   const error = currentSchool ? errorSchool : errorAll
 
-  const allScreenedStudentIds = new Set(schoolScreenings.map(s => s.student_id))
+  // Get the latest screening per student
+  const latestScreeningByStudent = new Map<string, (typeof schoolScreenings)[0]>()
+  schoolScreenings.forEach(s => {
+    const existing = latestScreeningByStudent.get(s.student_id)
+    if (!existing || new Date(s.created_at) > new Date(existing.created_at)) {
+      latestScreeningByStudent.set(s.student_id, s)
+    }
+  })
+  const latestScreenings = Array.from(latestScreeningByStudent.values())
 
   const graduatedStudentIds = new Set(
-    schoolScreenings
+    latestScreenings
       .filter(s => s.error_patterns?.screening_metadata?.graduated === true)
       .map(s => s.student_id)
   )
-
   const qualifiedStudentIds = new Set(
-    schoolScreenings
+    latestScreenings
       .filter(s => s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true)
       .map(s => s.student_id)
   )
-
   const subStudentIds = new Set(
-    schoolScreenings
+    latestScreenings
       .filter(s => s.error_patterns?.screening_metadata?.sub === true)
       .map(s => s.student_id)
   )
-
   const pausedStudentIds = new Set(
-    schoolScreenings
+    latestScreenings
       .filter(s => s.error_patterns?.screening_metadata?.paused === true)
       .map(s => s.student_id)
   )
-
   const caseloadStudentIds = new Set([...qualifiedStudentIds, ...subStudentIds])
 
+  // Raw screening record counts
+  const rawCounts = {
+    total: schoolScreenings.length,
+    qualified: schoolScreenings.filter(
+      s => s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true
+    ).length,
+    sub: schoolScreenings.filter(s => s.error_patterns?.screening_metadata?.sub === true).length,
+    paused: schoolScreenings.filter(s => s.error_patterns?.screening_metadata?.paused === true)
+      .length,
+    graduated: schoolScreenings.filter(
+      s => s.error_patterns?.screening_metadata?.graduated === true
+    ).length,
+    caseload: schoolScreenings.filter(
+      s =>
+        s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true ||
+        s.error_patterns?.screening_metadata?.sub === true
+    ).length,
+  }
+
   const stats = {
-    totalScreenings: allScreenedStudentIds.size,
+    totalScreenings: latestScreeningByStudent.size,
     qualifiedScreenings: qualifiedStudentIds.size,
     subsScreenings: subStudentIds.size,
     pausedScreenings: pausedStudentIds.size,
@@ -121,6 +144,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.totalScreenings}</div>
+          <p className='text-xs text-muted-foreground mt-1'>{rawCounts.total} screenings</p>
         </CardContent>
       </Card>
 
@@ -134,6 +158,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.qualifiedScreenings}</div>
+          <p className='text-xs text-muted-foreground mt-1'>{rawCounts.qualified} screenings</p>
         </CardContent>
       </Card>
 
@@ -147,6 +172,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.subsScreenings}</div>
+          <p className='text-xs text-muted-foreground mt-1'>{rawCounts.sub} screenings</p>
         </CardContent>
       </Card>
 
@@ -160,6 +186,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.graduatedScreenings}</div>
+          <p className='text-xs text-muted-foreground mt-1'>{rawCounts.graduated} screenings</p>
         </CardContent>
       </Card>
 
@@ -173,6 +200,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.caseloadScreenings}</div>
+          <p className='text-xs text-muted-foreground mt-1'>{rawCounts.caseload} screenings</p>
         </CardContent>
       </Card>
     </div>
