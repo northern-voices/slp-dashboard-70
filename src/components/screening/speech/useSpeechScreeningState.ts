@@ -307,18 +307,11 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
   }
 
   const handleStimulabilityOptionChange = (sound: string, option: string, checked: boolean) => {
-    if (checked) {
-      // Only allow one at a time
-      setSelectedStimulabilityOptions({
-        ...selectedStimulabilityOptions,
-        [sound]: [option],
-      })
-    } else {
-      setSelectedStimulabilityOptions({
-        ...selectedStimulabilityOptions,
-        [sound]: [],
-      })
-    }
+    const current = selectedStimulabilityOptions[sound] || []
+    setSelectedStimulabilityOptions({
+      ...selectedStimulabilityOptions,
+      [sound]: checked ? [...current, option] : current.filter(o => o !== option),
+    })
   }
 
   const handleSoundNoteChange = (sound: string, value: string) => {
@@ -331,19 +324,28 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
   const handleErrorPatternChange = (sound: string, pattern: string, checked: boolean) => {
     const currentPatterns = selectedErrorPatterns[sound] || []
 
-    // Other and Stimulability are always exclusive
-    if (pattern === 'Other' || pattern === 'Stimulability') {
+    // Other
+    if (pattern === 'Other') {
       if (checked) {
-        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: [pattern] })
-        if (pattern === 'Stimulability') {
-          setSelectedStimulabilityOptions({ ...selectedStimulabilityOptions, [sound]: ['Word'] })
-        }
+        const stimulability = currentPatterns.includes('Stimulability') ? ['Stimulability'] : []
+        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: [...stimulability, pattern] })
       } else {
-        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: [] })
+        const stimulability = currentPatterns.includes('Stimulability') ? ['Stimulability'] : []
+        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: stimulability })
         clearNotesForSound(sound)
-        if (pattern === 'Stimulability') {
-          setSelectedStimulabilityOptions({ ...selectedStimulabilityOptions, [sound]: [] })
-        }
+      }
+      return
+    }
+
+    if (pattern === 'Stimulability') {
+      setSelectedErrorPatterns({
+        ...selectedErrorPatterns,
+        [sound]: checked
+          ? [...currentPatterns, pattern]
+          : currentPatterns.filter(p => p !== pattern),
+      })
+      if (!checked) {
+        setSelectedStimulabilityOptions({ ...selectedStimulabilityOptions, [sound]: [] })
       }
       return
     }

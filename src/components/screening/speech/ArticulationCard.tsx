@@ -30,28 +30,37 @@ const computePatternDisabled = (
   pattern: string,
   currentPatterns: string[]
 ): boolean => {
-  const isExclusive = (p: string) => p === 'Other' || p === 'Stimulability'
+  const isExclusive = (p: string) => p === 'Other'
   const hasExclusiveSelected = currentPatterns.some(isExclusive)
   const isThisPatternExclusive = isExclusive(pattern)
-  const hasNonExclusiveSelected = currentPatterns.some(p => !isExclusive(p))
+  const hasNonExclusiveSelected = currentPatterns.some(
+    p => !isExclusive(p) && p !== 'Stimulability'
+  )
 
+  // Stimulability is never disabled and never counts against other patterns
+  if (pattern === 'Stimulability') return false
   if (hasExclusiveSelected && !currentPatterns.includes(pattern)) return true
   if (hasNonExclusiveSelected && isThisPatternExclusive) return true
 
+  const nonStimulabilityPatterns = currentPatterns.filter(p => p !== 'Stimulability')
+
   const isSyllableSound = sound === '2 syllables' || sound === '3 syllables'
-  if (isSyllableSound && currentPatterns.length > 0 && !currentPatterns.includes(pattern))
+  if (isSyllableSound && nonStimulabilityPatterns.length > 0 && !currentPatterns.includes(pattern))
     return true
 
   const isOmissionSelected = currentPatterns.includes('Omission')
   if (sound === 'P' || sound === 'B' || sound === 'Final P') {
-    if (pattern === 'Omission' && currentPatterns.length > 0 && !isOmissionSelected) return true
+    if (pattern === 'Omission' && nonStimulabilityPatterns.length > 0 && !isOmissionSelected)
+      return true
     if (pattern !== 'Omission' && isOmissionSelected) return true
   }
 
-  if (sound === 'M' && currentPatterns.length > 0 && !currentPatterns.includes(pattern)) return true
+  if (sound === 'M' && nonStimulabilityPatterns.length > 0 && !currentPatterns.includes(pattern))
+    return true
 
   if (sound === 'Final T' || sound === 'Final K') {
-    if (pattern === 'Omission' && currentPatterns.length > 0 && !isOmissionSelected) return true
+    if (pattern === 'Omission' && nonStimulabilityPatterns.length > 0 && !isOmissionSelected)
+      return true
     if (pattern !== 'Omission' && isOmissionSelected) return true
   }
 
@@ -74,7 +83,7 @@ const computePatternDisabled = (
 
   if (clusterSounds[sound]) {
     if (
-      currentPatterns.length > 0 &&
+      nonStimulabilityPatterns.length > 0 &&
       !currentPatterns.includes(pattern) &&
       !clusterSounds[sound]([...currentPatterns, pattern])
     )
@@ -82,7 +91,7 @@ const computePatternDisabled = (
   }
 
   if (sound === 'L' || sound === 'R') {
-    if (currentPatterns.length > 0 && !currentPatterns.includes(pattern)) return true
+    if (nonStimulabilityPatterns.length > 0 && !currentPatterns.includes(pattern)) return true
   }
 
   const szSounds = ['S', 'Z', 'Ch', 'Sh', 'J', 'F', 'V', 'th']
@@ -233,12 +242,11 @@ const ArticulationCard = ({
                                     <div className='text-xs font-medium text-gray-700'>
                                       Stimulable at:
                                     </div>
-                                    <div className='grid grid-cols-2 gap-2'>
+                                    <div className='flex flex-col gap-2'>
                                       {stimulabilityOptions.map(option => {
                                         const currentOptions =
                                           selectedStimulabilityOptions[sound] || []
                                         const isSelected = currentOptions.includes(option)
-                                        const isDisabled = currentOptions.length > 0 && !isSelected
 
                                         return (
                                           <div key={option} className='flex items-center space-x-2'>
@@ -252,13 +260,10 @@ const ArticulationCard = ({
                                                   checked as boolean
                                                 )
                                               }
-                                              disabled={isDisabled}
                                             />
                                             <Label
                                               htmlFor={`${sound}-stimulability-${option}`}
-                                              className={`text-xs font-medium ${
-                                                isDisabled ? 'text-gray-400' : ''
-                                              }`}>
+                                              className='text-xs font-medium'>
                                               {option}
                                             </Label>
                                           </div>
