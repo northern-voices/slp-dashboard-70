@@ -307,10 +307,9 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
   }
 
   const handleStimulabilityOptionChange = (sound: string, option: string, checked: boolean) => {
-    const current = selectedStimulabilityOptions[sound] || []
     setSelectedStimulabilityOptions({
       ...selectedStimulabilityOptions,
-      [sound]: checked ? [...current, option] : current.filter(o => o !== option),
+      [sound]: checked ? [option] : [],
     })
   }
 
@@ -344,7 +343,9 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
           ? [...currentPatterns, pattern]
           : currentPatterns.filter(p => p !== pattern),
       })
-      if (!checked) {
+      if (checked) {
+        setSelectedStimulabilityOptions({ ...selectedStimulabilityOptions, [sound]: ['Word'] })
+      } else {
         setSelectedStimulabilityOptions({ ...selectedStimulabilityOptions, [sound]: [] })
       }
       return
