@@ -95,7 +95,11 @@ const computePatternDisabled = (
   }
 
   const szSounds = ['S', 'Z', 'Ch', 'Sh', 'J', 'F', 'V', 'th']
-  if (szSounds.includes(sound) && pattern === 'Other' && currentPatterns.some(p => p !== 'Other'))
+  if (
+    szSounds.includes(sound) &&
+    pattern === 'Other' &&
+    currentPatterns.some(p => p !== 'Other' && p !== 'Stimulability')
+  )
     return true
 
   return false

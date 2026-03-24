@@ -360,10 +360,11 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
 
     // One at a time, clears notes on uncheck
     if (['2 syllables', '3 syllables', 'M'].includes(sound)) {
+      const stimulability = currentPatterns.includes('Stimulability') ? ['Stimulability'] : []
       if (checked) {
-        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: [pattern] })
+        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: [...stimulability, pattern] })
       } else {
-        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: [] })
+        setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: stimulability })
         clearNotesForSound(sound)
       }
       return
@@ -371,9 +372,10 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
 
     // One at a time, no notes
     if (sound === 'L' || sound === 'R') {
+      const stimulability = currentPatterns.includes('Stimulability') ? ['Stimulability'] : []
       setSelectedErrorPatterns({
         ...selectedErrorPatterns,
-        [sound]: checked ? [pattern] : [],
+        [sound]: checked ? [...stimulability, pattern] : stimulability,
       })
       return
     }
@@ -381,9 +383,12 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
     // Omission is exclusive, other patterns can combine
     if (['P', 'B', 'Final P', 'Final T', 'Final K'].includes(sound)) {
       if (pattern === 'Omission') {
+        const stimulability = currentPatterns.includes('Stimulability') ? ['Stimulability'] : []
         setSelectedErrorPatterns({
           ...selectedErrorPatterns,
-          [sound]: checked ? ['Omission'] : currentPatterns.filter(p => p !== 'Omission'),
+          [sound]: checked
+            ? [...stimulability, 'Omission']
+            : currentPatterns.filter(p => p !== 'Omission'),
         })
       } else {
         if (checked) {
