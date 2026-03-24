@@ -367,6 +367,7 @@ const MultiStepSpeechScreeningForm = ({
                 word: string
                 errorPatterns: string[]
                 stoppingSounds?: string[]
+                stimulabilityOptions?: string[]
               }>) || [],
             articulationNotes:
               (articulation.articulationNotes as string) ||

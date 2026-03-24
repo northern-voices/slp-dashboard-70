@@ -247,11 +247,13 @@ const ArticulationCard = ({
                                         const currentOptions =
                                           selectedStimulabilityOptions[sound] || []
                                         const isSelected = currentOptions.includes(option)
+                                        const isDisabled = currentOptions.length > 0 && !isSelected
 
                                         return (
                                           <div key={option} className='flex items-center space-x-2'>
                                             <Checkbox
                                               id={`${sound}-stimulability-${option}`}
+                                              disabled={isDisabled}
                                               checked={isSelected}
                                               onCheckedChange={checked =>
                                                 handleStimulabilityOptionChange(
@@ -263,7 +265,7 @@ const ArticulationCard = ({
                                             />
                                             <Label
                                               htmlFor={`${sound}-stimulability-${option}`}
-                                              className='text-xs font-medium'>
+                                              className={`text-xs font-medium ${isDisabled ? 'text-gray-400' : ''}`}>
                                               {option}
                                             </Label>
                                           </div>
