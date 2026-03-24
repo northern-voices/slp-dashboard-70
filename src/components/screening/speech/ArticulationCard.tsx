@@ -85,7 +85,7 @@ const computePatternDisabled = (
     if (
       nonStimulabilityPatterns.length > 0 &&
       !currentPatterns.includes(pattern) &&
-      !clusterSounds[sound]([...currentPatterns, pattern])
+      !clusterSounds[sound]([...nonStimulabilityPatterns, pattern])
     )
       return true
   }

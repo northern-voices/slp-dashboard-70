@@ -406,7 +406,8 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
     if (validatorMap[sound]) {
       if (checked) {
         const newPatterns = [...currentPatterns, pattern]
-        if (validatorMap[sound](newPatterns)) {
+        const patternsForValidation = newPatterns.filter(p => p !== 'Stimulability')
+        if (validatorMap[sound](patternsForValidation)) {
           setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: newPatterns })
         }
       } else {
