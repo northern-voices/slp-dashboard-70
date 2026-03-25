@@ -331,6 +331,25 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
                         </div>
                       )}
 
+                      {/* Display Stimulability Options */}
+                      {soundError.errorPatterns?.includes('Stimulability') &&
+                        soundError.stimulabilityOptions &&
+                        soundError.stimulabilityOptions.length > 0 && (
+                          <div className='mb-2'>
+                            <span className='text-xs text-gray-600'>Stimulable at:</span>
+                            <div className='flex flex-wrap gap-1 mt-1'>
+                              {soundError.stimulabilityOptions.map((option, optionIndex) => (
+                                <Badge
+                                  key={optionIndex}
+                                  variant='secondary'
+                                  className='text-xs text-green-800 bg-green-100'>
+                                  {option}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                       {/* Display Notes (from input field) */}
                       {soundError.notes && (
                         <div className='text-sm text-gray-700'>
