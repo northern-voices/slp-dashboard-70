@@ -22,3 +22,15 @@ export const useUploadConsentForm = (studentId: string) => {
     },
   })
 }
+
+export const useDeleteConsentForm = (studentId: string) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, filePath }: { id: string; filePath: string }) =>
+      consentFormsApi.deleteConsentForm(id, filePath),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['consent-forms', studentId] })
+    },
+  })
+}
