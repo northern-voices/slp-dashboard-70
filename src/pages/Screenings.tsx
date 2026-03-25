@@ -26,11 +26,14 @@ const ScreeningsContent = () => {
   const [gradeFilter, setGradeFilter] = useState('all')
 
   // Speech program filters
-  const [qualifiesForSpeechProgramFilter, setQualifiesForSpeechProgramFilter] = useState('all')
+  const [qualifiesForSpeechProgramFilter, setQualifiesForSpeechProgramFilter] = useState<string[]>(
+    []
+  )
   const [vocabularySupportFilter, setVocabularySupportFilter] = useState('all')
   const [casFilter, setCasFilter] = useState('all')
   const [languageComprehensionFilter, setLanguageComprehensionFilter] = useState('all')
   const [priorityRescreenFilter, setPriorityRescreenFilter] = useState('all')
+  const [deduplicateByStudent, setDeduplicateByStudent] = useState(false)
 
   // Notes and recommendations filters
   const [recommendationsFilter, setRecommendationsFilter] = useState('all')
@@ -41,13 +44,19 @@ const ScreeningsContent = () => {
     setResultFilter('all')
     setDateRangeFilter('school_year')
     setGradeFilter('all')
-    setQualifiesForSpeechProgramFilter('all')
+    setQualifiesForSpeechProgramFilter([])
     setVocabularySupportFilter('all')
     setCasFilter('all')
     setLanguageComprehensionFilter('all')
     setPriorityRescreenFilter('all')
     setRecommendationsFilter('all')
     setClinicalNotesFilter('all')
+    setDeduplicateByStudent(false)
+  }
+
+  const handleStatFilterClick = (filterValues: string[], deduplicate: boolean) => {
+    setQualifiesForSpeechProgramFilter(filterValues)
+    setDeduplicateByStudent(deduplicate)
   }
 
   const handleBulkAction = (action: string) => {
@@ -104,7 +113,7 @@ const ScreeningsContent = () => {
                 </div>
 
                 <ScreeningStats
-                  onFilterClick={setQualifiesForSpeechProgramFilter}
+                  onFilterClick={handleStatFilterClick}
                   onClearAllFilters={clearAllFilters}
                 />
               </div>
@@ -151,6 +160,7 @@ const ScreeningsContent = () => {
                   setSelectedScreenings={setSelectedScreenings}
                   onBulkAction={handleBulkAction}
                   currentSchool={currentSchool}
+                  deduplicateByStudent={deduplicateByStudent}
                 />
               </div>
             </div>

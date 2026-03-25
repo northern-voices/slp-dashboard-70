@@ -1,41 +1,68 @@
-
 export const getStatusColor = (status: string) => {
   switch (status) {
-    case 'completed': return 'default';
-    case 'in_progress': return 'secondary';
-    case 'scheduled': return 'outline';
-    case 'cancelled': return 'destructive';
-    default: return 'outline';
+    case 'completed':
+      return 'default'
+    case 'in_progress':
+      return 'secondary'
+    case 'scheduled':
+      return 'outline'
+    case 'cancelled':
+      return 'destructive'
+    default:
+      return 'outline'
   }
-};
+}
 
 export const getTypeDisplay = (type: string) => {
   switch (type) {
-    case 'initial': return 'Initial';
-    case 'progress': return 'Progress';
-    default: return type;
+    case 'initial':
+      return 'Initial'
+    case 'progress':
+      return 'Progress'
+    default:
+      return type
   }
-};
+}
+
+export const getStatusDisplay = (status: string) => {
+  switch (status) {
+    case 'no_consent':
+      return 'No Consent'
+    case 'qualified':
+      return 'Qualifies'
+    case 'sub':
+      return 'Sub'
+    case 'paused':
+      return 'Pause/Away'
+    case 'graduated':
+      return 'Graduated'
+    default:
+      return status
+  }
+}
 
 export const groupScreeningsByRecency = (screenings: any[]) => {
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const sixMonthsAgo = new Date()
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
   const recentScreenings = screenings.filter(
     screening => new Date(screening.screening_date) >= sixMonthsAgo
-  );
+  )
 
   const historicalScreenings = screenings.filter(
     screening => new Date(screening.screening_date) < sixMonthsAgo
-  );
+  )
 
   // Group historical screenings by year
-  const groupedHistorical = historicalScreenings.reduce((acc, screening) => {
-    const year = new Date(screening.screening_date).getFullYear();
-    if (!acc[year]) acc[year] = [];
-    acc[year].push(screening);
-    return acc;
-  }, {} as Record<number, any[]>);
+  const groupedHistorical = historicalScreenings.reduce(
+    (acc, screening) => {
+      const year = new Date(screening.screening_date).getFullYear()
+      if (!acc[year]) acc[year] = []
+      acc[year].push(screening)
+      return acc
+    },
+    {} as Record<number, any[]>
+  )
 
-  return { recentScreenings, groupedHistorical };
-};
+  return { recentScreenings, groupedHistorical }
+}
