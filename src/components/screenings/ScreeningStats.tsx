@@ -4,7 +4,7 @@ import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-scr
 import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface ScreeningStatsProps {
-  onFilterClick?: (filterValues: string[]) => void
+  onFilterClick?: (filterValues: string[], deduplicate: boolean) => void
   onClearAllFilters?: () => void
 }
 
@@ -89,9 +89,9 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
     caseloadScreenings: caseloadStudentIds.size,
   }
 
-  const handleCardClick = (filterValues: string[]) => {
+  const handleCardClick = (filterValues: string[], deduplicate: boolean) => {
     if (onFilterClick) {
-      onFilterClick(filterValues)
+      onFilterClick(filterValues, deduplicate)
     }
   }
 
@@ -151,56 +151,128 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
       {/* Qualified */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
-        onClick={() => handleCardClick(['qualified'])}>
+        onClick={() => handleCardClick(['qualified'], false)}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Qualified</CardTitle>
           <CheckCircle className='h-4 w-4 text-muted-foreground' />
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.qualifiedScreenings}</div>
-          <p className='text-xs text-muted-foreground mt-1'>{rawCounts.qualified} screenings</p>
+          <div className='flex gap-2 mt-2'>
+            <button
+              className='text-xs text-blue-600 hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['qualified'], true)
+              }}>
+              {stats.qualifiedScreenings} students
+            </button>
+            <span className='text-xs text-muted-foreground'>·</span>
+            <button
+              className='text-xs text-muted-foreground hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['qualified'], false)
+              }}>
+              {rawCounts.qualified} screenings
+            </button>
+          </div>
         </CardContent>
       </Card>
 
       {/* Subs */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
-        onClick={() => handleCardClick(['sub'])}>
+        onClick={() => handleCardClick(['sub'], false)}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Subs</CardTitle>
           <Clock className='h-4 w-4 text-muted-foreground' />
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.subsScreenings}</div>
-          <p className='text-xs text-muted-foreground mt-1'>{rawCounts.sub} screenings</p>
+          <div className='flex gap-2 mt-2'>
+            <button
+              className='text-xs text-blue-600 hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['sub'], true)
+              }}>
+              {stats.subsScreenings} students
+            </button>
+            <span className='text-xs text-muted-foreground'>·</span>
+            <button
+              className='text-xs text-muted-foreground hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['sub'], false)
+              }}>
+              {rawCounts.sub} screenings
+            </button>
+          </div>
         </CardContent>
       </Card>
 
       {/* Graduated */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
-        onClick={() => handleCardClick(['graduated'])}>
+        onClick={() => handleCardClick(['graduated'], false)}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Graduated</CardTitle>
           <Calendar className='h-4 w-4 text-muted-foreground' />
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.graduatedScreenings}</div>
-          <p className='text-xs text-muted-foreground mt-1'>{rawCounts.graduated} screenings</p>
+          <div className='flex gap-2 mt-2'>
+            <button
+              className='text-xs text-blue-600 hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['graduated'], true)
+              }}>
+              {stats.graduatedScreenings} students
+            </button>
+            <span className='text-xs text-muted-foreground'>·</span>
+            <button
+              className='text-xs text-muted-foreground hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['graduated'], false)
+              }}>
+              {rawCounts.graduated} screenings
+            </button>
+          </div>
         </CardContent>
       </Card>
 
       {/* Caseload */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
-        onClick={() => handleCardClick(['qualified', 'sub'])}>
+        onClick={() => handleCardClick(['qualified', 'sub'], false)}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Caseload</CardTitle>
           <Users className='h-4 w-4 text-muted-foreground' />
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.caseloadScreenings}</div>
-          <p className='text-xs text-muted-foreground mt-1'>{rawCounts.caseload} screenings</p>
+          <div className='flex gap-2 mt-2'>
+            <button
+              className='text-xs text-blue-600 hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['qualified', 'sub'], true)
+              }}>
+              {stats.caseloadScreenings} students
+            </button>
+            <span className='text-xs text-muted-foreground'>·</span>
+            <button
+              className='text-xs text-muted-foreground hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['qualified', 'sub'], false)
+              }}>
+              {rawCounts.caseload} screenings
+            </button>
+          </div>
         </CardContent>
       </Card>
     </div>

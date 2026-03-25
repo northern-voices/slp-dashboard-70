@@ -33,6 +33,7 @@ const ScreeningsContent = () => {
   const [casFilter, setCasFilter] = useState('all')
   const [languageComprehensionFilter, setLanguageComprehensionFilter] = useState('all')
   const [priorityRescreenFilter, setPriorityRescreenFilter] = useState('all')
+  const [deduplicateByStudent, setDeduplicateByStudent] = useState(false)
 
   // Notes and recommendations filters
   const [recommendationsFilter, setRecommendationsFilter] = useState('all')
@@ -50,6 +51,12 @@ const ScreeningsContent = () => {
     setPriorityRescreenFilter('all')
     setRecommendationsFilter('all')
     setClinicalNotesFilter('all')
+    setDeduplicateByStudent(false)
+  }
+
+  const handleStatFilterClick = (filterValues: string[], deduplicate: boolean) => {
+    setQualifiesForSpeechProgramFilter(filterValues)
+    setDeduplicateByStudent(deduplicate)
   }
 
   const handleBulkAction = (action: string) => {
@@ -106,7 +113,7 @@ const ScreeningsContent = () => {
                 </div>
 
                 <ScreeningStats
-                  onFilterClick={setQualifiesForSpeechProgramFilter}
+                  onFilterClick={handleStatFilterClick}
                   onClearAllFilters={clearAllFilters}
                 />
               </div>
@@ -153,6 +160,7 @@ const ScreeningsContent = () => {
                   setSelectedScreenings={setSelectedScreenings}
                   onBulkAction={handleBulkAction}
                   currentSchool={currentSchool}
+                  deduplicateByStudent={deduplicateByStudent}
                 />
               </div>
             </div>

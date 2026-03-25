@@ -79,6 +79,7 @@ interface ScreeningsTableProps {
   setSelectedScreenings: (screenings: Screening[]) => void
   onBulkAction: (action: string) => void
   currentSchool: School | null
+  deduplicateByStudent?: boolean
 }
 
 const ScreeningsTable = ({
@@ -97,6 +98,7 @@ const ScreeningsTable = ({
   setSelectedScreenings,
   onBulkAction,
   currentSchool,
+  deduplicateByStudent,
 }: ScreeningsTableProps) => {
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
@@ -198,8 +200,24 @@ const ScreeningsTable = ({
   // No need to filter anymore since we're fetching school-specific data
   const schoolScreenings = allScreenings || []
 
+  const latestScreeningsByStudent = useMemo(() => {
+    return Array.from(
+      schoolScreenings
+        .reduce((map, s) => {
+          const existing = map.get(s.student_id)
+          if (!existing || new Date(s.created_at) > new Date(existing.created_at)) {
+            map.set(s.student_id, s)
+          }
+          return map
+        }, new Map<string, Screening>())
+        .values()
+    )
+  }, [schoolScreenings])
+
   // Apply all filters
-  const filteredScreenings = schoolScreenings.filter(screening => {
+  const filteredScreenings = (
+    deduplicateByStudent ? latestScreeningsByStudent : schoolScreenings
+  ).filter(screening => {
     const matchesSearch =
       screening.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       screening.screener?.toLowerCase().includes(searchTerm.toLowerCase())
