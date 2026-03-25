@@ -36,4 +36,36 @@ export const consentFormsApi = {
       throw error
     }
   },
+
+  // Get all consent forms for a student
+  getConsentForms: async (studentId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('consent_forms')
+        .select(
+          `
+          id,
+          file_name,
+          file_path,
+          file_type,
+          file_size,
+          uploaded_at,
+          uploaded_by:users!consent_forms_uploaded_by_fkey(
+            id,
+            first_name,
+            last_name
+          )
+        `
+        )
+        .eq('student_id', studentId)
+        .order('uploaded_at', { ascending: false })
+
+      if (error) throw error
+
+      return data || []
+    } catch (error) {
+      console.error('Error fetching consent forms:', error)
+      throw error
+    }
+  },
 }
