@@ -148,6 +148,38 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
         </CardContent>
       </Card>
 
+      {/* Caseload */}
+      <Card
+        className='cursor-pointer hover:bg-gray-50 transition-colors'
+        onClick={() => handleCardClick(['qualified', 'sub'], false)}>
+        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+          <CardTitle className='text-sm font-medium'>Caseload</CardTitle>
+          <Users className='h-4 w-4 text-muted-foreground' />
+        </CardHeader>
+        <CardContent>
+          <div className='text-2xl font-bold'>{stats.caseloadScreenings}</div>
+          <div className='flex gap-2 mt-2'>
+            <button
+              className='text-xs text-blue-600 hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['qualified', 'sub'], true)
+              }}>
+              {stats.caseloadScreenings} students
+            </button>
+            <span className='text-xs text-muted-foreground'>·</span>
+            <button
+              className='text-xs text-muted-foreground hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['qualified', 'sub'], false)
+              }}>
+              {rawCounts.caseload} screenings
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Qualified */}
       <Card
         className='cursor-pointer hover:bg-gray-50 transition-colors'
@@ -239,38 +271,6 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
                 handleCardClick(['graduated'], false)
               }}>
               {rawCounts.graduated} screenings
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Caseload */}
-      <Card
-        className='cursor-pointer hover:bg-gray-50 transition-colors'
-        onClick={() => handleCardClick(['qualified', 'sub'], false)}>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>Caseload</CardTitle>
-          <Users className='h-4 w-4 text-muted-foreground' />
-        </CardHeader>
-        <CardContent>
-          <div className='text-2xl font-bold'>{stats.caseloadScreenings}</div>
-          <div className='flex gap-2 mt-2'>
-            <button
-              className='text-xs text-blue-600 hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleCardClick(['qualified', 'sub'], true)
-              }}>
-              {stats.caseloadScreenings} students
-            </button>
-            <span className='text-xs text-muted-foreground'>·</span>
-            <button
-              className='text-xs text-muted-foreground hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleCardClick(['qualified', 'sub'], false)
-              }}>
-              {rawCounts.caseload} screenings
             </button>
           </div>
         </CardContent>
