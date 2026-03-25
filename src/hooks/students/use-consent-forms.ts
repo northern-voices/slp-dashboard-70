@@ -9,3 +9,16 @@ export const useConsentForms = (studentId: string) => {
     staleTime: 5 * 60 * 1000,
   })
 }
+
+export const useUploadConsentForm = (studentId: string) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (file: File) => consentFormsApi.uploadConsentForm(file, studentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['consent-forms', studentId],
+      })
+    },
+  })
+}
