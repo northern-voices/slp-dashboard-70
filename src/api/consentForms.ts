@@ -9,12 +9,11 @@ export const consentFormsApi = {
       } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const fileExt = file.name.split('.').pop()
       const filePath = `${studentId}/${Date.now()}-${file.name}`
 
       const { error: uploadError } = await supabase.storage
         .from('consent-forms')
-        .upload(filePath, fileExt, {
+        .upload(filePath, file, {
           contentType: file.type,
           upsert: false,
         })
@@ -76,9 +75,13 @@ export const consentFormsApi = {
         .from('consent-forms')
         .createSignedUrl(filePath, 60 * 60)
 
+      if (error) throw error
+      if (!data?.signedUrl) throw new Error('No signed URL returned')
+
       return data.signedUrl
     } catch (error) {
       console.error('Error generating a signed URL:', error)
+      throw error
     }
   },
 
