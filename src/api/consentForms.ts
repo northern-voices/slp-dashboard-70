@@ -68,4 +68,35 @@ export const consentFormsApi = {
       throw error
     }
   },
+
+  // Generate a signed URL to view a file (expires in 1 hour)
+  getSignedUrl: async (filePath: string): Promise<string> => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('consent-forms')
+        .createSignedUrl(filePath, 60 * 60)
+
+      return data.signedUrl
+    } catch (error) {
+      console.error('Error generating a signed URL:', error)
+    }
+  },
+
+  // Delete a consent form (storage + db record)
+  deleteConsentForm: async (id: string, filePath: string): Promise<void> => {
+    try {
+      const { error: storageError } = await supabase.storage
+        .from('consent-forms')
+        .remove([filePath])
+
+      if (storageError) throw storageError
+
+      const { error: dbError } = await supabase.from('consent_forms').delete().eq('id', id)
+
+      if (dbError) throw dbError
+    } catch (error) {
+      console.error('Error deleting consent form', error)
+      throw error
+    }
+  },
 }
