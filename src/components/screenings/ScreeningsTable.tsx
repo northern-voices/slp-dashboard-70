@@ -273,6 +273,15 @@ const ScreeningsTable = ({
           matchesDateRange = screeningDate >= schoolYearStart
           break
         }
+        default: {
+          if (dateRangeFilter.startsWith('sy_')) {
+            const [startYear, endYear] = dateRangeFilter.replace('sy_', '').split('-').map(Number)
+            const syStart = new Date(startYear, 8, 1) // Sept 1 of start year
+            const syEnd = new Date(endYear, 7, 31, 23, 59, 59) // Aug 31 of end year
+            matchesDateRange = screeningDate >= syStart && screeningDate <= syEnd
+          }
+          break
+        }
       }
     }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -37,6 +37,7 @@ interface ScreeningsFiltersProps {
   setLanguageComprehensionFilter: (value: string) => void
   priorityRescreenFilter: string
   setPriorityRescreenFilter: (value: string) => void
+  availableSchoolYears: string[]
 }
 
 const ScreeningsFilters = ({
@@ -62,6 +63,7 @@ const ScreeningsFilters = ({
   setLanguageComprehensionFilter,
   priorityRescreenFilter,
   setPriorityRescreenFilter,
+  availableSchoolYears,
 }: ScreeningsFiltersProps) => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
@@ -203,6 +205,11 @@ const ScreeningsFilters = ({
                       <SelectItem value='month'>This Month</SelectItem>
                       <SelectItem value='quarter'>This Quarter</SelectItem>
                       <SelectItem value='school_year'>This School Year</SelectItem>
+                      {availableSchoolYears.map(year => (
+                        <SelectItem key={year} value={`sy_${year}`}>
+                          {year}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

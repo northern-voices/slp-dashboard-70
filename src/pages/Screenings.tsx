@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
@@ -11,10 +11,28 @@ import ScreeningStats from '@/components/screenings/ScreeningStats'
 import ScreeningsFilters from '@/components/screenings/ScreeningsFilters'
 import ScreeningsTable from '@/components/screenings/ScreeningsTable'
 import { Screening } from '@/types/database'
+import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 
 const ScreeningsContent = () => {
   const { currentSchool } = useOrganization()
   const navigate = useNavigate()
+
+  const { data: allScreeningsData } = useScreenings()
+  const { data: schoolScreeningsData } = useScreeningsBySchool(currentSchool?.id, 'all')
+
+  const screeningsForYears = currentSchool ? schoolScreeningsData || [] : allScreeningsData || []
+
+  const availableSchoolYears = useMemo(() => {
+    const years = new Set<string>()
+    screeningsForYears.forEach(s => {
+      const date = new Date(s.created_at)
+      const month = date.getMonth()
+      const year = date.getFullYear()
+      const schoolYear = month >= 8 ? `${year}-${year + 1}` : `${year - 1}-${year}`
+      years.add(schoolYear)
+    })
+    return Array.from(years).sort().reverse() // newest first
+  }, [screeningsForYears])
 
   const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -142,6 +160,7 @@ const ScreeningsContent = () => {
                   setLanguageComprehensionFilter={setLanguageComprehensionFilter}
                   priorityRescreenFilter={priorityRescreenFilter}
                   setPriorityRescreenFilter={setPriorityRescreenFilter}
+                  availableSchoolYears={availableSchoolYears}
                 />
 
                 <ScreeningsTable
