@@ -1,23 +1,42 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import Header from '@/components/Header'
-import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import CreateScreeningModal from '@/components/screenings/CreateScreeningModal'
 import ScreeningStats from '@/components/screenings/ScreeningStats'
 import ScreeningsFilters from '@/components/screenings/ScreeningsFilters'
 import ScreeningsTable from '@/components/screenings/ScreeningsTable'
 import { Screening } from '@/types/database'
+import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 
 const ScreeningsContent = () => {
   const { currentSchool } = useOrganization()
   const navigate = useNavigate()
 
-  const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
+  const { data: allScreeningsData } = useScreenings()
+  const { data: schoolScreeningsData } = useScreeningsBySchool(currentSchool?.id, 'all')
 
+  const screeningsForYears = currentSchool ? schoolScreeningsData || [] : allScreeningsData || []
+
+  const availableSchoolYears = useMemo(() => {
+    const years = new Set<string>()
+    screeningsForYears.forEach(s => {
+      const date = new Date(s.created_at)
+      const month = date.getMonth()
+      const year = date.getFullYear()
+      const schoolYear = month >= 8 ? `${year}-${year + 1}` : `${year - 1}-${year}`
+      years.add(schoolYear)
+    })
+    return Array.from(years).sort().reverse() // newest first
+  }, [screeningsForYears])
+
+  const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   // Basic filters
   const [resultFilter, setResultFilter] = useState('all')
@@ -25,11 +44,14 @@ const ScreeningsContent = () => {
   const [gradeFilter, setGradeFilter] = useState('all')
 
   // Speech program filters
-  const [qualifiesForSpeechProgramFilter, setQualifiesForSpeechProgramFilter] = useState('all')
+  const [qualifiesForSpeechProgramFilter, setQualifiesForSpeechProgramFilter] = useState<string[]>(
+    []
+  )
   const [vocabularySupportFilter, setVocabularySupportFilter] = useState('all')
   const [casFilter, setCasFilter] = useState('all')
   const [languageComprehensionFilter, setLanguageComprehensionFilter] = useState('all')
   const [priorityRescreenFilter, setPriorityRescreenFilter] = useState('all')
+  const [deduplicateByStudent, setDeduplicateByStudent] = useState(false)
 
   // Notes and recommendations filters
   const [recommendationsFilter, setRecommendationsFilter] = useState('all')
@@ -40,13 +62,19 @@ const ScreeningsContent = () => {
     setResultFilter('all')
     setDateRangeFilter('school_year')
     setGradeFilter('all')
-    setQualifiesForSpeechProgramFilter('all')
+    setQualifiesForSpeechProgramFilter([])
     setVocabularySupportFilter('all')
     setCasFilter('all')
     setLanguageComprehensionFilter('all')
     setPriorityRescreenFilter('all')
     setRecommendationsFilter('all')
     setClinicalNotesFilter('all')
+    setDeduplicateByStudent(false)
+  }
+
+  const handleStatFilterClick = (filterValues: string[], deduplicate: boolean) => {
+    setQualifiesForSpeechProgramFilter(filterValues)
+    setDeduplicateByStudent(deduplicate)
   }
 
   const handleBulkAction = (action: string) => {
@@ -95,7 +123,7 @@ const ScreeningsContent = () => {
                     </p>
                   </div>
                   <Button
-                    onClick={() => navigate(`/screening/speech`)}
+                    onClick={() => setIsCreateModalOpen(true)}
                     className='bg-blue-600 hover:bg-blue-700'>
                     <Plus className='w-4 h-4 mr-2' />
                     Create Screening
@@ -103,7 +131,7 @@ const ScreeningsContent = () => {
                 </div>
 
                 <ScreeningStats
-                  onFilterClick={setQualifiesForSpeechProgramFilter}
+                  onFilterClick={handleStatFilterClick}
                   onClearAllFilters={clearAllFilters}
                 />
               </div>
@@ -132,6 +160,7 @@ const ScreeningsContent = () => {
                   setLanguageComprehensionFilter={setLanguageComprehensionFilter}
                   priorityRescreenFilter={priorityRescreenFilter}
                   setPriorityRescreenFilter={setPriorityRescreenFilter}
+                  availableSchoolYears={availableSchoolYears}
                 />
 
                 <ScreeningsTable
@@ -150,12 +179,18 @@ const ScreeningsContent = () => {
                   setSelectedScreenings={setSelectedScreenings}
                   onBulkAction={handleBulkAction}
                   currentSchool={currentSchool}
+                  deduplicateByStudent={deduplicateByStudent}
                 />
               </div>
             </div>
           </div>
         </SidebarInset>
       </div>
+
+      <CreateScreeningModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </SidebarProvider>
   )
 }

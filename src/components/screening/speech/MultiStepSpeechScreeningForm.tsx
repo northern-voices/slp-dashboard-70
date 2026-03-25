@@ -8,26 +8,35 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import { schoolGradesApi } from '@/api/schoolGrades'
+import { Screening } from '@/types/database'
 import ProgressIndicator from '../shared/ProgressIndicator'
 import SpeechScreeningStep1 from './steps/SpeechScreeningStep1'
 import SpeechScreeningStep2 from './steps/SpeechScreeningStep2'
 import SubmissionConfirmationModal from '../SubmissionConfirmationModal'
 import { useOnlineStatus } from '@/hooks/use-online-status'
+import { ErrorPatterns, SpeechScreeningFormValues } from '@/types/screening-form'
 import { offlineQueue } from '@/services/offline-queue'
 
 interface MultiStepSpeechScreeningFormProps {
   onSubmit?: (data: unknown) => void
   onCancel: () => void
   existingStudent?: Student | null
+  onStudentSelect?: (student: Student | null) => void
+  afterStudentContent?: React.ReactNode
+  initialScreeningData?: Screening | null
 }
 
 const MultiStepSpeechScreeningForm = ({
   onSubmit,
   onCancel,
   existingStudent,
+  onStudentSelect,
+  afterStudentContent,
+  initialScreeningData,
 }: MultiStepSpeechScreeningFormProps) => {
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null)
+
   const [selectedGrade, setSelectedGrade] = useState<string>('')
   const [selectedGradeId, setSelectedGradeId] = useState<string>('')
   const [gradeSchoolId, setGradeSchoolId] = useState<string>('')
@@ -47,7 +56,7 @@ const MultiStepSpeechScreeningForm = ({
   // Grade ID will be set through backend validation in handleSubmit
   // No default grade ID needed - it will come from existing or newly created grade records
 
-  const form = useForm({
+  const form = useForm<SpeechScreeningFormValues>({
     mode: 'onSubmit',
     reValidateMode: 'onSubmit',
     defaultValues: {
@@ -116,6 +125,55 @@ const MultiStepSpeechScreeningForm = ({
     },
   })
 
+  useEffect(() => {
+    if (!initialScreeningData) return
+
+    const errorPatterns = initialScreeningData.error_patterns
+    const articulation = errorPatterns?.articulation
+    const areasOfConcern = errorPatterns?.add_areas_of_concern || {
+      voice: null,
+      fluency: null,
+      literacy: null,
+      suspected_cas: null,
+      cleft_lip_palate: null,
+      reluctant_speaking: null,
+      language_expression: null,
+      language_comprehension: null,
+      known_pending_diagnoses: null,
+      pragmatics_social_communication: null,
+    }
+
+    form.setValue('screening_type', 'progress')
+    form.setValue('screening_date', new Date().toLocaleDateString('en-CA'))
+    form.setValue('speech_screen_result', initialScreeningData.result || '')
+    form.setValue('clinical_notes', '')
+    form.setValue('referral_notes', '')
+    form.setValue(
+      'vocabulary_support_recommended',
+      initialScreeningData.vocabulary_support || false
+    )
+    form.setValue('error_patterns', {
+      articulation: {
+        soundErrors: articulation.soundErrors || [],
+        articulationNotes: articulation.articulationNotes || '',
+      },
+      add_areas_of_concern: areasOfConcern,
+      attendance: {
+        absent: false,
+        absence_notes: '',
+        priority_re_screen: false,
+      },
+      additional_observations: errorPatterns.additional_observations || '',
+      screening_metadata: {
+        screening_date: new Date().toLocaleDateString('en-CA'),
+        qualifies_for_speech_program: false,
+        vocabulary_support_recommended: initialScreeningData.vocabulary_support || false,
+        sub: false,
+        graduated: false,
+      },
+    })
+  }, [initialScreeningData, form])
+
   // Initialize states from form data if available
   useEffect(() => {
     const formAbsentValue = form.getValues('absent.isAbsent')
@@ -145,6 +203,11 @@ const MultiStepSpeechScreeningForm = ({
   const handleSaveDraft = () => {
     console.log('Saving draft...', form.getValues())
     // TODO: Implement draft saving functionality
+  }
+
+  const handleStudentSelect = (student: Student | null) => {
+    setSelectedStudent(student)
+    onStudentSelect?.(student)
   }
 
   const validateRequiredFields = (formData: Record<string, unknown>): string[] => {
@@ -244,7 +307,7 @@ const MultiStepSpeechScreeningForm = ({
           const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
             currentSchool.id,
             selectedGrade,
-            academicYear,
+            academicYear
           )
 
           if (!gradeAvailability.exists) {
@@ -304,6 +367,7 @@ const MultiStepSpeechScreeningForm = ({
                 word: string
                 errorPatterns: string[]
                 stoppingSounds?: string[]
+                stimulabilityOptions?: string[]
               }>) || [],
             articulationNotes:
               (articulation.articulationNotes as string) ||
@@ -406,7 +470,7 @@ const MultiStepSpeechScreeningForm = ({
                 grade_level: selectedGrade,
                 academic_year: academicYear,
               }
-            : undefined,
+            : undefined
         )
 
         toast({
@@ -443,7 +507,7 @@ const MultiStepSpeechScreeningForm = ({
                     variant: 'destructive',
                   })
                 },
-              },
+              }
             )
           } else {
             setShowSubmissionModal(true)
@@ -502,7 +566,7 @@ const MultiStepSpeechScreeningForm = ({
                   grade_level: selectedGrade,
                   academic_year: academicYear,
                 }
-              : undefined,
+              : undefined
           )
 
           toast({
@@ -577,18 +641,20 @@ const MultiStepSpeechScreeningForm = ({
             form={form as unknown as UseFormReturn<Record<string, unknown>>}
             selectedStudent={selectedStudent}
             selectedGrade={selectedGrade}
-            onStudentSelect={setSelectedStudent}
+            onStudentSelect={handleStudentSelect}
             onGradeChange={setSelectedGrade}
             onGradeIdChange={setSelectedGradeId}
             onAbsentChange={setIsAbsent}
             onNoConsentChange={setIsNoConsent}
+            afterStudentContent={afterStudentContent}
           />
         )
       case 2:
         return (
           <SpeechScreeningStep2
-            form={form as unknown as UseFormReturn}
+            form={form}
             selectedStudent={selectedStudent}
+            initialScreeningData={initialScreeningData}
           />
         )
       default:

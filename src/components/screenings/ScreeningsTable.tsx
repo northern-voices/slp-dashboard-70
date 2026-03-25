@@ -14,15 +14,12 @@ import {
 } from '@/components/ui/select'
 import {
   Eye,
-  Download,
   Trash2,
   MoreHorizontal,
   Loader2,
   ChevronUp,
   ChevronDown,
   Mail,
-  Plus,
-  List,
   User,
 } from 'lucide-react'
 import {
@@ -70,7 +67,7 @@ interface ScreeningsTableProps {
   searchTerm: string
   resultFilter: string
   dateRangeFilter: string
-  qualifiesForSpeechProgramFilter: string
+  qualifiesForSpeechProgramFilter: string[]
   vocabularySupportFilter: string
   casFilter: string
   gradeFilter: string
@@ -82,6 +79,7 @@ interface ScreeningsTableProps {
   setSelectedScreenings: (screenings: Screening[]) => void
   onBulkAction: (action: string) => void
   currentSchool: School | null
+  deduplicateByStudent?: boolean
 }
 
 const ScreeningsTable = ({
@@ -100,6 +98,7 @@ const ScreeningsTable = ({
   setSelectedScreenings,
   onBulkAction,
   currentSchool,
+  deduplicateByStudent,
 }: ScreeningsTableProps) => {
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
@@ -130,7 +129,7 @@ const ScreeningsTable = ({
     error: errorSchool,
   } = useScreeningsBySchool(
     currentSchool?.id,
-    dateRangeFilter === 'school_year' ? 'school_year' : 'all',
+    dateRangeFilter === 'school_year' ? 'school_year' : 'all'
   )
 
   // Use mutation hooks
@@ -201,8 +200,24 @@ const ScreeningsTable = ({
   // No need to filter anymore since we're fetching school-specific data
   const schoolScreenings = allScreenings || []
 
+  const latestScreeningsByStudent = useMemo(() => {
+    return Array.from(
+      schoolScreenings
+        .reduce((map, s) => {
+          const existing = map.get(s.student_id)
+          if (!existing || new Date(s.created_at) > new Date(existing.created_at)) {
+            map.set(s.student_id, s)
+          }
+          return map
+        }, new Map<string, Screening>())
+        .values()
+    )
+  }, [schoolScreenings])
+
   // Apply all filters
-  const filteredScreenings = schoolScreenings.filter(screening => {
+  const filteredScreenings = (
+    deduplicateByStudent ? latestScreeningsByStudent : schoolScreenings
+  ).filter(screening => {
     const matchesSearch =
       screening.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       screening.screener?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -258,34 +273,41 @@ const ScreeningsTable = ({
           matchesDateRange = screeningDate >= schoolYearStart
           break
         }
+        default: {
+          if (dateRangeFilter.startsWith('sy_')) {
+            const [startYear, endYear] = dateRangeFilter.replace('sy_', '').split('-').map(Number)
+            const syStart = new Date(startYear, 8, 1) // Sept 1 of start year
+            const syEnd = new Date(endYear, 7, 31, 23, 59, 59) // Aug 31 of end year
+            matchesDateRange = screeningDate >= syStart && screeningDate <= syEnd
+          }
+          break
+        }
       }
     }
 
     // Apply qualifies for speech program filter
     // Apply qualifies for speech program filter
     let matchesQualifiesForSpeechProgram = true
-    if (qualifiesForSpeechProgramFilter !== 'all') {
+    if (qualifiesForSpeechProgramFilter.length > 0) {
       const metadata = screening.error_patterns?.screening_metadata
       const consent = screening.error_patterns?.consent
 
-      if (qualifiesForSpeechProgramFilter === 'qualified') {
-        matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === true
-      } else if (qualifiesForSpeechProgramFilter === 'not_in_program') {
-        matchesQualifiesForSpeechProgram =
-          metadata?.qualifies_for_speech_program === false &&
-          !metadata?.sub &&
-          !metadata?.paused &&
-          !metadata?.graduated &&
-          !consent?.no_consent
-      } else if (qualifiesForSpeechProgramFilter === 'sub') {
-        matchesQualifiesForSpeechProgram = metadata?.sub === true
-      } else if (qualifiesForSpeechProgramFilter === 'paused') {
-        matchesQualifiesForSpeechProgram = metadata?.paused === true
-      } else if (qualifiesForSpeechProgramFilter === 'graduated') {
-        matchesQualifiesForSpeechProgram = metadata?.graduated === true
-      } else if (qualifiesForSpeechProgramFilter === 'no_consent') {
-        matchesQualifiesForSpeechProgram = consent?.no_consent === true
-      }
+      matchesQualifiesForSpeechProgram = qualifiesForSpeechProgramFilter.some(filter => {
+        if (filter === 'qualified') return metadata?.qualifies_for_speech_program === true
+        if (filter === 'not_in_program')
+          return (
+            metadata?.qualifies_for_speech_program === false &&
+            !metadata?.sub &&
+            !metadata?.paused &&
+            !metadata?.graduated &&
+            !consent?.no_consent
+          )
+        if (filter === 'sub') return metadata?.sub === true
+        if (filter === 'paused') return metadata?.paused === true
+        if (filter === 'graduated') return metadata?.graduated === true
+        if (filter === 'no_consent') return consent?.no_consent === true
+        return false
+      })
     }
 
     // Apply grade filter
@@ -463,11 +485,7 @@ const ScreeningsTable = ({
     const qualifies = metadata?.qualifies_for_speech_program || false
 
     if (noConsent) {
-      return (
-        <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>
-          Qualifies - No Consent
-        </Badge>
-      )
+      return <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     }
     if (graduated) {
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
@@ -612,7 +630,7 @@ const ScreeningsTable = ({
 
   const handleViewStudent = (screening: Screening) => {
     const student = students.find(
-      s => s.id === screening.student_id || s.student_id === screening.student_id,
+      s => s.id === screening.student_id || s.student_id === screening.student_id
     )
 
     if (!student) {
@@ -660,7 +678,7 @@ const ScreeningsTable = ({
               variant: 'destructive',
             })
           },
-        },
+        }
       )
     } else {
       // Handle hearing screenings update here if needed
@@ -724,10 +742,10 @@ const ScreeningsTable = ({
 
       // Check if this is the most recent screening for the student
       const studentScreenings = schoolScreenings.filter(
-        s => s.student_id === screening.student_id && s.source_table === 'speech',
+        s => s.student_id === screening.student_id && s.source_table === 'speech'
       )
       const mostRecentScreening = studentScreenings.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )[0]
       const isLatestScreening = mostRecentScreening?.id === screening.id
 
@@ -765,7 +783,7 @@ const ScreeningsTable = ({
                       variant: 'destructive',
                     })
                   },
-                },
+                }
               )
             } else {
               // For older screenings, just show success without updating student
@@ -785,7 +803,7 @@ const ScreeningsTable = ({
               variant: 'destructive',
             })
           },
-        },
+        }
       )
     } else {
       // Handle hearing screenings update here if needed
@@ -862,7 +880,7 @@ const ScreeningsTable = ({
               variant: 'destructive',
             })
           },
-        },
+        }
       )
     } else {
       toast({

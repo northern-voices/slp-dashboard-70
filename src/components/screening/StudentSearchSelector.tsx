@@ -27,13 +27,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -45,7 +38,6 @@ interface StudentSearchSelectorProps {
   isStudentCreatable?: boolean
 }
 
-// Simplified student creation schema
 const newStudentSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   last_name: z.string().min(1, 'Last name is required'),
@@ -68,7 +60,6 @@ const StudentSearchSelector = ({
   const { userProfile, availableSchools, currentSchool, isLoading: orgLoading } = useOrganization()
   const queryClient = useQueryClient()
 
-  // Custom mutations that don't invalidate screenings to prevent unwanted navigation
   const createStudentMutation = useMutation({
     mutationFn: (studentData: {
       first_name: string
@@ -79,7 +70,6 @@ const StudentSearchSelector = ({
       date_of_birth?: string
     }) => studentsApi.createStudent(studentData),
     onSuccess: () => {
-      // Only invalidate student queries, not screenings
       queryClient.invalidateQueries({ queryKey: ['students'] })
     },
   })
@@ -88,14 +78,11 @@ const StudentSearchSelector = ({
     mutationFn: ({ id, studentData }: { id: string; studentData: Partial<Student> }) =>
       studentsApi.updateStudent(id, studentData),
     onSuccess: (_, variables) => {
-      // Only invalidate student queries, not screenings
       queryClient.invalidateQueries({ queryKey: ['students'] })
       queryClient.invalidateQueries({ queryKey: ['students', variables.id] })
-      // Don't invalidate screenings to prevent navigation issues
     },
   })
 
-  // Only fetch students if a school is selected
   const { data: studentsByGrade = [], isLoading: loadingByGrade } = useStudentsByGrade(
     currentSchool && gradeFilter ? gradeFilter : ''
   )
@@ -103,7 +90,6 @@ const StudentSearchSelector = ({
     currentSchool?.id
   )
 
-  // Determine which students to show with client-side full name filtering
   const studentsToShow = currentSchool
     ? searchValue.length >= 2
       ? studentsBySchool.filter(student => {
@@ -120,7 +106,6 @@ const StudentSearchSelector = ({
 
   const isLoading = currentSchool ? (gradeFilter ? loadingByGrade : loadingBySchool) : false
 
-  // New student form
   const newStudentForm = useForm<NewStudentFormData>({
     resolver: zodResolver(newStudentSchema),
     defaultValues: {
@@ -142,7 +127,6 @@ const StudentSearchSelector = ({
   }
 
   const handleCreateNewStudent = async (data: NewStudentFormData, e?: React.FormEvent) => {
-    // Prevent form submission propagation
     if (e) {
       e.preventDefault()
       e.stopPropagation()
@@ -157,7 +141,6 @@ const StudentSearchSelector = ({
       return
     }
 
-    // Check for duplicate student
     try {
       const duplicate = await studentsApi.checkDuplicateStudent(
         currentSchool.id,
@@ -186,14 +169,12 @@ const StudentSearchSelector = ({
       return
     }
 
-    // Generate school abbreviation from school name
     const schoolAbbreviation = currentSchool.name
       .split(' ')
       .map(word => word.charAt(0).toUpperCase())
       .join('')
-      .substring(0, 3) // Limit to 3 characters max
+      .substring(0, 3)
 
-    // Generate a temporary unique ID using timestamp to avoid conflicts
     const timestamp = Date.now().toString(36)
     const tempStudentId = `${schoolAbbreviation}-TEMP-${timestamp}`
 
@@ -209,10 +190,8 @@ const StudentSearchSelector = ({
       },
       {
         onSuccess: newStudent => {
-          // Generate the final student ID with school abbreviation and UUID
           const formattedStudentId = `${schoolAbbreviation}-${newStudent.id}`
 
-          // Update the student with the formatted ID
           updateStudentMutation.mutate(
             {
               id: newStudent.id,
@@ -222,17 +201,13 @@ const StudentSearchSelector = ({
             },
             {
               onSuccess: updatedStudent => {
-                // Close modal and reset form FIRST before showing toast
                 setShowNewStudentForm(false)
                 setOpen(false)
                 setSearchValue('')
                 newStudentForm.reset()
 
-                // Select the newly created student
                 onStudentSelect(updatedStudent as Student)
 
-                // Show success toast after modal is closed
-                // Use setTimeout to ensure modal closes before toast appears
                 setTimeout(() => {
                   toast({
                     title: 'Success',
@@ -288,10 +263,9 @@ const StudentSearchSelector = ({
   const handleCloseNewStudentForm = () => {
     setShowNewStudentForm(false)
     newStudentForm.reset()
-    setSearchValue('') // Clear search input when closing modal
+    setSearchValue('')
   }
 
-  // Check if we should show "Add New Student" option
   const shouldShowAddNew = searchValue.length >= 2 && studentsToShow.length === 0 && !isLoading
 
   return (
@@ -489,13 +463,11 @@ const StudentSearchSelector = ({
         <DialogContent
           className='max-w-2xl max-h-[90vh] overflow-y-auto'
           onPointerDownOutside={e => {
-            // Prevent closing during mutation
             if (createStudentMutation.isPending || updateStudentMutation.isPending) {
               e.preventDefault()
             }
           }}
           onInteractOutside={e => {
-            // Prevent closing during mutation
             if (createStudentMutation.isPending || updateStudentMutation.isPending) {
               e.preventDefault()
             }
@@ -512,7 +484,7 @@ const StudentSearchSelector = ({
               onSubmit={e => {
                 e.preventDefault()
                 e.stopPropagation()
-                // Ensure the event doesn't bubble to parent forms
+
                 return newStudentForm.handleSubmit(data => {
                   handleCreateNewStudent(data, e)
                   return false
@@ -549,7 +521,7 @@ const StudentSearchSelector = ({
                 />
               </div>
 
-              <FormField
+              {/* <FormField
                 control={newStudentForm.control}
                 name='date_of_birth'
                 render={({ field }) => (
@@ -561,7 +533,7 @@ const StudentSearchSelector = ({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <div className='flex justify-end space-x-2 pt-4'>
                 <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>

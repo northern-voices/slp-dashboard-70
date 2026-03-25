@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -20,8 +20,8 @@ interface ScreeningsFiltersProps {
   setResultFilter: (value: string) => void
   dateRangeFilter: string
   setDateRangeFilter: (value: string) => void
-  qualifiesForSpeechProgramFilter: string
-  setQualifiesForSpeechProgramFilter: (value: string) => void
+  qualifiesForSpeechProgramFilter: string[]
+  setQualifiesForSpeechProgramFilter: (value: string[]) => void
   // New filter props
   vocabularySupportFilter: string
   setVocabularySupportFilter: (value: string) => void
@@ -37,6 +37,7 @@ interface ScreeningsFiltersProps {
   setLanguageComprehensionFilter: (value: string) => void
   priorityRescreenFilter: string
   setPriorityRescreenFilter: (value: string) => void
+  availableSchoolYears: string[]
 }
 
 const ScreeningsFilters = ({
@@ -62,6 +63,7 @@ const ScreeningsFilters = ({
   setLanguageComprehensionFilter,
   priorityRescreenFilter,
   setPriorityRescreenFilter,
+  availableSchoolYears,
 }: ScreeningsFiltersProps) => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
@@ -70,7 +72,7 @@ const ScreeningsFilters = ({
     searchTerm ||
     resultFilter !== 'all' ||
     dateRangeFilter !== 'all' ||
-    qualifiesForSpeechProgramFilter !== 'all' ||
+    qualifiesForSpeechProgramFilter.length > 0 ||
     vocabularySupportFilter !== 'all' ||
     casFilter !== 'all' ||
     gradeFilter !== 'all' ||
@@ -84,7 +86,7 @@ const ScreeningsFilters = ({
     setSearchTerm('')
     setResultFilter('all')
     setDateRangeFilter('all')
-    setQualifiesForSpeechProgramFilter('all')
+    setQualifiesForSpeechProgramFilter([])
     setVocabularySupportFilter('all')
     setCasFilter('all')
     setGradeFilter('all')
@@ -100,7 +102,7 @@ const ScreeningsFilters = ({
     if (searchTerm) count++
     if (resultFilter !== 'all') count++
     if (dateRangeFilter !== 'all') count++
-    if (qualifiesForSpeechProgramFilter !== 'all') count++
+    if (qualifiesForSpeechProgramFilter.length > 0) count++
     if (vocabularySupportFilter !== 'all') count++
     if (casFilter !== 'all') count++
     if (gradeFilter !== 'all') count++
@@ -203,6 +205,11 @@ const ScreeningsFilters = ({
                       <SelectItem value='month'>This Month</SelectItem>
                       <SelectItem value='quarter'>This Quarter</SelectItem>
                       <SelectItem value='school_year'>This School Year</SelectItem>
+                      {availableSchoolYears.map(year => (
+                        <SelectItem key={year} value={`sy_${year}`}>
+                          {year}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -253,20 +260,42 @@ const ScreeningsFilters = ({
                   <label className='text-sm font-medium text-gray-700'>
                     Speech Program Qualification
                   </label>
-                  <Select
-                    value={qualifiesForSpeechProgramFilter}
-                    onValueChange={setQualifiesForSpeechProgramFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder='All Students' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='all'>All Students</SelectItem>
-                      <SelectItem value='qualified'>Qualifies</SelectItem>
-                      <SelectItem value='not_in_program'>Not in Program</SelectItem>
-                      <SelectItem value='sub'>Sub</SelectItem>
-                      <SelectItem value='graduated'>Graduated</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className='space-y-1'>
+                    {[
+                      { value: 'qualified', label: 'Qualifies' },
+                      { value: 'not_in_program', label: 'Not in Program' },
+                      { value: 'sub', label: 'Sub' },
+                      { value: 'paused', label: 'Pause/Away' },
+                      { value: 'graduated', label: 'Graduated' },
+                      { value: 'no_consent', label: 'No Consent' },
+                    ].map(option => (
+                      <div key={option.value} className='flex items-center space-x-2'>
+                        <input
+                          type='checkbox'
+                          id={`qual_${option.value}`}
+                          checked={qualifiesForSpeechProgramFilter.includes(option.value)}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              setQualifiesForSpeechProgramFilter([
+                                ...qualifiesForSpeechProgramFilter,
+                                option.value,
+                              ])
+                            } else {
+                              setQualifiesForSpeechProgramFilter(
+                                qualifiesForSpeechProgramFilter.filter(v => v !== option.value)
+                              )
+                            }
+                          }}
+                          className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                        />
+                        <label
+                          htmlFor={`qual_${option.value}`}
+                          className='text-sm text-gray-700 cursor-pointer'>
+                          {option.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
