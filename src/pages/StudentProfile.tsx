@@ -238,7 +238,7 @@ const StudentProfileContent = () => {
                 onAddSpeechScreening={handleAddSpeechScreening}
               />
               <StudentPageMonthlyMeetingsTable studentId={studentId} />
-              <ConsentFormsSection studentId={studentId!} />
+              <ConsentFormsSection student={student} />
             </div>
           </main>
         </SidebarInset>
