@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { useConsentForms, useDeleteConsentForm } from '@/hooks/students/use-consent-forms'
-import { consentFormsApi } from '@/api/consentForms'
 import { Loader2, Plus, Trash2, Eye, FileImage } from 'lucide-react'
 import { format } from 'date-fns'
 import { Student } from '@/types/database'
 import ConsentFormModal from './ConsentFormModal'
+import ConsentFormDetailsModal from './ConsentFormDetailsModal'
 
 interface ConsentFormsSectionProps {
   student: Student
@@ -22,6 +22,8 @@ interface ConsentForm {
   consent_date: string
   consent_purpose: string
   consent_type: string
+  verbal_consent_details: string | null
+  additional_notes: string | null
   uploaded_at: string
   uploaded_by: {
     id: string
@@ -33,25 +35,13 @@ interface ConsentForm {
 const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
   const { toast } = useToast()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedForm, setSelectedForm] = useState<ConsentForm | null>(null)
 
   const { data: forms = [], isLoading } = useConsentForms(student.id) as {
     data: ConsentForm[]
     isLoading: boolean
   }
   const deleteMutation = useDeleteConsentForm(student.id)
-
-  const handleView = async (filePath: string, fileName: string) => {
-    try {
-      const url = await consentFormsApi.getSignedUrl(filePath)
-      window.open(url, '_blank')
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: `Could not open ${fileName}. Please try again.`,
-        variant: 'destructive',
-      })
-    }
-  }
 
   const handleDelete = (id: string, filePath: string | null, fileName: string) => {
     deleteMutation.mutate(
@@ -115,14 +105,9 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
                     </span>
                   </div>
                   <div className='flex gap-2'>
-                    {form.file_path && (
-                      <Button
-                        size='sm'
-                        variant='outline'
-                        onClick={() => handleView(form.file_path!, form.file_name!)}>
-                        <Eye className='h-4 w-4' />
-                      </Button>
-                    )}
+                    <Button size='sm' variant='outline' onClick={() => setSelectedForm(form)}>
+                      <Eye className='h-4 w-4' />
+                    </Button>
                     <Button
                       size='sm'
                       variant='outline'
@@ -144,6 +129,12 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         student={student}
+      />
+
+      <ConsentFormDetailsModal
+        isOpen={!!selectedForm}
+        onClose={() => setSelectedForm(null)}
+        form={selectedForm}
       />
     </>
   )

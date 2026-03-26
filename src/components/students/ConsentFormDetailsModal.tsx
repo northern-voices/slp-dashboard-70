@@ -81,18 +81,18 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
               </p>
             </div>
           </div>
-        </div>
 
-        {/* Purpose & Type */}
-        <div className='grid grid-cols-2 gap-4'>
-          <div>
-            <p className='text-xs text-muted-foreground'>Purpose</p>
-            <p className='font-medium'>{purposeLabel(form.consent_purpose)}</p>
-          </div>
+          {/* Purpose & Type */}
+          <div className='grid grid-cols-2 gap-4'>
+            <div>
+              <p className='text-xs text-muted-foreground'>Purpose</p>
+              <p className='font-medium'>{purposeLabel(form.consent_purpose)}</p>
+            </div>
 
-          <div>
-            <p className='text-xs text-muted-foreground'>Type of Consent</p>
-            <p className='font-medium'>{form.consent_type}</p>
+            <div>
+              <p className='text-xs text-muted-foreground'>Type of Consent</p>
+              <p className='font-medium'>{form.consent_type}</p>
+            </div>
           </div>
 
           {/* Verbal details */}
