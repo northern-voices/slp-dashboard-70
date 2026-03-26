@@ -94,6 +94,55 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
             <p className='text-xs text-muted-foreground'>Type of Consent</p>
             <p className='font-medium'>{form.consent_type}</p>
           </div>
+
+          {/* Verbal details */}
+          {form.consent_type === 'verbal' && (
+            <div>
+              <p className='text-xs text-muted-foreground'>Verbal Consent Details</p>
+              <p className='mt-1 whitespace-pre-wrap rounded-md bg-muted px-3 py-2'>
+                {form.verbal_consent_details || '—'}
+              </p>
+            </div>
+          )}
+
+          {/* Written — photo */}
+          {form.consent_type === 'written' && form.file_path && (
+            <div>
+              <p className='text-xs text-muted-foreground'>Uploaded Form</p>
+              <div className='mt-1 flex items-center justify-between rounded-md border px-3 py-2'>
+                <span className='truncate text-sm text-muted-foreground'>
+                  {form.file_name || 'Consent form photo'}
+                </span>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={handleViewPhoto}
+                  disabled={loadingPhoto}>
+                  {loadingPhoto ? (
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  ) : (
+                    <ExternalLink className='mr-2 h-4 w-4' />
+                  )}
+                  View Photo
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Additional notes */}
+          {form.additional_notes && (
+            <div>
+              <p className='text-xs text-muted-foreground'>Additional Notes</p>
+              <p className='mt-1 whitespace-pre-wrap rounded-md bg-muted px-3 py-2'>
+                {form.additional_notes}
+              </p>
+            </div>
+          )}
+
+          {/* Recorded at */}
+          <p className='text-xs text-muted-foreground'>
+            Recorded on {format(new Date(form.uploaded_at), 'MMM d, yyyy · h:mm a')}
+          </p>
         </div>
       </DialogContent>
     </Dialog>
