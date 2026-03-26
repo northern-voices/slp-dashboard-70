@@ -23,6 +23,7 @@ interface ConsentForm {
   consent_purpose: string
   consent_type: string
   verbal_consent_details: string | null
+  parent_guardian: string | null
   additional_notes: string | null
   uploaded_at: string
   uploaded_by: {

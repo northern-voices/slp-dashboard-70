@@ -12,6 +12,7 @@ interface ConsentFormDetails {
   consent_purpose: string
   consent_type: string
   verbal_consent_details: string | null
+  parent_guardian: string | null
   additional_notes: string | null
   file_name: string | null
   file_path: string | null
@@ -59,7 +60,7 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className='max-w-md'>
+      <DialogContent className='max-w-xl'>
         <DialogHeader>
           <DialogTitle>Consent Form Details</DialogTitle>
         </DialogHeader>
@@ -91,9 +92,17 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
 
             <div>
               <p className='text-xs text-muted-foreground'>Type of Consent</p>
-              <p className='font-medium'>{form.consent_type}</p>
+              <p className='font-medium capitalize'>{form.consent_type}</p>
             </div>
           </div>
+
+          {/* Parent / Guardian */}
+          {form.parent_guardian && (
+            <div>
+              <p className='text-xs text-muted-foreground'>Parent / Guardian</p>
+              <p className='font-medium'>{form.parent_guardian}</p>
+            </div>
+          )}
 
           {/* Verbal details */}
           {form.consent_type === 'verbal' && (

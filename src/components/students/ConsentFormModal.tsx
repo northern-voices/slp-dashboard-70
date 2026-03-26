@@ -29,6 +29,7 @@ interface ConsentFormValues {
   consent_purpose: ConsentPurpose | ''
   consent_type: ConsentType | ''
   verbal_consent_details: string
+  parent_guardian: string
   additional_notes: string
 }
 
@@ -46,6 +47,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
       consent_purpose: '',
       consent_type: '',
       verbal_consent_details: '',
+      parent_guardian: '',
       additional_notes: '',
     },
   })
@@ -102,6 +104,15 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
       return
     }
 
+    if (!values.parent_guardian.trim()) {
+      toast({
+        title: 'Missing field',
+        description: 'Please enter a parent or a guardian name.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     await uploadMutation.mutateAsync(
       {
         consent_date: values.consent_date,
@@ -109,6 +120,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
         consent_type: values.consent_type as ConsentType,
         verbal_consent_details:
           values.consent_type === 'verbal' ? values.verbal_consent_details : undefined,
+        parent_guardian: values.parent_guardian || undefined,
         additional_notes: values.additional_notes || undefined,
         file: values.consent_type === 'written' ? file : undefined,
       },
@@ -161,7 +173,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
           {/* Consent Date */}
           <div className='space-y-1'>
             <Label htmlFor='consent-date'>
-              Date <span className='text-destructive'>*</span>
+              Date of Consent <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='consent-date'
@@ -259,6 +271,18 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
               />
             </div>
           )}
+
+          {/* Parent/Guardian */}
+          <div className='space-y-1'>
+            <Label htmlFor='parent-guardian'>
+              Parent / Guardian <span className='text-destructive'>*</span>
+            </Label>
+            <Input
+              id='parent-guardian'
+              placeholder='Enter parent or guardian name'
+              {...form.register('parent_guardian')}
+            />
+          </div>
 
           {/* Additional Notes */}
           <div className='space-y-1'>
