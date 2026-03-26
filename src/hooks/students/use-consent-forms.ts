@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { consentFormsApi } from '@/api/consentForms'
+import { ConsentFormData, consentFormsApi } from '@/api/consentForms'
 
 export const useConsentForms = (studentId: string) => {
   return useQuery({
@@ -14,7 +14,8 @@ export const useUploadConsentForm = (studentId: string) => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (file: File) => consentFormsApi.uploadConsentForm(file, studentId),
+    mutationFn: (formData: ConsentFormData) =>
+      consentFormsApi.uploadConsentForm(studentId, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['consent-forms', studentId],
@@ -27,7 +28,7 @@ export const useDeleteConsentForm = (studentId: string) => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, filePath }: { id: string; filePath: string }) =>
+    mutationFn: ({ id, filePath }: { id: string; filePath: string | null }) =>
       consentFormsApi.deleteConsentForm(id, filePath),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['consent-forms', studentId] })
