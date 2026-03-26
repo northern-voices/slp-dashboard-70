@@ -23,3 +23,9 @@ interface ConsentFormModalProps {
   onClose: () => void
   student: Student
 }
+
+const today = () => new Date().toISOString().split('T')[0]
+
+const ConsentFormModal = () => {}
+
+export default ConsentFormModal
