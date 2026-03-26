@@ -76,7 +76,7 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
         <CardHeader className='flex flex-row items-center justify-between'>
           <CardTitle className='text-lg font-semibold'>Consent Forms</CardTitle>
           <Button size='sm' onClick={() => setIsModalOpen(true)}>
-            <Plus className='mr-2 h-4 w-4' />
+            <Plus className='h-4 w-4' />
             Add
           </Button>
         </CardHeader>
