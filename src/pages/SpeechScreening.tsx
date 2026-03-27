@@ -1,18 +1,15 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ScreeningFormData } from '@/types/screening'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, FileText, ClipboardList, Info, RefreshCw } from 'lucide-react'
-import AppSidebar from '@/components/AppSidebar'
-import Header from '@/components/Header'
+import { ChevronLeft, ClipboardList, Info, RefreshCw } from 'lucide-react'
 import MultiStepSpeechScreeningForm from '@/components/screening/speech/MultiStepSpeechScreeningForm'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useStudent } from '@/hooks/students/use-students'
-import { UserRole, Student } from '@/types/database'
+import { Student } from '@/types/database'
 import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
@@ -90,18 +87,8 @@ const SpeechScreeningContent = () => {
 
   if (loading) {
     return (
-      <div className='min-h-screen flex w-full bg-gray-25'>
-        <SidebarProvider>
-          <AppSidebar userRole={userRole as UserRole} userName={userName} />
-          <SidebarInset>
-            <Header userRole={userRole as UserRole} userName={userName} />
-            <main className='flex-1 p-4 md:p-6 lg:p-8'>
-              <div className='flex justify-center items-center h-64'>
-                <LoadingSpinner size='lg' />
-              </div>
-            </main>
-          </SidebarInset>
-        </SidebarProvider>
+      <div className='flex justify-center items-center h-64'>
+        <LoadingSpinner size='lg' />
       </div>
     )
   }
@@ -188,42 +175,37 @@ const SpeechScreeningContent = () => {
   }
 
   return (
-    <div className='min-h-screen flex w-full bg-gray-25'>
-      <SidebarProvider>
-        <AppSidebar userRole={userRole as UserRole} userName={userName} />
-        <SidebarInset>
-          <Header userRole={userRole as UserRole} userName={userName} />
-          <main className='flex-1 p-4 md:p-6 lg:p-8'>
-            {/* Breadcrumb Navigation */}
-            <div className='mb-6'>
-              <div className='flex items-center gap-4 mb-4'>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={handleCancel}
-                  className='text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2'>
-                  <ChevronLeft className='w-4 h-4 mr-1' />
-                  Back
-                </Button>
+    <main className='flex-1 p-4 md:p-6 lg:p-8'>
+      {/* Breadcrumb Navigation */}
+      <div className='mb-6'>
+        <div className='flex items-center gap-4 mb-4'>
+          <Button
+            variant='ghost'
+            size='sm'
+            onClick={handleCancel}
+            className='text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2'>
+            <ChevronLeft className='w-4 h-4 mr-1' />
+            Back
+          </Button>
 
-                <Breadcrumb></Breadcrumb>
-              </div>
+          <Breadcrumb></Breadcrumb>
+        </div>
 
-              {/* Title and View Drafts Button */}
-              <div className='flex items-start justify-between'>
-                <div className='space-y-1'>
-                  <h1 className='text-2xl font-semibold text-gray-900'>Speech Screening</h1>
-                  {student ? (
-                    <p className='text-gray-600'>
-                      Creating speech screening for {student.first_name} {student.last_name}
-                    </p>
-                  ) : (
-                    <p className='text-gray-600'>Creating new speech screening</p>
-                  )}
-                </div>
+        {/* Title and View Drafts Button */}
+        <div className='flex items-start justify-between'>
+          <div className='space-y-1'>
+            <h1 className='text-2xl font-semibold text-gray-900'>Speech Screening</h1>
+            {student ? (
+              <p className='text-gray-600'>
+                Creating speech screening for {student.first_name} {student.last_name}
+              </p>
+            ) : (
+              <p className='text-gray-600'>Creating new speech screening</p>
+            )}
+          </div>
 
-                {/* //TODO: Work on view drafts functionality */}
-                {/* <Button
+          {/* //TODO: Work on view drafts functionality */}
+          {/* <Button
                   variant='outline'
                   size='sm'
                   onClick={handleViewDrafts}
@@ -231,41 +213,32 @@ const SpeechScreeningContent = () => {
                   <FileText className='w-4 h-4' />
                   View Drafts
                 </Button> */}
-              </div>
-            </div>
+        </div>
+      </div>
 
-            {/* Screening Form */}
-            <div className='bg-white rounded-lg border border-gray-200 shadow-sm'>
-              <div className='p-6'>
-                <MultiStepSpeechScreeningForm
-                  onSubmit={handleSubmit}
-                  onCancel={handleCancel}
-                  existingStudent={student}
-                  onStudentSelect={setSelectedStudent}
-                  afterStudentContent={renderLatestScreening()}
-                  initialScreeningData={isPreviousYearScreening ? latestScreening : null}
-                />
-              </div>
-            </div>
-          </main>
-
-          <ScreeningDetailsModal
-            isOpen={showDetailsModal}
-            onClose={() => setShowDetailsModal(false)}
-            screening={latestScreening}
+      {/* Screening Form */}
+      <div className='bg-white rounded-lg border border-gray-200 shadow-sm'>
+        <div className='p-6'>
+          <MultiStepSpeechScreeningForm
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            existingStudent={student}
+            onStudentSelect={setSelectedStudent}
+            afterStudentContent={renderLatestScreening()}
+            initialScreeningData={isPreviousYearScreening ? latestScreening : null}
           />
-        </SidebarInset>
-      </SidebarProvider>
-    </div>
+        </div>
+      </div>
+
+      <ScreeningDetailsModal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        screening={latestScreening}
+      />
+    </main>
   )
 }
 
-const SpeechScreening = () => {
-  return (
-    <div className='min-h-screen bg-gray-50'>
-      <SpeechScreeningContent />
-    </div>
-  )
-}
+const SpeechScreening = () => <SpeechScreeningContent />
 
 export default SpeechScreening
