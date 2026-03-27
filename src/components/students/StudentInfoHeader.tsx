@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { Button } from '@/components/ui/button'
@@ -39,19 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  User,
-  Calendar,
-  Phone,
-  FileText,
-  GraduationCap,
-  Edit,
-  Save,
-  X,
-  Trash2,
-  TrendingUp,
-  ArrowRightLeft,
-} from 'lucide-react'
+import { User, Calendar, GraduationCap, Edit, Save, X, Trash2, ArrowRightLeft } from 'lucide-react'
 import type { Student } from '@/types/database'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useToast } from '@/hooks/use-toast'
@@ -59,6 +47,8 @@ import { studentsApi } from '@/api/students'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useQueryClient } from '@tanstack/react-query'
 import TransferStudentDialog from './TransferStudentDialog'
+import { Badge } from '@/components/ui/badge'
+import { useConsentForms } from '@/hooks/students/use-consent-forms'
 
 interface StudentInfoHeaderProps {
   student?: Student | null
@@ -107,6 +97,22 @@ const StudentInfoHeader = ({
   const [isLoadingNotes, setIsLoadingNotes] = useState(false)
   const { toast } = useToast()
   const queryClient = useQueryClient()
+
+  const { data: consentForms = [] } = useConsentForms(localStudent?.id || '')
+
+  const hasConsentThisYear = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth()
+    const academicYearStart = month < 7 ? year - 1 : year
+    const start = new Date(`${academicYearStart}-08-01`)
+    const end = new Date(`${academicYearStart + 1}-07-31`)
+
+    return consentForms.some(form => {
+      const date = new Date(form.consent_date)
+      return date >= start && date <= end
+    })
+  }
 
   const navigate = useNavigate()
 
@@ -445,11 +451,20 @@ const StudentInfoHeader = ({
                 <div className='flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full'>
                   <User className='w-6 h-6 text-blue-600' />
                 </div>
-                <div>
+                <div className='flex items-center gap-2 flex-wrap'>
                   <h1 className='text-2xl font-semibold text-gray-900'>
                     {localStudent.first_name} {localStudent.last_name}
                   </h1>
                   {/* <p className='text-gray-600'>Student ID: {localStudent.student_id}</p> */}
+                  {hasConsentThisYear ? (
+                    <Badge className='bg-green-100 text-green-700 border-green-200'>
+                      Consent on File
+                    </Badge>
+                  ) : (
+                    <Badge variant='outline' className='text-gray-500 border-gray-300'>
+                      No Consent
+                    </Badge>
+                  )}
                 </div>
               </div>
 
