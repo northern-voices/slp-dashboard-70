@@ -19,7 +19,7 @@ const DashboardLayout = () => {
         <SidebarInset className='flex-1'>
           <Header userRole={userRole} userName={userName} userProfile={userProfile} />
 
-          <main className='flex-1 px-6 py-8 pb-8'>
+          <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
             <Outlet />
           </main>
         </SidebarInset>
