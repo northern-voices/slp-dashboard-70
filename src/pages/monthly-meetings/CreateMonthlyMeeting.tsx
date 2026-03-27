@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import AppSidebar from '@/components/AppSidebar'
-import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -300,62 +297,56 @@ const CreateMonthlyMeetingContent = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className='flex w-full min-h-screen'>
-        <AppSidebar />
-        <SidebarInset>
-          <Header userRole={userRole} userName={userName} />
-          <div className='flex-1 p-4 bg-gray-25 md:p-6 lg:p-8'>
-            <div className='max-w-4xl mx-auto'>
-              <div className='flex items-center gap-4 mb-6'>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={handleCancel}
-                  className='text-gray-600 hover:text-gray-900'>
-                  <ChevronLeft className='w-4 h-4 mr-1' />
-                  Back to Monthly Meetings
-                </Button>
-                <div className='w-px h-4 bg-gray-300' />
-                <h1 className='text-2xl font-semibold text-gray-900'>Create Monthly Meeting</h1>
+    <div className='max-w-4xl mx-auto'>
+      <div className='flex items-center gap-4 mb-6'>
+        <Button
+          variant='ghost'
+          size='sm'
+          onClick={handleCancel}
+          className='text-gray-600 hover:text-gray-900'>
+          <ChevronLeft className='w-4 h-4 mr-1' />
+          Back to Monthly Meetings
+        </Button>
+        <div className='w-px h-4 bg-gray-300' />
+        <h1 className='text-2xl font-semibold text-gray-900'>Create Monthly Meeting</h1>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className='flex items-center gap-2'>
+            <Calendar className='w-5 h-5 text-blue-600' />
+            Meeting Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className='space-y-6'>
+            <div className='space-y-4'>
+              <div className='grid grid-cols-3 gap-4'>
+                <div className='col-span-2 space-y-2'>
+                  <Label htmlFor='meeting_title'>Meeting Title *</Label>
+                  <Input
+                    id='meeting_title'
+                    name='meeting_title'
+                    value={formData.meeting_title}
+                    onChange={handleInputChange}
+                    placeholder='e.g., October Monthly Progress Review'
+                    required
+                  />
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='meeting_date'>Date *</Label>
+                  <Input
+                    id='meeting_date'
+                    name='meeting_date'
+                    type='date'
+                    value={formData.meeting_date}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
               </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className='flex items-center gap-2'>
-                    <Calendar className='w-5 h-5 text-blue-600' />
-                    Meeting Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className='space-y-6'>
-                    <div className='space-y-4'>
-                      <div className='grid grid-cols-3 gap-4'>
-                        <div className='col-span-2 space-y-2'>
-                          <Label htmlFor='meeting_title'>Meeting Title *</Label>
-                          <Input
-                            id='meeting_title'
-                            name='meeting_title'
-                            value={formData.meeting_title}
-                            onChange={handleInputChange}
-                            placeholder='e.g., October Monthly Progress Review'
-                            required
-                          />
-                        </div>
-                        <div className='space-y-2'>
-                          <Label htmlFor='meeting_date'>Date *</Label>
-                          <Input
-                            id='meeting_date'
-                            name='meeting_date'
-                            type='date'
-                            value={formData.meeting_date}
-                            onChange={handleInputChange}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      {/* <div className='space-y-2'>
+              {/* <div className='space-y-2'>
                         <Label htmlFor='student_id'>Student ID *</Label>
                         <Input
                           id='student_id'
@@ -367,30 +358,28 @@ const CreateMonthlyMeetingContent = () => {
                         />
                       </div> */}
 
-                      <div className='space-y-2'>
-                        <Label htmlFor='facilitator_id'>Meeting Facilitator</Label>
-                        <Select
-                          value={formData.facilitator_id}
-                          onValueChange={value =>
-                            setFormData(prev => ({ ...prev, facilitator_id: value }))
-                          }
-                          disabled={isLoadingUsers}>
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder={isLoadingUsers ? 'Loading...' : 'Select a facilitator'}
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {users.map(user => (
-                              <SelectItem key={user.id} value={user.id}>
-                                {user.first_name} {user.last_name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+              <div className='space-y-2'>
+                <Label htmlFor='facilitator_id'>Meeting Facilitator</Label>
+                <Select
+                  value={formData.facilitator_id}
+                  onValueChange={value => setFormData(prev => ({ ...prev, facilitator_id: value }))}
+                  disabled={isLoadingUsers}>
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={isLoadingUsers ? 'Loading...' : 'Select a facilitator'}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.first_name} {user.last_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                      {/* <div className='space-y-2'>
+              {/* <div className='space-y-2'>
                         <Label htmlFor='attendees'>Attendees *</Label>
                         <Input
                           id='attendees'
@@ -405,176 +394,171 @@ const CreateMonthlyMeetingContent = () => {
                         </p>
                       </div> */}
 
-                      <div className='space-y-2'>
-                        <Label htmlFor='attendees'>Attendees *</Label>
-                        <div
-                          className={cn(
-                            'min-h-[42px] w-full rounded-md border border-input bg-background',
-                            'px-3 py-2 text-sm ring-offset-background',
-                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
-                          )}>
-                          <div className='flex flex-wrap gap-2'>
-                            {/* Display existing attendees as badges */}
-                            {formData.attendees.map((attendee, index) => (
-                              <Badge
-                                key={index}
-                                variant='secondary'
-                                className='flex items-center gap-1 px-2 py-1'>
-                                <span>{attendee}</span>
-                                <button
-                                  type='button'
-                                  onClick={() => handleRemoveAttendee(attendee)}
-                                  className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
-                                  <X className='w-3 h-3' />
-                                </button>
-                              </Badge>
-                            ))}
-
-                            {/* Input for new attendee */}
-                            <input
-                              type='text'
-                              id='attendees'
-                              value={attendeeInput}
-                              onChange={e => setAttendeeInput(e.target.value)}
-                              onKeyDown={handleAttendeeKeyDown}
-                              onBlur={handleAddAttendee}
-                              placeholder={
-                                formData.attendees.length === 0 ? 'Type name and press Enter' : ''
-                              }
-                              className='flex-1 min-w-[120px] outline-none bg-transparent'
-                            />
-                          </div>
-                        </div>
-                        <p className='text-sm text-gray-500'>
-                          Type a name and press Enter to add. Click the × or hit Backspace to
-                          remove.
-                        </p>
-                      </div>
-
-                      {/* Students Table Section */}
-                      <div className='space-y-2'>
-                        <Label>Students</Label>
-
-                        <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
-                          <MonthlyMeetingsStudentTable
-                            students={students}
-                            isLoading={isLoadingStudents}
-                            studentData={studentData}
-                            onStudentClick={student => {
-                              setSelectedStudent(student)
-                              setShowStudentModal(true)
-                            }}
-                            hasStudentData={hasStudentData}
-                          />
-                        </div>
-                      </div>
-
-                      <div className='space-y-2'>
-                        {/* This was originally additional notes but was requested by client to be changed to meeting notes */}
-                        <Label htmlFor='additional_notes'>Meeting Notes</Label>
-                        <Textarea
-                          id='additional_notes'
-                          name='additional_notes'
-                          value={formData.additional_notes}
-                          onChange={handleInputChange}
-                          placeholder='Meeting notes to be added...'
-                          rows={4}
-                        />
-                      </div>
-                    </div>
-
-                    <div className='space-y-2'>
-                      <Label htmlFor='action_plan'>Action Plan</Label>
-                      <Textarea
-                        id='action_plan'
-                        name='action_plan'
-                        value={formData.action_plan}
-                        onChange={handleInputChange}
-                        placeholder='Action plan and next steps...'
-                        rows={4}
-                      />
-                    </div>
-
-                    <div className='flex justify-between pt-4'>
-                      <div>
-                        {isDirty && (
-                          <Button
-                            type='button'
-                            variant='ghost'
-                            onClick={() => {
-                              discardDraft()
-                              toast({
-                                title: 'Draft Discarded',
-                                description: 'Your draft has been discarded.',
-                              })
-                            }}
-                            disabled={isSubmitting}
-                            className='text-red-600 hover:text-red-700 hover:bg-red-50'>
-                            Discard Draft
-                          </Button>
-                        )}
-                      </div>
-
-                      <div className='flex gap-3'>
-                        <Button
+              <div className='space-y-2'>
+                <Label htmlFor='attendees'>Attendees *</Label>
+                <div
+                  className={cn(
+                    'min-h-[42px] w-full rounded-md border border-input bg-background',
+                    'px-3 py-2 text-sm ring-offset-background',
+                    'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
+                  )}>
+                  <div className='flex flex-wrap gap-2'>
+                    {/* Display existing attendees as badges */}
+                    {formData.attendees.map((attendee, index) => (
+                      <Badge
+                        key={index}
+                        variant='secondary'
+                        className='flex items-center gap-1 px-2 py-1'>
+                        <span>{attendee}</span>
+                        <button
                           type='button'
-                          variant='outline'
-                          onClick={handleCancel}
-                          disabled={isSubmitting}>
-                          Cancel
-                        </Button>
-                        <Button
-                          type='submit'
-                          className='bg-blue-600 hover:bg-blue-700'
-                          disabled={isSubmitting}>
-                          {isSubmitting ? 'Saving...' : 'Save Meeting Notes'}
-                        </Button>
-                      </div>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
+                          onClick={() => handleRemoveAttendee(attendee)}
+                          className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
+                          <X className='w-3 h-3' />
+                        </button>
+                      </Badge>
+                    ))}
 
-              {/* Student Details Modal */}
-              <StudentDetailsModal
-                open={showStudentModal}
-                onClose={() => {
-                  setShowStudentModal(false)
-                  setSelectedStudent(null)
-                }}
-                selectedStudent={selectedStudent}
-                studentData={studentData}
-                setStudentData={setStudentData}
-              />
+                    {/* Input for new attendee */}
+                    <input
+                      type='text'
+                      id='attendees'
+                      value={attendeeInput}
+                      onChange={e => setAttendeeInput(e.target.value)}
+                      onKeyDown={handleAttendeeKeyDown}
+                      onBlur={handleAddAttendee}
+                      placeholder={
+                        formData.attendees.length === 0 ? 'Type name and press Enter' : ''
+                      }
+                      className='flex-1 min-w-[120px] outline-none bg-transparent'
+                    />
+                  </div>
+                </div>
+                <p className='text-sm text-gray-500'>
+                  Type a name and press Enter to add. Click the × or hit Backspace to remove.
+                </p>
+              </div>
 
-              {/* Draft Restore Dialog */}
-              <DraftRestoreDialog
-                open={showRestoreDialog}
-                onRestore={() => {
-                  loadDraft()
-                  setShowRestoreDialog(false)
-                  toast({
-                    title: 'Draft Restored',
-                    description: 'Your previous draft has been restored.',
-                  })
-                }}
-                onDiscard={() => {
-                  discardDraft()
-                  setShowRestoreDialog(false)
-                }}
-              />
+              {/* Students Table Section */}
+              <div className='space-y-2'>
+                <Label>Students</Label>
 
-              {/* Leave Confirmation Dialog */}
-              <UnsavedChangesDialog
-                open={showLeaveDialog}
-                onKeepEditing={() => setShowLeaveDialog(false)}
-                onLeave={confirmLeave}
+                <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
+                  <MonthlyMeetingsStudentTable
+                    students={students}
+                    isLoading={isLoadingStudents}
+                    studentData={studentData}
+                    onStudentClick={student => {
+                      setSelectedStudent(student)
+                      setShowStudentModal(true)
+                    }}
+                    hasStudentData={hasStudentData}
+                  />
+                </div>
+              </div>
+
+              <div className='space-y-2'>
+                {/* This was originally additional notes but was requested by client to be changed to meeting notes */}
+                <Label htmlFor='additional_notes'>Meeting Notes</Label>
+                <Textarea
+                  id='additional_notes'
+                  name='additional_notes'
+                  value={formData.additional_notes}
+                  onChange={handleInputChange}
+                  placeholder='Meeting notes to be added...'
+                  rows={4}
+                />
+              </div>
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='action_plan'>Action Plan</Label>
+              <Textarea
+                id='action_plan'
+                name='action_plan'
+                value={formData.action_plan}
+                onChange={handleInputChange}
+                placeholder='Action plan and next steps...'
+                rows={4}
               />
             </div>
-          </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+
+            <div className='flex justify-between pt-4'>
+              <div>
+                {isDirty && (
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    onClick={() => {
+                      discardDraft()
+                      toast({
+                        title: 'Draft Discarded',
+                        description: 'Your draft has been discarded.',
+                      })
+                    }}
+                    disabled={isSubmitting}
+                    className='text-red-600 hover:text-red-700 hover:bg-red-50'>
+                    Discard Draft
+                  </Button>
+                )}
+              </div>
+
+              <div className='flex gap-3'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={handleCancel}
+                  disabled={isSubmitting}>
+                  Cancel
+                </Button>
+                <Button
+                  type='submit'
+                  className='bg-blue-600 hover:bg-blue-700'
+                  disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save Meeting Notes'}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Student Details Modal */}
+      <StudentDetailsModal
+        open={showStudentModal}
+        onClose={() => {
+          setShowStudentModal(false)
+          setSelectedStudent(null)
+        }}
+        selectedStudent={selectedStudent}
+        studentData={studentData}
+        setStudentData={setStudentData}
+      />
+
+      {/* Draft Restore Dialog */}
+      <DraftRestoreDialog
+        open={showRestoreDialog}
+        onRestore={() => {
+          loadDraft()
+          setShowRestoreDialog(false)
+          toast({
+            title: 'Draft Restored',
+            description: 'Your previous draft has been restored.',
+          })
+        }}
+        onDiscard={() => {
+          discardDraft()
+          setShowRestoreDialog(false)
+        }}
+      />
+
+      {/* Leave Confirmation Dialog */}
+      <UnsavedChangesDialog
+        open={showLeaveDialog}
+        onKeepEditing={() => setShowLeaveDialog(false)}
+        onLeave={confirmLeave}
+      />
+    </div>
   )
 }
 
