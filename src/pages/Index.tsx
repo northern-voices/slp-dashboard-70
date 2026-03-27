@@ -15,6 +15,7 @@ import { useAvailableSLPs } from '@/hooks/school/useAvailableSLPs'
 import { supabase } from '@/lib/supabase'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
 // import DashboardStats from '@/components/DashboardStats'
 // import QuickActions from '@/components/QuickActions'
 // import RecentActivity from '@/components/RecentActivity'
@@ -289,14 +290,7 @@ const DashboardContent = () => {
   }
 
   if (isLoading || isLoadingSchool) {
-    return (
-      <div className='flex items-center justify-center flex-1'>
-        <div className='text-center'>
-          <div className='w-8 h-8 mx-auto mb-4 border-b-2 rounded-full animate-spin border-brand'></div>
-          <p className='text-sm text-gray-600'>Loading dashboard...</p>
-        </div>
-      </div>
-    )
+    return <DashboardSkeleton />
   }
 
   if (schoolError) {
