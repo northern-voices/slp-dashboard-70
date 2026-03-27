@@ -45,6 +45,7 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
 import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
 import MonthlyMeetingBulkActions from '@/components/monthly-meetings/MonthlyMeetingBulkActions'
+import MonthlyMeetingsSkeleton from '@/components/skeletons/MonthlyMeetingsSkeleton'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 
 interface MonthlyMeetingsTableProps {
@@ -63,7 +64,7 @@ const MonthlyMeetingsTable = ({
   const [sortField, setSortField] = useState<'meeting_date' | 'meeting_title' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [selectedMeetingForDetails, setSelectedMeetingForDetails] = useState<MonthlyMeeting | null>(
-    null,
+    null
   )
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [meetingToDelete, setMeetingToDelete] = useState<MonthlyMeeting | null>(null)
@@ -82,7 +83,7 @@ const MonthlyMeetingsTable = ({
     error,
   } = useMonthlyMeetingsBySchool(
     currentSchool?.id,
-    dateRangeFilter === 'school_year' || dateRangeFilter === 'all' ? dateRangeFilter : 'all',
+    dateRangeFilter === 'school_year' || dateRangeFilter === 'all' ? dateRangeFilter : 'all'
   )
 
   // Debug logging
@@ -103,7 +104,7 @@ const MonthlyMeetingsTable = ({
       meeting.student_updates?.some(
         update =>
           update.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          update.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()),
+          update.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
       )
 
     // Filter by facilitator
@@ -320,13 +321,7 @@ const MonthlyMeetingsTable = ({
     filteredMeetings.length > 0 && selectedMeetings.length === filteredMeetings.length
   const isSomeSelected = selectedMeetings.length > 0
 
-  if (isLoading) {
-    return (
-      <div className='flex items-center justify-center py-12'>
-        <Loader2 className='w-8 h-8 animate-spin text-blue-600' />
-      </div>
-    )
-  }
+  if (isLoading) return <MonthlyMeetingsSkeleton />
 
   if (error) {
     return (
