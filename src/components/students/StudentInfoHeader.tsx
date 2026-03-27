@@ -100,7 +100,7 @@ const StudentInfoHeader = ({
 
   const { data: consentForms = [] } = useConsentForms(localStudent?.id || '')
 
-  const hasConsentThisYear = () => {
+  const hasConsentThisYear = (() => {
     const now = new Date()
     const year = now.getFullYear()
     const month = now.getMonth()
@@ -112,7 +112,7 @@ const StudentInfoHeader = ({
       const date = new Date(form.consent_date)
       return date >= start && date <= end
     })
-  }
+  })()
 
   const navigate = useNavigate()
 
