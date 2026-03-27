@@ -18,6 +18,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -35,7 +42,8 @@ interface StudentTableProps {
 const newStudentSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   last_name: z.string().min(1, 'Last name is required'),
-  date_of_birth: z.string().optional(),
+  // date_of_birth: z.string().optional(),
+  grade_level: z.string().optional(),
 })
 
 type NewStudentFormData = z.infer<typeof newStudentSchema>
@@ -93,7 +101,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     defaultValues: {
       first_name: '',
       last_name: '',
-      date_of_birth: '',
+      // date_of_birth: '',
+      grade_level: '',
     },
   })
 
@@ -291,16 +300,14 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       const duplicate = await studentsApi.checkDuplicateStudent(
         activeSchool.id,
         data.first_name,
-        data.last_name,
-        data.date_of_birth
+        data.last_name
+        // data.date_of_birth
       )
 
       if (duplicate) {
         toast({
           title: 'Duplicate Student',
-          description: `A student with the name "${data.first_name} ${data.last_name}"${
-            data.date_of_birth ? ` and birthdate ${data.date_of_birth}` : ''
-          } already exists in this school.`,
+          description: `A student with the name "${data.first_name} ${data.last_name}" already exists in this school.`,
           variant: 'destructive',
         })
         return
@@ -313,6 +320,39 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         variant: 'destructive',
       })
       return
+    }
+
+    // Resolve grade ID if a grade level was selected
+    let resolvedGradeId: string | undefined = undefined
+
+    if (data.grade_level) {
+      const currentDate = new Date()
+      const currentYear = currentDate.getFullYear()
+      const currentMonth = currentDate.getMonth()
+      const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+      const academicYear = `${academicYearStart}-${academicYearStart + 1}`
+
+      try {
+        const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
+          activeSchool.id,
+          data.grade_level,
+          academicYear
+        )
+
+        if (gradeAvailability.exists && gradeAvailability.grade?.id) {
+          resolvedGradeId = gradeAvailability.grade.id
+        } else {
+          const newGrade = await schoolGradesApi.createSchoolGrade({
+            school_id: activeSchool.id,
+            grade_level: data.grade_level,
+            academic_year: academicYear,
+          })
+          resolvedGradeId = newGrade.id
+        }
+      } catch (error) {
+        console.error('Error resolving grade:', error)
+        // No return -- non-fatal can proceed without grade
+      }
     }
 
     // Generate school abbreviation from school name
@@ -334,7 +374,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         student_id: tempStudentId,
         school_id: activeSchool.id,
         qualifies_for_program: false,
-        ...(data.date_of_birth && { date_of_birth: data.date_of_birth }),
+        // ...(data.date_of_birth && { date_of_birth: data.date_of_birth }),
       },
       {
         onSuccess: newStudent => {
@@ -347,6 +387,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
               id: newStudent.id,
               studentData: {
                 student_id: formattedStudentId,
+                ...(resolvedGradeId && { current_grade_id: resolvedGradeId }),
               },
             },
             {
@@ -536,7 +577,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                 />
               </div>
 
-              <FormField
+              {/* <FormField
                 control={newStudentForm.control}
                 name='date_of_birth'
                 render={({ field }) => (
@@ -545,6 +586,31 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                     <FormControl>
                       <Input type='date' {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              /> */}
+
+              <FormField
+                control={newStudentForm.control}
+                name='grade_level'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Grade Level</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder='Select grade (optional)' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {GRADE_MAPPING.map(grade => (
+                          <SelectItem key={grade.value} value={grade.value}>
+                            {grade.display}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
