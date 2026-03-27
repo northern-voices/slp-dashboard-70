@@ -5,6 +5,7 @@ import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import ScreeningsTableSkeleton from '@/components/skeletons/ScreeningsTableSkeleton'
 import {
   Select,
   SelectContent,
@@ -902,78 +903,8 @@ const ScreeningsTable = ({
     filteredScreenings.length > 0 && selectedScreenings.length === filteredScreenings.length
   const isSomeSelected = selectedScreenings.length > 0
 
-  // Loading state with skeleton (show when initially loading or when fetching without data)
   if (isLoading) {
-    return (
-      <div className='space-y-4'>
-        <div className='flex justify-end mb-3'>
-          <div className='w-32 bg-gray-200 rounded-full h-7 animate-pulse'></div>
-        </div>
-
-        <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
-          <ResponsiveTable className='w-full'>
-            <TableHeader>
-              <tr>
-                <TableHead className='w-12'>
-                  <div className='w-4 h-4 bg-gray-200 rounded animate-pulse'></div>
-                </TableHead>
-                <TableHead className='w-1/4 min-w-[200px]'>
-                  <div className='w-20 h-4 bg-gray-200 rounded animate-pulse'></div>
-                </TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>
-                  <div className='w-16 h-4 bg-gray-200 rounded animate-pulse'></div>
-                </TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>
-                  <div className='w-20 h-4 bg-gray-200 rounded animate-pulse'></div>
-                </TableHead>
-                <TableHead className='w-1/6 min-w-[80px]'>
-                  <div className='h-4 bg-gray-200 rounded w-14 animate-pulse'></div>
-                </TableHead>
-                <TableHead className='w-1/6 min-w-[100px]'>
-                  <div className='w-12 h-4 bg-gray-200 rounded animate-pulse'></div>
-                </TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>
-                  <div className='w-20 h-4 bg-gray-200 rounded animate-pulse'></div>
-                </TableHead>
-              </tr>
-            </TableHeader>
-            <TableBody>
-              {[...Array(5)].map((_, i) => (
-                <tr key={i} className='border-b border-gray-200'>
-                  <TableCell>
-                    <div className='w-4 h-4 bg-gray-200 rounded animate-pulse'></div>
-                  </TableCell>
-                  <TableCell>
-                    <div className='space-y-2'>
-                      <div className='w-32 h-4 bg-gray-200 rounded animate-pulse'></div>
-                      <div className='w-24 h-3 bg-gray-200 rounded animate-pulse'></div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className='w-20 h-6 bg-gray-200 rounded-full animate-pulse'></div>
-                  </TableCell>
-                  <TableCell>
-                    <div className='w-24 h-6 bg-gray-200 rounded-full animate-pulse'></div>
-                  </TableCell>
-                  <TableCell>
-                    <div className='w-8 h-4 bg-gray-200 rounded animate-pulse'></div>
-                  </TableCell>
-                  <TableCell>
-                    <div className='w-20 h-4 bg-gray-200 rounded animate-pulse'></div>
-                  </TableCell>
-                  <TableCell>
-                    <div className='w-24 h-4 bg-gray-200 rounded animate-pulse'></div>
-                  </TableCell>
-                  <TableCell>
-                    <div className='w-8 h-8 bg-gray-200 rounded animate-pulse'></div>
-                  </TableCell>
-                </tr>
-              ))}
-            </TableBody>
-          </ResponsiveTable>
-        </div>
-      </div>
-    )
+    return <ScreeningsTableSkeleton />
   }
 
   // Error state
