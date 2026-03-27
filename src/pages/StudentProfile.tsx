@@ -11,6 +11,7 @@ import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useDeleteStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import StudentPageMonthlyMeetingsTable from '@/components/monthly-meetings/StudentPageMonthlyMeetingsTable'
 import ConsentFormsSection from '@/components/students/ConsentFormsSection'
+import StudentProfileSkeleton from '@/components/skeletons/StudentProfileSkeleton'
 
 const StudentProfileContent = () => {
   const { studentId, schoolId } = useParams<{ studentId: string; schoolId: string }>()
@@ -185,12 +186,7 @@ const StudentProfileContent = () => {
     )
   }
 
-  if (loading)
-    return (
-      <div className='flex justify-center p-8'>
-        <LoadingSpinner />
-      </div>
-    )
+  if (loading) return <StudentProfileSkeleton />
   if (error) return <ErrorMessage message={error} />
   if (!student) return <div className='p-8 text-center'>Student not found</div>
 
