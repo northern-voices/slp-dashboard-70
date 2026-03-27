@@ -1,19 +1,9 @@
 import React, { useState } from 'react'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from '@/components/ui/breadcrumb'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft } from 'lucide-react'
-import AppSidebar from '@/components/AppSidebar'
-import Header from '@/components/Header'
 import DraftsList from '@/components/drafts/DraftsList'
-import { OrganizationProvider, useOrganization } from '@/contexts/OrganizationContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { Draft } from '@/types/draft'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
@@ -125,49 +115,41 @@ const DraftsContent = () => {
     })
   }
   return (
-    <div className='min-h-screen flex w-full bg-gray-25'>
-      <SidebarProvider>
-        <AppSidebar userRole={userRole as UserRole} userName={userName} />
-        <SidebarInset>
-          <Header userRole={userRole as UserRole} userName={userName} />
-          <main className='flex-1 p-4 md:p-6 lg:p-8'>
-            {/* Breadcrumb Navigation */}
-            <div className='mb-6'>
-              <div className='flex items-center gap-4 mb-4'>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={handleBack}
-                  className='text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2'>
-                  <ChevronLeft className='w-4 h-4 mr-1' />
-                  Back
-                </Button>
+    <main className='flex-1 p-4 md:p-6 lg:p-8'>
+      {/* Breadcrumb Navigation */}
+      <div className='mb-6'>
+        <div className='flex items-center gap-4 mb-4'>
+          <Button
+            variant='ghost'
+            size='sm'
+            onClick={handleBack}
+            className='text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2'>
+            <ChevronLeft className='w-4 h-4 mr-1' />
+            Back
+          </Button>
 
-                <Breadcrumb></Breadcrumb>
-              </div>
+          <Breadcrumb></Breadcrumb>
+        </div>
 
-              <div className='space-y-1 mt-4'>
-                <h1 className='text-2xl font-semibold text-gray-900'>Screening Drafts</h1>
-                <p className='text-gray-600'>
-                  Manage your incomplete screening forms and continue where you left off
-                </p>
-              </div>
-            </div>
+        <div className='space-y-1 mt-4'>
+          <h1 className='text-2xl font-semibold text-gray-900'>Screening Drafts</h1>
+          <p className='text-gray-600'>
+            Manage your incomplete screening forms and continue where you left off
+          </p>
+        </div>
+      </div>
 
-            {/* Drafts List */}
-            <DraftsList
-              drafts={drafts}
-              onView={handleView}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onDuplicate={handleDuplicate}
-              currentUserId={currentUserId}
-              userRole={userRole}
-            />
-          </main>
-        </SidebarInset>
-      </SidebarProvider>
-    </div>
+      {/* Drafts List */}
+      <DraftsList
+        drafts={drafts}
+        onView={handleView}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onDuplicate={handleDuplicate}
+        currentUserId={currentUserId}
+        userRole={userRole}
+      />
+    </main>
   )
 }
 const Drafts = () => {
