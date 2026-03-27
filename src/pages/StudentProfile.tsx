@@ -14,6 +14,7 @@ import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useDeleteStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import StudentPageMonthlyMeetingsTable from '@/components/monthly-meetings/StudentPageMonthlyMeetingsTable'
 import { UserRole } from '@/types/database'
+import ConsentFormsSection from '@/components/students/ConsentFormsSection'
 
 const StudentProfileContent = () => {
   const { studentId, schoolId } = useParams<{ studentId: string; schoolId: string }>()
@@ -237,6 +238,7 @@ const StudentProfileContent = () => {
                 onAddSpeechScreening={handleAddSpeechScreening}
               />
               <StudentPageMonthlyMeetingsTable studentId={studentId} />
+              <ConsentFormsSection student={student} />
             </div>
           </main>
         </SidebarInset>
