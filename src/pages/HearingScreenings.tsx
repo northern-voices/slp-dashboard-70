@@ -8,7 +8,7 @@ import HearingScreeningsFilters from '@/components/screenings/hearing/HearingScr
 import HearingScreeningsTable from '@/components/screenings/hearing/HearingScreeningsTable'
 import { useHearingScreenings } from '@/hooks/screenings/use-hearing-screenings'
 import { Screening } from '@/types/database'
-import LoadingSpinner from '@/components/common/LoadingSpinner'
+import HearingScreeningsSkeleton from '@/components/skeletons/HearingScreeningsSkeleton'
 
 const HearingScreenings = () => {
   const { currentSchool } = useOrganization()
@@ -42,13 +42,7 @@ const HearingScreenings = () => {
     setComplexNeedsFilter('all')
   }
 
-  if (isLoading) {
-    return (
-      <div className='flex-1 bg-gray-25 p-4 md:p-6 lg:p-8 flex items-center justify-center'>
-        <LoadingSpinner size='lg' />
-      </div>
-    )
-  }
+  if (isLoading) return <HearingScreeningsSkeleton />
 
   return (
     <div className='max-w-7xl mx-auto'>
