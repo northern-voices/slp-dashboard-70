@@ -1,4 +1,14 @@
 import { useState } from 'react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
@@ -37,6 +47,11 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
   const { toast } = useToast()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedForm, setSelectedForm] = useState<ConsentForm | null>(null)
+  const [formToDelete, setFormToDelete] = useState<{
+    id: string
+    filePath: string | null
+    fileName: string
+  } | null>(null)
 
   const { data: forms = [], isLoading } = useConsentForms(student.id) as {
     data: ConsentForm[]
@@ -113,7 +128,11 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
                       size='sm'
                       variant='outline'
                       onClick={() =>
-                        handleDelete(form.id, form.file_path, form.file_name || 'this record')
+                        setFormToDelete({
+                          id: form.id,
+                          filePath: form.file_path,
+                          fileName: form.file_name || 'this record',
+                        })
                       }
                       disabled={deleteMutation.isPending}>
                       <Trash2 className='h-4 w-4 text-destructive' />
@@ -137,6 +156,32 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
         onClose={() => setSelectedForm(null)}
         form={selectedForm}
       />
+
+      <AlertDialog open={!!formToDelete} onOpenChange={() => setFormToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Consent Form?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete{' '}
+              <span className='font-medium text-foreground'>{formToDelete?.fileName}</span>. This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              onClick={() => {
+                if (formToDelete) {
+                  handleDelete(formToDelete.id, formToDelete.filePath, formToDelete.fileName)
+                  setFormToDelete(null)
+                }
+              }}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
