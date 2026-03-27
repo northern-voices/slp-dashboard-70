@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { consentFormsApi } from '@/api/consentForms'
 import { format } from 'date-fns'
-import { ExternalLink, Loader2 } from 'lucide-react'
+import { ExternalLink, Loader2, Download } from 'lucide-react'
 
 interface ConsentFormDetails {
   id: string
@@ -36,6 +36,7 @@ const purposeLabel = (purpose: string) =>
 const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsModalProps) => {
   const { toast } = useToast()
   const [loadingPhoto, setLoadingPhoto] = useState(false)
+  const [loadingDownload, setLoadingDownload] = useState(false)
 
   if (!form) return null
 
@@ -58,9 +59,37 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
     }
   }
 
+  const handleDownload = async () => {
+    if (!form.file_path) return
+    setLoadingDownload(true)
+
+    try {
+      const url = await consentFormsApi.getSignedUrl(form.file_path)
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const objectUrl = URL.createObjectURL(blob)
+
+      const a = document.createElement('a')
+      a.href = objectUrl
+      a.download = form.file_name || 'consent-form'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(objectUrl)
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Could not download the file. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoadingDownload(false)
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className='max-w-xl'>
+      <DialogContent className='max-w-2xl'>
         <DialogHeader>
           <DialogTitle>Consent Form Details</DialogTitle>
         </DialogHeader>
@@ -122,18 +151,34 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
                 <span className='truncate text-sm text-muted-foreground'>
                   {form.file_name || 'Consent form photo'}
                 </span>
-                <Button
-                  size='sm'
-                  variant='outline'
-                  onClick={handleViewPhoto}
-                  disabled={loadingPhoto}>
-                  {loadingPhoto ? (
-                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  ) : (
-                    <ExternalLink className='mr-2 h-4 w-4' />
-                  )}
-                  View Photo
-                </Button>
+
+                <div className='flex gap-2'>
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    onClick={handleDownload}
+                    disabled={loadingDownload}>
+                    {loadingDownload ? (
+                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <Download className='mr-2 h-4 w-4' />
+                    )}
+                    Download
+                  </Button>
+
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    onClick={handleViewPhoto}
+                    disabled={loadingPhoto}>
+                    {loadingPhoto ? (
+                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <ExternalLink className='mr-2 h-4 w-4' />
+                    )}
+                    View Photo
+                  </Button>
+                </div>
               </div>
             </div>
           )}
