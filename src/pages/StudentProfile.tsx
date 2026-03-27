@@ -6,14 +6,10 @@ import StudentInfoHeader from '@/components/students/StudentInfoHeader'
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory'
 import StudentDetailPagination from '@/components/students/StudentDetailPagination'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import AppSidebar from '@/components/AppSidebar'
-import Header from '@/components/Header'
 import { useToast } from '@/hooks/use-toast'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useDeleteStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import StudentPageMonthlyMeetingsTable from '@/components/monthly-meetings/StudentPageMonthlyMeetingsTable'
-import { UserRole } from '@/types/database'
 import ConsentFormsSection from '@/components/students/ConsentFormsSection'
 
 const StudentProfileContent = () => {
@@ -207,43 +203,35 @@ const StudentProfileContent = () => {
   const hasNext = currentStudentIndex < allStudents.length - 1
 
   return (
-    <div className='min-h-screen flex w-full bg-gray-25'>
-      <SidebarProvider>
-        <AppSidebar userRole={userRole as UserRole} userName={userName} />
-        <SidebarInset>
-          <Header userRole={userRole as UserRole} userName={userName} />
-          <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
-            <StudentDetailPagination
-              currentStudent={`${student.first_name} ${student.last_name}`}
-              currentIndex={currentStudentIndex}
-              totalStudents={allStudents.length}
-              onNavigateBack={handleNavigateBack}
-              onNavigatePrevious={handleNavigatePrevious}
-              onNavigateNext={handleNavigateNext}
-              hasPrevious={hasPrevious}
-              hasNext={hasNext}
-            />
+    <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
+      <StudentDetailPagination
+        currentStudent={`${student.first_name} ${student.last_name}`}
+        currentIndex={currentStudentIndex}
+        totalStudents={allStudents.length}
+        onNavigateBack={handleNavigateBack}
+        onNavigatePrevious={handleNavigatePrevious}
+        onNavigateNext={handleNavigateNext}
+        hasPrevious={hasPrevious}
+        hasNext={hasNext}
+      />
 
-            <div className='space-y-6'>
-              <StudentInfoHeader
-                student={student}
-                isLoading={loading}
-                onDelete={handleDeleteStudent}
-                onMoveUpGrade={handleMoveUpGrade}
-              />
-              <StudentScreeningHistory
-                studentId={studentId}
-                student={student}
-                onAddHearingScreening={handleAddHearingScreening}
-                onAddSpeechScreening={handleAddSpeechScreening}
-              />
-              <StudentPageMonthlyMeetingsTable studentId={studentId} />
-              <ConsentFormsSection student={student} />
-            </div>
-          </main>
-        </SidebarInset>
-      </SidebarProvider>
-    </div>
+      <div className='space-y-6'>
+        <StudentInfoHeader
+          student={student}
+          isLoading={loading}
+          onDelete={handleDeleteStudent}
+          onMoveUpGrade={handleMoveUpGrade}
+        />
+        <StudentScreeningHistory
+          studentId={studentId}
+          student={student}
+          onAddHearingScreening={handleAddHearingScreening}
+          onAddSpeechScreening={handleAddSpeechScreening}
+        />
+        <StudentPageMonthlyMeetingsTable studentId={studentId} />
+        <ConsentFormsSection student={student} />
+      </div>
+    </main>
   )
 }
 
