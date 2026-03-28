@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { getNavigationGroups } from './sidebar/sidebarNavigationData'
 
 interface SchoolRouterProps {
   children: React.ReactNode
@@ -11,7 +11,8 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const { schoolId } = useParams<{ schoolId: string }>()
-  const { currentSchool, availableSchools, setCurrentSchool, isLoading } = useOrganization()
+  const { currentSchool, availableSchools, setCurrentSchool, isLoading, userProfile } =
+    useOrganization()
   const [isInitializing, setIsInitializing] = useState(true)
   const [lastNavigationCheck, setLastNavigationCheck] = useState<number>(0)
 
@@ -157,14 +158,25 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
     shouldNavigate,
   ])
 
+  const userRole = (userProfile?.role as string) || 'slp'
+  const allItems = getNavigationGroups(
+    location,
+    userRole,
+    userProfile as unknown as Record<string, unknown>,
+    currentSchool
+  ).flatMap(group => group.items)
+
+  const normalizedPath = location.pathname.replace(/^\/school\/[^/]+/, '') || '/'
+  const matchedItem = [...allItems]
+    .sort((a, b) => b.url.length - a.url.length)
+    .find(item => {
+      const itemPath = item.url.replace(/^\/school\/[^/]+/, '') || '/'
+      return itemPath === '/' ? normalizedPath === '/' : normalizedPath.startsWith(itemPath)
+    })
+  const SkeletonComponent = matchedItem?.skeleton
+
   // Show loading while initializing
-  if (isLoading || isInitializing) {
-    return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <LoadingSpinner />
-      </div>
-    )
-  }
+  if (isLoading || isInitializing) return SkeletonComponent ? <SkeletonComponent /> : null
 
   // If no schools available, show error
   if (availableSchools.length === 0) {

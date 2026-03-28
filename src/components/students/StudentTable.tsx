@@ -34,6 +34,7 @@ import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useCreateStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { studentsApi } from '@/api/students'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import StudentsSkeleton from '@/components/skeletons/StudentsSkeleton'
 
 interface StudentTableProps {
   selectedSchool?: School | null
@@ -428,16 +429,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   }
 
   if (isLoading) {
-    return (
-      <div className='space-y-6'>
-        <div className='flex items-center justify-center py-12'>
-          <div className='text-center'>
-            <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin'></div>
-            <p className='text-gray-600'>Loading students...</p>
-          </div>
-        </div>
-      </div>
-    )
+    return <StudentsSkeleton />
   }
 
   return (

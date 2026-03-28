@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   Home,
   BarChart3,
@@ -9,12 +10,20 @@ import {
 } from 'lucide-react'
 import { Location } from 'react-router-dom'
 import { LucideIcon } from 'lucide-react'
+import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
+import StudentsSkeleton from '@/components/skeletons/StudentsSkeleton'
+import HearingScreeningsSkeleton from '@/components/skeletons/HearingScreeningsSkeleton'
+import MonthlyMeetingsSkeleton from '@/components/skeletons/MonthlyMeetingsSkeleton'
+import ScreeningsSkeleton from '@/components/skeletons/ScreeningsSkeleton'
+import ReportsSkeleton from '@/components/skeletons/ReportsSkeleton'
+import Reports from '@/pages/Reports'
 
 export interface NavigationItem {
   title: string
   url: string
   icon: LucideIcon
   isActive?: boolean
+  skeleton?: React.ComponentType
 }
 
 export interface NavigationGroup {
@@ -39,6 +48,7 @@ export const getNavigationGroups = (
       isActive:
         location.pathname === '/' ||
         (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}`),
+      skeleton: DashboardSkeleton,
     },
     {
       title: 'Student Profiles',
@@ -47,6 +57,7 @@ export const getNavigationGroups = (
       isActive:
         location.pathname.startsWith('/students') ||
         (useSchoolRoutes && location.pathname.startsWith(`/school/${currentSchool.id}/students`)),
+      skeleton: StudentsSkeleton,
     },
     {
       title: 'Speech Screenings',
@@ -55,6 +66,7 @@ export const getNavigationGroups = (
       isActive:
         location.pathname === '/screenings' ||
         (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screenings`),
+      skeleton: ScreeningsSkeleton,
     },
     {
       title: 'Hearing Screenings',
@@ -65,6 +77,7 @@ export const getNavigationGroups = (
       isActive:
         location.pathname === '/screenings/hearing' ||
         (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/screenings/hearing`),
+      skeleton: HearingScreeningsSkeleton,
     },
     {
       title: 'Reports',
@@ -76,6 +89,7 @@ export const getNavigationGroups = (
         location.pathname === '/speech-screening-reports' ||
         (useSchoolRoutes &&
           location.pathname.startsWith(`/school/${currentSchool.id}/speech-screening-reports`)),
+      skeleton: ReportsSkeleton,
     },
     {
       title: 'Monthly Meetings',
@@ -85,6 +99,7 @@ export const getNavigationGroups = (
         location.pathname === '/monthly-meetings' ||
         (useSchoolRoutes &&
           location.pathname.startsWith(`/school/${currentSchool.id}/monthly-meetings`)),
+      skeleton: MonthlyMeetingsSkeleton,
     },
     // {
     //   title: 'School Support',

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { format } from 'date-fns'
 import { useQueryClient } from '@tanstack/react-query'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -19,8 +19,6 @@ import {
 } from '@/components/ui/select'
 import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change'
 import { FileText, Calendar, Save, Volume2, X } from 'lucide-react'
-import AppSidebar from '@/components/AppSidebar'
-import Header from '@/components/Header'
 import { useToast } from '@/hooks/use-toast'
 import { useUpdateHearingScreening } from '@/hooks/screenings/use-screening-hearing-mutations'
 import { useHearingScreeningById } from '@/hooks/screenings/use-hearing-screenings'
@@ -188,325 +186,313 @@ const EditHearingScreeningContent = () => {
     : 'N/A'
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <Header />
-        <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
-          <div className='min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min'>
-            <div className='p-6'>
-              <div className='flex items-center gap-3 mb-6'>
-                <FileText className='w-6 h-6' />
+    <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
+      <div className='min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min'>
+        <div className='p-6'>
+          <div className='flex items-center gap-3 mb-6'>
+            <FileText className='w-6 h-6' />
+            <div>
+              <h1 className='text-2xl font-semibold'>Edit Hearing Screening</h1>
+              <p className='text-gray-600'>
+                Editing hearing screening for {screening.student_name}
+              </p>
+            </div>
+          </div>
+
+          <div className='space-y-6'>
+            {/* Screening Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle className='flex items-center gap-2'>
+                  <Calendar className='w-5 h-5' />
+                  Screening Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className='space-y-4'>
+                <div className='mb-4 py-3 px-5 bg-blue-50 rounded-lg border border-blue-200'>
+                  <div className='flex items-center gap-2'>
+                    <span className='text-sm font-medium text-blue-900'>Student Name:</span>
+                    <span className='text-sm font-semibold text-blue-800'>
+                      {screening.student_name}
+                    </span>
+                  </div>
+                  <div className='flex items-center gap-2 mt-1'>
+                    <span className='text-sm font-medium text-blue-900'>Grade:</span>
+                    <span className='text-sm font-semibold text-blue-800'>{screening.grade}</span>
+                  </div>
+                </div>
+
                 <div>
-                  <h1 className='text-2xl font-semibold'>Edit Hearing Screening</h1>
-                  <p className='text-gray-600'>
-                    Editing hearing screening for {screening.student_name}
-                  </p>
+                  <Label className='mb-2 block'>Screening Date</Label>
+                  <Input
+                    type='text'
+                    value={screeningDate}
+                    readOnly
+                    className='bg-gray-50 cursor-not-allowed'
+                  />
                 </div>
-              </div>
 
-              <div className='space-y-6'>
-                {/* Screening Details */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className='flex items-center gap-2'>
-                      <Calendar className='w-5 h-5' />
-                      Screening Details
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className='space-y-4'>
-                    <div className='mb-4 py-3 px-5 bg-blue-50 rounded-lg border border-blue-200'>
-                      <div className='flex items-center gap-2'>
-                        <span className='text-sm font-medium text-blue-900'>Student Name:</span>
-                        <span className='text-sm font-semibold text-blue-800'>
-                          {screening.student_name}
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-2 mt-1'>
-                        <span className='text-sm font-medium text-blue-900'>Grade:</span>
-                        <span className='text-sm font-semibold text-blue-800'>
-                          {screening.grade}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label className='mb-2 block'>Screening Date</Label>
-                      <Input
-                        type='text'
-                        value={screeningDate}
-                        readOnly
-                        className='bg-gray-50 cursor-not-allowed'
-                      />
-                    </div>
-
-                    {/* Screening Result */}
-                    <div>
-                      <Label className='mb-2 block'>Screening Result</Label>
-                      <div className='relative'>
-                        <Select
-                          value={form.watch('result') || ''}
-                          onValueChange={value =>
-                            form.setValue('result', value === 'none' ? '' : value)
-                          }>
-                          <SelectTrigger>
-                            <SelectValue placeholder='Select result (optional)' />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value='absent'>Absent</SelectItem>
-                            <SelectItem value='non_compliant'>Non Compliant</SelectItem>
-                            <SelectItem value='complex_needs'>Complex Needs</SelectItem>
-                            <SelectItem value='results_uncertain'>Results Uncertain</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {form.watch('result') && (
-                          <button
-                            type='button'
-                            onClick={() => form.setValue('result', '')}
-                            className='absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full
+                {/* Screening Result */}
+                <div>
+                  <Label className='mb-2 block'>Screening Result</Label>
+                  <div className='relative'>
+                    <Select
+                      value={form.watch('result') || ''}
+                      onValueChange={value =>
+                        form.setValue('result', value === 'none' ? '' : value)
+                      }>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select result (optional)' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='absent'>Absent</SelectItem>
+                        <SelectItem value='non_compliant'>Non Compliant</SelectItem>
+                        <SelectItem value='complex_needs'>Complex Needs</SelectItem>
+                        <SelectItem value='results_uncertain'>Results Uncertain</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {form.watch('result') && (
+                      <button
+                        type='button'
+                        onClick={() => form.setValue('result', '')}
+                        className='absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full
   transition-colors'>
-                            <X className='w-4 h-4 text-gray-500' />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Tympanometry Results */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className='flex items-center gap-2'>
-                      <Volume2 className='w-5 h-5' />
-                      Tympanometry Results
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                      {/* Right Ear */}
-                      <div>
-                        <h4 className='font-medium mb-3'>Right Ear</h4>
-                        <div className='space-y-3'>
-                          <div>
-                            <Label className='text-sm font-medium text-gray-700'>
-                              R+ Volume (ml)
-                            </Label>
-                            <Input
-                              type='number'
-                              step='0.01'
-                              placeholder='0.0'
-                              {...form.register('right_vol')}
-                              disabled={rightVolImmeasurable}
-                            />
-                            <div className='flex items-center space-x-2 mt-2'>
-                              <Checkbox
-                                id='right_vol_immeasurable'
-                                checked={rightVolImmeasurable}
-                                onCheckedChange={checked => {
-                                  setRightVolImmeasurable(checked as boolean)
-                                  if (checked) form.setValue('right_vol', '')
-                                }}
-                              />
-                              <label
-                                htmlFor='right_vol_immeasurable'
-                                className='text-sm text-gray-600 cursor-pointer'>
-                                Immeasurable
-                              </label>
-                            </div>
-                          </div>
-                          <div>
-                            <Label className='text-sm font-medium text-gray-700'>
-                              R+ Compliance (ml)
-                            </Label>
-                            <Input
-                              type='number'
-                              step='0.01'
-                              placeholder='0.0'
-                              {...form.register('right_compliance')}
-                              disabled={rightCompImmeasurable}
-                            />
-                            <div className='flex items-center space-x-2 mt-2'>
-                              <Checkbox
-                                id='right_comp_immeasurable'
-                                checked={rightCompImmeasurable}
-                                onCheckedChange={checked => {
-                                  setRightCompImmeasurable(checked as boolean)
-                                  if (checked) form.setValue('right_compliance', '')
-                                }}
-                              />
-                              <label
-                                htmlFor='right_comp_immeasurable'
-                                className='text-sm text-gray-600 cursor-pointer'>
-                                Immeasurable
-                              </label>
-                            </div>
-                          </div>
-                          <div>
-                            <Label className='text-sm font-medium text-gray-700'>
-                              R+ Pressure (daPa)
-                            </Label>
-                            <Input
-                              type='number'
-                              step='1'
-                              placeholder='0'
-                              {...form.register('right_press')}
-                              disabled={rightPressImmeasurable}
-                            />
-                            <div className='flex items-center space-x-2 mt-2'>
-                              <Checkbox
-                                id='right_press_immeasurable'
-                                checked={rightPressImmeasurable}
-                                onCheckedChange={checked => {
-                                  setRightPressImmeasurable(checked as boolean)
-                                  if (checked) form.setValue('right_press', '')
-                                }}
-                              />
-                              <label
-                                htmlFor='right_press_immeasurable'
-                                className='text-sm text-gray-600 cursor-pointer'>
-                                Immeasurable
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Left Ear */}
-                      <div>
-                        <h4 className='font-medium mb-3'>Left Ear</h4>
-                        <div className='space-y-3'>
-                          <div>
-                            <Label className='text-sm font-medium text-gray-700'>
-                              L+ Volume (ml)
-                            </Label>
-                            <Input
-                              type='number'
-                              step='0.01'
-                              placeholder='0.0'
-                              {...form.register('left_vol')}
-                              disabled={leftVolImmeasurable}
-                            />
-                            <div className='flex items-center space-x-2 mt-2'>
-                              <Checkbox
-                                id='left_vol_immeasurable'
-                                checked={leftVolImmeasurable}
-                                onCheckedChange={checked => {
-                                  setLeftVolImmeasurable(checked as boolean)
-                                  if (checked) form.setValue('left_vol', '')
-                                }}
-                              />
-                              <label
-                                htmlFor='left_vol_immeasurable'
-                                className='text-sm text-gray-600 cursor-pointer'>
-                                Immeasurable
-                              </label>
-                            </div>
-                          </div>
-                          <div>
-                            <Label className='text-sm font-medium text-gray-700'>
-                              L+ Compliance (ml)
-                            </Label>
-                            <Input
-                              type='number'
-                              step='0.01'
-                              placeholder='0.0'
-                              {...form.register('left_compliance')}
-                              disabled={leftCompImmeasurable}
-                            />
-                            <div className='flex items-center space-x-2 mt-2'>
-                              <Checkbox
-                                id='left_comp_immeasurable'
-                                checked={leftCompImmeasurable}
-                                onCheckedChange={checked => {
-                                  setLeftCompImmeasurable(checked as boolean)
-                                  if (checked) form.setValue('left_compliance', '')
-                                }}
-                              />
-                              <label
-                                htmlFor='left_comp_immeasurable'
-                                className='text-sm text-gray-600 cursor-pointer'>
-                                Immeasurable
-                              </label>
-                            </div>
-                          </div>
-                          <div>
-                            <Label className='text-sm font-medium text-gray-700'>
-                              L+ Pressure (daPa)
-                            </Label>
-                            <Input
-                              type='number'
-                              step='1'
-                              placeholder='0'
-                              {...form.register('left_press')}
-                              disabled={leftPressImmeasurable}
-                            />
-                            <div className='flex items-center space-x-2 mt-2'>
-                              <Checkbox
-                                id='left_press_immeasurable'
-                                checked={leftPressImmeasurable}
-                                onCheckedChange={checked => {
-                                  setLeftPressImmeasurable(checked as boolean)
-                                  if (checked) form.setValue('left_press', '')
-                                }}
-                              />
-                              <label
-                                htmlFor='left_press_immeasurable'
-                                className='text-sm text-gray-600 cursor-pointer'>
-                                Immeasurable
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Notes */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Clinical Notes (Private)</CardTitle>
-                  </CardHeader>
-                  <CardContent className='space-y-4'>
-                    <div>
-                      <Label className='mb-2 block'>Clinical Observations</Label>
-                      <Textarea
-                        {...form.register('clinical_notes')}
-                        placeholder='Enter clinical observations and notes...'
-                        rows={4}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recommendations and Referrals (Reports)</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Textarea
-                      {...form.register('referral_notes')}
-                      placeholder='Enter recommendations and referrals...'
-                      rows={4}
-                    />
-                  </CardContent>
-                </Card>
-
-                <div className='flex gap-2 pt-4'>
-                  <Button variant='outline' onClick={handleGoBack} disabled={saving}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave} disabled={saving}>
-                    <Save className='w-4 h-4 mr-2' />
-                    {saving ? 'Saving...' : 'Save Changes'}
-                  </Button>
+                        <X className='w-4 h-4 text-gray-500' />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+
+            {/* Tympanometry Results */}
+            <Card>
+              <CardHeader>
+                <CardTitle className='flex items-center gap-2'>
+                  <Volume2 className='w-5 h-5' />
+                  Tympanometry Results
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                  {/* Right Ear */}
+                  <div>
+                    <h4 className='font-medium mb-3'>Right Ear</h4>
+                    <div className='space-y-3'>
+                      <div>
+                        <Label className='text-sm font-medium text-gray-700'>R+ Volume (ml)</Label>
+                        <Input
+                          type='number'
+                          step='0.01'
+                          placeholder='0.0'
+                          {...form.register('right_vol')}
+                          disabled={rightVolImmeasurable}
+                        />
+                        <div className='flex items-center space-x-2 mt-2'>
+                          <Checkbox
+                            id='right_vol_immeasurable'
+                            checked={rightVolImmeasurable}
+                            onCheckedChange={checked => {
+                              setRightVolImmeasurable(checked as boolean)
+                              if (checked) form.setValue('right_vol', '')
+                            }}
+                          />
+                          <label
+                            htmlFor='right_vol_immeasurable'
+                            className='text-sm text-gray-600 cursor-pointer'>
+                            Immeasurable
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className='text-sm font-medium text-gray-700'>
+                          R+ Compliance (ml)
+                        </Label>
+                        <Input
+                          type='number'
+                          step='0.01'
+                          placeholder='0.0'
+                          {...form.register('right_compliance')}
+                          disabled={rightCompImmeasurable}
+                        />
+                        <div className='flex items-center space-x-2 mt-2'>
+                          <Checkbox
+                            id='right_comp_immeasurable'
+                            checked={rightCompImmeasurable}
+                            onCheckedChange={checked => {
+                              setRightCompImmeasurable(checked as boolean)
+                              if (checked) form.setValue('right_compliance', '')
+                            }}
+                          />
+                          <label
+                            htmlFor='right_comp_immeasurable'
+                            className='text-sm text-gray-600 cursor-pointer'>
+                            Immeasurable
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className='text-sm font-medium text-gray-700'>
+                          R+ Pressure (daPa)
+                        </Label>
+                        <Input
+                          type='number'
+                          step='1'
+                          placeholder='0'
+                          {...form.register('right_press')}
+                          disabled={rightPressImmeasurable}
+                        />
+                        <div className='flex items-center space-x-2 mt-2'>
+                          <Checkbox
+                            id='right_press_immeasurable'
+                            checked={rightPressImmeasurable}
+                            onCheckedChange={checked => {
+                              setRightPressImmeasurable(checked as boolean)
+                              if (checked) form.setValue('right_press', '')
+                            }}
+                          />
+                          <label
+                            htmlFor='right_press_immeasurable'
+                            className='text-sm text-gray-600 cursor-pointer'>
+                            Immeasurable
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Left Ear */}
+                  <div>
+                    <h4 className='font-medium mb-3'>Left Ear</h4>
+                    <div className='space-y-3'>
+                      <div>
+                        <Label className='text-sm font-medium text-gray-700'>L+ Volume (ml)</Label>
+                        <Input
+                          type='number'
+                          step='0.01'
+                          placeholder='0.0'
+                          {...form.register('left_vol')}
+                          disabled={leftVolImmeasurable}
+                        />
+                        <div className='flex items-center space-x-2 mt-2'>
+                          <Checkbox
+                            id='left_vol_immeasurable'
+                            checked={leftVolImmeasurable}
+                            onCheckedChange={checked => {
+                              setLeftVolImmeasurable(checked as boolean)
+                              if (checked) form.setValue('left_vol', '')
+                            }}
+                          />
+                          <label
+                            htmlFor='left_vol_immeasurable'
+                            className='text-sm text-gray-600 cursor-pointer'>
+                            Immeasurable
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className='text-sm font-medium text-gray-700'>
+                          L+ Compliance (ml)
+                        </Label>
+                        <Input
+                          type='number'
+                          step='0.01'
+                          placeholder='0.0'
+                          {...form.register('left_compliance')}
+                          disabled={leftCompImmeasurable}
+                        />
+                        <div className='flex items-center space-x-2 mt-2'>
+                          <Checkbox
+                            id='left_comp_immeasurable'
+                            checked={leftCompImmeasurable}
+                            onCheckedChange={checked => {
+                              setLeftCompImmeasurable(checked as boolean)
+                              if (checked) form.setValue('left_compliance', '')
+                            }}
+                          />
+                          <label
+                            htmlFor='left_comp_immeasurable'
+                            className='text-sm text-gray-600 cursor-pointer'>
+                            Immeasurable
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className='text-sm font-medium text-gray-700'>
+                          L+ Pressure (daPa)
+                        </Label>
+                        <Input
+                          type='number'
+                          step='1'
+                          placeholder='0'
+                          {...form.register('left_press')}
+                          disabled={leftPressImmeasurable}
+                        />
+                        <div className='flex items-center space-x-2 mt-2'>
+                          <Checkbox
+                            id='left_press_immeasurable'
+                            checked={leftPressImmeasurable}
+                            onCheckedChange={checked => {
+                              setLeftPressImmeasurable(checked as boolean)
+                              if (checked) form.setValue('left_press', '')
+                            }}
+                          />
+                          <label
+                            htmlFor='left_press_immeasurable'
+                            className='text-sm text-gray-600 cursor-pointer'>
+                            Immeasurable
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Notes */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Clinical Notes (Private)</CardTitle>
+              </CardHeader>
+              <CardContent className='space-y-4'>
+                <div>
+                  <Label className='mb-2 block'>Clinical Observations</Label>
+                  <Textarea
+                    {...form.register('clinical_notes')}
+                    placeholder='Enter clinical observations and notes...'
+                    rows={4}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Recommendations and Referrals (Reports)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  {...form.register('referral_notes')}
+                  placeholder='Enter recommendations and referrals...'
+                  rows={4}
+                />
+              </CardContent>
+            </Card>
+
+            <div className='flex gap-2 pt-4'>
+              <Button variant='outline' onClick={handleGoBack} disabled={saving}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={saving}>
+                <Save className='w-4 h-4 mr-2' />
+                {saving ? 'Saving...' : 'Save Changes'}
+              </Button>
             </div>
           </div>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </div>
   )
 }
 

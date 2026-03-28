@@ -1,8 +1,3 @@
-import React from 'react'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import AppSidebar from '@/components/AppSidebar'
-import Header from '@/components/Header'
-import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Building2, Users, Settings } from 'lucide-react'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -67,103 +62,82 @@ const ManagementContent = () => {
   // SLP view - only show assigned schools
   if (userRole === 'slp') {
     return (
-      <SidebarProvider>
-        <div className='min-h-screen flex w-full bg-gray-25'>
-          <AppSidebar userRole={userRole} userName={userName} />
-
-          <SidebarInset className='flex-1'>
-            <Header userRole={userRole} userName={userName} userProfile={userProfile} />
-
-            <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
-              <div className='mb-6 md:mb-8'>
-                <h1 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2'>
-                  Schools
-                </h1>
-                <p className='text-gray-600 text-sm md:text-base'>
-                  View your assigned schools and manage students
-                </p>
-              </div>
-
-              {/* <SLPSchoolBrowser /> */}
-            </main>
-          </SidebarInset>
+      <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
+        <div className='mb-6 md:mb-8'>
+          <h1 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2'>
+            Schools
+          </h1>
+          <p className='text-gray-600 text-sm md:text-base'>
+            View your assigned schools and manage students
+          </p>
         </div>
-      </SidebarProvider>
+
+        {/* <SLPSchoolBrowser /> */}
+      </main>
     )
   }
 
   // Admin/Supervisor view - full management capabilities
   return (
-    <SidebarProvider>
-      <div className='min-h-screen flex w-full bg-gray-25'>
-        <AppSidebar userRole={userRole} userName={userName} />
-
-        <SidebarInset className='flex-1'>
-          <Header userRole={userRole} userName={userName} userProfile={userProfile} />
-
-          <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
-            <div className='mb-6 md:mb-8'>
-              <h1 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2'>
-                Management
-              </h1>
-              <p className='text-gray-600 text-sm md:text-base'>
-                Manage schools, users, and system settings
-              </p>
-            </div>
-
-            <ManagementStats />
-
-            <Tabs defaultValue='schools' className='space-y-6'>
-              <TabsList className='w-full justify-start flex-wrap h-auto p-1'>
-                <TabsTrigger value='schools' className='flex items-center flex-shrink-0'>
-                  <Building2 className='w-4 h-4 mr-2' />
-                  Schools
-                </TabsTrigger>
-                <TabsTrigger value='users' className='flex items-center flex-shrink-0'>
-                  <Users className='w-4 h-4 mr-2' />
-                  Users
-                </TabsTrigger>
-                <TabsTrigger value='settings' className='flex items-center flex-shrink-0'>
-                  <Settings className='w-4 h-4 mr-2' />
-                  Settings
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value='schools'>
-                <SchoolsTabContent
-                  schoolSearch={schoolSearch}
-                  setSchoolSearch={setSchoolSearch}
-                  filteredSchools={filteredSchools}
-                  onAddSchool={() => setSchoolFormOpen(true)}
-                  onEditSchool={handleEditSchool}
-                  onViewSchoolDetails={handleViewSchoolDetails}
-                  onDeleteSchool={handleDeleteSchool}
-                  getStatusBadge={getStatusBadge}
-                />
-              </TabsContent>
-
-              <TabsContent value='users'>
-                <UsersTabContent
-                  mockSLPs={mockSLPs}
-                  onInviteUser={() => setUserInviteOpen(true)}
-                  onEditUser={handleEditUser}
-                  onDeactivateUser={handleDeactivateUser}
-                  onResendInvite={handleResendInvite}
-                />
-              </TabsContent>
-
-              <TabsContent value='settings'>
-                <SettingsTabContent
-                  onOpenOrganizationSettings={() => setOrganizationSettingsOpen(true)}
-                  onOpenScreeningTemplates={() => setScreeningTemplatesOpen(true)}
-                  onOpenNotificationSettings={() => setNotificationSettingsOpen(true)}
-                />
-              </TabsContent>
-            </Tabs>
-          </main>
-        </SidebarInset>
+    <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
+      <div className='mb-6 md:mb-8'>
+        <h1 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2'>
+          Management
+        </h1>
+        <p className='text-gray-600 text-sm md:text-base'>
+          Manage schools, users, and system settings
+        </p>
       </div>
 
+      <ManagementStats />
+
+      <Tabs defaultValue='schools' className='space-y-6'>
+        <TabsList className='w-full justify-start flex-wrap h-auto p-1'>
+          <TabsTrigger value='schools' className='flex items-center flex-shrink-0'>
+            <Building2 className='w-4 h-4 mr-2' />
+            Schools
+          </TabsTrigger>
+          <TabsTrigger value='users' className='flex items-center flex-shrink-0'>
+            <Users className='w-4 h-4 mr-2' />
+            Users
+          </TabsTrigger>
+          <TabsTrigger value='settings' className='flex items-center flex-shrink-0'>
+            <Settings className='w-4 h-4 mr-2' />
+            Settings
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value='schools'>
+          <SchoolsTabContent
+            schoolSearch={schoolSearch}
+            setSchoolSearch={setSchoolSearch}
+            filteredSchools={filteredSchools}
+            onAddSchool={() => setSchoolFormOpen(true)}
+            onEditSchool={handleEditSchool}
+            onViewSchoolDetails={handleViewSchoolDetails}
+            onDeleteSchool={handleDeleteSchool}
+            getStatusBadge={getStatusBadge}
+          />
+        </TabsContent>
+
+        <TabsContent value='users'>
+          <UsersTabContent
+            mockSLPs={mockSLPs}
+            onInviteUser={() => setUserInviteOpen(true)}
+            onEditUser={handleEditUser}
+            onDeactivateUser={handleDeactivateUser}
+            onResendInvite={handleResendInvite}
+          />
+        </TabsContent>
+
+        <TabsContent value='settings'>
+          <SettingsTabContent
+            onOpenOrganizationSettings={() => setOrganizationSettingsOpen(true)}
+            onOpenScreeningTemplates={() => setScreeningTemplatesOpen(true)}
+            onOpenNotificationSettings={() => setNotificationSettingsOpen(true)}
+          />
+        </TabsContent>
+      </Tabs>
       <SchoolForm
         isOpen={schoolFormOpen}
         onClose={() => {
@@ -204,16 +178,10 @@ const ManagementContent = () => {
         isOpen={organizationSettingsOpen}
         onClose={() => setOrganizationSettingsOpen(false)}
       />
-    </SidebarProvider>
+    </main>
   )
 }
 
-const Management = () => {
-  return (
-    <div className='min-h-screen bg-gray-50'>
-      <ManagementContent />
-    </div>
-  )
-}
+const Management = () => <ManagementContent />
 
 export default Management
