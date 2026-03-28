@@ -289,7 +289,7 @@ const DashboardContent = () => {
     }
   }
 
-  if (isLoading || isLoadingSchool) {
+  if (isLoading || isLoadingSchool || !schoolData) {
     return <DashboardSkeleton />
   }
 
