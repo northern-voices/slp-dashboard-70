@@ -1,8 +1,4 @@
 import React from 'react'
-import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
-import StudentsSkeleton from '@/components/skeletons/StudentsSkeleton'
-import HearingScreeningsSkeleton from '@/components/skeletons/HearingScreeningsSkeleton'
-import MonthlyMeetingsSkeleton from '@/components/skeletons/MonthlyMeetingsSkeleton'
 import {
   Home,
   BarChart3,
@@ -14,7 +10,13 @@ import {
 } from 'lucide-react'
 import { Location } from 'react-router-dom'
 import { LucideIcon } from 'lucide-react'
+import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
+import StudentsSkeleton from '@/components/skeletons/StudentsSkeleton'
+import HearingScreeningsSkeleton from '@/components/skeletons/HearingScreeningsSkeleton'
+import MonthlyMeetingsSkeleton from '@/components/skeletons/MonthlyMeetingsSkeleton'
 import ScreeningsSkeleton from '@/components/skeletons/ScreeningsSkeleton'
+import ReportsSkeleton from '@/components/skeletons/ReportsSkeleton'
+import Reports from '@/pages/Reports'
 
 export interface NavigationItem {
   title: string
@@ -87,6 +89,7 @@ export const getNavigationGroups = (
         location.pathname === '/speech-screening-reports' ||
         (useSchoolRoutes &&
           location.pathname.startsWith(`/school/${currentSchool.id}/speech-screening-reports`)),
+      skeleton: ReportsSkeleton,
     },
     {
       title: 'Monthly Meetings',
