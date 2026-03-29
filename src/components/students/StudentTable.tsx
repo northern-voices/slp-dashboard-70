@@ -64,7 +64,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
   const activeSchool = selectedSchool || currentSchool
 
-  const { data: students = [], isLoading } = useStudentsBySchool(activeSchool?.id)
+  const {
+    data: students = [],
+    isLoading,
+    isPlaceholderData,
+  } = useStudentsBySchool(activeSchool?.id)
 
   const createStudentMutation = useCreateStudent()
   const updateStudentMutation = useUpdateStudent()
@@ -428,7 +432,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     newStudentForm.reset()
   }
 
-  if (isLoading) {
+  if (isLoading || isPlaceholderData) {
     return <StudentsSkeleton />
   }
 
