@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { useForm, Controller } from 'react-hook-form'
 import {
   Dialog,
   DialogContent,
@@ -47,24 +48,25 @@ const AddActivityModal: React.FC<AddActivityModalProps> = ({
   onOpenChange,
   onAddActivity,
 }) => {
-  const [formData, setFormData] = useState<Activity>({
-    activity_type: '',
-    activity_date: new Date().toISOString().split('T')[0], // Today's date
-    notes: '',
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { isValid },
+  } = useForm<Activity>({
+    defaultValues: {
+      activity_type: '',
+      activity_date: new Date().toISOString().split('T')[0],
+      notes: '',
+    },
+    mode: 'onChange',
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!formData.activity_type || !formData.activity_date) {
-      return
-    }
-
-    onAddActivity(formData)
+  const onSubmit = (data: Activity) => {
+    onAddActivity(data)
     onOpenChange(false)
-
-    // Reset form
-    setFormData({
+    reset({
       activity_type: '',
       activity_date: new Date().toISOString().split('T')[0],
       notes: '',
@@ -83,26 +85,32 @@ const AddActivityModal: React.FC<AddActivityModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className='space-y-4 py-4'>
+        <form onSubmit={handleSubmit(onSubmit)} className='space-y-4 py-4'>
           {/* Activity Type */}
           <div className='space-y-2'>
             <Label htmlFor='activity_type' className='text-sm font-medium text-gray-700'>
               Activity Type <span className='text-red-500'>*</span>
             </Label>
-            <Select
-              value={formData.activity_type}
-              onValueChange={value => setFormData(prev => ({ ...prev, activity_type: value }))}>
-              <SelectTrigger className='h-10 rounded-lg border-gray-200'>
-                <SelectValue placeholder='Select activity type' />
-              </SelectTrigger>
-              <SelectContent>
-                {ACTIVITY_TYPES.map(type => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
+            <Controller
+              name='activity_type'
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className='h-10 rounded-lg border-gray-200'>
+                    <SelectValue placeholder='Select activity type' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACTIVITY_TYPES.map(type => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
           {/* Date */}
@@ -113,10 +121,8 @@ const AddActivityModal: React.FC<AddActivityModalProps> = ({
             <Input
               id='activity_date'
               type='date'
-              value={formData.activity_date}
-              onChange={e => setFormData(prev => ({ ...prev, activity_date: e.target.value }))}
+              {...register('activity_date', { required: true })}
               className='h-10 rounded-lg border-gray-200'
-              required
             />
           </div>
 
@@ -128,8 +134,7 @@ const AddActivityModal: React.FC<AddActivityModalProps> = ({
             <Textarea
               id='notes'
               placeholder='Add any relevant notes about this activity...'
-              value={formData.notes}
-              onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              {...register('notes')}
               className='min-h-[100px] rounded-lg border-gray-200 resize-none'
             />
           </div>
@@ -145,7 +150,7 @@ const AddActivityModal: React.FC<AddActivityModalProps> = ({
             <Button
               type='submit'
               className='bg-brand hover:bg-brand/90 text-white'
-              disabled={!formData.activity_type || !formData.activity_date}>
+              disabled={!isValid}>
               Add Activity
             </Button>
           </DialogFooter>
