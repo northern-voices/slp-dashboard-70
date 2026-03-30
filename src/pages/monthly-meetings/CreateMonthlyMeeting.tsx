@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useForm, Controller } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -22,7 +23,6 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMeetingStudentTable'
-import { useDraft } from '@/hooks/use-draft'
 import StudentDetailsModal from '@/components/monthly-meetings/StudentDetailsModal'
 import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog'
 import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
@@ -36,10 +36,7 @@ interface MeetingFormData {
   action_plan: string
 }
 
-interface DraftData {
-  formData: MeetingFormData
-  studentData: Record<string, { sessions_attended: number | null; meeting_notes: string }>
-}
+type StudentData = Record<string, { sessions_attended: number | null; meeting_notes: string }>
 
 const CreateMonthlyMeetingContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -55,45 +52,69 @@ const CreateMonthlyMeetingContent = () => {
   const { userProfile, currentSchool } = useOrganization()
   const { user } = useAuth()
 
-  // Initial form data
-  const getInitialFormData = (): MeetingFormData => ({
-    meeting_title: (() => {
-      const today = new Date()
-      const monthName = today.toLocaleDateString('en-US', { month: 'long' })
-      return `${monthName} Monthly Meeting`
-    })(),
-    facilitator_id: user?.id || '',
-    attendees: [],
-    meeting_date: (() => {
-      const today = new Date()
-      const year = today.getFullYear()
-      const month = String(today.getMonth() + 1).padStart(2, '0')
-      const day = String(today.getDate()).padStart(2, '0')
-      return `${year}-${month}-${day}`
-    })(),
-    additional_notes: '',
-    action_plan: '',
-  })
-
   const draftKey = `monthly-meeting-draft-${currentSchool?.id || 'no-school'}`
+
   const {
-    data: draftData,
-    setData: setDraftData,
-    hasDraft,
-    isDirty,
-    loadDraft,
-    clearDraft,
-    discardDraft,
-  } = useDraft<DraftData>({
-    key: draftKey,
-    initialData: {
-      formData: getInitialFormData(),
-      studentData: {},
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    formState: { isDirty },
+  } = useForm<MeetingFormData>({
+    defaultValues: {
+      meeting_title: (() => {
+        const today = new Date()
+        return `${today.toLocaleDateString('en-US', { month: 'long' })} Monthly Meeting`
+      })(),
+      facilitator_id: user?.id || '',
+      attendees: [],
+      meeting_date: (() => {
+        const today = new Date()
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}}`
+      })(),
+      additional_notes: '',
+      action_plan: '',
     },
   })
 
-  const formData = draftData.formData
-  const studentData = draftData.studentData
+  const [studentData, setStudentData] = useState<StudentData>({})
+  const [hasDraft, setHasDraft] = useState(false)
+
+  // Detect draft on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(draftKey)
+    if (saved) setHasDraft(true)
+  }, [draftKey])
+
+  // Save draft on changes
+  const watchedValues = watch()
+  useEffect(() => {
+    if (isDirty) {
+      localStorage.setItem(draftKey, JSON.stringify({ formData: watchedValues, studentData }))
+    }
+  }, [watchedValues, studentData, isDirty, draftKey])
+
+  const loadDraft = () => {
+    const saved = localStorage.getItem(draftKey)
+    if (saved) {
+      const { formData, studentData: savedStudentData } = JSON.parse(saved)
+      reset(formData)
+      setStudentData(savedStudentData)
+    }
+    setHasDraft(false)
+  }
+
+  const clearDraft = () => {
+    localStorage.removeItem(draftKey)
+  }
+
+  const discardDraft = () => {
+    localStorage.removeItem(draftKey)
+    reset()
+    setStudentData({})
+    setHasDraft(false)
+  }
 
   // Show restore dialog if draft exists on mount
   useEffect(() => {
@@ -102,157 +123,66 @@ const CreateMonthlyMeetingContent = () => {
     }
   }, [hasDraft])
 
-  // Helper to update formData
-  const setFormData = (updater: MeetingFormData | ((prev: MeetingFormData) => MeetingFormData)) => {
-    setDraftData(prev => ({
-      ...prev,
-      formData: typeof updater === 'function' ? updater(prev.formData) : updater,
-    }))
-  }
-
-  // Helper to update studentData
-  const setStudentData = (
-    updater: typeof studentData | ((prev: typeof studentData) => typeof studentData)
-  ) => {
-    setDraftData(prev => ({
-      ...prev,
-      studentData: typeof updater === 'function' ? updater(prev.studentData) : updater,
-    }))
-  }
-
   const createMonthlyMeetings = useCreateMonthlyMeeting()
   const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
     currentSchool?.id
   )
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
 
-  const handleAddAttendee = () => {
-    const trimmedInput = attendeeInput.trim()
-    if (trimmedInput && !formData.attendees.includes(trimmedInput)) {
-      setFormData(prev => ({
-        ...prev,
-        attendees: [...prev.attendees, trimmedInput],
-      }))
-      setAttendeeInput('')
-    }
-  }
-
-  const handleRemoveAttendee = (attendeeToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      attendees: prev.attendees.filter(attendee => attendee !== attendeeToRemove),
-    }))
-  }
-
-  const handleAttendeeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleAddAttendee()
-    } else if (e.key === 'Backspace' && attendeeInput === '' && formData.attendees.length > 0) {
-      const newAttendees = [...formData.attendees]
-      newAttendees.pop()
-      setFormData(prev => ({ ...prev, attendees: newAttendees }))
-    }
-  }
-
-  const userRole = userProfile?.role || 'slp'
-  const userName = userProfile
-    ? `${userProfile.first_name} ${userProfile.last_name}`
-    : 'Dr. Sarah Johnson'
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const onSubmit = async (data: MeetingFormData) => {
     setIsSubmitting(true)
 
-    // Validate meeting title
-    if (!formData.meeting_title.trim()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Meeting title cannot be empty.',
-        variant: 'destructive',
-      })
-      setIsSubmitting(false)
-      return
-    }
-
-    // Validate attendees
-    if (formData.attendees.length === 0) {
+    if (data.attendees.length === 0) {
       toast({
         title: 'Validation Error',
         description: 'Please add at least one attendee.',
         variant: 'destructive',
       })
+
       setIsSubmitting(false)
       return
     }
 
-    // Build student updates array from studentData
-    const student_updates = Object.entries(studentData)
-      .filter(([_, data]) => data.sessions_attended !== null || data.meeting_notes.trim() !== '')
-      .map(([student_id, data]) => ({
-        student_id,
-        sessions_attended: data.sessions_attended,
-        meeting_notes: data.meeting_notes.trim() || null,
-      }))
-
-    // Validate attendees
-    if (formData.attendees.length === 0) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please add at least one attendee.',
-        variant: 'destructive',
-      })
-      setIsSubmitting(false)
-      return
-    }
-
-    // Validate school_id
     if (!currentSchool?.id) {
       toast({
         title: 'Validation Error',
         description: 'No school selected. Please select a school first.',
         variant: 'destructive',
       })
+
       setIsSubmitting(false)
       return
     }
 
-    // Convert attendees string to array
+    const student_updates = Object.entries(studentData)
+      .filter(([_, d]) => d.sessions_attended !== null || d.meeting_notes.trim() !== '')
+      .map(([student_id, d]) => ({
+        student_id,
+        sessions_attended: d.sessions_attended,
+        meeting_notes: d.meeting_notes.trim() || null,
+      }))
+
     const submitData = {
-      meeting_title: formData.meeting_title.trim(),
-      meeting_date: formData.meeting_date,
-      attendees: formData.attendees,
-      school_id: currentSchool?.id || '',
-      facilitator_id: formData.facilitator_id || null,
-      additional_notes: formData.additional_notes.trim() || null,
-      action_plan: formData.action_plan.trim() || null,
+      meeting_title: data.meeting_title.trim(),
+      meeting_date: data.meeting_date,
+      attendees: data.attendees,
+      school_id: currentSchool.id,
+      facilitator_id: data.facilitator_id || null,
+      additional_notes: data.additional_notes.trim() || null,
+      action_plan: data.action_plan.trim() || null,
       student_updates: student_updates.length > 0 ? student_updates : undefined,
     }
 
     createMonthlyMeetings.mutate(submitData, {
       onSuccess: () => {
-        // Clear draft on successful submission
         clearDraft()
-
         toast({
           title: 'Monthly Meeting Saved',
           description: 'The monthly meeting has been successfully saved.',
         })
-
-        // Navigate back to monthly meetings page
-        if (currentSchool?.id) {
-          navigate(`/school/${currentSchool.id}/monthly-meetings`)
-        } else {
-          navigate('/monthly-meetings')
-        }
+        navigate(
+          currentSchool?.id ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings'
+        )
         setIsSubmitting(false)
       },
       onError: error => {
@@ -319,28 +249,23 @@ const CreateMonthlyMeetingContent = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className='space-y-6'>
+          <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
             <div className='space-y-4'>
               <div className='grid grid-cols-3 gap-4'>
                 <div className='col-span-2 space-y-2'>
                   <Label htmlFor='meeting_title'>Meeting Title *</Label>
                   <Input
                     id='meeting_title'
-                    name='meeting_title'
-                    value={formData.meeting_title}
-                    onChange={handleInputChange}
+                    {...register('meeting_title', { required: true })}
                     placeholder='e.g., October Monthly Progress Review'
-                    required
                   />
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='meeting_date'>Date *</Label>
                   <Input
                     id='meeting_date'
-                    name='meeting_date'
                     type='date'
-                    value={formData.meeting_date}
-                    onChange={handleInputChange}
+                    {...register('meeting_date', { required: true })}
                     required
                   />
                 </div>
@@ -360,23 +285,30 @@ const CreateMonthlyMeetingContent = () => {
 
               <div className='space-y-2'>
                 <Label htmlFor='facilitator_id'>Meeting Facilitator</Label>
-                <Select
-                  value={formData.facilitator_id}
-                  onValueChange={value => setFormData(prev => ({ ...prev, facilitator_id: value }))}
-                  disabled={isLoadingUsers}>
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={isLoadingUsers ? 'Loading...' : 'Select a facilitator'}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map(user => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.first_name} {user.last_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
+                <Controller
+                  name='facilitator_id'
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isLoadingUsers}>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={isLoadingUsers ? 'Loading...' : 'Select a facilitator'}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.map(user => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.first_name} {user.last_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
 
               {/* <div className='space-y-2'>
@@ -396,44 +328,68 @@ const CreateMonthlyMeetingContent = () => {
 
               <div className='space-y-2'>
                 <Label htmlFor='attendees'>Attendees *</Label>
-                <div
-                  className={cn(
-                    'min-h-[42px] w-full rounded-md border border-input bg-background',
-                    'px-3 py-2 text-sm ring-offset-background',
-                    'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
-                  )}>
-                  <div className='flex flex-wrap gap-2'>
-                    {/* Display existing attendees as badges */}
-                    {formData.attendees.map((attendee, index) => (
-                      <Badge
-                        key={index}
-                        variant='secondary'
-                        className='flex items-center gap-1 px-2 py-1'>
-                        <span>{attendee}</span>
-                        <button
-                          type='button'
-                          onClick={() => handleRemoveAttendee(attendee)}
-                          className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
-                          <X className='w-3 h-3' />
-                        </button>
-                      </Badge>
-                    ))}
-
-                    {/* Input for new attendee */}
-                    <input
-                      type='text'
-                      id='attendees'
-                      value={attendeeInput}
-                      onChange={e => setAttendeeInput(e.target.value)}
-                      onKeyDown={handleAttendeeKeyDown}
-                      onBlur={handleAddAttendee}
-                      placeholder={
-                        formData.attendees.length === 0 ? 'Type name and press Enter' : ''
-                      }
-                      className='flex-1 min-w-[120px] outline-none bg-transparent'
-                    />
-                  </div>
-                </div>
+                <Controller
+                  name='attendees'
+                  control={control}
+                  render={({ field }) => (
+                    <div
+                      className={cn(
+                        'min-h-[42px] w-full rounded-md border border-input bg-background',
+                        'px-3 py-2 text-sm ring-offset-background',
+                        'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
+                      )}>
+                      <div className='flex flex-wrap gap-2'>
+                        {field.value.map((attendee, index) => (
+                          <Badge
+                            key={index}
+                            variant='secondary'
+                            className='flex items-center gap-1 px-2 py-1'>
+                            <span>{attendee}</span>
+                            <button
+                              type='button'
+                              onClick={() =>
+                                field.onChange(field.value.filter(a => a !== attendee))
+                              }
+                              className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
+                              <X className='w-3 h-3' />
+                            </button>
+                          </Badge>
+                        ))}
+                        <input
+                          type='text'
+                          id='attendees'
+                          value={attendeeInput}
+                          onChange={e => setAttendeeInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              const trimmed = attendeeInput.trim()
+                              if (trimmed && !field.value.includes(trimmed)) {
+                                field.onChange([...field.value, trimmed])
+                                setAttendeeInput('')
+                              }
+                            } else if (
+                              e.key === 'Backspace' &&
+                              attendeeInput === '' &&
+                              field.value.length > 0
+                            ) {
+                              field.onChange(field.value.slice(0, -1))
+                            }
+                          }}
+                          onBlur={() => {
+                            const trimmed = attendeeInput.trim()
+                            if (trimmed && !field.value.includes(trimmed)) {
+                              field.onChange([...field.value, trimmed])
+                              setAttendeeInput('')
+                            }
+                          }}
+                          placeholder={field.value.length === 0 ? 'Type name and press Enter' : ''}
+                          className='flex-1 min-w-[120px] outline-none bg-transparent'
+                        />
+                      </div>
+                    </div>
+                  )}
+                />
                 <p className='text-sm text-gray-500'>
                   Type a name and press Enter to add. Click the × or hit Backspace to remove.
                 </p>
@@ -462,9 +418,7 @@ const CreateMonthlyMeetingContent = () => {
                 <Label htmlFor='additional_notes'>Meeting Notes</Label>
                 <Textarea
                   id='additional_notes'
-                  name='additional_notes'
-                  value={formData.additional_notes}
-                  onChange={handleInputChange}
+                  {...register('additional_notes')}
                   placeholder='Meeting notes to be added...'
                   rows={4}
                 />
@@ -475,9 +429,7 @@ const CreateMonthlyMeetingContent = () => {
               <Label htmlFor='action_plan'>Action Plan</Label>
               <Textarea
                 id='action_plan'
-                name='action_plan'
-                value={formData.action_plan}
-                onChange={handleInputChange}
+                {...register('action_plan')}
                 placeholder='Action plan and next steps...'
                 rows={4}
               />
