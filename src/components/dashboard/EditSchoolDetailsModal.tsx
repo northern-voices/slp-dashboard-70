@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useForm, Controller } from 'react-hook-form'
 import { formatPhoneNumber, unformatPhoneNumber } from '@/utils/formatters'
 import { validationUtils } from '@/utils/validationUtils'
 import {
@@ -48,39 +49,26 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
   availableSLPs,
   isSaving = false,
 }) => {
-  const [formData, setFormData] = useState<SchoolDetailsFormData>(initialData)
-  const [phoneError, setPhoneError] = useState<string | null>(null)
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<SchoolDetailsFormData>({ defaultValues: initialData })
 
   useEffect(() => {
     if (open) {
-      setFormData(initialData)
-      setPhoneError(null)
+      reset(initialData)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    // Validate phone number if provided
-    if (formData.schoolPhone && !validationUtils.isValidPhoneNumber(formData.schoolPhone)) {
-      setPhoneError('Please enter a valid phone number')
-      return
-    }
-
-    setPhoneError(null)
-
+  const onSubmit = async (data: SchoolDetailsFormData) => {
     await onSave({
-      ...formData,
-      schoolPhone: unformatPhoneNumber(formData.schoolPhone),
+      ...data,
+      schoolPhone: unformatPhoneNumber(data.schoolPhone),
     })
-  }
-
-  const handleChange = (field: keyof SchoolDetailsFormData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }))
   }
 
   return (
@@ -98,7 +86,7 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className='py-4 space-y-5'>
             {/* School Name Field */}
             <div className='space-y-2'>
@@ -108,10 +96,8 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
               <Input
                 id='schoolName'
                 placeholder='e.g., Northern Voices Elementary'
-                value={formData.schoolName}
-                onChange={e => handleChange('schoolName', e.target.value)}
+                {...register('schoolName', { required: true })}
                 className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
-                required
               />
             </div>
 
@@ -124,15 +110,21 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
                 id='schoolPhone'
                 type='tel'
                 placeholder='e.g., (907) 555-0123'
-                value={formData.schoolPhone}
-                onChange={e => {
-                  setPhoneError(null)
-                  handleChange('schoolPhone', formatPhoneNumber(e.target.value))
-                }}
+                {...register('schoolPhone', {
+                  validate: value =>
+                    !value ||
+                    validationUtils.isValidPhoneNumber(value) ||
+                    'Please enter a valid phone number',
+                  onChange: e => {
+                    e.target.value = formatPhoneNumber(e.target.value)
+                  },
+                })}
                 className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
                 maxLength={14}
               />
-              {phoneError && <p className='text-xs text-red-500'>{phoneError}</p>}
+              {errors.schoolPhone && (
+                <p className='text-xs text-red-500'>{errors.schoolPhone.message}</p>
+              )}
             </div>
 
             {/* Primary SLP Field */}
@@ -140,23 +132,27 @@ const EditSchoolDetailsModal: React.FC<EditSchoolDetailsModalProps> = ({
               <Label htmlFor='primarySLP' className='text-sm font-medium text-gray-700'>
                 Primary SLP
               </Label>
-              <Select
-                value={formData.primarySLPId || 'none'}
-                onValueChange={value =>
-                  handleChange('primarySLPId', value === 'none' ? null : value)
-                }>
-                <SelectTrigger className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'>
-                  <SelectValue placeholder='Select primary SLP...' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='none'>No Primary SLP</SelectItem>
-                  {availableSLPs.map(slp => (
-                    <SelectItem key={slp.id} value={slp.id}>
-                      {slp.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                name='primarySLPId'
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value || 'none'}
+                    onValueChange={value => field.onChange(value === 'none' ? null : value)}>
+                    <SelectTrigger className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'>
+                      <SelectValue placeholder='Select primary SLP...' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='none'>No Primary SLP</SelectItem>
+                      {availableSLPs.map(slp => (
+                        <SelectItem key={slp.id} value={slp.id}>
+                          {slp.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
           </div>
 
