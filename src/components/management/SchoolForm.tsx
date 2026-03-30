@@ -15,13 +15,6 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import GradeManagement from './GradeManagement'
 
-interface SchoolFormProps {
-  isOpen: boolean
-  onClose: () => void
-  school?: Partial<SchoolFormData>
-  onSave: (schoolData: SchoolFormData) => void
-}
-
 interface SchoolFormData {
   name: string
   address: string
@@ -32,6 +25,13 @@ interface SchoolFormData {
   status: string
   notes: string
   grades: string[]
+}
+
+interface SchoolFormProps {
+  isOpen: boolean
+  onClose: () => void
+  school?: Partial<SchoolFormData>
+  onSave: (schoolData: SchoolFormData) => void
 }
 
 const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
