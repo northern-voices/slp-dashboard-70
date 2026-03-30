@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { useForm, Controller } from 'react-hook-form'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,55 +22,46 @@ interface SchoolFormProps {
   onSave: (schoolData: any) => void
 }
 
+interface SchoolFormData {
+  name: string
+  address: string
+  principal: string
+  principalEmail: string
+  phone: string
+  district: string
+  status: string
+  notes: string
+  grades: string[]
+}
+
 const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
   const { toast } = useToast()
-  const [formData, setFormData] = useState({
-    name: school?.name || '',
-    address: school?.address || '',
-    principal: school?.principal || '',
-    principalEmail: school?.principalEmail || '',
-    phone: school?.phone || '',
-    district: school?.district || '',
-    status: school?.status || 'active',
-    notes: school?.notes || '',
-    grades: school?.grades || [],
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<SchoolFormData>({
+    defaultValues: {
+      name: school?.name || '',
+      address: school?.address || '',
+      principal: school?.principal || '',
+      principalEmail: school?.principalEmail || '',
+      phone: school?.phone || '',
+      district: school?.district || '',
+      status: school?.status || 'active',
+      notes: school?.notes || '',
+      grades: school?.grades || [],
+    },
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!formData.name.trim()) {
-      toast({
-        title: 'Error',
-        description: 'School name is required',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    if (formData.grades.length === 0) {
-      toast({
-        title: 'Error',
-        description: 'Please select at least one grade for this school',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    onSave(formData)
+  const onSubmit = (data: SchoolFormData) => {
+    onSave(data)
     toast({
       title: 'Success',
       description: school ? 'School updated successfully' : 'School created successfully',
     })
     onClose()
-  }
-
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleGradesChange = (grades: string[]) => {
-    setFormData(prev => ({ ...prev, grades }))
   }
 
   return (
@@ -79,27 +71,20 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
           <DialogTitle>{school ? 'Edit School' : 'Add New School'}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className='space-y-6'>
+        <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div className='space-y-2'>
               <Label htmlFor='name'>School Name *</Label>
               <Input
                 id='name'
-                value={formData.name}
-                onChange={e => handleChange('name', e.target.value)}
+                {...register('name', { required: true })}
                 placeholder='Enter school name'
-                required
               />
             </div>
 
             <div className='space-y-2'>
               <Label htmlFor='district'>District</Label>
-              <Input
-                id='district'
-                value={formData.district}
-                onChange={e => handleChange('district', e.target.value)}
-                placeholder='Enter district name'
-              />
+              <Input id='district' {...register('district')} placeholder='Enter district name' />
             </div>
           </div>
 
@@ -107,8 +92,7 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
             <Label htmlFor='address'>Address</Label>
             <Textarea
               id='address'
-              value={formData.address}
-              onChange={e => handleChange('address', e.target.value)}
+              {...register('address')}
               placeholder='Enter full address'
               rows={2}
             />
@@ -117,12 +101,7 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div className='space-y-2'>
               <Label htmlFor='principal'>Principal Name</Label>
-              <Input
-                id='principal'
-                value={formData.principal}
-                onChange={e => handleChange('principal', e.target.value)}
-                placeholder='Enter principal name'
-              />
+              <Input id='principal' {...register('principal')} placeholder='Enter principal name' />
             </div>
 
             <div className='space-y-2'>
@@ -130,8 +109,7 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
               <Input
                 id='principalEmail'
                 type='email'
-                value={formData.principalEmail}
-                onChange={e => handleChange('principalEmail', e.target.value)}
+                {...register('principalEmail')}
                 placeholder='Enter principal email'
               />
             </div>
@@ -140,41 +118,46 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div className='space-y-2'>
               <Label htmlFor='phone'>Phone Number</Label>
-              <Input
-                id='phone'
-                value={formData.phone}
-                onChange={e => handleChange('phone', e.target.value)}
-                placeholder='Enter phone number'
-              />
+              <Input id='phone' {...register('phone')} placeholder='Enter phone number' />
             </div>
 
             <div className='space-y-2'>
               <Label htmlFor='status'>Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={value => handleChange('status', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='active'>Active</SelectItem>
-                  <SelectItem value='inactive'>Inactive</SelectItem>
-                  <SelectItem value='pending'>Pending</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name='status'
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='active'>Active</SelectItem>
+                      <SelectItem value='inactive'>Inactive</SelectItem>
+                      <SelectItem value='pending'>Pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
           </div>
 
           <div className='border rounded-lg p-4 bg-gray-50'>
-            <GradeManagement selectedGrades={formData.grades} onGradesChange={handleGradesChange} />
+            <Controller
+              name='grades'
+              control={control}
+              rules={{ validate: v => v.length > 0 }}
+              render={({ field }) => (
+                <GradeManagement selectedGrades={field.value} onGradesChange={field.onChange} />
+              )}
+            />
           </div>
 
           <div className='space-y-2'>
             <Label htmlFor='notes'>Notes</Label>
             <Textarea
               id='notes'
-              value={formData.notes}
-              onChange={e => handleChange('notes', e.target.value)}
+              {...register('notes')}
               placeholder='Additional notes about the school'
               rows={3}
             />
