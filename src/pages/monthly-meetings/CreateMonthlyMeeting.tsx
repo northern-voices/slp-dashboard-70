@@ -49,7 +49,7 @@ const CreateMonthlyMeetingContent = () => {
 
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { userProfile, currentSchool } = useOrganization()
+  const { currentSchool } = useOrganization()
   const { user } = useAuth()
 
   const draftKey = `monthly-meeting-draft-${currentSchool?.id || 'no-school'}`
@@ -71,7 +71,10 @@ const CreateMonthlyMeetingContent = () => {
       attendees: [],
       meeting_date: (() => {
         const today = new Date()
-        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}}`
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
+          2,
+          '0'
+        )}-${String(today.getDate()).padStart(2, '0')}`
       })(),
       additional_notes: '',
       action_plan: '',
@@ -266,7 +269,6 @@ const CreateMonthlyMeetingContent = () => {
                     id='meeting_date'
                     type='date'
                     {...register('meeting_date', { required: true })}
-                    required
                   />
                 </div>
               </div>
