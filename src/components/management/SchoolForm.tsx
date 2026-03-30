@@ -18,8 +18,8 @@ import GradeManagement from './GradeManagement'
 interface SchoolFormProps {
   isOpen: boolean
   onClose: () => void
-  school?: any
-  onSave: (schoolData: any) => void
+  school?: Partial<SchoolFormData>
+  onSave: (schoolData: SchoolFormData) => void
 }
 
 interface SchoolFormData {
