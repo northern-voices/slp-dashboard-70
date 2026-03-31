@@ -1,0 +1,50 @@
+import { GraduationCap, Calendar } from 'lucide-react'
+import type { SchoolGrade } from '@/api/schoolGrades'
+import type { Student } from '@/types/database'
+
+interface StudentDetailsGridProps {
+  student: Student
+  currentGrade: SchoolGrade | null
+  isLoadingCurrentGrade: boolean
+  formatDate: (dateString: string) => string
+  getAge: (dateString: string) => number
+}
+
+const StudentDetailsGrid = ({
+  student,
+  currentGrade,
+  isLoadingCurrentGrade,
+  formatDate,
+  getAge,
+}: StudentDetailsGridProps) => (
+  <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
+    <div className='flex items-start gap-2'>
+      <GraduationCap className='w-4 h-4 mt-1 text-gray-400' />
+      <div>
+        <span className='text-sm font-medium text-gray-700'>Current Grade</span>
+        {isLoadingCurrentGrade ? (
+          <div className='w-32 h-5 mt-1 bg-gray-200 rounded animate-pulse' />
+        ) : (
+          <p className='text-sm text-gray-600'>
+            {currentGrade
+              ? `${currentGrade.grade_level} (${currentGrade.academic_year})`
+              : 'No grade assigned'}
+          </p>
+        )}
+      </div>
+    </div>
+
+    {student.date_of_birth && (
+      <div className='flex items-start gap-2'>
+        <Calendar className='w-4 h-4 mt-1 text-gray-400' />
+        <div>
+          <span className='text-sm font-medium text-gray-700'>Date of Birth</span>
+          <p className='text-sm text-gray-600'>{formatDate(student.date_of_birth)}</p>
+          <p className='text-xs text-gray-500'>{getAge(student.date_of_birth)} years old</p>
+        </div>
+      </div>
+    )}
+  </div>
+)
+
+export default StudentDetailsGrid
