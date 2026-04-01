@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,7 +19,6 @@ import ScreeningDetailsModal from '@/components/students/screening-history/Scree
 import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
 import LastMeetingCard from '@/components/monthly-meetings/LastMeetingCard'
 import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
-import { GRADE_MAPPING } from '@/constants/app'
 import { Student } from '@/types/database'
 
 type StudentData = Record<string, { sessions_attended: number | null; meeting_notes: string }>
@@ -41,6 +42,37 @@ const StudentDetailsModal = ({
 }: StudentDetailsModalProps) => {
   const [showScreeningModal, setShowScreeningModal] = useState(false)
   const [showMeetingModal, setShowMeetingModal] = useState(false)
+  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
+
+  const { currentSchool } = useOrganization()
+
+  useEffect(() => {
+    const fetchGrades = async () => {
+      if (!currentSchool?.id) {
+        setGradesMap(new Map())
+        return
+      }
+
+      try {
+        const grades = await schoolGradesApi.getSchoolGradesBySchool(currentSchool.id)
+        const map = new Map<string, SchoolGrade>()
+        grades.forEach(grade => map.set(grade.id, grade))
+        setGradesMap(map)
+      } catch (error) {
+        console.error('Error fetching grades:', error)
+        setGradesMap(new Map())
+      }
+    }
+    fetchGrades()
+  }, [currentSchool?.id])
+
+  const getStudentGrade = (): string => {
+    if (selectedStudent?.current_grade_id) {
+      const grade = gradesMap.get(selectedStudent.current_grade_id)
+      if (grade) return grade.grade_level
+    }
+    return 'N/A'
+  }
 
   const { toast } = useToast()
 
@@ -63,10 +95,8 @@ const StudentDetailsModal = ({
             Student Details:{' '}
             {selectedStudent ? `${selectedStudent.first_name} ${selectedStudent.last_name}` : ''}
           </DialogTitle>
-          {selectedStudent?.grade && (
-            <p className='text-sm text-gray-500'>
-              Grade: {GRADE_MAPPING[selectedStudent.grade]?.display || selectedStudent.grade}
-            </p>
+          {selectedStudent?.current_grade_id && (
+            <p className='text-sm text-gray-500'>Grade: {getStudentGrade()}</p>
           )}
           <div className='grid grid-cols-2 gap-3 mt-3'>
             {isLoadingScreenings ? (
