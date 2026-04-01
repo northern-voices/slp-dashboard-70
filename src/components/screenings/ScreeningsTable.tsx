@@ -13,45 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Eye,
-  Trash2,
-  MoreHorizontal,
-  Loader2,
-  ChevronUp,
-  ChevronDown,
-  Mail,
-  User,
-} from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Loader2, ChevronUp, ChevronDown } from 'lucide-react'
 import {
   ResponsiveTable,
-  ResponsiveTableRow,
   TableHeader,
   TableHead,
   TableBody,
-  TableCell,
 } from '@/components/ui/responsive-table'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { format } from 'date-fns'
-import { parseDateSafely } from '@/utils/dateUtils'
-import ScreeningBulkActions from './ScreeningBulkActions'
-import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
-import SendReportsModal from './SendReportsModal'
 import { School, Screening, Student } from '@/types/database'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import {
@@ -63,6 +31,12 @@ import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useSchoolGradesBySchool } from '@/hooks/use-school-grades'
 import type { SchoolGrade } from '@/api/schoolGrades'
+import ScreeningBulkActions from './ScreeningBulkActions'
+import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
+import SendReportsModal from './SendReportsModal'
+import DeleteScreeningDialog from './DeleteScreeningDialog'
+import ScreeningTableRow from './ScreeningTableRow'
+import { useScreeningsFilter } from '@/hooks/screenings/use-screenings-filter'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -103,8 +77,6 @@ const ScreeningsTable = ({
 }: ScreeningsTableProps) => {
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
-  const [sortField, setSortField] = useState<'date' | 'name' | 'grade' | null>(null)
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [screeningToDelete, setScreeningToDelete] = useState<Screening | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [updatingScreeningId, setUpdatingScreeningId] = useState<string | null>(null)
@@ -134,7 +106,7 @@ const ScreeningsTable = ({
   )
 
   // Use mutation hooks
-  const { mutate: updateSpeechScreening, isPending: isUpdating } = useUpdateSpeechScreening()
+  const { mutate: updateSpeechScreening } = useUpdateSpeechScreening()
   const { mutate: updateStudent } = useUpdateStudent()
   const { toast } = useToast()
 
@@ -142,11 +114,9 @@ const ScreeningsTable = ({
   const { data: students = [] } = useStudentsBySchool(currentSchool?.id)
 
   // Fetch grades using React Query
-  const {
-    data: grades = [],
-    isLoading: isLoadingGrades,
-    error: gradesError,
-  } = useSchoolGradesBySchool(currentSchool?.id)
+  const { data: grades = [], isLoading: isLoadingGrades } = useSchoolGradesBySchool(
+    currentSchool?.id
+  )
 
   // Create grades map from React Query data
   const gradesMap = useMemo(() => {
@@ -171,27 +141,6 @@ const ScreeningsTable = ({
     setStudentsMap(studentsMapping)
   }, [currentSchool?.id, students])
 
-  // Helper function to get grade for a screening
-  const getScreeningGrade = (screening: Screening): string | JSX.Element => {
-    const student = studentsMap.get(screening.student_id)
-
-    // If student has a current_grade_id, try to look it up
-    if (student?.current_grade_id) {
-      // If grades are still loading, show loading indicator
-      if (isLoadingGrades) {
-        return <Loader2 className='inline w-3 h-3 text-gray-400 animate-spin' />
-      }
-
-      const grade = gradesMap.get(student.current_grade_id)
-      if (grade) {
-        return grade.grade_level
-      }
-    }
-
-    // Fallback to screening's grade field if student doesn't have current_grade_id
-    return screening.grade || 'N/A'
-  }
-
   // Determine which data to use based on whether a school is selected
   const allScreenings = currentSchool ? schoolScreeningsData : allScreeningsData
   const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
@@ -201,267 +150,36 @@ const ScreeningsTable = ({
   // No need to filter anymore since we're fetching school-specific data
   const schoolScreenings = allScreenings || []
 
-  const latestScreeningsByStudent = useMemo(() => {
-    return Array.from(
-      schoolScreenings
-        .reduce((map, s) => {
-          const existing = map.get(s.student_id)
-          if (!existing || new Date(s.created_at) > new Date(existing.created_at)) {
-            map.set(s.student_id, s)
-          }
-          return map
-        }, new Map<string, Screening>())
-        .values()
-    )
-  }, [schoolScreenings])
-
-  // Apply all filters
-  const filteredScreenings = (
-    deduplicateByStudent ? latestScreeningsByStudent : schoolScreenings
-  ).filter(screening => {
-    const matchesSearch =
-      screening.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      screening.screener?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesResult =
-      resultFilter === 'all' ||
-      screening.result === resultFilter ||
-      screening.screening_result === resultFilter
-
-    // Apply date range filter
-    let matchesDateRange = true
-    if (dateRangeFilter !== 'all') {
-      const screeningDate = parseDateSafely(screening.created_at)
-      const now = new Date()
-
-      switch (dateRangeFilter) {
-        case 'today': {
-          // Compare local dates
-          const screeningLocalDate = screeningDate.toLocaleDateString()
-          const nowLocalDate = now.toLocaleDateString()
-          matchesDateRange = screeningLocalDate === nowLocalDate
-          break
-        }
-        case 'week': {
-          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-          matchesDateRange = screeningDate >= weekAgo
-          break
-        }
-        case 'month': {
-          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-          matchesDateRange = screeningDate >= monthAgo
-          break
-        }
-        case 'quarter': {
-          const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-          matchesDateRange = screeningDate >= quarterAgo
-          break
-        }
-        case 'school_year': {
-          // School year starts September 1st
-          const currentDate = new Date()
-          const currentYear = currentDate.getFullYear()
-          const currentMonth = currentDate.getMonth() // 0-indexed (September = 8)
-
-          // Determine the start of the current school year
-          let schoolYearStart: Date
-          if (currentMonth >= 8) {
-            // September or later
-            schoolYearStart = new Date(currentYear, 8, 1) // September 1st of current year
-          } else {
-            schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
-          }
-
-          matchesDateRange = screeningDate >= schoolYearStart
-          break
-        }
-        default: {
-          if (dateRangeFilter.startsWith('sy_')) {
-            const [startYear, endYear] = dateRangeFilter.replace('sy_', '').split('-').map(Number)
-            const syStart = new Date(startYear, 8, 1) // Sept 1 of start year
-            const syEnd = new Date(endYear, 7, 31, 23, 59, 59) // Aug 31 of end year
-            matchesDateRange = screeningDate >= syStart && screeningDate <= syEnd
-          }
-          break
-        }
-      }
-    }
-
-    // Apply qualifies for speech program filter
-    // Apply qualifies for speech program filter
-    let matchesQualifiesForSpeechProgram = true
-    if (qualifiesForSpeechProgramFilter.length > 0) {
-      const metadata = screening.error_patterns?.screening_metadata
-      const consent = screening.error_patterns?.consent
-
-      matchesQualifiesForSpeechProgram = qualifiesForSpeechProgramFilter.some(filter => {
-        if (filter === 'qualified') return metadata?.qualifies_for_speech_program === true
-        if (filter === 'not_in_program')
-          return (
-            metadata?.qualifies_for_speech_program === false &&
-            !metadata?.sub &&
-            !metadata?.paused &&
-            !metadata?.graduated &&
-            !consent?.no_consent
-          )
-        if (filter === 'sub') return metadata?.sub === true
-        if (filter === 'paused') return metadata?.paused === true
-        if (filter === 'graduated') return metadata?.graduated === true
-        if (filter === 'no_consent') return consent?.no_consent === true
-        return false
-      })
-    }
-
-    // Apply grade filter
-    let matchesGrade = true
-    if (gradeFilter !== 'all') {
-      const grade = getScreeningGrade(screening)
-      const gradeStr = typeof grade === 'string' ? grade : ''
-      matchesGrade = gradeStr === gradeFilter
-    }
-
-    // Apply vocabulary support filter
-    let matchesVocabularySupport = true
-    if (vocabularySupportFilter !== 'all') {
-      const vocabularySupport = screening.vocabulary_support
-      matchesVocabularySupport = vocabularySupport === (vocabularySupportFilter === 'true')
-    }
-
-    // Apply CAS filter
-    let matchesCAS = true
-    if (casFilter !== 'all') {
-      const suspectedCAS = screening.error_patterns?.add_areas_of_concern?.suspected_cas
-      if (casFilter === 'has_text') {
-        matchesCAS = suspectedCAS !== null && suspectedCAS !== undefined && suspectedCAS !== ''
-      } else if (casFilter === 'no_text') {
-        matchesCAS =
-          !suspectedCAS ||
-          suspectedCAS === null ||
-          suspectedCAS === undefined ||
-          suspectedCAS === ''
-      }
-    }
-
-    // Apply language comprehension filter
-    let matchesLanguageComprehension = true
-    if (languageComprehensionFilter !== 'all') {
-      const languageComprehension =
-        screening.error_patterns?.add_areas_of_concern?.language_comprehension
-      if (languageComprehensionFilter === 'concern') {
-        matchesLanguageComprehension =
-          languageComprehension !== null &&
-          languageComprehension !== undefined &&
-          languageComprehension !== ''
-      } else if (languageComprehensionFilter === 'no_concern') {
-        matchesLanguageComprehension =
-          !languageComprehension ||
-          languageComprehension === null ||
-          languageComprehension === undefined ||
-          languageComprehension === ''
-      }
-    }
-
-    // Apply priority rescreen filter
-    let matchesPriorityRescreen = true
-    if (priorityRescreenFilter !== 'all') {
-      const priorityRescreen = screening.error_patterns?.attendance?.priority_re_screen
-      if (priorityRescreenFilter === 'true') {
-        matchesPriorityRescreen = priorityRescreen === true
-      } else if (priorityRescreenFilter === 'false') {
-        matchesPriorityRescreen =
-          priorityRescreen === false || priorityRescreen === null || priorityRescreen === undefined
-      }
-    }
-
-    // Apply recommendations filter
-    let matchesRecommendations = true
-    if (recommendationsFilter !== 'all') {
-      const hasReferralNotes = screening.referral_notes && screening.referral_notes.trim() !== ''
-
-      if (recommendationsFilter === 'has_referral_notes') {
-        matchesRecommendations = hasReferralNotes
-      } else if (recommendationsFilter === 'no_referral_notes') {
-        matchesRecommendations = !hasReferralNotes
-      }
-    }
-
-    // Apply clinical notes filter
-    let matchesClinicalNotes = true
-    if (clinicalNotesFilter !== 'all') {
-      const hasClinicalNotes = screening.clinical_notes && screening.clinical_notes.trim() !== ''
-      if (clinicalNotesFilter === 'has_notes') {
-        matchesClinicalNotes = hasClinicalNotes
-      } else if (clinicalNotesFilter === 'no_notes') {
-        matchesClinicalNotes = !hasClinicalNotes
-      }
-    }
-
-    return (
-      matchesSearch &&
-      matchesResult &&
-      matchesDateRange &&
-      matchesQualifiesForSpeechProgram &&
-      matchesGrade &&
-      matchesVocabularySupport &&
-      matchesCAS &&
-      matchesLanguageComprehension &&
-      matchesPriorityRescreen &&
-      matchesRecommendations &&
-      matchesClinicalNotes
-    )
+  const {
+    filteredScreenings,
+    sortedScreenings,
+    sortField,
+    sortOrder,
+    handleSort,
+    getScreeningGrade,
+  } = useScreeningsFilter({
+    screenings: schoolScreenings,
+    deduplicateByStudent,
+    searchTerm,
+    resultFilter,
+    dateRangeFilter,
+    qualifiesForSpeechProgramFilter,
+    vocabularySupportFilter,
+    casFilter,
+    gradeFilter,
+    recommendationsFilter,
+    clinicalNotesFilter,
+    languageComprehensionFilter,
+    priorityRescreenFilter,
+    studentsMap,
+    gradesMap,
+    isLoadingGrades,
   })
-
-  // Sort screenings by field
-  const sortedScreenings = [...filteredScreenings].sort((a, b) => {
-    if (!sortOrder || !sortField) return 0
-
-    let comparison = 0
-
-    switch (sortField) {
-      case 'date': {
-        const dateA = new Date(a.created_at).getTime()
-        const dateB = new Date(b.created_at).getTime()
-        comparison = dateA - dateB
-        break
-      }
-      case 'name': {
-        comparison = (a.student_name || '').localeCompare(b.student_name || '')
-        break
-      }
-      case 'grade': {
-        const gradeA = getScreeningGrade(a)
-        const gradeB = getScreeningGrade(b)
-        // Handle case where grade might be JSX (loading spinner)
-        const gradeAStr = typeof gradeA === 'string' ? gradeA : ''
-        const gradeBStr = typeof gradeB === 'string' ? gradeB : ''
-        comparison = gradeAStr.localeCompare(gradeBStr)
-        break
-      }
-    }
-
-    return sortOrder === 'asc' ? comparison : -comparison
-  })
-
-  const handleSort = (field: 'date' | 'name' | 'grade') => {
-    if (sortField !== field) {
-      setSortField(field)
-      setSortOrder('desc')
-    } else if (sortOrder === 'desc') {
-      setSortOrder('asc')
-    } else if (sortOrder === 'asc') {
-      setSortField(null)
-      setSortOrder(null)
-    }
-  }
 
   const getSortIcon = (field: 'date' | 'name' | 'grade') => {
-    if (sortField !== field) {
-      return <ChevronUp className='w-4 h-4 opacity-30' />
-    }
-    if (sortOrder === 'asc') {
-      return <ChevronUp className='w-4 h-4' />
-    } else if (sortOrder === 'desc') {
-      return <ChevronDown className='w-4 h-4' />
-    }
+    if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
+    if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
+    if (sortOrder === 'desc') return <ChevronDown className='w-4 h-4' />
     return <ChevronUp className='w-4 h-4 opacity-30' />
   }
 
@@ -843,11 +561,7 @@ const ScreeningsTable = ({
     { value: 'no_consent', label: 'Qualifies - No Consent' },
   ]
 
-  const {
-    mutate: deleteScreening,
-    isPending: isDeleting,
-    error: deleteError,
-  } = useDeleteScreening()
+  const { mutate: deleteScreening, isPending: isDeleting } = useDeleteScreening()
 
   const handleDelete = (screening: Screening) => {
     setScreeningToDelete(screening)
@@ -979,169 +693,23 @@ const ScreeningsTable = ({
                 <TableHead className='w-12'></TableHead>
               </tr>
             </TableHeader>
+
             <TableBody>
               {sortedScreenings.map(screening => (
-                <ResponsiveTableRow
+                <ScreeningTableRow
                   key={screening.id}
-                  mobileCardContent={
-                    <div className='space-y-3'>
-                      <div className='flex items-center justify-between'>
-                        <div className='flex items-center gap-2'>
-                          <Checkbox
-                            checked={selectedScreenings.some(s => s.id === screening.id)}
-                            onCheckedChange={checked =>
-                              handleSelectScreening(screening, checked as boolean)
-                            }
-                          />
-                          <h3 className='font-medium'>{screening.student_name}</h3>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant='ghost' size='sm'>
-                              <MoreHorizontal className='w-4 h-4' />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align='end' className='bg-white'>
-                            <DropdownMenuItem onClick={() => handleViewDetails(screening)}>
-                              <Eye className='w-4 h-4 mr-2' />
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleViewStudent(screening)}>
-                              <User className='w-4 h-4 mr-2' />
-                              View Student
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEmailReport(screening)}>
-                              <Mail className='w-4 h-4 mr-2' />
-                              Send Report
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className='text-red-600'
-                              onClick={() => handleDelete(screening)}
-                              disabled={isDeleting}>
-                              {isDeleting ? (
-                                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                              ) : (
-                                <Trash2 className='w-4 h-4 mr-2' />
-                              )}
-                              {isDeleting ? 'Deleting...' : 'Delete'}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                      <div className='flex items-center gap-'>{getResultSelector(screening)}</div>
-                      <div className='flex items-center gap-2'>{getProgramSelector(screening)}</div>
-                      <div className='space-y-1 text-sm text-gray-600'>
-                        <p>
-                          <span className='font-medium'>Date:</span>{' '}
-                          {new Date(screening.created_at).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </p>
-                        <p>
-                          <span className='font-medium'>Screener:</span> {screening.screener}
-                        </p>
-                        <p>
-                          <span className='font-medium'>Student ID:</span> {screening.student_id}
-                        </p>
-                        {(() => {
-                          const grade = getScreeningGrade(screening)
-                          const gradeStr = typeof grade === 'string' ? grade : '...'
-                          return gradeStr !== 'N/A' ? (
-                            <p>
-                              <span className='font-medium'>Grade:</span> {grade}
-                            </p>
-                          ) : null
-                        })()}
-                      </div>
-                    </div>
-                  }>
-                  <TableCell>
-                    <Checkbox
-                      className='mt-1.5'
-                      checked={selectedScreenings.some(s => s.id === screening.id)}
-                      onCheckedChange={checked =>
-                        handleSelectScreening(screening, checked as boolean)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell className='max-w-0'>
-                    <div className='truncate'>
-                      <div
-                        className='text-base font-medium truncate'
-                        title={screening.student_name}>
-                        {screening.student_name}
-                      </div>
-                      {/* <div className='text-sm text-gray-500 truncate'>
-                        ID: {screening.student_id}
-                      </div> */}
-                    </div>
-                  </TableCell>
-                  <TableCell className='max-w-0'>
-                    <div className='w-full min-w-[120px]'>{getResultSelector(screening)}</div>
-                  </TableCell>
-                  <TableCell className='max-w-0'>
-                    <div className='w-full min-w-[120px]'>{getProgramSelector(screening)}</div>
-                  </TableCell>
-                  <TableCell className='max-w-0'>
-                    {(() => {
-                      const grade = getScreeningGrade(screening)
-                      const gradeStr = typeof grade === 'string' ? grade : '...'
-                      return (
-                        <div className='truncate' title={gradeStr}>
-                          {gradeStr === 'N/A' ? '-' : grade}
-                        </div>
-                      )
-                    })()}
-                  </TableCell>
-                  <TableCell className='max-w-0'>
-                    <div
-                      className='truncate'
-                      title={format(parseDateSafely(screening.date), 'MMM d, yyyy')}>
-                      {format(parseDateSafely(screening.date), 'MMM d, yyyy')}
-                    </div>
-                  </TableCell>
-                  <TableCell className='max-w-0'>
-                    <div className='truncate' title={screening.screener}>
-                      {screening.screener}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant='ghost' size='sm'>
-                          <MoreHorizontal className='w-4 h-4' />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align='end' className='bg-white'>
-                        <DropdownMenuItem onClick={() => handleViewDetails(screening)}>
-                          <Eye className='w-4 h-4 mr-2' />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleViewStudent(screening)}>
-                          <User className='w-4 h-4 mr-2' />
-                          View Student
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEmailReport(screening)}>
-                          <Mail className='w-4 h-4 mr-2' />
-                          Send Report
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className='text-red-600'
-                          onClick={() => handleDelete(screening)}
-                          disabled={isDeleting}>
-                          {isDeleting ? (
-                            <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                          ) : (
-                            <Trash2 className='w-4 h-4 mr-2' />
-                          )}
-                          {isDeleting ? 'Deleting...' : 'Delete'}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </ResponsiveTableRow>
+                  screening={screening}
+                  isSelected={selectedScreenings.some(s => s.id === screening.id)}
+                  isDeleting={isDeleting}
+                  onSelect={handleSelectScreening}
+                  onViewDetails={handleViewDetails}
+                  onViewStudent={handleViewStudent}
+                  onEmailReport={handleEmailReport}
+                  onDelete={handleDelete}
+                  getScreeningGrade={getScreeningGrade}
+                  getResultSelector={getResultSelector}
+                  getProgramSelector={getProgramSelector}
+                />
               ))}
             </TableBody>
           </ResponsiveTable>
@@ -1160,28 +728,13 @@ const ScreeningsTable = ({
         screening={selectedScreening}
       />
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={open => !open && cancelDelete()}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your screening for{' '}
-              {screeningToDelete?.student_name}.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelDelete}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} disabled={isDeleting}>
-              {isDeleting ? (
-                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-              ) : (
-                <Trash2 className='w-4 h-4 mr-2' />
-              )}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteScreeningDialog
+        open={isDeleteDialogOpen}
+        screening={screeningToDelete}
+        isDeleting={isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
 
       {/* Send Reports Modal */}
       <SendReportsModal
