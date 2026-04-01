@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { School } from '@/types/database'
+import { Activity, School } from '@/types/database'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import SchoolInfoCard from '@/components/SchoolInfoCard'
 import AddTeamMemberModal from '@/components/AddTeamMemberModal'
@@ -289,6 +289,32 @@ const DashboardContent = () => {
     }
   }
 
+  const handleEditActivity = async (
+    activityId: string,
+    updates: Partial<Pick<Activity, 'activity_type' | 'activity_date' | 'notes'>>
+  ) => {
+    if (!currentSchool) {
+      console.error('No school selected')
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('school_activities')
+        .update(updates)
+        .eq('id', activityId)
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-activities', currentSchool.id] })
+
+      toast.success('Activity updated successfully')
+    } catch (error) {
+      console.error('Error updating activity:', error)
+      toast.error('Failed to update activity. Please try again.')
+    }
+  }
+
   if (isLoading || isLoadingSchool || !schoolData) {
     return <DashboardSkeleton />
   }
@@ -337,6 +363,7 @@ const DashboardContent = () => {
           activities={activities}
           onAddActivity={() => setIsAddActivityModalOpen(true)}
           onDeleteActivity={handleDeleteActivity}
+          onEditActivity={handleEditActivity}
         />
 
         {/* <QuickActions />
