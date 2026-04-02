@@ -2,6 +2,7 @@ import React from 'react'
 import { Check, ChevronsUpDown, Building2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Command,
   CommandEmpty,
@@ -48,12 +49,13 @@ const SchoolSelector = () => {
 
   if (isLoading) {
     return (
-      <div className='px-2 py-1'>
-        <div className='flex items-center space-x-2 p-2 rounded-md bg-gray-100 animate-pulse'>
-          <Building2 className='w-4 h-4' />
-          <div className='h-4 bg-gray-200 rounded flex-1'></div>
+      <Button variant='outline' disabled className='w-full justify-between text-left font-normal'>
+        <div className='flex items-center space-x-2 min-w-0'>
+          <Skeleton className='w-4 h-4 rounded flex-shrink-0' />
+          <Skeleton className='h-4 w-32' />
         </div>
-      </div>
+        <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+      </Button>
     )
   }
 

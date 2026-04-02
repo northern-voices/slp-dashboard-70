@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
+import { useForm, Controller } from 'react-hook-form'
 import { TEAM_MEMBER_ROLES, getTeamRoleLabel } from '@/constants/teamRoles'
-import { formatPhoneNumber, unformatPhoneNumber } from '@/utils/formatters'
+import { unformatPhoneNumber } from '@/utils/formatters'
 import {
   Dialog,
   DialogContent,
@@ -34,57 +35,30 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
   onOpenChange,
   onAddMember,
 }) => {
-  const [formData, setFormData] = useState<TeamMember>({
-    name: '',
-    roles: [],
-    email: '',
-    phone: '',
-  })
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!formData.name || formData.roles.length === 0 || !formData.email) {
-      return
-    }
-
-    onAddMember({
-      ...formData,
-      phone: formData.phone ? unformatPhoneNumber(formData.phone) : '',
-    })
-
-    setFormData({
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<TeamMember>({
+    defaultValues: {
       name: '',
       roles: [],
       email: '',
       phone: '',
+    },
+  })
+
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+
+  const onSubmit = (data: TeamMember) => {
+    onAddMember({
+      ...data,
+      phone: data.phone ? unformatPhoneNumber(data.phone) : '',
     })
-
+    reset()
     onOpenChange(false)
-  }
-
-  const handleChange = (field: keyof TeamMember, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }))
-  }
-
-  const handleRoleToggle = (roleValue: string) => {
-    setFormData(prev => ({
-      ...prev,
-      roles: prev.roles.includes(roleValue)
-        ? prev.roles.filter(r => r !== roleValue)
-        : [...prev.roles, roleValue],
-    }))
-  }
-
-  const handleRemoveRole = (roleToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      roles: prev.roles.filter(r => r !== roleToRemove),
-    }))
   }
 
   return (
@@ -102,7 +76,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className='py-4 space-y-5'>
             {/* Name Field */}
             <div className='space-y-2'>
@@ -112,10 +86,8 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
               <Input
                 id='name'
                 placeholder='e.g., Emily Carter'
-                value={formData.name}
-                onChange={e => handleChange('name', e.target.value)}
+                {...register('name', { required: true })}
                 className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
-                required
               />
             </div>
 
@@ -124,67 +96,86 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
               <Label className='text-sm font-medium text-gray-700'>
                 Roles <span className='text-red-500'>*</span>
               </Label>
-              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    role='combobox'
-                    className='w-full justify-between h-auto min-h-[40px] rounded-lg border-gray-200 hover:bg-gray-50 text-left font-normal'>
-                    <div className='flex flex-wrap gap-1.5'>
-                      {formData.roles.length === 0 ? (
-                        <span className='text-sm text-gray-500'>Select roles...</span>
-                      ) : (
-                        formData.roles.map(roleValue => (
-                          <span
-                            key={roleValue}
-                            className='inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 text-xs font-medium'>
-                            {getTeamRoleLabel(roleValue)}
-                            <button
-                              type='button'
-                              onClick={e => {
-                                e.stopPropagation()
-                                handleRemoveRole(roleValue)
-                              }}
-                              className='hover:bg-purple-200 rounded-full p-0.5'>
-                              <X className='w-3 h-3' />
-                            </button>
-                          </span>
-                        ))
-                      )}
-                    </div>
-                    <ChevronDown className='w-4 h-4 ml-2 opacity-50 shrink-0' />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className='w-[460px] p-0' align='start'>
-                  <div
-                    className='max-h-[300px] overflow-y-auto p-2'
-                    onTouchMove={e => e.stopPropagation()}
-                    onWheel={e => e.stopPropagation()}>
-                    <div className='space-y-1'>
-                      {TEAM_MEMBER_ROLES.map(role => (
+              <Controller
+                name='roles'
+                control={control}
+                rules={{ validate: v => v.length > 0 }}
+                render={({ field }) => (
+                  <>
+                    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type='button'
+                          variant='outline'
+                          role='combobox'
+                          className='w-full justify-between h-auto min-h-[40px] rounded-lg border-gray-200 hover:bg-gray-50 text-left font-normal'>
+                          <div className='flex flex-wrap gap-1.5'>
+                            {field.value.length === 0 ? (
+                              <span className='text-sm text-gray-500'>Select roles...</span>
+                            ) : (
+                              field.value.map(roleValue => (
+                                <span
+                                  key={roleValue}
+                                  className='inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 text-xs font-medium'>
+                                  {getTeamRoleLabel(roleValue)}
+                                  <button
+                                    type='button'
+                                    onClick={e => {
+                                      e.stopPropagation()
+                                      field.onChange(field.value.filter(r => r !== roleValue))
+                                    }}
+                                    className='hover:bg-purple-200 rounded-full p-0.5'>
+                                    <X className='w-3 h-3' />
+                                  </button>
+                                </span>
+                              ))
+                            )}
+                          </div>
+                          <ChevronDown className='w-4 h-4 ml-2 opacity-50 shrink-0' />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className='w-[460px] p-0' align='start'>
                         <div
-                          key={role.value}
-                          className='flex items-center p-2 space-x-2 rounded-md cursor-pointer hover:bg-gray-50'
-                          onClick={() => handleRoleToggle(role.value)}>
-                          <Checkbox
-                            checked={formData.roles.includes(role.value)}
-                            onCheckedChange={() => handleRoleToggle(role.value)}
-                          />
-                          <label className='flex-1 text-sm text-gray-700 cursor-pointer'>
-                            {role.label}
-                          </label>
+                          className='max-h-[300px] overflow-y-auto p-2'
+                          onTouchMove={e => e.stopPropagation()}
+                          onWheel={e => e.stopPropagation()}>
+                          <div className='space-y-1'>
+                            {TEAM_MEMBER_ROLES.map(role => (
+                              <div
+                                key={role.value}
+                                className='flex items-center p-2 space-x-2 rounded-md cursor-pointer hover:bg-gray-50'
+                                onClick={() => {
+                                  const newRoles = field.value.includes(role.value)
+                                    ? field.value.filter(r => r !== role.value)
+                                    : [...field.value, role.value]
+                                  field.onChange(newRoles)
+                                }}>
+                                <Checkbox
+                                  checked={field.value.includes(role.value)}
+                                  onCheckedChange={() => {
+                                    const newRoles = field.value.includes(role.value)
+                                      ? field.value.filter(r => r !== role.value)
+                                      : [...field.value, role.value]
+                                    field.onChange(newRoles)
+                                  }}
+                                />
+                                <label className='flex-1 text-sm text-gray-700 cursor-pointer'>
+                                  {role.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-              {formData.roles.length > 0 && (
-                <p className='mt-1 text-xs text-gray-500'>
-                  {formData.roles.length} role{formData.roles.length !== 1 ? 's' : ''} selected
-                </p>
-              )}
+                      </PopoverContent>
+                    </Popover>
+                    {field.value.length > 0 && (
+                      <p className='mt-1 text-xs text-gray-500'>
+                        {field.value.length} role{field.value.length !== 1 ? 's' : ''} selected
+                      </p>
+                    )}
+                  </>
+                )}
+              />
             </div>
 
             {/* Email Field */}
@@ -196,8 +187,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                 id='email'
                 type='email'
                 placeholder='e.g., emily.carter@nvschools.edu'
-                value={formData.email}
-                onChange={e => handleChange('email', e.target.value)}
+                {...register('email', { required: true })}
                 className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
                 required
               />
@@ -212,8 +202,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                 id='phone'
                 type='tel'
                 placeholder='e.g., (555) 123-4567'
-                value={formData.phone}
-                onChange={e => handleChange('phone', formatPhoneNumber(e.target.value))}
+                {...register('phone')}
                 className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
                 maxLength={14}
               />

@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, CheckCircle, Clock, FileText, Users } from 'lucide-react'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import ScreeningStatsSkeleton from '@/components/skeletons/ScreeningStatsSkeleton'
 
 interface ScreeningStatsProps {
   onFilterClick?: (filterValues: string[], deduplicate: boolean) => void
@@ -24,7 +25,9 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
     error: errorSchool,
   } = useScreeningsBySchool(currentSchool?.id, 'school_year')
 
-  const schoolScreenings = currentSchool ? schoolScreeningsData || [] : allScreeningsData || []
+  const schoolScreenings = currentSchool
+    ? (schoolScreeningsData?.screenings ?? [])
+    : (allScreeningsData ?? [])
   const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
   const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
   const error = currentSchool ? errorSchool : errorAll
@@ -102,22 +105,7 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
   }
 
   if (isLoading) {
-    return (
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
-        {[...Array(5)].map((_, i) => (
-          <Card key={i}>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <div className='h-4 bg-gray-200 rounded animate-pulse w-24'></div>
-              <div className='h-4 w-4 bg-gray-200 rounded animate-pulse'></div>
-            </CardHeader>
-            <CardContent>
-              <div className='h-8 bg-gray-200 rounded animate-pulse w-16 mb-2'></div>
-              <div className='h-3 bg-gray-200 rounded animate-pulse w-20'></div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    )
+    return <ScreeningStatsSkeleton />
   }
 
   if (error) {

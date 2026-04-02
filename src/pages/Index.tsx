@@ -1,8 +1,5 @@
 import { useState } from 'react'
-import { School } from '@/types/database'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import AppSidebar from '@/components/AppSidebar'
-import Header from '@/components/Header'
+import { Activity, School } from '@/types/database'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import SchoolInfoCard from '@/components/SchoolInfoCard'
 import AddTeamMemberModal from '@/components/AddTeamMemberModal'
@@ -18,6 +15,7 @@ import { useAvailableSLPs } from '@/hooks/school/useAvailableSLPs'
 import { supabase } from '@/lib/supabase'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
 // import DashboardStats from '@/components/DashboardStats'
 // import QuickActions from '@/components/QuickActions'
 // import RecentActivity from '@/components/RecentActivity'
@@ -53,7 +51,7 @@ const DashboardContent = () => {
   } = useSchoolDetails(currentSchool)
 
   const { data: availableSLPs = [], isLoading: isLoadingSLPs } = useAvailableSLPs(
-    currentOrganization?.id,
+    currentOrganization?.id
   )
 
   const { data: activities = [], isLoading: isLoadingActivities } =
@@ -291,82 +289,86 @@ const DashboardContent = () => {
     }
   }
 
-  if (isLoading || isLoadingSchool) {
-    return (
-      <div className='flex w-full min-h-screen bg-gray-25'>
-        <div className='flex items-center justify-center flex-1'>
-          <div className='text-center'>
-            <div className='w-8 h-8 mx-auto mb-4 border-b-2 rounded-full animate-spin border-brand'></div>
-            <p className='text-sm text-gray-600'>Loading dashboard...</p>
-          </div>
-        </div>
-      </div>
-    )
+  const handleEditActivity = async (
+    activityId: string,
+    updates: Partial<Pick<Activity, 'activity_type' | 'activity_date' | 'notes'>>
+  ) => {
+    if (!currentSchool) {
+      console.error('No school selected')
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('school_activities')
+        .update(updates)
+        .eq('id', activityId)
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-activities', currentSchool.id] })
+
+      toast.success('Activity updated successfully')
+    } catch (error) {
+      console.error('Error updating activity:', error)
+      toast.error('Failed to update activity. Please try again.')
+    }
+  }
+
+  if (isLoading || isLoadingSchool || !schoolData) {
+    return <DashboardSkeleton />
   }
 
   if (schoolError) {
     return (
-      <div className='flex w-full min-h-screen bg-gray-25'>
-        <div className='flex items-center justify-center flex-1'>
-          <div className='text-center'>
-            <p className='text-sm text-red-600'>Error loading school data</p>
-          </div>
-        </div>
+      <div className='flex items-center justify-center flex-1'>
+        <p className='text-sm text-red-600'>Error loading school data</p>
       </div>
     )
   }
 
   return (
-    <SidebarProvider>
-      <div className='flex w-full min-h-screen bg-gray-25'>
-        <AppSidebar userRole={userRole} userName={userName} />
+    <>
+      {/* Page Header */}
+      <div className='mb-8'>
+        <h1 className='mb-2 text-2xl font-semibold tracking-tight text-gray-900'>
+          {userRole === 'slp'
+            ? 'My Dashboard'
+            : currentSchool
+              ? `${currentSchool.name} Dashboard`
+              : 'Dashboard'}
+        </h1>
+        <p className='text-sm leading-relaxed text-gray-600'>
+          Welcome back, {userName}.
+          {userRole === 'slp'
+            ? ' Select a school and start managing screenings.'
+            : ' Start new assessments and manage your speech & language screenings.'}
+        </p>
+      </div>
 
-        <SidebarInset className='flex-1'>
-          <Header userRole={userRole} userName={userName} />
+      {/* Dashboard Content */}
+      <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8'>
+        <SchoolInfoCard
+          schoolName={schoolData.schoolName}
+          schoolPhone={schoolData.schoolPhone}
+          primarySLP={schoolData.primarySLP}
+          schoolTeam={schoolData.schoolTeam}
+          onAddMember={() => setIsAddMemberModalOpen(true)}
+          onEdit={() => setIsEditModalOpen(true)}
+          onEditMember={handleEditMember}
+          onDeleteMember={handleDeleteMember}
+        />
 
-          <main className='flex-1 px-6 py-8 pb-8'>
-            {/* Page Header */}
-            <div className='mb-8'>
-              <h1 className='mb-2 text-2xl font-semibold tracking-tight text-gray-900'>
-                {userRole === 'slp'
-                  ? 'My Dashboard'
-                  : currentSchool
-                    ? `${currentSchool.name} Dashboard`
-                    : 'Dashboard'}
-              </h1>
-              <p className='text-sm leading-relaxed text-gray-600'>
-                Welcome back, {userName}.
-                {userRole === 'slp'
-                  ? ' Select a school and start managing screenings.'
-                  : ' Start new assessments and manage your speech & language screenings.'}
-              </p>
-            </div>
+        <ActivityLogCard
+          activities={activities}
+          onAddActivity={() => setIsAddActivityModalOpen(true)}
+          onDeleteActivity={handleDeleteActivity}
+          onEditActivity={handleEditActivity}
+        />
 
-            {/* Dashboard Content */}
-            <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8'>
-              <SchoolInfoCard
-                schoolName={schoolData.schoolName}
-                schoolPhone={schoolData.schoolPhone}
-                primarySLP={schoolData.primarySLP}
-                schoolTeam={schoolData.schoolTeam}
-                onAddMember={() => setIsAddMemberModalOpen(true)}
-                onEdit={() => setIsEditModalOpen(true)}
-                onEditMember={handleEditMember}
-                onDeleteMember={handleDeleteMember}
-              />
-
-              <ActivityLogCard
-                activities={activities}
-                onAddActivity={() => setIsAddActivityModalOpen(true)}
-                onDeleteActivity={handleDeleteActivity}
-              />
-
-              {/* <QuickActions />
+        {/* <QuickActions />
                 <DashboardStats />
                 <RecentActivity /> */}
-            </div>
-          </main>
-        </SidebarInset>
       </div>
 
       {/* Modals */}
@@ -403,7 +405,7 @@ const DashboardContent = () => {
           isSaving={isSaving}
         />
       )}
-    </SidebarProvider>
+    </>
   )
 }
 

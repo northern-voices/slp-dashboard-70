@@ -179,3 +179,15 @@ export interface SchoolStaff {
   created_at: string
   updated_at: string
 }
+
+export interface Activity {
+  id: string
+  activity_type: string
+  activity_date: string
+  notes: string | null
+  created_at: string
+  creator: {
+    first_name: string
+    last_name: string
+  } | null
+}

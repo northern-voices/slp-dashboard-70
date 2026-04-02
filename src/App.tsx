@@ -9,6 +9,7 @@ import { OrganizationProvider } from '@/contexts/OrganizationContext'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import PublicRoute from '@/components/auth/PublicRoute'
 import SchoolRouter from '@/components/SchoolRouter'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 import Index from './pages/Index'
 import Students from './pages/Students'
 import StudentProfile from './pages/StudentProfile'
@@ -50,11 +51,11 @@ import { School } from 'lucide-react'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, // Prevents refetch on tab focus
-      refetchOnMount: true, // Allow refetch on component mount (needed for invalidation to work)
-      refetchOnReconnect: false, // Prevents refetch on network reconnect
-      staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
-      gcTime: 10 * 60 * 1000, // Cache data for 10 minutes
+      refetchOnWindowFocus: false,
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
     },
   },
 })
@@ -141,585 +142,480 @@ const App = () => (
                 {/* Logout Route */}
                 <Route path='/logout' element={<Logout />} />
 
-                {/* Redirect Routes - Auto-redirect to current school */}
-                <Route
-                  path='/screenings'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <Screenings />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/screening/speech'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <SpeechScreening />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/screening/rescreening'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <Rescreening />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/screening/rescreening/:studentId'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <Rescreening />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/screenings/hearing'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <HearingScreenings />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/screening/hearing'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <HearingScreening />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/edit-screening/:screeningId'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <EditScreening />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/edit-hearing-screening/:screeningId'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <EditHearingScreening />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/students'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <Students />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/students/:studentId'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <StudentProfile />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/students/:studentId/progress-check'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <MonthlyProgressCheck />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/students/:studentId/goal-sheet'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <GenerateGoalSheet />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                {/* Redirect /reports to /speech-screening-reports for consistency */}
+                {/* Redirect /reports to /speech-screening-reports */}
                 <Route
                   path='/reports'
                   element={<Navigate to='/speech-screening-reports' replace />}
                 />
-                <Route
-                  path='/speech-screening-reports'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <Reports />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/monthly-meetings'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <MonthlyMeetings />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/monthly-meetings/create'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <CreateMonthlyMeeting />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/monthly-meetings/edit/:meetingId'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <EditMonthlyMeeting />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/speech-screening-reports/school-wide-speech'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <SchoolWideReports />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/speech-screening-reports/school-wide-hearing'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <SchoolWideHearingReports />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/speech-screening-reports/speech'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <SpeechReports />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/speech-screening-reports/hearing'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <HearingReports />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/management'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <Management />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/profile'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <Profile />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/notifications'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <Notifications />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
 
-                {/* Protected Routes - All wrapped under school selection */}
+                {/* Protected Routes - All share the DashboardLayout */}
                 <Route
-                  path='/'
                   element={
                     <ProtectedRoute>
+                      <DashboardLayout />
+                    </ProtectedRoute>
+                  }>
+                  <Route
+                    path='/'
+                    element={
                       <SchoolRouter>
                         <Index />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
+                    }
+                  />
 
-                {/* School-based routes */}
-                <Route
-                  path='/school/:schoolId'
-                  element={
-                    <ProtectedRoute>
+                  {/* School-based routes */}
+                  <Route
+                    path='/school/:schoolId'
+                    element={
                       <SchoolRouter>
                         <Index />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/students'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/students'
+                    element={
                       <SchoolRouter>
                         <Students />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/students/:studentId'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/students/:studentId'
+                    element={
                       <SchoolRouter>
                         <StudentProfile />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/students/:studentId/progress-check'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/students/:studentId/progress-check'
+                    element={
                       <SchoolRouter>
                         <MonthlyProgressCheck />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/students/:studentId/goal-sheet'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/students/:studentId/goal-sheet'
+                    element={
                       <SchoolRouter>
                         <GenerateGoalSheet />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
+                    }
+                  />
 
-                {/* Screening Routes */}
-                <Route
-                  path='/school/:schoolId/screenings'
-                  element={
-                    <ProtectedRoute>
+                  {/* Screening Routes */}
+                  <Route
+                    path='/screenings'
+                    element={
                       <SchoolRouter>
                         <Screenings />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/screening/speech'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/screening/speech'
+                    element={
                       <SchoolRouter>
                         <SpeechScreening />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/screening/speech/:studentId'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <SpeechScreening />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/school/:schoolId/screening/rescreening'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/screening/rescreening'
+                    element={
                       <SchoolRouter>
                         <Rescreening />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/school/:schoolId/screening/rescreening/:studentId'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/screening/rescreening/:studentId'
+                    element={
                       <SchoolRouter>
                         <Rescreening />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/school/:schoolId/screenings/hearing'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/screenings/hearing'
+                    element={
                       <SchoolRouter>
                         <HearingScreenings />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/screening/hearing'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/screening/hearing'
+                    element={
                       <SchoolRouter>
                         <HearingScreening />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/screening/hearing/:studentId'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <HearingScreening />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/edit-screening/:screeningId'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/edit-screening/:screeningId'
+                    element={
                       <SchoolRouter>
                         <EditScreening />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/school/:schoolId/edit-hearing-screening/:screeningId'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/edit-hearing-screening/:screeningId'
+                    element={
                       <SchoolRouter>
                         <EditHearingScreening />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
+                    }
+                  />
 
-                {/* Drafts Route */}
-                <Route
-                  path='/school/:schoolId/drafts'
-                  element={
-                    <ProtectedRoute>
+                  <Route
+                    path='/school/:schoolId/screenings'
+                    element={
                       <SchoolRouter>
-                        <Drafts />
+                        <Screenings />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/screening/speech'
+                    element={
+                      <SchoolRouter>
+                        <SpeechScreening />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/screening/speech/:studentId'
+                    element={
+                      <SchoolRouter>
+                        <SpeechScreening />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/screening/rescreening'
+                    element={
+                      <SchoolRouter>
+                        <Rescreening />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/screening/rescreening/:studentId'
+                    element={
+                      <SchoolRouter>
+                        <Rescreening />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/screenings/hearing'
+                    element={
+                      <SchoolRouter>
+                        <HearingScreenings />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/screening/hearing'
+                    element={
+                      <SchoolRouter>
+                        <HearingScreening />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/screening/hearing/:studentId'
+                    element={
+                      <SchoolRouter>
+                        <HearingScreening />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/edit-screening/:screeningId'
+                    element={
+                      <SchoolRouter>
+                        <EditScreening />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/edit-hearing-screening/:screeningId'
+                    element={
+                      <SchoolRouter>
+                        <EditHearingScreening />
+                      </SchoolRouter>
+                    }
+                  />
 
-                <Route
-                  path='/school/:schoolId/speech-screening-reports'
-                  element={
-                    <ProtectedRoute>
+                  {/* Students */}
+                  <Route
+                    path='/students'
+                    element={
+                      <SchoolRouter>
+                        <Students />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/students/:studentId'
+                    element={
+                      <SchoolRouter>
+                        <StudentProfile />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/students/:studentId/progress-check'
+                    element={
+                      <SchoolRouter>
+                        <MonthlyProgressCheck />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/students/:studentId/goal-sheet'
+                    element={
+                      <SchoolRouter>
+                        <GenerateGoalSheet />
+                      </SchoolRouter>
+                    }
+                  />
+
+                  {/* Reports */}
+                  <Route
+                    path='/speech-screening-reports'
+                    element={
                       <SchoolRouter>
                         <Reports />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/monthly-meetings'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <MonthlyMeetings />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/monthly-meetings/create'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <CreateMonthlyMeeting />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/school/:schoolId/monthly-meetings/edit/:meetingId'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <EditMonthlyMeeting />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/school/:schoolId/speech-screening-reports/school-wide-hearing'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <SchoolWideHearingReports />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path='/school/:schoolId/speech-screening-reports/school-wide-speech'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/speech-screening-reports/school-wide-speech'
+                    element={
                       <SchoolRouter>
                         <SchoolWideReports />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/speech-screening-reports/speech'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/speech-screening-reports/school-wide-hearing'
+                    element={
+                      <SchoolRouter>
+                        <SchoolWideHearingReports />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/speech-screening-reports/speech'
+                    element={
                       <SchoolRouter>
                         <SpeechReports />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/speech-screening-reports/hearing'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/speech-screening-reports/hearing'
+                    element={
                       <SchoolRouter>
                         <HearingReports />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/management'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+
+                  <Route
+                    path='/school/:schoolId/speech-screening-reports'
+                    element={
+                      <SchoolRouter>
+                        <Reports />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/speech-screening-reports/school-wide-speech'
+                    element={
+                      <SchoolRouter>
+                        <SchoolWideReports />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/speech-screening-reports/school-wide-hearing'
+                    element={
+                      <SchoolRouter>
+                        <SchoolWideHearingReports />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/speech-screening-reports/speech'
+                    element={
+                      <SchoolRouter>
+                        <SpeechReports />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/speech-screening-reports/hearing'
+                    element={
+                      <SchoolRouter>
+                        <HearingReports />
+                      </SchoolRouter>
+                    }
+                  />
+
+                  {/* Monthly Meetings */}
+                  <Route
+                    path='/monthly-meetings'
+                    element={
+                      <SchoolRouter>
+                        <MonthlyMeetings />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/monthly-meetings/create'
+                    element={
+                      <SchoolRouter>
+                        <CreateMonthlyMeeting />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/monthly-meetings/edit/:meetingId'
+                    element={
+                      <SchoolRouter>
+                        <EditMonthlyMeeting />
+                      </SchoolRouter>
+                    }
+                  />
+
+                  <Route
+                    path='/school/:schoolId/monthly-meetings'
+                    element={
+                      <SchoolRouter>
+                        <MonthlyMeetings />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/monthly-meetings/create'
+                    element={
+                      <SchoolRouter>
+                        <CreateMonthlyMeeting />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/monthly-meetings/edit/:meetingId'
+                    element={
+                      <SchoolRouter>
+                        <EditMonthlyMeeting />
+                      </SchoolRouter>
+                    }
+                  />
+
+                  {/* Drafts */}
+                  <Route
+                    path='/school/:schoolId/drafts'
+                    element={
+                      <SchoolRouter>
+                        <Drafts />
+                      </SchoolRouter>
+                    }
+                  />
+
+                  {/* School Support */}
+                  <Route
+                    path='/school-support'
+                    element={
+                      <SchoolRouter>
+                        <SchoolSupport />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school-support/create'
+                    element={
+                      <SchoolRouter>
+                        <CreateSchoolSupportForm />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/school-support'
+                    element={
+                      <SchoolRouter>
+                        <SchoolSupport />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/school-support/create'
+                    element={
+                      <SchoolRouter>
+                        <CreateSchoolSupportForm />
+                      </SchoolRouter>
+                    }
+                  />
+
+                  {/* Management, Profile, Notifications */}
+                  <Route
+                    path='/management'
+                    element={
                       <SchoolRouter>
                         <Management />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/profile'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/profile'
+                    element={
                       <SchoolRouter>
                         <Profile />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/notifications'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/notifications'
+                    element={
                       <SchoolRouter>
                         <Notifications />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
+                    }
+                  />
 
-                {/* School Support Routes */}
-                <Route
-                  path='/school-support'
-                  element={
-                    <ProtectedRoute>
+                  <Route
+                    path='/school/:schoolId/management'
+                    element={
                       <SchoolRouter>
-                        <SchoolSupport />
+                        <Management />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school-support/create'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/profile'
+                    element={
                       <SchoolRouter>
-                        <CreateSchoolSupportForm />
+                        <Profile />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/school-support'
-                  element={
-                    <ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/notifications'
+                    element={
                       <SchoolRouter>
-                        <SchoolSupport />
+                        <Notifications />
                       </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path='/school/:schoolId/school-support/create'
-                  element={
-                    <ProtectedRoute>
-                      <SchoolRouter>
-                        <CreateSchoolSupportForm />
-                      </SchoolRouter>
-                    </ProtectedRoute>
-                  }
-                />
+                    }
+                  />
+                </Route>
 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path='*' element={<NotFound />} />

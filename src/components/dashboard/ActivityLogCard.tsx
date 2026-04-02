@@ -11,25 +11,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Calendar, Plus, FileText, Trash2, User } from 'lucide-react'
+import { Calendar, Plus, FileText, Trash2, User, Pencil } from 'lucide-react'
 import { parseDateSafely } from '@/utils/dateUtils'
-
-interface Activity {
-  id: string
-  activity_type: string
-  activity_date: string
-  notes: string | null
-  created_at: string
-  creator: {
-    first_name: string
-    last_name: string
-  } | null
-}
+import { Activity } from '@/types/database'
 
 interface ActivityLogCardProps {
   activities: Activity[]
   onAddActivity: () => void
   onDeleteActivity?: (activityId: string) => void
+  onEditActivity?: (
+    activityId: string,
+    updates: Partial<Pick<Activity, 'activity_type' | 'activity_date' | 'notes'>>
+  ) => void
 }
 
 const ACTIVITY_TYPE_LABELS: Record<string, string> = {
@@ -47,8 +40,11 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
   activities,
   onAddActivity,
   onDeleteActivity,
+  onEditActivity,
 }) => {
   const [activityToDeleteId, setActivityToDeleteId] = useState<string | null>(null)
+  const [activityToEdit, setActivityToEdit] = useState<Activity | null>(null)
+  const [editForm, setEditForm] = useState({ activity_type: '', activity_date: '', notes: '' })
 
   const formatDate = (dateString: string) => {
     console.log('--- Date Debug ---')
@@ -136,6 +132,24 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
                       <Trash2 className='w-4 h-4' />
                     </Button>
                   )}
+
+                  {onEditActivity && (
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      className='shrink-0 ml-2 h-8 w-8 p-0 text-gray-400 hover:text-blue-600 hover:bg-blue-50'
+                      onClick={() => {
+                        setActivityToEdit(activity)
+                        setEditForm({
+                          activity_type: activity.activity_type,
+                          activity_date: activity.activity_date,
+                          notes: activity.notes ?? '',
+                        })
+                      }}
+                      aria-label='Edit Activity'>
+                      <Pencil className='w-4 h-4' />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
@@ -178,6 +192,67 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
               }}
               className='bg-red-600 hover:bg-red-700'>
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!activityToEdit} onOpenChange={open => !open && setActivityToEdit(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Edit Activity</AlertDialogTitle>
+          </AlertDialogHeader>
+
+          <div className='space-y-3 py-2'>
+            <div>
+              <label className='text-xs font-medium text-gray-700'>Activity Type</label>
+              <select
+                className='mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm'
+                value={editForm.activity_type}
+                onChange={e => setEditForm(f => ({ ...f, activity_type: e.target.value }))}>
+                {Object.entries(ACTIVITY_TYPE_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className='text-xs font-medium text-gray-700'>Date</label>
+              <input
+                type='date'
+                className='mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm'
+                value={editForm.activity_date.slice(0, 10)}
+                onChange={e => setEditForm(f => ({ ...f, activity_date: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <label className='text-xs font-medium text-gray-700'>Notes</label>
+              <textarea
+                className='mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm'
+                rows={3}
+                value={editForm.notes}
+                onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setActivityToEdit(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (activityToEdit && onEditActivity) {
+                  onEditActivity(activityToEdit.id, {
+                    activity_type: editForm.activity_type,
+                    activity_date: editForm.activity_date,
+                    notes: editForm.notes || null,
+                  })
+                  setActivityToEdit(null)
+                }
+              }}>
+              Save
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

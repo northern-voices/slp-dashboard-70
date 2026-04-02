@@ -57,6 +57,8 @@ const Header = ({
     switch (role) {
       case 'admin':
         return 'Administrator'
+      case 'super_admin':
+        return 'Super Admin'
       case 'slp':
       default:
         return 'Speech-Language Pathologist'

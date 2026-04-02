@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { useDraft } from '@/hooks/use-draft'
+import { useForm, Controller, ControllerRenderProps } from 'react-hook-form'
 import { useParams, useNavigate } from 'react-router-dom'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import AppSidebar from '@/components/AppSidebar'
-import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -40,10 +37,7 @@ interface MeetingFormData {
   action_plan: string
 }
 
-interface DraftData {
-  formData: MeetingFormData
-  studentData: Record<string, { sessions_attended: number | null; meeting_notes: string }>
-}
+type StudentData = Record<string, { sessions_attended: number | null; meeting_notes: string }>
 
 const EditMonthlyMeetingContent = () => {
   const [showStudentModal, setShowStudentModal] = useState(false)
@@ -53,13 +47,17 @@ const EditMonthlyMeetingContent = () => {
   const [showRestoreDialog, setShowRestoreDialog] = useState(false)
   const [showLeaveDialog, setShowLeaveDialog] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
-  const [originalData, setOriginalData] = useState<DraftData | null>(null)
+  const [studentData, setStudentData] = useState<StudentData>({})
+  const [originalData, setOriginalData] = useState<{
+    formData: MeetingFormData
+    studentData: StudentData
+  } | null>(null)
 
   const navigate = useNavigate()
   const { toast } = useToast()
 
   const { meetingId } = useParams<{ meetingId: string }>()
-  const { userProfile, currentSchool } = useOrganization()
+  const { currentSchool } = useOrganization()
 
   const updateMonthlyMeeting = useUpdateMonthlyMeeting()
   const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
@@ -70,44 +68,52 @@ const EditMonthlyMeetingContent = () => {
 
   const draftKey = `monthly-meeting-edit-draft-${meetingId}`
   const {
-    data: draftData,
-    setData: setDraftData,
-    isDirty,
-    loadDraft,
-    clearDraft,
-  } = useDraft<DraftData>({
-    key: draftKey,
-    initialData: {
-      formData: {
-        meeting_title: '',
-        facilitator_id: user?.id || '',
-        attendees: [],
-        meeting_date: '',
-        additional_notes: '',
-        action_plan: '',
-      },
-      studentData: {},
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    formState: { isDirty },
+  } = useForm<MeetingFormData>({
+    defaultValues: {
+      meeting_title: '',
+      facilitator_id: user?.id || '',
+      attendees: [],
+      meeting_date: '',
+      additional_notes: '',
+      action_plan: '',
     },
   })
 
-  const formData = draftData.formData
-  const studentData = draftData.studentData
+  const watchedValues = watch()
 
-  // Wrapper helpers — keep the same call-site API as before
-  const setFormData = (updater: MeetingFormData | ((prev: MeetingFormData) => MeetingFormData)) => {
-    setDraftData(prev => ({
-      ...prev,
-      formData: typeof updater === 'function' ? updater(prev.formData) : updater,
-    }))
+  useEffect(() => {
+    if (isDirty) {
+      localStorage.setItem(draftKey, JSON.stringify({ formData: watchedValues, studentData }))
+    }
+  }, [watchedValues, studentData, isDirty, draftKey])
+
+  const loadDraft = () => {
+    const saved = localStorage.getItem(draftKey)
+
+    if (saved) {
+      const { formData, studentData: savedStudentData } = JSON.parse(saved)
+      reset(formData)
+      setStudentData(savedStudentData)
+    }
+    setShowRestoreDialog(false)
   }
 
-  const setStudentData = (
-    updater: typeof studentData | ((prev: typeof studentData) => typeof studentData)
-  ) => {
-    setDraftData(prev => ({
-      ...prev,
-      studentData: typeof updater === 'function' ? updater(prev.studentData) : updater,
-    }))
+  const clearDraft = () => {
+    localStorage.removeItem(draftKey)
+  }
+
+  const discardChanges = () => {
+    if (originalData) {
+      reset(originalData.formData)
+      setStudentData(originalData.studentData)
+      clearDraft()
+    }
   }
 
   // Fetch meeting data
@@ -125,11 +131,8 @@ const EditMonthlyMeetingContent = () => {
       action_plan: meetingData.action_plan || '',
     }
 
-    const fetchedStudentData: Record<
-      string,
-      { sessions_attended: number | null; meeting_notes: string }
-    > = {}
-    if (meetingData.student_updates && meetingData.student_updates.length > 0) {
+    const fetchedStudentData: StudentData = {}
+    if (meetingData.student_updates?.length > 0) {
       meetingData.student_updates.forEach(update => {
         fetchedStudentData[update.student_id] = {
           sessions_attended: update.sessions_attended,
@@ -138,16 +141,14 @@ const EditMonthlyMeetingContent = () => {
       })
     }
 
-    const fetched: DraftData = { formData: fetchedFormData, studentData: fetchedStudentData }
-
     const savedDraft = localStorage.getItem(draftKey)
     if (savedDraft) {
-      setOriginalData(fetched)
+      setOriginalData({ formData: fetchedFormData, studentData: fetchedStudentData })
       setShowRestoreDialog(true)
     } else {
-      setOriginalData(fetched)
-      setDraftData(fetched)
-      clearDraft()
+      setOriginalData({ formData: fetchedFormData, studentData: fetchedStudentData })
+      reset(fetchedFormData)
+      setStudentData(fetchedStudentData)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [meetingData])
@@ -164,87 +165,59 @@ const EditMonthlyMeetingContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isError])
 
-  const handleAddAttendee = () => {
-    const trimmedInput = attendeeInput.trim()
-    if (trimmedInput && !formData.attendees.includes(trimmedInput)) {
-      setFormData(prev => ({
-        ...prev,
-        attendees: [...prev.attendees, trimmedInput],
-      }))
+  const handleAttendeeKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    field: ControllerRenderProps<MeetingFormData, 'attendees'>
+  ) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      const trimmed = attendeeInput.trim()
+      if (trimmed && !field.value.includes(trimmed)) {
+        field.onChange([...field.value, trimmed])
+        setAttendeeInput('')
+      }
+    } else if (e.key === 'Backspace' && attendeeInput === '' && field.value.length > 0) {
+      field.onChange(field.value.slice(0, -1))
+    }
+  }
+
+  const handleAttendeeBlur = (field: ControllerRenderProps<MeetingFormData, 'attendees'>) => {
+    const trimmed = attendeeInput.trim()
+    if (trimmed && !field.value.includes(trimmed)) {
+      field.onChange([...field.value, trimmed])
       setAttendeeInput('')
     }
   }
 
-  const handleRemoveAttendee = (attendeeToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      attendees: prev.attendees.filter(attendee => attendee !== attendeeToRemove),
-    }))
-  }
-
-  const handleAttendeeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleAddAttendee()
-    } else if (e.key === 'Backspace' && attendeeInput === '' && formData.attendees.length > 0) {
-      const newAttendees = [...formData.attendees]
-      newAttendees.pop()
-      setFormData(prev => ({ ...prev, attendees: newAttendees }))
-    }
-  }
-
-  const userRole = userProfile?.role || 'slp'
-  const userName = userProfile
-    ? `${userProfile.first_name} ${userProfile.last_name}`
-    : 'Dr. Sarah Johnson'
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const onSubmit = async (data: MeetingFormData) => {
     setIsSubmitting(true)
 
-    if (!formData.meeting_title.trim()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Meeting title cannot be empty.',
-        variant: 'destructive',
-      })
-      setIsSubmitting(false)
-      return
-    }
-
-    if (formData.attendees.length === 0) {
+    if (data.attendees.length === 0) {
       toast({
         title: 'Validation Error',
         description: 'Please add at least one attendee.',
         variant: 'destructive',
       })
+
       setIsSubmitting(false)
       return
     }
 
     const student_updates = Object.entries(studentData)
-      .filter(([_, data]) => data.sessions_attended !== null || data.meeting_notes.trim() !== '')
-      .map(([student_id, data]) => ({
+      .filter(([_, d]) => d.sessions_attended !== null || d.meeting_notes.trim() !== '')
+      .map(([student_id, d]) => ({
         student_id,
-        sessions_attended: data.sessions_attended,
-        meeting_notes: data.meeting_notes.trim() || null,
+        sessions_attended: d.sessions_attended,
+        meeting_notes: d.meeting_notes.trim() || null,
       }))
 
     const submitData = {
-      meeting_title: formData.meeting_title.trim(),
-      meeting_date: formData.meeting_date,
-      attendees: formData.attendees,
-      facilitator_id: formData.facilitator_id || null,
-      additional_notes: formData.additional_notes.trim() || null,
-      action_plan: formData.action_plan.trim() || null,
+      meeting_title: data.meeting_title.trim(),
+      meeting_date: data.meeting_date,
+      attendees: data.attendees,
+      facilitator_id: data.facilitator_id || null,
+      additional_notes: data.additional_notes.trim() || null,
+      action_plan: data.action_plan.trim() || null,
       student_updates: student_updates.length > 0 ? student_updates : undefined,
     }
 
@@ -257,12 +230,9 @@ const EditMonthlyMeetingContent = () => {
             title: 'Monthly Meeting Updated',
             description: 'The monthly meeting has been successfully updated.',
           })
-
-          if (currentSchool?.id) {
-            navigate(`/school/${currentSchool.id}/monthly-meetings`)
-          } else {
-            navigate('/monthly-meetings')
-          }
+          navigate(
+            currentSchool?.id ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings'
+          )
           setIsSubmitting(false)
         },
         onError: error => {
@@ -304,76 +274,68 @@ const EditMonthlyMeetingContent = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className='flex w-full min-h-screen'>
-        <AppSidebar />
-        <SidebarInset>
-          <Header userRole={userRole} userName={userName} />
-          <div className='flex-1 p-4 bg-gray-25 md:p-6 lg:p-8'>
-            <div className='max-w-4xl mx-auto'>
-              <div className='flex items-center gap-4 mb-6'>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={handleCancel}
-                  className='text-gray-600 hover:text-gray-900'>
-                  <ChevronLeft className='w-4 h-4 mr-1' />
-                  Back to Monthly Meetings
-                </Button>
-                <div className='w-px h-4 bg-gray-300' />
-                <h1 className='text-2xl font-semibold text-gray-900'>Edit Monthly Meeting</h1>
-              </div>
+    <>
+      <div className='flex-1 p-4 bg-gray-25 md:p-6 lg:p-8'>
+        <div className='max-w-4xl mx-auto'>
+          <div className='flex items-center gap-4 mb-6'>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={handleCancel}
+              className='text-gray-600 hover:text-gray-900'>
+              <ChevronLeft className='w-4 h-4 mr-1' />
+              Back to Monthly Meetings
+            </Button>
+            <div className='w-px h-4 bg-gray-300' />
+            <h1 className='text-2xl font-semibold text-gray-900'>Edit Monthly Meeting</h1>
+          </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className='flex items-center gap-2'>
-                    <Calendar className='w-5 h-5 text-blue-600' />
-                    Meeting Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className='flex items-center justify-center py-16'>
-                      <div className='text-center'>
-                        <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin'></div>
-                        <p className='text-sm text-gray-600'>Loading meeting data...</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <Calendar className='w-5 h-5 text-blue-600' />
+                Meeting Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className='flex items-center justify-center py-16'>
+                  <div className='text-center'>
+                    <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin'></div>
+                    <p className='text-sm text-gray-600'>Loading meeting data...</p>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+                  <div className='space-y-4'>
+                    <div className='grid grid-cols-3 gap-4'>
+                      <div className='col-span-2 space-y-2'>
+                        <Label htmlFor='meeting_title'>Meeting Title *</Label>
+                        <Input
+                          id='meeting_title'
+                          {...register('meeting_title', { required: true })}
+                          placeholder='e.g., October Monthly Progress Review'
+                        />
+                      </div>
+                      <div className='space-y-2'>
+                        <Label htmlFor='meeting_date'>Date *</Label>
+                        <Input
+                          id='meeting_date'
+                          type='date'
+                          {...register('meeting_date', { required: true })}
+                        />
                       </div>
                     </div>
-                  ) : (
-                    <form onSubmit={handleSubmit} className='space-y-6'>
-                      <div className='space-y-4'>
-                        <div className='grid grid-cols-3 gap-4'>
-                          <div className='col-span-2 space-y-2'>
-                            <Label htmlFor='meeting_title'>Meeting Title *</Label>
-                            <Input
-                              id='meeting_title'
-                              name='meeting_title'
-                              value={formData.meeting_title}
-                              onChange={handleInputChange}
-                              placeholder='e.g., October Monthly Progress Review'
-                              required
-                            />
-                          </div>
-                          <div className='space-y-2'>
-                            <Label htmlFor='meeting_date'>Date *</Label>
-                            <Input
-                              id='meeting_date'
-                              name='meeting_date'
-                              type='date'
-                              value={formData.meeting_date}
-                              onChange={handleInputChange}
-                              required
-                            />
-                          </div>
-                        </div>
 
-                        <div className='space-y-2'>
-                          <Label htmlFor='facilitator_id'>Meeting Facilitator</Label>
+                    <div className='space-y-2'>
+                      <Label htmlFor='facilitator_id'>Meeting Facilitator</Label>
+                      <Controller
+                        name='facilitator_id'
+                        control={control}
+                        render={({ field }) => (
                           <Select
-                            value={formData.facilitator_id}
-                            onValueChange={value =>
-                              setFormData(prev => ({ ...prev, facilitator_id: value }))
-                            }
+                            value={field.value}
+                            onValueChange={field.onChange}
                             disabled={isLoadingUsers}>
                             <SelectTrigger>
                               <SelectValue
@@ -388,10 +350,16 @@ const EditMonthlyMeetingContent = () => {
                               ))}
                             </SelectContent>
                           </Select>
-                        </div>
+                        )}
+                      />
+                    </div>
 
-                        <div className='space-y-2'>
-                          <Label htmlFor='attendees'>Attendees *</Label>
+                    <div className='space-y-2'>
+                      <Label htmlFor='attendees'>Attendees *</Label>
+                      <Controller
+                        name='attendees'
+                        control={control}
+                        render={({ field }) => (
                           <div
                             className={cn(
                               'min-h-[42px] w-full rounded-md border border-input bg-background',
@@ -399,7 +367,7 @@ const EditMonthlyMeetingContent = () => {
                               'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
                             )}>
                             <div className='flex flex-wrap gap-2'>
-                              {formData.attendees.map((attendee, index) => (
+                              {field.value.map((attendee, index) => (
                                 <Badge
                                   key={index}
                                   variant='secondary'
@@ -407,141 +375,132 @@ const EditMonthlyMeetingContent = () => {
                                   <span>{attendee}</span>
                                   <button
                                     type='button'
-                                    onClick={() => handleRemoveAttendee(attendee)}
+                                    onClick={() =>
+                                      field.onChange(field.value.filter(a => a !== attendee))
+                                    }
                                     className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
                                     <X className='w-3 h-3' />
                                   </button>
                                 </Badge>
                               ))}
-
                               <input
                                 type='text'
                                 id='attendees'
                                 value={attendeeInput}
                                 onChange={e => setAttendeeInput(e.target.value)}
-                                onKeyDown={handleAttendeeKeyDown}
-                                onBlur={handleAddAttendee}
+                                onKeyDown={e => handleAttendeeKeyDown(e, field)}
+                                onBlur={() => handleAttendeeBlur(field)}
                                 placeholder={
-                                  formData.attendees.length === 0 ? 'Type name and press Enter' : ''
+                                  field.value.length === 0 ? 'Type name and press Enter' : ''
                                 }
                                 className='flex-1 min-w-[120px] outline-none bg-transparent'
                               />
                             </div>
                           </div>
-                          <p className='text-sm text-gray-500'>
-                            Type a name and press Enter to add. Click the × or hit Backspace to
-                            remove.
-                          </p>
-                        </div>
+                        )}
+                      />
+                      <p className='text-sm text-gray-500'>
+                        Type a name and press Enter to add. Click the × or hit Backspace to remove.
+                      </p>
+                    </div>
 
-                        {/* Students Table Section */}
-                        <div className='space-y-2'>
-                          <Label>Students</Label>
-                          <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
-                            <MonthlyMeetingsStudentTable
-                              students={students}
-                              isLoading={isLoadingStudents}
-                              studentData={studentData}
-                              onStudentClick={student => {
-                                setSelectedStudent(student)
-                                setShowStudentModal(true)
-                              }}
-                              hasStudentData={hasStudentData}
-                            />
-                          </div>
-                        </div>
-
-                        <div className='space-y-2'>
-                          <Label htmlFor='additional_notes'>Additional Notes</Label>
-                          <Textarea
-                            id='additional_notes'
-                            name='additional_notes'
-                            value={formData.additional_notes}
-                            onChange={handleInputChange}
-                            placeholder='Additional notes to be added...'
-                            rows={4}
-                          />
-                        </div>
-
-                        <div className='space-y-2'>
-                          <Label htmlFor='action_plan'>Action Plan</Label>
-                          <Textarea
-                            id='action_plan'
-                            name='action_plan'
-                            value={formData.action_plan}
-                            onChange={handleInputChange}
-                            placeholder='Action plan and next steps...'
-                            rows={4}
-                          />
-                        </div>
+                    {/* Students Table Section */}
+                    <div className='space-y-2'>
+                      <Label>Students</Label>
+                      <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
+                        <MonthlyMeetingsStudentTable
+                          students={students}
+                          isLoading={isLoadingStudents}
+                          studentData={studentData}
+                          onStudentClick={student => {
+                            setSelectedStudent(student)
+                            setShowStudentModal(true)
+                          }}
+                          hasStudentData={hasStudentData}
+                        />
                       </div>
+                    </div>
 
-                      <div className='flex justify-between pt-4'>
-                        <div>
-                          {isDirty && (
-                            <Button
-                              type='button'
-                              variant='ghost'
-                              onClick={() => {
-                                if (originalData) {
-                                  // Reset to API data, not empty initialData
-                                  setDraftData(originalData)
-                                  clearDraft()
-                                }
-                                toast({
-                                  title: 'Draft Discarded',
-                                  description: 'Your changes have been discarded.',
-                                })
-                              }}
-                              disabled={isSubmitting}
-                              className='text-red-600 hover:text-red-700 hover:bg-red-50'>
-                              Discard Changes
-                            </Button>
-                          )}
-                        </div>
-                        <div className='flex gap-3'>
-                          <Button
-                            type='button'
-                            variant='outline'
-                            onClick={handleCancel}
-                            disabled={isSubmitting}>
-                            Cancel
-                          </Button>
-                          <Button
-                            type='submit'
-                            className='bg-blue-600 hover:bg-blue-700'
-                            disabled={isSubmitting}>
-                            {isSubmitting ? 'Updating...' : 'Update Meeting'}
-                          </Button>
-                        </div>
-                      </div>
-                    </form>
-                  )}
-                </CardContent>
-              </Card>
+                    <div className='space-y-2'>
+                      <Label htmlFor='additional_notes'>Additional Notes</Label>
+                      <Textarea
+                        id='additional_notes'
+                        {...register('additional_notes')}
+                        placeholder='Additional notes to be added...'
+                        rows={4}
+                      />
+                    </div>
 
-              {/* Student Details Modal */}
-              <StudentDetailsModal
-                open={showStudentModal}
-                onClose={() => {
-                  setShowStudentModal(false)
-                  setSelectedStudent(null)
-                }}
-                selectedStudent={selectedStudent}
-                studentData={studentData}
-                setStudentData={setStudentData}
-                meetingId={meetingId}
-              />
-            </div>
-          </div>
-        </SidebarInset>
+                    <div className='space-y-2'>
+                      <Label htmlFor='action_plan'>Action Plan</Label>
+                      <Textarea
+                        id='action_plan'
+                        {...register('action_plan')}
+                        placeholder='Action plan and next steps...'
+                        rows={4}
+                      />
+                    </div>
+                  </div>
+
+                  <div className='flex justify-between pt-4'>
+                    <div>
+                      {isDirty && (
+                        <Button
+                          type='button'
+                          variant='ghost'
+                          onClick={() => {
+                            discardChanges()
+                            toast({
+                              title: 'Draft Discarded',
+                              description: 'Your changes have been discarded.',
+                            })
+                          }}
+                          disabled={isSubmitting}
+                          className='text-red-600 hover:text-red-700 hover:bg-red-50'>
+                          Discard Changes
+                        </Button>
+                      )}
+                    </div>
+                    <div className='flex gap-3'>
+                      <Button
+                        type='button'
+                        variant='outline'
+                        onClick={handleCancel}
+                        disabled={isSubmitting}>
+                        Cancel
+                      </Button>
+                      <Button
+                        type='submit'
+                        className='bg-blue-600 hover:bg-blue-700'
+                        disabled={isSubmitting}>
+                        {isSubmitting ? 'Updating...' : 'Update Meeting'}
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Student Details Modal */}
+          <StudentDetailsModal
+            open={showStudentModal}
+            onClose={() => {
+              setShowStudentModal(false)
+              setSelectedStudent(null)
+            }}
+            selectedStudent={selectedStudent}
+            studentData={studentData}
+            setStudentData={setStudentData}
+            meetingId={meetingId}
+          />
+        </div>
       </div>
 
       <DraftRestoreDialog
         open={showRestoreDialog}
         onRestore={() => {
           loadDraft()
-          setShowRestoreDialog(false)
           toast({
             title: 'Draft Restored',
             description: 'Your previous changes have been restored.',
@@ -549,7 +508,8 @@ const EditMonthlyMeetingContent = () => {
         }}
         onDiscard={() => {
           if (originalData) {
-            setDraftData(originalData)
+            reset(originalData.formData)
+            setStudentData(originalData.studentData)
             clearDraft()
           }
           setShowRestoreDialog(false)
@@ -561,7 +521,7 @@ const EditMonthlyMeetingContent = () => {
         onKeepEditing={() => setShowLeaveDialog(false)}
         onLeave={confirmLeave}
       />
-    </SidebarProvider>
+    </>
   )
 }
 
