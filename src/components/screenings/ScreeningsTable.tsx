@@ -84,6 +84,8 @@ const ScreeningsTable = ({
   const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
   const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
 
   const navigate = useNavigate()
 
@@ -175,6 +177,30 @@ const ScreeningsTable = ({
     gradesMap,
     isLoadingGrades,
   })
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [
+    searchTerm,
+    resultFilter,
+    dateRangeFilter,
+    gradeFilter,
+    sortField,
+    sortOrder,
+    qualifiesForSpeechProgramFilter,
+    vocabularySupportFilter,
+    casFilter,
+    recommendationsFilter,
+    clinicalNotesFilter,
+    languageComprehensionFilter,
+    priorityRescreenFilter,
+  ])
+
+  const totalPages = Math.max(1, Math.ceil(sortedScreenings.length / pageSize))
+  const paginatedScreenings = sortedScreenings.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
 
   const getSortIcon = (field: 'date' | 'name' | 'grade') => {
     if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
@@ -323,7 +349,7 @@ const ScreeningsTable = ({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedScreenings(filteredScreenings)
+      setSelectedScreenings(paginatedScreenings)
     } else {
       setSelectedScreenings([])
     }
@@ -614,7 +640,8 @@ const ScreeningsTable = ({
   }
 
   const isAllSelected =
-    filteredScreenings.length > 0 && selectedScreenings.length === filteredScreenings.length
+    paginatedScreenings.length > 0 &&
+    paginatedScreenings.every(s => selectedScreenings.some(sel => sel.id === s.id))
   const isSomeSelected = selectedScreenings.length > 0
 
   if (isLoading) {
