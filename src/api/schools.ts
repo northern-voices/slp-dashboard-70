@@ -27,8 +27,6 @@ export const schoolsApi = {
   getSchools: async (): Promise<School[]> => {
     const { data, error } = await supabase.from('schools').select('*').order('name')
 
-    console.log(data, 'schools data')
-
     if (error) {
       throw error
     }
