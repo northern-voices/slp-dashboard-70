@@ -84,6 +84,8 @@ const ScreeningsTable = ({
   const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
   const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
 
   const navigate = useNavigate()
 
@@ -102,8 +104,13 @@ const ScreeningsTable = ({
     error: errorSchool,
   } = useScreeningsBySchool(
     currentSchool?.id,
-    dateRangeFilter === 'school_year' ? 'school_year' : 'all'
+    dateRangeFilter === 'school_year' ? 'school_year' : 'all',
+    currentPage,
+    pageSize
   )
+
+  const totalCount = schoolScreeningsData?.totalCount ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
   // Use mutation hooks
   const { mutate: updateSpeechScreening } = useUpdateSpeechScreening()
@@ -141,14 +148,12 @@ const ScreeningsTable = ({
     setStudentsMap(studentsMapping)
   }, [currentSchool?.id, students])
 
-  // Determine which data to use based on whether a school is selected
-  const allScreenings = currentSchool ? schoolScreeningsData : allScreeningsData
   const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
-  const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
   const error = currentSchool ? errorSchool : errorAll
 
-  // No need to filter anymore since we're fetching school-specific data
-  const schoolScreenings = allScreenings || []
+  const schoolScreenings = currentSchool
+    ? (schoolScreeningsData?.screenings ?? [])
+    : (allScreeningsData ?? [])
 
   const {
     filteredScreenings,
@@ -175,6 +180,26 @@ const ScreeningsTable = ({
     gradesMap,
     isLoadingGrades,
   })
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [
+    searchTerm,
+    resultFilter,
+    dateRangeFilter,
+    gradeFilter,
+    sortField,
+    sortOrder,
+    qualifiesForSpeechProgramFilter,
+    vocabularySupportFilter,
+    casFilter,
+    recommendationsFilter,
+    clinicalNotesFilter,
+    languageComprehensionFilter,
+    priorityRescreenFilter,
+  ])
+
+  const paginatedScreenings = sortedScreenings
 
   const getSortIcon = (field: 'date' | 'name' | 'grade') => {
     if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
@@ -323,7 +348,7 @@ const ScreeningsTable = ({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedScreenings(filteredScreenings)
+      setSelectedScreenings(paginatedScreenings)
     } else {
       setSelectedScreenings([])
     }
@@ -614,7 +639,8 @@ const ScreeningsTable = ({
   }
 
   const isAllSelected =
-    filteredScreenings.length > 0 && selectedScreenings.length === filteredScreenings.length
+    paginatedScreenings.length > 0 &&
+    paginatedScreenings.every(s => selectedScreenings.some(sel => sel.id === s.id))
   const isSomeSelected = selectedScreenings.length > 0
 
   if (isLoading) {
@@ -695,7 +721,7 @@ const ScreeningsTable = ({
             </TableHeader>
 
             <TableBody>
-              {sortedScreenings.map(screening => (
+              {paginatedScreenings.map(screening => (
                 <ScreeningTableRow
                   key={screening.id}
                   screening={screening}
@@ -720,6 +746,52 @@ const ScreeningsTable = ({
             </div>
           )}
         </div>
+
+        {totalCount > 0 && (
+          <div className='flex items-center justify-between px-2 py-3'>
+            <div className='flex items-center gap-2 text-sm text-gray-600'>
+              <span>Rows per page:</span>
+              <Select
+                value={String(pageSize)}
+                onValueChange={val => {
+                  setPageSize(Number(val))
+                  setCurrentPage(1)
+                }}>
+                <SelectTrigger className='w-20 h-8'>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[10, 25, 50, 100].map(size => (
+                    <SelectItem key={size} value={String(size)}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className='flex items-center gap-1 text-sm text-gray-600'>
+              <span>
+                {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalCount)} of{' '}
+                {totalCount}
+              </span>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}>
+                <ChevronUp className='w-4 h-4 rotate-[-90deg]' />
+              </Button>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}>
+                <ChevronDown className='w-4 h-4 rotate-[-90deg]' />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <ScreeningDetailsModal

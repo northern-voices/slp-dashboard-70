@@ -25,7 +25,9 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
     error: errorSchool,
   } = useScreeningsBySchool(currentSchool?.id, 'school_year')
 
-  const schoolScreenings = currentSchool ? schoolScreeningsData || [] : allScreeningsData || []
+  const schoolScreenings = currentSchool
+    ? (schoolScreeningsData?.screenings ?? [])
+    : (allScreeningsData ?? [])
   const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
   const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
   const error = currentSchool ? errorSchool : errorAll

@@ -19,7 +19,11 @@ interface RawSpeechScreening {
   created_at: string
   updated_at: string
   students: {
-    schools: string
+    schools: {
+      id: string
+      name: string
+      organization_id: string
+    } | null
     id: string
     first_name: string
     last_name: string
@@ -37,6 +41,14 @@ interface RawSpeechScreening {
     first_name: string
     last_name: string
   } | null
+}
+
+const mapProgramStatus = (
+  raw?: 'none' | 'qualifies' | 'not_in_program' | 'sub' | 'pause' | 'graduated'
+): 'none' | 'qualified' | 'not_in_program' | 'sub' | 'paused' | 'graduated' | 'no_consent' => {
+  if (raw === 'qualifies') return 'qualified'
+  if (raw === 'pause') return 'paused'
+  return raw || 'none'
 }
 
 // Helper function to get user's organization schools
@@ -61,7 +73,7 @@ export const speechScreeningsApi = {
   getSpeechScreeningsList: async (
     currentUserId?: string,
     userRole?: UserRole,
-    organizationId?: string,
+    organizationId?: string
   ): Promise<Screening[]> => {
     try {
       // Get organization schools if organizationId is provided
@@ -72,7 +84,7 @@ export const speechScreeningsApi = {
       }
 
       // Build base query
-      let query = supabase.from('speech_screenings').select(
+      const query = supabase.from('speech_screenings').select(
         `
           *,
           students (
@@ -97,7 +109,7 @@ export const speechScreeningsApi = {
             first_name,
             last_name
           )
-        `,
+        `
       )
 
       // Apply filters based on user role
@@ -118,11 +130,11 @@ export const speechScreeningsApi = {
       // If organization schools are specified, check if any are missing from the main query
       if (organizationSchoolIds.length > 0) {
         const presentSchoolIds = new Set(
-          (data || []).map((s: RawSpeechScreening) => s.students?.school_id).filter(Boolean),
+          (data || []).map((s: RawSpeechScreening) => s.students?.school_id).filter(Boolean)
         )
 
         const missingSchoolIds = organizationSchoolIds.filter(
-          schoolId => !presentSchoolIds.has(schoolId),
+          schoolId => !presentSchoolIds.has(schoolId)
         )
 
         // If any organization schools are missing, fetch them specifically
@@ -154,7 +166,7 @@ export const speechScreeningsApi = {
                 first_name,
                 last_name
               )
-            `,
+            `
             )
             .in('students.school_id', missingSchoolIds)
             .order('created_at', { ascending: false })
@@ -164,7 +176,7 @@ export const speechScreeningsApi = {
           if (!targetError && targetData && targetData.length > 0) {
             // Merge the targeted data with the main data
             const mergedData = [...(data || []), ...targetData]
-            data = mergedData as any[]
+            data = mergedData as RawSpeechScreening[]
           }
         }
       }
@@ -197,13 +209,13 @@ export const speechScreeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',
-        program_status: screening.students?.program_status || 'none',
+        program_status: mapProgramStatus(screening.students?.program_status),
       }))
 
       // Filter by organization schools if provided
       if (organizationSchoolIds.length > 0) {
         return transformedData.filter(screening =>
-          organizationSchoolIds.includes(screening.school_id),
+          organizationSchoolIds.includes(screening.school_id)
         )
       }
 
@@ -217,11 +229,11 @@ export const speechScreeningsApi = {
   getSpeechScreeningsByStudent: async (
     studentId: string,
     currentUserId?: string,
-    userRole?: UserRole,
+    userRole?: UserRole
   ): Promise<Screening[]> => {
     try {
       // Build base query for specific student
-      let query = supabase
+      const query = supabase
         .from('speech_screenings')
         .select(
           `
@@ -248,7 +260,7 @@ export const speechScreeningsApi = {
             first_name,
             last_name
           )
-        `,
+        `
         )
         .eq('student_id', studentId)
 
@@ -290,7 +302,7 @@ export const speechScreeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',
-        program_status: screening.students?.program_status || 'none',
+        program_status: mapProgramStatus(screening.students?.program_status),
       }))
 
       return transformedData
@@ -302,7 +314,7 @@ export const speechScreeningsApi = {
 
   getSpeechScreeningById: async (
     screeningId: string,
-    organizationId?: string,
+    organizationId?: string
   ): Promise<Screening | null> => {
     try {
       const { data, error } = await supabase
@@ -333,7 +345,7 @@ export const speechScreeningsApi = {
             first_name,
             last_name
           )
-        `,
+        `
         )
         .eq('id', screeningId)
         .single()
@@ -352,7 +364,7 @@ export const speechScreeningsApi = {
 
       // Validate organization access if organizationId is provided
       if (organizationId && screening.students?.schools) {
-        const screeningOrgId = (screening.students.schools as any).organization_id
+        const screeningOrgId = screening.students.schools.organization_id
         if (screeningOrgId !== organizationId) {
           // Screening belongs to a different organization - deny access
           console.warn('Access denied: Screening belongs to a different organization')
@@ -388,7 +400,7 @@ export const speechScreeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',
-        program_status: screening.students?.program_status || 'none',
+        program_status: mapProgramStatus(screening.students?.program_status),
       }
 
       return transformedScreening
@@ -451,7 +463,7 @@ export const speechScreeningsApi = {
           first_name,
           last_name
         )
-      `,
+      `
         )
         .single()
 
@@ -501,7 +513,7 @@ export const speechScreeningsApi = {
         grade_id: newScreening.grade_id,
         screener_id: newScreening.screener_id,
         academic_year: newScreening.school_grades?.academic_year || '',
-        program_status: newScreening.students?.program_status || 'none',
+        program_status: mapProgramStatus(newScreening.students?.program_status),
       }
 
       return transformedScreening
@@ -525,7 +537,7 @@ export const speechScreeningsApi = {
       suspected_cas: boolean
       clinical_notes: string | null
       referral_notes: string | null
-    }>,
+    }>
   ): Promise<Screening> => {
     try {
       const { data: updatedScreening, error } = await supabase
@@ -553,7 +565,7 @@ export const speechScreeningsApi = {
           first_name,
           last_name
         )
-      `,
+      `
         )
         .single()
 
@@ -593,7 +605,7 @@ export const speechScreeningsApi = {
         grade_id: updatedScreening.grade_id,
         screener_id: updatedScreening.screener_id,
         academic_year: updatedScreening.school_grades?.academic_year || '',
-        program_status: updatedScreening.students?.program_status || 'none',
+        program_status: mapProgramStatus(updatedScreening.students?.program_status),
       }
 
       return transformedScreening
@@ -619,7 +631,9 @@ export const speechScreeningsApi = {
     currentUserId?: string,
     userRole?: UserRole,
     dateFilter?: 'all' | 'school_year',
-  ): Promise<Screening[]> => {
+    page: number = 1,
+    pageSize: number = 50
+  ): Promise<{ data: Screening[]; totalCount: number }> => {
     try {
       // Calculate school year start date (September 1st)
       const currentDate = new Date()
@@ -663,6 +677,7 @@ export const speechScreeningsApi = {
             last_name
           )
         `,
+          { count: 'exact' }
         )
         .eq('students.school_id', schoolId)
 
@@ -677,7 +692,12 @@ export const speechScreeningsApi = {
       //   query = query.eq('screener_id', currentUserId)
       // }
 
-      const { data, error } = await query.order('created_at', { ascending: false })
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
+
+      const { data, error, count } = await query
+        .order('created_at', { ascending: false })
+        .range(from, to)
 
       if (error) throw error
 
@@ -709,10 +729,10 @@ export const speechScreeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',
-        program_status: screening.students?.program_status || 'none',
+        program_status: mapProgramStatus(screening.students?.program_status),
       }))
 
-      return transformedData
+      return { data: transformedData, totalCount: count ?? 0 }
     } catch (error) {
       console.error('Error fetching speech screenings by school:', error)
       throw error
