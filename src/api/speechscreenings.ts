@@ -19,7 +19,11 @@ interface RawSpeechScreening {
   created_at: string
   updated_at: string
   students: {
-    schools: string
+    schools: {
+      id: string
+      name: string
+      organization_id: string
+    } | null
     id: string
     first_name: string
     last_name: string
@@ -80,7 +84,7 @@ export const speechScreeningsApi = {
       }
 
       // Build base query
-      let query = supabase.from('speech_screenings').select(
+      const query = supabase.from('speech_screenings').select(
         `
           *,
           students (
@@ -172,7 +176,7 @@ export const speechScreeningsApi = {
           if (!targetError && targetData && targetData.length > 0) {
             // Merge the targeted data with the main data
             const mergedData = [...(data || []), ...targetData]
-            data = mergedData as any[]
+            data = mergedData as RawSpeechScreening[]
           }
         }
       }
@@ -229,7 +233,7 @@ export const speechScreeningsApi = {
   ): Promise<Screening[]> => {
     try {
       // Build base query for specific student
-      let query = supabase
+      const query = supabase
         .from('speech_screenings')
         .select(
           `
@@ -360,7 +364,7 @@ export const speechScreeningsApi = {
 
       // Validate organization access if organizationId is provided
       if (organizationId && screening.students?.schools) {
-        const screeningOrgId = (screening.students.schools as any).organization_id
+        const screeningOrgId = screening.students.schools.organization_id
         if (screeningOrgId !== organizationId) {
           // Screening belongs to a different organization - deny access
           console.warn('Access denied: Screening belongs to a different organization')
