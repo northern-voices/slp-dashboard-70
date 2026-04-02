@@ -15,7 +15,7 @@ export const useScreenings = () => {
       screeningsApi.getScreeningsList(
         user?.id,
         userProfile?.role as UserRole,
-        currentOrganization?.id,
+        currentOrganization?.id
       ),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
@@ -42,12 +42,12 @@ export const useRecentScreeningsBySchool = (schoolId?: string, days: number = 7)
 
       const recentSpeech = speechScreenings.filter(
         screening =>
-          screening.school_id === schoolId && new Date(screening.created_at) >= cutoffDate,
+          screening.school_id === schoolId && new Date(screening.created_at) >= cutoffDate
       )
 
       const recentHearing = hearingScreenings.filter(
         screening =>
-          screening.school_id === schoolId && new Date(screening.created_at) >= cutoffDate,
+          screening.school_id === schoolId && new Date(screening.created_at) >= cutoffDate
       )
 
       return recentSpeech.length + recentHearing.length
@@ -58,30 +58,46 @@ export const useRecentScreeningsBySchool = (schoolId?: string, days: number = 7)
   })
 }
 
-export const useScreeningsBySchool = (schoolId?: string, dateFilter?: 'all' | 'school_year') => {
+export const useScreeningsBySchool = (
+  schoolId?: string,
+  dateFilter?: 'all' | 'school_year',
+  page: number = 1,
+  pageSize: number = 50
+) => {
   const { user } = useAuth()
   const { userProfile } = useOrganization()
 
   return useQuery({
-    queryKey: ['screenings', 'by-school', schoolId, user?.id, userProfile?.role, dateFilter],
+    queryKey: [
+      'screenings',
+      'by-school',
+      schoolId,
+      user?.id,
+      userProfile?.role,
+      dateFilter,
+      page,
+      pageSize,
+    ],
     queryFn: async () => {
-      if (!schoolId) return []
+      if (!schoolId) return { screenings: [], totalCount: 0 }
 
       // Fetch speech screenings for the school with date filter
       const speechScreenings = await speechScreeningsApi.getSpeechScreeningsBySchool(
         schoolId,
         user?.id,
         userProfile?.role as UserRole,
-        dateFilter || 'school_year', // Default to school_year if not provided
+        dateFilter || 'school_year',
+        page,
+        pageSize
       )
 
       // Add source table information
-      const allScreenings = speechScreenings.map(screening => ({
+      const allScreenings = speechScreenings.data.map(screening => ({
         ...screening,
         source_table: 'speech' as const,
       }))
 
-      return allScreenings
+      return { screenings: allScreenings, totalCount: speechScreenings.totalCount }
     },
     staleTime: 30 * 60 * 1000, // 30 minutes - keep cached data longer
     gcTime: 60 * 60 * 1000, // 60 minutes - keep in cache longer
@@ -99,7 +115,7 @@ export const useSpeechScreeningsByStudent = (studentId?: string) => {
       speechScreeningsApi.getSpeechScreeningsByStudent(
         studentId!,
         user?.id,
-        userProfile?.role as UserRole,
+        userProfile?.role as UserRole
       ),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -119,12 +135,12 @@ export const useScreeningsByStudent = (studentId?: string) => {
         speechScreeningsApi.getSpeechScreeningsByStudent(
           studentId!,
           user?.id,
-          userProfile?.role as UserRole,
+          userProfile?.role as UserRole
         ),
         screeningsApi.getHearingScreeningsByStudent(
           studentId!,
           user?.id,
-          userProfile?.role as UserRole,
+          userProfile?.role as UserRole
         ),
       ])
 
@@ -136,7 +152,7 @@ export const useScreeningsByStudent = (studentId?: string) => {
 
       // Sort by date
       allScreenings.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )
 
       return allScreenings

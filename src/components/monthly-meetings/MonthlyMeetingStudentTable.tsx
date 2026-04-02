@@ -52,7 +52,8 @@ const MonthlyMeetingsStudentTable = ({
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
 
   // Fetch screenings for the current school to filter students
-  const { data: schoolScreenings = [] } = useScreeningsBySchool(currentSchool?.id, 'all')
+  const { data: schoolScreeningsData } = useScreeningsBySchool(currentSchool?.id, 'all')
+  const schoolScreenings = schoolScreeningsData?.screenings ?? []
 
   // Create a Set of student IDs who have at least one screening
   const studentsWithScreenings = useMemo(() => {

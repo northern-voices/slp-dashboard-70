@@ -15,8 +15,11 @@ const ScreeningsContent = () => {
 
   const { data: allScreeningsData } = useScreenings()
   const { data: schoolScreeningsData } = useScreeningsBySchool(currentSchool?.id, 'all')
+  const schoolScreenings = schoolScreeningsData?.screenings ?? []
 
-  const screeningsForYears = currentSchool ? schoolScreeningsData || [] : allScreeningsData || []
+  const screeningsForYears = currentSchool
+    ? (schoolScreeningsData?.screenings ?? [])
+    : (allScreeningsData ?? [])
 
   const availableSchoolYears = useMemo(() => {
     const years = new Set<string>()
