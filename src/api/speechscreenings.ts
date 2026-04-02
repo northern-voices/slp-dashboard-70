@@ -39,6 +39,14 @@ interface RawSpeechScreening {
   } | null
 }
 
+const mapProgramStatus = (
+  raw?: 'none' | 'qualifies' | 'not_in_program' | 'sub' | 'pause' | 'graduated'
+): 'none' | 'qualified' | 'not_in_program' | 'sub' | 'paused' | 'graduated' | 'no_consent' => {
+  if (raw === 'qualifies') return 'qualified'
+  if (raw === 'pause') return 'paused'
+  return raw || 'none'
+}
+
 // Helper function to get user's organization schools
 const getUserOrganizationSchools = async (organizationId: string): Promise<string[]> => {
   try {
@@ -197,7 +205,7 @@ export const speechScreeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',
-        program_status: screening.students?.program_status || 'none',
+        program_status: mapProgramStatus(screening.students?.program_status),
       }))
 
       // Filter by organization schools if provided
@@ -290,7 +298,7 @@ export const speechScreeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',
-        program_status: screening.students?.program_status || 'none',
+        program_status: mapProgramStatus(screening.students?.program_status),
       }))
 
       return transformedData
@@ -388,7 +396,7 @@ export const speechScreeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',
-        program_status: screening.students?.program_status || 'none',
+        program_status: mapProgramStatus(screening.students?.program_status),
       }
 
       return transformedScreening
@@ -501,7 +509,7 @@ export const speechScreeningsApi = {
         grade_id: newScreening.grade_id,
         screener_id: newScreening.screener_id,
         academic_year: newScreening.school_grades?.academic_year || '',
-        program_status: newScreening.students?.program_status || 'none',
+        program_status: mapProgramStatus(newScreening.students?.program_status),
       }
 
       return transformedScreening
@@ -593,7 +601,7 @@ export const speechScreeningsApi = {
         grade_id: updatedScreening.grade_id,
         screener_id: updatedScreening.screener_id,
         academic_year: updatedScreening.school_grades?.academic_year || '',
-        program_status: updatedScreening.students?.program_status || 'none',
+        program_status: mapProgramStatus(updatedScreening.students?.program_status),
       }
 
       return transformedScreening
@@ -717,7 +725,7 @@ export const speechScreeningsApi = {
         grade_id: screening.grade_id,
         screener_id: screening.screener_id,
         academic_year: screening.school_grades?.academic_year || '',
-        program_status: screening.students?.program_status || 'none',
+        program_status: mapProgramStatus(screening.students?.program_status),
       }))
 
       return { data: transformedData, totalCount: count ?? 0 }
