@@ -503,14 +503,18 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
             {paginatedStudents.map(student => (
               <TableRow
                 key={student.id}
-                className='transition-colors cursor-pointer hover:bg-gray-50'
+                className='transition-colors cursor-pointer'
                 onClick={() => handleRowClick(student.id)}>
-                <TableCell className='p-4 font-medium'>
+                <TableCell className='p-4 font-medium group-hover:bg-gray-100 transition-colors'>
                   {student.first_name} {student.last_name}
                 </TableCell>
-                <TableCell className='p-4'>{getStudentGrade(student)}</TableCell>
-                <TableCell className='p-4'>{getQualificationBadge(student)}</TableCell>
-                <TableCell className='p-4'>
+                <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
+                  {getStudentGrade(student)}
+                </TableCell>
+                <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
+                  {getQualificationBadge(student)}
+                </TableCell>
+                <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
                   {parseDateSafely(student.created_at).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
