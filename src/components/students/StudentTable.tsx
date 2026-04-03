@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { School } from '@/types/database'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  ResponsiveTable,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableCell,
+} from '@/components/ui/responsive-table'
+import { TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { ChevronUp, ChevronDown, Plus, UserPlus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -475,73 +482,57 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       />
 
       {/* Students Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Students ({filteredStudents.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredStudents.length > 0 ? (
-            <div className='overflow-x-auto'>
-              <table className='w-full'>
-                <thead>
-                  <tr className='border-b'>
-                    <th className='p-4 font-medium text-left'>Name</th>
-                    <th className='p-4 font-medium text-left'>Grade</th>
-                    <th className='p-4 font-medium text-left'>Program</th>
-                    <th className='p-4 font-medium text-left'>Date Created</th>
-                    {/* // TODO: Add date of birth (ask Lisa) */}
-                    {/* <th className='p-4 font-medium text-left'>Date of Birth</th> */}
-                    {/* <th className='p-4 font-medium text-left'>Actions</th> */}
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedStudents.map(student => (
-                    <tr
-                      key={student.id}
-                      className='transition-colors border-b cursor-pointer hover:bg-gray-50'
-                      onClick={() => handleRowClick(student.id)}>
-                      <td className='p-4'>
-                        <div>
-                          <div className='font-medium'>
-                            {student.first_name} {student.last_name}
-                          </div>
-                        </div>
-                      </td>
-                      {/* // TODO: Add date of birth (ask Lisa) */}
-                      {/* <td className='p-4'>N/A</td> */}
-                      <td className='p-4'>{getStudentGrade(student)}</td>
-                      <td className='p-4'>{getQualificationBadge(student)}</td>
-                      <td className='p-4'>
-                        {parseDateSafely(student.created_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </td>
-                      {/* <td className='p-4'>
-                        <Button
-                          size='sm'
-                          variant='outline'
-                          onClick={e => handleViewClick(e, student.id)}
-                          className='flex items-center gap-2'>
-                          <Eye className='w-4 h-4' />
-                          View
-                        </Button>
-                      </td> */}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className='py-8 text-center text-gray-500'>
+      <div className='flex justify-end mb-3'>
+        <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
+          {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''} found
+        </span>
+      </div>
+
+      <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
+        <ResponsiveTable className='w-full'>
+          <TableHeader>
+            <tr>
+              <TableHead className='w-1/4 min-w-[200px]'>Name</TableHead>
+              <TableHead className='w-1/6 min-w-[120px]'>Grade</TableHead>
+              <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
+              <TableHead className='w-1/6 min-w-[150px]'>Date Created</TableHead>
+            </tr>
+          </TableHeader>
+
+          <TableBody>
+            {paginatedStudents.map(student => (
+              <TableRow
+                key={student.id}
+                className='transition-colors cursor-pointer hover:bg-gray-50'
+                onClick={() => handleRowClick(student.id)}>
+                <TableCell className='p-4 font-medium'>
+                  {student.first_name} {student.last_name}
+                </TableCell>
+                <TableCell className='p-4'>{getStudentGrade(student)}</TableCell>
+                <TableCell className='p-4'>{getQualificationBadge(student)}</TableCell>
+                <TableCell className='p-4'>
+                  {parseDateSafely(student.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </ResponsiveTable>
+
+        {filteredStudents.length === 0 && (
+          <div className='py-8 text-center'>
+            <p className='text-gray-500'>
               {searchTerm
                 ? 'No students found matching your search.'
                 : 'No students found. Add your first student to get started.'}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </p>
+          </div>
+        )}
+      </div>
+
       {filteredStudents.length > 0 && (
         <div className='flex items-center justify-between px-2 py-3'>
           <div className='flex items-center gap-2 text-sm text-gray-600'>
