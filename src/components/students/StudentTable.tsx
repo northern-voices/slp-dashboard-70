@@ -2,9 +2,16 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { School } from '@/types/database'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  ResponsiveTable,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableCell,
+} from '@/components/ui/responsive-table'
+import { TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { Plus, UserPlus } from 'lucide-react'
+import { ChevronUp, ChevronDown, Plus, UserPlus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
@@ -59,6 +66,10 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const [showAddModal, setShowAddModal] = useState(false)
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [isLoadingGrades, setIsLoadingGrades] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
+  const [sortField, setSortField] = useState<'name' | 'grade' | 'date' | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
 
   const { currentSchool } = useOrganization()
 
@@ -245,33 +256,82 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       return matchesSearch && matchesGrade && matchesDateRange && matchesProgram
     })
     .sort((a, b) => {
-      // Get grade levels from current_grade_id
-      let gradeA = 'N/A'
-      if (a.current_grade_id) {
-        const grade = gradesMap.get(a.current_grade_id)
-        if (grade) {
-          gradeA = grade.grade_level
+      // Default sort by grade when no sort is selected
+      if (!sortField || !sortOrder) {
+        let gradeA = 'N/A'
+        if (a.current_grade_id) {
+          const grade = gradesMap.get(a.current_grade_id)
+          if (grade) gradeA = grade.grade_level
+        }
+
+        let gradeB = 'N/A'
+        if (b.current_grade_id) {
+          const grade = gradesMap.get(b.current_grade_id)
+          if (grade) gradeB = grade.grade_level
+        }
+
+        const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
+        const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
+
+        if (indexA === -1 && indexB === -1) return 0
+        if (indexA === -1) return 1
+        if (indexB === -1) return -1
+
+        return indexA - indexB
+      }
+
+      let comparison = 0
+      switch (sortField) {
+        case 'name': {
+          const nameA = `${a.first_name} ${a.last_name}`
+          const nameB = `${b.first_name} ${b.last_name}`
+          comparison = nameA.localeCompare(nameB)
+          break
+        }
+        case 'grade': {
+          let gradeA = 'N/A'
+
+          if (a.current_grade_id) {
+            const grade = gradesMap.get(a.current_grade_id)
+            if (grade) gradeA = grade.grade_level
+          }
+
+          let gradeB = 'N/A'
+          if (b.current_grade_id) {
+            const grade = gradesMap.get(b.current_grade_id)
+            if (grade) gradeB = grade.grade_level
+          }
+
+          const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
+          const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
+
+          if (indexA === -1 && indexB === -1) comparison = 0
+          else if (indexA === -1) comparison = 1
+          else if (indexB === -1) comparison = -1
+          else comparison = indexA - indexB
+          break
+        }
+
+        case 'date': {
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          break
         }
       }
 
-      let gradeB = 'N/A'
-      if (b.current_grade_id) {
-        const grade = gradesMap.get(b.current_grade_id)
-        if (grade) {
-          gradeB = grade.grade_level
-        }
-      }
-
-      const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
-      const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
-
-      // If grade not found in mapping, put at the end
-      if (indexA === -1 && indexB === -1) return 0
-      if (indexA === -1) return 1
-      if (indexB === -1) return -1
-
-      return indexA - indexB
+      return sortOrder === 'asc' ? comparison : -comparison
     })
+
+  const totalPages = Math.max(1, Math.ceil(filteredStudents.length / pageSize))
+  const paginatedStudents = filteredStudents.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
+
+  useEffect(() => {
+    setCurrentPage(1)
+    setSortField(null)
+    setSortOrder(null)
+  }, [searchTerm, gradeFilter, dateRangeFilter, programFilter])
 
   const handleRowClick = (studentId: string) => {
     if (activeSchool) {
@@ -288,6 +348,24 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     } else {
       navigate(`/students/${studentId}`)
     }
+  }
+
+  const handleSort = (field: 'name' | 'grade' | 'date') => {
+    if (sortField !== field) {
+      setSortField(field)
+      setSortOrder('desc')
+    } else if (sortOrder === 'desc') {
+      setSortOrder('asc')
+    } else {
+      setSortField(null)
+      setSortOrder(null)
+    }
+  }
+
+  const getSortIcon = (field: 'name' | 'grade' | 'date') => {
+    if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
+    if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
+    return <ChevronDown className='w-4 h-4' />
   }
 
   const handleAddStudent = async (data: NewStudentFormData) => {
@@ -463,73 +541,131 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       />
 
       {/* Students Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Students ({filteredStudents.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredStudents.length > 0 ? (
-            <div className='overflow-x-auto'>
-              <table className='w-full'>
-                <thead>
-                  <tr className='border-b'>
-                    <th className='p-4 font-medium text-left'>Name</th>
-                    <th className='p-4 font-medium text-left'>Grade</th>
-                    <th className='p-4 font-medium text-left'>Program</th>
-                    <th className='p-4 font-medium text-left'>Date Created</th>
-                    {/* // TODO: Add date of birth (ask Lisa) */}
-                    {/* <th className='p-4 font-medium text-left'>Date of Birth</th> */}
-                    {/* <th className='p-4 font-medium text-left'>Actions</th> */}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredStudents.map(student => (
-                    <tr
-                      key={student.id}
-                      className='transition-colors border-b cursor-pointer hover:bg-gray-50'
-                      onClick={() => handleRowClick(student.id)}>
-                      <td className='p-4'>
-                        <div>
-                          <div className='font-medium'>
-                            {student.first_name} {student.last_name}
-                          </div>
-                        </div>
-                      </td>
-                      {/* // TODO: Add date of birth (ask Lisa) */}
-                      {/* <td className='p-4'>N/A</td> */}
-                      <td className='p-4'>{getStudentGrade(student)}</td>
-                      <td className='p-4'>{getQualificationBadge(student)}</td>
-                      <td className='p-4'>
-                        {parseDateSafely(student.created_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </td>
-                      {/* <td className='p-4'>
-                        <Button
-                          size='sm'
-                          variant='outline'
-                          onClick={e => handleViewClick(e, student.id)}
-                          className='flex items-center gap-2'>
-                          <Eye className='w-4 h-4' />
-                          View
-                        </Button>
-                      </td> */}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className='py-8 text-center text-gray-500'>
+      <div className='flex justify-end mb-3'>
+        <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
+          {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''} found
+        </span>
+      </div>
+
+      <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
+        <ResponsiveTable className='w-full'>
+          <TableHeader>
+            <tr>
+              <TableHead className='w-1/4 min-w-[200px]'>
+                <Button
+                  variant='ghost'
+                  onClick={() => handleSort('name')}
+                  className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
+                  Name
+                  <span className='ml-1'>{getSortIcon('name')}</span>
+                </Button>
+              </TableHead>
+              <TableHead className='w-1/6 min-w-[120px]'>
+                <Button
+                  variant='ghost'
+                  onClick={() => handleSort('grade')}
+                  className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
+                  Grade
+                  <span className='ml-1'>{getSortIcon('grade')}</span>
+                </Button>
+              </TableHead>
+              <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
+              <TableHead className='w-1/6 min-w-[150px]'>
+                <Button
+                  variant='ghost'
+                  onClick={() => handleSort('date')}
+                  className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
+                  Date Created
+                  <span className='ml-1'>{getSortIcon('date')}</span>
+                </Button>
+              </TableHead>
+            </tr>
+          </TableHeader>
+
+          <TableBody>
+            {paginatedStudents.map(student => (
+              <TableRow
+                key={student.id}
+                className='transition-colors cursor-pointer'
+                onClick={() => handleRowClick(student.id)}>
+                <TableCell className='p-4 font-medium group-hover:bg-gray-100 transition-colors'>
+                  {student.first_name} {student.last_name}
+                </TableCell>
+                <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
+                  {getStudentGrade(student)}
+                </TableCell>
+                <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
+                  {getQualificationBadge(student)}
+                </TableCell>
+                <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
+                  {parseDateSafely(student.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </ResponsiveTable>
+
+        {filteredStudents.length === 0 && (
+          <div className='py-8 text-center'>
+            <p className='text-gray-500'>
               {searchTerm
                 ? 'No students found matching your search.'
                 : 'No students found. Add your first student to get started.'}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </p>
+          </div>
+        )}
+      </div>
+
+      {filteredStudents.length > 0 && (
+        <div className='flex items-center justify-between px-2 py-3'>
+          <div className='flex items-center gap-2 text-sm text-gray-600'>
+            <span>Rows per page:</span>
+            <Select
+              value={String(pageSize)}
+              onValueChange={val => {
+                setPageSize(Number(val))
+                setCurrentPage(1)
+              }}>
+              <SelectTrigger className='w-20 h-8'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 25, 50, 100].map(size => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className='flex items-center gap-1 text-sm text-gray-600'>
+            <span>
+              {(currentPage - 1) * pageSize + 1}–
+              {Math.min(currentPage * pageSize, filteredStudents.length)} of{' '}
+              {filteredStudents.length}
+            </span>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}>
+              <ChevronUp className='w-4 h-4 rotate-[-90deg]' />
+            </Button>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}>
+              <ChevronDown className='w-4 h-4 rotate-[-90deg]' />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Add Student Modal */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
