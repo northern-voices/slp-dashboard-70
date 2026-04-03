@@ -4,7 +4,7 @@ import { parseDateSafely } from '@/utils/dateUtils'
 import { School } from '@/types/database'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, UserPlus } from 'lucide-react'
+import { ChevronUp, ChevronDown, Plus, UserPlus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
@@ -59,6 +59,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const [showAddModal, setShowAddModal] = useState(false)
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [isLoadingGrades, setIsLoadingGrades] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
 
   const { currentSchool } = useOrganization()
 
@@ -100,6 +102,10 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
     fetchGrades()
   }, [activeSchool?.id])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, gradeFilter, dateRangeFilter, programFilter])
 
   const newStudentForm = useForm<NewStudentFormData>({
     resolver: zodResolver(newStudentSchema),
@@ -272,6 +278,12 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
       return indexA - indexB
     })
+
+  const totalPages = Math.max(1, Math.ceil(filteredStudents.length / pageSize))
+  const paginatedStudents = filteredStudents.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
 
   const handleRowClick = (studentId: string) => {
     if (activeSchool) {
@@ -483,7 +495,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map(student => (
+                  {paginatedStudents.map(student => (
                     <tr
                       key={student.id}
                       className='transition-colors border-b cursor-pointer hover:bg-gray-50'
@@ -530,6 +542,52 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
           )}
         </CardContent>
       </Card>
+      {filteredStudents.length > 0 && (
+        <div className='flex items-center justify-between px-2 py-3'>
+          <div className='flex items-center gap-2 text-sm text-gray-600'>
+            <span>Rows per page:</span>
+            <Select
+              value={String(pageSize)}
+              onValueChange={val => {
+                setPageSize(Number(val))
+                setCurrentPage(1)
+              }}>
+              <SelectTrigger className='w-20 h-8'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 25, 50, 100].map(size => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className='flex items-center gap-1 text-sm text-gray-600'>
+            <span>
+              {(currentPage - 1) * pageSize + 1}–
+              {Math.min(currentPage * pageSize, filteredStudents.length)} of{' '}
+              {filteredStudents.length}
+            </span>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}>
+              <ChevronUp className='w-4 h-4 rotate-[-90deg]' />
+            </Button>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}>
+              <ChevronDown className='w-4 h-4 rotate-[-90deg]' />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Add Student Modal */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
