@@ -68,6 +68,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const [isLoadingGrades, setIsLoadingGrades] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
+  const [sortField, setSortField] = useState<'name' | 'grade' | 'date' | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
 
   const { currentSchool } = useOrganization()
 
@@ -109,10 +111,6 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
     fetchGrades()
   }, [activeSchool?.id])
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchTerm, gradeFilter, dateRangeFilter, programFilter])
 
   const newStudentForm = useForm<NewStudentFormData>({
     resolver: zodResolver(newStudentSchema),
@@ -258,32 +256,69 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       return matchesSearch && matchesGrade && matchesDateRange && matchesProgram
     })
     .sort((a, b) => {
-      // Get grade levels from current_grade_id
-      let gradeA = 'N/A'
-      if (a.current_grade_id) {
-        const grade = gradesMap.get(a.current_grade_id)
-        if (grade) {
-          gradeA = grade.grade_level
+      // Default sort by grade when no sort is selected
+      if (!sortField || !sortOrder) {
+        let gradeA = 'N/A'
+        if (a.current_grade_id) {
+          const grade = gradesMap.get(a.current_grade_id)
+          if (grade) gradeA = grade.grade_level
+        }
+
+        let gradeB = 'N/A'
+        if (b.current_grade_id) {
+          const grade = gradesMap.get(b.current_grade_id)
+          if (grade) gradeB = grade.grade_level
+        }
+
+        const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
+        const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
+
+        if (indexA === -1 && indexB === -1) return 0
+        if (indexA === -1) return 1
+        if (indexB === -1) return -1
+
+        return indexA - indexB
+      }
+
+      let comparison = 0
+      switch (sortField) {
+        case 'name': {
+          const nameA = `${a.first_name} ${a.last_name}`
+          const nameB = `${b.first_name} ${b.last_name}`
+          comparison = nameA.localeCompare(nameB)
+          break
+        }
+        case 'grade': {
+          let gradeA = 'N/A'
+
+          if (a.current_grade_id) {
+            const grade = gradesMap.get(a.current_grade_id)
+            if (grade) gradeA = grade.grade_level
+          }
+
+          let gradeB = 'N/A'
+          if (b.current_grade_id) {
+            const grade = gradesMap.get(b.current_grade_id)
+            if (grade) gradeB = grade.grade_level
+          }
+
+          const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
+          const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
+
+          if (indexA === -1 && indexB === -1) comparison = 0
+          else if (indexA === -1) comparison = 1
+          else if (indexB === -1) comparison = -1
+          else comparison = indexA - indexB
+          break
+        }
+
+        case 'date': {
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          break
         }
       }
 
-      let gradeB = 'N/A'
-      if (b.current_grade_id) {
-        const grade = gradesMap.get(b.current_grade_id)
-        if (grade) {
-          gradeB = grade.grade_level
-        }
-      }
-
-      const indexA = GRADE_MAPPING.findIndex(g => g.value === gradeA)
-      const indexB = GRADE_MAPPING.findIndex(g => g.value === gradeB)
-
-      // If grade not found in mapping, put at the end
-      if (indexA === -1 && indexB === -1) return 0
-      if (indexA === -1) return 1
-      if (indexB === -1) return -1
-
-      return indexA - indexB
+      return sortOrder === 'asc' ? comparison : -comparison
     })
 
   const totalPages = Math.max(1, Math.ceil(filteredStudents.length / pageSize))
@@ -291,6 +326,12 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   )
+
+  useEffect(() => {
+    setCurrentPage(1)
+    setSortField(null)
+    setSortOrder(null)
+  }, [searchTerm, gradeFilter, dateRangeFilter, programFilter])
 
   const handleRowClick = (studentId: string) => {
     if (activeSchool) {
@@ -307,6 +348,24 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     } else {
       navigate(`/students/${studentId}`)
     }
+  }
+
+  const handleSort = (field: 'name' | 'grade' | 'date') => {
+    if (sortField !== field) {
+      setSortField(field)
+      setSortOrder('desc')
+    } else if (sortOrder === 'desc') {
+      setSortOrder('asc')
+    } else {
+      setSortField(null)
+      setSortOrder(null)
+    }
+  }
+
+  const getSortIcon = (field: 'name' | 'grade' | 'date') => {
+    if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
+    if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
+    return <ChevronDown className='w-4 h-4' />
   }
 
   const handleAddStudent = async (data: NewStudentFormData) => {
@@ -492,10 +551,34 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         <ResponsiveTable className='w-full'>
           <TableHeader>
             <tr>
-              <TableHead className='w-1/4 min-w-[200px]'>Name</TableHead>
-              <TableHead className='w-1/6 min-w-[120px]'>Grade</TableHead>
+              <TableHead className='w-1/4 min-w-[200px]'>
+                <Button
+                  variant='ghost'
+                  onClick={() => handleSort('name')}
+                  className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
+                  Name
+                  <span className='ml-1'>{getSortIcon('name')}</span>
+                </Button>
+              </TableHead>
+              <TableHead className='w-1/6 min-w-[120px]'>
+                <Button
+                  variant='ghost'
+                  onClick={() => handleSort('grade')}
+                  className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
+                  Grade
+                  <span className='ml-1'>{getSortIcon('grade')}</span>
+                </Button>
+              </TableHead>
               <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
-              <TableHead className='w-1/6 min-w-[150px]'>Date Created</TableHead>
+              <TableHead className='w-1/6 min-w-[150px]'>
+                <Button
+                  variant='ghost'
+                  onClick={() => handleSort('date')}
+                  className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
+                  Date Created
+                  <span className='ml-1'>{getSortIcon('date')}</span>
+                </Button>
+              </TableHead>
             </tr>
           </TableHeader>
 
