@@ -6,46 +6,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
-import { Eye, MoreHorizontal, ChevronUp, ChevronDown, Trash2, Mail, Loader2 } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 import {
   ResponsiveTable,
-  ResponsiveTableRow,
   TableHeader,
   TableHead,
   TableBody,
-  TableCell,
 } from '@/components/ui/responsive-table'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { format } from 'date-fns'
 import { useMonthlyMeetingsBySchool } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
 import { useDeleteMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -53,7 +23,9 @@ import { MonthlyMeeting } from '@/api/monthlymeetings'
 import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
 import MonthlyMeetingBulkActions from '@/components/monthly-meetings/MonthlyMeetingBulkActions'
 import MonthlyMeetingsSkeleton from '@/components/skeletons/MonthlyMeetingsSkeleton'
-import { edgeFunctionsApi } from '@/api/edgeFunctions'
+import MonthlyMeetingTableRow from '@/components/monthly-meetings/MonthlyMeetingTableRow'
+import MonthlyMeetingDeleteDialog from '@/components/monthly-meetings/MonthlyMeetingDeleteDialog'
+import MonthlyMeetingsSendReportDialog from '@/components/monthly-meetings/MonthlyMeetingsSendReportDialog'
 
 interface MonthlyMeetingsTableProps {
   searchTerm: string
@@ -78,8 +50,6 @@ const MonthlyMeetingsTable = ({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [meetingToSend, setMeetingToSend] = useState<MonthlyMeeting | null>(null)
   const [isSendReportDialogOpen, setIsSendReportDialogOpen] = useState(false)
-  const [sendReportEmail, setSendReportEmail] = useState('')
-  const [isSendingReport, setIsSendingReport] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
 
@@ -90,7 +60,6 @@ const MonthlyMeetingsTable = ({
     setCurrentPage(1)
   }, [searchTerm, dateRangeFilter, facilitatorFilter, sortField, sortOrder])
 
-  // Fetch monthly meetings by school
   const {
     data: meetings = [],
     isLoading,
@@ -100,7 +69,6 @@ const MonthlyMeetingsTable = ({
     dateRangeFilter === 'school_year' || dateRangeFilter === 'all' ? dateRangeFilter : 'all'
   )
 
-  // Debug logging
   console.log('MonthlyMeetingsTable Debug:', {
     currentSchoolId: currentSchool?.id,
     dateRangeFilter,
@@ -110,7 +78,6 @@ const MonthlyMeetingsTable = ({
     meetings,
   })
 
-  // Apply filters
   const filteredMeetings = meetings.filter(meeting => {
     const matchesSearch =
       meeting.meeting_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -121,65 +88,46 @@ const MonthlyMeetingsTable = ({
           update.student?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
       )
 
-    // Filter by facilitator
     const matchesFacilitator =
       facilitatorFilter === 'all' || meeting.facilitator_id === facilitatorFilter
 
-    // Apply client-side date range filter for filters other than 'all' and 'school_year'
-    // (those are handled at the API level)
     let matchesDateRange = true
     if (dateRangeFilter !== 'all' && dateRangeFilter !== 'school_year') {
       const meetingDate = new Date(meeting.meeting_date)
       const now = new Date()
-
       switch (dateRangeFilter) {
-        case 'today': {
-          const meetingLocalDate = meetingDate.toLocaleDateString()
-          const nowLocalDate = now.toLocaleDateString()
-          matchesDateRange = meetingLocalDate === nowLocalDate
+        case 'today':
+          matchesDateRange = meetingDate.toLocaleDateString() === now.toLocaleDateString()
           break
-        }
-        case 'week': {
-          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-          matchesDateRange = meetingDate >= weekAgo
+        case 'week':
+          matchesDateRange = meetingDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
           break
-        }
-        case 'month': {
-          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-          matchesDateRange = meetingDate >= monthAgo
+        case 'month':
+          matchesDateRange = meetingDate >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
           break
-        }
-        case 'quarter': {
-          const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-          matchesDateRange = meetingDate >= quarterAgo
+        case 'quarter':
+          matchesDateRange = meetingDate >= new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
           break
-        }
       }
     }
 
     return matchesSearch && matchesFacilitator && matchesDateRange
   })
 
-  // Sort meetings
   const sortedMeetings = [...filteredMeetings].sort((a, b) => {
     if (!sortOrder || !sortField) return 0
-
-    let comparison = 0
-
     switch (sortField) {
-      case 'meeting_date': {
-        const dateA = new Date(a.meeting_date).getTime()
-        const dateB = new Date(b.meeting_date).getTime()
-        comparison = dateA - dateB
-        break
-      }
-      case 'meeting_title': {
-        comparison = (a.meeting_title || '').localeCompare(b.meeting_title || '')
-        break
-      }
+      case 'meeting_date':
+        return sortOrder === 'asc'
+          ? new Date(a.meeting_date).getTime() - new Date(b.meeting_date).getTime()
+          : new Date(b.meeting_date).getTime() - new Date(a.meeting_date).getTime()
+      case 'meeting_title':
+        return sortOrder === 'asc'
+          ? (a.meeting_title || '').localeCompare(b.meeting_title || '')
+          : (b.meeting_title || '').localeCompare(a.meeting_title || '')
+      default:
+        return 0
     }
-
-    return sortOrder === 'asc' ? comparison : -comparison
   })
 
   const totalCount = sortedMeetings.length
@@ -195,71 +143,44 @@ const MonthlyMeetingsTable = ({
       setSortOrder('desc')
     } else if (sortOrder === 'desc') {
       setSortOrder('asc')
-    } else if (sortOrder === 'asc') {
+    } else {
       setSortField(null)
       setSortOrder(null)
     }
   }
 
   const getSortIcon = (field: 'meeting_date' | 'meeting_title') => {
-    if (sortField !== field) {
-      return <ChevronUp className='w-4 h-4 opacity-30' />
-    }
-    if (sortOrder === 'asc') {
-      return <ChevronUp className='w-4 h-4' />
-    } else if (sortOrder === 'desc') {
-      return <ChevronDown className='w-4 h-4' />
-    }
+    if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
+    if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
+    if (sortOrder === 'desc') return <ChevronDown className='w-4 h-4' />
     return <ChevronUp className='w-4 h-4 opacity-30' />
   }
 
-  const getStatusBadge = (meetingDate: string) => {
-    const now = new Date()
-    const date = new Date(meetingDate)
+  // const getStatusBadge = (meetingDate: string) => {
+  //   const now = new Date()
+  //   const date = new Date(meetingDate)
 
-    if (date > now) {
-      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Scheduled</Badge>
-    } else {
-      return (
-        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Completed</Badge>
-      )
-    }
-  }
+  //   if (date > now) {
+  //     return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Scheduled</Badge>
+  //   } else {
+  //     return (
+  //       <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Completed</Badge>
+  //     )
+  //   }
+  // }
 
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedMeetings(paginatedMeetings)
-    } else {
-      setSelectedMeetings([])
-    }
+    setSelectedMeetings(checked ? paginatedMeetings : [])
   }
 
   const handleSelectMeeting = (meeting: MonthlyMeeting, checked: boolean) => {
-    if (checked) {
-      setSelectedMeetings([...selectedMeetings, meeting])
-    } else {
-      setSelectedMeetings(selectedMeetings.filter(m => m.id !== meeting.id))
-    }
-  }
-
-  const handleViewDetails = (meeting: MonthlyMeeting) => {
-    setSelectedMeetingForDetails(meeting)
-    setIsDetailsModalOpen(true)
-  }
-
-  const handleCloseDetailsModal = () => {
-    setIsDetailsModalOpen(false)
-    setSelectedMeetingForDetails(null)
-  }
-
-  const handleDeleteMeeting = (meeting: MonthlyMeeting) => {
-    setMeetingToDelete(meeting)
-    setIsDeleteDialogOpen(true)
+    setSelectedMeetings(
+      checked ? [...selectedMeetings, meeting] : selectedMeetings.filter(m => m.id !== meeting.id)
+    )
   }
 
   const confirmDeleteMeeting = () => {
     if (!meetingToDelete) return
-
     deleteMonthlyMeeting.mutate(meetingToDelete.id, {
       onSuccess: () => {
         toast({
@@ -268,7 +189,6 @@ const MonthlyMeetingsTable = ({
         })
         setIsDeleteDialogOpen(false)
         setMeetingToDelete(null)
-        // Remove from selected meetings if it was selected
         setSelectedMeetings(selectedMeetings.filter(m => m.id !== meetingToDelete.id))
       },
       onError: error => {
@@ -280,62 +200,6 @@ const MonthlyMeetingsTable = ({
         })
       },
     })
-  }
-
-  const cancelDeleteMeeting = () => {
-    setIsDeleteDialogOpen(false)
-    setMeetingToDelete(null)
-  }
-
-  const handleSendReport = (meeting: MonthlyMeeting) => {
-    setMeetingToSend(meeting)
-    setSendReportEmail('')
-    setIsSendReportDialogOpen(true)
-  }
-
-  const confirmSendReport = async () => {
-    if (!meetingToSend || !sendReportEmail) return
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(sendReportEmail)) {
-      toast({
-        title: 'Invalid Email',
-        description: 'Please enter a valid email address.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    setIsSendingReport(true)
-
-    try {
-      await edgeFunctionsApi.monthlyMeetings(meetingToSend.id, sendReportEmail)
-
-      toast({
-        title: 'Report Sent',
-        description: `Monthly meeting report has been sent to ${sendReportEmail}`,
-      })
-
-      setIsSendReportDialogOpen(false)
-      setMeetingToSend(null)
-      setSendReportEmail('')
-    } catch (error) {
-      console.error('Failed to send report:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to send the report. Please try again.',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsSendingReport(false)
-    }
-  }
-
-  const cancelSendReport = () => {
-    setIsSendReportDialogOpen(false)
-    setMeetingToSend(null)
-    setSendReportEmail('')
   }
 
   const isAllSelected =
@@ -401,123 +265,24 @@ const MonthlyMeetingsTable = ({
           </TableHeader>
           <TableBody>
             {paginatedMeetings.map(meeting => (
-              <ResponsiveTableRow
+              <MonthlyMeetingTableRow
                 key={meeting.id}
-                mobileCardContent={
-                  <div className='space-y-3'>
-                    <div className='flex items-center justify-between'>
-                      <div className='flex items-center gap-2'>
-                        <Checkbox
-                          checked={selectedMeetings.some(m => m.id === meeting.id)}
-                          onCheckedChange={checked =>
-                            handleSelectMeeting(meeting, checked as boolean)
-                          }
-                        />
-                        <h3 className='font-medium'>{meeting.meeting_title}</h3>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant='ghost' size='sm'>
-                            <MoreHorizontal className='w-4 h-4' />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align='end' className='bg-white'>
-                          <DropdownMenuItem onClick={() => handleViewDetails(meeting)}>
-                            <Eye className='w-4 h-4 mr-2' />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleSendReport(meeting)}>
-                            <Mail className='w-4 h-4 mr-2' />
-                            Send Report
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className='text-red-600'
-                            onClick={() => handleDeleteMeeting(meeting)}>
-                            <Trash2 className='w-4 h-4 mr-2' />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <div className='text-sm text-gray-600 space-y-1'>
-                      <p>
-                        <span className='font-medium'>Date:</span>{' '}
-                        {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
-                      </p>
-                      <p>
-                        <span className='font-medium'>Attendees:</span>{' '}
-                        {meeting.attendees.join(', ')}
-                      </p>
-                      <p>
-                        <span className='font-medium'>Facilitator:</span>{' '}
-                        {meeting.facilitator
-                          ? `${meeting.facilitator.first_name} ${meeting.facilitator.last_name}`
-                          : 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-                }>
-                <TableCell>
-                  <Checkbox
-                    className='mt-1.5'
-                    checked={selectedMeetings.some(m => m.id === meeting.id)}
-                    onCheckedChange={checked => handleSelectMeeting(meeting, checked as boolean)}
-                  />
-                </TableCell>
-                <TableCell className='max-w-0'>
-                  <div className='truncate'>
-                    <div className='font-medium text-base truncate' title={meeting.meeting_title}>
-                      {meeting.meeting_title}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className='max-w-0'>
-                  <div
-                    className='truncate'
-                    title={format(new Date(meeting.meeting_date), 'MMM d, yyyy')}>
-                    {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
-                  </div>
-                </TableCell>
-                <TableCell className='max-w-0'>
-                  <div className='truncate' title={meeting.attendees.join(', ')}>
-                    {meeting.attendees.join(', ')}
-                  </div>
-                </TableCell>
-                <TableCell className='max-w-0'>
-                  <div className='truncate'>
-                    {meeting.facilitator
-                      ? `${meeting.facilitator.first_name} ${meeting.facilitator.last_name}`
-                      : 'N/A'}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant='ghost' size='sm'>
-                        <MoreHorizontal className='w-4 h-4' />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end' className='bg-white'>
-                      <DropdownMenuItem onClick={() => handleViewDetails(meeting)}>
-                        <Eye className='w-4 h-4 mr-2' />
-                        View Details
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleSendReport(meeting)}>
-                        <Mail className='w-4 h-4 mr-2' />
-                        Send Report
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className='text-red-600'
-                        onClick={() => {
-                          handleDeleteMeeting(meeting)
-                        }}>
-                        <Trash2 className='w-4 h-4 mr-2' />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </ResponsiveTableRow>
+                meeting={meeting}
+                isSelected={selectedMeetings.some(m => m.id === meeting.id)}
+                onSelect={handleSelectMeeting}
+                onViewDetails={m => {
+                  setSelectedMeetingForDetails(m)
+                  setIsDetailsModalOpen(true)
+                }}
+                onSendReport={m => {
+                  setMeetingToSend(m)
+                  setIsSendReportDialogOpen(true)
+                }}
+                onDelete={m => {
+                  setMeetingToDelete(m)
+                  setIsDeleteDialogOpen(true)
+                }}
+              />
             ))}
           </TableBody>
         </ResponsiveTable>
@@ -528,90 +293,14 @@ const MonthlyMeetingsTable = ({
           </div>
         )}
 
-        {/* Monthly Meeting Details Modal */}
         <MonthlyMeetingDetailsModal
           isOpen={isDetailsModalOpen}
-          onClose={handleCloseDetailsModal}
+          onClose={() => {
+            setIsDetailsModalOpen(false)
+            setSelectedMeetingForDetails(null)
+          }}
           meeting={selectedMeetingForDetails}
         />
-
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Monthly Meeting</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this meeting "{meetingToDelete?.meeting_title}"?
-                This action cannot be undone.
-                {meetingToDelete?.student_updates && meetingToDelete.student_updates.length > 0 && (
-                  <span className='block mt-2 font-medium text-orange-600'>
-                    This meeting has {meetingToDelete.student_updates.length} student update(s) that
-                    will also be deleted.
-                  </span>
-                )}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={cancelDeleteMeeting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={confirmDeleteMeeting}
-                className='bg-red-600 hover:bg-red-700'
-                disabled={deleteMonthlyMeeting.isPending}>
-                {deleteMonthlyMeeting.isPending ? (
-                  <>
-                    <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                    Deleting...
-                  </>
-                ) : (
-                  'Delete'
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* Send Report Dialog */}
-        <Dialog open={isSendReportDialogOpen} onOpenChange={setIsSendReportDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Send Monthly Meeting Report</DialogTitle>
-              <DialogDescription>
-                Send the monthly meeting report for "{meetingToSend?.meeting_title}" via email.
-              </DialogDescription>
-            </DialogHeader>
-            <div className='space-y-4 py-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='email'>Email Address</Label>
-                <Input
-                  id='email'
-                  type='email'
-                  placeholder='Enter email address'
-                  value={sendReportEmail}
-                  onChange={e => setSendReportEmail(e.target.value)}
-                  disabled={isSendingReport}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant='outline' onClick={cancelSendReport} disabled={isSendingReport}>
-                Cancel
-              </Button>
-              <Button onClick={confirmSendReport} disabled={isSendingReport || !sendReportEmail}>
-                {isSendingReport ? (
-                  <>
-                    <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Mail className='w-4 h-4 mr-2' />
-                    Send Report
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
 
       {totalCount > 0 && (
@@ -636,7 +325,6 @@ const MonthlyMeetingsTable = ({
               </SelectContent>
             </Select>
           </div>
-
           <div className='flex items-center gap-1 text-sm text-gray-600'>
             <span>
               {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalCount)} of{' '}
@@ -659,6 +347,26 @@ const MonthlyMeetingsTable = ({
           </div>
         </div>
       )}
+
+      <MonthlyMeetingDeleteDialog
+        open={isDeleteDialogOpen}
+        meeting={meetingToDelete}
+        isPending={deleteMonthlyMeeting.isPending}
+        onConfirm={confirmDeleteMeeting}
+        onCancel={() => {
+          setIsDeleteDialogOpen(false)
+          setMeetingToDelete(null)
+        }}
+      />
+
+      <MonthlyMeetingsSendReportDialog
+        open={isSendReportDialogOpen}
+        meeting={meetingToSend}
+        onClose={() => {
+          setIsSendReportDialogOpen(false)
+          setMeetingToSend(null)
+        }}
+      />
     </div>
   )
 }
