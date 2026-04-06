@@ -1,4 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -73,8 +80,15 @@ const MonthlyMeetingsTable = ({
   const [isSendReportDialogOpen, setIsSendReportDialogOpen] = useState(false)
   const [sendReportEmail, setSendReportEmail] = useState('')
   const [isSendingReport, setIsSendingReport] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
+
   const { toast } = useToast()
   const deleteMonthlyMeeting = useDeleteMonthlyMeeting()
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, dateRangeFilter, facilitatorFilter, sortField, sortOrder])
 
   // Fetch monthly meetings by school
   const {
@@ -168,6 +182,13 @@ const MonthlyMeetingsTable = ({
     return sortOrder === 'asc' ? comparison : -comparison
   })
 
+  const totalCount = sortedMeetings.length
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+  const paginatedMeetings = sortedMeetings.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
+
   const handleSort = (field: 'meeting_date' | 'meeting_title') => {
     if (sortField !== field) {
       setSortField(field)
@@ -207,7 +228,7 @@ const MonthlyMeetingsTable = ({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedMeetings(filteredMeetings)
+      setSelectedMeetings(paginatedMeetings)
     } else {
       setSelectedMeetings([])
     }
@@ -318,7 +339,8 @@ const MonthlyMeetingsTable = ({
   }
 
   const isAllSelected =
-    filteredMeetings.length > 0 && selectedMeetings.length === filteredMeetings.length
+    paginatedMeetings.length > 0 &&
+    paginatedMeetings.every(m => selectedMeetings.some(sel => sel.id === m.id))
   const isSomeSelected = selectedMeetings.length > 0
 
   if (isLoading) return <MonthlyMeetingsSkeleton />
@@ -378,7 +400,7 @@ const MonthlyMeetingsTable = ({
             </tr>
           </TableHeader>
           <TableBody>
-            {sortedMeetings.map(meeting => (
+            {paginatedMeetings.map(meeting => (
               <ResponsiveTableRow
                 key={meeting.id}
                 mobileCardContent={
@@ -591,6 +613,52 @@ const MonthlyMeetingsTable = ({
           </DialogContent>
         </Dialog>
       </div>
+
+      {totalCount > 0 && (
+        <div className='flex items-center justify-between px-2 py-3'>
+          <div className='flex items-center gap-2 text-sm text-gray-600'>
+            <span>Rows per page:</span>
+            <Select
+              value={String(pageSize)}
+              onValueChange={val => {
+                setPageSize(Number(val))
+                setCurrentPage(1)
+              }}>
+              <SelectTrigger className='w-20 h-8'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 25, 50, 100].map(size => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className='flex items-center gap-1 text-sm text-gray-600'>
+            <span>
+              {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalCount)} of{' '}
+              {totalCount}
+            </span>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}>
+              <ChevronUp className='w-4 h-4 rotate-[-90deg]' />
+            </Button>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}>
+              <ChevronDown className='w-4 h-4 rotate-[-90deg]' />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
