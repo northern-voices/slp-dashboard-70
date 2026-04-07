@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { Screening } from '@/types/database'
+import { ErrorPatterns } from '@/types/screening-form'
+import { Screening, ProgramStatus } from '@/types/database'
 import { screeningsApi } from '@/api/screenings'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -76,34 +77,7 @@ const EditScreeningContent = () => {
     sub: boolean
     graduated: boolean
     paused: boolean
-    error_patterns: {
-      attendance: {
-        absent: boolean
-        absence_notes: string
-        priority_re_screen: boolean
-      }
-      articulation: {
-        soundErrors: Array<{
-          sound: string
-          word: string
-          errorPatterns: string[]
-          stoppingSounds?: string[]
-          notes: string
-          otherNotes?: string
-        }>
-        articulationNotes: string
-      }
-      screening_metadata: {
-        screening_date: string
-        qualifies_for_speech_program: boolean
-        vocabulary_support_recommended: boolean
-        sub?: boolean
-        graduated?: boolean
-        paused?: boolean
-      }
-      add_areas_of_concern: Record<string, string | null>
-      additional_observations: string
-    }
+    error_patterns: ErrorPatterns
     general_articulation_notes?: string
   }>({
     mode: 'onChange',
@@ -360,7 +334,7 @@ const EditScreeningContent = () => {
       }
 
       // Determine the program status from form data
-      const determineProgramStatus = (): string => {
+      const determineProgramStatus = (): ProgramStatus => {
         if (formData.graduated) return 'graduated'
         if (formData.paused) return 'paused'
         if (formData.sub) return 'sub'
