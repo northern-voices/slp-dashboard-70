@@ -1,5 +1,6 @@
 import { UseFormReturn } from 'react-hook-form'
 import { Screening } from '@/types/database'
+import SpeechScreenResultCard from '../SpeechScreenResultCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -149,6 +150,8 @@ const SpeechScreeningStep2 = ({
           />
         </CardContent>
       </Card>
+
+      <SpeechScreenResultCard form={form} />
     </div>
   )
 }
