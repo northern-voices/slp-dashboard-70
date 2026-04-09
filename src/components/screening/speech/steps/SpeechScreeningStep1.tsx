@@ -27,6 +27,8 @@ interface SpeechScreeningStep1Props {
   onGradeIdChange: (gradeId: string) => void
   onAbsentChange?: (isAbsent: boolean) => void
   onNoConsentChange?: (isNoConsent: boolean) => void
+  onComplexNeedsChange?: (isComplexNeeds: boolean) => void
+  onUnableToScreenChange?: (isUnableToScreen: boolean) => void
   afterStudentContent?: React.ReactNode
 }
 
@@ -39,6 +41,8 @@ const SpeechScreeningStep1 = ({
   onGradeIdChange,
   onAbsentChange,
   onNoConsentChange,
+  onComplexNeedsChange,
+  onUnableToScreenChange,
   afterStudentContent,
 }: SpeechScreeningStep1Props) => {
   const { currentSchool } = useOrganization()
@@ -382,7 +386,11 @@ const SpeechScreeningStep1 = ({
                   disabled={localAbsentValue || localNoConsentValue}
                   onCheckedChange={checked => {
                     form.setValue('complex_needs', Boolean(checked))
-                    if (checked) form.setValue('unable_to_screen', false)
+                    if (checked) {
+                      form.setValue('unable_to_screen', false)
+                      onUnableToScreenChange?.(false)
+                    }
+                    onComplexNeedsChange?.(Boolean(checked))
                   }}
                 />
                 <Label
@@ -399,7 +407,11 @@ const SpeechScreeningStep1 = ({
                   disabled={localAbsentValue || localNoConsentValue}
                   onCheckedChange={checked => {
                     form.setValue('unable_to_screen', Boolean(checked))
-                    if (checked) form.setValue('complex_needs', false)
+                    if (checked) {
+                      form.setValue('complex_needs', false)
+                      onComplexNeedsChange?.(false)
+                    }
+                    onUnableToScreenChange?.(Boolean(checked))
                   }}
                 />
                 <Label
