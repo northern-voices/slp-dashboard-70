@@ -1,7 +1,6 @@
 import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   articulationSounds,
@@ -348,17 +347,6 @@ const ArticulationCard = ({
               )
             })}
           </div>
-        </div>
-
-        {/* General Articulation Notes */}
-        <div>
-          <Label htmlFor='general_articulation_notes'>General Articulation Notes (Private)</Label>
-          <Textarea
-            {...form.register('general_articulation_notes')}
-            placeholder='Add general articulation notes...'
-            rows={3}
-            className='mt-1'
-          />
         </div>
       </CardContent>
     </Card>
