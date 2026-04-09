@@ -225,7 +225,11 @@ const MultiStepSpeechScreeningForm = ({
         errors.push('Screening date is required')
       }
 
-      if (!formData.speech_screen_result || formData.speech_screen_result === '') {
+      const hasSpecialResult = formData.complex_needs || formData.unable_to_screen
+      if (
+        !hasSpecialResult &&
+        (!formData.speech_screen_result || formData.speech_screen_result === '')
+      ) {
         errors.push('Speech screen result is required')
       }
     }
@@ -354,7 +358,11 @@ const MultiStepSpeechScreeningForm = ({
           ? 'absent'
           : formNoConsent
             ? 'non_registered_no_consent'
-            : (formData.speech_screen_result as string) || '',
+            : formData.complex_needs
+              ? 'complex_needs'
+              : formData.unable_to_screen
+                ? 'unable_to_screen'
+                : (formData.speech_screen_result as string) || '',
         vocabulary_support: (formData.vocabulary_support_recommended as boolean) || false,
         clinical_notes: (formData.clinical_notes as string) || '',
         referral_notes: (formData.referral_notes as string) || '',

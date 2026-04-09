@@ -108,9 +108,10 @@ export interface SpeechScreeningFormValues {
   sub: boolean
   graduated: boolean
   paused?: boolean
+  complex_needs?: boolean
+  unable_to_screen?: boolean
   error_patterns: ErrorPatterns
   general_articulation_notes?: string
-
   academic_year: string
   priority_re_screen: boolean
   other_notes: string
