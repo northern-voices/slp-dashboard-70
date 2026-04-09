@@ -84,7 +84,7 @@ const SpeechScreeningStep2 = ({
 
       <Card>
         <CardHeader>
-          <CardTitle>Clinical Notes (Private)</CardTitle>
+          <CardTitle>Clinical Notes (Private) - Not shown on reports</CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
           {initialScreeningData?.clinical_notes && (
@@ -120,7 +120,7 @@ const SpeechScreeningStep2 = ({
 
       <Card>
         <CardHeader>
-          <CardTitle>Recommendations and referrals (Reports)</CardTitle>
+          <CardTitle>Recommendations and Referrals (Reports) - Show on summary report</CardTitle>
         </CardHeader>
         <CardContent>
           {initialScreeningData?.referral_notes && (
