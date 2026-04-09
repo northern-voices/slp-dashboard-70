@@ -107,6 +107,7 @@ export interface SpeechScreeningFormValues {
   qualifies_for_speech_program: boolean
   sub: boolean
   graduated: boolean
+  paused?: boolean
   error_patterns: ErrorPatterns
   general_articulation_notes?: string
 
