@@ -31,6 +31,7 @@ const SpeechScreeningStep2 = ({
 }: SpeechScreeningStep2Props) => {
   const [clinicalNotesOpen, setClinicalNotesOpen] = useState(false)
   const [referralNotesOpen, setReferralNotesOpen] = useState(false)
+  const [progressNotesOpen, setProgressNotesOpen] = useState(false)
 
   return (
     <div className='space-y-6'>
@@ -157,6 +158,45 @@ const SpeechScreeningStep2 = ({
             <Textarea
               {...form.register('referral_notes')}
               placeholder='OT or Comprehensive Language Evaluation or Fluency Evaluation, etc.'
+              rows={4}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  // Allow Ctrl+Enter for new lines
+                  return
+                }
+                if (e.key === 'Enter') {
+                  e.stopPropagation() // Prevent form submission
+                }
+              }}
+            />
+          </CardContent>
+        )}
+      </Card>
+
+      <Card>
+        <CardHeader
+          className='cursor-pointer select-none'
+          onClick={() => setProgressNotesOpen(!progressNotesOpen)}>
+          <CardTitle className='flex items-center justify-between'>
+            Progress Notes - Show on progress report
+            <span className='text-lg font-normal text-muted-foreground'>
+              {progressNotesOpen ? '▲ Hide' : '▼ Show'}
+            </span>{' '}
+          </CardTitle>
+        </CardHeader>
+        {progressNotesOpen && (
+          <CardContent>
+            {initialScreeningData?.progress_notes && (
+              <div className='rounded-md border border-blue-200 bg-blue-50 p-3 mb-3'>
+                <p className='text-xs font-semibold text-blue-700 mb-1'>Previous Progress Notes</p>
+                <p className='text-sm text-blue-900 whitespace-pre-wrap'>
+                  {initialScreeningData.progress_notes}
+                </p>
+              </div>
+            )}
+            <Textarea
+              {...form.register('progress_notes')}
+              placeholder='EA / Teacher Feedback or progress noted (vocabulary), participation'
               rows={4}
               onKeyDown={e => {
                 if (e.key === 'Enter' && e.ctrlKey) {

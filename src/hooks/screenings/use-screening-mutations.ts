@@ -15,6 +15,7 @@ type CreateSpeechScreeningInput = {
   vocabulary_support?: boolean
   clinical_notes?: string | null
   referral_notes?: string | null
+  progress_notes?: string | null
 }
 
 // Type for the update speech screening input
@@ -29,6 +30,7 @@ type UpdateSpeechScreeningInput = {
   suspected_cas?: boolean
   clinical_notes?: string | null
   referral_notes?: string | null
+  progress_notes?: string | null
 }
 
 export const useCreateSpeechScreening = () => {

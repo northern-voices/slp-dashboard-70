@@ -118,6 +118,7 @@ export interface Screening {
   suspected_cas?: boolean
   error_patterns?: ErrorPatterns
   clinical_notes?: string
+  progress_notes?: string
 
   // Hearing-specific fields
   right_volume_db?: number | null

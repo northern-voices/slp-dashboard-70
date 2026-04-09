@@ -88,6 +88,7 @@ const MultiStepSpeechScreeningForm = ({
       general_articulation_notes: '',
       clinical_notes: '',
       referral_notes: '',
+      progress_notes: '',
       other_notes: '',
 
       // Enhanced Speech Screening Fields - match the structure expected by EnhancedSpeechScreeningFields
@@ -148,6 +149,7 @@ const MultiStepSpeechScreeningForm = ({
     form.setValue('speech_screen_result', initialScreeningData.result || '')
     form.setValue('clinical_notes', '')
     form.setValue('referral_notes', '')
+    form.setValue('progress_notes', '')
     form.setValue(
       'vocabulary_support_recommended',
       initialScreeningData.vocabulary_support || false
@@ -356,6 +358,8 @@ const MultiStepSpeechScreeningForm = ({
         vocabulary_support: (formData.vocabulary_support_recommended as boolean) || false,
         clinical_notes: (formData.clinical_notes as string) || '',
         referral_notes: (formData.referral_notes as string) || '',
+        progress_notes: (formData.progress_notes as string) || '',
+
         error_patterns: {
           additional_observations: (formData.other_notes as string) || '',
           articulation: {

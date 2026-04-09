@@ -99,6 +99,7 @@ export interface SpeechScreeningFormValues {
   screening_date: string
   clinical_notes: string
   referral_notes: string
+  progress_notes: string
   result: string
   vocabulary_support: boolean
   speech_screen_result: string
