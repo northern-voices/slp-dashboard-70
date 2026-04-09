@@ -135,7 +135,7 @@ const SpeechScreeningStep2 = ({
           )}
           <Textarea
             {...form.register('referral_notes')}
-            placeholder='Enter recommendations and referrals...'
+            placeholder='OT or Comprehensive Language Evaluation or Fluency Evaluation, etc.'
             rows={4}
             className='-mt-2'
             onKeyDown={e => {
