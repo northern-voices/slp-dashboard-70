@@ -44,8 +44,6 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
                 <SelectItem value='moderate'>Moderate</SelectItem>
                 <SelectItem value='severe'>Severe</SelectItem>
                 <SelectItem value='profound'>Profound</SelectItem>
-                <SelectItem value='complex_needs'>Complex needs</SelectItem>
-                <SelectItem value='unable_to_screen'>Unable to screen (Compliance)</SelectItem>
               </SelectContent>
             </Select>
           </div>
