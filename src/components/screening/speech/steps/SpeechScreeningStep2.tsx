@@ -91,7 +91,7 @@ const SpeechScreeningStep2 = ({
           className='cursor-pointer select-none'
           onClick={() => setClinicalNotesOpen(!clinicalNotesOpen)}>
           <CardTitle className='flex items-center justify-between'>
-            Clinical Notes (Private) - Not shown on reports{' '}
+            Clinical Notes (Private) - Not shown on reports
             <span className='text-lg font-normal text-muted-foreground'>
               {clinicalNotesOpen ? '▲ Hide' : '▼ Show'}
             </span>
@@ -158,7 +158,6 @@ const SpeechScreeningStep2 = ({
               {...form.register('referral_notes')}
               placeholder='OT or Comprehensive Language Evaluation or Fluency Evaluation, etc.'
               rows={4}
-              className='-mt-2'
               onKeyDown={e => {
                 if (e.key === 'Enter' && e.ctrlKey) {
                   // Allow Ctrl+Enter for new lines
