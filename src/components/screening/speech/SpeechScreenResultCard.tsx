@@ -80,6 +80,7 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
               onCheckedChange={checked => {
                 form.setValue('sub', checked as boolean)
                 form.setValue('qualifies_for_speech_program', false)
+                if (checked) form.setValue('speech_screen_result', '')
               }}
             />
             <Label htmlFor='sub' className='text-sm font-medium'>
@@ -104,8 +105,7 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
                   <RadioGroupItem value={option.value} id={`result_${option.value}`} />
                   <Label
                     htmlFor={`result_${option.value}`}
-                    className='text-sm font-normal
-  cursor-pointer'>
+                    className='text-sm font-normal cursor-pointer'>
                     {option.label}
                   </Label>
                 </div>
