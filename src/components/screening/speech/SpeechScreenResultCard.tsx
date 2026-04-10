@@ -50,6 +50,50 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
 
           <div className='flex items-center space-x-2'>
             <Checkbox
+              id='does_not_qualify'
+              checked={!form.watch('qualifies_for_speech_program') && !form.watch('sub')}
+              onCheckedChange={checked => {
+                if (checked) {
+                  form.setValue('qualifies_for_speech_program', false)
+                  form.setValue('sub', false)
+                }
+              }}
+            />
+            <Label htmlFor='does_not_qualify' className='text-sm font-medium'>
+              Does not qualify
+            </Label>
+          </div>
+
+          <div className='flex items-center space-x-2'>
+            <Checkbox
+              id='qualifies_for_speech_program'
+              checked={form.watch('qualifies_for_speech_program') || false}
+              onCheckedChange={checked => {
+                form.setValue('qualifies_for_speech_program', checked as boolean)
+                if (checked) form.setValue('sub', false)
+              }}
+            />
+            <Label htmlFor='qualifies_for_speech_program' className='text-sm font-medium'>
+              Qualifies - Primary Caseload
+            </Label>
+          </div>
+
+          <div className='flex items-center space-x-2'>
+            <Checkbox
+              id='sub'
+              checked={form.watch('sub') || false}
+              onCheckedChange={checked => {
+                form.setValue('sub', checked as boolean)
+                if (checked) form.setValue('qualifies_for_speech_program', false)
+              }}
+            />
+            <Label htmlFor='sub' className='text-sm font-medium'>
+              Qualifies - Sub
+            </Label>
+          </div>
+
+          <div className='flex items-center space-x-2'>
+            <Checkbox
               id='vocabulary_support_recommended'
               checked={form.watch('vocabulary_support_recommended') || false}
               onCheckedChange={checked => {
@@ -58,46 +102,6 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
             />
             <Label htmlFor='vocabulary_support_recommended' className='text-sm font-medium'>
               Vocabulary Support Recommended (Language Ladder)
-            </Label>
-          </div>
-
-          <div className='flex items-center space-x-2'>
-            <Checkbox
-              id='qualifies_for_speech_program'
-              checked={form.watch('qualifies_for_speech_program') || false}
-              disabled={form.watch('sub')}
-              onCheckedChange={checked => {
-                form.setValue('qualifies_for_speech_program', checked as boolean)
-                if (checked) {
-                  form.setValue('sub', false)
-                }
-              }}
-            />
-            <Label
-              htmlFor='qualifies_for_speech_program'
-              className={`text-sm font-medium ${form.watch('sub') ? 'text-gray-400' : ''}`}>
-              Qualifies for Speech Program
-            </Label>
-          </div>
-
-          <div className='flex items-center space-x-2'>
-            <Checkbox
-              id='sub'
-              checked={form.watch('sub') || false}
-              disabled={form.watch('qualifies_for_speech_program') || false}
-              onCheckedChange={checked => {
-                form.setValue('sub', checked as boolean)
-                if (checked) {
-                  form.setValue('qualifies_for_speech_program', false)
-                }
-              }}
-            />
-            <Label
-              htmlFor='sub'
-              className={`text-sm font-medium ${
-                form.watch('qualifies_for_speech_program') ? 'text-gray-400' : ''
-              }`}>
-              Sub
             </Label>
           </div>
         </div>
