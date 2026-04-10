@@ -2,6 +2,7 @@ import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   articulationSounds,
   soundErrorPatterns,
@@ -36,8 +37,10 @@ const computePatternDisabled = (
     p => !isExclusive(p) && p !== 'Stimulability'
   )
 
-  // Stimulability is never disabled and never counts against other patterns
-  if (pattern === 'Stimulability') return false
+  if (pattern === 'Stimulability') {
+    const nonStimulabilityPatterns = currentPatterns.filter(p => p !== 'Stimulability')
+    return nonStimulabilityPatterns.length === 0
+  }
   if (hasExclusiveSelected && !currentPatterns.includes(pattern)) return true
   if (hasNonExclusiveSelected && isThisPatternExclusive) return true
 
@@ -145,7 +148,6 @@ const ArticulationCard = ({
         <CardTitle>Articulation</CardTitle>
       </CardHeader>
       <CardContent className='space-y-6'>
-        {/* Articulation Sounds */}
         <div>
           <Label className='text-base font-medium mb-3 block'>Sounds in Error</Label>
           <div className='grid grid-cols-3 md:grid-cols-6 gap-3'>
@@ -164,14 +166,17 @@ const ArticulationCard = ({
                   </button>
                   {selectedSounds.includes(sound) && (
                     <>
-                      {/* Error Patterns for this sound */}
+                      {/* Error Patterns */}
                       <div className='mt-2 space-y-1'>
                         {soundErrorPatterns[sound]?.patterns.map(patternObj => {
                           const pattern = patternObj.value
                           const patternDisplay = patternObj.display
                           const currentPatterns = selectedErrorPatterns[sound] || []
-
                           const isDisabled = computePatternDisabled(sound, pattern, currentPatterns)
+
+                          if (pattern === 'Stimulability') {
+                            return null
+                          }
 
                           return (
                             <div key={pattern} className='space-y-2'>
@@ -238,46 +243,6 @@ const ArticulationCard = ({
                                 </div>
                               )}
 
-                              {/* Stimulability Options */}
-                              {pattern === 'Stimulability' &&
-                                currentPatterns.includes('Stimulability') && (
-                                  <div className='ml-6 space-y-1'>
-                                    <div className='text-xs font-medium text-gray-700'>
-                                      Stimulable at:
-                                    </div>
-                                    <div className='flex flex-col gap-2'>
-                                      {stimulabilityOptions.map(option => {
-                                        const currentOptions =
-                                          selectedStimulabilityOptions[sound] || []
-                                        const isSelected = currentOptions.includes(option)
-                                        const isDisabled = currentOptions.length > 0 && !isSelected
-
-                                        return (
-                                          <div key={option} className='flex items-center space-x-2'>
-                                            <Checkbox
-                                              id={`${sound}-stimulability-${option}`}
-                                              disabled={isDisabled}
-                                              checked={isSelected}
-                                              onCheckedChange={checked =>
-                                                handleStimulabilityOptionChange(
-                                                  sound,
-                                                  option,
-                                                  checked as boolean
-                                                )
-                                              }
-                                            />
-                                            <Label
-                                              htmlFor={`${sound}-stimulability-${option}`}
-                                              className={`text-xs font-medium ${isDisabled ? 'text-gray-400' : ''}`}>
-                                              {option}
-                                            </Label>
-                                          </div>
-                                        )
-                                      })}
-                                    </div>
-                                  </div>
-                                )}
-
                               {/* Other Error Pattern input */}
                               {pattern === 'Other' && currentPatterns.includes('Other') && (
                                 <div className='mt-2'>
@@ -303,7 +268,7 @@ const ArticulationCard = ({
                         })}
                       </div>
 
-                      {/* Notes checkbox */}
+                      {/* Notes (Private) */}
                       <div className='mt-1 space-y-2'>
                         <div className='flex items-center space-x-2'>
                           <Checkbox
@@ -329,6 +294,34 @@ const ArticulationCard = ({
                               className='text-xs px-3 py-2 border border-gray-300 rounded-sm w-full'
                             />
                           </div>
+                        )}
+                      </div>
+
+                      {/* Stimulability */}
+                      <div className='space-y-1 mt-1'>
+                        <div className='text-xs font-medium text-gray-700'>Stimulability</div>
+                        {(selectedErrorPatterns[sound] || []).filter(p => p !== 'Stimulability')
+                          .length > 0 && (
+                          <RadioGroup
+                            value={selectedStimulabilityOptions[sound]?.[0] || 'Word'}
+                            onValueChange={value =>
+                              handleStimulabilityOptionChange(sound, value, true)
+                            }
+                            className='ml-2 space-y-1'>
+                            {stimulabilityOptions.map(option => (
+                              <div key={option} className='flex items-center space-x-2'>
+                                <RadioGroupItem
+                                  value={option}
+                                  id={`${sound}-stimulability-${option}`}
+                                />
+                                <Label
+                                  htmlFor={`${sound}-stimulability-${option}`}
+                                  className='text-xs font-normal cursor-pointer'>
+                                  {option}
+                                </Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
                         )}
                       </div>
 

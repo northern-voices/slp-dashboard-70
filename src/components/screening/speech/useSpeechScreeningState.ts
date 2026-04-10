@@ -320,6 +320,24 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
     })
   }
 
+  useEffect(() => {
+    const updatedStimulability = { ...selectedStimulabilityOptions }
+    let changed = false
+
+    Object.keys(selectedErrorPatterns).forEach(sound => {
+      const patterns = selectedErrorPatterns[sound] || []
+      if (patterns.length > 0 && !updatedStimulability[sound]?.length) {
+        updatedStimulability[sound] = ['Word']
+        changed = true
+      } else if (patterns.length === 0 && updatedStimulability[sound]?.length) {
+        updatedStimulability[sound] = []
+        changed = true
+      }
+    })
+
+    if (changed) setSelectedStimulabilityOptions(updatedStimulability)
+  }, [selectedErrorPatterns])
+
   const handleErrorPatternChange = (sound: string, pattern: string, checked: boolean) => {
     const currentPatterns = selectedErrorPatterns[sound] || []
 
@@ -332,21 +350,6 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
         const stimulability = currentPatterns.includes('Stimulability') ? ['Stimulability'] : []
         setSelectedErrorPatterns({ ...selectedErrorPatterns, [sound]: stimulability })
         clearNotesForSound(sound)
-      }
-      return
-    }
-
-    if (pattern === 'Stimulability') {
-      setSelectedErrorPatterns({
-        ...selectedErrorPatterns,
-        [sound]: checked
-          ? [...currentPatterns, pattern]
-          : currentPatterns.filter(p => p !== pattern),
-      })
-      if (checked) {
-        setSelectedStimulabilityOptions({ ...selectedStimulabilityOptions, [sound]: ['Word'] })
-      } else {
-        setSelectedStimulabilityOptions({ ...selectedStimulabilityOptions, [sound]: [] })
       }
       return
     }
