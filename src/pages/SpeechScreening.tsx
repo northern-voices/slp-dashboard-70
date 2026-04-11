@@ -51,24 +51,13 @@ const SpeechScreeningContent = () => {
   )
   const latestScreening = studentScreenings[0] ?? null
 
-  const getCurrentAcademicYearStart = () => {
-    const now = new Date()
-    const month = now.getMonth()
-    const year = now.getFullYear()
-    return new Date(month < 7 ? year - 1 : year, 7, 1)
-  }
-
-  const getPreviousAcademicYearStart = () => {
-    const now = new Date()
-    const month = now.getMonth()
-    const year = now.getFullYear()
-    const currentYearStart = month < 7 ? year - 1 : year
-    return new Date(currentYearStart - 1, 7, 1)
-  }
-
-  const isPreviousYearScreening = latestScreening
-    ? new Date(latestScreening.created_at) >= getPreviousAcademicYearStart() &&
-      new Date(latestScreening.created_at) < getCurrentAcademicYearStart()
+  const isWithin13Months = latestScreening
+    ? (() => {
+        const screeningDate = new Date(latestScreening.created_at)
+        const thirteenMonthsAgo = new Date()
+        thirteenMonthsAgo.setMonth(thirteenMonthsAgo.getMonth() - 13)
+        return screeningDate >= thirteenMonthsAgo
+      })()
     : false
 
   const handleCancel = () => {
@@ -78,12 +67,6 @@ const SpeechScreeningContent = () => {
       navigate('/screenings')
     }
   }
-
-  const userName = userProfile
-    ? `${userProfile.first_name} ${userProfile.last_name}`
-    : 'Dr. Sarah Johnson'
-
-  const userRole = userProfile?.role || 'slp'
 
   if (loading) {
     return (
@@ -106,18 +89,18 @@ const SpeechScreeningContent = () => {
           </div>
           {latestScreening && (
             <div className={`flex items-center gap-2`}>
-              {isPreviousYearScreening ? (
+              {isWithin13Months ? (
                 <div className='flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full'>
                   <RefreshCw className='w-3 h-3 text-green-600' />
                   <p className='text-xs font-medium text-green-700'>
-                    Previous school year — will be treated as a rescreening
+                    Within 13 months — will be treated as a rescreening
                   </p>
                 </div>
               ) : (
                 <div className='flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full'>
                   <Info className='w-3 h-3 text-blue-600' />
                   <p className='text-xs font-medium text-blue-700'>
-                    Not from the previous school year — will be treated as a new screening
+                    More than 13 months ago — will be treated as a new screening
                   </p>
                 </div>
               )}
@@ -225,7 +208,7 @@ const SpeechScreeningContent = () => {
             existingStudent={student}
             onStudentSelect={setSelectedStudent}
             afterStudentContent={renderLatestScreening()}
-            initialScreeningData={isPreviousYearScreening ? latestScreening : null}
+            initialScreeningData={isWithin13Months ? latestScreening : null}
           />
         </div>
       </div>
