@@ -53,10 +53,14 @@ const SpeechScreeningContent = () => {
 
   const isWithin13Months = latestScreening
     ? (() => {
-        const screeningDate = new Date(latestScreening.created_at)
-        const thirteenMonthsAgo = new Date()
-        thirteenMonthsAgo.setMonth(thirteenMonthsAgo.getMonth() - 13)
-        return screeningDate >= thirteenMonthsAgo
+        const now = new Date()
+        const month = now.getMonth()
+        const year = now.getFullYear()
+        const academicYearStart = month < 7 ? year - 1 : year
+
+        const threshold = new Date(academicYearStart, 6, 1)
+
+        return new Date(latestScreening.created_at) >= threshold
       })()
     : false
 
@@ -81,78 +85,69 @@ const SpeechScreeningContent = () => {
     const programStatus = selectedStudent?.program_status || student?.program_status
 
     return (
-      <div className='mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg'>
-        <div className='flex items-center justify-between mb-3'>
-          <div className='flex items-center gap-2'>
-            <ClipboardList className='w-4 h-4 text-amber-600' />
-            <h2 className='text-sm font-semibold text-amber-800'>Latest Screening</h2>
+      <div className='mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-3 text-sm flex-wrap'>
+            <div className='flex items-center gap-1.5'>
+              <ClipboardList className='w-3.5 h-3.5 text-amber-600' />
+              <span className='text-xs font-semibold text-amber-800'>Latest Screening</span>
+            </div>
+
+            {latestScreening ? (
+              <>
+                <span className='text-amber-700 text-xs'>
+                  {format(parseDateSafely(latestScreening.created_at), 'MMM d, yyyy')}
+                </span>
+
+                <span className='text-xs text-amber-600 font-medium'>Status:</span>
+                <Badge
+                  className={`text-xs ${
+                    programStatus === 'qualified'
+                      ? 'bg-green-100 text-green-800'
+                      : programStatus === 'sub'
+                        ? 'bg-blue-100 text-blue-800'
+                        : programStatus === 'no_consent'
+                          ? 'bg-gray-100 text-gray-800'
+                          : 'bg-amber-100 text-amber-800'
+                  }`}>
+                  {programStatus === 'no_consent'
+                    ? 'No Consent'
+                    : programStatus?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) ||
+                      '-'}
+                </Badge>
+
+                <span className='text-xs text-amber-600 font-medium'>Result:</span>
+                <Badge className='bg-amber-100 text-amber-800 text-xs'>
+                  {latestScreening.result
+                    ?.replace(/_/g, ' ')
+                    .replace(/\b\w/g, c => c.toUpperCase()) || '-'}
+                </Badge>
+              </>
+            ) : (
+              <span className='text-xs text-amber-700'>No previous screenings found.</span>
+            )}
           </div>
+
           {latestScreening && (
-            <div className={`flex items-center gap-2`}>
+            <div className='ml-3 shrink-0'>
               {isWithin13Months ? (
-                <div className='flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full'>
+                <div className='flex items-center gap-1.5 px-2 py-1 bg-green-50 border border-green-200 rounded-full'>
                   <RefreshCw className='w-3 h-3 text-green-600' />
                   <p className='text-xs font-medium text-green-700'>
-                    Within 13 months — will be treated as a rescreening
+                    Within 13 months — rescreening
                   </p>
                 </div>
               ) : (
-                <div className='flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full'>
+                <div className='flex items-center gap-1.5 px-2 py-1 bg-blue-50 border border-blue-200 rounded-full'>
                   <Info className='w-3 h-3 text-blue-600' />
                   <p className='text-xs font-medium text-blue-700'>
-                    More than 13 months ago — will be treated as a new screening
+                    Over 13 months — new screening
                   </p>
                 </div>
               )}
             </div>
           )}
         </div>
-
-        {latestScreening ? (
-          <div className='grid grid-cols-2 md:grid-cols-5 gap-3 text-sm'>
-            <div>
-              <p className='text-xs text-amber-600 font-medium'>Program Status</p>
-              <Badge
-                className={`text-xs mt-0.5 ${
-                  programStatus === 'qualified'
-                    ? 'bg-green-100 text-green-800'
-                    : programStatus === 'sub'
-                      ? 'bg-blue-100 text-blue-800'
-                      : programStatus === 'no_consent'
-                        ? 'bg-gray-100 text-gray-800'
-                        : 'bg-amber-100 text-amber-800'
-                }`}>
-                {programStatus === 'no_consent'
-                  ? 'No Consent'
-                  : programStatus?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || '-'}
-              </Badge>
-            </div>
-            <div>
-              <p className='text-xs text-amber-600 font-medium'>Date</p>
-              <p className='text-amber-900'>
-                {format(parseDateSafely(latestScreening.created_at), 'MMM d, yyyy')}
-              </p>
-            </div>
-            <div>
-              <p className='text-xs text-amber-600 font-medium'>Type</p>
-              <p className='text-amber-900 capitalize'>{latestScreening.screening_type || '-'}</p>
-            </div>
-            <div>
-              <p className='text-xs text-amber-600 font-medium'>Result</p>
-              <Badge className='bg-amber-100 text-amber-800 text-xs mt-0.5'>
-                {latestScreening.result
-                  ?.replace(/_/g, ' ')
-                  .replace(/\b\w/g, c => c.toUpperCase()) || '-'}
-              </Badge>
-            </div>
-            <div>
-              <p className='text-xs text-amber-600 font-medium'>Screener</p>
-              <p className='text-amber-900'>{latestScreening.screener || '-'}</p>
-            </div>
-          </div>
-        ) : (
-          <p className='text-sm text-amber-700'>No previous screenings found for this student.</p>
-        )}
       </div>
     )
   }
