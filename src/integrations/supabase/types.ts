@@ -1,16 +1,10 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: '12.2.3 (519615d)'
   }
   public: {
     Tables: {
@@ -28,9 +22,8 @@ export type Database = {
           left_pressure: number | null
           left_volume_db: number | null
           referral_notes: string | null
-          result:
-            | Database["public"]["Enums"]["hearing_screening_note_type"]
-            | null
+          progress_notes: string | null
+          result: Database['public']['Enums']['hearing_screening_note_type'] | null
           right_compliance: number | null
           right_ear_compliance_result: string | null
           right_ear_pressure_result: string | null
@@ -55,9 +48,8 @@ export type Database = {
           left_pressure?: number | null
           left_volume_db?: number | null
           referral_notes?: string | null
-          result?:
-            | Database["public"]["Enums"]["hearing_screening_note_type"]
-            | null
+          progress_notes?: string | null
+          result?: Database['public']['Enums']['hearing_screening_note_type'] | null
           right_compliance?: number | null
           right_ear_compliance_result?: string | null
           right_ear_pressure_result?: string | null
@@ -82,9 +74,8 @@ export type Database = {
           left_pressure?: number | null
           left_volume_db?: number | null
           referral_notes?: string | null
-          result?:
-            | Database["public"]["Enums"]["hearing_screening_note_type"]
-            | null
+          progress_notes?: string | null
+          result?: Database['public']['Enums']['hearing_screening_note_type'] | null
           right_compliance?: number | null
           right_ear_compliance_result?: string | null
           right_ear_pressure_result?: string | null
@@ -98,25 +89,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "hearing_screenings_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'hearing_screenings_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "school_grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'school_grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "hearing_screenings_screener_id_fkey"
-            columns: ["screener_id"]
+            foreignKeyName: 'hearing_screenings_screener_id_fkey'
+            columns: ['screener_id']
             isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
+            referencedRelation: 'users'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "hearing_screenings_student_id_fkey"
-            columns: ["student_id"]
+            foreignKeyName: 'hearing_screenings_student_id_fkey'
+            columns: ['student_id']
             isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
+            referencedRelation: 'students'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -150,18 +141,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "monthly_meeting_student_updates_meeting_fkey"
-            columns: ["monthly_meeting_id"]
+            foreignKeyName: 'monthly_meeting_student_updates_meeting_fkey'
+            columns: ['monthly_meeting_id']
             isOneToOne: false
-            referencedRelation: "monthly_meetings"
-            referencedColumns: ["id"]
+            referencedRelation: 'monthly_meetings'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "monthly_meeting_student_updates_student_fkey"
-            columns: ["student_id"]
+            foreignKeyName: 'monthly_meeting_student_updates_student_fkey'
+            columns: ['student_id']
             isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
+            referencedRelation: 'students'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -204,18 +195,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "monthly_meetings_facilitator_id_fkey"
-            columns: ["facilitator_id"]
+            foreignKeyName: 'monthly_meetings_facilitator_id_fkey'
+            columns: ['facilitator_id']
             isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
+            referencedRelation: 'users'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "monthly_meetings_school_id_fkey"
-            columns: ["school_id"]
+            foreignKeyName: 'monthly_meetings_school_id_fkey'
+            columns: ['school_id']
             isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
+            referencedRelation: 'schools'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -249,7 +240,7 @@ export type Database = {
           id: string
           is_bulk: boolean | null
           metadata: Json | null
-          report_type: Database["public"]["Enums"]["report_type"]
+          report_type: Database['public']['Enums']['report_type']
           school_id: string | null
           speech_screening_id: string | null
           student_id: string | null
@@ -262,7 +253,7 @@ export type Database = {
           id?: string
           is_bulk?: boolean | null
           metadata?: Json | null
-          report_type: Database["public"]["Enums"]["report_type"]
+          report_type: Database['public']['Enums']['report_type']
           school_id?: string | null
           speech_screening_id?: string | null
           student_id?: string | null
@@ -275,46 +266,46 @@ export type Database = {
           id?: string
           is_bulk?: boolean | null
           metadata?: Json | null
-          report_type?: Database["public"]["Enums"]["report_type"]
+          report_type?: Database['public']['Enums']['report_type']
           school_id?: string | null
           speech_screening_id?: string | null
           student_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "reports_generated_by_fkey"
-            columns: ["generated_by"]
+            foreignKeyName: 'reports_generated_by_fkey'
+            columns: ['generated_by']
             isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
+            referencedRelation: 'users'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "reports_hearing_screening_id_fkey"
-            columns: ["hearing_screening_id"]
+            foreignKeyName: 'reports_hearing_screening_id_fkey'
+            columns: ['hearing_screening_id']
             isOneToOne: false
-            referencedRelation: "hearing_screenings"
-            referencedColumns: ["id"]
+            referencedRelation: 'hearing_screenings'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "reports_school_id_fkey"
-            columns: ["school_id"]
+            foreignKeyName: 'reports_school_id_fkey'
+            columns: ['school_id']
             isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
+            referencedRelation: 'schools'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "reports_student_id_fkey"
-            columns: ["student_id"]
+            foreignKeyName: 'reports_student_id_fkey'
+            columns: ['student_id']
             isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
+            referencedRelation: 'students'
+            referencedColumns: ['id']
           },
         ]
       }
       school_activities: {
         Row: {
           activity_date: string
-          activity_type: Database["public"]["Enums"]["activity_type_enum"]
+          activity_type: Database['public']['Enums']['activity_type_enum']
           created_at: string | null
           created_by: string
           id: string
@@ -324,7 +315,7 @@ export type Database = {
         }
         Insert: {
           activity_date: string
-          activity_type: Database["public"]["Enums"]["activity_type_enum"]
+          activity_type: Database['public']['Enums']['activity_type_enum']
           created_at?: string | null
           created_by: string
           id?: string
@@ -334,7 +325,7 @@ export type Database = {
         }
         Update: {
           activity_date?: string
-          activity_type?: Database["public"]["Enums"]["activity_type_enum"]
+          activity_type?: Database['public']['Enums']['activity_type_enum']
           created_at?: string | null
           created_by?: string
           id?: string
@@ -344,18 +335,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "school_activities_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: 'school_activities_created_by_fkey'
+            columns: ['created_by']
             isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
+            referencedRelation: 'users'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "school_activities_school_id_fkey"
-            columns: ["school_id"]
+            foreignKeyName: 'school_activities_school_id_fkey'
+            columns: ['school_id']
             isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
+            referencedRelation: 'schools'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -386,11 +377,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "school_grades_school_id_fkey"
-            columns: ["school_id"]
+            foreignKeyName: 'school_grades_school_id_fkey'
+            columns: ['school_id']
             isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
+            referencedRelation: 'schools'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -433,11 +424,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "school_staff_school_id_fkey"
-            columns: ["school_id"]
+            foreignKeyName: 'school_staff_school_id_fkey'
+            columns: ['school_id']
             isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
+            referencedRelation: 'schools'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -495,18 +486,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "schools_organization_id_fkey"
-            columns: ["organization_id"]
+            foreignKeyName: 'schools_organization_id_fkey'
+            columns: ['organization_id']
             isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "schools_primary_slp_id_fkey"
-            columns: ["primary_slp_id"]
+            foreignKeyName: 'schools_primary_slp_id_fkey'
+            columns: ['primary_slp_id']
             isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
+            referencedRelation: 'users'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -518,11 +509,10 @@ export type Database = {
           grade_id: string
           id: string
           referral_notes: string | null
-          result: Database["public"]["Enums"]["speech_screening_result"] | null
+          progress_notes: string | null
+          result: Database['public']['Enums']['speech_screening_result'] | null
           screener_id: string
-          screening_type:
-            | Database["public"]["Enums"]["screening_type_enum"]
-            | null
+          screening_type: Database['public']['Enums']['screening_type_enum'] | null
           student_id: string
           suspected_cas: boolean | null
           updated_at: string | null
@@ -535,11 +525,10 @@ export type Database = {
           grade_id: string
           id?: string
           referral_notes?: string | null
-          result?: Database["public"]["Enums"]["speech_screening_result"] | null
+          progress_notes?: string | null
+          result?: Database['public']['Enums']['speech_screening_result'] | null
           screener_id: string
-          screening_type?:
-            | Database["public"]["Enums"]["screening_type_enum"]
-            | null
+          screening_type?: Database['public']['Enums']['screening_type_enum'] | null
           student_id: string
           suspected_cas?: boolean | null
           updated_at?: string | null
@@ -552,11 +541,10 @@ export type Database = {
           grade_id?: string
           id?: string
           referral_notes?: string | null
-          result?: Database["public"]["Enums"]["speech_screening_result"] | null
+          progress_notes?: string | null
+          result?: Database['public']['Enums']['speech_screening_result'] | null
           screener_id?: string
-          screening_type?:
-            | Database["public"]["Enums"]["screening_type_enum"]
-            | null
+          screening_type?: Database['public']['Enums']['screening_type_enum'] | null
           student_id?: string
           suspected_cas?: boolean | null
           updated_at?: string | null
@@ -564,25 +552,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "speech_screenings_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'speech_screenings_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "school_grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'school_grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "speech_screenings_screener_id_fkey"
-            columns: ["screener_id"]
+            foreignKeyName: 'speech_screenings_screener_id_fkey'
+            columns: ['screener_id']
             isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
+            referencedRelation: 'users'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "speech_screenings_student_id_fkey"
-            columns: ["student_id"]
+            foreignKeyName: 'speech_screenings_student_id_fkey'
+            columns: ['student_id']
             isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
+            referencedRelation: 'students'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -613,18 +601,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "student_notes_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: 'student_notes_created_by_fkey'
+            columns: ['created_by']
             isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
+            referencedRelation: 'users'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "student_notes_student_id_fkey"
-            columns: ["student_id"]
+            foreignKeyName: 'student_notes_student_id_fkey'
+            columns: ['student_id']
             isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
+            referencedRelation: 'students'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -667,46 +655,46 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "student_transfers_from_grade_id_fkey"
-            columns: ["from_grade_id"]
+            foreignKeyName: 'student_transfers_from_grade_id_fkey'
+            columns: ['from_grade_id']
             isOneToOne: false
-            referencedRelation: "school_grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'school_grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "student_transfers_from_school_id_fkey"
-            columns: ["from_school_id"]
+            foreignKeyName: 'student_transfers_from_school_id_fkey'
+            columns: ['from_school_id']
             isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
+            referencedRelation: 'schools'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "student_transfers_student_id_fkey"
-            columns: ["student_id"]
+            foreignKeyName: 'student_transfers_student_id_fkey'
+            columns: ['student_id']
             isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
+            referencedRelation: 'students'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "student_transfers_to_grade_id_fkey"
-            columns: ["to_grade_id"]
+            foreignKeyName: 'student_transfers_to_grade_id_fkey'
+            columns: ['to_grade_id']
             isOneToOne: false
-            referencedRelation: "school_grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'school_grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "student_transfers_to_school_id_fkey"
-            columns: ["to_school_id"]
+            foreignKeyName: 'student_transfers_to_school_id_fkey'
+            columns: ['to_school_id']
             isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
+            referencedRelation: 'schools'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "student_transfers_transferred_by_fkey"
-            columns: ["transferred_by"]
+            foreignKeyName: 'student_transfers_transferred_by_fkey'
+            columns: ['transferred_by']
             isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
+            referencedRelation: 'users'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -718,9 +706,7 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
-          program_status:
-            | Database["public"]["Enums"]["speech_program_status"]
-            | null
+          program_status: Database['public']['Enums']['speech_program_status'] | null
           qualifies_for_program: boolean | null
           school_id: string
           student_id: string | null
@@ -733,9 +719,7 @@ export type Database = {
           first_name: string
           id?: string
           last_name: string
-          program_status?:
-            | Database["public"]["Enums"]["speech_program_status"]
-            | null
+          program_status?: Database['public']['Enums']['speech_program_status'] | null
           qualifies_for_program?: boolean | null
           school_id: string
           student_id?: string | null
@@ -748,9 +732,7 @@ export type Database = {
           first_name?: string
           id?: string
           last_name?: string
-          program_status?:
-            | Database["public"]["Enums"]["speech_program_status"]
-            | null
+          program_status?: Database['public']['Enums']['speech_program_status'] | null
           qualifies_for_program?: boolean | null
           school_id?: string
           student_id?: string | null
@@ -758,18 +740,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "students_current_grade_id_fkey"
-            columns: ["current_grade_id"]
+            foreignKeyName: 'students_current_grade_id_fkey'
+            columns: ['current_grade_id']
             isOneToOne: false
-            referencedRelation: "school_grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'school_grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "students_school_id_fkey"
-            columns: ["school_id"]
+            foreignKeyName: 'students_school_id_fkey'
+            columns: ['school_id']
             isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
+            referencedRelation: 'schools'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -784,7 +766,7 @@ export type Database = {
           is_email_verified: boolean | null
           last_name: string
           organization_id: string
-          role: Database["public"]["Enums"]["user_role"]
+          role: Database['public']['Enums']['user_role']
           updated_at: string | null
         }
         Insert: {
@@ -797,7 +779,7 @@ export type Database = {
           is_email_verified?: boolean | null
           last_name: string
           organization_id: string
-          role?: Database["public"]["Enums"]["user_role"]
+          role?: Database['public']['Enums']['user_role']
           updated_at?: string | null
         }
         Update: {
@@ -810,16 +792,16 @@ export type Database = {
           is_email_verified?: boolean | null
           last_name?: string
           organization_id?: string
-          role?: Database["public"]["Enums"]["user_role"]
+          role?: Database['public']['Enums']['user_role']
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "users_organization_id_fkey"
-            columns: ["organization_id"]
+            foreignKeyName: 'users_organization_id_fkey'
+            columns: ['organization_id']
             isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
+            referencedRelation: 'organizations'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -959,7 +941,7 @@ export type Database = {
       is_super_admin: { Args: never; Returns: boolean }
       map_screening_result: {
         Args: { csv_result: string }
-        Returns: Database["public"]["Enums"]["speech_screening_result"]
+        Returns: Database['public']['Enums']['speech_screening_result']
       }
       verify_school_summary_report: {
         Args: { p_academic_year: string; p_school_id: string }
@@ -979,72 +961,62 @@ export type Database = {
     }
     Enums: {
       activity_type_enum:
-        | "speech_screen"
-        | "hearing_screen"
-        | "school_visit_training"
-        | "school_visit_other"
-        | "monthly_meeting"
-        | "phone_call"
-        | "email"
-        | "consult_outside_providers"
-      hearing_screening_note:
-        | "absent"
-        | "non_compliant"
-        | "complex_needs"
-        | "results_uncertain"
+        | 'speech_screen'
+        | 'hearing_screen'
+        | 'school_visit_training'
+        | 'school_visit_other'
+        | 'monthly_meeting'
+        | 'phone_call'
+        | 'email'
+        | 'consult_outside_providers'
+      hearing_screening_note: 'absent' | 'non_compliant' | 'complex_needs' | 'results_uncertain'
       hearing_screening_note_type:
-        | "absent"
-        | "non_compliant"
-        | "complex_needs"
-        | "results_uncertain"
+        | 'absent'
+        | 'non_compliant'
+        | 'complex_needs'
+        | 'results_uncertain'
       report_type:
-        | "speech_screening_report"
-        | "bulk_speech_screening_reports"
-        | "speech_goals_report"
-        | "bulk_speech_goals_reports"
-        | "speech_progress_report"
-        | "bulk_speech_progress_reports"
-        | "hearing_screening_report"
-        | "bulk_hearing_screenings_report"
+        | 'speech_screening_report'
+        | 'bulk_speech_screening_reports'
+        | 'speech_goals_report'
+        | 'bulk_speech_goals_reports'
+        | 'speech_progress_report'
+        | 'bulk_speech_progress_reports'
+        | 'hearing_screening_report'
+        | 'bulk_hearing_screenings_report'
       school_staff_role:
-        | "director"
-        | "sss_coordinator"
-        | "principal"
-        | "vice_principal"
-        | "inclusive_supports_teacher"
-        | "speech_ea"
-        | "non_designated_ea"
-        | "educator"
-        | "ot"
-        | "slp_supplemental"
-        | "pt"
-        | "ed_psych"
-        | "jp_liaison"
-        | "learning_support_teacher"
-      screening_type_enum: "initial" | "progress"
-      speech_program_status:
-        | "none"
-        | "qualified"
-        | "sub"
-        | "graduated"
-        | "paused"
-        | "no_consent"
+        | 'director'
+        | 'sss_coordinator'
+        | 'principal'
+        | 'vice_principal'
+        | 'inclusive_supports_teacher'
+        | 'speech_ea'
+        | 'non_designated_ea'
+        | 'educator'
+        | 'ot'
+        | 'slp_supplemental'
+        | 'pt'
+        | 'ed_psych'
+        | 'jp_liaison'
+        | 'learning_support_teacher'
+      screening_type_enum: 'initial' | 'progress'
+      speech_program_status: 'none' | 'qualified' | 'sub' | 'graduated' | 'paused' | 'no_consent'
       speech_screening_result:
-        | "absent"
-        | "passed"
-        | "mild_moderate"
-        | "severe_profound"
-        | "non_registered_no_consent"
-        | "complex_needs"
-        | "age_appropriate"
-        | "monitor"
-        | "mild"
-        | "moderate"
-        | "severe"
-        | "profound"
-        | "unable_to_screen"
-        | "no_errors"
-      user_role: "admin" | "slp" | "super_admin" | "hearing_technician"
+        | 'absent'
+        | 'passed'
+        | 'mild_moderate'
+        | 'severe_profound'
+        | 'non_registered_no_consent'
+        | 'complex_needs'
+        | 'age_appropriate'
+        | 'monitor'
+        | 'mild'
+        | 'moderate'
+        | 'severe'
+        | 'profound'
+        | 'unable_to_screen'
+        | 'no_errors'
+      user_role: 'admin' | 'slp' | 'super_admin' | 'hearing_technician'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1052,33 +1024,31 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -1087,23 +1057,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -1112,23 +1082,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -1137,115 +1107,103 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+    | keyof DefaultSchema['Enums']
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof DefaultSchema['CompositeTypes']
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
   public: {
     Enums: {
       activity_type_enum: [
-        "speech_screen",
-        "hearing_screen",
-        "school_visit_training",
-        "school_visit_other",
-        "monthly_meeting",
-        "phone_call",
-        "email",
-        "consult_outside_providers",
+        'speech_screen',
+        'hearing_screen',
+        'school_visit_training',
+        'school_visit_other',
+        'monthly_meeting',
+        'phone_call',
+        'email',
+        'consult_outside_providers',
       ],
-      hearing_screening_note: [
-        "absent",
-        "non_compliant",
-        "complex_needs",
-        "results_uncertain",
-      ],
+      hearing_screening_note: ['absent', 'non_compliant', 'complex_needs', 'results_uncertain'],
       hearing_screening_note_type: [
-        "absent",
-        "non_compliant",
-        "complex_needs",
-        "results_uncertain",
+        'absent',
+        'non_compliant',
+        'complex_needs',
+        'results_uncertain',
       ],
       report_type: [
-        "speech_screening_report",
-        "bulk_speech_screening_reports",
-        "speech_goals_report",
-        "bulk_speech_goals_reports",
-        "speech_progress_report",
-        "bulk_speech_progress_reports",
-        "hearing_screening_report",
-        "bulk_hearing_screenings_report",
+        'speech_screening_report',
+        'bulk_speech_screening_reports',
+        'speech_goals_report',
+        'bulk_speech_goals_reports',
+        'speech_progress_report',
+        'bulk_speech_progress_reports',
+        'hearing_screening_report',
+        'bulk_hearing_screenings_report',
       ],
       school_staff_role: [
-        "director",
-        "sss_coordinator",
-        "principal",
-        "vice_principal",
-        "inclusive_supports_teacher",
-        "speech_ea",
-        "non_designated_ea",
-        "educator",
-        "ot",
-        "slp_supplemental",
-        "pt",
-        "ed_psych",
-        "jp_liaison",
-        "learning_support_teacher",
+        'director',
+        'sss_coordinator',
+        'principal',
+        'vice_principal',
+        'inclusive_supports_teacher',
+        'speech_ea',
+        'non_designated_ea',
+        'educator',
+        'ot',
+        'slp_supplemental',
+        'pt',
+        'ed_psych',
+        'jp_liaison',
+        'learning_support_teacher',
       ],
-      screening_type_enum: ["initial", "progress"],
-      speech_program_status: [
-        "none",
-        "qualified",
-        "sub",
-        "graduated",
-        "paused",
-        "no_consent",
-      ],
+      screening_type_enum: ['initial', 'progress'],
+      speech_program_status: ['none', 'qualified', 'sub', 'graduated', 'paused', 'no_consent'],
       speech_screening_result: [
-        "absent",
-        "passed",
-        "mild_moderate",
-        "severe_profound",
-        "non_registered_no_consent",
-        "complex_needs",
-        "age_appropriate",
-        "monitor",
-        "mild",
-        "moderate",
-        "severe",
-        "profound",
-        "unable_to_screen",
-        "no_errors",
+        'absent',
+        'passed',
+        'mild_moderate',
+        'severe_profound',
+        'non_registered_no_consent',
+        'complex_needs',
+        'age_appropriate',
+        'monitor',
+        'mild',
+        'moderate',
+        'severe',
+        'profound',
+        'unable_to_screen',
+        'no_errors',
       ],
-      user_role: ["admin", "slp", "super_admin", "hearing_technician"],
+      user_role: ['admin', 'slp', 'super_admin', 'hearing_technician'],
     },
   },
 } as const

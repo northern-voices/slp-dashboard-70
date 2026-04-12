@@ -36,16 +36,17 @@ const MultiStepSpeechScreeningForm = ({
 }: MultiStepSpeechScreeningFormProps) => {
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(existingStudent || null)
-
   const [selectedGrade, setSelectedGrade] = useState<string>('')
   const [selectedGradeId, setSelectedGradeId] = useState<string>('')
   const [gradeSchoolId, setGradeSchoolId] = useState<string>('')
   const [isAbsent, setIsAbsent] = useState(false)
   const [isNoConsent, setIsNoConsent] = useState(false)
+  const [isComplexNeeds, setIsComplexNeeds] = useState(false)
+  const [isUnableToScreen, setIsUnableToScreen] = useState(false)
   const [showSubmissionModal, setShowSubmissionModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const isSubmittingRef = useRef(false)
 
+  const isSubmittingRef = useRef(false)
   const { user } = useAuth()
   const { currentSchool } = useOrganization()
   const { toast } = useToast()
@@ -88,6 +89,7 @@ const MultiStepSpeechScreeningForm = ({
       general_articulation_notes: '',
       clinical_notes: '',
       referral_notes: '',
+      progress_notes: '',
       other_notes: '',
 
       // Enhanced Speech Screening Fields - match the structure expected by EnhancedSpeechScreeningFields
@@ -148,6 +150,7 @@ const MultiStepSpeechScreeningForm = ({
     form.setValue('speech_screen_result', initialScreeningData.result || '')
     form.setValue('clinical_notes', '')
     form.setValue('referral_notes', '')
+    form.setValue('progress_notes', '')
     form.setValue(
       'vocabulary_support_recommended',
       initialScreeningData.vocabulary_support || false
@@ -223,7 +226,11 @@ const MultiStepSpeechScreeningForm = ({
         errors.push('Screening date is required')
       }
 
-      if (!formData.speech_screen_result || formData.speech_screen_result === '') {
+      const hasSpecialResult = formData.complex_needs || formData.unable_to_screen
+      if (
+        !hasSpecialResult &&
+        (!formData.speech_screen_result || formData.speech_screen_result === '')
+      ) {
         errors.push('Speech screen result is required')
       }
     }
@@ -263,13 +270,24 @@ const MultiStepSpeechScreeningForm = ({
     const noConsentData = (formData.no_consent as Record<string, unknown>) || {}
     const formAbsent = (absentData.isAbsent as boolean) || false
     const formNoConsent = (noConsentData.isNoConsent as boolean) || false
+    const formComplexNeeds = (formData.complex_needs as boolean) || false
+    const formUnableToScreen = (formData.unable_to_screen as boolean) || false
 
     try {
       // Allow submission from step 1 if absent or no consent is checked, otherwise require step 2
-      if (currentStep === 1 && !formAbsent && !formNoConsent) {
+      if (
+        currentStep === 1 &&
+        !formAbsent &&
+        !formNoConsent &&
+        !formComplexNeeds &&
+        !formUnableToScreen
+      ) {
         return
       }
-      if (currentStep === 2 && (formAbsent || formNoConsent)) {
+      if (
+        currentStep === 2 &&
+        (formAbsent || formNoConsent || formComplexNeeds || formUnableToScreen)
+      ) {
         // If we're on step 2 but absent or no consent is checked, we should have submitted from step 1
         return
       }
@@ -352,10 +370,16 @@ const MultiStepSpeechScreeningForm = ({
           ? 'absent'
           : formNoConsent
             ? 'non_registered_no_consent'
-            : (formData.speech_screen_result as string) || '',
+            : formData.complex_needs
+              ? 'complex_needs'
+              : formData.unable_to_screen
+                ? 'unable_to_screen'
+                : (formData.speech_screen_result as string) || '',
         vocabulary_support: (formData.vocabulary_support_recommended as boolean) || false,
         clinical_notes: (formData.clinical_notes as string) || '',
         referral_notes: (formData.referral_notes as string) || '',
+        progress_notes: (formData.progress_notes as string) || '',
+
         error_patterns: {
           additional_observations: (formData.other_notes as string) || '',
           articulation: {
@@ -598,7 +622,11 @@ const MultiStepSpeechScreeningForm = ({
 
   const canSubmitFromStep1 = () => {
     // Can submit from step 1 if absent or no consent is checked and we have required fields
-    return (isAbsent || isNoConsent) && selectedGrade && selectedStudent
+    return (
+      (isAbsent || isNoConsent || isComplexNeeds || isUnableToScreen) &&
+      selectedGrade &&
+      selectedStudent
+    )
   }
 
   const canSubmitFromStep2 = () => {
@@ -624,6 +652,8 @@ const MultiStepSpeechScreeningForm = ({
     setGradeSchoolId('')
     setIsAbsent(false)
     setIsNoConsent(false)
+    setIsComplexNeeds(false)
+    setIsUnableToScreen(false)
   }
 
   const handleGoToDashboard = () => {
@@ -646,6 +676,8 @@ const MultiStepSpeechScreeningForm = ({
             onGradeIdChange={setSelectedGradeId}
             onAbsentChange={setIsAbsent}
             onNoConsentChange={setIsNoConsent}
+            onComplexNeedsChange={setIsComplexNeeds}
+            onUnableToScreenChange={setIsUnableToScreen}
             afterStudentContent={afterStudentContent}
           />
         )
@@ -697,7 +729,7 @@ const MultiStepSpeechScreeningForm = ({
 
             {currentStep === 1 ? (
               // Step 1: Show Submit if absent or no consent, Next if not
-              isAbsent || isNoConsent ? (
+              isAbsent || isNoConsent || isComplexNeeds || isUnableToScreen ? (
                 <Button
                   type='button'
                   onClick={async () => {
@@ -716,7 +748,11 @@ const MultiStepSpeechScreeningForm = ({
                     ? 'Submitting...'
                     : isAbsent
                       ? 'Submit Absent Screening'
-                      : 'Submit No Consent Screening'}
+                      : isNoConsent
+                        ? 'Submit No Consent Screening'
+                        : isComplexNeeds
+                          ? 'Submit Complex Needs Screening'
+                          : 'Submit Unable to Screen Screening'}
                 </Button>
               ) : (
                 <Button

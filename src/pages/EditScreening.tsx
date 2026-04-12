@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { ErrorPatterns } from '@/types/screening-form'
+import { ErrorPatterns, SpeechScreeningFormValues } from '@/types/screening-form'
 import { Screening, ProgramStatus } from '@/types/database'
 import { screeningsApi } from '@/api/screenings'
 import { Button } from '@/components/ui/button'
@@ -58,34 +58,24 @@ const EditScreeningContent = () => {
   const [editedGradeId, setEditedGradeId] = useState<string>('')
   const [availableGrades, setAvailableGrades] = useState<SchoolGrade[]>([])
   const [isLoadingGrades, setIsLoadingGrades] = useState(false)
+  const [clinicalNotesOpen, setClinicalNotesOpen] = useState(false)
+  const [referralNotesOpen, setReferralNotesOpen] = useState(false)
+  const [progressNotesOpen, setProgressNotesOpen] = useState(false)
+
   const updateSpeechScreening = useUpdateSpeechScreening()
   const updateStudent = useUpdateStudent()
   const queryClient = useQueryClient()
 
   useRedirectOnSchoolChange('/screenings')
 
-  const form = useForm<{
-    screening_type: string
-    screening_date: string
-    clinical_notes: string
-    referral_notes: string
-    result: string
-    vocabulary_support: boolean
-    speech_screen_result: string
-    vocabulary_support_recommended: boolean
-    qualifies_for_speech_program: boolean
-    sub: boolean
-    graduated: boolean
-    paused: boolean
-    error_patterns: ErrorPatterns
-    general_articulation_notes?: string
-  }>({
+  const form = useForm<SpeechScreeningFormValues>({
     mode: 'onChange',
     defaultValues: {
       screening_type: '',
       screening_date: '',
       clinical_notes: '',
       referral_notes: '',
+      progress_notes: '',
       result: '',
       vocabulary_support: false,
       speech_screen_result: '',
@@ -255,6 +245,7 @@ const EditScreeningContent = () => {
                 : '',
               clinical_notes: screeningData.clinical_notes || '',
               referral_notes: screeningData.referral_notes || '',
+              progress_notes: screeningData.progress_notes || '',
               result: screeningData.result || '',
               vocabulary_support: screeningData.vocabulary_support || false,
               speech_screen_result: screeningData.result || '',
@@ -349,6 +340,7 @@ const EditScreeningContent = () => {
           screening_type: formData.screening_type,
           clinical_notes: formData.clinical_notes,
           referral_notes: formData.referral_notes,
+          progress_notes: formData.progress_notes,
           result: formData.speech_screen_result || formData.result,
           vocabulary_support: formData.vocabulary_support,
           error_patterns: updatedErrorPatterns,
@@ -661,50 +653,89 @@ const EditScreeningContent = () => {
             <EnhancedSpeechScreeningFields form={form} />
 
             <Card>
-              <CardHeader>
-                <CardTitle>Clinical Notes (Private)</CardTitle>
+              <CardHeader
+                className='cursor-pointer select-none'
+                onClick={() => setClinicalNotesOpen(!clinicalNotesOpen)}>
+                <CardTitle className='flex items-center justify-between'>
+                  Clinical Notes (Private) - Not shown on reports
+                  <span className='text-lg font-normal text-muted-foreground'>
+                    {clinicalNotesOpen ? '▲ Hide' : '▼ Show'}
+                  </span>
+                </CardTitle>
               </CardHeader>
-              <CardContent className='space-y-4'>
-                <div>
-                  <Label htmlFor='clinical_notes'>Clinical Observations</Label>
-                  <Textarea
-                    {...form.register('clinical_notes')}
-                    placeholder='Enter clinical observations and notes...'
-                    rows={4}
-                    className='mt-2'
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && e.ctrlKey) {
-                        return
-                      }
-                      if (e.key === 'Enter') {
-                        e.stopPropagation()
-                      }
-                    }}
-                  />
-                </div>
-              </CardContent>
+              {clinicalNotesOpen && (
+                <CardContent className='space-y-4'>
+                  <div>
+                    <Label htmlFor='clinical_notes'>Clinical Observations</Label>
+                    <Textarea
+                      {...form.register('clinical_notes')}
+                      placeholder='Enter clinical observations and notes...'
+                      rows={4}
+                      className='mt-2'
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && e.ctrlKey) {
+                          return
+                        }
+                        if (e.key === 'Enter') {
+                          e.stopPropagation()
+                        }
+                      }}
+                    />
+                  </div>
+                </CardContent>
+              )}
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>Recommendations and referrals (Reports)</CardTitle>
+              <CardHeader
+                className='cursor-pointer select-none'
+                onClick={() => setReferralNotesOpen(!referralNotesOpen)}>
+                <CardTitle className='flex items-center justify-between'>
+                  Recommendations and Referrals (Reports) - Show on summary report
+                  <span className='text-lg font-normal text-muted-foreground'>
+                    {referralNotesOpen ? '▲ Hide' : '▼ Show'}
+                  </span>
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <Textarea
-                  {...form.register('referral_notes')}
-                  placeholder='Enter recommendations and referrals...'
-                  rows={4}
-                  className='-mt-2'
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && e.ctrlKey) {
-                      return
-                    }
-                    if (e.key === 'Enter') {
-                      e.stopPropagation()
-                    }
-                  }}
-                />
-              </CardContent>
+              {referralNotesOpen && (
+                <CardContent>
+                  <Textarea
+                    {...form.register('referral_notes')}
+                    placeholder='OT or Comprehensive Language Evaluation or Fluency Evaluation, etc.'
+                    rows={4}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && e.ctrlKey) return
+                      if (e.key === 'Enter') e.stopPropagation()
+                    }}
+                  />
+                </CardContent>
+              )}
+            </Card>
+
+            <Card>
+              <CardHeader
+                className='cursor-pointer select-none'
+                onClick={() => setProgressNotesOpen(!progressNotesOpen)}>
+                <CardTitle className='flex items-center justify-between'>
+                  Progress Notes - Show on progress report
+                  <span className='text-lg font-normal text-muted-foreground'>
+                    {progressNotesOpen ? '▲ Hide' : '▼ Show'}
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              {progressNotesOpen && (
+                <CardContent>
+                  <Textarea
+                    {...form.register('progress_notes')}
+                    placeholder='EA / Teacher Feedback or progress noted (vocabulary), participation'
+                    rows={4}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && e.ctrlKey) return
+                      if (e.key === 'Enter') e.stopPropagation()
+                    }}
+                  />
+                </CardContent>
+              )}
             </Card>
 
             <div className='flex gap-2 pt-4'>

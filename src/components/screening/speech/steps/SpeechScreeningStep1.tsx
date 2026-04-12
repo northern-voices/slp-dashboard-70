@@ -27,6 +27,8 @@ interface SpeechScreeningStep1Props {
   onGradeIdChange: (gradeId: string) => void
   onAbsentChange?: (isAbsent: boolean) => void
   onNoConsentChange?: (isNoConsent: boolean) => void
+  onComplexNeedsChange?: (isComplexNeeds: boolean) => void
+  onUnableToScreenChange?: (isUnableToScreen: boolean) => void
   afterStudentContent?: React.ReactNode
 }
 
@@ -39,6 +41,8 @@ const SpeechScreeningStep1 = ({
   onGradeIdChange,
   onAbsentChange,
   onNoConsentChange,
+  onComplexNeedsChange,
+  onUnableToScreenChange,
   afterStudentContent,
 }: SpeechScreeningStep1Props) => {
   const { currentSchool } = useOrganization()
@@ -374,6 +378,48 @@ const SpeechScreeningStep1 = ({
                   />
                 </div>
               )}
+
+              <div className='flex items-center space-x-2'>
+                <Checkbox
+                  id='complex_needs'
+                  checked={Boolean(form.watch('complex_needs'))}
+                  disabled={localAbsentValue || localNoConsentValue}
+                  onCheckedChange={checked => {
+                    form.setValue('complex_needs', Boolean(checked))
+                    if (checked) {
+                      form.setValue('unable_to_screen', false)
+                      onUnableToScreenChange?.(false)
+                    }
+                    onComplexNeedsChange?.(Boolean(checked))
+                  }}
+                />
+                <Label
+                  htmlFor='complex_needs'
+                  className={`text-sm font-medium ${localAbsentValue || localNoConsentValue ? 'text-gray-400' : ''}`}>
+                  Complex Needs
+                </Label>
+              </div>
+
+              <div className='flex items-center space-x-2'>
+                <Checkbox
+                  id='unable_to_screen'
+                  checked={Boolean(form.watch('unable_to_screen'))}
+                  disabled={localAbsentValue || localNoConsentValue}
+                  onCheckedChange={checked => {
+                    form.setValue('unable_to_screen', Boolean(checked))
+                    if (checked) {
+                      form.setValue('complex_needs', false)
+                      onComplexNeedsChange?.(false)
+                    }
+                    onUnableToScreenChange?.(Boolean(checked))
+                  }}
+                />
+                <Label
+                  htmlFor='unable_to_screen'
+                  className={`text-sm font-medium ${localAbsentValue || localNoConsentValue ? 'text-gray-400' : ''}`}>
+                  Unable to Screen (Compliance)
+                </Label>
+              </div>
 
               {localAbsentValue || localNoConsentValue ? (
                 <div className='flex items-center space-x-2'>

@@ -1,7 +1,6 @@
 import { UseFormReturn } from 'react-hook-form'
 import { useSpeechScreeningState } from './useSpeechScreeningState'
-import { SpeechScreeningFormValues, ErrorPatterns } from '@/types/screening-form'
-import SpeechScreenResultCard from './SpeechScreenResultCard'
+import { SpeechScreeningFormValues } from '@/types/screening-form'
 import AreasOfConcernCard from './AreasOfConcernCard'
 import ArticulationCard from './ArticulationCard'
 
@@ -51,8 +50,6 @@ const EnhancedSpeechScreeningFields = ({ form }: EnhancedSpeechScreeningFieldsPr
         handleStimulabilityOptionChange={handleStimulabilityOptionChange}
         handleErrorPatternChange={handleErrorPatternChange}
       />
-
-      <SpeechScreenResultCard form={form} />
 
       <AreasOfConcernCard
         form={form}
