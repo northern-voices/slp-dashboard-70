@@ -2,20 +2,36 @@ import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { SpeechScreeningFormValues } from '@/types/screening-form'
 
 interface SpeechScreenResultCardProps {
   form: UseFormReturn<SpeechScreeningFormValues>
 }
 
+const DOES_NOT_QUALIFY_OPTIONS = [
+  { value: 'no_errors', label: 'No Errors' },
+  { value: 'age_appropriate', label: 'Age Appropriate' },
+  { value: 'mild', label: 'Mild' },
+  { value: 'moderate', label: 'Moderate' },
+  { value: 'severe', label: 'Severe' },
+  { value: 'profound', label: 'Profound' },
+]
+
+const QUALIFIES_OPTIONS = [
+  { value: 'mild', label: 'Mild' },
+  { value: 'moderate', label: 'Moderate' },
+  { value: 'severe', label: 'Severe' },
+  { value: 'profound', label: 'Profound' },
+]
+
 const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
+  const qualifies = form.watch('qualifies_for_speech_program')
+  const sub = form.watch('sub')
+  const doesNotQualify = !qualifies && !sub
+
+  const activeOptions = doesNotQualify ? DOES_NOT_QUALIFY_OPTIONS : QUALIFIES_OPTIONS
+
   return (
     <Card>
       <CardHeader>
@@ -23,31 +39,78 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
-          <div className='flex flex-col gap-1'>
-            <Label htmlFor='speech_screen_result'>
+          <div className='flex items-center space-x-2'>
+            <Checkbox
+              id='does_not_qualify'
+              checked={!form.watch('qualifies_for_speech_program') && !form.watch('sub')}
+              onCheckedChange={checked => {
+                if (checked) {
+                  form.setValue('qualifies_for_speech_program', false)
+                  form.setValue('sub', false)
+                  form.setValue('speech_screen_result', '')
+                }
+              }}
+            />
+            <Label htmlFor='does_not_qualify' className='text-sm font-medium'>
+              Does Not Qualify
+            </Label>
+          </div>
+
+          <div className='flex items-center space-x-2'>
+            <Checkbox
+              id='qualifies_for_speech_program'
+              checked={form.watch('qualifies_for_speech_program') || false}
+              onCheckedChange={checked => {
+                form.setValue('qualifies_for_speech_program', checked as boolean)
+                if (checked) {
+                  form.setValue('sub', false)
+                  form.setValue('speech_screen_result', '')
+                }
+              }}
+            />
+            <Label htmlFor='qualifies_for_speech_program' className='text-sm font-medium'>
+              Qualifies - Primary Caseload
+            </Label>
+          </div>
+
+          <div className='flex items-center space-x-2'>
+            <Checkbox
+              id='sub'
+              checked={form.watch('sub') || false}
+              onCheckedChange={checked => {
+                form.setValue('sub', checked as boolean)
+                form.setValue('qualifies_for_speech_program', false)
+                if (checked) form.setValue('speech_screen_result', '')
+              }}
+            />
+            <Label htmlFor='sub' className='text-sm font-medium'>
+              Qualifies - Sub
+            </Label>
+          </div>
+
+          <div className='pl-2 pt-1'>
+            <Label className='text-sm font-medium mb-2 block'>
               Result <span className='text-red-500 text-lg'>*</span>
             </Label>
-            <Select
+
+            <RadioGroup
               value={form.watch('speech_screen_result') || ''}
               onValueChange={value => {
                 form.setValue('speech_screen_result', value)
                 form.trigger('speech_screen_result')
-              }}>
-              <SelectTrigger>
-                <SelectValue placeholder='Select result' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='no_errors'>No Errors</SelectItem>
-                <SelectItem value='age_appropriate'>Age Appropriate</SelectItem>
-                {/* <SelectItem value='monitor'>Monitor (Age Appropriate)</SelectItem> // TODO Lisa said to remove this for now */}
-                <SelectItem value='mild'>Mild</SelectItem>
-                <SelectItem value='moderate'>Moderate</SelectItem>
-                <SelectItem value='severe'>Severe</SelectItem>
-                <SelectItem value='profound'>Profound</SelectItem>
-                <SelectItem value='complex_needs'>Complex needs</SelectItem>
-                <SelectItem value='unable_to_screen'>Unable to screen (Compliance)</SelectItem>
-              </SelectContent>
-            </Select>
+              }}
+              className='space-y-2'>
+              {activeOptions.map(option => (
+                <div key={option.value} className='flex items-center space-x-2'>
+                  <RadioGroupItem value={option.value} id={`result_${option.value}`} />
+                  <Label
+                    htmlFor={`result_${option.value}`}
+                    className='text-sm font-normal cursor-pointer'>
+                    {option.label}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
           </div>
 
           <div className='flex items-center space-x-2'>
@@ -60,46 +123,6 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
             />
             <Label htmlFor='vocabulary_support_recommended' className='text-sm font-medium'>
               Vocabulary Support Recommended (Language Ladder)
-            </Label>
-          </div>
-
-          <div className='flex items-center space-x-2'>
-            <Checkbox
-              id='qualifies_for_speech_program'
-              checked={form.watch('qualifies_for_speech_program') || false}
-              disabled={form.watch('sub')}
-              onCheckedChange={checked => {
-                form.setValue('qualifies_for_speech_program', checked as boolean)
-                if (checked) {
-                  form.setValue('sub', false)
-                }
-              }}
-            />
-            <Label
-              htmlFor='qualifies_for_speech_program'
-              className={`text-sm font-medium ${form.watch('sub') ? 'text-gray-400' : ''}`}>
-              Qualifies for Speech Program
-            </Label>
-          </div>
-
-          <div className='flex items-center space-x-2'>
-            <Checkbox
-              id='sub'
-              checked={form.watch('sub') || false}
-              disabled={form.watch('qualifies_for_speech_program') || false}
-              onCheckedChange={checked => {
-                form.setValue('sub', checked as boolean)
-                if (checked) {
-                  form.setValue('qualifies_for_speech_program', false)
-                }
-              }}
-            />
-            <Label
-              htmlFor='sub'
-              className={`text-sm font-medium ${
-                form.watch('qualifies_for_speech_program') ? 'text-gray-400' : ''
-              }`}>
-              Sub
             </Label>
           </div>
         </div>

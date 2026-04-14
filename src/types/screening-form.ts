@@ -99,6 +99,7 @@ export interface SpeechScreeningFormValues {
   screening_date: string
   clinical_notes: string
   referral_notes: string
+  progress_notes: string
   result: string
   vocabulary_support: boolean
   speech_screen_result: string
@@ -106,9 +107,11 @@ export interface SpeechScreeningFormValues {
   qualifies_for_speech_program: boolean
   sub: boolean
   graduated: boolean
+  paused?: boolean
+  complex_needs?: boolean
+  unable_to_screen?: boolean
   error_patterns: ErrorPatterns
   general_articulation_notes?: string
-
   academic_year: string
   priority_re_screen: boolean
   other_notes: string

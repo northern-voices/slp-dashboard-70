@@ -42,6 +42,9 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   const [studentCurrentGrade, setStudentCurrentGrade] = useState<string | null>(null)
   const [gradesMatch, setGradesMatch] = useState<boolean>(true)
   const [isLoadingGrades, setIsLoadingGrades] = useState(false)
+  const [isEditingProgressNotes, setIsEditingProgressNotes] = useState(false)
+  const [progressNotesText, setProgressNotesText] = useState('')
+
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
 
@@ -171,6 +174,29 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   const handleCancelAdditionalObservations = () => {
     setIsEditingAdditionalObservations(false)
     setAdditionalObservationsText('')
+  }
+
+  const handleEditProgressNotes = () => {
+    setProgressNotesText(currentScreening.progress_notes || '')
+    setIsEditingProgressNotes(true)
+  }
+
+  const handleSaveProgressNotes = () => {
+    setCurrentScreening(prev => (prev ? { ...prev, progress_notes: progressNotesText } : null))
+
+    updateSpeechScreening.mutate({
+      id: currentScreening.id,
+      data: {
+        progress_notes: progressNotesText,
+      },
+    })
+
+    setIsEditingProgressNotes(false)
+  }
+
+  const handleCancelProgressNotes = () => {
+    setIsEditingProgressNotes(false)
+    setProgressNotesText('')
   }
 
   const handleEditReferralNotes = () => {
@@ -666,6 +692,53 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
               </div>
             </div>
           )}
+
+          {/* Progress Notes Section - Only show if not absent */}
+          {(currentScreening.progress_notes || isEditingProgressNotes) &&
+            !currentScreening.error_patterns?.attendance?.absent && (
+              <div>
+                <div className='flex items-center justify-between mb-2'>
+                  <h3 className='font-medium text-gray-900'>Progress Notes</h3>
+
+                  {!isEditingProgressNotes && (
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={handleEditProgressNotes}
+                      className='h-6 px-2'>
+                      <Edit2 className='w-3 h-3 mr-1' />
+                      Edit
+                    </Button>
+                  )}
+                </div>
+
+                {isEditingProgressNotes ? (
+                  <div className='space-y-2'>
+                    <Textarea
+                      value={progressNotesText}
+                      onChange={e => setProgressNotesText(e.target.value)}
+                      className='min-h-[100px] text-sm'
+                      placeholder='Enter progress notes...'
+                    />
+                    <div className='flex justify-end gap-2'>
+                      <Button variant='outline' size='sm' onClick={handleCancelProgressNotes}>
+                        <XCircle className='w-3 h-3 mr-1' />
+                        Cancel
+                      </Button>
+
+                      <Button size='sm' onClick={handleSaveProgressNotes}>
+                        <Save className='w-3 h-3 mr-1' />
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className='p-3 text-sm text-gray-700 rounded-md bg-gray-50'>
+                    {currentScreening.progress_notes}
+                  </p>
+                )}
+              </div>
+            )}
 
           {/* Enhanced Backend Details for Speech Screenings */}
           {currentScreening.error_patterns && (
