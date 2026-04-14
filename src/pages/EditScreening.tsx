@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { Screening } from '@/types/database'
+import { ErrorPatterns } from '@/types/screening-form'
+import { Screening, ProgramStatus } from '@/types/database'
 import { screeningsApi } from '@/api/screenings'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -76,34 +77,7 @@ const EditScreeningContent = () => {
     sub: boolean
     graduated: boolean
     paused: boolean
-    error_patterns: {
-      attendance: {
-        absent: boolean
-        absence_notes: string
-        priority_re_screen: boolean
-      }
-      articulation: {
-        soundErrors: Array<{
-          sound: string
-          word: string
-          errorPatterns: string[]
-          stoppingSounds?: string[]
-          notes: string
-          otherNotes?: string
-        }>
-        articulationNotes: string
-      }
-      screening_metadata: {
-        screening_date: string
-        qualifies_for_speech_program: boolean
-        vocabulary_support_recommended: boolean
-        sub?: boolean
-        graduated?: boolean
-        paused?: boolean
-      }
-      add_areas_of_concern: Record<string, string | null>
-      additional_observations: string
-    }
+    error_patterns: ErrorPatterns
     general_articulation_notes?: string
   }>({
     mode: 'onChange',
@@ -360,7 +334,7 @@ const EditScreeningContent = () => {
       }
 
       // Determine the program status from form data
-      const determineProgramStatus = (): string => {
+      const determineProgramStatus = (): ProgramStatus => {
         if (formData.graduated) return 'graduated'
         if (formData.paused) return 'paused'
         if (formData.sub) return 'sub'
@@ -568,7 +542,7 @@ const EditScreeningContent = () => {
   }
 
   return (
-    <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
+    <div className='flex-1 p-4 md:p-6 lg:p-8'>
       {/* <div className='flex items-center gap-4'>
             <Button variant='ghost' size='sm' onClick={handleGoBack} className='gap-2'>
               <ChevronLeft className='w-4 h-4' />
@@ -593,18 +567,18 @@ const EditScreeningContent = () => {
             </Breadcrumb>
           </div> */}
 
-      <div className='min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min'>
-        <div className='p-6'>
-          <div className='flex items-center gap-3 mb-6'>
-            <FileText className='w-6 h-6' />
-            <div>
-              <h1 className='text-2xl font-semibold'>Edit Screening</h1>
-              <p className='text-gray-600'>
-                Editing {screening.screening_type} screening for {screening.student_name}
-              </p>
-            </div>
-          </div>
+      <div className='flex items-center gap-3 mb-6'>
+        <FileText className='w-6 h-6' />
+        <div>
+          <h1 className='text-2xl font-semibold'>Edit Screening</h1>
+          <p className='text-gray-600'>
+            Editing {screening.screening_type} screening for {screening.student_name}
+          </p>
+        </div>
+      </div>
 
+      <div className='bg-white rounded-lg border border-gray-200 shadow-sm'>
+        <div className='p-6'>
           <div className='space-y-6'>
             <Card>
               <CardHeader>
@@ -812,10 +786,6 @@ const EditScreeningContent = () => {
   )
 }
 
-const EditScreening = () => (
-  <div className='min-h-screen bg-gray-50'>
-    <EditScreeningContent />
-  </div>
-)
+const EditScreening = () => <EditScreeningContent />
 
 export default EditScreening
