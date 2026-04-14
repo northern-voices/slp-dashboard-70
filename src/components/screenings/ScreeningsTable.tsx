@@ -97,21 +97,6 @@ const ScreeningsTable = ({
     error: errorAll,
   } = useScreenings()
 
-  const {
-    data: schoolScreeningsData,
-    isLoading: isLoadingSchool,
-    isFetching: isFetchingSchool,
-    error: errorSchool,
-  } = useScreeningsBySchool(
-    currentSchool?.id,
-    dateRangeFilter === 'school_year' ? 'school_year' : 'all',
-    currentPage,
-    pageSize
-  )
-
-  const totalCount = schoolScreeningsData?.totalCount ?? 0
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
-
   // Use mutation hooks
   const { mutate: updateSpeechScreening } = useUpdateSpeechScreening()
   const { mutate: updateStudent } = useUpdateStudent()
@@ -133,6 +118,33 @@ const ScreeningsTable = ({
     })
     return mapping
   }, [grades])
+
+  const isFilterActive =
+    searchTerm.trim() !== '' ||
+    (resultFilter !== '' && resultFilter !== 'all') ||
+    qualifiesForSpeechProgramFilter.length > 0 ||
+    (vocabularySupportFilter !== '' && vocabularySupportFilter !== 'all') ||
+    (casFilter !== '' && casFilter !== 'all') ||
+    (gradeFilter !== '' && gradeFilter !== 'all') ||
+    (recommendationsFilter !== '' && recommendationsFilter !== 'all') ||
+    (clinicalNotesFilter !== '' && clinicalNotesFilter !== 'all') ||
+    (languageComprehensionFilter !== '' && languageComprehensionFilter !== 'all') ||
+    (priorityRescreenFilter !== '' && priorityRescreenFilter !== 'all')
+
+  const {
+    data: schoolScreeningsData,
+    isLoading: isLoadingSchool,
+    isFetching: isFetchingSchool,
+    error: errorSchool,
+  } = useScreeningsBySchool(
+    currentSchool?.id,
+    dateRangeFilter === 'school_year' ? 'school_year' : 'all',
+    isFilterActive ? 1 : currentPage,
+    isFilterActive ? 10000 : pageSize
+  )
+
+  const totalCount = schoolScreeningsData?.totalCount ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
   // Create students map
   useEffect(() => {
@@ -747,7 +759,7 @@ const ScreeningsTable = ({
           )}
         </div>
 
-        {totalCount > 0 && (
+        {totalCount > 0 && !isFilterActive && (
           <div className='flex items-center justify-between px-2 py-3'>
             <div className='flex items-center gap-2 text-sm text-gray-600'>
               <span>Rows per page:</span>

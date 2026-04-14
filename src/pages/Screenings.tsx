@@ -123,7 +123,11 @@ const ScreeningsContent = () => {
           </Button>
         </div>
 
-        <ScreeningStats onFilterClick={handleStatFilterClick} onClearAllFilters={clearAllFilters} />
+        <ScreeningStats
+          onFilterClick={handleStatFilterClick}
+          onClearAllFilters={clearAllFilters}
+          dateRangeFilter={dateRangeFilter}
+        />
       </div>
 
       <div className='space-y-6'>
