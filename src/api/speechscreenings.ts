@@ -15,6 +15,7 @@ interface RawSpeechScreening {
   suspected_cas: boolean
   clinical_notes: string | null
   referral_notes: string | null
+  progress_notes: string | null
   error_patterns: ErrorPatterns | null
   created_at: string
   updated_at: string
@@ -199,6 +200,7 @@ export const speechScreeningsApi = {
         screening_result: (screening.result as SpeechScreeningResult) || undefined,
         referral_notes: screening.referral_notes || '',
         clinical_notes: screening.clinical_notes || '',
+        progress_notes: screening.progress_notes || '',
         vocabulary_support: screening.vocabulary_support,
         suspected_cas: screening.suspected_cas,
         error_patterns: screening.error_patterns,
@@ -292,6 +294,7 @@ export const speechScreeningsApi = {
         screening_result: (screening.result as SpeechScreeningResult) || undefined,
         referral_notes: screening.referral_notes || '',
         clinical_notes: screening.clinical_notes || '',
+        progress_notes: screening.progress_notes || '',
         vocabulary_support: screening.vocabulary_support,
         suspected_cas: screening.suspected_cas,
         error_patterns: screening.error_patterns,
@@ -390,6 +393,7 @@ export const speechScreeningsApi = {
         screening_result: (screening.result as SpeechScreeningResult) || undefined,
         referral_notes: screening.referral_notes || '',
         clinical_notes: screening.clinical_notes || '',
+        progress_notes: screening.progress_notes || '',
         vocabulary_support: screening.vocabulary_support,
         suspected_cas: screening.suspected_cas,
         error_patterns: screening.error_patterns,
@@ -420,6 +424,7 @@ export const speechScreeningsApi = {
     suspected_cas?: boolean
     clinical_notes?: string | null
     referral_notes?: string | null
+    progress_notes?: string | null
   }): Promise<Screening> => {
     try {
       // Validate required fields
@@ -437,6 +442,7 @@ export const speechScreeningsApi = {
         suspected_cas: data.suspected_cas || false,
         clinical_notes: data.clinical_notes || null,
         referral_notes: data.referral_notes || null,
+        progress_notes: data.progress_notes || null,
       }
 
       const { data: newScreening, error } = await supabase
@@ -504,6 +510,7 @@ export const speechScreeningsApi = {
         screening_result: newScreening.result,
         referral_notes: newScreening.referral_notes || '',
         clinical_notes: newScreening.clinical_notes || '',
+        progress_notes: newScreening.progress_notes || '',
         vocabulary_support: newScreening.vocabulary_support,
         suspected_cas: newScreening.suspected_cas,
         error_patterns: newScreening.error_patterns,
@@ -533,6 +540,7 @@ export const speechScreeningsApi = {
       screening_type: string
       error_patterns: ErrorPatterns
       result: SpeechScreeningResult | null
+      progress_notes: string | null
       vocabulary_support: boolean
       suspected_cas: boolean
       clinical_notes: string | null
@@ -596,6 +604,7 @@ export const speechScreeningsApi = {
         screening_result: updatedScreening.result || undefined,
         referral_notes: updatedScreening.referral_notes || '',
         clinical_notes: updatedScreening.clinical_notes || '',
+        progress_notes: updatedScreening.progress_notes || '',
         vocabulary_support: updatedScreening.vocabulary_support,
         suspected_cas: updatedScreening.suspected_cas,
         error_patterns: updatedScreening.error_patterns,
@@ -719,6 +728,7 @@ export const speechScreeningsApi = {
         screening_result: (screening.result as SpeechScreeningResult) || undefined,
         referral_notes: screening.referral_notes || '',
         clinical_notes: screening.clinical_notes || '',
+        progress_notes: screening.progress_notes || '',
         vocabulary_support: screening.vocabulary_support,
         suspected_cas: screening.suspected_cas,
         error_patterns: screening.error_patterns,
