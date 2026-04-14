@@ -69,19 +69,10 @@ const MonthlyMeetingsTable = ({
     dateRangeFilter === 'school_year' || dateRangeFilter === 'all' ? dateRangeFilter : 'all'
   )
 
-  console.log('MonthlyMeetingsTable Debug:', {
-    currentSchoolId: currentSchool?.id,
-    dateRangeFilter,
-    isLoading,
-    error,
-    meetingsCount: meetings.length,
-    meetings,
-  })
-
   const filteredMeetings = meetings.filter(meeting => {
     const matchesSearch =
       meeting.meeting_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      meeting.attendees?.some(p => p.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      meeting.attendees?.some(p => p?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       meeting.student_updates?.some(
         update =>
           update.student?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
