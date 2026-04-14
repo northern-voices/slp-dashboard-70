@@ -19,10 +19,8 @@ import {
   TableCell,
 } from '@/components/ui/responsive-table'
 import { GRADE_MAPPING } from '@/constants/app'
-import { Student } from '@/types/database'
+import { Student, Screening } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 
 interface StudentData {
   sessions_attended: number | null
@@ -35,6 +33,8 @@ interface MonthlyMeetingsStudentTableProps {
   studentData: Record<string, StudentData>
   onStudentClick: (student: Student) => void
   hasStudentData: (studentId: string) => boolean
+  schoolId?: string
+  screenings?: Screening[]
 }
 
 const MonthlyMeetingsStudentTable = ({
@@ -43,37 +43,25 @@ const MonthlyMeetingsStudentTable = ({
   studentData,
   onStudentClick,
   hasStudentData,
+  schoolId,
+  screenings = [],
 }: MonthlyMeetingsStudentTableProps) => {
-  const { currentSchool } = useOrganization()
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('grade')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
 
-  // Fetch screenings for the current school to filter students
-  const { data: schoolScreeningsData } = useScreeningsBySchool(currentSchool?.id, 'all')
-  const schoolScreenings = schoolScreeningsData?.screenings ?? []
-
-  // Create a Set of student IDs who have at least one screening
-  const studentsWithScreenings = useMemo(() => {
-    const studentIds = new Set<string>()
-    schoolScreenings.forEach(screening => {
-      studentIds.add(screening.student_id)
-    })
-    return studentIds
-  }, [schoolScreenings])
-
   // Fetch grades when component mounts
   useEffect(() => {
     const fetchGrades = async () => {
-      if (!currentSchool?.id) {
+      if (!schoolId) {
         setGradesMap(new Map())
         return
       }
 
       try {
-        const grades = await schoolGradesApi.getSchoolGradesBySchool(currentSchool.id)
+        const grades = await schoolGradesApi.getSchoolGradesBySchool(schoolId)
         const map = new Map<string, SchoolGrade>()
         grades.forEach(grade => {
           map.set(grade.id, grade)
@@ -86,7 +74,18 @@ const MonthlyMeetingsStudentTable = ({
     }
 
     fetchGrades()
-  }, [currentSchool?.id])
+  }, [schoolId])
+
+  const mostRecentScreeningByStudent = useMemo(() => {
+    const map = new Map<string, Screening>()
+    screenings.forEach(screening => {
+      const existing = map.get(screening.student_id)
+      if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
+        map.set(screening.student_id, screening)
+      }
+    })
+    return map
+  }, [screenings])
 
   const handleSort = (field: 'grade' | 'program_status') => {
     if (sortField !== field) {
@@ -125,7 +124,18 @@ const MonthlyMeetingsStudentTable = ({
   }
 
   const getProgramStatus = (student: Student): string => {
-    // Read directly from student.program_status field
+    const latestScreening = mostRecentScreeningByStudent.get(student.id)
+    if (latestScreening) {
+      const metadata = latestScreening.error_patterns?.screening_metadata
+      const consent = latestScreening.error_patterns?.consent
+      if (consent?.no_consent) return 'no_consent'
+      if (metadata?.graduated) return 'graduated'
+      if (metadata?.paused) return 'paused'
+      if (metadata?.sub) return 'sub'
+      if (metadata?.qualifies_for_speech_program) return 'qualified'
+      if (metadata?.qualifies_for_speech_program === false) return 'not_in_program'
+    }
+
     return student.program_status || 'none'
   }
 
@@ -174,9 +184,7 @@ const MonthlyMeetingsStudentTable = ({
   const filteredStudents = students
     .filter(student => {
       const status = getProgramStatus(student)
-      const isQualifiedOrSub = status === 'sub' || status === 'qualified' || status === 'paused'
-      const hasScreening = studentsWithScreenings.has(student.id)
-      return isQualifiedOrSub && hasScreening
+      return status === 'sub' || status === 'qualified' || status === 'paused'
     })
     .sort((a, b) => {
       if (!sortField || !sortOrder) {
