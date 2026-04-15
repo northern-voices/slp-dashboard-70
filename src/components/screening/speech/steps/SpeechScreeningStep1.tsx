@@ -61,15 +61,10 @@ const SpeechScreeningStep1 = ({
   // Memoized handler for absent checkbox to prevent unnecessary re-renders
   const handleAbsentChange = useCallback(
     (checked: boolean) => {
-      // Don't allow checking absent if no consent is already checked
-      if (checked && localNoConsentValue) {
-        return
-      }
+      if (checked && localNoConsentValue) return
 
-      // Update local state immediately for responsive UI
       setLocalAbsentValue(checked)
 
-      // If absent is checked, uncheck no consent
       if (checked) {
         setLocalNoConsentValue(false)
         form.setValue('no_consent', {
@@ -78,13 +73,20 @@ const SpeechScreeningStep1 = ({
         })
       }
 
-      // Update form state and trigger re-render
       form.setValue('absent', {
         isAbsent: checked,
         notes: form.getValues('absent.notes') || '',
       })
 
-      // Notify parent component of the change
+      if (
+        !checked &&
+        !localNoConsentValue &&
+        !form.getValues('complex_needs') &&
+        !form.getValues('unable_to_screen')
+      ) {
+        form.setValue('priority_re_screen', false)
+      }
+
       onAbsentChange?.(checked)
     },
     [form, onAbsentChange, localNoConsentValue]
@@ -93,32 +95,31 @@ const SpeechScreeningStep1 = ({
   // Memoized handler for no consent checkbox to prevent unnecessary re-renders
   const handleNoConsentChange = useCallback(
     (checked: boolean) => {
-      // Don't allow checking no consent if absent is already checked
-      if (checked && localAbsentValue) {
-        return
-      }
+      if (checked && localAbsentValue) return
 
-      // Update local state immediately for responsive UI
       setLocalNoConsentValue(checked)
 
-      // If no consent is checked, uncheck absent
       if (checked) {
         setLocalAbsentValue(false)
-        form.setValue('absent', {
-          isAbsent: false,
-          notes: '',
-        })
-        // Notify parent component that absent is now false
+        form.setValue('absent', { isAbsent: false, notes: '' })
         onAbsentChange?.(false)
       }
 
-      // Update form state and trigger re-render
       form.setValue('no_consent', {
         isNoConsent: checked,
         notes: form.getValues('no_consent.notes') || '',
       })
 
-      // Notify parent component of the change
+      // Reset priority_re_screen if no qualifying condition remains
+      if (
+        !checked &&
+        !localAbsentValue &&
+        !form.getValues('complex_needs') &&
+        !form.getValues('unable_to_screen')
+      ) {
+        form.setValue('priority_re_screen', false)
+      }
+
       onNoConsentChange?.(checked)
     },
     [form, onAbsentChange, onNoConsentChange, localAbsentValue]
@@ -390,6 +391,15 @@ const SpeechScreeningStep1 = ({
                       form.setValue('unable_to_screen', false)
                       onUnableToScreenChange?.(false)
                     }
+                    // Reset priority_re_screen if no qualifying condition remains
+                    if (
+                      !checked &&
+                      !form.getValues('unable_to_screen') &&
+                      !localAbsentValue &&
+                      !localNoConsentValue
+                    ) {
+                      form.setValue('priority_re_screen', false)
+                    }
                     onComplexNeedsChange?.(Boolean(checked))
                   }}
                 />
@@ -411,6 +421,15 @@ const SpeechScreeningStep1 = ({
                       form.setValue('complex_needs', false)
                       onComplexNeedsChange?.(false)
                     }
+                    // Reset priority_re_screen if no qualifying condition remains
+                    if (
+                      !checked &&
+                      !form.getValues('complex_needs') &&
+                      !localAbsentValue &&
+                      !localNoConsentValue
+                    ) {
+                      form.setValue('priority_re_screen', false)
+                    }
                     onUnableToScreenChange?.(Boolean(checked))
                   }}
                 />
@@ -421,7 +440,10 @@ const SpeechScreeningStep1 = ({
                 </Label>
               </div>
 
-              {localAbsentValue || localNoConsentValue ? (
+              {localAbsentValue ||
+              localNoConsentValue ||
+              Boolean(form.watch('complex_needs')) ||
+              Boolean(form.watch('unable_to_screen')) ? (
                 <div className='flex items-center space-x-2'>
                   <Checkbox
                     id='priority_re_screen'
