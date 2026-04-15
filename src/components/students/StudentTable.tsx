@@ -237,7 +237,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
       const search = searchTerm.toLowerCase()
       const matchesSearch =
-        fullName.includes(search) || student.student_id.toLowerCase().includes(search)
+        fullName.includes(search) || (student.student_id?.toLowerCase() ?? '').includes(search)
 
       // Get grade level from current_grade_id
       let studentGradeLevel = 'N/A'

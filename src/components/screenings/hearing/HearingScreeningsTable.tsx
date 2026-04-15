@@ -21,6 +21,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   ResponsiveTable,
   ResponsiveTableRow,
   TableHeader,
@@ -28,7 +35,6 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
-import { format } from 'date-fns'
 import { useHearingScreenings } from '@/hooks/screenings/use-hearing-screenings'
 import { useDeleteHearingScreening } from '@/hooks/screenings/use-screening-hearing-mutations'
 import { Screening, Student } from '@/types/database'
@@ -71,6 +77,8 @@ const HearingScreeningsTable = ({
   const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
   const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
   const { currentSchool } = useOrganization()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -98,6 +106,18 @@ const HearingScreeningsTable = ({
     })
     setStudentsMap(studentsMapping)
   }, [currentSchool?.id, students])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [
+    searchTerm,
+    dateRangeFilter,
+    gradeFilter,
+    resultFilter,
+    referralNotesFilter,
+    nonCompliantFilter,
+    complexNeedsFilter,
+  ])
 
   const isPassedEar = (earResult: string | null | undefined) => {
     if (!earResult) return false
@@ -134,15 +154,50 @@ const HearingScreeningsTable = ({
 
     const matchesGrade = gradeFilter === 'all' || screening.grade === gradeFilter
 
-    // Result filter - updated logic
+    const matchesDateRange = (() => {
+      if (dateRangeFilter === 'all') return true
+
+      const screeningDate = new Date(screening.created_at)
+      const now = new Date()
+
+      if (dateRangeFilter === 'today') {
+        return screeningDate.toDateString() === now.toDateString()
+      }
+
+      if (dateRangeFilter === 'week') {
+        const weekAgo = new Date(now)
+        weekAgo.setDate(now.getDate() - 7)
+        return screeningDate >= weekAgo
+      }
+
+      if (dateRangeFilter === 'month') {
+        return (
+          screeningDate.getMonth() === now.getMonth() &&
+          screeningDate.getFullYear() === now.getFullYear()
+        )
+      }
+      if (dateRangeFilter === 'quarter') {
+        const quarterAgo = new Date(now)
+        quarterAgo.setMonth(now.getMonth() - 3)
+        return screeningDate >= quarterAgo
+      }
+      if (dateRangeFilter === 'school_year') {
+        const currentMonth = now.getMonth()
+        const currentYear = now.getFullYear()
+        const schoolYearStart =
+          currentMonth >= 8 ? new Date(currentYear, 8, 1) : new Date(currentYear - 1, 8, 1)
+        return screeningDate >= schoolYearStart
+      }
+      return true
+    })()
+
+    // Result filter
     let matchesResult = true
     if (resultFilter === 'passed') {
-      // Passed = both ears have Type A, AS, or AD
       const rightEarPassed = isPassedEar(screening.right_ear_result)
       const leftEarPassed = isPassedEar(screening.left_ear_result)
       matchesResult = screening.result !== 'absent' && rightEarPassed && leftEarPassed
     } else if (resultFilter === 'referred') {
-      // Referred = not absent and doesn't meet passed criteria
       const rightEarPassed = isPassedEar(screening.right_ear_result)
       const leftEarPassed = isPassedEar(screening.left_ear_result)
       matchesResult = screening.result !== 'absent' && !(rightEarPassed && leftEarPassed)
@@ -150,25 +205,23 @@ const HearingScreeningsTable = ({
       matchesResult = screening.result === 'absent'
     }
 
-    // Referral notes filter
     const matchesReferralNotes =
       referralNotesFilter === 'all' ||
       (referralNotesFilter === 'has_notes' &&
         screening.referral_notes &&
         screening.referral_notes.trim().length > 0)
 
-    // Non-compliant filter
     const matchesNonCompliant =
       nonCompliantFilter === 'all' ||
       (nonCompliantFilter === 'true' && screening.result === 'non_compliant')
 
-    // Complex needs filter
     const matchesComplexNeeds =
       complexNeedsFilter === 'all' ||
       (complexNeedsFilter === 'true' && screening.result === 'complex_needs')
 
     return (
       matchesSearch &&
+      matchesDateRange &&
       matchesGrade &&
       matchesResult &&
       matchesReferralNotes &&
@@ -197,6 +250,13 @@ const HearingScreeningsTable = ({
     return sortOrder === 'asc' ? comparison : -comparison
   })
 
+  const totalCount = sortedScreenings.length
+  const totalPages = Math.ceil(totalCount / pageSize)
+  const paginatedScreenings = sortedScreenings.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
+
   const handleSort = (field: 'date' | 'name' | 'grade') => {
     if (sortField === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : sortOrder === 'desc' ? null : 'asc')
@@ -211,7 +271,7 @@ const HearingScreeningsTable = ({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedScreenings(sortedScreenings)
+      setSelectedScreenings(paginatedScreenings)
     } else {
       setSelectedScreenings([])
     }
@@ -229,7 +289,7 @@ const HearingScreeningsTable = ({
     value: number | null | undefined,
     result: string | null | undefined,
     unit: string,
-    screeningResult?: string | null,
+    screeningResult?: string | null
   ) => {
     if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
     if (result === 'Immeasurable') return 'Immeasurable'
@@ -239,7 +299,7 @@ const HearingScreeningsTable = ({
 
   const formatResultBadge = (
     result: string | null | undefined,
-    screeningResult?: string | null,
+    screeningResult?: string | null
   ): string => {
     if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
     return result || '-'
@@ -277,7 +337,7 @@ const HearingScreeningsTable = ({
   const handleViewStudent = (screening: Screening) => {
     // Find student by comparing screening.student_id with both student.id and student.student_id
     const student = students.find(
-      s => s.id === screening.student_id || s.student_id === screening.student_id,
+      s => s.id === screening.student_id || s.student_id === screening.student_id
     )
 
     if (!student) {
@@ -376,8 +436,8 @@ const HearingScreeningsTable = ({
               <TableHead className='w-12'>
                 <Checkbox
                   checked={
-                    selectedScreenings.length === sortedScreenings.length &&
-                    sortedScreenings.length > 0
+                    selectedScreenings.length === paginatedScreenings.length &&
+                    paginatedScreenings.length > 0
                   }
                   onCheckedChange={handleSelectAll}
                 />
@@ -402,14 +462,14 @@ const HearingScreeningsTable = ({
             </tr>
           </TableHeader>
           <TableBody>
-            {sortedScreenings.length === 0 ? (
+            {paginatedScreenings.length === 0 ? (
               <tr>
                 <TableCell colSpan={10} className='text-center py-8 text-gray-500'>
                   No hearing screenings found
                 </TableCell>
               </tr>
             ) : (
-              sortedScreenings.map(screening => (
+              paginatedScreenings.map(screening => (
                 <ResponsiveTableRow key={screening.id}>
                   <TableCell>
                     <Checkbox
@@ -447,7 +507,7 @@ const HearingScreeningsTable = ({
                               screening.right_volume_db,
                               screening.right_ear_volume_result,
                               'ml',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -455,7 +515,7 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_volume_result,
+                              screening.right_ear_volume_result
                             )}`}>
                             {formatResultBadge(screening.right_ear_volume_result, screening.result)}
                           </Badge>
@@ -472,7 +532,7 @@ const HearingScreeningsTable = ({
                               screening.right_compliance,
                               screening.right_ear_compliance_result,
                               'ml',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -480,11 +540,11 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_compliance_result,
+                              screening.right_ear_compliance_result
                             )}`}>
                             {formatResultBadge(
                               screening.right_ear_compliance_result,
-                              screening.result,
+                              screening.result
                             )}
                           </Badge>
                         </div>
@@ -500,7 +560,7 @@ const HearingScreeningsTable = ({
                               screening.right_pressure,
                               screening.right_ear_pressure_result,
                               'daPa',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -508,11 +568,11 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_pressure_result,
+                              screening.right_ear_pressure_result
                             )}`}>
                             {formatResultBadge(
                               screening.right_ear_pressure_result,
-                              screening.result,
+                              screening.result
                             )}
                           </Badge>
                         </div>
@@ -531,7 +591,7 @@ const HearingScreeningsTable = ({
                               screening.left_volume_db,
                               screening.left_ear_volume_result,
                               'ml',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -539,7 +599,7 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_volume_result,
+                              screening.left_ear_volume_result
                             )}`}>
                             {formatResultBadge(screening.left_ear_volume_result, screening.result)}
                           </Badge>
@@ -556,7 +616,7 @@ const HearingScreeningsTable = ({
                               screening.left_compliance,
                               screening.left_ear_compliance_result,
                               'ml',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -564,11 +624,11 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_compliance_result,
+                              screening.left_ear_compliance_result
                             )}`}>
                             {formatResultBadge(
                               screening.left_ear_compliance_result,
-                              screening.result,
+                              screening.result
                             )}
                           </Badge>
                         </div>
@@ -584,7 +644,7 @@ const HearingScreeningsTable = ({
                               screening.left_pressure,
                               screening.left_ear_pressure_result,
                               'daPa',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -592,11 +652,11 @@ const HearingScreeningsTable = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_pressure_result,
+                              screening.left_ear_pressure_result
                             )}`}>
                             {formatResultBadge(
                               screening.left_ear_pressure_result,
-                              screening.result,
+                              screening.result
                             )}
                           </Badge>
                         </div>
@@ -664,6 +724,55 @@ const HearingScreeningsTable = ({
           </TableBody>
         </ResponsiveTable>
       </div>
+
+      {totalCount > 0 && totalPages > 1 && (
+        <div className='flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-white rounded-b-lg'>
+          <div className='flex items-center gap-2'>
+            <span className='text-sm text-gray-600'>Rows per page:</span>
+            <Select
+              value={String(pageSize)}
+              onValueChange={val => {
+                setPageSize(Number(val))
+                setCurrentPage(1)
+              }}>
+              <SelectTrigger className='w-[70px] h-8'>
+                <SelectValue />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value='25'>25</SelectItem>
+                <SelectItem value='50'>50</SelectItem>
+                <SelectItem value='100'>100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className='flex items-center gap-4'>
+            <span className='text-sm text-gray-600'>
+              {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)} of{' '}
+              {totalCount}
+            </span>
+
+            <div className='flex gap-1'>
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}>
+                Previous
+              </Button>
+
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}>
+                Next
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hearing Screening Details Modal */}
       <HearingScreeningDetailsModal

@@ -7,9 +7,14 @@ import ScreeningStatsSkeleton from '@/components/skeletons/ScreeningStatsSkeleto
 interface ScreeningStatsProps {
   onFilterClick?: (filterValues: string[], deduplicate: boolean) => void
   onClearAllFilters?: () => void
+  dateRangeFilter?: string
 }
 
-const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProps) => {
+const ScreeningStats = ({
+  onFilterClick,
+  onClearAllFilters,
+  dateRangeFilter = 'school_year',
+}: ScreeningStatsProps) => {
   const { currentSchool } = useOrganization()
 
   const {
@@ -18,12 +23,18 @@ const ScreeningStats = ({ onFilterClick, onClearAllFilters }: ScreeningStatsProp
     isFetching: isFetchingAll,
     error: errorAll,
   } = useScreenings()
+
   const {
     data: schoolScreeningsData,
     isLoading: isLoadingSchool,
     isFetching: isFetchingSchool,
     error: errorSchool,
-  } = useScreeningsBySchool(currentSchool?.id, 'school_year')
+  } = useScreeningsBySchool(
+    currentSchool?.id,
+    dateRangeFilter === 'school_year' ? 'school_year' : 'all',
+    1,
+    10000 // fetch all records
+  )
 
   const schoolScreenings = currentSchool
     ? (schoolScreeningsData?.screenings ?? [])

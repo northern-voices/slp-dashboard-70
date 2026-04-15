@@ -26,6 +26,7 @@ import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMe
 import StudentDetailsModal from '@/components/monthly-meetings/StudentDetailsModal'
 import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog'
 import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
+import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 
 interface MeetingFormData {
   meeting_title: string
@@ -131,6 +132,9 @@ const CreateMonthlyMeetingContent = () => {
     currentSchool?.id
   )
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
+
+  const { data: screeningsData } = useScreeningsBySchool(currentSchool?.id, 'school_year', 1, 10000)
+  const screenings = screeningsData?.screenings ?? []
 
   const onSubmit = async (data: MeetingFormData) => {
     setIsSubmitting(true)
@@ -411,6 +415,8 @@ const CreateMonthlyMeetingContent = () => {
                       setShowStudentModal(true)
                     }}
                     hasStudentData={hasStudentData}
+                    schoolId={currentSchool?.id}
+                    screenings={screenings}
                   />
                 </div>
               </div>
