@@ -200,26 +200,32 @@ export const useSpeechScreeningState = (form: UseFormReturn<SpeechScreeningFormV
 
   // Create nested structure for articulation data
   useEffect(() => {
-    const soundErrorsData = selectedSounds.map(sound => {
-      const word = soundErrorPatterns[sound]?.word || ''
-      const hasOtherPattern = selectedErrorPatterns[sound]?.includes('Other')
+    const soundErrorsData = selectedSounds
+      .filter(sound => {
+        const meaningfulPatterns = (selectedErrorPatterns[sound] || []).filter(
+          p => p !== 'Stimulability'
+        )
+        return meaningfulPatterns.length > 0
+      })
+      .map(sound => {
+        const word = soundErrorPatterns[sound]?.word || ''
+        const hasOtherPattern = selectedErrorPatterns[sound]?.includes('Other')
 
-      let otherNotes = ''
-      if (hasOtherPattern && soundNotes[sound]) {
-        // Format: "Hear for Bear" when "Other" is selected
-        otherNotes = `${soundNotes[sound]} for ${word}`
-      }
+        let otherNotes = ''
+        if (hasOtherPattern && soundNotes[sound]) {
+          otherNotes = `${soundNotes[sound]} for ${word}`
+        }
 
-      return {
-        sound: sound,
-        word: word,
-        errorPatterns: selectedErrorPatterns[sound] || [],
-        stoppingSounds: selectedStoppingSounds[sound] || [],
-        stimulabilityOptions: selectedStimulabilityOptions[sound] || [],
-        notes: notes[sound] || '',
-        otherNotes: otherNotes,
-      }
-    })
+        return {
+          sound: sound,
+          word: word,
+          errorPatterns: selectedErrorPatterns[sound] || [],
+          stoppingSounds: selectedStoppingSounds[sound] || [],
+          stimulabilityOptions: selectedStimulabilityOptions[sound] || [],
+          notes: notes[sound] || '',
+          otherNotes: otherNotes,
+        }
+      })
 
     const articulationData = {
       soundErrors: soundErrorsData,
