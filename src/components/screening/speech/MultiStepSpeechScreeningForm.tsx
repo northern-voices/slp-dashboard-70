@@ -144,10 +144,18 @@ const MultiStepSpeechScreeningForm = ({
       known_pending_diagnoses: null,
       pragmatics_social_communication: null,
     }
+    const screeningMetadata = initialScreeningData.error_patterns?.screening_metadata
 
     form.setValue('screening_type', 'progress')
     form.setValue('screening_date', new Date().toLocaleDateString('en-CA'))
     form.setValue('speech_screen_result', initialScreeningData.result || '')
+    form.setValue('sub', screeningMetadata?.sub || false)
+    form.setValue(
+      'qualifies_for_speech_program',
+      screeningMetadata?.qualifies_for_speech_program || false
+    )
+    form.setValue('graduated', screeningMetadata?.graduated || false)
+    form.setValue('paused', screeningMetadata?.paused || false)
     form.setValue('clinical_notes', '')
     form.setValue('referral_notes', '')
     form.setValue('progress_notes', '')
@@ -169,10 +177,11 @@ const MultiStepSpeechScreeningForm = ({
       additional_observations: errorPatterns.additional_observations || '',
       screening_metadata: {
         screening_date: new Date().toLocaleDateString('en-CA'),
-        qualifies_for_speech_program: false,
+        qualifies_for_speech_program: screeningMetadata?.qualifies_for_speech_program || false,
         vocabulary_support_recommended: initialScreeningData.vocabulary_support || false,
-        sub: false,
-        graduated: false,
+        sub: screeningMetadata?.sub || false,
+        graduated: screeningMetadata?.graduated || false,
+        paused: screeningMetadata?.paused || false,
       },
     })
   }, [initialScreeningData, form])
