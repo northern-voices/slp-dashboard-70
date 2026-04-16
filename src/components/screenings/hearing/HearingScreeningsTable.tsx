@@ -21,13 +21,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   ResponsiveTable,
   ResponsiveTableRow,
   TableHeader,
@@ -46,6 +39,7 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import ScreeningBulkActions from '@/components/screenings/ScreeningBulkActions'
 import HearingEarCell from '@/components/screenings/hearing/HearingEarCell'
+import HearingScreeningsPagination from './HearingScreeningsPagination'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -546,54 +540,17 @@ const HearingScreeningsTable = ({
         </ResponsiveTable>
       </div>
 
-      {totalCount > 0 && totalPages > 1 && (
-        <div className='flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-white rounded-b-lg'>
-          <div className='flex items-center gap-2'>
-            <span className='text-sm text-gray-600'>Rows per page:</span>
-            <Select
-              value={String(pageSize)}
-              onValueChange={val => {
-                setPageSize(Number(val))
-                setCurrentPage(1)
-              }}>
-              <SelectTrigger className='w-[70px] h-8'>
-                <SelectValue />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value='25'>25</SelectItem>
-                <SelectItem value='50'>50</SelectItem>
-                <SelectItem value='100'>100</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className='flex items-center gap-4'>
-            <span className='text-sm text-gray-600'>
-              {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)} of{' '}
-              {totalCount}
-            </span>
-
-            <div className='flex gap-1'>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}>
-                Previous
-              </Button>
-
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}>
-                Next
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <HearingScreeningsPagination
+        currentPage={currentPage}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={size => {
+          setPageSize(size)
+          setCurrentPage(1)
+        }}
+      />
 
       {/* Hearing Screening Details Modal */}
       <HearingScreeningDetailsModal
