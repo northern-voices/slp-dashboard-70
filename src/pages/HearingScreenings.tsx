@@ -21,6 +21,7 @@ const HearingScreenings = () => {
   const [nonCompliantFilter, setNonCompliantFilter] = useState('all')
   const [complexNeedsFilter, setComplexNeedsFilter] = useState('all')
   const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
+  const [deduplicateFilter, setDeduplicateFilter] = useState(false)
 
   const { data: screenings = [], isLoading } = useHearingScreenings(currentSchool?.id)
 
@@ -40,6 +41,12 @@ const HearingScreenings = () => {
     setReferralNotesFilter('all')
     setNonCompliantFilter('all')
     setComplexNeedsFilter('all')
+    setDeduplicateFilter(false)
+  }
+
+  const handleResultFilterChange = (value: string) => {
+    setResultFilter(value)
+    setDeduplicateFilter(false)
   }
 
   if (isLoading) return <HearingScreeningsSkeleton />
@@ -63,7 +70,10 @@ const HearingScreenings = () => {
 
         <HearingScreeningStats
           screenings={screenings}
-          onFilterClick={setResultFilter}
+          onFilterClick={(filterValue, deduplicate) => {
+            setResultFilter(filterValue)
+            setDeduplicateFilter(deduplicate)
+          }}
           onClearAllFilters={clearAllFilters}
         />
       </div>
@@ -77,7 +87,7 @@ const HearingScreenings = () => {
           gradeFilter={gradeFilter}
           setGradeFilter={setGradeFilter}
           resultFilter={resultFilter}
-          setResultFilter={setResultFilter}
+          setResultFilter={handleResultFilterChange}
           referralNotesFilter={referralNotesFilter}
           setReferralNotesFilter={setReferralNotesFilter}
           nonCompliantFilter={nonCompliantFilter}
@@ -96,6 +106,7 @@ const HearingScreenings = () => {
           complexNeedsFilter={complexNeedsFilter}
           selectedScreenings={selectedScreenings}
           setSelectedScreenings={setSelectedScreenings}
+          deduplicateFilter={deduplicateFilter}
         />
       </div>
     </div>
