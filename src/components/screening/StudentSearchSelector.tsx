@@ -181,8 +181,8 @@ const StudentSearchSelector = ({
     // Create student with temporary ID
     createStudentMutation.mutate(
       {
-        first_name: data.first_name,
-        last_name: data.last_name,
+        first_name: data.first_name.trim().replace(/\s+/g, ' '),
+        last_name: data.last_name.trim().replace(/\s+/g, ' '),
         student_id: tempStudentId,
         school_id: currentSchool.id,
         qualifies_for_program: true,
@@ -392,7 +392,7 @@ const StudentSearchSelector = ({
                           onClick={handleShowNewStudentForm}
                           className='w-full'>
                           <UserPlus className='w-4 h-4 mr-2' />
-                          Add New Student
+                          Add New Student asdf
                         </Button>
                       )}
                     </div>

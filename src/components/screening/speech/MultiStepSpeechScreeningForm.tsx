@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useForm, UseFormReturn } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Student } from '@/types/database'
@@ -45,6 +45,7 @@ const MultiStepSpeechScreeningForm = ({
   const [isUnableToScreen, setIsUnableToScreen] = useState(false)
   const [showSubmissionModal, setShowSubmissionModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [resetKey, setResetKey] = useState(0)
 
   const isSubmittingRef = useRef(false)
   const { user } = useAuth()
@@ -53,9 +54,6 @@ const MultiStepSpeechScreeningForm = ({
   const createScreening = useCreateSpeechScreening()
   const updateStudent = useUpdateStudent()
   const isOnline = useOnlineStatus()
-
-  // Grade ID will be set through backend validation in handleSubmit
-  // No default grade ID needed - it will come from existing or newly created grade records
 
   const form = useForm<SpeechScreeningFormValues>({
     mode: 'onSubmit',
@@ -127,7 +125,7 @@ const MultiStepSpeechScreeningForm = ({
     },
   })
 
-  useEffect(() => {
+  const initializeFromScreeningData = useCallback(() => {
     if (!initialScreeningData) return
 
     const errorPatterns = initialScreeningData.error_patterns
@@ -144,7 +142,8 @@ const MultiStepSpeechScreeningForm = ({
       known_pending_diagnoses: null,
       pragmatics_social_communication: null,
     }
-    const screeningMetadata = initialScreeningData.error_patterns?.screening_metadata
+
+    const screeningMetadata = errorPatterns?.screening_metadata
 
     form.setValue('screening_type', 'progress')
     form.setValue('screening_date', new Date().toLocaleDateString('en-CA'))
@@ -169,11 +168,7 @@ const MultiStepSpeechScreeningForm = ({
         articulationNotes: articulation.articulationNotes || '',
       },
       add_areas_of_concern: areasOfConcern,
-      attendance: {
-        absent: false,
-        absence_notes: '',
-        priority_re_screen: false,
-      },
+      attendance: { absent: false, absence_notes: '', priority_re_screen: false },
       additional_observations: errorPatterns.additional_observations || '',
       screening_metadata: {
         screening_date: new Date().toLocaleDateString('en-CA'),
@@ -185,6 +180,10 @@ const MultiStepSpeechScreeningForm = ({
       },
     })
   }, [initialScreeningData, form])
+
+  useEffect(() => {
+    initializeFromScreeningData()
+  }, [initialScreeningData]) // eslint-disable-line
 
   // Initialize states from form data if available
   useEffect(() => {
@@ -220,6 +219,11 @@ const MultiStepSpeechScreeningForm = ({
   const handleStudentSelect = (student: Student | null) => {
     setSelectedStudent(student)
     onStudentSelect?.(student)
+  }
+
+  const handleReset = () => {
+    initializeFromScreeningData()
+    setResetKey(prev => prev + 1)
   }
 
   const validateRequiredFields = (formData: Record<string, unknown>): string[] => {
@@ -693,6 +697,7 @@ const MultiStepSpeechScreeningForm = ({
       case 2:
         return (
           <SpeechScreeningStep2
+            key={resetKey}
             form={form}
             selectedStudent={selectedStudent}
             initialScreeningData={initialScreeningData}
@@ -723,9 +728,16 @@ const MultiStepSpeechScreeningForm = ({
             <Button type='button' variant='destructive' onClick={onCancel}>
               Cancel
             </Button>
+
             {currentStep > 1 && (
               <Button type='button' variant='default' onClick={handlePrevious}>
                 Previous
+              </Button>
+            )}
+
+            {currentStep === 2 && initialScreeningData && (
+              <Button type='button' variant='outline' onClick={handleReset}>
+                Reset to Previous Screening
               </Button>
             )}
           </div>

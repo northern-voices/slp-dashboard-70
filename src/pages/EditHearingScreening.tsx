@@ -17,12 +17,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change'
-import { FileText, Calendar, Save, Volume2, X } from 'lucide-react'
+import { FileText, Calendar, Save, Volume2, X, Edit } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useUpdateHearingScreening } from '@/hooks/screenings/use-screening-hearing-mutations'
 import { useHearingScreeningById } from '@/hooks/screenings/use-hearing-screenings'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { studentsApi } from '@/api/students'
 
 interface HearingEditFormValues {
   right_vol: string
@@ -37,10 +49,14 @@ interface HearingEditFormValues {
 }
 
 const EditHearingScreeningContent = () => {
-  const { screeningId } = useParams<{ screeningId: string }>()
-  const navigate = useNavigate()
-  const { toast } = useToast()
   const [saving, setSaving] = useState(false)
+  const [studentData, setStudentData] = useState(null)
+  const [isEditingStudent, setIsEditingStudent] = useState(false)
+  const [editedFirstName, setEditedFirstName] = useState('')
+  const [editedLastName, setEditedLastName] = useState('')
+  const [editedGradeId, setEditedGradeId] = useState<string>('')
+  const [availableGrades, setAvailableGrades] = useState<SchoolGrade[]>([])
+  const [isLoadingGrades, setIsLoadingGrades] = useState(false)
 
   // Immeasurable checkbox state
   const [rightVolImmeasurable, setRightVolImmeasurable] = useState(false)
@@ -49,6 +65,12 @@ const EditHearingScreeningContent = () => {
   const [leftVolImmeasurable, setLeftVolImmeasurable] = useState(false)
   const [leftCompImmeasurable, setLeftCompImmeasurable] = useState(false)
   const [leftPressImmeasurable, setLeftPressImmeasurable] = useState(false)
+
+  const { screeningId } = useParams<{ screeningId: string }>()
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  const { currentSchool } = useOrganization()
+  const updateStudent = useUpdateStudent()
 
   const updateHearingScreening = useUpdateHearingScreening()
   const queryClient = useQueryClient()
@@ -69,7 +91,7 @@ const EditHearingScreeningContent = () => {
     },
   })
 
-  const { data: screening, isLoading, isError } = useHearingScreeningById(screeningId)
+  const { data: screening, isLoading } = useHearingScreeningById(screeningId)
 
   useEffect(() => {
     if (!screening) return
@@ -94,6 +116,17 @@ const EditHearingScreeningContent = () => {
       referral_notes: screening.referral_notes || '',
     })
   }, [screening])
+
+  useEffect(() => {
+    if (!screening?.student_id) return
+
+    studentsApi
+      .getStudentByStudentId(screening.student_id)
+      .then(student => {
+        setStudentData(student)
+      })
+      .catch(err => console.error('Error fetching student:', err))
+  }, [screening?.student_id])
 
   const handleGoBack = () => navigate(-1)
 
@@ -165,6 +198,80 @@ const EditHearingScreeningContent = () => {
     }
   }
 
+  const handleEditStudent = () => {
+    if (!studentData) {
+      toast({
+        title: 'Error',
+        description: 'Student data not loaded yet.',
+        variant: 'destructive',
+      })
+      return
+    }
+    setEditedFirstName(studentData.first_name)
+    setEditedLastName(studentData.last_name)
+    setEditedGradeId(studentData.current_grade_id || '')
+    setIsEditingStudent(true)
+
+    if (currentSchool?.id) {
+      setIsLoadingGrades(true)
+      schoolGradesApi
+        .getSchoolGradesBySchool(currentSchool.id)
+        .then(grades => setAvailableGrades(grades))
+        .catch(() =>
+          toast({ title: 'Error', description: 'Failed to load grades.', variant: 'destructive' })
+        )
+        .finally(() => setIsLoadingGrades(false))
+    }
+  }
+
+  const handleSaveStudent = async () => {
+    if (!studentData?.id || !editedFirstName.trim() || !editedLastName.trim()) {
+      toast({
+        title: 'Error',
+        description: 'First name and last name are required.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    try {
+      await updateStudent.mutateAsync({
+        id: studentData.id,
+        studentData: {
+          first_name: editedFirstName.trim(),
+          last_name: editedLastName.trim(),
+          current_grade_id: editedGradeId || undefined,
+        },
+      })
+
+      setStudentData({
+        ...studentData,
+        first_name: editedFirstName.trim(),
+        last_name: editedLastName.trim(),
+        current_grade_id: editedGradeId || null,
+      })
+      setIsEditingStudent(false)
+
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+      queryClient.invalidateQueries({ queryKey: ['hearing-screenings'] })
+
+      toast({
+        title: 'Student updated',
+        description: 'Student information updated successfully.',
+      })
+    } catch {
+      toast({ title: 'Error', description: 'Failed to update student.', variant: 'destructive' })
+    }
+  }
+
+  const handleCancelEditStudent = () => {
+    setIsEditingStudent(false)
+    setEditedFirstName('')
+    setEditedLastName('')
+    setEditedGradeId('')
+    setAvailableGrades([])
+  }
+
   if (isLoading) return <LoadingSpinner />
 
   if (!screening) {
@@ -210,15 +317,29 @@ const EditHearingScreeningContent = () => {
               </CardHeader>
               <CardContent className='space-y-4'>
                 <div className='mb-4 py-3 px-5 bg-blue-50 rounded-lg border border-blue-200'>
-                  <div className='flex items-center gap-2'>
-                    <span className='text-sm font-medium text-blue-900'>Student Name:</span>
-                    <span className='text-sm font-semibold text-blue-800'>
-                      {screening.student_name}
-                    </span>
-                  </div>
-                  <div className='flex items-center gap-2 mt-1'>
-                    <span className='text-sm font-medium text-blue-900'>Grade:</span>
-                    <span className='text-sm font-semibold text-blue-800'>{screening.grade}</span>
+                  <div className='flex items-center justify-between'>
+                    <div className='flex-1'>
+                      <div className='flex items-center gap-2'>
+                        <span className='text-sm font-medium text-blue-900'>Student Name:</span>
+                        <span className='text-sm font-semibold text-blue-800'>
+                          {screening.student_name}
+                        </span>
+                      </div>
+                      <div className='flex items-center gap-2 mt-1'>
+                        <span className='text-sm font-medium text-blue-900'>Grade:</span>
+                        <span className='text-sm font-semibold text-blue-800'>
+                          {screening.grade}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={handleEditStudent}
+                      className='ml-4'>
+                      <Edit className='w-4 h-4 mr-2' />
+                      Edit Student
+                    </Button>
                   </div>
                 </div>
 
@@ -255,8 +376,7 @@ const EditHearingScreeningContent = () => {
                       <button
                         type='button'
                         onClick={() => form.setValue('result', '')}
-                        className='absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full
-  transition-colors'>
+                        className='absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors'>
                         <X className='w-4 h-4 text-gray-500' />
                       </button>
                     )}
@@ -492,6 +612,66 @@ const EditHearingScreeningContent = () => {
           </div>
         </div>
       </div>
+
+      <Dialog
+        open={isEditingStudent}
+        onOpenChange={open => {
+          if (!open) handleCancelEditStudent()
+        }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Student Information</DialogTitle>
+            <DialogDescription>
+              Update the student's first name, last name, and current grade below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className='space-y-4 py-4'>
+            <div className='space-y-2'>
+              <label className='text-sm font-medium text-gray-700'>First Name</label>
+              <Input
+                value={editedFirstName}
+                onChange={e => setEditedFirstName(e.target.value)}
+                placeholder='First Name'
+              />
+            </div>
+            <div className='space-y-2'>
+              <label className='text-sm font-medium text-gray-700'>Last Name</label>
+              <Input
+                value={editedLastName}
+                onChange={e => setEditedLastName(e.target.value)}
+                placeholder='Last Name'
+              />
+            </div>
+            <div className='space-y-2'>
+              <label className='text-sm font-medium text-gray-700'>Current Grade</label>
+              {isLoadingGrades ? (
+                <div className='flex items-center justify-center py-2'>
+                  <LoadingSpinner size='sm' />
+                </div>
+              ) : (
+                <Select value={editedGradeId || undefined} onValueChange={setEditedGradeId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder='Select grade (optional)' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableGrades.map(grade => (
+                      <SelectItem key={grade.id} value={grade.id}>
+                        {grade.grade_level} ({grade.academic_year})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant='outline' onClick={handleCancelEditStudent}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveStudent}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

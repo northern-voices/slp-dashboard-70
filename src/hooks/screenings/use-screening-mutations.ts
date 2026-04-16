@@ -182,12 +182,21 @@ export const useDeleteScreening = () => {
       const previousScreenings = queryClient.getQueriesData({ queryKey: ['screenings'] })
 
       // Optimistically update to remove the screening
-      queryClient.setQueriesData<Screening[]>({ queryKey: ['screenings'] }, old => {
-        if (!old) return old
-        return old.filter(screening => screening.id !== id)
-      })
+      queryClient.setQueriesData<Screening[] | { screenings: Screening[]; totalCount: number }>(
+        { queryKey: ['screenings'] },
+        old => {
+          if (!old) return old
 
-      // Return the context with the previous data for rollback on error
+          const filter = (arr: Screening[]) => arr.filter(s => s.id !== id)
+
+          if ('screenings' in old) {
+            return { ...old, screenings: filter(old.screenings), totalCount: old.totalCount - 1 }
+          }
+
+          return filter(old)
+        }
+      )
+
       return { previousScreenings }
     },
 
