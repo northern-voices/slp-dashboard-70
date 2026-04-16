@@ -11,17 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { FileText, Calendar, Save, Edit } from 'lucide-react'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import EnhancedSpeechScreeningFields from '@/components/screening/speech/EnhancedSpeechScreeningFields'
+import EditStudentDialog from '@/components/screening/EditStudentDialog'
 
 const EditScreeningContent = () => {
   const {
@@ -257,65 +250,19 @@ const EditScreeningContent = () => {
         </div>
       </div>
 
-      <Dialog
+      <EditStudentDialog
         open={isEditingStudent}
-        onOpenChange={open => {
-          if (!open) handleCancelEditStudent()
-        }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Student Information</DialogTitle>
-            <DialogDescription>
-              Update the student's first name, last name, and current grade below.
-            </DialogDescription>
-          </DialogHeader>
-          <div className='space-y-4 py-4'>
-            <div className='space-y-2'>
-              <label className='text-sm font-medium text-gray-700'>First Name</label>
-              <Input
-                value={editedFirstName}
-                onChange={e => setEditedFirstName(e.target.value)}
-                placeholder='First Name'
-              />
-            </div>
-            <div className='space-y-2'>
-              <label className='text-sm font-medium text-gray-700'>Last Name</label>
-              <Input
-                value={editedLastName}
-                onChange={e => setEditedLastName(e.target.value)}
-                placeholder='Last Name'
-              />
-            </div>
-            <div className='space-y-2'>
-              <label className='text-sm font-medium text-gray-700'>Current Grade</label>
-              {isLoadingGrades ? (
-                <div className='flex items-center justify-center py-2'>
-                  <LoadingSpinner size='sm' />
-                </div>
-              ) : (
-                <Select value={editedGradeId || undefined} onValueChange={setEditedGradeId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select grade (optional)' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableGrades.map(grade => (
-                      <SelectItem key={grade.id} value={grade.id}>
-                        {grade.grade_level} ({grade.academic_year})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant='outline' onClick={handleCancelEditStudent}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveStudent}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        editedFirstName={editedFirstName}
+        editedLastName={editedLastName}
+        editedGradeId={editedGradeId}
+        availableGrades={availableGrades}
+        isLoadingGrades={isLoadingGrades}
+        onFirstNameChange={setEditedFirstName}
+        onLastNameChange={setEditedLastName}
+        onGradeChange={setEditedGradeId}
+        onSave={handleSaveStudent}
+        onCancel={handleCancelEditStudent}
+      />
     </div>
   )
 }
