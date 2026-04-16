@@ -53,14 +53,7 @@ export interface Student {
   grade?: string
   date_of_birth?: string
   qualifies_for_program?: boolean
-  program_status?:
-    | 'none'
-    | 'qualified'
-    | 'not_in_program'
-    | 'sub'
-    | 'paused'
-    | 'graduated'
-    | 'no_consent'
+  program_status?: ProgramStatus
   current_grade_id?: string | null
   created_at: string
   updated_at: string
@@ -83,6 +76,15 @@ export interface Student {
   }>
 }
 
+export type ProgramStatus =
+  | 'none'
+  | 'qualified'
+  | 'not_in_program'
+  | 'sub'
+  | 'paused'
+  | 'graduated'
+  | 'no_consent'
+
 // Updated Screening interface to match database schema
 export interface Screening {
   id: string
@@ -101,14 +103,7 @@ export interface Screening {
   updated_at: string
   school_id: string
   school_name?: string
-  program_status?:
-    | 'none'
-    | 'qualified'
-    | 'not_in_program'
-    | 'sub'
-    | 'paused'
-    | 'graduated'
-    | 'no_consent'
+  program_status?: ProgramStatus
   grade_id: string
   screener_id: string
   academic_year?: string
