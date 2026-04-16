@@ -56,6 +56,7 @@ interface HearingScreeningsTableProps {
   complexNeedsFilter: string
   selectedScreenings: Screening[]
   setSelectedScreenings: (screenings: Screening[]) => void
+  deduplicateFilter: boolean
 }
 
 const HearingScreeningsTable = ({
@@ -68,6 +69,7 @@ const HearingScreeningsTable = ({
   complexNeedsFilter,
   selectedScreenings,
   setSelectedScreenings,
+  deduplicateFilter,
 }: HearingScreeningsTableProps) => {
   const [sortField, setSortField] = useState<'date' | 'name' | 'grade' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
@@ -117,6 +119,7 @@ const HearingScreeningsTable = ({
     referralNotesFilter,
     nonCompliantFilter,
     complexNeedsFilter,
+    deduplicateFilter,
   ])
 
   const isPassedEar = (earResult: string | null | undefined) => {
@@ -130,7 +133,7 @@ const HearingScreeningsTable = ({
 
   // When a result filter is active, only show the latest screening per student
   const screeningsToFilter = useMemo(() => {
-    if (resultFilter === 'all') return screenings
+    if (!deduplicateFilter) return screenings
 
     const latestByStudent = new Map<string, Screening>()
     screenings.forEach(screening => {
@@ -144,7 +147,7 @@ const HearingScreeningsTable = ({
     })
 
     return Array.from(latestByStudent.values())
-  }, [screenings, resultFilter])
+  }, [screenings, deduplicateFilter])
 
   // Apply filters
   const filteredScreenings = screeningsToFilter.filter(screening => {
