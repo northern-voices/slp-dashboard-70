@@ -205,12 +205,15 @@ export const studentsApi = {
         return null
       }
 
+      const normalizedFirstName = firstName.trim().replace(/\s+/g, ' ')
+      const normalizedLastName = lastName.trim().replace(/\s+/g, ' ')
+
       let query = supabase
         .from('students')
         .select('*')
         .eq('school_id', schoolId)
-        .ilike('first_name', firstName.trim())
-        .ilike('last_name', lastName.trim())
+        .ilike('first_name', normalizedFirstName)
+        .ilike('last_name', normalizedLastName)
 
       // If date of birth is provided and not empty, include it in the check
       if (dateOfBirth && dateOfBirth.trim()) {
