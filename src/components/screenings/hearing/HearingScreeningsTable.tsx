@@ -11,16 +11,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import {
   ResponsiveTable,
   ResponsiveTableRow,
   TableHeader,
@@ -40,6 +30,7 @@ import { useToast } from '@/hooks/use-toast'
 import ScreeningBulkActions from '@/components/screenings/ScreeningBulkActions'
 import HearingEarCell from '@/components/screenings/hearing/HearingEarCell'
 import HearingScreeningsPagination from './HearingScreeningsPagination'
+import HearingScreeningDeleteDialog from './HearingScreeningDeleteDialog'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -567,25 +558,11 @@ const HearingScreeningsTable = ({
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!screeningToDelete} onOpenChange={handleDeleteCancel}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Hearing Screening</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the hearing screening for{' '}
-              <strong>{screeningToDelete?.student_name}</strong>? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleDeleteCancel}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className='bg-red-600 hover:bg-red-700'>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <HearingScreeningDeleteDialog
+        screening={screeningToDelete}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </div>
   )
 }
