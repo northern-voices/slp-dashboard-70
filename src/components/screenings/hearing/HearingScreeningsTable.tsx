@@ -45,6 +45,7 @@ import SendReportsModal from '@/components/screenings/SendReportsModal'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import ScreeningBulkActions from '@/components/screenings/ScreeningBulkActions'
+import HearingEarCell from '@/components/screenings/hearing/HearingEarCell'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -288,45 +289,6 @@ const HearingScreeningsTable = ({
     }
   }
 
-  const formatValue = (
-    value: number | null | undefined,
-    result: string | null | undefined,
-    unit: string,
-    screeningResult?: string | null
-  ) => {
-    if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
-    if (result === 'Immeasurable') return 'Immeasurable'
-    if (value === null || value === undefined) return 'N/A'
-    return `${value} ${unit}`
-  }
-
-  const formatResultBadge = (
-    result: string | null | undefined,
-    screeningResult?: string | null
-  ): string => {
-    if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
-    return result || '-'
-  }
-
-  const getResultBadgeVariant = (result: string | null | undefined) => {
-    if (!result || result === '-') return 'secondary'
-    const normalizedResult = result.toLowerCase()
-    if (normalizedResult === 'normal') return 'default'
-    if (normalizedResult === 'high' || normalizedResult === 'low') return 'outline'
-    if (normalizedResult === 'immeasurable') return 'secondary'
-    return 'secondary'
-  }
-
-  const getResultBadgeColor = (result: string | null | undefined) => {
-    if (!result || result === '-') return ''
-    const normalizedResult = result.toLowerCase()
-    if (normalizedResult === 'normal') return 'bg-green-100 text-green-800 border-green-200'
-    if (normalizedResult === 'high' || normalizedResult === 'low')
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-    if (normalizedResult === 'immeasurable') return 'bg-gray-100 text-gray-600 border-gray-200'
-    return 'bg-gray-100 text-gray-600 border-gray-200'
-  }
-
   const handleViewDetails = (screening: Screening) => {
     setSelectedScreening(screening)
     setIsDetailsModalOpen(true)
@@ -498,173 +460,29 @@ const HearingScreeningsTable = ({
                       )}
                     </div>
                   </TableCell>
+
                   <TableCell className='py-4 px-4'>
-                    <div className='space-y-0 divide-y divide-gray-200'>
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded'>
-                            Vol
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.right_volume_db,
-                              screening.right_ear_volume_result,
-                              'ml',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_volume_result
-                            )}`}>
-                            {formatResultBadge(screening.right_ear_volume_result, screening.result)}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded'>
-                            Comp
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.right_compliance,
-                              screening.right_ear_compliance_result,
-                              'ml',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_compliance_result
-                            )}`}>
-                            {formatResultBadge(
-                              screening.right_ear_compliance_result,
-                              screening.result
-                            )}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded'>
-                            Press
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.right_pressure,
-                              screening.right_ear_pressure_result,
-                              'daPa',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_pressure_result
-                            )}`}>
-                            {formatResultBadge(
-                              screening.right_ear_pressure_result,
-                              screening.result
-                            )}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
+                    <HearingEarCell
+                      volumeDb={screening.right_volume_db}
+                      volumeResult={screening.right_ear_volume_result}
+                      compliance={screening.right_compliance}
+                      complianceResult={screening.right_ear_compliance_result}
+                      pressure={screening.right_pressure}
+                      pressureResult={screening.right_ear_pressure_result}
+                      screeningResult={screening.result}
+                    />
                   </TableCell>
+
                   <TableCell className='py-4 px-4'>
-                    <div className='space-y-0 divide-y divide-gray-200'>
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded'>
-                            Vol
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.left_volume_db,
-                              screening.left_ear_volume_result,
-                              'ml',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_volume_result
-                            )}`}>
-                            {formatResultBadge(screening.left_ear_volume_result, screening.result)}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded'>
-                            Comp
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.left_compliance,
-                              screening.left_ear_compliance_result,
-                              'ml',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_compliance_result
-                            )}`}>
-                            {formatResultBadge(
-                              screening.left_ear_compliance_result,
-                              screening.result
-                            )}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded'>
-                            Press
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.left_pressure,
-                              screening.left_ear_pressure_result,
-                              'daPa',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_pressure_result
-                            )}`}>
-                            {formatResultBadge(
-                              screening.left_ear_pressure_result,
-                              screening.result
-                            )}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
+                    <HearingEarCell
+                      volumeDb={screening.left_volume_db}
+                      volumeResult={screening.left_ear_volume_result}
+                      compliance={screening.left_compliance}
+                      complianceResult={screening.left_ear_compliance_result}
+                      pressure={screening.left_pressure}
+                      pressureResult={screening.left_ear_pressure_result}
+                      screeningResult={screening.result}
+                    />
                   </TableCell>
                   <TableCell className='py-4 px-3'>
                     <div className='space-y-3'>
