@@ -293,19 +293,17 @@ const EditHearingScreeningContent = () => {
     : 'N/A'
 
   return (
-    <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
-      <div className='min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min'>
-        <div className='p-6'>
-          <div className='flex items-center gap-3 mb-6'>
-            <FileText className='w-6 h-6' />
-            <div>
-              <h1 className='text-2xl font-semibold'>Edit Hearing Screening</h1>
-              <p className='text-gray-600'>
-                Editing hearing screening for {screening.student_name}
-              </p>
-            </div>
-          </div>
+    <div className='flex-1 p-4 md:p-6 lg:p-8'>
+      <div className='flex items-center gap-3 mb-6'>
+        <FileText className='w-6 h-6' />
+        <div>
+          <h1 className='text-2xl font-semibold'>Edit Hearing Screening</h1>
+          <p className='text-gray-600'>Editing hearing screening for {screening.student_name}</p>
+        </div>
+      </div>
 
+      <div className='bg-white rounded-lg border border-gray-200 shadow-sm'>
+        <div className='p-6'>
           <div className='space-y-6'>
             {/* Screening Details */}
             <Card>
@@ -676,10 +674,6 @@ const EditHearingScreeningContent = () => {
   )
 }
 
-const EditHearingScreening = () => (
-  <div className='min-h-screen bg-gray-50'>
-    <EditHearingScreeningContent />
-  </div>
-)
+const EditHearingScreening = () => <EditHearingScreeningContent />
 
 export default EditHearingScreening
