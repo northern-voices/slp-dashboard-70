@@ -1,35 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Eye, Mail, Trash2, MoreHorizontal, ChevronUp, ChevronDown, User } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 import {
   ResponsiveTable,
-  ResponsiveTableRow,
   TableHeader,
   TableHead,
   TableBody,
@@ -45,6 +19,9 @@ import SendReportsModal from '@/components/screenings/SendReportsModal'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import ScreeningBulkActions from '@/components/screenings/ScreeningBulkActions'
+import HearingScreeningsPagination from './HearingScreeningsPagination'
+import HearingScreeningDeleteDialog from './HearingScreeningDeleteDialog'
+import HearingScreeningTableRow from '@/components/screenings/hearing/HearingScreeningTableRow'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -288,45 +265,6 @@ const HearingScreeningsTable = ({
     }
   }
 
-  const formatValue = (
-    value: number | null | undefined,
-    result: string | null | undefined,
-    unit: string,
-    screeningResult?: string | null
-  ) => {
-    if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
-    if (result === 'Immeasurable') return 'Immeasurable'
-    if (value === null || value === undefined) return 'N/A'
-    return `${value} ${unit}`
-  }
-
-  const formatResultBadge = (
-    result: string | null | undefined,
-    screeningResult?: string | null
-  ): string => {
-    if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
-    return result || '-'
-  }
-
-  const getResultBadgeVariant = (result: string | null | undefined) => {
-    if (!result || result === '-') return 'secondary'
-    const normalizedResult = result.toLowerCase()
-    if (normalizedResult === 'normal') return 'default'
-    if (normalizedResult === 'high' || normalizedResult === 'low') return 'outline'
-    if (normalizedResult === 'immeasurable') return 'secondary'
-    return 'secondary'
-  }
-
-  const getResultBadgeColor = (result: string | null | undefined) => {
-    if (!result || result === '-') return ''
-    const normalizedResult = result.toLowerCase()
-    if (normalizedResult === 'normal') return 'bg-green-100 text-green-800 border-green-200'
-    if (normalizedResult === 'high' || normalizedResult === 'low')
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-    if (normalizedResult === 'immeasurable') return 'bg-gray-100 text-gray-600 border-gray-200'
-    return 'bg-gray-100 text-gray-600 border-gray-200'
-  }
-
   const handleViewDetails = (screening: Screening) => {
     setSelectedScreening(screening)
     setIsDetailsModalOpen(true)
@@ -473,309 +411,33 @@ const HearingScreeningsTable = ({
               </tr>
             ) : (
               paginatedScreenings.map(screening => (
-                <ResponsiveTableRow key={screening.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedScreenings.some(s => s.id === screening.id)}
-                      onCheckedChange={checked =>
-                        handleSelectScreening(screening, checked as boolean)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell className='py-4'>
-                    <div className='space-y-1'>
-                      <div className='font-semibold text-sm text-gray-900'>
-                        {screening.student_name || 'Unknown Student'}
-                      </div>
-                      <div className='text-xs text-gray-600'>Grade: {screening.grade || 'N/A'}</div>
-                      {screening.result && (
-                        <Badge variant='secondary' className='text-xs mt-1'>
-                          {screening.result === 'absent' && 'Absent'}
-                          {screening.result === 'non_compliant' && 'Non Compliant'}
-                          {screening.result === 'complex_needs' && 'Complex Needs'}
-                          {screening.result === 'results_uncertain' && 'Results Uncertain'}
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className='py-4 px-4'>
-                    <div className='space-y-0 divide-y divide-gray-200'>
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded'>
-                            Vol
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.right_volume_db,
-                              screening.right_ear_volume_result,
-                              'ml',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_volume_result
-                            )}`}>
-                            {formatResultBadge(screening.right_ear_volume_result, screening.result)}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded'>
-                            Comp
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.right_compliance,
-                              screening.right_ear_compliance_result,
-                              'ml',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_compliance_result
-                            )}`}>
-                            {formatResultBadge(
-                              screening.right_ear_compliance_result,
-                              screening.result
-                            )}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded'>
-                            Press
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.right_pressure,
-                              screening.right_ear_pressure_result,
-                              'daPa',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_pressure_result
-                            )}`}>
-                            {formatResultBadge(
-                              screening.right_ear_pressure_result,
-                              screening.result
-                            )}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className='py-4 px-4'>
-                    <div className='space-y-0 divide-y divide-gray-200'>
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded'>
-                            Vol
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.left_volume_db,
-                              screening.left_ear_volume_result,
-                              'ml',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_volume_result
-                            )}`}>
-                            {formatResultBadge(screening.left_ear_volume_result, screening.result)}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded'>
-                            Comp
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.left_compliance,
-                              screening.left_ear_compliance_result,
-                              'ml',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_compliance_result
-                            )}`}>
-                            {formatResultBadge(
-                              screening.left_ear_compliance_result,
-                              screening.result
-                            )}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className='flex items-center py-2'>
-                        <div className='flex items-center gap-2 flex-1'>
-                          <span className='text-xs font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded'>
-                            Press
-                          </span>
-                          <span className='text-sm font-semibold text-gray-900'>
-                            {formatValue(
-                              screening.left_pressure,
-                              screening.left_ear_pressure_result,
-                              'daPa',
-                              screening.result
-                            )}
-                          </span>
-                        </div>
-                        <div className='h-6 w-px bg-gray-300 mx-3'></div>
-                        <div className='flex-1'>
-                          <Badge
-                            className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_pressure_result
-                            )}`}>
-                            {formatResultBadge(
-                              screening.left_ear_pressure_result,
-                              screening.result
-                            )}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className='py-4 px-3'>
-                    <div className='space-y-3'>
-                      {/* Right Ear Result */}
-                      <div className='border-l-2 border-gray-300 pl-2 py-1'>
-                        <div className='flex items-center gap-1.5 mb-1'>
-                          <span className='text-xs font-semibold text-gray-700'>R</span>
-                          <span className='text-xs text-gray-500'>Right</span>
-                        </div>
-                        <div className='text-xs text-gray-600 leading-relaxed'>
-                          {screening.right_ear_result || '-'}
-                        </div>
-                      </div>
-                      {/* Left Ear Result */}
-                      <div className='border-l-2 border-gray-300 pl-2 py-1'>
-                        <div className='flex items-center gap-1.5 mb-1'>
-                          <span className='text-xs font-semibold text-gray-700'>L</span>
-                          <span className='text-xs text-gray-500'>Left</span>
-                        </div>
-                        <div className='text-xs text-gray-600 leading-relaxed'>
-                          {screening.left_ear_result || '-'}
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  {/* <TableCell>{screening.screener || 'Unknown Screener'}</TableCell>
-                  <TableCell>{format(new Date(screening.created_at), 'MMM d, yyyy')}</TableCell> */}
-                  <TableCell className='text-right'>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant='ghost' size='sm'>
-                          <MoreHorizontal className='w-4 h-4' />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align='end'>
-                        <DropdownMenuItem onClick={() => handleViewDetails(screening)}>
-                          <Eye className='w-4 h-4 mr-2' />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleViewStudent(screening)}>
-                          <User className='w-4 h-4 mr-2' />
-                          View Student
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleSendReport(screening)}>
-                          <Mail className='w-4 h-4 mr-2' />
-                          Send Report
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className='text-red-600'
-                          onClick={() => handleDeleteClick(screening)}>
-                          <Trash2 className='w-4 h-4 mr-2' />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </ResponsiveTableRow>
+                <HearingScreeningTableRow
+                  key={screening.id}
+                  screening={screening}
+                  isSelected={selectedScreenings.some(s => s.id === screening.id)}
+                  onSelect={handleSelectScreening}
+                  onViewDetails={handleViewDetails}
+                  onViewStudent={handleViewStudent}
+                  onSendReport={handleSendReport}
+                  onDelete={handleDeleteClick}
+                />
               ))
             )}
           </TableBody>
         </ResponsiveTable>
       </div>
 
-      {totalCount > 0 && totalPages > 1 && (
-        <div className='flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-white rounded-b-lg'>
-          <div className='flex items-center gap-2'>
-            <span className='text-sm text-gray-600'>Rows per page:</span>
-            <Select
-              value={String(pageSize)}
-              onValueChange={val => {
-                setPageSize(Number(val))
-                setCurrentPage(1)
-              }}>
-              <SelectTrigger className='w-[70px] h-8'>
-                <SelectValue />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value='25'>25</SelectItem>
-                <SelectItem value='50'>50</SelectItem>
-                <SelectItem value='100'>100</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className='flex items-center gap-4'>
-            <span className='text-sm text-gray-600'>
-              {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)} of{' '}
-              {totalCount}
-            </span>
-
-            <div className='flex gap-1'>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}>
-                Previous
-              </Button>
-
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}>
-                Next
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <HearingScreeningsPagination
+        currentPage={currentPage}
+        totalCount={totalCount}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={size => {
+          setPageSize(size)
+          setCurrentPage(1)
+        }}
+      />
 
       {/* Hearing Screening Details Modal */}
       <HearingScreeningDetailsModal
@@ -792,25 +454,11 @@ const HearingScreeningsTable = ({
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!screeningToDelete} onOpenChange={handleDeleteCancel}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Hearing Screening</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the hearing screening for{' '}
-              <strong>{screeningToDelete?.student_name}</strong>? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleDeleteCancel}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className='bg-red-600 hover:bg-red-700'>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <HearingScreeningDeleteDialog
+        screening={screeningToDelete}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </div>
   )
 }
