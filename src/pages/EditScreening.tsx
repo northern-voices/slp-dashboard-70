@@ -15,6 +15,7 @@ import { FileText, Calendar, Save, Edit } from 'lucide-react'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import EnhancedSpeechScreeningFields from '@/components/screening/speech/EnhancedSpeechScreeningFields'
 import EditStudentDialog from '@/components/screening/EditStudentDialog'
+import CollapsibleNotesCard from '@/components/screening/CollapsibleNotesCard'
 
 const EditScreeningContent = () => {
   const {
@@ -158,84 +159,51 @@ const EditScreeningContent = () => {
 
             <EnhancedSpeechScreeningFields form={form} />
 
-            <Card>
-              <CardHeader
-                className='cursor-pointer select-none'
-                onClick={() => setClinicalNotesOpen(!clinicalNotesOpen)}>
-                <CardTitle className='flex items-center justify-between'>
-                  Clinical Notes (Private) - Not shown on reports
-                  <span className='text-lg font-normal text-muted-foreground'>
-                    {clinicalNotesOpen ? '▲ Hide' : '▼ Show'}
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              {clinicalNotesOpen && (
-                <CardContent className='space-y-4'>
-                  <div>
-                    <Label htmlFor='clinical_notes'>Clinical Observations</Label>
-                    <Textarea
-                      {...form.register('clinical_notes')}
-                      placeholder='Enter clinical observations and notes...'
-                      rows={4}
-                      className='mt-2'
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && !e.ctrlKey) e.stopPropagation()
-                      }}
-                    />
-                  </div>
-                </CardContent>
-              )}
-            </Card>
+            <CollapsibleNotesCard
+              title='Clinical Notes (Private) - Not shown on reports'
+              open={clinicalNotesOpen}
+              onToggle={() => setClinicalNotesOpen(!clinicalNotesOpen)}>
+              <div>
+                <Label htmlFor='clinical_notes'>Clinical Observations</Label>
+                <Textarea
+                  {...form.register('clinical_notes')}
+                  placeholder='Enter clinical observations and notes...'
+                  rows={4}
+                  className='mt-2'
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.ctrlKey) e.stopPropagation()
+                  }}
+                />
+              </div>
+            </CollapsibleNotesCard>
 
-            <Card>
-              <CardHeader
-                className='cursor-pointer select-none'
-                onClick={() => setReferralNotesOpen(!referralNotesOpen)}>
-                <CardTitle className='flex items-center justify-between'>
-                  Recommendations and Referrals (Reports) - Show on summary report
-                  <span className='text-lg font-normal text-muted-foreground'>
-                    {referralNotesOpen ? '▲ Hide' : '▼ Show'}
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              {referralNotesOpen && (
-                <CardContent>
-                  <Textarea
-                    {...form.register('referral_notes')}
-                    placeholder='OT or Comprehensive Language Evaluation or Fluency Evaluation, etc.'
-                    rows={4}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && !e.ctrlKey) e.stopPropagation()
-                    }}
-                  />
-                </CardContent>
-              )}
-            </Card>
+            <CollapsibleNotesCard
+              title='Recommendations and Referrals (Reports) - Show on summary report'
+              open={referralNotesOpen}
+              onToggle={() => setReferralNotesOpen(!referralNotesOpen)}>
+              <Textarea
+                {...form.register('referral_notes')}
+                placeholder='OT or Comprehensive Language Evaluation or Fluency Evaluation, etc.'
+                rows={4}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.ctrlKey) e.stopPropagation()
+                }}
+              />
+            </CollapsibleNotesCard>
 
-            <Card>
-              <CardHeader
-                className='cursor-pointer select-none'
-                onClick={() => setProgressNotesOpen(!progressNotesOpen)}>
-                <CardTitle className='flex items-center justify-between'>
-                  Progress Notes - Show on progress report
-                  <span className='text-lg font-normal text-muted-foreground'>
-                    {progressNotesOpen ? '▲ Hide' : '▼ Show'}
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              {progressNotesOpen && (
-                <CardContent>
-                  <Textarea
-                    {...form.register('progress_notes')}
-                    placeholder='EA / Teacher Feedback or progress noted (vocabulary), participation'
-                    rows={4}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && !e.ctrlKey) e.stopPropagation()
-                    }}
-                  />
-                </CardContent>
-              )}
-            </Card>
+            <CollapsibleNotesCard
+              title='Progress Notes - Show on progress report'
+              open={progressNotesOpen}
+              onToggle={() => setProgressNotesOpen(!progressNotesOpen)}>
+              <Textarea
+                {...form.register('progress_notes')}
+                placeholder='EA / Teacher Feedback or progress noted (vocabulary), participation'
+                rows={4}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.ctrlKey) e.stopPropagation()
+                }}
+              />
+            </CollapsibleNotesCard>
 
             <div className='flex gap-2 pt-4'>
               <Button variant='outline' onClick={handleGoBack} disabled={saving}>
