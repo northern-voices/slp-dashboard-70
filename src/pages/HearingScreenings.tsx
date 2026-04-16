@@ -44,6 +44,11 @@ const HearingScreenings = () => {
     setDeduplicateFilter(false)
   }
 
+  const handleResultFilterChange = (value: string) => {
+    setResultFilter(value)
+    setDeduplicateFilter(false)
+  }
+
   if (isLoading) return <HearingScreeningsSkeleton />
 
   return (
@@ -82,7 +87,7 @@ const HearingScreenings = () => {
           gradeFilter={gradeFilter}
           setGradeFilter={setGradeFilter}
           resultFilter={resultFilter}
-          setResultFilter={setResultFilter}
+          setResultFilter={handleResultFilterChange}
           referralNotesFilter={referralNotesFilter}
           setReferralNotesFilter={setReferralNotesFilter}
           nonCompliantFilter={nonCompliantFilter}
