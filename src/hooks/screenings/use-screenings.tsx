@@ -162,3 +162,19 @@ export const useScreeningsByStudent = (studentId?: string) => {
     enabled: !!studentId && !!user && !!userProfile,
   })
 }
+
+export const useScreeningStats = (
+  schoolId?: string,
+  dateFilter: 'school_year' | 'all' = 'school_year'
+) => {
+  const { user } = useAuth()
+  const { userProfile } = useOrganization()
+
+  return useQuery({
+    queryKey: ['screening-stats', schoolId, dateFilter, user?.id],
+    queryFn: () => speechScreeningsApi.getScreeningStats(schoolId!, dateFilter),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: !!schoolId && !!user && !!userProfile,
+  })
+}

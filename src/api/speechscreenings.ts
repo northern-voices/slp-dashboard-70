@@ -44,6 +44,15 @@ interface RawSpeechScreening {
   } | null
 }
 
+export interface ScreeningStats {
+  total_students: number
+  qualified: number
+  sub: number
+  graduated: number
+  paused: number
+  caseload: number
+}
+
 const mapProgramStatus = (
   raw?: 'none' | 'qualifies' | 'not_in_program' | 'sub' | 'pause' | 'graduated'
 ): 'none' | 'qualified' | 'not_in_program' | 'sub' | 'paused' | 'graduated' | 'no_consent' => {
@@ -747,5 +756,19 @@ export const speechScreeningsApi = {
       console.error('Error fetching speech screenings by school:', error)
       throw error
     }
+  },
+
+  getScreeningStats: async (
+    schoolId: string,
+    dateFilter: 'school_year' | 'all' = 'school_year'
+  ): Promise<ScreeningStats> => {
+    const { data, error } = await supabase.rpc('get_screening_stats', {
+      p_school_id: schoolId,
+      p_date_filter: dateFilter,
+    })
+
+    if (error) throw error
+
+    return data as ScreeningStats
   },
 }
