@@ -75,6 +75,7 @@ export interface ErrorPatterns {
     sub?: boolean
     graduated?: boolean
     paused?: boolean
+    transferred?: boolean
   }
   consent?: {
     no_consent?: boolean

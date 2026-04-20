@@ -18,6 +18,7 @@ interface ScreeningTableRowProps {
   getScreeningGrade: (screening: Screening) => string
   getResultSelector: (screening: Screening) => React.ReactNode
   getProgramSelector: (screening: Screening) => React.ReactNode
+  getStatusSelector: (screening: Screening) => React.ReactNode
 }
 
 const ScreeningTableRow = ({
@@ -32,6 +33,7 @@ const ScreeningTableRow = ({
   getScreeningGrade,
   getResultSelector,
   getProgramSelector,
+  getStatusSelector,
 }: ScreeningTableRowProps) => {
   const grade = getScreeningGrade(screening)
   const isLoadingGrade = grade === '...'
@@ -59,6 +61,7 @@ const ScreeningTableRow = ({
           </div>
           <div className='flex items-center gap-2'>{getResultSelector(screening)}</div>
           <div className='flex items-center gap-2'>{getProgramSelector(screening)}</div>
+          <div className='flex items-center gap-2'>{getStatusSelector(screening)}</div>
           <div className='space-y-1 text-sm text-gray-600'>
             <p>
               <span className='font-medium'>Date:</span>{' '}
@@ -101,6 +104,9 @@ const ScreeningTableRow = ({
       </TableCell>
       <TableCell className='max-w-0'>
         <div className='w-full min-w-[120px]'>{getProgramSelector(screening)}</div>
+      </TableCell>
+      <TableCell className='max-w-0'>
+        <div className='w-full min-w-[120px]'>{getStatusSelector(screening)}</div>
       </TableCell>
       <TableCell className='max-w-0'>
         <div className='truncate' title={isLoadingGrade ? '' : grade}>
