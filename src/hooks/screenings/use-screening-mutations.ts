@@ -83,6 +83,8 @@ export const useCreateSpeechScreening = () => {
   })
 }
 
+type PaginatedScreenings = { screenings: Screening[]; totalCount: number }
+
 export const useUpdateSpeechScreening = () => {
   const queryClient = useQueryClient()
   const { user } = useAuth()
@@ -121,11 +123,11 @@ export const useUpdateSpeechScreening = () => {
         if (
           typeof old === 'object' &&
           'screenings' in old &&
-          Array.isArray((old as any).screenings)
+          Array.isArray((old as PaginatedScreenings).screenings)
         ) {
           return {
             ...old,
-            screenings: (old as any).screenings.map((screening: Screening) =>
+            screenings: (old as PaginatedScreenings).screenings.map((screening: Screening) =>
               screening.id === id
                 ? {
                     ...screening,

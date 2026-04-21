@@ -20,7 +20,7 @@ import {
   TableHead,
   TableBody,
 } from '@/components/ui/responsive-table'
-import { School, Screening, Student } from '@/types/database'
+import { School, Screening, Student, ProgramStatus, ServiceStatus } from '@/types/database'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import {
   useDeleteScreening,
@@ -330,7 +330,7 @@ const ScreeningsTable = ({
         <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>Transferred</Badge>
       )
 
-    return null
+    return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>None</Badge>
   }
 
   const getStatusSelector = (screening: Screening) => {
@@ -340,7 +340,7 @@ const ScreeningsTable = ({
       return (
         <Select
           value={getStatusValue(screening)}
-          onValueChange={value => handleStatusChange(screening, value as StatusValue)}
+          onValueChange={value => handleStatusChange(screening, value as ServiceStatus)}
           disabled={isThisScreeningUpdating}>
           <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
             <SelectValue placeholder='Select status'>
@@ -493,17 +493,6 @@ const ScreeningsTable = ({
     }
   }
 
-  type ProgramStatus =
-    | 'none'
-    | 'qualified'
-    | 'not_in_program'
-    | 'sub'
-    | 'paused'
-    | 'graduated'
-    | 'no_consent'
-
-  type StatusValue = 'none' | 'paused' | 'graduated' | 'transferred'
-
   const handleProgramChange = (screening: Screening, newProgram: ProgramStatus) => {
     if (screening.source_table === 'speech') {
       setUpdatingProgramId(screening.id)
@@ -540,8 +529,6 @@ const ScreeningsTable = ({
           ...currentMetadata,
           qualifies_for_speech_program: newProgram === 'qualified',
           sub: newProgram === 'sub',
-          graduated: newProgram === 'graduated',
-          paused: newProgram === 'paused',
         } as ErrorPatterns['screening_metadata'],
       }
 
@@ -620,7 +607,7 @@ const ScreeningsTable = ({
     }
   }
 
-  const handleStatusChange = (screening: Screening, newStatus: StatusValue) => {
+  const handleStatusChange = (screening: Screening, newStatus: ServiceStatus) => {
     if (screening.source_table === 'speech') {
       setUpdatingProgramId(screening.id)
 
@@ -672,7 +659,7 @@ const ScreeningsTable = ({
               updateStudent(
                 {
                   id: student.id,
-                  studentData: { program_status: newStatus === 'none' ? 'none' : newStatus },
+                  studentData: { service_status: newStatus },
                 },
                 {
                   onSuccess: () => {
@@ -741,6 +728,7 @@ const ScreeningsTable = ({
   ]
 
   const statusOptions = [
+    { value: 'none', label: 'None' },
     { value: 'paused', label: 'Pause/Away' },
     { value: 'graduated', label: 'Graduated' },
     { value: 'transferred', label: 'Transferred' },
