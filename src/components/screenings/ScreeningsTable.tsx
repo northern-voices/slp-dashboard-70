@@ -230,23 +230,16 @@ const ScreeningsTable = ({
   }
 
   const getQualificationBadge = (screening: Screening) => {
-    const metadata = screening.error_patterns?.screening_metadata
-    const consent = screening.error_patterns?.consent
-
-    const noConsent = consent?.no_consent || false
-    const sub = metadata?.sub || false
-    const qualifies = metadata?.qualifies_for_speech_program || false
-
-    if (noConsent) {
+    if (screening.program_status === 'no_consent') {
       return <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     }
-    if (sub) {
+    if (screening.program_status === 'sub') {
       return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
     }
-    if (qualifies) {
+    if (screening.program_status === 'qualified') {
       return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
     }
-    if (qualifies === false && !sub && !noConsent) {
+    if (screening.program_status === 'not_in_program') {
       return (
         <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
           Not In Program
@@ -258,15 +251,7 @@ const ScreeningsTable = ({
   }
 
   const getProgramValue = (screening: Screening): string => {
-    const metadata = screening.error_patterns?.screening_metadata
-    const consent = screening.error_patterns?.consent
-
-    if (consent?.no_consent) return 'no_consent'
-    if (metadata?.sub) return 'sub'
-    if (metadata?.qualifies_for_speech_program) return 'qualified'
-    if (metadata?.qualifies_for_speech_program === false) return 'not_in_program'
-
-    return 'none'
+    return screening.program_status ?? 'none'
   }
 
   const getProgramSelector = (screening: Screening) => {
