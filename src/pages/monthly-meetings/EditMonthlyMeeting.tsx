@@ -27,6 +27,7 @@ import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMe
 import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog'
 import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
 import { useGetMonthlyMeetingById } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
+import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 
 interface MeetingFormData {
   meeting_title: string
@@ -65,6 +66,9 @@ const EditMonthlyMeetingContent = () => {
   )
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
   const { user } = useAuth()
+
+  const studentIds = students.map(student => student.id)
+  const { data: studentIdsWithConsent = [] } = useConsentFormPresence(studentIds)
 
   const draftKey = `monthly-meeting-edit-draft-${meetingId}`
   const {
@@ -417,6 +421,7 @@ const EditMonthlyMeetingContent = () => {
                             setShowStudentModal(true)
                           }}
                           hasStudentData={hasStudentData}
+                          studentIdsWithConsent={studentIdsWithConsent}
                         />
                       </div>
                     </div>

@@ -35,3 +35,12 @@ export const useDeleteConsentForm = (studentId: string) => {
     },
   })
 }
+
+export const useConsentFormPresence = (studentIds: string[]) => {
+  return useQuery({
+    queryKey: ['consent-form-presence', studentIds],
+    queryFn: () => consentFormsApi.getConsentFormPresenceByStudentIds(studentIds),
+    enabled: studentIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  })
+}

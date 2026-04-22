@@ -27,6 +27,7 @@ import StudentDetailsModal from '@/components/monthly-meetings/StudentDetailsMod
 import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog'
 import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
 import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
+import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 
 interface MeetingFormData {
   meeting_title: string
@@ -135,6 +136,9 @@ const CreateMonthlyMeetingContent = () => {
 
   const { data: screeningsData } = useScreeningsBySchool(currentSchool?.id, 'school_year', 1, 10000)
   const screenings = screeningsData?.screenings ?? []
+
+  const studentIds = students.map(student => student.id)
+  const { data: studentIdsWithConsent = [] } = useConsentFormPresence(studentIds)
 
   const onSubmit = async (data: MeetingFormData) => {
     setIsSubmitting(true)
@@ -417,6 +421,7 @@ const CreateMonthlyMeetingContent = () => {
                     hasStudentData={hasStudentData}
                     schoolId={currentSchool?.id}
                     screenings={screenings}
+                    studentIdsWithConsent={studentIdsWithConsent}
                   />
                 </div>
               </div>

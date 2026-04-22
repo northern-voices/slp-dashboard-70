@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { ChevronUp, ChevronDown, CheckCircle2, UserPlus } from 'lucide-react'
+import { FileCheck, ChevronUp, ChevronDown, CheckCircle2, UserPlus } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -35,6 +35,7 @@ interface MonthlyMeetingsStudentTableProps {
   hasStudentData: (studentId: string) => boolean
   schoolId?: string
   screenings?: Screening[]
+  studentIdsWithConsent?: string[]
 }
 
 const MonthlyMeetingsStudentTable = ({
@@ -45,6 +46,7 @@ const MonthlyMeetingsStudentTable = ({
   hasStudentData,
   schoolId,
   screenings = [],
+  studentIdsWithConsent = [],
 }: MonthlyMeetingsStudentTableProps) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('grade')
@@ -75,6 +77,8 @@ const MonthlyMeetingsStudentTable = ({
 
     fetchGrades()
   }, [schoolId])
+
+  const consentSet = useMemo(() => new Set(studentIdsWithConsent), [studentIdsWithConsent])
 
   const mostRecentScreeningByStudent = useMemo(() => {
     const map = new Map<string, Screening>()
@@ -233,8 +237,9 @@ const MonthlyMeetingsStudentTable = ({
       <ResponsiveTable className='w-full'>
         <TableHeader>
           <tr>
-            <TableHead className='w-1/3'>Name</TableHead>
-            <TableHead className='w-1/3'>
+            <TableHead className='w-1/2'>Name</TableHead>
+
+            <TableHead className='w-1/2'>
               <Button
                 type='button'
                 variant='ghost'
@@ -244,7 +249,8 @@ const MonthlyMeetingsStudentTable = ({
                 <span className='ml-1'>{getSortIcon('grade')}</span>
               </Button>
             </TableHead>
-            <TableHead className='w-1/3'>
+
+            <TableHead className='pr-10'>
               <Button
                 type='button'
                 variant='ghost'
@@ -254,7 +260,11 @@ const MonthlyMeetingsStudentTable = ({
                 <span className='ml-1'>{getSortIcon('program_status')}</span>
               </Button>
             </TableHead>
+
+            <TableHead className='w-[60px] text-center font-medium'>Consent</TableHead>
+
             <TableHead className='w-[60px] text-center'></TableHead>
+
             <TableHead className='w-[60px] text-center'></TableHead>
           </tr>
         </TableHeader>
@@ -264,8 +274,17 @@ const MonthlyMeetingsStudentTable = ({
               <TableCell>
                 {student.first_name} {student.last_name}
               </TableCell>
+
               <TableCell>{getStudentGrade(student)}</TableCell>
+
               <TableCell>{getQualificationBadge(student)}</TableCell>
+
+              <TableCell className='text-center pl-2'>
+                {consentSet.has(student.id) && (
+                  <FileCheck className='h-5 w-5 text-blue-600 mx-auto' />
+                )}
+              </TableCell>
+
               <TableCell className='text-center'>
                 <Button
                   type='button'
@@ -276,6 +295,7 @@ const MonthlyMeetingsStudentTable = ({
                   <UserPlus className='h-4 w-4' />
                 </Button>
               </TableCell>
+
               <TableCell className='text-center'>
                 {hasStudentData(student.id) && (
                   <CheckCircle2 className='h-5 w-5 text-green-600 mx-auto' />
