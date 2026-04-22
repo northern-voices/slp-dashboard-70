@@ -305,27 +305,19 @@ const ScreeningsTable = ({
   }
 
   const getStatusValue = (screening: Screening): string => {
-    const metadata = screening.error_patterns?.screening_metadata
-
-    if (metadata?.paused) return 'paused'
-    if (metadata?.graduated) return 'graduated'
-    if (metadata?.transferred) return 'transferred'
-
-    return 'none'
+    return screening.service_status ?? 'none'
   }
 
   const getStatusBadge = (screening: Screening) => {
-    const metadata = screening.error_patterns?.screening_metadata
-
-    if (metadata?.paused)
+    if (screening.service_status === 'paused')
       return (
         <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause/Away</Badge>
       )
 
-    if (metadata?.graduated)
+    if (screening.service_status === 'graduated')
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
 
-    if (metadata?.transferred)
+    if (screening.service_status === 'transferred')
       return (
         <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>Transferred</Badge>
       )
