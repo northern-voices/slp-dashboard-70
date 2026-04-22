@@ -20,7 +20,7 @@ import {
   TableHead,
   TableBody,
 } from '@/components/ui/responsive-table'
-import { School, Screening, Student } from '@/types/database'
+import { School, Screening, Student, ProgramStatus, ServiceStatus } from '@/types/database'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import {
   useDeleteScreening,
@@ -230,36 +230,16 @@ const ScreeningsTable = ({
   }
 
   const getQualificationBadge = (screening: Screening) => {
-    const metadata = screening.error_patterns?.screening_metadata
-    const consent = screening.error_patterns?.consent
-
-    // Read program status from error_patterns
-    const noConsent = consent?.no_consent || false
-    const graduated = metadata?.graduated || false
-    const paused = metadata?.paused || false
-    const sub = metadata?.sub || false
-    const qualifies = metadata?.qualifies_for_speech_program || false
-
-    if (noConsent) {
+    if (screening.program_status === 'no_consent') {
       return <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     }
-    if (graduated) {
-      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-    }
-    if (paused) {
-      return (
-        <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause/Away</Badge>
-      )
-    }
-    if (sub) {
+    if (screening.program_status === 'sub') {
       return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
     }
-    if (qualifies) {
+    if (screening.program_status === 'qualified') {
       return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
     }
-
-    // If none of the above, check if they explicitly don't qualify
-    if (qualifies === false && !sub && !graduated && !paused && !noConsent) {
+    if (screening.program_status === 'not_in_program') {
       return (
         <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
           Not In Program
@@ -271,17 +251,7 @@ const ScreeningsTable = ({
   }
 
   const getProgramValue = (screening: Screening): string => {
-    const metadata = screening.error_patterns?.screening_metadata
-    const consent = screening.error_patterns?.consent
-
-    if (consent?.no_consent) return 'no_consent'
-    if (metadata?.graduated) return 'graduated'
-    if (metadata?.paused) return 'paused'
-    if (metadata?.sub) return 'sub'
-    if (metadata?.qualifies_for_speech_program) return 'qualified'
-    if (metadata?.qualifies_for_speech_program === false) return 'not_in_program'
-
-    return 'none'
+    return screening.program_status ?? 'none'
   }
 
   const getProgramSelector = (screening: Screening) => {
@@ -317,6 +287,60 @@ const ScreeningsTable = ({
 
     // For hearing screenings or when not editable, show badge
     return getQualificationBadge(screening)
+  }
+
+  const getStatusValue = (screening: Screening): string => {
+    return screening.service_status ?? 'none'
+  }
+
+  const getStatusBadge = (screening: Screening) => {
+    if (screening.service_status === 'paused')
+      return (
+        <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause/Away</Badge>
+      )
+
+    if (screening.service_status === 'graduated')
+      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+
+    if (screening.service_status === 'transferred')
+      return (
+        <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>Transferred</Badge>
+      )
+
+    return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>None</Badge>
+  }
+
+  const getStatusSelector = (screening: Screening) => {
+    if (screening.source_table === 'speech') {
+      const isThisScreeningUpdating = updatingProgramId === screening.id
+
+      return (
+        <Select
+          value={getStatusValue(screening)}
+          onValueChange={value => handleStatusChange(screening, value as ServiceStatus)}
+          disabled={isThisScreeningUpdating}>
+          <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+            <SelectValue placeholder='Select status'>
+              <div className='flex items-center gap-2'>
+                {isThisScreeningUpdating && (
+                  <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
+                )}
+                {getStatusBadge(screening)}
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {statusOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )
+    }
+
+    return getStatusBadge(screening)
   }
 
   const getResultSelector = (screening: Screening) => {
@@ -446,15 +470,6 @@ const ScreeningsTable = ({
     }
   }
 
-  type ProgramStatus =
-    | 'none'
-    | 'qualified'
-    | 'not_in_program'
-    | 'sub'
-    | 'paused'
-    | 'graduated'
-    | 'no_consent'
-
   const handleProgramChange = (screening: Screening, newProgram: ProgramStatus) => {
     if (screening.source_table === 'speech') {
       setUpdatingProgramId(screening.id)
@@ -491,8 +506,6 @@ const ScreeningsTable = ({
           ...currentMetadata,
           qualifies_for_speech_program: newProgram === 'qualified',
           sub: newProgram === 'sub',
-          graduated: newProgram === 'graduated',
-          paused: newProgram === 'paused',
         } as ErrorPatterns['screening_metadata'],
       }
 
@@ -571,6 +584,101 @@ const ScreeningsTable = ({
     }
   }
 
+  const handleStatusChange = (screening: Screening, newStatus: ServiceStatus) => {
+    if (screening.source_table === 'speech') {
+      setUpdatingProgramId(screening.id)
+
+      const student = studentsMap.get(screening.student_id)
+
+      if (!student) {
+        toast({
+          title: 'Error updating status',
+          description: 'Student not found',
+          variant: 'destructive',
+        })
+        setUpdatingProgramId(null)
+        return
+      }
+
+      const currentErrorPatterns = screening.error_patterns || ({} as ErrorPatterns)
+      const currentMetadata = currentErrorPatterns.screening_metadata || {}
+      const currentConsent = currentErrorPatterns.consent || {}
+
+      const cleanErrorPatterns: Partial<ErrorPatterns> = {
+        articulation: currentErrorPatterns.articulation || ({} as ErrorPatterns['articulation']),
+        add_areas_of_concern:
+          currentErrorPatterns.add_areas_of_concern ||
+          ({} as ErrorPatterns['add_areas_of_concern']),
+        attendance: currentErrorPatterns.attendance || ({} as ErrorPatterns['attendance']),
+        additional_observations: currentErrorPatterns.additional_observations || '',
+        consent: { ...currentConsent },
+        screening_metadata: {
+          ...currentMetadata,
+          paused: newStatus === 'paused',
+          graduated: newStatus === 'graduated',
+          transferred: newStatus === 'transferred',
+        } as ErrorPatterns['screening_metadata'],
+      }
+
+      const studentScreenings = schoolScreenings.filter(
+        s => s.student_id === screening.student_id && s.source_table === 'speech'
+      )
+      const mostRecentScreening = studentScreenings.sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )[0]
+      const isLatestScreening = mostRecentScreening?.id === screening.id
+
+      updateSpeechScreening(
+        { id: screening.id, data: { error_patterns: cleanErrorPatterns as ErrorPatterns } },
+        {
+          onSuccess: () => {
+            if (isLatestScreening) {
+              updateStudent(
+                {
+                  id: student.id,
+                  studentData: { service_status: newStatus },
+                },
+                {
+                  onSuccess: () => {
+                    setUpdatingProgramId(null)
+                    toast({
+                      title: 'Status updated',
+                      description: `Successfully updated status for ${screening.student_name}`,
+                      variant: 'default',
+                    })
+                  },
+                  onError: () => {
+                    setUpdatingProgramId(null)
+                    toast({
+                      title: 'Warning',
+                      description: 'Screening updated but failed to update student status',
+                      variant: 'destructive',
+                    })
+                  },
+                }
+              )
+            } else {
+              setUpdatingProgramId(null)
+              toast({
+                title: 'Status updated',
+                description: `Successfully updated status for this screening (historical record)`,
+                variant: 'default',
+              })
+            }
+          },
+          onError: error => {
+            setUpdatingProgramId(null)
+            toast({
+              title: 'Error updating status',
+              description: error.message || 'Failed to update status',
+              variant: 'destructive',
+            })
+          },
+        }
+      )
+    }
+  }
+
   // Define the result options
   const resultOptions = [
     { value: 'no_errors', label: 'No Errors' },
@@ -592,10 +700,15 @@ const ScreeningsTable = ({
     { value: 'qualified', label: 'Qualifies' },
     { value: 'not_in_program', label: 'Not In Program' },
     { value: 'sub', label: 'Sub' },
-    { value: 'paused', label: 'Pause/Away' },
-    // { value: 'not_set', label: 'Not Set' },
-    { value: 'graduated', label: 'Graduated' },
     { value: 'no_consent', label: 'Qualifies - No Consent' },
+    // { value: 'not_set', label: 'Not Set' },
+  ]
+
+  const statusOptions = [
+    { value: 'none', label: 'None' },
+    { value: 'paused', label: 'Pause/Away' },
+    { value: 'graduated', label: 'Graduated' },
+    { value: 'transferred', label: 'Transferred' },
   ]
 
   const { mutate: deleteScreening, isPending: isDeleting } = useDeleteScreening()
@@ -709,6 +822,7 @@ const ScreeningsTable = ({
                 </TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
+                <TableHead className='w-1/6 min-w-[120px]'>Status</TableHead>
                 <TableHead className='w-1/6 min-w-[80px]'>
                   <Button
                     variant='ghost'
@@ -747,6 +861,7 @@ const ScreeningsTable = ({
                   getScreeningGrade={getScreeningGrade}
                   getResultSelector={getResultSelector}
                   getProgramSelector={getProgramSelector}
+                  getStatusSelector={getStatusSelector}
                 />
               ))}
             </TableBody>

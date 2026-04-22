@@ -54,43 +54,32 @@ const ScreeningStats = ({
   const latestScreenings = Array.from(latestScreeningByStudent.values())
 
   const graduatedStudentIds = new Set(
-    latestScreenings
-      .filter(s => s.error_patterns?.screening_metadata?.graduated === true)
-      .map(s => s.student_id)
+    latestScreenings.filter(s => s.service_status === 'graduated').map(s => s.student_id)
   )
+
   const qualifiedStudentIds = new Set(
-    latestScreenings
-      .filter(s => s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true)
-      .map(s => s.student_id)
+    latestScreenings.filter(s => s.program_status === 'qualified').map(s => s.student_id)
   )
+
   const subStudentIds = new Set(
-    latestScreenings
-      .filter(s => s.error_patterns?.screening_metadata?.sub === true)
-      .map(s => s.student_id)
+    latestScreenings.filter(s => s.program_status === 'sub').map(s => s.student_id)
   )
+
   const pausedStudentIds = new Set(
-    latestScreenings
-      .filter(s => s.error_patterns?.screening_metadata?.paused === true)
-      .map(s => s.student_id)
+    latestScreenings.filter(s => s.service_status === 'paused').map(s => s.student_id)
   )
+
   const caseloadStudentIds = new Set([...qualifiedStudentIds, ...subStudentIds])
 
   // Raw screening record counts
   const rawCounts = {
     total: schoolScreenings.length,
-    qualified: schoolScreenings.filter(
-      s => s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true
-    ).length,
-    sub: schoolScreenings.filter(s => s.error_patterns?.screening_metadata?.sub === true).length,
-    paused: schoolScreenings.filter(s => s.error_patterns?.screening_metadata?.paused === true)
-      .length,
-    graduated: schoolScreenings.filter(
-      s => s.error_patterns?.screening_metadata?.graduated === true
-    ).length,
+    qualified: schoolScreenings.filter(s => s.program_status === 'qualified').length,
+    sub: schoolScreenings.filter(s => s.program_status === 'sub').length,
+    paused: schoolScreenings.filter(s => s.service_status === 'paused').length,
+    graduated: schoolScreenings.filter(s => s.service_status === 'graduated').length,
     caseload: schoolScreenings.filter(
-      s =>
-        s.error_patterns?.screening_metadata?.qualifies_for_speech_program === true ||
-        s.error_patterns?.screening_metadata?.sub === true
+      s => s.program_status === 'qualified' || s.program_status === 'sub'
     ).length,
   }
 

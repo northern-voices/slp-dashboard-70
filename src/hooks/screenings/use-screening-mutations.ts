@@ -83,6 +83,8 @@ export const useCreateSpeechScreening = () => {
   })
 }
 
+type PaginatedScreenings = { screenings: Screening[]; totalCount: number }
+
 export const useUpdateSpeechScreening = () => {
   const queryClient = useQueryClient()
   const { user } = useAuth()
@@ -101,17 +103,43 @@ export const useUpdateSpeechScreening = () => {
 
       const previousScreenings = queryClient.getQueriesData({ queryKey: ['screenings'] })
 
-      queryClient.setQueriesData<Screening[]>({ queryKey: ['screenings'] }, old => {
+      queryClient.setQueriesData({ queryKey: ['screenings'] }, (old: unknown) => {
         if (!old) return old
-        return old.map(screening =>
-          screening.id === id
-            ? {
-                ...screening,
-                ...data,
-                error_patterns: data.error_patterns || screening.error_patterns,
-              }
-            : screening
-        )
+
+        // Flat array shape
+        if (Array.isArray(old)) {
+          return old.map(screening =>
+            screening.id === id
+              ? {
+                  ...screening,
+                  ...data,
+                  error_patterns: data.error_patterns || screening.error_patterns,
+                }
+              : screening
+          )
+        }
+
+        // Paginated shape { screenings: [], totalCount: number }
+        if (
+          typeof old === 'object' &&
+          'screenings' in old &&
+          Array.isArray((old as PaginatedScreenings).screenings)
+        ) {
+          return {
+            ...old,
+            screenings: (old as PaginatedScreenings).screenings.map((screening: Screening) =>
+              screening.id === id
+                ? {
+                    ...screening,
+                    ...data,
+                    error_patterns: data.error_patterns || screening.error_patterns,
+                  }
+                : screening
+            ),
+          }
+        }
+
+        return old
       })
 
       return { previousScreenings }

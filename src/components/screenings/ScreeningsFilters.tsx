@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Search, Filter, ChevronDown, ChevronUp, X, RefreshCw } from 'lucide-react'
+import { GRADE_MAPPING } from '@/constants/app'
 
 interface ScreeningsFiltersProps {
   searchTerm: string
@@ -167,8 +168,8 @@ const ScreeningsFilters = ({
 
           <CollapsibleContent>
             <CardContent className='pt-0'>
-              {/* Dropdown Filters */}
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6'>
+              {/* Dropdown Filters - Row 1 */}
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-4'>
                 <div className='space-y-2'>
                   <label className='text-sm font-medium text-gray-700'>Screening Result</label>
                   <Select value={resultFilter} onValueChange={setResultFilter}>
@@ -222,51 +223,25 @@ const ScreeningsFilters = ({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value='all'>All Grades</SelectItem>
-                      <SelectItem value='Headstart'>Headstart</SelectItem>
-                      <SelectItem value='Nursery'>Nursery</SelectItem>
-                      <SelectItem value='Pre-K'>Pre-K</SelectItem>
-                      <SelectItem value='K4'>K4</SelectItem>
-                      <SelectItem value='K5'>K5</SelectItem>
-                      <SelectItem value='Kindergarten'>Kindergarten</SelectItem>
-                      <SelectItem value='K/1'>K/1</SelectItem>
-                      <SelectItem value='1'>1</SelectItem>
-                      <SelectItem value='1/2'>1/2</SelectItem>
-                      <SelectItem value='2'>2</SelectItem>
-                      <SelectItem value='2/3'>2/3</SelectItem>
-                      <SelectItem value='3'>3</SelectItem>
-                      <SelectItem value='3/4'>3/4</SelectItem>
-                      <SelectItem value='4'>4</SelectItem>
-                      <SelectItem value='4/5'>4/5</SelectItem>
-                      <SelectItem value='5'>5</SelectItem>
-                      <SelectItem value='5/6'>5/6</SelectItem>
-                      <SelectItem value='6'>6</SelectItem>
-                      <SelectItem value='6/7'>6/7</SelectItem>
-                      <SelectItem value='7'>7</SelectItem>
-                      <SelectItem value='7/8'>7/8</SelectItem>
-                      <SelectItem value='8'>8</SelectItem>
-                      <SelectItem value='8/9'>8/9</SelectItem>
-                      <SelectItem value='9'>9</SelectItem>
-                      <SelectItem value='9/10'>9/10</SelectItem>
-                      <SelectItem value='10'>10</SelectItem>
-                      <SelectItem value='10/11'>10/11</SelectItem>
-                      <SelectItem value='11'>11</SelectItem>
-                      <SelectItem value='11/12'>11/12</SelectItem>
-                      <SelectItem value='12'>12</SelectItem>
+                      {GRADE_MAPPING.map(grade => (
+                        <SelectItem key={grade.value} value={grade.value}>
+                          {grade.display}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
 
+              {/* Checkbox Filters - Row 2 */}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
                 <div className='space-y-2'>
-                  <label className='text-sm font-medium text-gray-700'>
-                    Speech Program Qualification
-                  </label>
-                  <div className='space-y-1'>
+                  <label className='text-sm font-medium text-gray-700'>Program Status</label>
+                  <div className='flex flex-wrap gap-x-6 gap-y-1'>
                     {[
                       { value: 'qualified', label: 'Qualifies' },
                       { value: 'not_in_program', label: 'Not in Program' },
                       { value: 'sub', label: 'Sub' },
-                      { value: 'paused', label: 'Pause/Away' },
-                      { value: 'graduated', label: 'Graduated' },
                       { value: 'no_consent', label: 'No Consent' },
                     ].map(option => (
                       <div key={option.value} className='flex items-center space-x-2'>
@@ -290,6 +265,42 @@ const ScreeningsFilters = ({
                         />
                         <label
                           htmlFor={`qual_${option.value}`}
+                          className='text-sm text-gray-700 cursor-pointer'>
+                          {option.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium text-gray-700'>Status</label>
+                  <div className='flex flex-wrap gap-x-6 gap-y-1'>
+                    {[
+                      { value: 'paused', label: 'Pause/Away' },
+                      { value: 'graduated', label: 'Graduated' },
+                    ].map(option => (
+                      <div key={option.value} className='flex items-center space-x-2'>
+                        <input
+                          type='checkbox'
+                          id={`svc_${option.value}`}
+                          checked={qualifiesForSpeechProgramFilter.includes(option.value)}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              setQualifiesForSpeechProgramFilter([
+                                ...qualifiesForSpeechProgramFilter,
+                                option.value,
+                              ])
+                            } else {
+                              setQualifiesForSpeechProgramFilter(
+                                qualifiesForSpeechProgramFilter.filter(v => v !== option.value)
+                              )
+                            }
+                          }}
+                          className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                        />
+                        <label
+                          htmlFor={`svc_${option.value}`}
                           className='text-sm text-gray-700 cursor-pointer'>
                           {option.label}
                         </label>
