@@ -168,8 +168,8 @@ const ScreeningsFilters = ({
 
           <CollapsibleContent>
             <CardContent className='pt-0'>
-              {/* Dropdown Filters */}
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6'>
+              {/* Dropdown Filters - Row 1 */}
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-4'>
                 <div className='space-y-2'>
                   <label className='text-sm font-medium text-gray-700'>Screening Result</label>
                   <Select value={resultFilter} onValueChange={setResultFilter}>
@@ -231,10 +231,13 @@ const ScreeningsFilters = ({
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
 
+              {/* Checkbox Filters - Row 2 */}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
                 <div className='space-y-2'>
                   <label className='text-sm font-medium text-gray-700'>Program Status</label>
-                  <div className='space-y-1'>
+                  <div className='flex flex-wrap gap-x-6 gap-y-1'>
                     {[
                       { value: 'qualified', label: 'Qualifies' },
                       { value: 'not_in_program', label: 'Not in Program' },
@@ -271,8 +274,8 @@ const ScreeningsFilters = ({
                 </div>
 
                 <div className='space-y-2'>
-                  <label className='text-sm font-medium text-gray-700'>Service Status</label>
-                  <div className='space-y-1'>
+                  <label className='text-sm font-medium text-gray-700'>Status</label>
+                  <div className='flex flex-wrap gap-x-6 gap-y-1'>
                     {[
                       { value: 'paused', label: 'Pause/Away' },
                       { value: 'graduated', label: 'Graduated' },
@@ -280,7 +283,7 @@ const ScreeningsFilters = ({
                       <div key={option.value} className='flex items-center space-x-2'>
                         <input
                           type='checkbox'
-                          id={`qual_${option.value}`}
+                          id={`svc_${option.value}`}
                           checked={qualifiesForSpeechProgramFilter.includes(option.value)}
                           onChange={e => {
                             if (e.target.checked) {
@@ -297,7 +300,7 @@ const ScreeningsFilters = ({
                           className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
                         />
                         <label
-                          htmlFor={`qual_${option.value}`}
+                          htmlFor={`svc_${option.value}`}
                           className='text-sm text-gray-700 cursor-pointer'>
                           {option.label}
                         </label>
