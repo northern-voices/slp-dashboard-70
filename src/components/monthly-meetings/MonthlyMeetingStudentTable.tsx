@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { FileCheck, ChevronUp, ChevronDown, CheckCircle2, UserPlus } from 'lucide-react'
+import { FileCheck, FileX, ChevronUp, ChevronDown, CheckCircle2, UserPlus } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -280,8 +280,10 @@ const MonthlyMeetingsStudentTable = ({
               <TableCell>{getQualificationBadge(student)}</TableCell>
 
               <TableCell className='text-center pl-2'>
-                {consentSet.has(student.id) && (
-                  <FileCheck className='h-5 w-5 text-blue-600 mx-auto' />
+                {consentSet.has(student.id) ? (
+                  <FileCheck className='h-5 w-5 text-green-600 mx-auto' />
+                ) : (
+                  <FileX className='h-5 w-5 text-red-400 mx-auto' />
                 )}
               </TableCell>
 
