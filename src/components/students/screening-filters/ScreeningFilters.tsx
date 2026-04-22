@@ -271,17 +271,49 @@ const ScreeningFilters = ({
                 </div>
 
                 <div className='space-y-2'>
-                  <label className='text-sm font-medium text-gray-700'>
-                    Speech Program Qualification
-                  </label>
+                  <label className='text-sm font-medium text-gray-700'>Program Status</label>
                   <div className='space-y-1'>
                     {[
                       { value: 'qualified', label: 'Qualifies' },
                       { value: 'not_in_program', label: 'Not in Program' },
                       { value: 'sub', label: 'Sub' },
+                      { value: 'no_consent', label: 'No Consent' },
+                    ].map(option => (
+                      <div key={option.value} className='flex items-center space-x-2'>
+                        <input
+                          type='checkbox'
+                          id={`qual_${option.value}`}
+                          checked={qualifiesForSpeechProgramFilter.includes(option.value)}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              setQualifiesForSpeechProgramFilter([
+                                ...qualifiesForSpeechProgramFilter,
+                                option.value,
+                              ])
+                            } else {
+                              setQualifiesForSpeechProgramFilter(
+                                qualifiesForSpeechProgramFilter.filter(v => v !== option.value)
+                              )
+                            }
+                          }}
+                          className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                        />
+                        <label
+                          htmlFor={`qual_${option.value}`}
+                          className='text-sm text-gray-700 cursor-pointer'>
+                          {option.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium text-gray-700'>Service Status</label>
+                  <div className='space-y-1'>
+                    {[
                       { value: 'paused', label: 'Pause/Away' },
                       { value: 'graduated', label: 'Graduated' },
-                      { value: 'no_consent', label: 'No Consent' },
                     ].map(option => (
                       <div key={option.value} className='flex items-center space-x-2'>
                         <input
