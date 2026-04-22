@@ -36,6 +36,7 @@ import { format } from 'date-fns'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import { Screening } from '@/types/database'
 import { ErrorPatterns } from '@/types/screening-form'
+import { ProgramStatus, ServiceStatus } from '@/types/database'
 
 interface ScreeningsListProps {
   studentId?: string
@@ -84,10 +85,10 @@ const ScreeningsList = ({
 
   // Separate screenings by type
   const speechScreenings = (allScreenings || []).filter(
-    screening => screening.source_table === 'speech',
+    screening => screening.source_table === 'speech'
   )
   const hearingScreenings = (allScreenings || []).filter(
-    screening => screening.source_table === 'hearing',
+    screening => screening.source_table === 'hearing'
   )
 
   const { mutate: updateSpeechScreening } = useUpdateSpeechScreening()
@@ -120,21 +121,12 @@ const ScreeningsList = ({
               variant: 'destructive',
             })
           },
-        },
+        }
       )
     }
   }
 
-  type ProgramStatus =
-    | 'none'
-    | 'qualified'
-    | 'not_in_program'
-    | 'sub'
-    | 'paused'
-    | 'graduated'
-    | 'no_consent'
-
-  const handleProgramChange = (screening: Screening, newProgram: ProgramStatus) => {
+  const handleProgramChange = (screening: Screening, newProgram: ProgramStatus | ServiceStatus) => {
     if (screening.source_table === 'speech') {
       setUpdatingProgramId(screening.id)
 
@@ -175,13 +167,14 @@ const ScreeningsList = ({
 
       // Check if this is the most recent screening for the student
       const studentScreenings = speechScreenings.filter(
-        s => s.student_id === screening.student_id && s.source_table === 'speech',
+        s => s.student_id === screening.student_id && s.source_table === 'speech'
       )
       const mostRecentScreening = studentScreenings.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )[0]
       const isLatestScreening = mostRecentScreening?.id === screening.id
 
+      const isServiceStatus = newProgram === 'paused' || newProgram === 'graduated'
       const mappedProgramStatus = newProgram === 'not_in_program' ? 'none' : newProgram
 
       // Update the screening first
@@ -199,7 +192,9 @@ const ScreeningsList = ({
               updateStudent(
                 {
                   id: student.id,
-                  studentData: { program_status: mappedProgramStatus },
+                  studentData: isServiceStatus
+                    ? { service_status: newProgram as ServiceStatus }
+                    : { program_status: mappedProgramStatus as ProgramStatus },
                 },
                 {
                   onSuccess: () => {
@@ -218,7 +213,7 @@ const ScreeningsList = ({
                       variant: 'destructive',
                     })
                   },
-                },
+                }
               )
             } else {
               // For older screenings, just show success without updating student
@@ -238,7 +233,7 @@ const ScreeningsList = ({
               variant: 'destructive',
             })
           },
-        },
+        }
       )
     }
   }
@@ -264,7 +259,9 @@ const ScreeningsList = ({
       return (
         <Select
           value={getProgramValue(screening)}
-          onValueChange={value => handleProgramChange(screening, value as ProgramStatus)}
+          onValueChange={value =>
+            handleProgramChange(screening, value as ProgramStatus | ServiceStatus)
+          }
           disabled={isThisScreeningUpdating}>
           <SelectTrigger className='w-full h-8 border-none p-0 hover:bg-transparent focus:ring-0'>
             <SelectValue placeholder='Select program'>
@@ -411,26 +408,18 @@ const ScreeningsList = ({
     // Apply qualifies for speech program filter
     let matchesQualifiesForSpeechProgram = true
     if (qualifiesForSpeechProgramFilter !== 'all') {
-      const metadata = screening.error_patterns?.screening_metadata
-      const consent = screening.error_patterns?.consent
-
       if (qualifiesForSpeechProgramFilter === 'qualified') {
-        matchesQualifiesForSpeechProgram = metadata?.qualifies_for_speech_program === true
+        matchesQualifiesForSpeechProgram = screening.program_status === 'qualified'
       } else if (qualifiesForSpeechProgramFilter === 'not_in_program') {
-        matchesQualifiesForSpeechProgram =
-          metadata?.qualifies_for_speech_program === false &&
-          !metadata?.sub &&
-          !metadata?.paused &&
-          !metadata?.graduated &&
-          !consent?.no_consent
+        matchesQualifiesForSpeechProgram = screening.program_status === 'not_in_program'
       } else if (qualifiesForSpeechProgramFilter === 'sub') {
-        matchesQualifiesForSpeechProgram = metadata?.sub === true
-      } else if (qualifiesForSpeechProgramFilter === 'paused') {
-        matchesQualifiesForSpeechProgram = metadata?.paused === true
-      } else if (qualifiesForSpeechProgramFilter === 'graduated') {
-        matchesQualifiesForSpeechProgram = metadata?.graduated === true
+        matchesQualifiesForSpeechProgram = screening.program_status === 'sub'
       } else if (qualifiesForSpeechProgramFilter === 'no_consent') {
-        matchesQualifiesForSpeechProgram = consent?.no_consent === true
+        matchesQualifiesForSpeechProgram = screening.program_status === 'no_consent'
+      } else if (qualifiesForSpeechProgramFilter === 'paused') {
+        matchesQualifiesForSpeechProgram = screening.service_status === 'paused'
+      } else if (qualifiesForSpeechProgramFilter === 'graduated') {
+        matchesQualifiesForSpeechProgram = screening.service_status === 'graduated'
       }
     }
 
@@ -827,42 +816,31 @@ const ScreeningsList = ({
   }
 
   const getQualificationBadge = (screening: Screening) => {
-    const metadata = screening.error_patterns?.screening_metadata
-    const consent = screening.error_patterns?.consent
+    const programStatus = screening.program_status
+    const serviceStatus = screening.service_status
 
-    // Read program status from error_patterns
-    const noConsent = consent?.no_consent || false
-    const graduated = metadata?.graduated || false
-    const paused = metadata?.paused || false
-    const sub = metadata?.sub || false
-    const qualifies = metadata?.qualifies_for_speech_program || false
-
-    if (noConsent) {
-      return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>No Consent</Badge>
-    }
-    if (graduated) {
+    if (serviceStatus === 'graduated')
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-    }
-    if (paused) {
+    if (serviceStatus === 'paused')
       return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
-    }
-    if (sub) {
-      return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
-    }
-    if (qualifies) {
-      return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
-    }
 
-    // If none of the above, check if they explicitly don't qualify
-    if (qualifies === false && !sub && !graduated && !paused && !noConsent) {
-      return (
-        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
-          Not In Program
-        </Badge>
-      )
+    switch (programStatus) {
+      case 'no_consent':
+        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>No Consent</Badge>
+      case 'sub':
+        return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
+      case 'qualified':
+        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
+      case 'not_in_program':
+        return (
+          <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
+            Not In Program
+          </Badge>
+        )
+      case 'none':
+      default:
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
     }
-
-    return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
   }
 
   // Helper functions for hearing screenings
@@ -870,7 +848,7 @@ const ScreeningsList = ({
     value: number | null | undefined,
     result: string | null | undefined,
     unit: string,
-    screeningResult?: string | null,
+    screeningResult?: string | null
   ) => {
     if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
     if (result === 'Immeasurable') return 'Immeasurable'
@@ -890,7 +868,7 @@ const ScreeningsList = ({
 
   const formatResultBadge = (
     result: string | null | undefined,
-    screeningResult?: string | null,
+    screeningResult?: string | null
   ): string => {
     if (screeningResult === 'absent' || screeningResult === 'non_compliant') return 'N/A'
     return result || '-'
@@ -1146,7 +1124,7 @@ const ScreeningsList = ({
                               screening.right_volume_db,
                               screening.right_ear_volume_result,
                               'ml',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -1154,7 +1132,7 @@ const ScreeningsList = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_volume_result,
+                              screening.right_ear_volume_result
                             )}`}>
                             {formatResultBadge(screening.right_ear_volume_result, screening.result)}
                           </Badge>
@@ -1171,7 +1149,7 @@ const ScreeningsList = ({
                               screening.right_compliance,
                               screening.right_ear_compliance_result,
                               'ml',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -1179,11 +1157,11 @@ const ScreeningsList = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_compliance_result,
+                              screening.right_ear_compliance_result
                             )}`}>
                             {formatResultBadge(
                               screening.right_ear_compliance_result,
-                              screening.result,
+                              screening.result
                             )}
                           </Badge>
                         </div>
@@ -1199,7 +1177,7 @@ const ScreeningsList = ({
                               screening.right_pressure,
                               screening.right_ear_pressure_result,
                               'daPa',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -1207,11 +1185,11 @@ const ScreeningsList = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.right_ear_pressure_result,
+                              screening.right_ear_pressure_result
                             )}`}>
                             {formatResultBadge(
                               screening.right_ear_pressure_result,
-                              screening.result,
+                              screening.result
                             )}
                           </Badge>
                         </div>
@@ -1230,7 +1208,7 @@ const ScreeningsList = ({
                               screening.left_volume_db,
                               screening.left_ear_volume_result,
                               'ml',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -1238,7 +1216,7 @@ const ScreeningsList = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_volume_result,
+                              screening.left_ear_volume_result
                             )}`}>
                             {formatResultBadge(screening.left_ear_volume_result, screening.result)}
                           </Badge>
@@ -1255,7 +1233,7 @@ const ScreeningsList = ({
                               screening.left_compliance,
                               screening.left_ear_compliance_result,
                               'ml',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -1263,11 +1241,11 @@ const ScreeningsList = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_compliance_result,
+                              screening.left_ear_compliance_result
                             )}`}>
                             {formatResultBadge(
                               screening.left_ear_compliance_result,
-                              screening.result,
+                              screening.result
                             )}
                           </Badge>
                         </div>
@@ -1283,7 +1261,7 @@ const ScreeningsList = ({
                               screening.left_pressure,
                               screening.left_ear_pressure_result,
                               'daPa',
-                              screening.result,
+                              screening.result
                             )}
                           </span>
                         </div>
@@ -1291,11 +1269,11 @@ const ScreeningsList = ({
                         <div className='flex-1'>
                           <Badge
                             className={`text-xs ${getResultBadgeColor(
-                              screening.left_ear_pressure_result,
+                              screening.left_ear_pressure_result
                             )}`}>
                             {formatResultBadge(
                               screening.left_ear_pressure_result,
-                              screening.result,
+                              screening.result
                             )}
                           </Badge>
                         </div>

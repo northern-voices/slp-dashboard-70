@@ -127,23 +127,13 @@ export const useScreeningsFilter = ({
 
       let matchesQualifiesForSpeechProgram = true
       if (qualifiesForSpeechProgramFilter.length > 0) {
-        const metadata = screening.error_patterns?.screening_metadata
-        const consent = screening.error_patterns?.consent
-
         matchesQualifiesForSpeechProgram = qualifiesForSpeechProgramFilter.some(filter => {
-          if (filter === 'qualified') return metadata?.qualifies_for_speech_program === true
-          if (filter === 'not_in_program')
-            return (
-              metadata?.qualifies_for_speech_program === false &&
-              !metadata?.sub &&
-              !metadata?.paused &&
-              !metadata?.graduated &&
-              !consent?.no_consent
-            )
-          if (filter === 'sub') return metadata?.sub === true
-          if (filter === 'paused') return metadata?.paused === true
-          if (filter === 'graduated') return metadata?.graduated === true
-          if (filter === 'no_consent') return consent?.no_consent === true
+          if (filter === 'qualified') return screening.program_status === 'qualified'
+          if (filter === 'not_in_program') return screening.program_status === 'not_in_program'
+          if (filter === 'sub') return screening.program_status === 'sub'
+          if (filter === 'no_consent') return screening.program_status === 'no_consent'
+          if (filter === 'paused') return screening.service_status === 'paused'
+          if (filter === 'graduated') return screening.service_status === 'graduated'
           return false
         })
       }

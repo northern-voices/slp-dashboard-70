@@ -12,7 +12,7 @@ import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { studentsApi } from '@/api/students'
 import { speechScreeningsApi } from '@/api/speechscreenings'
 import { SpeechScreeningFormValues } from '@/types/screening-form'
-import { Screening, ProgramStatus } from '@/types/database'
+import { Screening, ProgramStatus, ServiceStatus } from '@/types/database'
 import { format } from 'date-fns'
 
 export const useEditScreening = () => {
@@ -273,11 +273,15 @@ export const useEditScreening = () => {
       }
 
       const determineProgramStatus = (): ProgramStatus => {
-        if (formData.graduated) return 'graduated'
-        if (formData.paused) return 'paused'
         if (formData.sub) return 'sub'
         if (formData.qualifies_for_speech_program) return 'qualified'
         if (formData.qualifies_for_speech_program === false) return 'not_in_program'
+        return 'none'
+      }
+
+      const determineServiceStatus = (): ServiceStatus => {
+        if (formData.graduated) return 'graduated'
+        if (formData.paused) return 'paused'
         return 'none'
       }
 
@@ -298,7 +302,10 @@ export const useEditScreening = () => {
         try {
           await updateStudent.mutateAsync({
             id: studentData.id,
-            studentData: { program_status: determineProgramStatus() },
+            studentData: {
+              program_status: determineProgramStatus(),
+              service_status: determineServiceStatus(),
+            },
           })
         } catch (error) {
           console.error('Failed to update student program status:', error)

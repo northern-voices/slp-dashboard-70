@@ -481,9 +481,9 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
 
   const renderScreeningMetadata = () => {
     const programStatus = currentScreening.program_status
+    const serviceStatus = currentScreening.service_status
     const metadata = currentScreening.error_patterns?.screening_metadata
 
-    // Determine background and text colors based on program status
     const getStatusColors = (status: string) => {
       switch (status) {
         case 'graduated':
@@ -497,6 +497,12 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
             bg: 'bg-purple-50 border-purple-200',
             text: 'text-purple-800',
             badge: 'bg-purple-100 text-purple-800',
+          }
+        case 'transferred':
+          return {
+            bg: 'bg-yellow-50 border-yellow-200',
+            text: 'text-yellow-800',
+            badge: 'bg-yellow-100 text-yellow-800',
           }
         case 'sub':
           return {
@@ -526,39 +532,65 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
       }
     }
 
-    const getStatusLabel = (status: string) => {
+    const getProgramLabel = (status: string) => {
       switch (status) {
-        case 'graduated':
-          return 'Graduated'
-        case 'paused':
-          return 'Paused'
         case 'sub':
           return 'Sub'
         case 'qualified':
           return 'Qualifies'
         case 'not_in_program':
           return 'Not in Program'
+        case 'no_consent':
+          return 'No Consent'
         case 'none':
         default:
           return 'Not Set'
       }
     }
 
-    const colors = getStatusColors(programStatus || 'none')
-    const showMetadata = programStatus && programStatus !== 'none'
+    const getServiceLabel = (status: string) => {
+      switch (status) {
+        case 'graduated':
+          return 'Graduated'
+        case 'paused':
+          return 'Pause/Away'
+        case 'transferred':
+          return 'Transferred'
+        case 'none':
+        default:
+          return 'None'
+      }
+    }
+
+    const showProgramStatus = programStatus && programStatus !== 'none'
+    const showServiceStatus = serviceStatus && serviceStatus !== 'none'
     const showVocabularySupport = metadata?.vocabulary_support_recommended
 
-    // Don't render anything if there's no program status and no vocabulary support
-    if (!showMetadata && !showVocabularySupport) return null
+    if (!showProgramStatus && !showServiceStatus && !showVocabularySupport) return null
 
     return (
       <div className='space-y-4'>
         <h4 className='font-medium text-gray-900'>Speech Screening Details:</h4>
         <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-          {showMetadata && (
-            <div className={`p-3 rounded-md border ${colors.bg}`}>
-              <h5 className={`text-sm font-medium mb-2 ${colors.text}`}>Speech Program Status:</h5>
-              <Badge className={colors.badge}>{getStatusLabel(programStatus)}</Badge>
+          {showProgramStatus && (
+            <div className={`p-3 rounded-md border ${getStatusColors(programStatus).bg}`}>
+              <h5 className={`text-sm font-medium mb-2 ${getStatusColors(programStatus).text}`}>
+                Program Status:
+              </h5>
+              <Badge className={getStatusColors(programStatus).badge}>
+                {getProgramLabel(programStatus)}
+              </Badge>
+            </div>
+          )}
+
+          {showServiceStatus && (
+            <div className={`p-3 rounded-md border ${getStatusColors(serviceStatus).bg}`}>
+              <h5 className={`text-sm font-medium mb-2 ${getStatusColors(serviceStatus).text}`}>
+                Service Status:
+              </h5>
+              <Badge className={getStatusColors(serviceStatus).badge}>
+                {getServiceLabel(serviceStatus)}
+              </Badge>
             </div>
           )}
 

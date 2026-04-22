@@ -253,21 +253,25 @@ const MultiStepSpeechScreeningForm = ({
 
   // Helper function to determine program_status from form data
   const determineProgramStatus = (formData: Record<string, unknown>): Student['program_status'] => {
-    const noConsentData = (formData.no_consent as Record<string, unknown>) || {}
-    const noConsent = (noConsentData.isNoConsent as boolean) || false
-    const graduated = (formData.graduated as boolean) || false
-    const paused = (formData.paused as boolean) || false
+    const noConsent = (formData.no_consent as { isNoConsent?: boolean })?.isNoConsent || false
     const sub = (formData.sub as boolean) || false
     const qualifies = (formData.qualifies_for_speech_program as boolean) || false
 
     if (noConsent) return 'no_consent'
-    if (graduated) return 'graduated'
-    if (paused) return 'paused'
     if (sub) return 'sub'
     if (qualifies) return 'qualified'
 
     // If none of the above are true, check if they explicitly don't qualify
     // For now, default to 'none' if nothing is selected
+    return 'none'
+  }
+
+  const determineServiceStatus = (formData): Student['service_status'] => {
+    const graduated = (formData.graduated as boolean) || false
+    const paused = (formData.paused as boolean) || false
+
+    if (graduated) return 'graduated'
+    if (paused) return 'paused'
     return 'none'
   }
 
@@ -524,12 +528,13 @@ const MultiStepSpeechScreeningForm = ({
         onSuccess: () => {
           // After creating the screening, update the student's program_status
           if (selectedStudent?.id) {
-            const programStatus = determineProgramStatus(formData)
-
             updateStudent.mutate(
               {
                 id: selectedStudent.id,
-                studentData: { program_status: programStatus },
+                studentData: {
+                  program_status: determineProgramStatus(formData),
+                  service_status: determineServiceStatus(formData),
+                },
               },
               {
                 onSuccess: () => {
