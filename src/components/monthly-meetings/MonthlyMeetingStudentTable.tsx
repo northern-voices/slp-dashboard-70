@@ -124,18 +124,9 @@ const MonthlyMeetingsStudentTable = ({
   }
 
   const getProgramStatus = (student: Student): string => {
-    const latestScreening = mostRecentScreeningByStudent.get(student.id)
-    if (latestScreening) {
-      const metadata = latestScreening.error_patterns?.screening_metadata
-      const consent = latestScreening.error_patterns?.consent
-      if (consent?.no_consent) return 'no_consent'
-      if (metadata?.graduated) return 'graduated'
-      if (metadata?.paused) return 'paused'
-      if (metadata?.sub) return 'sub'
-      if (metadata?.qualifies_for_speech_program) return 'qualified'
-      if (metadata?.qualifies_for_speech_program === false) return 'not_in_program'
-    }
-
+    if (student.service_status === 'graduated') return 'graduated'
+    if (student.service_status === 'paused') return 'paused'
+    if (student.service_status === 'transferred') return 'transferred'
     return student.program_status || 'none'
   }
 
