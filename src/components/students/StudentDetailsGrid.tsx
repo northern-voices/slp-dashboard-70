@@ -1,6 +1,19 @@
-import { GraduationCap, Calendar } from 'lucide-react'
+import { GraduationCap, Calendar, User } from 'lucide-react'
 import type { SchoolGrade } from '@/api/schoolGrades'
 import type { Student } from '@/types/database'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+interface SpeechEA {
+  id: string
+  name: string
+  roles: string[]
+}
 
 interface StudentDetailsGridProps {
   student: Student
@@ -8,6 +21,8 @@ interface StudentDetailsGridProps {
   isLoadingCurrentGrade: boolean
   formatDate: (dateString: string) => string
   getAge: (dateString: string) => number
+  speechEAs: SpeechEA[]
+  onAssignEA: (staffId: string | null) => void
 }
 
 const StudentDetailsGrid = ({
@@ -16,6 +31,8 @@ const StudentDetailsGrid = ({
   isLoadingCurrentGrade,
   formatDate,
   getAge,
+  speechEAs,
+  onAssignEA,
 }: StudentDetailsGridProps) => (
   <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
     <div className='flex items-start gap-2'>
@@ -44,6 +61,30 @@ const StudentDetailsGrid = ({
         </div>
       </div>
     )}
+
+    <div className='flex items-start gap-2'>
+      <User className='w-4 h-4 mt-1 text-gray-400' />
+
+      <div>
+        <span className='text-sm font-medium text-gray-700'>Speech EA</span>
+        <Select
+          value={student.speech_ea_id ?? 'none'}
+          onValueChange={value => onAssignEA(value === 'none' ? null : value)}>
+          <SelectTrigger className='h-7 text-sm text-gray-600 border-none shadow-none p-0 w-auto focus:ring-0'>
+            <SelectValue placeholder='None assigned' />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value='none'>None assigned</SelectItem>
+            {speechEAs.map(ea => (
+              <SelectItem key={ea.id} value={ea.id}>
+                {ea.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
   </div>
 )
 

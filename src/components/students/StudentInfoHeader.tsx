@@ -14,6 +14,8 @@ import StudentBasicInfo from './StudentBasicInfo'
 import StudentDetailsGrid from './StudentDetailsGrid'
 import StudentNotes from './StudentNotes'
 import EditStudentDialog from './EditStudentDialog'
+import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface StudentInfoHeaderProps {
   student?: Student | null
@@ -36,6 +38,23 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
   const queryClient = useQueryClient()
 
   const { data: consentForms = [] } = useConsentForms(localStudent?.id || '')
+
+  const { currentSchool } = useOrganization()
+  const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
+  const speechEAs = (schoolDetails?.schoolTeam ?? []).filter(m => m.roles.includes('Speech EA'))
+
+  const handleAssignEA = async (staffId: string | null) => {
+    if (!localStudent?.id) return
+
+    try {
+      await studentsApi.updateStudent(localStudent.id, { speech_ea_id: staffId })
+      setLocalStudent({ ...localStudent, speech_ea_id: staffId })
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+      toast({ title: 'Speech EA updated' })
+    } catch {
+      toast({ title: 'Error', description: 'Failed to update Speech EA.', variant: 'destructive' })
+    }
+  }
 
   const hasConsentThisYear = (() => {
     const now = new Date()
@@ -217,6 +236,8 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
               isLoadingCurrentGrade={isLoadingCurrentGrade}
               formatDate={formatDate}
               getAge={getAge}
+              speechEAs={speechEAs}
+              onAssignEA={handleAssignEA}
             />
             <StudentNotes studentId={localStudent.id} formatDate={formatDate} />
           </div>
