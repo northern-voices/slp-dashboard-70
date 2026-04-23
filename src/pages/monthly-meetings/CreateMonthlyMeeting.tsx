@@ -35,6 +35,8 @@ interface MeetingFormData {
   attendees: string[]
   meeting_date: string
   meeting_type: string
+  topics: string
+  school_visit_purpose: string
   additional_notes: string
   action_plan: string
 }
@@ -81,6 +83,8 @@ const CreateMonthlyMeetingContent = () => {
         )}-${String(today.getDate()).padStart(2, '0')}`
       })(),
       meeting_type: '',
+      topics: '',
+      school_visit_purpose: '',
       additional_notes: '',
       action_plan: '',
     },
@@ -193,6 +197,8 @@ const CreateMonthlyMeetingContent = () => {
       meeting_title: data.meeting_title.trim(),
       meeting_date: data.meeting_date,
       meeting_type: data.meeting_type,
+      topics: data.topics.trim() || null,
+      school_visit_purpose: data.school_visit_purpose.trim() || null,
       attendees: data.attendees,
       school_id: currentSchool.id,
       facilitator_id: data.facilitator_id || null,
@@ -414,6 +420,30 @@ const CreateMonthlyMeetingContent = () => {
               </div>
             </div>
 
+            {watchedValues.meeting_type === 'coaching_call' && (
+              <div className='space-y-2'>
+                <Label htmlFor='topics'>Topics</Label>
+                <Textarea
+                  id='topics'
+                  {...register('topics')}
+                  placeholder='Topics to be discussed...'
+                  rows={4}
+                />
+              </div>
+            )}
+
+            {watchedValues.meeting_type === 'school_visit_summary' && (
+              <div className='space-y-2'>
+                <Label htmlFor='school_visit_purpose'>School Visit Purpose</Label>
+                <Textarea
+                  id='school_visit_purpose'
+                  {...register('school_visit_purpose')}
+                  placeholder='Purpose of the school visit...'
+                  rows={4}
+                />
+              </div>
+            )}
+
             {watchedValues.meeting_type === 'progress_checkin' && (
               <>
                 <div className='space-y-2'>
@@ -437,25 +467,29 @@ const CreateMonthlyMeetingContent = () => {
               </>
             )}
 
-            <div className='space-y-2'>
-              <Label htmlFor='additional_notes'>Meeting Notes</Label>
-              <Textarea
-                id='additional_notes'
-                {...register('additional_notes')}
-                placeholder='Meeting notes to be added...'
-                rows={4}
-              />
-            </div>
+            {watchedValues.meeting_type && (
+              <>
+                <div className='space-y-2'>
+                  <Label htmlFor='additional_notes'>Meeting Notes</Label>
+                  <Textarea
+                    id='additional_notes'
+                    {...register('additional_notes')}
+                    placeholder='Meeting notes to be added...'
+                    rows={4}
+                  />
+                </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='action_plan'>Action Plan</Label>
-              <Textarea
-                id='action_plan'
-                {...register('action_plan')}
-                placeholder='Action plan and next steps...'
-                rows={4}
-              />
-            </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='action_plan'>Action Plan</Label>
+                  <Textarea
+                    id='action_plan'
+                    {...register('action_plan')}
+                    placeholder='Action plan and next steps...'
+                    rows={4}
+                  />
+                </div>
+              </>
+            )}
 
             <div className='flex justify-between pt-4'>
               <div>
