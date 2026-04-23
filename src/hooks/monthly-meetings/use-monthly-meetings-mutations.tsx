@@ -1,38 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import {
+  monthlyMeetingsApi,
+  MonthlyMeeting,
+  MonthlyMeetingPayload,
+  StudentUpdate,
+} from '@/api/monthlymeetings'
 
-import { monthlyMeetingsApi, MonthlyMeeting, StudentUpdate } from '@/api/monthlymeetings'
-
-// Type for the create monthly meeting input
-type CreateMonthlyMeetingInput = {
-  meeting_title: string
-  meeting_date: string
-  attendees: string[]
-  school_id: string
-  additional_notes?: string | null
-  facilitator_id?: string | null
-  student_updates?: Array<{
-    student_id: string
-    sessions_attended?: number | null
-    meeting_notes?: string | null
-  }>
-}
-
-// Type for the update monthly meeting input
-type UpdateMonthlyMeetingInput = {
-  meeting_title?: string
-  meeting_date?: string
-  attendees?: string[]
-  school_id: string
-  additional_notes?: string | null
-  facilitator_id?: string | null
-  student_updates?: Array<{
-    student_id: string
-    sessions_attended?: number | null
-    meeting_notes?: string | null
-  }>
-}
+type CreateMonthlyMeetingInput = MonthlyMeetingPayload
+type UpdateMonthlyMeetingInput = Partial<MonthlyMeetingPayload>
 
 // Type for student update operations
 type AddStudentUpdateInput = {
