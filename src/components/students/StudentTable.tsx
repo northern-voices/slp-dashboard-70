@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { School } from '@/types/database'
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/responsive-table'
 import { TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { ChevronUp, ChevronDown, Plus, UserPlus } from 'lucide-react'
+import { ChevronUp, ChevronDown, Plus, UserPlus, FileCheck, FileX } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
@@ -42,6 +42,7 @@ import { useCreateStudent, useUpdateStudent } from '@/hooks/students/use-student
 import { studentsApi } from '@/api/students'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import StudentsSkeleton from '@/components/skeletons/StudentsSkeleton'
+import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 
 interface StudentTableProps {
   selectedSchool?: School | null
@@ -83,6 +84,10 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
   const createStudentMutation = useCreateStudent()
   const updateStudentMutation = useUpdateStudent()
+
+  const studentIds = students.map(student => student.id)
+  const { data: studentIdsWithConsent = [] } = useConsentFormPresence(studentIds)
+  const consentSet = useMemo(() => new Set(studentIdsWithConsent), [studentIdsWithConsent])
 
   // Fetch all grades for the school
   useEffect(() => {
@@ -558,6 +563,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   <span className='ml-1'>{getSortIcon('name')}</span>
                 </Button>
               </TableHead>
+
               <TableHead className='w-1/6 min-w-[120px]'>
                 <Button
                   variant='ghost'
@@ -567,7 +573,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   <span className='ml-1'>{getSortIcon('grade')}</span>
                 </Button>
               </TableHead>
+
               <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
+
               <TableHead className='w-1/6 min-w-[150px]'>
                 <Button
                   variant='ghost'
@@ -577,6 +585,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   <span className='ml-1'>{getSortIcon('date')}</span>
                 </Button>
               </TableHead>
+
+              <TableHead className='w-1/6 text-center'>Consent</TableHead>
             </tr>
           </TableHeader>
 
@@ -589,18 +599,29 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                 <TableCell className='p-4 font-medium group-hover:bg-gray-100 transition-colors'>
                   {student.first_name} {student.last_name}
                 </TableCell>
+
                 <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
                   {getStudentGrade(student)}
                 </TableCell>
+
                 <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
                   {getQualificationBadge(student)}
                 </TableCell>
+
                 <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
                   {parseDateSafely(student.created_at).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',
                   })}
+                </TableCell>
+
+                <TableCell className='p-4 text-center group-hover:bg-gray-100 transition-colors'>
+                  {consentSet.has(student.id) ? (
+                    <FileCheck className='h-5 w-5 text-green-600 mx-auto' />
+                  ) : (
+                    <FileX className='h-5 w-5 text-red-400 mx-auto' />
+                  )}
                 </TableCell>
               </TableRow>
             ))}

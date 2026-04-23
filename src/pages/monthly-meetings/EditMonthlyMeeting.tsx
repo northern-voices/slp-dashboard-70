@@ -27,12 +27,15 @@ import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMe
 import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog'
 import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
 import { useGetMonthlyMeetingById } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
+import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
+import { MeetingTypeBadge } from '@/utils/meetingTypes'
 
 interface MeetingFormData {
   meeting_title: string
   facilitator_id: string
   attendees: string[]
   meeting_date: string
+  meeting_type: string
   additional_notes: string
   action_plan: string
 }
@@ -66,6 +69,9 @@ const EditMonthlyMeetingContent = () => {
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
   const { user } = useAuth()
 
+  const studentIds = students.map(student => student.id)
+  const { data: studentIdsWithConsent = [] } = useConsentFormPresence(studentIds)
+
   const draftKey = `monthly-meeting-edit-draft-${meetingId}`
   const {
     register,
@@ -80,6 +86,7 @@ const EditMonthlyMeetingContent = () => {
       facilitator_id: user?.id || '',
       attendees: [],
       meeting_date: '',
+      meeting_type: '',
       additional_notes: '',
       action_plan: '',
     },
@@ -127,6 +134,7 @@ const EditMonthlyMeetingContent = () => {
       facilitator_id: meetingData.facilitator_id || user?.id || '',
       attendees: meetingData.attendees || [],
       meeting_date: meetingData.meeting_date ? meetingData.meeting_date.split('T')[0] : '',
+      meeting_type: meetingData.meeting_type || '',
       additional_notes: meetingData.additional_notes || '',
       action_plan: meetingData.action_plan || '',
     }
@@ -214,6 +222,7 @@ const EditMonthlyMeetingContent = () => {
     const submitData = {
       meeting_title: data.meeting_title.trim(),
       meeting_date: data.meeting_date,
+      meeting_type: data.meeting_type,
       attendees: data.attendees,
       facilitator_id: data.facilitator_id || null,
       additional_notes: data.additional_notes.trim() || null,
@@ -275,226 +284,236 @@ const EditMonthlyMeetingContent = () => {
 
   return (
     <>
-      <div className='flex-1 p-4 bg-gray-25 md:p-6 lg:p-8'>
-        <div className='max-w-4xl mx-auto'>
-          <div className='flex items-center gap-4 mb-6'>
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={handleCancel}
-              className='text-gray-600 hover:text-gray-900'>
-              <ChevronLeft className='w-4 h-4 mr-1' />
-              Back to Monthly Meetings
-            </Button>
-            <div className='w-px h-4 bg-gray-300' />
-            <h1 className='text-2xl font-semibold text-gray-900'>Edit Monthly Meeting</h1>
-          </div>
+      <div className='max-w-4xl mx-auto'>
+        <div className='flex items-center gap-4 mb-6'>
+          <Button
+            variant='ghost'
+            size='sm'
+            onClick={handleCancel}
+            className='text-gray-600 hover:text-gray-900'>
+            <ChevronLeft className='w-4 h-4 mr-1' />
+            Back to Monthly Meetings
+          </Button>
+          <div className='w-px h-4 bg-gray-300' />
+          <h1 className='text-2xl font-semibold text-gray-900'>Edit Monthly Meeting</h1>
+        </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <Calendar className='w-5 h-5 text-blue-600' />
-                Meeting Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className='flex items-center justify-center py-16'>
-                  <div className='text-center'>
-                    <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin'></div>
-                    <p className='text-sm text-gray-600'>Loading meeting data...</p>
-                  </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2'>
+              <Calendar className='w-5 h-5 text-blue-600' />
+              Meeting Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className='flex items-center justify-center py-16'>
+                <div className='text-center'>
+                  <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin'></div>
+                  <p className='text-sm text-gray-600'>Loading meeting data...</p>
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
-                  <div className='space-y-4'>
-                    <div className='grid grid-cols-3 gap-4'>
-                      <div className='col-span-2 space-y-2'>
-                        <Label htmlFor='meeting_title'>Meeting Title *</Label>
-                        <Input
-                          id='meeting_title'
-                          {...register('meeting_title', { required: true })}
-                          placeholder='e.g., October Monthly Progress Review'
-                        />
-                      </div>
-                      <div className='space-y-2'>
-                        <Label htmlFor='meeting_date'>Date *</Label>
-                        <Input
-                          id='meeting_date'
-                          type='date'
-                          {...register('meeting_date', { required: true })}
-                        />
-                      </div>
-                    </div>
-
-                    <div className='space-y-2'>
-                      <Label htmlFor='facilitator_id'>Meeting Facilitator</Label>
-                      <Controller
-                        name='facilitator_id'
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            disabled={isLoadingUsers}>
-                            <SelectTrigger>
-                              <SelectValue
-                                placeholder={isLoadingUsers ? 'Loading...' : 'Select a facilitator'}
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {users.map(user => (
-                                <SelectItem key={user.id} value={user.id}>
-                                  {user.first_name} {user.last_name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+                <div className='space-y-4'>
+                  <div className='grid grid-cols-3 gap-4'>
+                    <div className='col-span-2 space-y-2'>
+                      <Label htmlFor='meeting_title'>Meeting Title *</Label>
+                      <Input
+                        id='meeting_title'
+                        {...register('meeting_title', { required: true })}
+                        placeholder='e.g., October Monthly Progress Review'
                       />
                     </div>
-
                     <div className='space-y-2'>
-                      <Label htmlFor='attendees'>Attendees *</Label>
-                      <Controller
-                        name='attendees'
-                        control={control}
-                        render={({ field }) => (
-                          <div
-                            className={cn(
-                              'min-h-[42px] w-full rounded-md border border-input bg-background',
-                              'px-3 py-2 text-sm ring-offset-background',
-                              'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
-                            )}>
-                            <div className='flex flex-wrap gap-2'>
-                              {field.value.map((attendee, index) => (
-                                <Badge
-                                  key={index}
-                                  variant='secondary'
-                                  className='flex items-center gap-1 px-2 py-1'>
-                                  <span>{attendee}</span>
-                                  <button
-                                    type='button'
-                                    onClick={() =>
-                                      field.onChange(field.value.filter(a => a !== attendee))
-                                    }
-                                    className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
-                                    <X className='w-3 h-3' />
-                                  </button>
-                                </Badge>
-                              ))}
-                              <input
-                                type='text'
-                                id='attendees'
-                                value={attendeeInput}
-                                onChange={e => setAttendeeInput(e.target.value)}
-                                onKeyDown={e => handleAttendeeKeyDown(e, field)}
-                                onBlur={() => handleAttendeeBlur(field)}
-                                placeholder={
-                                  field.value.length === 0 ? 'Type name and press Enter' : ''
-                                }
-                                className='flex-1 min-w-[120px] outline-none bg-transparent'
-                              />
-                            </div>
-                          </div>
-                        )}
-                      />
-                      <p className='text-sm text-gray-500'>
-                        Type a name and press Enter to add. Click the × or hit Backspace to remove.
-                      </p>
-                    </div>
-
-                    {/* Students Table Section */}
-                    <div className='space-y-2'>
-                      <Label>Students</Label>
-                      <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
-                        <MonthlyMeetingsStudentTable
-                          students={students}
-                          isLoading={isLoadingStudents}
-                          studentData={studentData}
-                          onStudentClick={student => {
-                            setSelectedStudent(student)
-                            setShowStudentModal(true)
-                          }}
-                          hasStudentData={hasStudentData}
-                        />
-                      </div>
-                    </div>
-
-                    <div className='space-y-2'>
-                      <Label htmlFor='additional_notes'>Additional Notes</Label>
-                      <Textarea
-                        id='additional_notes'
-                        {...register('additional_notes')}
-                        placeholder='Additional notes to be added...'
-                        rows={4}
-                      />
-                    </div>
-
-                    <div className='space-y-2'>
-                      <Label htmlFor='action_plan'>Action Plan</Label>
-                      <Textarea
-                        id='action_plan'
-                        {...register('action_plan')}
-                        placeholder='Action plan and next steps...'
-                        rows={4}
+                      <Label htmlFor='meeting_date'>Date *</Label>
+                      <Input
+                        id='meeting_date'
+                        type='date'
+                        {...register('meeting_date', { required: true })}
                       />
                     </div>
                   </div>
 
-                  <div className='flex justify-between pt-4'>
-                    <div>
-                      {isDirty && (
-                        <Button
-                          type='button'
-                          variant='ghost'
-                          onClick={() => {
-                            discardChanges()
-                            toast({
-                              title: 'Draft Discarded',
-                              description: 'Your changes have been discarded.',
-                            })
-                          }}
-                          disabled={isSubmitting}
-                          className='text-red-600 hover:text-red-700 hover:bg-red-50'>
-                          Discard Changes
-                        </Button>
+                  <div className='space-y-2'>
+                    <Label htmlFor='facilitator_id'>Meeting Facilitator</Label>
+                    <Controller
+                      name='facilitator_id'
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={isLoadingUsers}>
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={isLoadingUsers ? 'Loading...' : 'Select a facilitator'}
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {users.map(user => (
+                              <SelectItem key={user.id} value={user.id}>
+                                {user.first_name} {user.last_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       )}
+                    />
+                  </div>
+
+                  <div className='space-y-2'>
+                    <Label htmlFor='attendees'>Attendees *</Label>
+                    <Controller
+                      name='attendees'
+                      control={control}
+                      render={({ field }) => (
+                        <div
+                          className={cn(
+                            'min-h-[42px] w-full rounded-md border border-input bg-background',
+                            'px-3 py-2 text-sm ring-offset-background',
+                            'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
+                          )}>
+                          <div className='flex flex-wrap gap-2'>
+                            {field.value.map((attendee, index) => (
+                              <Badge
+                                key={index}
+                                variant='secondary'
+                                className='flex items-center gap-1 px-2 py-1'>
+                                <span>{attendee}</span>
+                                <button
+                                  type='button'
+                                  onClick={() =>
+                                    field.onChange(field.value.filter(a => a !== attendee))
+                                  }
+                                  className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'>
+                                  <X className='w-3 h-3' />
+                                </button>
+                              </Badge>
+                            ))}
+                            <input
+                              type='text'
+                              id='attendees'
+                              value={attendeeInput}
+                              onChange={e => setAttendeeInput(e.target.value)}
+                              onKeyDown={e => handleAttendeeKeyDown(e, field)}
+                              onBlur={() => handleAttendeeBlur(field)}
+                              placeholder={
+                                field.value.length === 0 ? 'Type name and press Enter' : ''
+                              }
+                              className='flex-1 min-w-[120px] outline-none bg-transparent'
+                            />
+                          </div>
+                        </div>
+                      )}
+                    />
+                    <p className='text-sm text-gray-500'>
+                      Type a name and press Enter to add. Click the × or hit Backspace to remove.
+                    </p>
+                  </div>
+
+                  <div className='space-y-2'>
+                    <Label>Meeting Type</Label>
+                    <div className='flex h-12 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm opacity-60 cursor-not-allowed'>
+                      <MeetingTypeBadge type={watchedValues.meeting_type || null} />
                     </div>
-                    <div className='flex gap-3'>
+                  </div>
+
+                  {watchedValues.meeting_type && (
+                    <>
+                      {/* Students Table Section */}
+                      <div className='space-y-2'>
+                        <Label>Students</Label>
+                        <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
+                          <MonthlyMeetingsStudentTable
+                            students={students}
+                            isLoading={isLoadingStudents}
+                            studentData={studentData}
+                            onStudentClick={student => {
+                              setSelectedStudent(student)
+                              setShowStudentModal(true)
+                            }}
+                            hasStudentData={hasStudentData}
+                            studentIdsWithConsent={studentIdsWithConsent}
+                          />
+                        </div>
+                      </div>
+
+                      <div className='space-y-2'>
+                        <Label htmlFor='additional_notes'>Additional Notes</Label>
+                        <Textarea
+                          id='additional_notes'
+                          {...register('additional_notes')}
+                          placeholder='Additional notes to be added...'
+                          rows={4}
+                        />
+                      </div>
+
+                      <div className='space-y-2'>
+                        <Label htmlFor='action_plan'>Action Plan</Label>
+                        <Textarea
+                          id='action_plan'
+                          {...register('action_plan')}
+                          placeholder='Action plan and next steps...'
+                          rows={4}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className='flex justify-between pt-4'>
+                  <div>
+                    {isDirty && (
                       <Button
                         type='button'
-                        variant='outline'
-                        onClick={handleCancel}
-                        disabled={isSubmitting}>
-                        Cancel
+                        variant='ghost'
+                        onClick={() => {
+                          discardChanges()
+                          toast({
+                            title: 'Draft Discarded',
+                            description: 'Your changes have been discarded.',
+                          })
+                        }}
+                        disabled={isSubmitting}
+                        className='text-red-600 hover:text-red-700 hover:bg-red-50'>
+                        Discard Changes
                       </Button>
-                      <Button
-                        type='submit'
-                        className='bg-blue-600 hover:bg-blue-700'
-                        disabled={isSubmitting}>
-                        {isSubmitting ? 'Updating...' : 'Update Meeting'}
-                      </Button>
-                    </div>
+                    )}
                   </div>
-                </form>
-              )}
-            </CardContent>
-          </Card>
+                  <div className='flex gap-3'>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      onClick={handleCancel}
+                      disabled={isSubmitting}>
+                      Cancel
+                    </Button>
+                    <Button
+                      type='submit'
+                      className='bg-blue-600 hover:bg-blue-700'
+                      disabled={isSubmitting}>
+                      {isSubmitting ? 'Updating...' : 'Update Meeting'}
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Student Details Modal */}
-          <StudentDetailsModal
-            open={showStudentModal}
-            onClose={() => {
-              setShowStudentModal(false)
-              setSelectedStudent(null)
-            }}
-            selectedStudent={selectedStudent}
-            studentData={studentData}
-            setStudentData={setStudentData}
-            meetingId={meetingId}
-          />
-        </div>
+        {/* Student Details Modal */}
+        <StudentDetailsModal
+          open={showStudentModal}
+          onClose={() => {
+            setShowStudentModal(false)
+            setSelectedStudent(null)
+          }}
+          selectedStudent={selectedStudent}
+          studentData={studentData}
+          setStudentData={setStudentData}
+          meetingId={meetingId}
+        />
       </div>
 
       <DraftRestoreDialog

@@ -106,6 +106,25 @@ export const consentFormsApi = {
     }
   },
 
+  getConsentFormPresenceByStudentIds: async (studentIds: string[]): Promise<string[]> => {
+    if (studentIds.length === 0) return []
+    try {
+      const { data, error } = await supabase
+        .from('consent_forms')
+        .select('student_id')
+        .in('student_id', studentIds)
+
+      if (error) throw error
+
+      const unique = [...new Set((data || []).map(r => r.student_id))]
+
+      return unique
+    } catch (error) {
+      console.error('Error fetching consent form presence:', error)
+      throw error
+    }
+  },
+
   // Generate a signed URL to view a file (expires in 1 hour)
   getSignedUrl: async (filePath: string): Promise<string> => {
     try {

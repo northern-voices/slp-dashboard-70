@@ -1,6 +1,26 @@
 import { supabase } from '@/lib/supabase'
 import { UserRole } from '@/types/database'
 
+export type StudentUpdatePayload = {
+  student_id: string
+  sessions_attended?: number | null
+  meeting_notes?: string | null
+}
+
+export type MonthlyMeetingPayload = {
+  meeting_title: string
+  meeting_date: string
+  attendees: string[]
+  school_id: string
+  additional_notes?: string | null
+  action_plan?: string | null
+  meeting_type?: string | null
+  topics?: string | null
+  school_visit_purpose?: string | null
+  facilitator_id?: string | null
+  student_updates?: StudentUpdatePayload[]
+}
+
 export interface StudentUpdate {
   id: string
   student_id: string
@@ -30,6 +50,9 @@ export interface MonthlyMeeting {
   attendees: string[]
   additional_notes: string | null
   action_plan: string | null
+  meeting_type: string | null
+  topics: string | null
+  school_visit_purpose: string | null
   facilitator_id: string | null
   school_id: string | null
   created_at: string
@@ -51,6 +74,9 @@ interface RawMonthlyMeeting {
   attendees: string[]
   additional_notes: string | null
   action_plan: string | null
+  meeting_type: string | null
+  topics: string | null
+  school_visit_purpose: string | null
   facilitator_id: string | null
   school_id: string | null
   created_at: string
@@ -112,6 +138,9 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
   attendees: meeting.attendees,
   additional_notes: meeting.additional_notes,
   action_plan: meeting.action_plan,
+  meeting_type: meeting.meeting_type,
+  topics: meeting.topics,
+  school_visit_purpose: meeting.school_visit_purpose,
   facilitator_id: meeting.facilitator_id,
   school_id: meeting.school_id,
   created_at: meeting.created_at,
@@ -287,6 +316,9 @@ export const monthlyMeetingsApi = {
           attendees: meeting.attendees,
           additional_notes: meeting.additional_notes,
           action_plan: meeting.action_plan,
+          meeting_type: meeting.meeting_type,
+          topics: meeting.topics,
+          school_visit_purpose: meeting.school_visit_purpose,
           facilitator_id: meeting.facilitator_id,
           school_id: meeting.school_id,
           created_at: meeting.created_at,
@@ -455,20 +487,7 @@ export const monthlyMeetingsApi = {
     return transformMonthlyMeeting(data)
   },
 
-  createMonthlyMeeting: async (data: {
-    meeting_title: string
-    meeting_date: string
-    attendees: string[]
-    school_id: string
-    additional_notes?: string | null
-    action_plan?: string | null
-    facilitator_id?: string | null
-    student_updates?: Array<{
-      student_id: string
-      sessions_attended?: number | null
-      meeting_notes?: string | null
-    }>
-  }): Promise<MonthlyMeeting> => {
+  createMonthlyMeeting: async (data: MonthlyMeetingPayload): Promise<MonthlyMeeting> => {
     try {
       // Validate required fields
       if (!data.meeting_date) {
@@ -495,6 +514,9 @@ export const monthlyMeetingsApi = {
         school_id: data.school_id,
         additional_notes: data.additional_notes || null,
         action_plan: data.action_plan || null,
+        meeting_type: data.meeting_type || null,
+        topics: data.topics || null,
+        school_visit_purpose: data.school_visit_purpose || null,
         facilitator_id: data.facilitator_id || null,
       }
 
@@ -583,20 +605,7 @@ export const monthlyMeetingsApi = {
 
   updateMonthlyMeeting: async (
     id: string,
-    data: Partial<{
-      meeting_title: string
-      meeting_date: string
-      attendees: string[]
-      school_id: string
-      additional_notes: string | null
-      action_plan: string | null
-      facilitator_id: string | null
-      student_updates: Array<{
-        student_id: string
-        sessions_attended?: number | null
-        meeting_notes?: string | null
-      }>
-    }>
+    data: Partial<MonthlyMeetingPayload>
   ): Promise<MonthlyMeeting> => {
     try {
       // Extract student_updates from data
