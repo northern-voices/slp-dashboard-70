@@ -34,6 +34,7 @@ interface MeetingFormData {
   facilitator_id: string
   attendees: string[]
   meeting_date: string
+  meeting_type: string
   additional_notes: string
   action_plan: string
 }
@@ -78,6 +79,7 @@ const CreateMonthlyMeetingContent = () => {
           '0'
         )}-${String(today.getDate()).padStart(2, '0')}`
       })(),
+      meeting_type: '',
       additional_notes: '',
       action_plan: '',
     },
@@ -176,6 +178,7 @@ const CreateMonthlyMeetingContent = () => {
     const submitData = {
       meeting_title: data.meeting_title.trim(),
       meeting_date: data.meeting_date,
+      meeting_type: data.meeting_type,
       attendees: data.attendees,
       school_id: currentSchool.id,
       facilitator_id: data.facilitator_id || null,
@@ -231,7 +234,6 @@ const CreateMonthlyMeetingContent = () => {
     }
   }
 
-  // Check if student has data entered
   const hasStudentData = (studentId: string) => {
     const data = studentData[studentId]
     return data && (data.sessions_attended !== null || data.meeting_notes.trim() !== '')
@@ -281,21 +283,8 @@ const CreateMonthlyMeetingContent = () => {
                 </div>
               </div>
 
-              {/* <div className='space-y-2'>
-                        <Label htmlFor='student_id'>Student ID *</Label>
-                        <Input
-                          id='student_id'
-                          name='student_id'
-                          value={formData.student_id}
-                          onChange={handleInputChange}
-                          placeholder='Enter student ID'
-                          required
-                        />
-                      </div> */}
-
               <div className='space-y-2'>
                 <Label htmlFor='facilitator_id'>Meeting Facilitator</Label>
-
                 <Controller
                   name='facilitator_id'
                   control={control}
@@ -320,21 +309,6 @@ const CreateMonthlyMeetingContent = () => {
                   )}
                 />
               </div>
-
-              {/* <div className='space-y-2'>
-                        <Label htmlFor='attendees'>Attendees *</Label>
-                        <Input
-                          id='attendees'
-                          name='attendees'
-                          value={formData.attendees}
-                          onChange={handleInputChange}
-                          placeholder='e.g. Lisa Brillinger, Cheryl Mullner, Danielle Ewanus'
-                          required
-                        />
-                        <p className='text-sm text-gray-500'>
-                          Separate multiple attendees with commas
-                        </p>
-                      </div> */}
 
               <div className='space-y-2'>
                 <Label htmlFor='attendees'>Attendees *</Label>
@@ -405,48 +379,69 @@ const CreateMonthlyMeetingContent = () => {
                 </p>
               </div>
 
-              {/* Students Table Section */}
               <div className='space-y-2'>
-                <Label>Students</Label>
-
-                <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
-                  <MonthlyMeetingsStudentTable
-                    students={students}
-                    isLoading={isLoadingStudents}
-                    studentData={studentData}
-                    onStudentClick={student => {
-                      setSelectedStudent(student)
-                      setShowStudentModal(true)
-                    }}
-                    hasStudentData={hasStudentData}
-                    schoolId={currentSchool?.id}
-                    screenings={screenings}
-                    studentIdsWithConsent={studentIdsWithConsent}
-                  />
-                </div>
-              </div>
-
-              <div className='space-y-2'>
-                {/* This was originally additional notes but was requested by client to be changed to meeting notes */}
-                <Label htmlFor='additional_notes'>Meeting Notes</Label>
-                <Textarea
-                  id='additional_notes'
-                  {...register('additional_notes')}
-                  placeholder='Meeting notes to be added...'
-                  rows={4}
+                <Label htmlFor='meeting_type'>Meeting Type *</Label>
+                <Controller
+                  name='meeting_type'
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select a meeting type' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='monthly_checkin'>Monthly Checkin</SelectItem>
+                        <SelectItem value='coaching_call'>Coaching Call</SelectItem>
+                        <SelectItem value='school_visit_summary'>School Visit Summary</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
               </div>
             </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='action_plan'>Action Plan</Label>
-              <Textarea
-                id='action_plan'
-                {...register('action_plan')}
-                placeholder='Action plan and next steps...'
-                rows={4}
-              />
-            </div>
+            {watchedValues.meeting_type && (
+              <>
+                <div className='space-y-2'>
+                  <Label>Students</Label>
+                  <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
+                    <MonthlyMeetingsStudentTable
+                      students={students}
+                      isLoading={isLoadingStudents}
+                      studentData={studentData}
+                      onStudentClick={student => {
+                        setSelectedStudent(student)
+                        setShowStudentModal(true)
+                      }}
+                      hasStudentData={hasStudentData}
+                      schoolId={currentSchool?.id}
+                      screenings={screenings}
+                      studentIdsWithConsent={studentIdsWithConsent}
+                    />
+                  </div>
+                </div>
+
+                <div className='space-y-2'>
+                  <Label htmlFor='additional_notes'>Meeting Notes</Label>
+                  <Textarea
+                    id='additional_notes'
+                    {...register('additional_notes')}
+                    placeholder='Meeting notes to be added...'
+                    rows={4}
+                  />
+                </div>
+
+                <div className='space-y-2'>
+                  <Label htmlFor='action_plan'>Action Plan</Label>
+                  <Textarea
+                    id='action_plan'
+                    {...register('action_plan')}
+                    placeholder='Action plan and next steps...'
+                    rows={4}
+                  />
+                </div>
+              </>
+            )}
 
             <div className='flex justify-between pt-4'>
               <div>
@@ -488,7 +483,6 @@ const CreateMonthlyMeetingContent = () => {
         </CardContent>
       </Card>
 
-      {/* Student Details Modal */}
       <StudentDetailsModal
         open={showStudentModal}
         onClose={() => {
@@ -500,7 +494,6 @@ const CreateMonthlyMeetingContent = () => {
         setStudentData={setStudentData}
       />
 
-      {/* Draft Restore Dialog */}
       <DraftRestoreDialog
         open={showRestoreDialog}
         onRestore={() => {
@@ -517,7 +510,6 @@ const CreateMonthlyMeetingContent = () => {
         }}
       />
 
-      {/* Leave Confirmation Dialog */}
       <UnsavedChangesDialog
         open={showLeaveDialog}
         onKeepEditing={() => setShowLeaveDialog(false)}

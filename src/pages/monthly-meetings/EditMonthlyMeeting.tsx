@@ -34,6 +34,7 @@ interface MeetingFormData {
   facilitator_id: string
   attendees: string[]
   meeting_date: string
+  meeting_type: string
   additional_notes: string
   action_plan: string
 }
@@ -84,6 +85,7 @@ const EditMonthlyMeetingContent = () => {
       facilitator_id: user?.id || '',
       attendees: [],
       meeting_date: '',
+      meeting_type: '',
       additional_notes: '',
       action_plan: '',
     },
@@ -218,6 +220,7 @@ const EditMonthlyMeetingContent = () => {
     const submitData = {
       meeting_title: data.meeting_title.trim(),
       meeting_date: data.meeting_date,
+      meeting_type: data.meeting_type,
       attendees: data.attendees,
       facilitator_id: data.facilitator_id || null,
       additional_notes: data.additional_notes.trim() || null,
@@ -408,43 +411,69 @@ const EditMonthlyMeetingContent = () => {
                       </p>
                     </div>
 
-                    {/* Students Table Section */}
                     <div className='space-y-2'>
-                      <Label>Students</Label>
-                      <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
-                        <MonthlyMeetingsStudentTable
-                          students={students}
-                          isLoading={isLoadingStudents}
-                          studentData={studentData}
-                          onStudentClick={student => {
-                            setSelectedStudent(student)
-                            setShowStudentModal(true)
-                          }}
-                          hasStudentData={hasStudentData}
-                          studentIdsWithConsent={studentIdsWithConsent}
-                        />
-                      </div>
-                    </div>
-
-                    <div className='space-y-2'>
-                      <Label htmlFor='additional_notes'>Additional Notes</Label>
-                      <Textarea
-                        id='additional_notes'
-                        {...register('additional_notes')}
-                        placeholder='Additional notes to be added...'
-                        rows={4}
+                      <Label htmlFor='meeting_type'>Meeting Type *</Label>
+                      <Controller
+                        name='meeting_type'
+                        control={control}
+                        render={({ field }) => (
+                          <Select value={field.value} onValueChange={field.onChange}>
+                            <SelectTrigger>
+                              <SelectValue placeholder='Select a meeting type' />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value='monthly_checking'>Monthly Checkin</SelectItem>
+                              <SelectItem value='coaching_call'>Coaching Call</SelectItem>
+                              <SelectItem value='school_visit_summary'>
+                                School Visit Summary
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       />
                     </div>
 
-                    <div className='space-y-2'>
-                      <Label htmlFor='action_plan'>Action Plan</Label>
-                      <Textarea
-                        id='action_plan'
-                        {...register('action_plan')}
-                        placeholder='Action plan and next steps...'
-                        rows={4}
-                      />
-                    </div>
+                    {watchedValues.meeting_type && (
+                      <>
+                        {/* Students Table Section */}
+                        <div className='space-y-2'>
+                          <Label>Students</Label>
+                          <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
+                            <MonthlyMeetingsStudentTable
+                              students={students}
+                              isLoading={isLoadingStudents}
+                              studentData={studentData}
+                              onStudentClick={student => {
+                                setSelectedStudent(student)
+                                setShowStudentModal(true)
+                              }}
+                              hasStudentData={hasStudentData}
+                              studentIdsWithConsent={studentIdsWithConsent}
+                            />
+                          </div>
+                        </div>
+
+                        <div className='space-y-2'>
+                          <Label htmlFor='additional_notes'>Additional Notes</Label>
+                          <Textarea
+                            id='additional_notes'
+                            {...register('additional_notes')}
+                            placeholder='Additional notes to be added...'
+                            rows={4}
+                          />
+                        </div>
+
+                        <div className='space-y-2'>
+                          <Label htmlFor='action_plan'>Action Plan</Label>
+                          <Textarea
+                            id='action_plan'
+                            {...register('action_plan')}
+                            placeholder='Action plan and next steps...'
+                            rows={4}
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   <div className='flex justify-between pt-4'>
