@@ -63,6 +63,7 @@ const CreateMonthlyMeetingContent = () => {
     control,
     reset,
     watch,
+    setValue,
     formState: { isDirty },
   } = useForm<MeetingFormData>({
     defaultValues: {
@@ -101,6 +102,19 @@ const CreateMonthlyMeetingContent = () => {
       localStorage.setItem(draftKey, JSON.stringify({ formData: watchedValues, studentData }))
     }
   }, [watchedValues, studentData, isDirty, draftKey])
+
+  useEffect(() => {
+    const month = new Date().toLocaleDateString('en-US', { month: 'long' })
+    const titleMap: Record<string, string> = {
+      progress_checkin: `${month} Monthly Meeting`,
+      coaching_call: `${month} Coaching Call`,
+      school_visit_summary: `${month} School Visit Summary`,
+    }
+
+    if (watchedValues.meeting_type) {
+      setValue('meeting_title', titleMap[watchedValues.meeting_type])
+    }
+  }, [watchedValues.meeting_type])
 
   const loadDraft = () => {
     const saved = localStorage.getItem(draftKey)
@@ -390,7 +404,7 @@ const CreateMonthlyMeetingContent = () => {
                         <SelectValue placeholder='Select a meeting type' />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value='monthly_checkin'>Monthly Checkin</SelectItem>
+                        <SelectItem value='progress_checkin'>Progress Check-in</SelectItem>
                         <SelectItem value='coaching_call'>Coaching Call</SelectItem>
                         <SelectItem value='school_visit_summary'>School Visit Summary</SelectItem>
                       </SelectContent>
@@ -400,7 +414,7 @@ const CreateMonthlyMeetingContent = () => {
               </div>
             </div>
 
-            {watchedValues.meeting_type && (
+            {watchedValues.meeting_type === 'progress_checkin' && (
               <>
                 <div className='space-y-2'>
                   <Label>Students</Label>
@@ -420,28 +434,28 @@ const CreateMonthlyMeetingContent = () => {
                     />
                   </div>
                 </div>
-
-                <div className='space-y-2'>
-                  <Label htmlFor='additional_notes'>Meeting Notes</Label>
-                  <Textarea
-                    id='additional_notes'
-                    {...register('additional_notes')}
-                    placeholder='Meeting notes to be added...'
-                    rows={4}
-                  />
-                </div>
-
-                <div className='space-y-2'>
-                  <Label htmlFor='action_plan'>Action Plan</Label>
-                  <Textarea
-                    id='action_plan'
-                    {...register('action_plan')}
-                    placeholder='Action plan and next steps...'
-                    rows={4}
-                  />
-                </div>
               </>
             )}
+
+            <div className='space-y-2'>
+              <Label htmlFor='additional_notes'>Meeting Notes</Label>
+              <Textarea
+                id='additional_notes'
+                {...register('additional_notes')}
+                placeholder='Meeting notes to be added...'
+                rows={4}
+              />
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='action_plan'>Action Plan</Label>
+              <Textarea
+                id='action_plan'
+                {...register('action_plan')}
+                placeholder='Action plan and next steps...'
+                rows={4}
+              />
+            </div>
 
             <div className='flex justify-between pt-4'>
               <div>
