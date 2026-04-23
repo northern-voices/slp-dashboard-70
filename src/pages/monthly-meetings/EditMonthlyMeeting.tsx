@@ -28,6 +28,7 @@ import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog
 import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
 import { useGetMonthlyMeetingById } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
+import { MeetingTypeBadge } from '@/utils/meetingTypes'
 
 interface MeetingFormData {
   meeting_title: string
@@ -133,6 +134,7 @@ const EditMonthlyMeetingContent = () => {
       facilitator_id: meetingData.facilitator_id || user?.id || '',
       attendees: meetingData.attendees || [],
       meeting_date: meetingData.meeting_date ? meetingData.meeting_date.split('T')[0] : '',
+      meeting_type: meetingData.meeting_type || '',
       additional_notes: meetingData.additional_notes || '',
       action_plan: meetingData.action_plan || '',
     }
@@ -413,24 +415,9 @@ const EditMonthlyMeetingContent = () => {
 
                     <div className='space-y-2'>
                       <Label htmlFor='meeting_type'>Meeting Type *</Label>
-                      <Controller
-                        name='meeting_type'
-                        control={control}
-                        render={({ field }) => (
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger>
-                              <SelectValue placeholder='Select a meeting type' />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value='monthly_checking'>Monthly Checkin</SelectItem>
-                              <SelectItem value='coaching_call'>Coaching Call</SelectItem>
-                              <SelectItem value='school_visit_summary'>
-                                School Visit Summary
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
+                      <div className='flex items-center h-10 px-3 rounded-md border border-input bg-gray-50'>
+                        <MeetingTypeBadge type={watchedValues.meeting_type || null} />
+                      </div>
                     </div>
 
                     {watchedValues.meeting_type && (
