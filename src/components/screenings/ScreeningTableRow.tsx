@@ -19,6 +19,7 @@ interface ScreeningTableRowProps {
   getResultSelector: (screening: Screening) => React.ReactNode
   getProgramSelector: (screening: Screening) => React.ReactNode
   getStatusSelector: (screening: Screening) => React.ReactNode
+  onRescreen: (screening: Screening) => void
 }
 
 const ScreeningTableRow = ({
@@ -34,9 +35,11 @@ const ScreeningTableRow = ({
   getResultSelector,
   getProgramSelector,
   getStatusSelector,
+  onRescreen,
 }: ScreeningTableRowProps) => {
   const grade = getScreeningGrade(screening)
   const isLoadingGrade = grade === '...'
+  const isRescreenApplicable = screening.error_patterns?.attendance?.priority_re_screen === true
 
   return (
     <ResponsiveTableRow
@@ -53,9 +56,11 @@ const ScreeningTableRow = ({
             <ScreeningRowDropdown
               screening={screening}
               isDeleting={isDeleting}
+              isRescreenApplicable={isRescreenApplicable}
               onViewDetails={onViewDetails}
               onViewStudent={onViewStudent}
               onEmailReport={onEmailReport}
+              onRescreen={onRescreen}
               onDelete={onDelete}
             />
           </div>
@@ -133,9 +138,11 @@ const ScreeningTableRow = ({
         <ScreeningRowDropdown
           screening={screening}
           isDeleting={isDeleting}
+          isRescreenApplicable={isRescreenApplicable}
           onViewDetails={onViewDetails}
           onViewStudent={onViewStudent}
           onEmailReport={onEmailReport}
+          onRescreen={onRescreen}
           onDelete={onDelete}
         />
       </TableCell>

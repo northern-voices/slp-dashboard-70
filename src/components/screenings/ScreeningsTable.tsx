@@ -213,6 +213,14 @@ const ScreeningsTable = ({
 
   const paginatedScreenings = sortedScreenings
 
+  const handleRescreen = (screening: Screening) => {
+    if (currentSchool?.id) {
+      navigate(`/school/${currentSchool.id}/screening/rescreening/${screening.student_id}`)
+    } else {
+      navigate(`/screening/rescreening/${screening.student_id}`)
+    }
+  }
+
   const getSortIcon = (field: 'date' | 'name' | 'grade') => {
     if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
     if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
@@ -857,6 +865,7 @@ const ScreeningsTable = ({
                   onViewDetails={handleViewDetails}
                   onViewStudent={handleViewStudent}
                   onEmailReport={handleEmailReport}
+                  onRescreen={handleRescreen}
                   onDelete={handleDelete}
                   getScreeningGrade={getScreeningGrade}
                   getResultSelector={getResultSelector}

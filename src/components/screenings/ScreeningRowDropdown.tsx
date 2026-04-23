@@ -5,24 +5,28 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Eye, Trash2, MoreHorizontal, Loader2, Mail, User } from 'lucide-react'
+import { Eye, Trash2, MoreHorizontal, Loader2, Mail, User, RefreshCw } from 'lucide-react'
 import type { Screening } from '@/types/database'
 
 interface ScreeningRowDropdownProps {
   screening: Screening
   isDeleting: boolean
+  isRescreenApplicable: boolean
   onViewDetails: (screening: Screening) => void
   onViewStudent: (screening: Screening) => void
   onEmailReport: (screening: Screening) => void
+  onRescreen: (screening: Screening) => void
   onDelete: (screening: Screening) => void
 }
 
 const ScreeningRowDropdown = ({
   screening,
   isDeleting,
+  isRescreenApplicable,
   onViewDetails,
   onViewStudent,
   onEmailReport,
+  onRescreen,
   onDelete,
 }: ScreeningRowDropdownProps) => (
   <DropdownMenu>
@@ -43,6 +47,10 @@ const ScreeningRowDropdown = ({
       <DropdownMenuItem onClick={() => onEmailReport(screening)}>
         <Mail className='w-4 h-4 mr-2' />
         Send Report
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => onRescreen(screening)} disabled={!isRescreenApplicable}>
+        <RefreshCw className='w-4 h-4 mr-2' />
+        Rescreening
       </DropdownMenuItem>
       <DropdownMenuItem
         className='text-red-600'
