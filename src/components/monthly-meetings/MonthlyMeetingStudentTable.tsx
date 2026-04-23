@@ -49,7 +49,7 @@ const MonthlyMeetingsStudentTable = ({
   studentIdsWithConsent = [],
 }: MonthlyMeetingsStudentTableProps) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
-  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('grade')
+  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
@@ -211,6 +211,18 @@ const MonthlyMeetingsStudentTable = ({
         const statusB = getProgramStatus(b)
         const statusOrder = { qualified: 0, sub: 1, paused: 2 }
         comparison = statusOrder[statusA] - statusOrder[statusB]
+
+        if (comparison === 0) {
+          const gradeA = getStudentGrade(a)
+          const gradeB = getStudentGrade(b)
+          const indexA = GRADE_MAPPING.findIndex(g => gradeA.includes(g.value))
+          const indexB = GRADE_MAPPING.findIndex(g => gradeB.includes(g.value))
+
+          if (indexA === -1 && indexB === -1) comparison = 0
+          else if (indexA === -1) comparison = 1
+          else if (indexB === -1) comparison = -1
+          else comparison = indexA - indexB
+        }
       }
 
       return sortOrder === 'asc' ? comparison : -comparison
