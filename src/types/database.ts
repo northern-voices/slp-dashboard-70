@@ -56,6 +56,7 @@ export interface Student {
   program_status?: ProgramStatus
   service_status?: ServiceStatus
   current_grade_id?: string | null
+  speech_ea_id?: string | null
   created_at: string
   updated_at: string
   speech_screenings?: Array<{
