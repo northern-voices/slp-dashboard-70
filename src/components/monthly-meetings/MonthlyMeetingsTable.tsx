@@ -240,6 +240,9 @@ const MonthlyMeetingsTable = ({
                   <span className='ml-1'>{getSortIcon('meeting_title')}</span>
                 </Button>
               </TableHead>
+
+              <TableHead className='w-1/6 min-w-[150px]'>Type</TableHead>
+
               <TableHead className='w-1/6 min-w-[120px]'>
                 <Button
                   variant='ghost'

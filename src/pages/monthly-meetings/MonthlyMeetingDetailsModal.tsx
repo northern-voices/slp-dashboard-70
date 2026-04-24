@@ -10,6 +10,7 @@ import { format } from 'date-fns'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { parseDateSafely } from '@/utils/dateUtils'
+import { MeetingTypeBadge } from '@/utils/meetingTypes'
 
 interface MonthlyMeetingDetailsModalProps {
   isOpen: boolean
@@ -104,6 +105,9 @@ const MonthlyMeetingDetailsModal = ({
                 <div className='flex items-center gap-2'>
                   <FileText className='w-4 h-4 text-gray-500' />
                   <span className='text-lg font-medium'>{meeting.meeting_title}</span>
+                </div>
+                <div className='flex items-center gap-2 ml-6'>
+                  <MeetingTypeBadge type={meeting.meeting_type} />
                 </div>
                 <div className='flex items-center gap-2 ml-6'>
                   <Calendar className='w-4 h-4 text-gray-500' />

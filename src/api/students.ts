@@ -305,6 +305,7 @@ export const studentsApi = {
       date_of_birth?: string
       qualifies_for_program: boolean
       current_grade_id?: string
+      speech_ea_id?: string | null
     }>
   ): Promise<Student> => {
     try {
