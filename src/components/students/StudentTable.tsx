@@ -78,15 +78,6 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const activeSchool = selectedSchool || currentSchool
 
   const { data: schoolDetails } = useSchoolDetails(activeSchool ?? null)
-  const eaMap = useMemo(() => {
-    const map: Record<string, string> = {}
-    ;(schoolDetails?.schoolTeam ?? [])
-      .filter(m => m.roles.includes('speech_ea'))
-      .forEach(m => {
-        map[m.id] = m.name
-      })
-    return map
-  }, [schoolDetails])
 
   const {
     data: students = [],
@@ -158,9 +149,10 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     return 'N/A'
   }
 
+  const speechEAs = schoolDetails?.schoolTeam?.filter(m => m.roles.includes('speech_ea')) ?? []
   const getSpeechEAName = (student): string => {
     if (!student.speech_ea_id) return '-'
-    return eaMap[student.speech_ea_id] ?? '-'
+    return speechEAs.find(ea => ea.id === student.speech_ea_id)?.name ?? '-'
   }
 
   const getProgramStatus = (student): string => {
