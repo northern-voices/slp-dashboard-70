@@ -70,25 +70,30 @@ const SpeechStudentReports = () => {
 
   const getAvailableReports = () => {
     return [
-      // TODO: Leave commented for now until Lisa decides what to do
-      // {
-      //   value: 'progress-report',
-      //   label: 'Progress Report',
-      //   description: 'Comprehensive progress summary showing achievements and therapy outcomes',
-      //   icon: TrendingUp,
-      // },
       {
-        value: 'student-report',
-        label: 'Student Report',
+        value: 'initial-speech-report',
+        label: 'Initial Speech Report',
         description: 'Detailed student assessment and performance overview',
         icon: BookOpen,
       },
       {
-        value: 'goal-sheet',
-        label: 'Goal Sheet',
+        value: 'initial-goal-sheet',
+        label: 'Initial Goal Sheet',
         description:
           'Individualized goal tracking sheet with specific objectives and progress metrics',
         icon: Target,
+      },
+      {
+        value: 'progress-speech-report',
+        label: 'Progress Speech Report',
+        description: 'Comprehensive progress summary showing achievements and therapy outcomes',
+        icon: TrendingUp,
+      },
+      {
+        value: 'progress-goal-sheet',
+        label: 'Progress Goal Sheet',
+        description: 'Updated goal tracking sheet reflecting current progress metrics',
+        icon: List,
       },
     ]
   }
@@ -105,15 +110,16 @@ const SpeechStudentReports = () => {
     try {
       // Process each selected report type
       for (const reportType of selectedReports) {
-        if (reportType === 'progress-report') {
-          await edgeFunctionsApi.studentProgressReport(selectedScreening.id, recipientEmail)
-        } else if (reportType === 'student-report') {
+        if (reportType === 'initial-speech-report') {
           await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
-        } else if (reportType === 'goal-sheet') {
+        } else if (reportType === 'initial-goal-sheet') {
           await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
-        } else {
-          console.warn(`Unknown report type: ${reportType}`)
-          continue // skip to next iteration
+        } else if (reportType === 'progress-speech-report') {
+          await edgeFunctionsApi.studentProgressReport(selectedScreening.id, recipientEmail)
+        } else if (reportType === 'progress-goal-sheet') {
+          // TODO: map to the correct API call when ready
+          console.warn(`progress-goal-sheet not yet mapped`)
+          continue
         }
       }
 
@@ -228,7 +234,7 @@ const SpeechStudentReports = () => {
             {/* Report Selection */}
             <div className='space-y-3'>
               <Label className='text-sm font-medium'>Select Type of Report</Label>
-              <div className='grid grid-cols-1 lg:grid-cols-3 gap-3'>
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
                 {getAvailableReports().map(report => {
                   const Icon = report.icon
                   const isSelected = selectedReports.includes(report.value)
