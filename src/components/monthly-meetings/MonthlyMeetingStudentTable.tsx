@@ -21,6 +21,8 @@ import {
 import { GRADE_MAPPING } from '@/constants/app'
 import { Student, Screening } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface StudentData {
   sessions_attended: number | null
@@ -77,6 +79,23 @@ const MonthlyMeetingsStudentTable = ({
 
     fetchGrades()
   }, [schoolId])
+
+  const { currentSchool } = useOrganization()
+  const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
+  const eaMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    ;(schoolDetails?.schoolTeam ?? [])
+      .filter(m => m.roles.includes('speech_ea'))
+      .forEach(m => {
+        map[m.id] = m.name
+      })
+    return map
+  }, [schoolDetails])
+
+  const getSpeechEAName = (student: Student): string => {
+    if (!student.speech_ea_id) return '-'
+    return eaMap[student.speech_ea_id] ?? '-'
+  }
 
   const consentSet = useMemo(() => new Set(studentIdsWithConsent), [studentIdsWithConsent])
 
@@ -275,6 +294,8 @@ const MonthlyMeetingsStudentTable = ({
 
             <TableHead className='w-[60px] text-center font-medium'>Consent</TableHead>
 
+            <TableHead className='w-1/6 min-w-[150px] !text-center'>Speech EA</TableHead>
+
             <TableHead className='w-[60px] text-center'></TableHead>
 
             <TableHead className='w-[60px] text-center'></TableHead>
@@ -298,6 +319,8 @@ const MonthlyMeetingsStudentTable = ({
                   <FileX className='h-5 w-5 text-red-400 mx-auto' />
                 )}
               </TableCell>
+
+              <TableCell className='text-center'>{getSpeechEAName(student)}</TableCell>
 
               <TableCell className='text-center'>
                 <Button
