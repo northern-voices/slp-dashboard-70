@@ -1,4 +1,4 @@
-import { FileText, User, Ear } from 'lucide-react'
+import { FileText, User, Ear, Building2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { useNavigate } from 'react-router-dom'
 import GeneratedReportsList from '@/components/reports/GeneratedReportsList'
@@ -53,6 +53,7 @@ const ReportsPageContent = () => {
               </Card>
             </div>
           </div>
+
           {/* Hearing Reports Section */}
           <div className='space-y-4'>
             <h2 className='text-md sm:text-lg text-gray-700 font-semibold'>Hearing Reports</h2>
@@ -81,8 +82,8 @@ const ReportsPageContent = () => {
                 onClick={() => navigate('school-wide-hearing')}>
                 <CardContent className='px-6 py-3'>
                   <div className='flex items-center gap-4'>
-                    <div className='w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0'>
-                      <Ear className='w-6 h-6 text-blue-600' />
+                    <div className='w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0'>
+                      <Building2 className='w-6 h-6 text-teal-600' />
                     </div>
                     <div className='flex-1'>
                       <h3 className='text-lg font-semibold text-gray-900'>
