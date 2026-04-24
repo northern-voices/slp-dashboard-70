@@ -43,6 +43,7 @@ import { studentsApi } from '@/api/students'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import StudentsSkeleton from '@/components/skeletons/StudentsSkeleton'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
+import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 
 interface StudentTableProps {
   selectedSchool?: School | null
@@ -75,6 +76,17 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const { currentSchool } = useOrganization()
 
   const activeSchool = selectedSchool || currentSchool
+
+  const { data: schoolDetails } = useSchoolDetails(activeSchool ?? null)
+  const eaMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    ;(schoolDetails?.schoolTeam ?? [])
+      .filter(m => m.roles.includes('speech_ea'))
+      .forEach(m => {
+        map[m.id] = m.name
+      })
+    return map
+  }, [schoolDetails])
 
   const {
     data: students = [],
@@ -144,6 +156,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     }
 
     return 'N/A'
+  }
+
+  const getSpeechEAName = (student): string => {
+    if (!student.speech_ea_id) return '-'
+    return eaMap[student.speech_ea_id] ?? '-'
   }
 
   const getProgramStatus = (student): string => {
@@ -587,6 +604,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
               </TableHead>
 
               <TableHead className='w-1/6 text-center'>Consent</TableHead>
+
+              <TableHead className='w-1/6 min-w-[150px]'>Speech EA</TableHead>
             </tr>
           </TableHeader>
 
@@ -622,6 +641,10 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   ) : (
                     <FileX className='h-5 w-5 text-red-400 mx-auto' />
                   )}
+                </TableCell>
+
+                <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
+                  {getSpeechEAName(student)}
                 </TableCell>
               </TableRow>
             ))}

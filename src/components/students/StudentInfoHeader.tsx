@@ -41,7 +41,7 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
 
   const { currentSchool } = useOrganization()
   const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
-  const speechEAs = (schoolDetails?.schoolTeam ?? []).filter(m => m.roles.includes('Speech EA'))
+  const speechEAs = (schoolDetails?.schoolTeam ?? []).filter(m => m.roles.includes('speech_ea'))
 
   const handleAssignEA = async (staffId: string | null) => {
     if (!localStudent?.id) return
