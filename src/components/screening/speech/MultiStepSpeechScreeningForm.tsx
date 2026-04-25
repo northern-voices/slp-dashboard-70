@@ -400,7 +400,7 @@ const MultiStepSpeechScreeningForm = ({
         error_patterns: {
           additional_observations: (formData.other_notes as string) || '',
           articulation: {
-            soundErrors:
+            soundErrors: (
               (articulation.soundErrors as Array<{
                 notes: string
                 otherNotes?: string
@@ -409,7 +409,11 @@ const MultiStepSpeechScreeningForm = ({
                 errorPatterns: string[]
                 stoppingSounds?: string[]
                 stimulabilityOptions?: string[]
-              }>) || [],
+              }>) || []
+            ).map(soundError => ({
+              ...soundError,
+              errorPatterns: soundError.errorPatterns.filter(p => p !== 'Stimulability'),
+            })),
             articulationNotes:
               (articulation.articulationNotes as string) ||
               (formData.general_articulation_notes as string) ||
