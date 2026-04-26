@@ -63,7 +63,7 @@ const SpeechStudentReports = () => {
 
   // Pre-fill email with current user's email on component mount
   useEffect(() => {
-    if (user?.email && !recipientEmail) {
+    if (user?.email) {
       setRecipientEmail(user.email)
     }
   }, [user?.email])
