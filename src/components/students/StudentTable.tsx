@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { School } from '@/types/database'
 import {
@@ -61,7 +61,6 @@ type NewStudentFormData = z.infer<typeof newStudentSchema>
 const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const navigate = useNavigate()
   const { toast } = useToast()
-  const [searchTerm, setSearchTerm] = useState('')
   const [gradeFilter, setGradeFilter] = useState('all')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
   const [programFilter, setProgramFilter] = useState('all')
@@ -72,6 +71,23 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const [pageSize, setPageSize] = useState(50)
   const [sortField, setSortField] = useState<'name' | 'grade' | 'date' | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const searchTerm = searchParams.get('search') ?? ''
+  const setSearchTerm = (value: string) => {
+    setSearchParams(
+      prev => {
+        if (value) {
+          prev.set('search', value)
+        } else {
+          prev.delete('search')
+        }
+
+        return prev
+      },
+      { replace: true }
+    )
+  }
 
   const { currentSchool } = useOrganization()
 
