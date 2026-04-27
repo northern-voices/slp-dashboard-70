@@ -339,7 +339,7 @@ const SpeechScreeningStep1 = ({
                   Absent
                 </Label>
               </div>
-              {localAbsentValue && (
+              {/* {localAbsentValue && (
                 <div>
                   <Label htmlFor='absent_notes' className='text-sm font-medium'>
                     Absent Notes
@@ -351,7 +351,7 @@ const SpeechScreeningStep1 = ({
                     className='mt-1'
                   />
                 </div>
-              )}
+              )} */}
 
               <div className='flex items-center space-x-2'>
                 <Checkbox
@@ -366,7 +366,7 @@ const SpeechScreeningStep1 = ({
                   No Consent
                 </Label>
               </div>
-              {localNoConsentValue && (
+              {/* {localNoConsentValue && (
                 <div>
                   <Label htmlFor='no_consent_notes' className='text-sm font-medium'>
                     No Consent Notes
@@ -378,7 +378,7 @@ const SpeechScreeningStep1 = ({
                     className='mt-1'
                   />
                 </div>
-              )}
+              )} */}
 
               <div className='flex items-center space-x-2'>
                 <Checkbox
