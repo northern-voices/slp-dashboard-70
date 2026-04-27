@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
-
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
 import {
   CheckCircle,
@@ -19,7 +18,6 @@ import {
   XCircle,
 } from 'lucide-react'
 import { Student } from '@/types/database'
-
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
