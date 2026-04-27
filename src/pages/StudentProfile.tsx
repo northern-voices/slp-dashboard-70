@@ -1,6 +1,5 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change'
-import LoadingSpinner from '@/components/common/LoadingSpinner'
 import ErrorMessage from '@/components/common/ErrorMessage'
 import StudentInfoHeader from '@/components/students/StudentInfoHeader'
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory'
@@ -8,7 +7,6 @@ import StudentDetailPagination from '@/components/students/StudentDetailPaginati
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useToast } from '@/hooks/use-toast'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
-import { useDeleteStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import StudentPageMonthlyMeetingsTable from '@/components/monthly-meetings/StudentPageMonthlyMeetingsTable'
 import ConsentFormsSection from '@/components/students/ConsentFormsSection'
 import StudentProfileSkeleton from '@/components/skeletons/StudentProfileSkeleton'
@@ -35,11 +33,6 @@ const StudentProfileContent = () => {
     error: queryError,
   } = useStudentsBySchool(targetSchoolId)
 
-  // Use mutation hooks
-  const deleteStudentMutation = useDeleteStudent()
-  const updateStudentMutation = useUpdateStudent()
-
-  // Find current student in the list
   const currentStudentIndex = allStudents.findIndex(s => s.id === studentId)
   const student = currentStudentIndex >= 0 ? allStudents[currentStudentIndex] : null
 
@@ -112,75 +105,6 @@ const StudentProfileContent = () => {
     }
   }
 
-  const handleDeleteStudent = () => {
-    if (!student) return
-
-    deleteStudentMutation.mutate(student.id, {
-      onSuccess: () => {
-        toast({
-          title: 'Student deleted',
-          description: 'The student has been successfully deleted.',
-          variant: 'destructive',
-        })
-        navigate('/students')
-      },
-      onError: () => {
-        toast({
-          title: 'Error',
-          description: 'Failed to delete student. Please try again.',
-          variant: 'destructive',
-        })
-      },
-    })
-  }
-
-  const handleMoveUpGrade = () => {
-    if (!student) return
-
-    const gradeMap: { [key: string]: string } = {
-      'Pre-K': 'K',
-      K: '1st',
-      '1st': '2nd',
-      '2nd': '3rd',
-      '3rd': '4th',
-      '4th': '5th',
-      '5th': '6th',
-      '6th': '7th',
-      '7th': '8th',
-      '8th': '9th',
-      '9th': '10th',
-      '10th': '11th',
-      '11th': '12th',
-    }
-
-    const nextGrade = gradeMap[student.grade || '']
-    if (!nextGrade) return
-
-    updateStudentMutation.mutate(
-      {
-        id: student.id,
-        studentData: {
-          grade: nextGrade,
-        },
-      },
-      {
-        onSuccess: () => {
-          toast({
-            title: 'Grade updated',
-            description: `${student.first_name} has been moved to ${nextGrade}.`,
-          })
-        },
-        onError: () => {
-          toast({
-            title: 'Error',
-            description: 'Failed to update student grade. Please try again.',
-            variant: 'destructive',
-          })
-        },
-      }
-    )
-  }
-
   if (loading) return <StudentProfileSkeleton />
   if (error) return <ErrorMessage message={error} />
   if (!student) return <div className='p-8 text-center'>Student not found</div>
@@ -207,12 +131,7 @@ const StudentProfileContent = () => {
       />
 
       <div className='space-y-6'>
-        <StudentInfoHeader
-          student={student}
-          isLoading={loading}
-          onDelete={handleDeleteStudent}
-          onMoveUpGrade={handleMoveUpGrade}
-        />
+        <StudentInfoHeader student={student} isLoading={loading} />
         <StudentScreeningHistory
           studentId={studentId}
           student={student}
