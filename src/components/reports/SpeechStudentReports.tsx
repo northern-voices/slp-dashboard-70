@@ -87,12 +87,12 @@ const SpeechStudentReports = () => {
         description: 'Comprehensive progress summary showing achievements and therapy outcomes',
         icon: TrendingUp,
       },
-      {
-        value: 'progress-goal-sheet',
-        label: 'Progress Goal Sheet',
-        description: 'Updated goal tracking sheet reflecting current progress metrics',
-        icon: List,
-      },
+      // {
+      //   value: 'progress-goal-sheet',
+      //   label: 'Progress Goal Sheet',
+      //   description: 'Updated goal tracking sheet reflecting current progress metrics',
+      //   icon: List,
+      // },
     ]
   }
 
