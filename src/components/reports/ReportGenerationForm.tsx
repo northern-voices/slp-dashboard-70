@@ -103,15 +103,15 @@ const ReportGenerationForm = () => {
       tooltip:
         'Creates comprehensive progress reports highlighting improvements, challenges, and next steps for continued therapy.',
     },
-    {
-      value: 'progress-goal-sheets',
-      label: 'Progress Goal Sheets (School Wide)',
-      description:
-        'Updated goal tracking sheets reflecting current progress metrics for all students',
-      icon: Target,
-      tooltip:
-        'Generates updated goal sheets showing progress against initial objectives for each student.',
-    },
+    // {
+    //   value: 'progress-goal-sheets',
+    //   label: 'Progress Goal Sheets (School Wide)',
+    //   description:
+    //     'Updated goal tracking sheets reflecting current progress metrics for all students',
+    //   icon: Target,
+    //   tooltip:
+    //     'Generates updated goal sheets showing progress against initial objectives for each student.',
+    // },
   ]
 
   const isSubmitting = form.formState.isSubmitting
