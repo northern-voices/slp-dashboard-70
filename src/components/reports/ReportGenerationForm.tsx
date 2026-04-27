@@ -22,9 +22,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import { ReportService } from '@/services/reportService'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { useNavigate } from 'react-router-dom'
@@ -40,7 +38,7 @@ type ReportFormData = z.infer<typeof reportSchema>
 
 const ReportGenerationForm = () => {
   const { currentSchool } = useOrganization()
-  const { toast } = useToast()
+
   const navigate = useNavigate()
 
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
@@ -67,41 +65,52 @@ const ReportGenerationForm = () => {
     },
   })
 
-  const screeningReports = [
+  const initialReports = [
     {
-      value: 'student-reports',
-      label: 'School Wide Student Reports',
-      description:
-        'Create detailed speech assessment reports covering multiple students in a class',
+      value: 'initial-speech-reports',
+      label: 'Initial Speech Reports (School Wide)',
+      description: 'Create detailed speech assessment reports covering multiple students',
       icon: Mic,
       tooltip:
-        'Produces comprehensive speech screening reports with articulation assessments, language evaluations, and therapy recommendations. Perfect for SLPs and special education teams.',
+        'Produces comprehensive speech screening reports with articulation assessments, language evaluations, and therapy recommendations.',
     },
     {
-      value: 'goal-sheets',
-      label: 'School Wide Goal Sheets',
+      value: 'school-summary-report',
+      label: 'Summary Report (School Wide)',
+      description:
+        'Generate a school-wide snapshot of screenings with qualified students and recommendations.',
+      icon: Volume2,
+      tooltip:
+        'Summarizes school-wide speech screenings, showing qualified students, subs, and recommendations to guide follow-up and planning.',
+    },
+    {
+      value: 'initial-goal-sheets',
+      label: 'Initial Goal Sheets (School Wide)',
       description:
         'Produce individualized goal tracking sheets for all students in selected classes',
       icon: Target,
       tooltip:
-        'Generates customized goal sheets with specific objectives, progress tracking metrics, and intervention strategies for each student. Used by therapists and IEP teams.',
+        'Generates customized goal sheets with specific objectives, progress tracking metrics, and intervention strategies for each student.',
     },
+  ]
+
+  const progressReports = [
     {
-      value: 'school-summary-report',
-      label: 'School Summary Report',
-      description:
-        'Generate a school-wide snapshot of screenings with qualified students, subs, and recommendations.',
-      icon: Target,
+      value: 'progress-speech-reports',
+      label: 'Progress Speech Reports (School Wide)',
+      description: 'Generate progress summaries showing student achievements and therapy outcomes',
+      icon: TrendingUp,
       tooltip:
-        'Summarizes school-wide speech screenings, showing qualified students, subs, and recommendations to guide follow-up and planning.',
+        'Creates comprehensive progress reports highlighting improvements, challenges, and next steps for continued therapy.',
     },
     // {
-    //   value: 'progress-reports',
-    //   label: 'School Wide Progress Reports',
-    //   description: 'Generate progress summaries showing student achievements and therapy outcomes',
-    //   icon: TrendingUp,
+    //   value: 'progress-goal-sheets',
+    //   label: 'Progress Goal Sheets (School Wide)',
+    //   description:
+    //     'Updated goal tracking sheets reflecting current progress metrics for all students',
+    //   icon: Target,
     //   tooltip:
-    //     'Creates comprehensive progress reports highlighting improvements, challenges, and next steps for continued therapy. Shared with parents, teachers, and administrators.',
+    //     'Generates updated goal sheets showing progress against initial objectives for each student.',
     // },
   ]
 
@@ -114,20 +123,14 @@ const ReportGenerationForm = () => {
       console.log('Generating report with data:', data.reportType)
 
       let result
-      if (data.reportType === 'progress-reports') {
-        result = await edgeFunctionsApi.schoolWideStudentProgressReport(
-          currentSchool.id,
-          data.academicYear,
-          data.email
-        )
-      } else if (data.reportType === 'goal-sheets') {
-        result = await edgeFunctionsApi.schoolWideStudentGoalSheets(
-          currentSchool.id,
-          data.academicYear,
-          data.email
-        )
-      } else if (data.reportType === 'student-reports') {
+      if (data.reportType === 'initial-speech-reports') {
         result = await edgeFunctionsApi.schoolWideSendStudentReports(
+          currentSchool.id,
+          data.academicYear,
+          data.email
+        )
+      } else if (data.reportType === 'initial-goal-sheets') {
+        result = await edgeFunctionsApi.schoolWideStudentGoalSheets(
           currentSchool.id,
           data.academicYear,
           data.email
@@ -138,17 +141,26 @@ const ReportGenerationForm = () => {
           data.academicYear,
           data.email
         )
-      } else {
-        console.warn(`Unknown report type: ${data.reportType}`)
+      } else if (data.reportType === 'progress-speech-reports') {
+        result = await edgeFunctionsApi.schoolWideStudentProgressReport(
+          currentSchool.id,
+          data.academicYear,
+          data.email
+        )
+      } else if (data.reportType === 'progress-goal-sheets') {
+        // TODO: map to correct API call when ready
+        console.warn('progress-goal-sheets not yet mapped')
       }
 
       console.log(result, 'result')
+
+      const allReports = [...initialReports, ...progressReports]
 
       // Show success modal
       setModalType('success')
       setModalMessage(
         `Your ${
-          screeningReports.find(type => type.value === data.reportType)?.label
+          allReports.find(type => type.value === data.reportType)?.label
         } is being generated. You'll receive an email at ${data.email} when it's ready.`
       )
       setIsSuccessModalOpen(true)
@@ -158,11 +170,11 @@ const ReportGenerationForm = () => {
       // Provide specific error messages based on report type
       setModalType('error')
 
-      if (data.reportType === 'student-reports') {
+      if (data.reportType === 'initial-speech-reports') {
         setModalMessage(
           `No speech screenings found for the ${data.academicYear} academic year. Please ensure speech screenings have been completed before generating this report.`
         )
-      } else if (data.reportType === 'goal-sheets') {
+      } else if (data.reportType === 'initial-goal-sheets') {
         setModalMessage(
           `No student data available for goal sheets in the ${data.academicYear} academic year. Please ensure students have been screened before generating goal sheets.`
         )
@@ -170,7 +182,7 @@ const ReportGenerationForm = () => {
         setModalMessage(
           `No screening data found for the ${data.academicYear} academic year. Please ensure screenings have been completed before generating the school summary report.`
         )
-      } else if (data.reportType === 'progress-reports') {
+      } else if (data.reportType === 'progress-speech-reports') {
         setModalMessage(
           `No progress data found for the ${data.academicYear} academic year. Please ensure student progress has been tracked before generating this report.`
         )
@@ -259,8 +271,74 @@ const ReportGenerationForm = () => {
                     <FormControl>
                       <div className='space-y-4'>
                         <div className='space-y-3'>
+                          <div className='grid grid-cols-1 lg:grid-cols-3 gap-3'>
+                            {initialReports.map(type => {
+                              const Icon = type.icon
+                              const isSelected = field.value === type.value
+                              return (
+                                <Tooltip key={type.value}>
+                                  <TooltipTrigger asChild>
+                                    <div
+                                      onClick={() => {
+                                        if (isSelected) {
+                                          field.onChange('')
+                                        } else {
+                                          field.onChange(type.value)
+                                        }
+                                      }}
+                                      className={`
+                                        relative cursor-pointer rounded-lg border-2 p-3 sm:p-4 transition-all duration-200 w-full
+                                        ${
+                                          isSelected
+                                            ? 'border-blue-600 bg-blue-50 shadow-sm'
+                                            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                                        }
+                                      `}>
+                                      <div className='flex items-start space-x-3 w-full'>
+                                        <div
+                                          className={`
+                                          flex-shrink-0 p-2 rounded-lg
+                                          ${
+                                            isSelected
+                                              ? 'bg-blue-600 text-white'
+                                              : 'bg-gray-100 text-gray-600'
+                                          }
+                                        `}>
+                                          <Icon className='w-4 h-4' />
+                                        </div>
+                                        <div className='flex-1 min-w-0 overflow-hidden'>
+                                          <h3
+                                            className={`
+                                            text-sm font-medium leading-tight truncate
+                                            ${isSelected ? 'text-blue-900' : 'text-gray-900'}
+                                          `}>
+                                            {type.label}
+                                          </h3>
+                                          <p
+                                            className={`
+                                            text-xs mt-1 leading-tight
+                                            ${isSelected ? 'text-blue-700' : 'text-gray-500'}
+                                          `}>
+                                            {type.description}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      {isSelected && (
+                                        <div className='absolute top-2 right-2'>
+                                          <div className='w-2 h-2 bg-blue-600 rounded-full'></div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent side='top' className='max-w-xs'>
+                                    <p>{type.tooltip}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )
+                            })}
+                          </div>
                           <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
-                            {screeningReports.map(type => {
+                            {progressReports.map(type => {
                               const Icon = type.icon
                               const isSelected = field.value === type.value
                               return (
