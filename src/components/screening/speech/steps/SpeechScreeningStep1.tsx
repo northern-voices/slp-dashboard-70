@@ -331,11 +331,21 @@ const SpeechScreeningStep1 = ({
                   id='absent'
                   checked={localAbsentValue}
                   onCheckedChange={handleAbsentChange}
-                  disabled={localNoConsentValue}
+                  disabled={
+                    localNoConsentValue ||
+                    Boolean(form.watch('complex_needs')) ||
+                    Boolean(form.watch('unable_to_screen'))
+                  }
                 />
                 <Label
                   htmlFor='absent'
-                  className={`text-sm font-medium ${localNoConsentValue ? 'text-gray-400' : ''}`}>
+                  className={`text-sm font-medium ${
+                    localNoConsentValue ||
+                    Boolean(form.watch('complex_needs')) ||
+                    Boolean(form.watch('unable_to_screen'))
+                      ? 'text-gray-400'
+                      : ''
+                  }`}>
                   Absent
                 </Label>
               </div>
@@ -358,11 +368,21 @@ const SpeechScreeningStep1 = ({
                   id='no_consent'
                   checked={localNoConsentValue}
                   onCheckedChange={handleNoConsentChange}
-                  disabled={localAbsentValue}
+                  disabled={
+                    localAbsentValue ||
+                    Boolean(form.watch('complex_needs')) ||
+                    Boolean(form.watch('unable_to_screen'))
+                  }
                 />
                 <Label
                   htmlFor='no_consent'
-                  className={`text-sm font-medium ${localAbsentValue ? 'text-gray-400' : ''}`}>
+                  className={`text-sm font-medium ${
+                    localAbsentValue ||
+                    Boolean(form.watch('complex_needs')) ||
+                    Boolean(form.watch('unable_to_screen'))
+                      ? 'text-gray-400'
+                      : ''
+                  }`}>
                   No Consent
                 </Label>
               </div>
@@ -390,8 +410,13 @@ const SpeechScreeningStep1 = ({
                     if (checked) {
                       form.setValue('unable_to_screen', false)
                       onUnableToScreenChange?.(false)
+                      setLocalAbsentValue(false)
+                      setLocalNoConsentValue(false)
+                      form.setValue('absent', { isAbsent: false, notes: '' })
+                      form.setValue('no_consent', { isNoConsent: false, notes: '' })
+                      onAbsentChange?.(false)
+                      onNoConsentChange?.(false)
                     }
-                    // Reset priority_re_screen if no qualifying condition remains
                     if (
                       !checked &&
                       !form.getValues('unable_to_screen') &&
@@ -420,8 +445,13 @@ const SpeechScreeningStep1 = ({
                     if (checked) {
                       form.setValue('complex_needs', false)
                       onComplexNeedsChange?.(false)
+                      setLocalAbsentValue(false)
+                      setLocalNoConsentValue(false)
+                      form.setValue('absent', { isAbsent: false, notes: '' })
+                      form.setValue('no_consent', { isNoConsent: false, notes: '' })
+                      onAbsentChange?.(false)
+                      onNoConsentChange?.(false)
                     }
-                    // Reset priority_re_screen if no qualifying condition remains
                     if (
                       !checked &&
                       !form.getValues('complex_needs') &&
