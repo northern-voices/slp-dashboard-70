@@ -92,12 +92,7 @@ const StudentProfileContent = () => {
         navigate('/screenings')
       }
     } else {
-      // Otherwise, go to students list
-      if (schoolId) {
-        navigate(`/school/${schoolId}/students`)
-      } else {
-        navigate('/students')
-      }
+      navigate(-1)
     }
   }
 
