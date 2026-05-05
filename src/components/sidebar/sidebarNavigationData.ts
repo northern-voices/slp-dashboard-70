@@ -7,6 +7,7 @@ import {
   HandHeart,
   Stethoscope,
   Ear,
+  ClipboardList,
 } from 'lucide-react'
 import { Location } from 'react-router-dom'
 import { LucideIcon } from 'lucide-react'
@@ -99,6 +100,16 @@ export const getNavigationGroups = (
         location.pathname === '/monthly-meetings' ||
         (useSchoolRoutes &&
           location.pathname.startsWith(`/school/${currentSchool.id}/monthly-meetings`)),
+      skeleton: MonthlyMeetingsSkeleton,
+    },
+    {
+      title: 'Caseload',
+      url: useSchoolRoutes ? `/school/${currentSchool.id}/caseload` : '/caseload',
+      icon: ClipboardList,
+      isActive:
+        location.pathname === '/caseload' ||
+        (useSchoolRoutes && location.pathname.startsWith(`/school/${currentSchool.id}/caseload`)),
+      // TODO: Add a caseload skeleton page here later on
       skeleton: MonthlyMeetingsSkeleton,
     },
     // {
