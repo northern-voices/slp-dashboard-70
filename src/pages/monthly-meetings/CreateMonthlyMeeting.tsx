@@ -105,7 +105,7 @@ const CreateMonthlyMeetingContent = () => {
           '0'
         )}-${String(today.getDate()).padStart(2, '0')}`
       })(),
-      meeting_type: '',
+      meeting_type: 'progress_checkin',
       topics: '',
       school_visit_purpose: '',
       additional_notes: '',
