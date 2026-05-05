@@ -44,6 +44,7 @@ const BulkSendReportsModal = ({
     if (isOpen && user?.email && !recipientEmail) {
       setRecipientEmail(user.email)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.email])
 
   const handleSendReports = async () => {
