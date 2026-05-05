@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Mail, Send, CheckCircle, XCircle, Target, BookOpen } from 'lucide-react'
+import { Mail, Send, CheckCircle, XCircle, Target, BookOpen, TrendingUp, List } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { useAuth } from '@/contexts/AuthContext'
@@ -60,10 +60,12 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
         await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmail)
       } else {
         for (const reportType of selectedReports) {
-          if (reportType === 'student-report') {
+          if (reportType === 'initial-speech-report') {
             await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmail)
-          } else if (reportType === 'goal-sheet') {
+          } else if (reportType === 'initial-goal-sheet') {
             await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmail)
+          } else if (reportType === 'progress-speech-report') {
+            await edgeFunctionsApi.studentProgressReport(screening.id, recipientEmail)
           } else {
             console.warn(`Unknown report type: ${reportType}`)
             continue
@@ -118,18 +120,30 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     // For speech screenings, show the speech report options
     return [
       {
-        value: 'student-report',
-        label: 'Student Report',
+        value: 'initial-speech-report',
+        label: 'Initial Speech Report',
         description: 'Detailed student assessment and performance overview',
         icon: BookOpen,
       },
       {
-        value: 'goal-sheet',
-        label: 'Goal Sheet',
+        value: 'initial-goal-sheet',
+        label: 'Initial Goal Sheet',
         description:
           'Individualized goal tracking sheet with specific objectives and progress metrics',
         icon: Target,
       },
+      {
+        value: 'progress-speech-report',
+        label: 'Progress Speech Report',
+        description: 'Comprehensive progress summary showing achievements and therapy outcomes',
+        icon: TrendingUp,
+      },
+      // {
+      //   value: 'progress-goal-sheet',
+      //   label: 'Progress Goal Sheet',
+      //   description: 'Updated goal tracking sheet reflecting current progress metrics',
+      //   icon: List,
+      // },
     ]
   }
 
