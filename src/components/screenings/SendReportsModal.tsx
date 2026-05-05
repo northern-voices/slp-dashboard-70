@@ -9,10 +9,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Mail, Send, CheckCircle, XCircle, Target, BookOpen, TrendingUp, List } from 'lucide-react'
+import { Mail, Send, CheckCircle, XCircle, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { useAuth } from '@/contexts/AuthContext'
+import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
 
 interface SendReportsModalProps {
   isOpen: boolean
@@ -118,33 +119,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     }
 
     // For speech screenings, show the speech report options
-    return [
-      {
-        value: 'initial-speech-report',
-        label: 'Initial Speech Report',
-        description: 'Detailed student assessment and performance overview',
-        icon: BookOpen,
-      },
-      {
-        value: 'initial-goal-sheet',
-        label: 'Initial Goal Sheet',
-        description:
-          'Individualized goal tracking sheet with specific objectives and progress metrics',
-        icon: Target,
-      },
-      {
-        value: 'progress-speech-report',
-        label: 'Progress Speech Report',
-        description: 'Comprehensive progress summary showing achievements and therapy outcomes',
-        icon: TrendingUp,
-      },
-      // {
-      //   value: 'progress-goal-sheet',
-      //   label: 'Progress Goal Sheet',
-      //   description: 'Updated goal tracking sheet reflecting current progress metrics',
-      //   icon: List,
-      // },
-    ]
+    return SPEECH_REPORT_OPTIONS
   }
 
   return (

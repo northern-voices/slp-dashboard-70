@@ -9,20 +9,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Mail,
-  Send,
-  Loader2,
-  CheckCircle,
-  XCircle,
-  Target,
-  BookOpen,
-  TrendingUp,
-  List,
-} from 'lucide-react'
+import { Mail, Send, Loader2, CheckCircle, XCircle, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { useAuth } from '@/contexts/AuthContext'
+import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
 
 interface BulkSendReportsModalProps {
   isOpen: boolean
@@ -119,34 +110,6 @@ const BulkSendReportsModal = ({
     handleClose()
   }
 
-  const reportOptions = [
-    {
-      value: 'initial-speech-report',
-      label: 'Initial Speech Report',
-      description: 'Detailed student assessment and performance overview',
-      icon: BookOpen,
-    },
-    {
-      value: 'initial-goal-sheet',
-      label: 'Initial Goal Sheet',
-      description:
-        'Individualized goal tracking sheet with specific objectives and progress metrics',
-      icon: Target,
-    },
-    {
-      value: 'progress-speech-report',
-      label: 'Progress Speech Report',
-      description: 'Comprehensive progress summary showing achievements and therapy outcomes',
-      icon: TrendingUp,
-    },
-    // {
-    //   value: 'progress-goal-sheet',
-    //   label: 'Progress Goal Sheet',
-    //   description: 'Updated goal tracking sheet reflecting current progress metrics',
-    //   icon: List,
-    // },
-  ]
-
   if (showResult) {
     return (
       <Dialog open={isOpen} onOpenChange={() => {}}>
@@ -202,7 +165,7 @@ const BulkSendReportsModal = ({
             <div className='space-y-3'>
               <Label className='text-sm font-medium'>Select Type of Report</Label>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                {reportOptions.map(report => {
+                {SPEECH_REPORT_OPTIONS.map(report => {
                   const Icon = report.icon
                   const isSelected = selectedReports.includes(report.value)
                   return (
