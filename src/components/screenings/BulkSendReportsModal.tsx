@@ -9,7 +9,17 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Mail, Send, Loader2, CheckCircle, XCircle, Target, BookOpen } from 'lucide-react'
+import {
+  Mail,
+  Send,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Target,
+  BookOpen,
+  TrendingUp,
+  List,
+} from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { useAuth } from '@/contexts/AuthContext'
@@ -65,16 +75,20 @@ const BulkSendReportsModal = ({
           await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmail)
         } else {
           for (const reportType of selectedReports) {
-            if (reportType === 'student-report') {
+            if (reportType === 'initial-speech-report') {
               await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmail)
-            } else if (reportType === 'goal-sheet') {
+            } else if (reportType === 'initial-goal-sheet') {
               await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmail)
+            } else if (reportType === 'progress-speech-report') {
+              await edgeFunctionsApi.studentProgressReport(screening.id, recipientEmail)
             }
           }
         }
+
         successCount++
       } catch (error) {
         console.error(`Failed to send report for screening ${screening.id}:`, error)
+
         failCount++
       }
     }
@@ -107,18 +121,30 @@ const BulkSendReportsModal = ({
 
   const reportOptions = [
     {
-      value: 'student-report',
-      label: 'Student Report',
+      value: 'initial-speech-report',
+      label: 'Initial Speech Report',
       description: 'Detailed student assessment and performance overview',
       icon: BookOpen,
     },
     {
-      value: 'goal-sheet',
-      label: 'Goal Sheet',
+      value: 'initial-goal-sheet',
+      label: 'Initial Goal Sheet',
       description:
         'Individualized goal tracking sheet with specific objectives and progress metrics',
       icon: Target,
     },
+    {
+      value: 'progress-speech-report',
+      label: 'Progress Speech Report',
+      description: 'Comprehensive progress summary showing achievements and therapy outcomes',
+      icon: TrendingUp,
+    },
+    // {
+    //   value: 'progress-goal-sheet',
+    //   label: 'Progress Goal Sheet',
+    //   description: 'Updated goal tracking sheet reflecting current progress metrics',
+    //   icon: List,
+    // },
   ]
 
   if (showResult) {
