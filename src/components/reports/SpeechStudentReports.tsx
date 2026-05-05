@@ -4,19 +4,7 @@ import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
-import {
-  CheckCircle,
-  Target,
-  Mail,
-  User,
-  Send,
-  Eye,
-  TrendingUp,
-  BookOpen,
-  Plus,
-  List,
-  XCircle,
-} from 'lucide-react'
+import { CheckCircle, Mail, User, Send, Eye, Plus, List, XCircle } from 'lucide-react'
 import { Student } from '@/types/database'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -37,6 +25,7 @@ import {
 } from '@/components/ui/responsive-table'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
+import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
 
 const SpeechStudentReports = () => {
   const navigate = useNavigate()
@@ -66,35 +55,7 @@ const SpeechStudentReports = () => {
     }
   }, [user?.email])
 
-  const getAvailableReports = () => {
-    return [
-      {
-        value: 'initial-speech-report',
-        label: 'Initial Speech Report',
-        description: 'Detailed student assessment and performance overview',
-        icon: BookOpen,
-      },
-      {
-        value: 'initial-goal-sheet',
-        label: 'Initial Goal Sheet',
-        description:
-          'Individualized goal tracking sheet with specific objectives and progress metrics',
-        icon: Target,
-      },
-      {
-        value: 'progress-speech-report',
-        label: 'Progress Speech Report',
-        description: 'Comprehensive progress summary showing achievements and therapy outcomes',
-        icon: TrendingUp,
-      },
-      // {
-      //   value: 'progress-goal-sheet',
-      //   label: 'Progress Goal Sheet',
-      //   description: 'Updated goal tracking sheet reflecting current progress metrics',
-      //   icon: List,
-      // },
-    ]
-  }
+  const getAvailableReports = () => SPEECH_REPORT_OPTIONS
 
   const handleSendEmail = async () => {
     if (!recipientEmail || selectedReports.length === 0 || !selectedScreening) {
