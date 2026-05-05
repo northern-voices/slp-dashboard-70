@@ -9,10 +9,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Mail, Send, Loader2, CheckCircle, XCircle, Target, BookOpen } from 'lucide-react'
+import { Mail, Send, Loader2, CheckCircle, XCircle, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { useAuth } from '@/contexts/AuthContext'
+import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
 
 interface BulkSendReportsModalProps {
   isOpen: boolean
@@ -43,6 +44,7 @@ const BulkSendReportsModal = ({
     if (isOpen && user?.email && !recipientEmail) {
       setRecipientEmail(user.email)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.email])
 
   const handleSendReports = async () => {
@@ -65,16 +67,20 @@ const BulkSendReportsModal = ({
           await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmail)
         } else {
           for (const reportType of selectedReports) {
-            if (reportType === 'student-report') {
+            if (reportType === 'initial-speech-report') {
               await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmail)
-            } else if (reportType === 'goal-sheet') {
+            } else if (reportType === 'initial-goal-sheet') {
               await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmail)
+            } else if (reportType === 'progress-speech-report') {
+              await edgeFunctionsApi.studentProgressReport(screening.id, recipientEmail)
             }
           }
         }
+
         successCount++
       } catch (error) {
         console.error(`Failed to send report for screening ${screening.id}:`, error)
+
         failCount++
       }
     }
@@ -105,22 +111,6 @@ const BulkSendReportsModal = ({
     handleClose()
   }
 
-  const reportOptions = [
-    {
-      value: 'student-report',
-      label: 'Student Report',
-      description: 'Detailed student assessment and performance overview',
-      icon: BookOpen,
-    },
-    {
-      value: 'goal-sheet',
-      label: 'Goal Sheet',
-      description:
-        'Individualized goal tracking sheet with specific objectives and progress metrics',
-      icon: Target,
-    },
-  ]
-
   if (showResult) {
     return (
       <Dialog open={isOpen} onOpenChange={() => {}}>
@@ -149,8 +139,7 @@ const BulkSendReportsModal = ({
             <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
               <Button
                 onClick={handleResultClose}
-                className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6
-  py-2'>
+                className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
                 {resultType === 'success' ? 'Done' : 'Try Again'}
               </Button>
             </div>
@@ -177,7 +166,7 @@ const BulkSendReportsModal = ({
             <div className='space-y-3'>
               <Label className='text-sm font-medium'>Select Type of Report</Label>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                {reportOptions.map(report => {
+                {SPEECH_REPORT_OPTIONS.map(report => {
                   const Icon = report.icon
                   const isSelected = selectedReports.includes(report.value)
                   return (
@@ -191,9 +180,7 @@ const BulkSendReportsModal = ({
                         }
                       }}
                       className={`
-                          relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200
-  w-full
-                          ${
+                          relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full ${
                             isSelected
                               ? 'border-blue-600 bg-blue-50 shadow-sm'
                               : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
@@ -241,9 +228,7 @@ const BulkSendReportsModal = ({
             <div className='space-y-3'>
               <Label className='text-sm font-medium'>Report Type</Label>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                <div
-                  className='relative cursor-default rounded-lg border-2 p-4 transition-all duration-200
-   w-full border-blue-600 bg-blue-50 shadow-sm'>
+                <div className='relative cursor-default rounded-lg border-2 p-4 transition-all duration-200 w-full border-blue-600 bg-blue-50 shadow-sm'>
                   <div className='flex items-start space-x-3 w-full'>
                     <div className='flex-shrink-0 p-2 rounded-lg bg-blue-600 text-white'>
                       <BookOpen className='w-4 h-4' />

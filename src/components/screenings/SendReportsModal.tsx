@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -9,10 +9,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Mail, Send, CheckCircle, XCircle, Target, BookOpen } from 'lucide-react'
+import { Mail, Send, CheckCircle, XCircle, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { useAuth } from '@/contexts/AuthContext'
+import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
 
 interface SendReportsModalProps {
   isOpen: boolean
@@ -40,6 +41,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     if (isOpen && screening?.source_table === 'hearing' && selectedReports.length === 0) {
       setSelectedReports(['hearing-report'])
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.email, screening])
 
   const handleSendEmail = async () => {
@@ -60,10 +62,12 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
         await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmail)
       } else {
         for (const reportType of selectedReports) {
-          if (reportType === 'student-report') {
+          if (reportType === 'initial-speech-report') {
             await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmail)
-          } else if (reportType === 'goal-sheet') {
+          } else if (reportType === 'initial-goal-sheet') {
             await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmail)
+          } else if (reportType === 'progress-speech-report') {
+            await edgeFunctionsApi.studentProgressReport(screening.id, recipientEmail)
           } else {
             console.warn(`Unknown report type: ${reportType}`)
             continue
@@ -116,21 +120,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     }
 
     // For speech screenings, show the speech report options
-    return [
-      {
-        value: 'student-report',
-        label: 'Student Report',
-        description: 'Detailed student assessment and performance overview',
-        icon: BookOpen,
-      },
-      {
-        value: 'goal-sheet',
-        label: 'Goal Sheet',
-        description:
-          'Individualized goal tracking sheet with specific objectives and progress metrics',
-        icon: Target,
-      },
-    ]
+    return SPEECH_REPORT_OPTIONS
   }
 
   return (
