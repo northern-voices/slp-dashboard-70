@@ -41,6 +41,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     if (isOpen && screening?.source_table === 'hearing' && selectedReports.length === 0) {
       setSelectedReports(['hearing-report'])
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.email, screening])
 
   const handleSendEmail = async () => {
