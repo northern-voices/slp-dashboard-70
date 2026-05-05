@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Component } from 'react'
+import type { ReactNode } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -42,6 +43,28 @@ interface MeetingFormData {
 }
 
 type StudentData = Record<string, { sessions_attended: number | null; meeting_notes: string }>
+
+class PageErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  state = { hasError: false, error: null }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className='p-8 text-red-600'>
+          Something went wrong loading this page. Please refresh and try again.
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 const CreateMonthlyMeetingContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -568,7 +591,11 @@ const CreateMonthlyMeetingContent = () => {
 }
 
 const CreateMonthlyMeeting = () => {
-  return <CreateMonthlyMeetingContent />
+  return (
+    <PageErrorBoundary>
+      <CreateMonthlyMeetingContent />
+    </PageErrorBoundary>
+  )
 }
 
 export default CreateMonthlyMeeting
