@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
+import { Input } from '@/components/ui/input'
+import { Search } from 'lucide-react'
 import CaseloadTable from '@/components/caseload/CaseloadTable'
 
 const Caseload = () => {
+  const [searchTerm, setSearchTerm] = useState('')
   const { currentSchool } = useOrganization()
   const { data: students = [], isLoading } = useStudentsBySchool(currentSchool?.id)
 
@@ -29,7 +33,6 @@ const Caseload = () => {
 
   return (
     <div className='space-y-6'>
-      {/* Header */}
       <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <div>
           <h1 className='text-2xl font-semibold text-gray-900 lg:text-3xl'>Caseload</h1>
@@ -37,7 +40,22 @@ const Caseload = () => {
         </div>
       </div>
 
-      <CaseloadTable students={students} isLoading={isLoading} schoolId={currentSchool.id} />
+      <div className='relative'>
+        <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+        <Input
+          placeholder='Search by student name...'
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className='pl-10'
+        />
+      </div>
+
+      <CaseloadTable
+        students={students}
+        isLoading={isLoading}
+        schoolId={currentSchool.id}
+        searchTerm={searchTerm}
+      />
     </div>
   )
 }

@@ -34,9 +34,10 @@ interface CaseloadTableProps {
   students: Student[]
   isLoading: boolean
   schoolId?: string
+  searchTerm: string
 }
 
-const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) => {
+const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTableProps) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
@@ -166,7 +167,12 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     )
   }
 
-  const sortedStudents = [...students].sort((a, b) => {
+  const filteredStudents = students.filter(student => {
+    const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
+    return fullName.includes(searchTerm.toLowerCase())
+  })
+
+  const sortedStudents = [...filteredStudents].sort((a, b) => {
     if (!sortField || !sortOrder) {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     }
@@ -210,7 +216,9 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
   if (totalStudents === 0) {
     return (
       <div className='text-center py-8 text-gray-500 text-sm'>
-        No students found in your caseload.
+        {searchTerm
+          ? 'No students found matching your search.'
+          : 'No students found in your caseload.'}
       </div>
     )
   }
