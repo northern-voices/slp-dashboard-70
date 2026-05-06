@@ -366,11 +366,13 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         </div>
       </div>
 
-      <ConsentFormModal
-        isOpen={!!consentStudent}
-        onClose={() => setConsentStudent(null)}
-        student={consentStudent!}
-      />
+      {consentStudent && (
+        <ConsentFormModal
+          isOpen={true}
+          onClose={() => setConsentStudent(null)}
+          student={consentStudent}
+        />
+      )}
     </div>
   )
 }
