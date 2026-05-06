@@ -1,8 +1,10 @@
-import React from 'react'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useStudentsBySchool } from '@/hooks/students/use-students'
+import CaseloadTable from '@/components/caseload/CaseloadTable'
 
 const Caseload = () => {
   const { currentSchool } = useOrganization()
+  const { data: students = [], isLoading } = useStudentsBySchool(currentSchool?.id)
 
   if (!currentSchool) {
     return (
@@ -35,7 +37,7 @@ const Caseload = () => {
         </div>
       </div>
 
-      {/* Table will go here */}
+      <CaseloadTable students={students} isLoading={isLoading} schoolId={currentSchool.id} />
     </div>
   )
 }
