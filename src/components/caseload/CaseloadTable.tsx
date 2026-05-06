@@ -108,4 +108,23 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         return <Badge className='bg-gray-100 text-gray font-medium text-[10px]'>Not Set</Badge>
     }
   }
+
+  const getStatusBadge = (student: Student) => {
+    switch (student.service_status) {
+      case 'graduated':
+        return (
+          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+        )
+      case 'paused':
+        return (
+          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Paused</Badge>
+        )
+      case 'transferred':
+        return (
+          <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Transferred</Badge>
+        )
+      default:
+        return <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Active</Badge>
+    }
+  }
 }
