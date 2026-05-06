@@ -37,6 +37,7 @@ import SendReportsModal from './SendReportsModal'
 import DeleteScreeningDialog from './DeleteScreeningDialog'
 import ScreeningTableRow from './ScreeningTableRow'
 import { useScreeningsFilter } from '@/hooks/screenings/use-screenings-filter'
+import ConsentFormModal from '@/components/students/ConsentFormModal'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -86,6 +87,7 @@ const ScreeningsTable = ({
   const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
+  const [consentStudent, setConsentStudent] = useState<Student | null>(null)
 
   const navigate = useNavigate()
 
@@ -431,6 +433,19 @@ const ScreeningsTable = ({
         state: { from: 'screenings' },
       })
     }
+  }
+
+  const handleAddConsent = (screening: Screening) => {
+    const student = studentsMap.get(screening.student_id)
+    if (!student) {
+      toast({
+        title: 'Error',
+        description: 'Student not found',
+        variant: 'destructive',
+      })
+      return
+    }
+    setConsentStudent(student)
   }
 
   const handleResultChange = (screening: Screening, newResult: string) => {
@@ -862,6 +877,7 @@ const ScreeningsTable = ({
                   getResultSelector={getResultSelector}
                   getProgramSelector={getProgramSelector}
                   getStatusSelector={getStatusSelector}
+                  onAddConsent={handleAddConsent}
                 />
               ))}
             </TableBody>
@@ -941,6 +957,14 @@ const ScreeningsTable = ({
         onClose={() => setIsEmailModalOpen(false)}
         screening={screeningToEmail}
       />
+
+      {consentStudent && (
+        <ConsentFormModal
+          isOpen={true}
+          onClose={() => setConsentStudent(null)}
+          student={consentStudent}
+        />
+      )}
     </>
   )
 }

@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Eye, Trash2, MoreHorizontal, Loader2, Mail, User } from 'lucide-react'
+import { Eye, Trash2, MoreHorizontal, Loader2, Mail, User, FilePlus } from 'lucide-react'
 import type { Screening } from '@/types/database'
 
 interface ScreeningRowDropdownProps {
@@ -15,6 +15,7 @@ interface ScreeningRowDropdownProps {
   onViewStudent: (screening: Screening) => void
   onEmailReport: (screening: Screening) => void
   onDelete: (screening: Screening) => void
+  onAddConsent: (screening: Screening) => void
 }
 
 const ScreeningRowDropdown = ({
@@ -24,6 +25,7 @@ const ScreeningRowDropdown = ({
   onViewStudent,
   onEmailReport,
   onDelete,
+  onAddConsent,
 }: ScreeningRowDropdownProps) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
@@ -39,6 +41,10 @@ const ScreeningRowDropdown = ({
       <DropdownMenuItem onClick={() => onViewStudent(screening)}>
         <User className='w-4 h-4 mr-2' />
         View Student
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => onAddConsent(screening)}>
+        <FilePlus className='w-4 h-4 mr-2' />
+        Add Consent
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => onEmailReport(screening)}>
         <Mail className='w-4 h-4 mr-2' />
