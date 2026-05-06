@@ -46,7 +46,7 @@ import Logout from './components/auth/Logout'
 import MonthlyMeetings from './pages/monthly-meetings/MonthlyMeetings'
 import CreateMonthlyMeeting from './pages/monthly-meetings/CreateMonthlyMeeting'
 import EditMonthlyMeeting from './pages/monthly-meetings/EditMonthlyMeeting'
-import { School } from 'lucide-react'
+import Caseload from './pages/Caseload'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -383,6 +383,24 @@ const App = () => (
                     element={
                       <SchoolRouter>
                         <GenerateGoalSheet />
+                      </SchoolRouter>
+                    }
+                  />
+
+                  <Route
+                    path='/caseload'
+                    element={
+                      <SchoolRouter>
+                        <Caseload />
+                      </SchoolRouter>
+                    }
+                  />
+
+                  <Route
+                    path='/school/:schoolId/caseload'
+                    element={
+                      <SchoolRouter>
+                        <Caseload />
                       </SchoolRouter>
                     }
                   />
