@@ -30,6 +30,7 @@ import { Student } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import ConsentFormModal from '../students/ConsentFormModal'
 
 interface CaseloadTableProps {
   students: Student[]
@@ -44,6 +45,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(50)
+  const [consentStudent, setConsentStudent] = useState<Student | null>(null)
 
   const navigate = useNavigate()
 
@@ -304,7 +306,9 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                         View Student
                       </DropdownMenuItem>
 
-                      <DropdownMenuItem>Add Consent</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setConsentStudent(student)}>
+                        Add Consent
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -361,6 +365,12 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
           </div>
         </div>
       </div>
+
+      <ConsentFormModal
+        isOpen={!!consentStudent}
+        onClose={() => setConsentStudent(null)}
+        student={consentStudent!}
+      />
     </div>
   )
 }
