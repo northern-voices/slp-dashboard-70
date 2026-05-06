@@ -127,4 +127,25 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         return <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Active</Badge>
     }
   }
+
+  const handleSort = (field: 'grade' | 'program_status') => {
+    if (sortField !== field) {
+      setSortField(field)
+      setSortOrder('desc')
+    } else if (sortOrder === 'desc') {
+      setSortOrder('asc')
+    } else {
+      setSortField(null)
+      setSortOrder(null)
+    }
+
+    setCurrentPage(1)
+  }
+
+  const getSortIcon = (field: 'grade' | 'program_status') => {
+    if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
+    if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
+
+    return <ChevronDown className='w-4 h-4' />
+  }
 }
