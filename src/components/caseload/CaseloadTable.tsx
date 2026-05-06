@@ -82,4 +82,30 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
 
     return 'N/A'
   }
+
+  const getProgramStatus = (student: Student): string => {
+    if (student.service_status === 'graduated') return 'graduated'
+    if (student.service_status === 'paused') return 'paused'
+    if (student.service_status === 'transferred') return 'transferred'
+    return student.program_status || 'none'
+  }
+
+  const getProgramBadge = (student: Student) => {
+    switch (getProgramStatus(student)) {
+      case 'graduated':
+        return <Badge className='bg-blue-100 text-blue font-medium text-[10px]'>Graduated</Badge>
+      case 'paused':
+        return <Badge className='bg-purple-100 text-purple font-medium text-[10px]'>Paused</Badge>
+      case 'sub':
+        return <Badge className='bg-orange-100 text-orange font-medium text-[10px]'>Sub</Badge>
+      case 'qualified':
+        return <Badge className='bg-red-100 text-red font-medium text-[10px]'>Qualified</Badge>
+      case 'not_in_program':
+        return (
+          <Badge className='bg-green-100 text-green font-medium text-[10px]'>Not In Program</Badge>
+        )
+      default:
+        return <Badge className='bg-gray-100 text-gray font-medium text-[10px]'>Not Set</Badge>
+    }
+  }
 }
