@@ -167,13 +167,16 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
   }
 
   const sortedStudents = [...students].sort((a, b) => {
-    if (!sortField || !sortOrder) return 0
+    if (!sortField || !sortOrder) {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    }
 
     let comparison = 0
 
     if (sortField === 'grade') {
       const indexA = GRADE_MAPPING.findIndex(g => getStudentGrade(a).includes(g.value))
       const indexB = GRADE_MAPPING.findIndex(g => getStudentGrade(b).includes(g.value))
+
       if (indexA === -1 && indexB === -1) comparison = 0
       else if (indexA === -1) comparison = 1
       else if (indexB === -1) comparison = -1
@@ -183,6 +186,16 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     if (sortField === 'program_status') {
       const order = { qualified: 0, sub: 1, paused: 2, graduated: 3, transferred: 4, none: 5 }
       comparison = (order[getProgramStatus(a)] ?? 99) - (order[getProgramStatus(b)] ?? 99)
+
+      if (comparison === 0) {
+        const indexA = GRADE_MAPPING.findIndex(g => getStudentGrade(a).includes(g.value))
+        const indexB = GRADE_MAPPING.findIndex(g => getStudentGrade(b).includes(g.value))
+
+        if (indexA === -1 && indexB === -1) comparison = 0
+        else if (indexA === -1) comparison = 1
+        else if (indexB === -1) comparison = -1
+        else comparison = indexA - indexB
+      }
     }
 
     return sortOrder === 'asc' ? comparison : -comparison
