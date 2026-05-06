@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
@@ -43,6 +44,16 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(50)
+
+  const navigate = useNavigate()
+
+  const handleNavigate = (path: string) => {
+    if (schoolId) {
+      navigate(`/school/${schoolId}/students/${path}`)
+    } else {
+      navigate(`/students/${path}`)
+    }
+  }
 
   useEffect(() => {
     const fetchGrades = async () => {
@@ -287,9 +298,13 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                         <MoreHorizontal className='h-4 w-4' />
                       </Button>
                     </DropdownMenuTrigger>
+
                     <DropdownMenuContent align='end'>
-                      <DropdownMenuItem>View Profile</DropdownMenuItem>
-                      <DropdownMenuItem>View Screenings</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleNavigate(student.id)}>
+                        View Student
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem>Add Consent</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
