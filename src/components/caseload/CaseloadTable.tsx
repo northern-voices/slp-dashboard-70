@@ -33,7 +33,9 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import type { Screening } from '@/types/database'
+import { useUpdateStudent } from '@/hooks/students'
 import ConsentFormModal from '../students/ConsentFormModal'
+import { useToast } from '@/hooks/use-toast'
 
 interface CaseloadTableProps {
   students: Student[]
@@ -99,6 +101,27 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
     return map
   }, [schoolScreenings])
+
+  const { mutate: updateStudent } = useUpdateStudent()
+  const { toast } = useToast()
+
+  const handleAssignEA = (student: Student, staffId: string) => {
+    const newEaId = staffId === 'none' ? null : staffId
+
+    updateStudent(
+      { id: student.id, studentData: { speech_ea_id: newEaId } },
+      {
+        onSuccess: () => toast({ title: 'Speech EA updated' }),
+        onError: () => {
+          toast({
+            title: 'Error',
+            description: 'Failed to update Speech EA.',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
+  }
 
   const getResultBadge = (result?: string | null) => {
     if (!result) return <span className='text-gray-400 text-sm'>—</span>
@@ -325,7 +348,23 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
                 <TableCell>{getStatusBadge(student)}</TableCell>
 
-                <TableCell>{getSpeechEAName(student)}</TableCell>
+                <TableCell>
+                  <Select
+                    value={student.speech_ea_id ?? 'none'}
+                    onValueChange={value => handleAssignEA(student, value)}>
+                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                      <SelectValue placeholder='Assign EA'>{getSpeechEAName(student)}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='none'>None</SelectItem>
+                      {speechEAs.map(ea => (
+                        <SelectItem key={ea.id} value={ea.id}>
+                          {ea.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
 
                 <TableCell className='text-center'>
                   <DropdownMenu>
