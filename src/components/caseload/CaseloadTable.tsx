@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { ChevronUp, ChevronDown, MoreHorizontal } from 'lucide-react'
+import { ChevronUp, ChevronDown, MoreHorizontal, FileCheck, FileX } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,8 +34,9 @@ import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import type { Screening } from '@/types/database'
 import { useUpdateStudent } from '@/hooks/students'
-import ConsentFormModal from '../students/ConsentFormModal'
 import { useToast } from '@/hooks/use-toast'
+import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
+import ConsentFormModal from '../students/ConsentFormModal'
 
 interface CaseloadTableProps {
   students: Student[]
@@ -85,7 +86,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
 
   const { data: screeningsData } = useScreeningsBySchool(schoolId, 'all', 1, 10000)
-  const schoolScreenings = screeningsData?.screenings ?? []
+  const schoolScreenings = useMemo(() => screeningsData?.screenings ?? [], [screeningsData])
 
   const latestScreeningByStudent = useMemo(() => {
     const map = new Map<string, Screening>()
@@ -222,6 +223,18 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     return <ChevronDown className='w-4 h-4' />
   }
 
+  const studentIds = useMemo(() => students.map(student => student.id), [students])
+  const { data: consentStudentIds = [] } = useConsentFormPresence(studentIds)
+  const consentSet = useMemo(() => new Set(consentStudentIds), [consentStudentIds])
+
+  const getConsentBadge = (student: Student) => {
+    if (consentSet.has(student.id)) {
+      return <FileCheck className='h-5 w-5 text-green-600 mx-auto' />
+    }
+
+    return <FileX className='h-5 w-5 text-red-400 mx-auto' />
+  }
+
   if (isLoading) {
     return (
       <div className='flex items-center justify-center py-8'>
@@ -299,9 +312,9 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         <ResponsiveTable className='w-full'>
           <TableHeader>
             <tr>
-              <TableHead className='w-1/4 min-w-[180px]'>Student</TableHead>
+              <TableHead className='w-1/5 min-w-[180px]'>Student</TableHead>
 
-              <TableHead>
+              <TableHead className='w-[70px]'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('grade')}
@@ -311,7 +324,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 </Button>
               </TableHead>
 
-              <TableHead>
+              <TableHead className='w-[70px]'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('program_status')}
@@ -321,11 +334,13 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 </Button>
               </TableHead>
 
-              <TableHead>Result</TableHead>
+              <TableHead className='w-[110px]'>Result</TableHead>
 
-              <TableHead>Status</TableHead>
+              <TableHead className='w-[70px]'>Status</TableHead>
 
-              <TableHead>Speech EA</TableHead>
+              <TableHead className='w-[70px] text-center'>Consent</TableHead>
+
+              <TableHead className='w-[150px]'>Speech EA</TableHead>
 
               <TableHead className='w-[60px]' />
             </tr>
@@ -348,11 +363,17 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
                 <TableCell>{getStatusBadge(student)}</TableCell>
 
+                <TableCell className='text-center'>
+                  <div className='flex w-full items-center justify-center'>
+                    {getConsentBadge(student)}
+                  </div>
+                </TableCell>
+
                 <TableCell>
                   <Select
                     value={student.speech_ea_id ?? 'none'}
                     onValueChange={value => handleAssignEA(student, value)}>
-                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                    <SelectTrigger className='w-[110px] h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
                       <SelectValue placeholder='Assign EA'>{getSpeechEAName(student)}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
