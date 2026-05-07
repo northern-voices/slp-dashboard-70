@@ -308,6 +308,12 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   return (
     <div className='space-y-4'>
+      <div className='flex justify-end mb-3'>
+        <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
+          {totalStudents} student{totalStudents !== 1 ? 's' : ''} found
+        </span>
+      </div>
+
       <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
         <ResponsiveTable className='w-full'>
           <TableHeader>
