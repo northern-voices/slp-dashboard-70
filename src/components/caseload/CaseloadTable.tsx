@@ -212,7 +212,11 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   const filteredStudents = students.filter(student => {
     const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
-    return fullName.includes(searchTerm.toLowerCase())
+    const matchesSearch = fullName.includes(searchTerm.toLowerCase())
+    const matchesCaseload =
+      student.program_status === 'qualified' || student.program_status === 'sub'
+
+    return matchesSearch && matchesCaseload
   })
 
   const sortedStudents = [...filteredStudents].sort((a, b) => {
