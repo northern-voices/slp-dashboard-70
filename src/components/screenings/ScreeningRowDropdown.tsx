@@ -33,23 +33,28 @@ const ScreeningRowDropdown = ({
         <MoreHorizontal className='w-4 h-4' />
       </Button>
     </DropdownMenuTrigger>
+
     <DropdownMenuContent align='end' className='bg-white'>
       <DropdownMenuItem onClick={() => onViewDetails(screening)}>
         <Eye className='w-4 h-4 mr-2' />
         View Details
       </DropdownMenuItem>
+
       <DropdownMenuItem onClick={() => onViewStudent(screening)}>
         <User className='w-4 h-4 mr-2' />
         View Student
       </DropdownMenuItem>
+
       <DropdownMenuItem onClick={() => onAddConsent(screening)}>
         <FilePlus className='w-4 h-4 mr-2' />
         Add Consent
       </DropdownMenuItem>
+
       <DropdownMenuItem onClick={() => onEmailReport(screening)}>
         <Mail className='w-4 h-4 mr-2' />
         Send Report
       </DropdownMenuItem>
+
       <DropdownMenuItem
         className='text-red-600'
         onClick={() => onDelete(screening)}
@@ -59,6 +64,7 @@ const ScreeningRowDropdown = ({
         ) : (
           <Trash2 className='w-4 h-4 mr-2' />
         )}
+
         {isDeleting ? 'Deleting...' : 'Delete'}
       </DropdownMenuItem>
     </DropdownMenuContent>

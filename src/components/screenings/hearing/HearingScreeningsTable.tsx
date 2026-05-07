@@ -22,6 +22,7 @@ import ScreeningBulkActions from '@/components/screenings/ScreeningBulkActions'
 import HearingScreeningsPagination from './HearingScreeningsPagination'
 import HearingScreeningDeleteDialog from './HearingScreeningDeleteDialog'
 import HearingScreeningTableRow from '@/components/screenings/hearing/HearingScreeningTableRow'
+import ConsentFormModal from '@/components/students/ConsentFormModal'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -58,6 +59,8 @@ const HearingScreeningsTable = ({
   const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
+  const [consentStudent, setConsentStudent] = useState<Student | null>(null)
+
   const { currentSchool } = useOrganization()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -333,6 +336,24 @@ const HearingScreeningsTable = ({
     setScreeningToDelete(null)
   }
 
+  const handleAddConsent = (screening: Screening) => {
+    const student = students.find(
+      student => student.id === screening.student_id || student.student_id === screening.student_id
+    )
+
+    if (!student) {
+      toast({
+        title: 'Error',
+        description: 'Student not found',
+        variant: 'destructive',
+      })
+
+      return
+    }
+
+    setConsentStudent(student)
+  }
+
   const SortIcon = ({ field }: { field: 'date' | 'name' | 'grade' }) => {
     if (sortField !== field) return null
     return sortOrder === 'asc' ? (
@@ -420,6 +441,7 @@ const HearingScreeningsTable = ({
                   onViewStudent={handleViewStudent}
                   onSendReport={handleSendReport}
                   onDelete={handleDeleteClick}
+                  onAddConsent={handleAddConsent}
                 />
               ))
             )}
@@ -459,6 +481,14 @@ const HearingScreeningsTable = ({
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
+
+      {consentStudent && (
+        <ConsentFormModal
+          isOpen={true}
+          onClose={() => setConsentStudent(null)}
+          student={consentStudent}
+        />
+      )}
     </div>
   )
 }
