@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { ChevronUp, ChevronDown, MoreHorizontal } from 'lucide-react'
+import { ChevronUp, ChevronDown, MoreHorizontal, FileCheck, FileX } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +30,12 @@ import { Student } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
+import { SCREENING_RESULTS } from '@/constants/screeningResults'
+import type { Screening } from '@/types/database'
+import { useUpdateStudent } from '@/hooks/students'
+import { useToast } from '@/hooks/use-toast'
+import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import ConsentFormModal from '../students/ConsentFormModal'
 
 interface CaseloadTableProps {
@@ -78,6 +84,54 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   const { currentSchool } = useOrganization()
   const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
+
+  const { data: screeningsData } = useScreeningsBySchool(schoolId, 'all', 1, 10000)
+  const schoolScreenings = useMemo(() => screeningsData?.screenings ?? [], [screeningsData])
+
+  const latestScreeningByStudent = useMemo(() => {
+    const map = new Map<string, Screening>()
+
+    schoolScreenings
+      .filter(s => s.source_table === 'speech')
+      .forEach(screening => {
+        const existing = map.get(screening.student_id)
+        if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
+          map.set(screening.student_id, screening)
+        }
+      })
+
+    return map
+  }, [schoolScreenings])
+
+  const { mutate: updateStudent } = useUpdateStudent()
+  const { toast } = useToast()
+
+  const handleAssignEA = (student: Student, staffId: string) => {
+    const newEaId = staffId === 'none' ? null : staffId
+
+    updateStudent(
+      { id: student.id, studentData: { speech_ea_id: newEaId } },
+      {
+        onSuccess: () => toast({ title: 'Speech EA updated' }),
+        onError: () => {
+          toast({
+            title: 'Error',
+            description: 'Failed to update Speech EA.',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
+  }
+
+  const getResultBadge = (result?: string | null) => {
+    if (!result) return <span className='text-gray-400 text-sm'>—</span>
+
+    const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
+    if (!config) return <span className='text-gray-400 text-sm'>—</span>
+
+    return <Badge className={`${config.color} font-medium text-[10px]`}>{config.label}</Badge>
+  }
 
   const speechEAs =
     schoolDetails?.schoolTeam?.filter(member => member.roles.includes('speech_ea')) ?? []
@@ -144,7 +198,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
           <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Transferred</Badge>
         )
       default:
-        return <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Active</Badge>
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>None</Badge>
     }
   }
 
@@ -169,6 +223,18 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     return <ChevronDown className='w-4 h-4' />
   }
 
+  const studentIds = useMemo(() => students.map(student => student.id), [students])
+  const { data: consentStudentIds = [] } = useConsentFormPresence(studentIds)
+  const consentSet = useMemo(() => new Set(consentStudentIds), [consentStudentIds])
+
+  const getConsentBadge = (student: Student) => {
+    if (consentSet.has(student.id)) {
+      return <FileCheck className='h-5 w-5 text-green-600 mx-auto' />
+    }
+
+    return <FileX className='h-5 w-5 text-red-400 mx-auto' />
+  }
+
   if (isLoading) {
     return (
       <div className='flex items-center justify-center py-8'>
@@ -182,7 +248,11 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   const filteredStudents = students.filter(student => {
     const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
-    return fullName.includes(searchTerm.toLowerCase())
+    const matchesSearch = fullName.includes(searchTerm.toLowerCase())
+    const matchesCaseload =
+      student.program_status === 'qualified' || student.program_status === 'sub'
+
+    return matchesSearch && matchesCaseload
   })
 
   const sortedStudents = [...filteredStudents].sort((a, b) => {
@@ -238,13 +308,19 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   return (
     <div className='space-y-4'>
+      <div className='flex justify-end mb-3'>
+        <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
+          {totalStudents} student{totalStudents !== 1 ? 's' : ''} found
+        </span>
+      </div>
+
       <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
         <ResponsiveTable className='w-full'>
           <TableHeader>
             <tr>
-              <TableHead className='w-1/4 min-w-[180px]'>Student</TableHead>
+              <TableHead className='w-1/5 min-w-[180px]'>Student</TableHead>
 
-              <TableHead>
+              <TableHead className='w-[70px]'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('grade')}
@@ -254,7 +330,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 </Button>
               </TableHead>
 
-              <TableHead>
+              <TableHead className='w-[70px]'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('program_status')}
@@ -264,11 +340,13 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 </Button>
               </TableHead>
 
-              <TableHead>Result</TableHead>
+              <TableHead className='w-[110px]'>Result</TableHead>
 
-              <TableHead>Status</TableHead>
+              <TableHead className='w-[70px]'>Status</TableHead>
 
-              <TableHead>Speech EA</TableHead>
+              <TableHead className='w-[70px] text-center'>Consent</TableHead>
+
+              <TableHead className='w-[150px]'>Speech EA</TableHead>
 
               <TableHead className='w-[60px]' />
             </tr>
@@ -286,12 +364,34 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 <TableCell>{getProgramBadge(student)}</TableCell>
 
                 <TableCell>
-                  <span className='text-gray-400 text-sm'>—</span>
+                  {getResultBadge(latestScreeningByStudent.get(student.id)?.result)}
                 </TableCell>
 
                 <TableCell>{getStatusBadge(student)}</TableCell>
 
-                <TableCell>{getSpeechEAName(student)}</TableCell>
+                <TableCell className='text-center'>
+                  <div className='flex w-full items-center justify-center'>
+                    {getConsentBadge(student)}
+                  </div>
+                </TableCell>
+
+                <TableCell>
+                  <Select
+                    value={student.speech_ea_id ?? 'none'}
+                    onValueChange={value => handleAssignEA(student, value)}>
+                    <SelectTrigger className='w-[110px] h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                      <SelectValue placeholder='Assign EA'>{getSpeechEAName(student)}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='none'>None</SelectItem>
+                      {speechEAs.map(ea => (
+                        <SelectItem key={ea.id} value={ea.id}>
+                          {ea.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
 
                 <TableCell className='text-center'>
                   <DropdownMenu>

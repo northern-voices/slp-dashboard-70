@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Eye, Mail, Trash2, MoreHorizontal, User } from 'lucide-react'
+import { Eye, Mail, Trash2, MoreHorizontal, User, FilePlus } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,7 @@ interface HearingScreeningTableRowProps {
   onViewStudent: (screening: Screening) => void
   onSendReport: (screening: Screening) => void
   onDelete: (screening: Screening) => void
+  onAddConsent: (screening: Screening) => void
 }
 
 const HearingScreeningTableRow = ({
@@ -30,6 +31,7 @@ const HearingScreeningTableRow = ({
   onViewStudent,
   onSendReport,
   onDelete,
+  onAddConsent,
 }: HearingScreeningTableRowProps) => {
   return (
     <ResponsiveTableRow>
@@ -111,19 +113,28 @@ const HearingScreeningTableRow = ({
               <MoreHorizontal className='w-4 h-4' />
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent align='end'>
             <DropdownMenuItem onClick={() => onViewDetails(screening)}>
               <Eye className='w-4 h-4 mr-2' />
               View Details
             </DropdownMenuItem>
+
             <DropdownMenuItem onClick={() => onViewStudent(screening)}>
               <User className='w-4 h-4 mr-2' />
               View Student
             </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={() => onAddConsent(screening)}>
+              <FilePlus className='w-4 h-4 mr-2' />
+              Add Consent
+            </DropdownMenuItem>
+
             <DropdownMenuItem onClick={() => onSendReport(screening)}>
               <Mail className='w-4 h-4 mr-2' />
               Send Report
             </DropdownMenuItem>
+
             <DropdownMenuItem className='text-red-600' onClick={() => onDelete(screening)}>
               <Trash2 className='w-4 h-4 mr-2' />
               Delete

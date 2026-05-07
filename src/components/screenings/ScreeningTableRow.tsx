@@ -19,6 +19,7 @@ interface ScreeningTableRowProps {
   getResultSelector: (screening: Screening) => React.ReactNode
   getProgramSelector: (screening: Screening) => React.ReactNode
   getStatusSelector: (screening: Screening) => React.ReactNode
+  onAddConsent: (screening: Screening) => void
 }
 
 const ScreeningTableRow = ({
@@ -34,6 +35,7 @@ const ScreeningTableRow = ({
   getResultSelector,
   getProgramSelector,
   getStatusSelector,
+  onAddConsent,
 }: ScreeningTableRowProps) => {
   const grade = getScreeningGrade(screening)
   const isLoadingGrade = grade === '...'
@@ -57,6 +59,7 @@ const ScreeningTableRow = ({
               onViewStudent={onViewStudent}
               onEmailReport={onEmailReport}
               onDelete={onDelete}
+              onAddConsent={onAddConsent}
             />
           </div>
           <div className='flex items-center gap-2'>{getResultSelector(screening)}</div>
@@ -137,6 +140,7 @@ const ScreeningTableRow = ({
           onViewStudent={onViewStudent}
           onEmailReport={onEmailReport}
           onDelete={onDelete}
+          onAddConsent={onAddConsent}
         />
       </TableCell>
     </ResponsiveTableRow>
