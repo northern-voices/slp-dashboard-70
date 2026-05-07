@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -30,6 +30,9 @@ import { Student } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
+import { SCREENING_RESULTS } from '@/constants/screeningResults'
+import type { Screening } from '@/types/database'
 import ConsentFormModal from '../students/ConsentFormModal'
 
 interface CaseloadTableProps {
@@ -78,6 +81,33 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   const { currentSchool } = useOrganization()
   const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
+
+  const { data: screeningsData } = useScreeningsBySchool(schoolId, 'all', 1, 10000)
+  const schoolScreenings = screeningsData?.screenings ?? []
+
+  const latestScreeningByStudent = useMemo(() => {
+    const map = new Map<string, Screening>()
+
+    schoolScreenings
+      .filter(s => s.source_table === 'speech')
+      .forEach(screening => {
+        const existing = map.get(screening.student_id)
+        if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
+          map.set(screening.student_id, screening)
+        }
+      })
+
+    return map
+  }, [schoolScreenings])
+
+  const getResultBadge = (result?: string | null) => {
+    if (!result) return <span className='text-gray-400 text-sm'>—</span>
+
+    const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
+    if (!config) return <span className='text-gray-400 text-sm'>—</span>
+
+    return <Badge className={`${config.color} font-medium text-[10px]`}>{config.label}</Badge>
+  }
 
   const speechEAs =
     schoolDetails?.schoolTeam?.filter(member => member.roles.includes('speech_ea')) ?? []
@@ -144,7 +174,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
           <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Transferred</Badge>
         )
       default:
-        return <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Active</Badge>
+        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>None</Badge>
     }
   }
 
@@ -286,7 +316,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 <TableCell>{getProgramBadge(student)}</TableCell>
 
                 <TableCell>
-                  <span className='text-gray-400 text-sm'>—</span>
+                  {getResultBadge(latestScreeningByStudent.get(student.id)?.result)}
                 </TableCell>
 
                 <TableCell>{getStatusBadge(student)}</TableCell>
