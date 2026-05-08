@@ -47,11 +47,18 @@ interface CaseloadTableProps {
 
 const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTableProps) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
-  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
+  const [sortField, setSortField] = useState<
+    'grade' | 'program_status' | 'name' | 'result' | 'consent' | null
+  >('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(50)
   const [consentStudent, setConsentStudent] = useState<Student | null>(null)
+
+  const [gradeFilter, setGradeFilter] = useState<string>('all')
+  const [resultFilter, setResultFilter] = useState<string>('all')
+  const [consentFilter, setConsentFilter] = useState<'all' | 'yes' | 'no'>('all')
+  const [eaFilter, setEaFilter] = useState<string>('all')
 
   const navigate = useNavigate()
 
@@ -202,7 +209,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     }
   }
 
-  const handleSort = (field: 'grade' | 'program_status') => {
+  const handleSort = (field: 'grade' | 'program_status' | 'name' | 'result' | 'consent') => {
     if (sortField !== field) {
       setSortField(field)
       setSortOrder('desc')
@@ -216,7 +223,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     setCurrentPage(1)
   }
 
-  const getSortIcon = (field: 'grade' | 'program_status') => {
+  const getSortIcon = (field: 'grade' | 'program_status' | 'name' | 'result' | 'consent') => {
     if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
     if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
 
@@ -252,7 +259,27 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     const matchesCaseload =
       student.program_status === 'qualified' || student.program_status === 'sub'
 
-    return matchesSearch && matchesCaseload
+    const matchesGrade = gradeFilter === 'all' || getStudentGrade(student) === gradeFilter
+
+    const screening = latestScreeningByStudent.get(student.id)
+    const matchesResult = resultFilter === 'all' || (screening?.result ?? 'none') === resultFilter
+
+    const hasConsent = consentSet.has(student.id)
+    const matchesConsent =
+      consentFilter === 'all' || (consentFilter === 'yes' ? hasConsent : !hasConsent)
+
+    const matchesEA =
+      eaFilter === 'all' ||
+      (eaFilter === 'none' ? !student.speech_ea_id : student.speech_ea_id === eaFilter)
+
+    return (
+      matchesSearch &&
+      matchesCaseload &&
+      matchesGrade &&
+      matchesResult &&
+      matchesConsent &&
+      matchesEA
+    )
   })
 
   const sortedStudents = [...filteredStudents].sort((a, b) => {
@@ -262,10 +289,15 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
     let comparison = 0
 
+    if (sortField === 'name') {
+      const nameA = `${a.last_name} ${a.first_name}`.toLowerCase()
+      const nameB = `${b.last_name} ${b.first_name}`.toLowerCase()
+      comparison = nameA.localeCompare(nameB)
+    }
+
     if (sortField === 'grade') {
       const indexA = GRADE_MAPPING.findIndex(g => getStudentGrade(a).includes(g.value))
       const indexB = GRADE_MAPPING.findIndex(g => getStudentGrade(b).includes(g.value))
-
       if (indexA === -1 && indexB === -1) comparison = 0
       else if (indexA === -1) comparison = 1
       else if (indexB === -1) comparison = -1
@@ -275,16 +307,41 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     if (sortField === 'program_status') {
       const order = { qualified: 0, sub: 1, paused: 2, graduated: 3, transferred: 4, none: 5 }
       comparison = (order[getProgramStatus(a)] ?? 99) - (order[getProgramStatus(b)] ?? 99)
-
       if (comparison === 0) {
         const indexA = GRADE_MAPPING.findIndex(g => getStudentGrade(a).includes(g.value))
         const indexB = GRADE_MAPPING.findIndex(g => getStudentGrade(b).includes(g.value))
-
         if (indexA === -1 && indexB === -1) comparison = 0
         else if (indexA === -1) comparison = 1
         else if (indexB === -1) comparison = -1
         else comparison = indexA - indexB
       }
+    }
+
+    if (sortField === 'result') {
+      const resultOrder = [
+        'no_errors',
+        'age_appropriate',
+        'monitor',
+        'mild',
+        'moderate',
+        'severe',
+        'profound',
+        'complex_needs',
+        'unable_to_screen',
+        'absent',
+        'non_registered_no_consent',
+      ]
+      const rA = latestScreeningByStudent.get(a.id)?.result ?? ''
+      const rB = latestScreeningByStudent.get(b.id)?.result ?? ''
+      const iA = resultOrder.indexOf(rA)
+      const iB = resultOrder.indexOf(rB)
+      comparison = (iA === -1 ? 99 : iA) - (iB === -1 ? 99 : iB)
+    }
+
+    if (sortField === 'consent') {
+      const cA = consentSet.has(a.id) ? 0 : 1
+      const cB = consentSet.has(b.id) ? 0 : 1
+      comparison = cA - cB
     }
 
     return sortOrder === 'asc' ? comparison : -comparison
