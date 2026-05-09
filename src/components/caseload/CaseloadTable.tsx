@@ -839,13 +839,82 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
                 <TableCell>{getStudentGrade(student)}</TableCell>
 
-                <TableCell>{getProgramBadge(student)}</TableCell>
-
                 <TableCell>
-                  {getResultBadge(latestScreeningByStudent.get(student.id)?.result)}
+                  <Select
+                    value={student.program_status ?? 'none'}
+                    onValueChange={value => handleProgramChange(student, value as ProgramStatus)}
+                    disabled={updatingStudentId === student.id}>
+                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                      <SelectValue>
+                        <div className='flex items-center gap-2'>
+                          {updatingStudentId === student.id && (
+                            <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
+                          )}
+                          {getProgramBadge(student)}
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {programOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableCell>
 
-                <TableCell>{getStatusBadge(student)}</TableCell>
+                <TableCell>
+                  <Select
+                    value={latestScreeningByStudent.get(student.id)?.result ?? ''}
+                    onValueChange={value => handleResultChange(student, value)}
+                    disabled={
+                      updatingStudentId === student.id || !latestScreeningByStudent.get(student.id)
+                    }>
+                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                      <SelectValue>
+                        <div className='flex items-center gap-2'>
+                          {updatingStudentId === student.id && (
+                            <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
+                          )}
+                          {getResultBadge(latestScreeningByStudent.get(student.id)?.result)}
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {resultOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+
+                <TableCell>
+                  <Select
+                    value={student.service_status ?? 'none'}
+                    onValueChange={value => handleStatusChange(student, value as ServiceStatus)}
+                    disabled={updatingStudentId === student.id}>
+                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                      <SelectValue>
+                        <div className='flex items-center gap-2'>
+                          {updatingStudentId === student.id && (
+                            <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
+                          )}
+                          {getStatusBadge(student)}
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
 
                 <TableCell className='text-center'>{getConsentBadge(student)}</TableCell>
 
