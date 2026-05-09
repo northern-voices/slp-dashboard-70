@@ -62,7 +62,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const [consentFilter, setConsentFilter] = useState<'all' | 'yes' | 'no'>('all')
   const [eaFilter, setEaFilter] = useState<string>('all')
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
-  const [dateFilter, setDateFilter] = useState<'all' | 'school_year'>('school_year')
+  const [dateFilter, setDateFilter] = useState<string>('school_year')
 
   const navigate = useNavigate()
 
@@ -96,23 +96,52 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const { currentSchool } = useOrganization()
   const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
 
-  const { data: screeningsData } = useScreeningsBySchool(schoolId, dateFilter, 1, 10000)
+  const { data: allScreeningsData } = useScreeningsBySchool(schoolId, 'all', 1, 10000)
+  const allSchoolScreenings = useMemo(
+    () => allScreeningsData?.screenings ?? [],
+    [allScreeningsData]
+  )
+
+  const apiDateFilter = dateFilter === 'school_year' ? 'school_year' : 'all'
+  const { data: screeningsData } = useScreeningsBySchool(schoolId, apiDateFilter, 1, 10000)
   const schoolScreenings = useMemo(() => screeningsData?.screenings ?? [], [screeningsData])
+
+  const availableSchoolYears = useMemo(() => {
+    const years = new Set<string>()
+    allSchoolScreenings.forEach(s => {
+      const date = new Date(s.created_at)
+      const month = date.getMonth()
+      const year = date.getFullYear()
+      const schoolYear = month >= 8 ? `${year}-${year + 1}` : `${year - 1}-${year}`
+      years.add(schoolYear)
+    })
+    return Array.from(years).sort().reverse()
+  }, [allSchoolScreenings])
 
   const latestScreeningByStudent = useMemo(() => {
     const map = new Map<string, Screening>()
 
-    schoolScreenings
-      .filter(s => s.source_table === 'speech')
-      .forEach(screening => {
-        const existing = map.get(screening.student_id)
-        if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
-          map.set(screening.student_id, screening)
-        }
+    let screeningsToProcess = schoolScreenings.filter(s => s.source_table === 'speech')
+
+    if (dateFilter.startsWith('sy_')) {
+      const [startYear, endYear] = dateFilter.replace('sy_', '').split('-').map(Number)
+      const syStart = new Date(startYear, 8, 1)
+      const syEnd = new Date(endYear, 7, 31, 23, 59, 59)
+      screeningsToProcess = screeningsToProcess.filter(s => {
+        const d = new Date(s.created_at)
+        return d >= syStart && d <= syEnd
       })
+    }
+
+    screeningsToProcess.forEach(screening => {
+      const existing = map.get(screening.student_id)
+      if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
+        map.set(screening.student_id, screening)
+      }
+    })
 
     return map
-  }, [schoolScreenings])
+  }, [schoolScreenings, dateFilter])
 
   const { mutate: updateStudent } = useUpdateStudent()
   const { toast } = useToast()
@@ -286,12 +315,15 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const filteredStudents = students.filter(student => {
     const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
     const matchesSearch = fullName.includes(searchTerm.toLowerCase())
+
+    const screening = latestScreeningByStudent.get(student.id)
     const matchesCaseload =
-      student.program_status === 'qualified' || student.program_status === 'sub'
+      dateFilter === 'school_year'
+        ? student.program_status === 'qualified' || student.program_status === 'sub'
+        : screening?.program_status === 'qualified' || screening?.program_status === 'sub'
 
     const matchesGrade = gradeFilter === 'all' || getStudentGrade(student).includes(gradeFilter)
 
-    const screening = latestScreeningByStudent.get(student.id)
     const matchesResult = resultFilter === 'all' || (screening?.result ?? 'none') === resultFilter
 
     const hasConsent = consentSet.has(student.id)
@@ -517,7 +549,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                   <Select
                     value={dateFilter}
                     onValueChange={v => {
-                      setDateFilter(v as 'all' | 'school_year')
+                      setDateFilter(v)
                       setCurrentPage(1)
                     }}>
                     <SelectTrigger>
@@ -525,7 +557,11 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value='school_year'>This School Year</SelectItem>
-                      <SelectItem value='all'>All Time</SelectItem>
+                      {availableSchoolYears.map(year => (
+                        <SelectItem key={year} value={`sy_${year}`}>
+                          {year}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
