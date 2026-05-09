@@ -357,6 +357,67 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     )
   }
 
+  const handleStatusChange = (student: Student, newStatus: ServiceStatus) => {
+    const screening = latestScreeningByStudent.get(student.id)
+    if (!screening) return
+
+    setUpdatingStudentId(student.id)
+    const currentErrorPatterns = screening.error_patterns || ({} as ErrorPatterns)
+
+    const cleanErrorPatterns: Partial<ErrorPatterns> = {
+      articulation: currentErrorPatterns.articulation || ({} as ErrorPatterns['articulation']),
+      add_areas_of_concern:
+        currentErrorPatterns.add_areas_of_concern || ({} as ErrorPatterns['add_areas_of_concern']),
+      attendance: currentErrorPatterns.attendance || ({} as ErrorPatterns['attendance']),
+      additional_observations: currentErrorPatterns.additional_observations || '',
+      consent: {
+        ...(currentErrorPatterns.consent || {}),
+      },
+      screening_metadata: {
+        ...(currentErrorPatterns.screening_metadata || {}),
+        paused: newStatus === 'paused',
+        graduated: newStatus === 'graduated',
+        transferred: newStatus === 'transferred',
+      } as ErrorPatterns['screening_metadata'],
+    }
+
+    updateSpeechScreening(
+      {
+        id: screening.id,
+        data: { error_patterns: cleanErrorPatterns as ErrorPatterns },
+      },
+      {
+        onSuccess: () => {
+          updateStudent(
+            { id: student.id, studentData: { service_status: newStatus } },
+            {
+              onSuccess: () => {
+                setUpdatingStudentId(null)
+                toast({ title: 'Status updated' })
+              },
+              onError: () => {
+                setUpdatingStudentId(null)
+                toast({
+                  title: 'Warning',
+                  description: 'Screening updated but failed to update student',
+                  variant: 'destructive',
+                })
+              },
+            }
+          )
+        },
+        onError: error => {
+          setUpdatingStudentId(null)
+          toast({
+            title: 'Error updating status',
+            description: error.message,
+            variant: 'destructive',
+          })
+        },
+      }
+    )
+  }
+
   const getSortIcon = (field: 'grade' | 'program_status' | 'name' | 'result' | 'consent') => {
     if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
     if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
