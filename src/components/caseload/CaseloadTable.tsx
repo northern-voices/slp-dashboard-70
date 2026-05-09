@@ -376,20 +376,6 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const startIndex = (currentPage - 1) * effectiveItemsPerPage
   const paginatedStudents = sortedStudents.slice(startIndex, startIndex + effectiveItemsPerPage)
 
-  if (totalStudents === 0) {
-    return (
-      <div className='text-center py-8 text-gray-500 text-sm'>
-        {searchTerm ||
-        gradeFilter !== 'all' ||
-        resultFilter !== 'all' ||
-        consentFilter !== 'all' ||
-        eaFilter !== 'all'
-          ? 'No students found matching your search.'
-          : 'No students found in your caseload.'}
-      </div>
-    )
-  }
-
   return (
     <div className='space-y-4'>
       <Card className='border border-gray-200 shadow-sm'>
@@ -653,6 +639,16 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
             ))}
           </TableBody>
         </ResponsiveTable>
+
+        {totalStudents === 0 && (
+          <div className='py-8 text-center'>
+            <p className='text-gray-500'>
+              {searchTerm || hasActiveFilters
+                ? 'No students found matching your filters.'
+                : 'No students found in your caseload.'}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
