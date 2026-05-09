@@ -259,7 +259,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     const matchesCaseload =
       student.program_status === 'qualified' || student.program_status === 'sub'
 
-    const matchesGrade = gradeFilter === 'all' || getStudentGrade(student) === gradeFilter
+    const matchesGrade = gradeFilter === 'all' || getStudentGrade(student).includes(gradeFilter)
 
     const screening = latestScreeningByStudent.get(student.id)
     const matchesResult = resultFilter === 'all' || (screening?.result ?? 'none') === resultFilter
@@ -356,7 +356,11 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   if (totalStudents === 0) {
     return (
       <div className='text-center py-8 text-gray-500 text-sm'>
-        {searchTerm
+        {searchTerm ||
+        gradeFilter !== 'all' ||
+        resultFilter !== 'all' ||
+        consentFilter !== 'all' ||
+        eaFilter !== 'all'
           ? 'No students found matching your search.'
           : 'No students found in your caseload.'}
       </div>
@@ -371,11 +375,106 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         </span>
       </div>
 
+      {/* Filter bar */}
+      <div className='flex flex-wrap gap-3 mb-3'>
+        {/* Grade */}
+        <Select
+          value={gradeFilter}
+          onValueChange={value => {
+            setGradeFilter(value)
+            setCurrentPage(1)
+          }}>
+          <SelectTrigger className='w-[120px] h-9'>
+            <SelectValue placeholder='Grade' />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value='all'>All Grades</SelectItem>
+
+            {GRADE_MAPPING.map(grade => (
+              <SelectItem key={grade.value} value={grade.value}>
+                {grade.display}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Result */}
+        <Select
+          value={resultFilter}
+          onValueChange={value => {
+            setResultFilter(value)
+            setCurrentPage(1)
+          }}>
+          <SelectTrigger className='w-[150px] h-9'>
+            <SelectValue placeholder='Result' />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value='all'>All Results</SelectItem>
+
+            {Object.entries(SCREENING_RESULTS).map(([key, { label }]) => (
+              <SelectItem key={key} value={key}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Consent */}
+        <Select
+          value={consentFilter}
+          onValueChange={value => {
+            setConsentFilter(value as 'all' | 'yes' | 'no')
+            setCurrentPage(1)
+          }}>
+          <SelectTrigger className='w-[130px] h-9'>
+            <SelectValue placeholder='Consent' />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value='all'>All Consent</SelectItem>
+            <SelectItem value='yes'>Consented</SelectItem>
+            <SelectItem value='no'>No Consent</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Speech EA */}
+        <Select
+          value={eaFilter}
+          onValueChange={value => {
+            setEaFilter(value)
+            setCurrentPage(1)
+          }}>
+          <SelectTrigger className='w-[140px] h-9'>
+            <SelectValue placeholder='Speech EA' />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value='all'>All EAs</SelectItem>
+            <SelectItem value='none'>Unassigned</SelectItem>
+            {speechEAs.map(ea => (
+              <SelectItem key={ea.id} value={ea.id}>
+                {ea.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
         <ResponsiveTable className='w-full'>
           <TableHeader>
             <tr>
-              <TableHead className='w-1/5 min-w-[180px]'>Student</TableHead>
+              <TableHead className='w-1/5 min-w-[180px]'>
+                <Button
+                  variant='ghost'
+                  onClick={() => handleSort('name')}
+                  className='h-auto p-0 font-medium hover:bg-transparent'>
+                  Student
+                  <span className='ml-1'>{getSortIcon('name')}</span>
+                </Button>
+              </TableHead>
 
               <TableHead className='w-[70px]'>
                 <Button
@@ -397,11 +496,28 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 </Button>
               </TableHead>
 
-              <TableHead className='w-[110px]'>Result</TableHead>
+              <TableHead className='w-[110px]'>
+                <Button
+                  variant='ghost'
+                  onClick={() => handleSort('result')}
+                  className='h-auto p-0 font-medium hover:bg-transparent'>
+                  Result
+                  <span className='ml-1'>{getSortIcon('result')}</span>
+                </Button>
+              </TableHead>
 
               <TableHead className='w-[70px]'>Status</TableHead>
 
-              <TableHead className='w-[70px] text-center'>Consent</TableHead>
+              <TableHead className='w-[70px] text-center'>
+                <Button
+                  variant='ghost'
+                  onClick={() => handleSort('consent')}
+                  className='h-auto p-0 font-medium hover:bg-transparent'>
+                  <span className='w-4 h-4 mr-1 inline-block opacity-0' />
+                  Consent
+                  <span className='ml-1'>{getSortIcon('consent')}</span>
+                </Button>
+              </TableHead>
 
               <TableHead className='w-[150px]'>Speech EA</TableHead>
 
@@ -426,11 +542,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
                 <TableCell>{getStatusBadge(student)}</TableCell>
 
-                <TableCell className='text-center'>
-                  <div className='flex w-full items-center justify-center'>
-                    {getConsentBadge(student)}
-                  </div>
-                </TableCell>
+                <TableCell className='text-center'>{getConsentBadge(student)}</TableCell>
 
                 <TableCell>
                   <Select
