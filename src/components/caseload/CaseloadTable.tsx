@@ -801,7 +801,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 </Button>
               </TableHead>
 
-              <TableHead className='w-[110px]'>
+              <TableHead className='w-[160px]'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('result')}
