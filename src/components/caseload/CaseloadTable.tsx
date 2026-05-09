@@ -839,7 +839,10 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
                 <TableCell>{getStudentGrade(student)}</TableCell>
 
-                <TableCell>
+                <TableCell>{getProgramBadge(student)}</TableCell>
+
+                {/* Functionality to be able to change the program but leave it out for now */}
+                {/* <TableCell>
                   <Select
                     value={student.program_status ?? 'none'}
                     onValueChange={value => handleProgramChange(student, value as ProgramStatus)}
@@ -862,7 +865,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                       ))}
                     </SelectContent>
                   </Select>
-                </TableCell>
+                </TableCell> */}
 
                 <TableCell>
                   <Select
