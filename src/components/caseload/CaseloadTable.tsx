@@ -5,7 +5,16 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { ChevronUp, ChevronDown, MoreHorizontal, FileCheck, FileX, Filter, X } from 'lucide-react'
+import {
+  ChevronUp,
+  ChevronDown,
+  MoreHorizontal,
+  Loader2,
+  FileCheck,
+  FileX,
+  Filter,
+  X,
+} from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +47,9 @@ import type { Screening } from '@/types/database'
 import { useUpdateStudent } from '@/hooks/students'
 import { useToast } from '@/hooks/use-toast'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
+import { useUpdateSpeechScreening } from '@/hooks/screenings'
+import { ProgramStatus, ServiceStatus } from '@/types/database'
+import { ErrorPatterns } from '@/types/screening-form'
 import ConsentFormModal from '../students/ConsentFormModal'
 
 interface CaseloadTableProps {
@@ -144,6 +156,10 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   }, [schoolScreenings, dateFilter])
 
   const { mutate: updateStudent } = useUpdateStudent()
+  const { mutate: updateSpeechScreening } = useUpdateSpeechScreening()
+
+  const [updatingStudentId, setUpdatingStudentId] = useState<string | null>(null)
+
   const { toast } = useToast()
 
   const handleAssignEA = (student: Student, staffId: string) => {
@@ -254,6 +270,91 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     }
 
     setCurrentPage(1)
+  }
+
+  const handleResultChange = (student: Student, newResult: string) => {
+    const screening = latestScreeningByStudent.get(student.id)
+    if (!screening) return
+
+    setUpdatingStudentId(student.id)
+    updateSpeechScreening(
+      { id: screening.id, data: { result: newResult } },
+      {
+        onSuccess: () => {
+          setUpdatingStudentId(null)
+          toast({ title: 'Result updated' })
+        },
+        onError: error => {
+          setUpdatingStudentId(null)
+          toast({
+            title: 'Error updating result',
+            description: error.message,
+            variant: 'destructive',
+          })
+        },
+      }
+    )
+  }
+
+  const handleProgramChange = (student: Student, newProgram: ProgramStatus) => {
+    const screening = latestScreeningByStudent.get(student.id)
+    if (!screening) return
+
+    setUpdatingStudentId(student.id)
+    const currentErrorPatterns = screening.error_patterns || ({} as ErrorPatterns)
+
+    const cleanErrorPatterns: Partial<ErrorPatterns> = {
+      articulation: currentErrorPatterns.articulation || ({} as ErrorPatterns['articulation']),
+      add_areas_of_concern:
+        currentErrorPatterns.add_areas_of_concern || ({} as ErrorPatterns['add_areas_of_concern']),
+      attendance: currentErrorPatterns.attendance || ({} as ErrorPatterns['attendance']),
+      additional_observations: currentErrorPatterns.additional_observations || '',
+      consent: {
+        ...(currentErrorPatterns.consent || {}),
+        no_consent: newProgram === 'no_consent',
+      },
+      screening_metadata: {
+        ...(currentErrorPatterns.screening_metadata || {}),
+        qualifies_for_speech_program: newProgram === 'qualified',
+        sub: newProgram === 'sub',
+      } as ErrorPatterns['screening_metadata'],
+    }
+
+    updateSpeechScreening(
+      {
+        id: screening.id,
+        data: { error_patterns: cleanErrorPatterns as ErrorPatterns },
+      },
+      {
+        onSuccess: () => {
+          updateStudent(
+            { id: student.id, studentData: { program_status: newProgram } },
+            {
+              onSuccess: () => {
+                setUpdatingStudentId(null)
+                toast({ title: 'Program updated' })
+              },
+              onError: () => {
+                setUpdatingStudentId(null)
+                toast({
+                  title: 'Warning',
+                  description: 'Screening update but failed to update the student',
+                  variant: 'destructive',
+                })
+              },
+            }
+          )
+        },
+        onError: error => {
+          setUpdatingStudentId(null)
+          toast({
+            title: 'Error updating program',
+            description: error.message,
+            variant: 'destructive',
+          })
+        },
+      }
+    )
   }
 
   const getSortIcon = (field: 'grade' | 'program_status' | 'name' | 'result' | 'consent') => {
@@ -414,6 +515,34 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const totalPages = Math.max(1, Math.ceil(totalStudents / effectiveItemsPerPage))
   const startIndex = (currentPage - 1) * effectiveItemsPerPage
   const paginatedStudents = sortedStudents.slice(startIndex, startIndex + effectiveItemsPerPage)
+
+  const resultOptions = [
+    { value: 'no_errors', label: 'No Errors' },
+    { value: 'age_appropriate', label: 'Age Appropriate' },
+    { value: 'monitor', label: 'Monitor' },
+    { value: 'mild', label: 'Mild' },
+    { value: 'moderate', label: 'Moderate' },
+    { value: 'severe', label: 'Severe' },
+    { value: 'profound', label: 'Profound' },
+    { value: 'complex_needs', label: 'Complex Needs' },
+    { value: 'unable_to_screen', label: 'Non-Compliant' },
+    { value: 'absent', label: 'Absent' },
+    { value: 'non_registered_no_consent', label: 'No Consent' },
+  ]
+
+  const programOptions = [
+    { value: 'qualified', label: 'Qualifies' },
+    { value: 'not_in_program', label: 'Not In Program' },
+    { value: 'sub', label: 'Sub' },
+    { value: 'no_consent', label: 'Qualifies - No Consent' },
+  ]
+
+  const statusOptions = [
+    { value: 'none', label: 'None' },
+    { value: 'paused', label: 'Pause/Away' },
+    { value: 'graduated', label: 'Graduated' },
+    { value: 'transferred', label: 'Transferred' },
+  ]
 
   return (
     <div className='space-y-4'>
