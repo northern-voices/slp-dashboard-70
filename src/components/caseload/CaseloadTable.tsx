@@ -95,7 +95,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const { currentSchool } = useOrganization()
   const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
 
-  const { data: screeningsData } = useScreeningsBySchool(schoolId, 'all', 1, 10000)
+  const { data: screeningsData } = useScreeningsBySchool(schoolId, 'school_year', 1, 10000)
   const schoolScreenings = useMemo(() => screeningsData?.screenings ?? [], [screeningsData])
 
   const latestScreeningByStudent = useMemo(() => {
