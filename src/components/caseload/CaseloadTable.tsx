@@ -62,6 +62,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const [consentFilter, setConsentFilter] = useState<'all' | 'yes' | 'no'>('all')
   const [eaFilter, setEaFilter] = useState<string>('all')
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
+  const [dateFilter, setDateFilter] = useState<'all' | 'school_year'>('school_year')
 
   const navigate = useNavigate()
 
@@ -95,7 +96,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const { currentSchool } = useOrganization()
   const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
 
-  const { data: screeningsData } = useScreeningsBySchool(schoolId, 'school_year', 1, 10000)
+  const { data: screeningsData } = useScreeningsBySchool(schoolId, dateFilter, 1, 10000)
   const schoolScreenings = useMemo(() => screeningsData?.screenings ?? [], [screeningsData])
 
   const latestScreeningByStudent = useMemo(() => {
@@ -234,7 +235,11 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   }
 
   const hasActiveFilters =
-    gradeFilter !== 'all' || resultFilter !== 'all' || consentFilter !== 'all' || eaFilter !== 'all'
+    gradeFilter !== 'all' ||
+    resultFilter !== 'all' ||
+    consentFilter !== 'all' ||
+    eaFilter !== 'all' ||
+    dateFilter !== 'school_year'
 
   const getActiveFilterCount = () => {
     let count = 0
@@ -242,6 +247,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     if (resultFilter !== 'all') count++
     if (consentFilter !== 'all') count++
     if (eaFilter !== 'all') count++
+    if (dateFilter !== 'school_year') count++
     return count
   }
 
@@ -250,6 +256,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     setResultFilter('all')
     setConsentFilter('all')
     setEaFilter('all')
+    setDateFilter('school_year')
     setCurrentPage(1)
   }
 
@@ -418,7 +425,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
           <CollapsibleContent>
             <CardContent className='pt-0'>
-              <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+              <div className='grid grid-cols-1 md:grid-cols-5 gap-4'>
                 <div className='space-y-2'>
                   <label className='text-sm font-medium text-gray-700'>Grade</label>
                   <Select
@@ -501,6 +508,24 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                           {ea.name}
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium text-gray-700'>School Year</label>
+                  <Select
+                    value={dateFilter}
+                    onValueChange={v => {
+                      setDateFilter(v as 'all' | 'school_year')
+                      setCurrentPage(1)
+                    }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder='This School Year' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='school_year'>This School Year</SelectItem>
+                      <SelectItem value='all'>All Time</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
