@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { ChevronUp, ChevronDown, MoreHorizontal, FileCheck, FileX } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { ChevronUp, ChevronDown, MoreHorizontal, FileCheck, FileX, Filter, X } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +61,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const [resultFilter, setResultFilter] = useState<string>('all')
   const [consentFilter, setConsentFilter] = useState<'all' | 'yes' | 'no'>('all')
   const [eaFilter, setEaFilter] = useState<string>('all')
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
   const navigate = useNavigate()
 
@@ -230,6 +233,26 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     return <ChevronDown className='w-4 h-4' />
   }
 
+  const hasActiveFilters =
+    gradeFilter !== 'all' || resultFilter !== 'all' || consentFilter !== 'all' || eaFilter !== 'all'
+
+  const getActiveFilterCount = () => {
+    let count = 0
+    if (gradeFilter !== 'all') count++
+    if (resultFilter !== 'all') count++
+    if (consentFilter !== 'all') count++
+    if (eaFilter !== 'all') count++
+    return count
+  }
+
+  const clearAllFilters = () => {
+    setGradeFilter('all')
+    setResultFilter('all')
+    setConsentFilter('all')
+    setEaFilter('all')
+    setCurrentPage(1)
+  }
+
   const studentIds = useMemo(() => students.map(student => student.id), [students])
   const { data: consentStudentIds = [] } = useConsentFormPresence(studentIds)
   const consentSet = useMemo(() => new Set(consentStudentIds), [consentStudentIds])
@@ -369,97 +392,142 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   return (
     <div className='space-y-4'>
+      <Card className='border border-gray-200 shadow-sm'>
+        <Collapsible open={isFiltersExpanded} onOpenChange={setIsFiltersExpanded}>
+          <CollapsibleTrigger asChild>
+            <CardHeader className='px-5 py-3 cursor-pointer rounded-lg hover:bg-gray-50 transition-colors'>
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center gap-3'>
+                  <Filter className='w-4 h-4 text-gray-600' />
+                  <CardTitle className='text-base font-semibold'>Filters</CardTitle>
+                  {hasActiveFilters && (
+                    <Badge variant='secondary' className='bg-blue-100 text-blue-700'>
+                      {getActiveFilterCount()} active
+                    </Badge>
+                  )}
+                </div>
+                <div className='flex items-center gap-2'>
+                  {hasActiveFilters && (
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={e => {
+                        e.stopPropagation()
+                        clearAllFilters()
+                      }}
+                      className='text-gray-600 hover:text-gray-900'>
+                      <X className='w-4 h-4 mr-1' />
+                      Clear All
+                    </Button>
+                  )}
+                  {isFiltersExpanded ? (
+                    <ChevronUp className='w-4 h-4 text-gray-600' />
+                  ) : (
+                    <ChevronDown className='w-4 h-4 text-gray-600' />
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            <CardContent className='pt-0'>
+              <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium text-gray-700'>Grade</label>
+                  <Select
+                    value={gradeFilter}
+                    onValueChange={v => {
+                      setGradeFilter(v)
+                      setCurrentPage(1)
+                    }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder='All Grades' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='all'>All Grades</SelectItem>
+                      {GRADE_MAPPING.map(grade => (
+                        <SelectItem key={grade.value} value={grade.value}>
+                          {grade.display}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium text-gray-700'>Result</label>
+                  <Select
+                    value={resultFilter}
+                    onValueChange={v => {
+                      setResultFilter(v)
+                      setCurrentPage(1)
+                    }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder='All Results' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='all'>All Results</SelectItem>
+                      {Object.entries(SCREENING_RESULTS).map(([key, { label }]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium text-gray-700'>Consent</label>
+                  <Select
+                    value={consentFilter}
+                    onValueChange={v => {
+                      setConsentFilter(v as 'all' | 'yes' | 'no')
+                      setCurrentPage(1)
+                    }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder='All' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='all'>All</SelectItem>
+                      <SelectItem value='yes'>Consented</SelectItem>
+                      <SelectItem value='no'>No Consent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium text-gray-700'>Speech EA</label>
+                  <Select
+                    value={eaFilter}
+                    onValueChange={v => {
+                      setEaFilter(v)
+                      setCurrentPage(1)
+                    }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder='All EAs' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='all'>All EAs</SelectItem>
+                      <SelectItem value='none'>Unassigned</SelectItem>
+                      {speechEAs.map(ea => (
+                        <SelectItem key={ea.id} value={ea.id}>
+                          {ea.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
       <div className='flex justify-end mb-3'>
         <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
           {totalStudents} student{totalStudents !== 1 ? 's' : ''} found
         </span>
-      </div>
-
-      {/* Filter bar */}
-      <div className='flex flex-wrap gap-3 mb-3'>
-        {/* Grade */}
-        <Select
-          value={gradeFilter}
-          onValueChange={value => {
-            setGradeFilter(value)
-            setCurrentPage(1)
-          }}>
-          <SelectTrigger className='w-[120px] h-9'>
-            <SelectValue placeholder='Grade' />
-          </SelectTrigger>
-
-          <SelectContent>
-            <SelectItem value='all'>All Grades</SelectItem>
-
-            {GRADE_MAPPING.map(grade => (
-              <SelectItem key={grade.value} value={grade.value}>
-                {grade.display}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Result */}
-        <Select
-          value={resultFilter}
-          onValueChange={value => {
-            setResultFilter(value)
-            setCurrentPage(1)
-          }}>
-          <SelectTrigger className='w-[150px] h-9'>
-            <SelectValue placeholder='Result' />
-          </SelectTrigger>
-
-          <SelectContent>
-            <SelectItem value='all'>All Results</SelectItem>
-
-            {Object.entries(SCREENING_RESULTS).map(([key, { label }]) => (
-              <SelectItem key={key} value={key}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Consent */}
-        <Select
-          value={consentFilter}
-          onValueChange={value => {
-            setConsentFilter(value as 'all' | 'yes' | 'no')
-            setCurrentPage(1)
-          }}>
-          <SelectTrigger className='w-[130px] h-9'>
-            <SelectValue placeholder='Consent' />
-          </SelectTrigger>
-
-          <SelectContent>
-            <SelectItem value='all'>All Consent</SelectItem>
-            <SelectItem value='yes'>Consented</SelectItem>
-            <SelectItem value='no'>No Consent</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {/* Speech EA */}
-        <Select
-          value={eaFilter}
-          onValueChange={value => {
-            setEaFilter(value)
-            setCurrentPage(1)
-          }}>
-          <SelectTrigger className='w-[140px] h-9'>
-            <SelectValue placeholder='Speech EA' />
-          </SelectTrigger>
-
-          <SelectContent>
-            <SelectItem value='all'>All EAs</SelectItem>
-            <SelectItem value='none'>Unassigned</SelectItem>
-            {speechEAs.map(ea => (
-              <SelectItem key={ea.id} value={ea.id}>
-                {ea.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
