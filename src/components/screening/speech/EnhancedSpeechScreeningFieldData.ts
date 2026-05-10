@@ -391,7 +391,12 @@ export const soundErrorPatterns = {
 // Stopping sound options for sounds that have "Stopping" pattern
 export const stoppingSoundOptions = ['P', 'B', 'T', 'D', 'K', 'G']
 
-export const stimulabilityOptions = ['Non-Stimulable', 'Sound', 'Word', 'Phrase']
+export const stimulabilityOptions = [
+  { value: 'Non-Stimulable', display: 'Aud. Discrim' },
+  { value: 'Sound', display: 'Sound' },
+  { value: 'Word', display: 'Word' },
+  { value: 'Phrase', display: 'Phrase' },
+]
 
 export const areasOfConcern = [
   'Language Comprehension',
