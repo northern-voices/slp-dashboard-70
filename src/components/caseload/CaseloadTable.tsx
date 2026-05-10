@@ -1,26 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '@/lib/supabase'
-import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import {
-  ChevronUp,
-  ChevronDown,
-  MoreHorizontal,
-  Loader2,
-  FileCheck,
-  FileX,
-  Filter,
-  X,
-  UserPlus,
-  CheckCircle,
-  Clock,
-  PauseCircle,
-} from 'lucide-react'
+import { ChevronUp, ChevronDown, MoreHorizontal, Loader2, FileCheck, FileX } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,15 +26,6 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { GRADE_MAPPING } from '@/constants/app'
 import { Student } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
@@ -66,6 +40,9 @@ import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { useUpdateSpeechScreening } from '@/hooks/screenings'
 import { ProgramStatus, ServiceStatus } from '@/types/database'
 import { ErrorPatterns } from '@/types/screening-form'
+import CaseloadStats from './CaseloadStats'
+import CaseloadFilters from './CaseloadFilter'
+import CreateEADialog from './CreateEADialog'
 import ConsentFormModal from '../students/ConsentFormModal'
 
 interface CaseloadTableProps {
@@ -89,15 +66,10 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const [resultFilter, setResultFilter] = useState<string>('all')
   const [consentFilter, setConsentFilter] = useState<'all' | 'yes' | 'no'>('all')
   const [eaFilter, setEaFilter] = useState<string>('all')
-  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
   const [dateFilter, setDateFilter] = useState<string>('school_year')
   const [createEAOpen, setCreateEAOpen] = useState(false)
-  const [newEAName, setNewEAName] = useState('')
-  const [newEAEmail, setNewEAEmail] = useState('')
-  const [isCreatingEA, setIsCreatingEA] = useState(false)
   const [programStatusFilter, setProgramStatusFilter] = useState<string>('all')
 
-  const queryClient = useQueryClient()
   const navigate = useNavigate()
 
   const handleNavigate = (path: string) => {
@@ -200,43 +172,6 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         },
       }
     )
-  }
-
-  const handleCreateEA = async () => {
-    if (!newEAName.trim() || !schoolId) return
-
-    setIsCreatingEA(true)
-
-    const nameParts = newEAName.trim().split(' ')
-    const firstName = nameParts[0] || ''
-    const lastName = nameParts.slice(1).join(' ') || ''
-
-    try {
-      const { error } = await supabase.from('school_staff').insert({
-        school_id: schoolId,
-        first_name: firstName,
-        last_name: lastName,
-        roles: ['speech_ea'],
-        email: newEAEmail.trim() || null,
-        is_active: true,
-      })
-
-      if (error) throw error
-
-      queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool?.id] })
-      toast({ title: 'Speech EA added successfully' })
-      setCreateEAOpen(false)
-      setNewEAName('')
-      setNewEAEmail('')
-    } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to create Speech EA',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsCreatingEA(false)
-    }
   }
 
   const getResultBadge = (result?: string | null) => {
@@ -456,17 +391,6 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     dateFilter !== 'school_year' ||
     programStatusFilter !== 'all'
 
-  const getActiveFilterCount = () => {
-    let count = 0
-    if (gradeFilter !== 'all') count++
-    if (resultFilter !== 'all') count++
-    if (consentFilter !== 'all') count++
-    if (eaFilter !== 'all') count++
-    if (dateFilter !== 'school_year') count++
-    if (programStatusFilter !== 'all') count++
-    return count
-  }
-
   const clearAllFilters = () => {
     setGradeFilter('all')
     setResultFilter('all')
@@ -669,216 +593,29 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   return (
     <div className='space-y-4'>
       {/* Caseload Stats */}
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-        <Card
-          className={`cursor-pointer transition-colors ${
-            programStatusFilter === 'qualified'
-              ? 'ring-2 ring-red-300 bg-red-50'
-              : 'hover:bg-gray-50'
-          }`}
-          onClick={() =>
-            setProgramStatusFilter(program => (program === 'qualified' ? 'all' : 'qualified'))
-          }>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Qualified</CardTitle>
-            <CheckCircle className='h-4 w-4 text-red-500' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{caseloadStats.qualified}</div>
-            <p className='text-xs text-muted-foreground mt-1'>students in program</p>
-          </CardContent>
-        </Card>
+      <CaseloadStats
+        stats={caseloadStats}
+        activeFilter={programStatusFilter}
+        onFilterChange={setProgramStatusFilter}
+      />
 
-        <Card
-          className={`cursor-pointer transition-colors ${
-            programStatusFilter === 'sub'
-              ? 'ring-2 ring-orange-300 bg-orange-50'
-              : 'hover:bg-gray-50'
-          }`}
-          onClick={() => setProgramStatusFilter(program => (program === 'sub' ? 'all' : 'sub'))}>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Subs</CardTitle>
-            <Clock className='h-4 w-4 text-orange-500' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{caseloadStats.sub}</div>
-            <p className='text-xs text-muted-foreground mt-1'>students on sub list</p>
-          </CardContent>
-        </Card>
-
-        <Card
-          className={`cursor-pointer transition-colors ${
-            programStatusFilter === 'paused'
-              ? 'ring-2 ring-purple-300 bg-purple-50'
-              : 'hover:bg-gray-50'
-          }`}
-          onClick={() =>
-            setProgramStatusFilter(program => (program === 'paused' ? 'all' : 'paused'))
-          }>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Pause / Away</CardTitle>
-            <PauseCircle className='h-4 w-4 text-purple-500' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{caseloadStats.paused}</div>
-            <p className='text-xs text-muted-foreground mt-1'>students paused</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className='border border-gray-200 shadow-sm'>
-        <Collapsible open={isFiltersExpanded} onOpenChange={setIsFiltersExpanded}>
-          <CollapsibleTrigger asChild>
-            <CardHeader className='px-5 py-3 cursor-pointer rounded-lg hover:bg-gray-50 transition-colors'>
-              <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-3'>
-                  <Filter className='w-4 h-4 text-gray-600' />
-                  <CardTitle className='text-base font-semibold'>Filters</CardTitle>
-                  {hasActiveFilters && (
-                    <Badge variant='secondary' className='bg-blue-100 text-blue-700'>
-                      {getActiveFilterCount()} active
-                    </Badge>
-                  )}
-                </div>
-                <div className='flex items-center gap-2'>
-                  {hasActiveFilters && (
-                    <Button
-                      variant='ghost'
-                      size='sm'
-                      onClick={e => {
-                        e.stopPropagation()
-                        clearAllFilters()
-                      }}
-                      className='text-gray-600 hover:text-gray-900'>
-                      <X className='w-4 h-4 mr-1' />
-                      Clear All
-                    </Button>
-                  )}
-                  {isFiltersExpanded ? (
-                    <ChevronUp className='w-4 h-4 text-gray-600' />
-                  ) : (
-                    <ChevronDown className='w-4 h-4 text-gray-600' />
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-          </CollapsibleTrigger>
-
-          <CollapsibleContent>
-            <CardContent className='pt-0'>
-              <div className='grid grid-cols-1 md:grid-cols-5 gap-4'>
-                <div className='space-y-2'>
-                  <label className='text-sm font-medium text-gray-700'>Grade</label>
-                  <Select
-                    value={gradeFilter}
-                    onValueChange={v => {
-                      setGradeFilter(v)
-                      setCurrentPage(1)
-                    }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder='All Grades' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='all'>All Grades</SelectItem>
-                      {GRADE_MAPPING.map(grade => (
-                        <SelectItem key={grade.value} value={grade.value}>
-                          {grade.display}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className='space-y-2'>
-                  <label className='text-sm font-medium text-gray-700'>Result</label>
-                  <Select
-                    value={resultFilter}
-                    onValueChange={v => {
-                      setResultFilter(v)
-                      setCurrentPage(1)
-                    }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder='All Results' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='all'>All Results</SelectItem>
-                      {Object.entries(SCREENING_RESULTS).map(([key, { label }]) => (
-                        <SelectItem key={key} value={key}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className='space-y-2'>
-                  <label className='text-sm font-medium text-gray-700'>Consent</label>
-                  <Select
-                    value={consentFilter}
-                    onValueChange={v => {
-                      setConsentFilter(v as 'all' | 'yes' | 'no')
-                      setCurrentPage(1)
-                    }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder='All' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='all'>All</SelectItem>
-                      <SelectItem value='yes'>Consented</SelectItem>
-                      <SelectItem value='no'>No Consent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className='space-y-2'>
-                  <label className='text-sm font-medium text-gray-700'>Speech EA</label>
-                  <Select
-                    value={eaFilter}
-                    onValueChange={v => {
-                      setEaFilter(v)
-                      setCurrentPage(1)
-                    }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder='All EAs' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='all'>All EAs</SelectItem>
-                      <SelectItem value='none'>Unassigned</SelectItem>
-                      {speechEAs.map(ea => (
-                        <SelectItem key={ea.id} value={ea.id}>
-                          {ea.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className='space-y-2'>
-                  <label className='text-sm font-medium text-gray-700'>School Year</label>
-                  <Select
-                    value={dateFilter}
-                    onValueChange={v => {
-                      setDateFilter(v)
-                      setCurrentPage(1)
-                    }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder='This School Year' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='school_year'>This School Year</SelectItem>
-                      {availableSchoolYears.map(year => (
-                        <SelectItem key={year} value={`sy_${year}`}>
-                          {year}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </CollapsibleContent>
-        </Collapsible>
-      </Card>
+      <CaseloadFilters
+        gradeFilter={gradeFilter}
+        setGradeFilter={setGradeFilter}
+        resultFilter={resultFilter}
+        setResultFilter={setResultFilter}
+        consentFilter={consentFilter}
+        setConsentFilter={setConsentFilter}
+        eaFilter={eaFilter}
+        setEaFilter={setEaFilter}
+        dateFilter={dateFilter}
+        setDateFilter={setDateFilter}
+        programStatusFilter={programStatusFilter}
+        speechEAs={speechEAs}
+        availableSchoolYears={availableSchoolYears}
+        onClearAll={clearAllFilters}
+        onPageReset={() => setCurrentPage(1)}
+      />
 
       <div className='flex justify-end mb-3'>
         <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
@@ -1166,90 +903,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         />
       )}
 
-      <Dialog
-        open={createEAOpen}
-        onOpenChange={open => {
-          setCreateEAOpen(open)
-          if (!open) {
-            setNewEAName('')
-            setNewEAEmail('')
-          }
-        }}>
-        <DialogContent className='sm:max-w-[420px]'>
-          <DialogHeader>
-            <div className='flex items-center mb-2 space-x-3'>
-              <div className='flex items-center justify-center w-10 h-10 bg-purple-50 rounded-xl'>
-                <UserPlus className='w-5 h-5 text-purple-600' />
-              </div>
-              <DialogTitle>Add Speech EA</DialogTitle>
-            </div>
-            <DialogDescription>
-              Create a new Speech Education Assistant for this school. They'll be available to
-              assign to students immediately after.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className='py-4 space-y-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='ea-name' className='text-sm font-medium text-gray-700'>
-                Full Name <span className='text-red-500'>*</span>
-              </Label>
-              <Input
-                id='ea-name'
-                placeholder='e.g., Emily Carter'
-                value={newEAName}
-                onChange={e => setNewEAName(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && newEAName.trim()) handleCreateEA()
-                }}
-                className='h-10 border-gray-200 rounded-lg'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='ea-email' className='text-sm font-medium text-gray-700'>
-                Email Address
-              </Label>
-              <Input
-                id='ea-email'
-                type='email'
-                placeholder='e.g., emily.carter@school.edu'
-                value={newEAEmail}
-                onChange={e => setNewEAEmail(e.target.value)}
-                className='h-10 border-gray-200 rounded-lg'
-              />
-            </div>
-
-            <div className='px-3 py-2 rounded-lg bg-purple-50'>
-              <p className='text-xs text-purple-700 font-medium'>
-                Role: Speech Education Assistant
-              </p>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => setCreateEAOpen(false)}
-              className='border-gray-200 rounded-lg hover:bg-gray-50'>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateEA}
-              disabled={!newEAName.trim() || isCreatingEA}
-              className='text-white rounded-lg bg-brand hover:bg-brand/90'>
-              {isCreatingEA ? (
-                <>
-                  <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                  Creating...
-                </>
-              ) : (
-                'Add EA'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CreateEADialog open={createEAOpen} onOpenChange={setCreateEAOpen} schoolId={schoolId} />
     </div>
   )
 }
