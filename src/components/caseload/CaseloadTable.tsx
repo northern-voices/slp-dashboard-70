@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '@/lib/supabase'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
@@ -14,6 +16,7 @@ import {
   FileX,
   Filter,
   X,
+  UserPlus,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -25,6 +28,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -36,6 +40,15 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { GRADE_MAPPING } from '@/constants/app'
 import { Student } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
@@ -75,7 +88,12 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const [eaFilter, setEaFilter] = useState<string>('all')
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
   const [dateFilter, setDateFilter] = useState<string>('school_year')
+  const [createEAOpen, setCreateEAOpen] = useState(false)
+  const [newEAName, setNewEAName] = useState('')
+  const [newEAEmail, setNewEAEmail] = useState('')
+  const [isCreatingEA, setIsCreatingEA] = useState(false)
 
+  const queryClient = useQueryClient()
   const navigate = useNavigate()
 
   const handleNavigate = (path: string) => {
@@ -178,6 +196,43 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         },
       }
     )
+  }
+
+  const handleCreateEA = async () => {
+    if (!newEAName.trim() || !schoolId) return
+
+    setIsCreatingEA(true)
+
+    const nameParts = newEAName.trim().split(' ')
+    const firstName = nameParts[0] || ''
+    const lastName = nameParts.slice(1).join(' ') || ''
+
+    try {
+      const { error } = await supabase.from('school_staff').insert({
+        school_id: schoolId,
+        first_name: firstName,
+        last_name: lastName,
+        roles: ['speech_ea'],
+        email: newEAEmail.trim() || null,
+        is_active: true,
+      })
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool?.id] })
+      toast({ title: 'Speech EA added successfully' })
+      setCreateEAOpen(false)
+      setNewEAName('')
+      setNewEAEmail('')
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to create Speech EA',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsCreatingEA(false)
+    }
   }
 
   const getResultBadge = (result?: string | null) => {
@@ -893,7 +948,13 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 <TableCell>
                   <Select
                     value={student.speech_ea_id ?? 'none'}
-                    onValueChange={value => handleAssignEA(student, value)}>
+                    onValueChange={value => {
+                      if (value === '__create_new__') {
+                        setCreateEAOpen(true)
+                        return
+                      }
+                      handleAssignEA(student, value)
+                    }}>
                     <SelectTrigger className='w-[110px] h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
                       <SelectValue placeholder='Assign EA'>{getSpeechEAName(student)}</SelectValue>
                     </SelectTrigger>
@@ -904,6 +965,10 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                           {ea.name}
                         </SelectItem>
                       ))}
+                      <SelectSeparator />
+                      <SelectItem value='__create_new__' className='text-blue-600 font-medium'>
+                        + Create new EA
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </TableCell>
@@ -1000,6 +1065,91 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
           student={consentStudent}
         />
       )}
+
+      <Dialog
+        open={createEAOpen}
+        onOpenChange={open => {
+          setCreateEAOpen(open)
+          if (!open) {
+            setNewEAName('')
+            setNewEAEmail('')
+          }
+        }}>
+        <DialogContent className='sm:max-w-[420px]'>
+          <DialogHeader>
+            <div className='flex items-center mb-2 space-x-3'>
+              <div className='flex items-center justify-center w-10 h-10 bg-purple-50 rounded-xl'>
+                <UserPlus className='w-5 h-5 text-purple-600' />
+              </div>
+              <DialogTitle>Add Speech EA</DialogTitle>
+            </div>
+            <DialogDescription>
+              Create a new Speech Education Assistant for this school. They'll be available to
+              assign to students immediately after.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className='py-4 space-y-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='ea-name' className='text-sm font-medium text-gray-700'>
+                Full Name <span className='text-red-500'>*</span>
+              </Label>
+              <Input
+                id='ea-name'
+                placeholder='e.g., Emily Carter'
+                value={newEAName}
+                onChange={e => setNewEAName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && newEAName.trim()) handleCreateEA()
+                }}
+                className='h-10 border-gray-200 rounded-lg'
+              />
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='ea-email' className='text-sm font-medium text-gray-700'>
+                Email Address
+              </Label>
+              <Input
+                id='ea-email'
+                type='email'
+                placeholder='e.g., emily.carter@school.edu'
+                value={newEAEmail}
+                onChange={e => setNewEAEmail(e.target.value)}
+                className='h-10 border-gray-200 rounded-lg'
+              />
+            </div>
+
+            <div className='px-3 py-2 rounded-lg bg-purple-50'>
+              <p className='text-xs text-purple-700 font-medium'>
+                Role: Speech Education Assistant
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => setCreateEAOpen(false)}
+              className='border-gray-200 rounded-lg hover:bg-gray-50'>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateEA}
+              disabled={!newEAName.trim() || isCreatingEA}
+              className='text-white rounded-lg bg-brand hover:bg-brand/90'>
+              {isCreatingEA ? (
+                <>
+                  <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                  Creating...
+                </>
+              ) : (
+                'Add EA'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
