@@ -26,6 +26,11 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
+import {
+  RESULT_OPTIONS,
+  PROGRAM_OPTIONS,
+  SERVICE_STATUS_OPTIONS,
+} from '@/constants/screeningOptions'
 import { GRADE_MAPPING } from '@/constants/app'
 import { Student } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
@@ -562,34 +567,6 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     startIndex + effectiveItemsPerPage
   )
 
-  const resultOptions = [
-    { value: 'no_errors', label: 'No Errors' },
-    { value: 'age_appropriate', label: 'Age Appropriate' },
-    { value: 'monitor', label: 'Monitor' },
-    { value: 'mild', label: 'Mild' },
-    { value: 'moderate', label: 'Moderate' },
-    { value: 'severe', label: 'Severe' },
-    { value: 'profound', label: 'Profound' },
-    { value: 'complex_needs', label: 'Complex Needs' },
-    { value: 'unable_to_screen', label: 'Non-Compliant' },
-    { value: 'absent', label: 'Absent' },
-    { value: 'non_registered_no_consent', label: 'No Consent' },
-  ]
-
-  const programOptions = [
-    { value: 'qualified', label: 'Qualifies' },
-    { value: 'not_in_program', label: 'Not In Program' },
-    { value: 'sub', label: 'Sub' },
-    { value: 'no_consent', label: 'Qualifies - No Consent' },
-  ]
-
-  const statusOptions = [
-    { value: 'none', label: 'None' },
-    { value: 'paused', label: 'Pause/Away' },
-    { value: 'graduated', label: 'Graduated' },
-    { value: 'transferred', label: 'Transferred' },
-  ]
-
   return (
     <div className='space-y-4'>
       {/* Caseload Stats */}
@@ -714,7 +691,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {programOptions.map(option => (
+                      {PROGRAM_OPTIONS.map(option => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
@@ -743,7 +720,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {resultOptions.map(option => (
+                        {RESULT_OPTIONS.map(option => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>
@@ -771,7 +748,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {statusOptions.map(option => (
+                      {SERVICE_STATUS_OPTIONS.map(option => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
