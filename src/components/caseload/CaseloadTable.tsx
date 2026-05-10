@@ -358,59 +358,23 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   }
 
   const handleStatusChange = (student: Student, newStatus: ServiceStatus) => {
-    const screening = latestScreeningByStudent.get(student.id)
-    if (!screening) return
-
     setUpdatingStudentId(student.id)
-    const currentErrorPatterns = screening.error_patterns || ({} as ErrorPatterns)
 
-    const cleanErrorPatterns: Partial<ErrorPatterns> = {
-      articulation: currentErrorPatterns.articulation || ({} as ErrorPatterns['articulation']),
-      add_areas_of_concern:
-        currentErrorPatterns.add_areas_of_concern || ({} as ErrorPatterns['add_areas_of_concern']),
-      attendance: currentErrorPatterns.attendance || ({} as ErrorPatterns['attendance']),
-      additional_observations: currentErrorPatterns.additional_observations || '',
-      consent: {
-        ...(currentErrorPatterns.consent || {}),
-      },
-      screening_metadata: {
-        ...(currentErrorPatterns.screening_metadata || {}),
-        paused: newStatus === 'paused',
-        graduated: newStatus === 'graduated',
-        transferred: newStatus === 'transferred',
-      } as ErrorPatterns['screening_metadata'],
-    }
-
-    updateSpeechScreening(
+    updateStudent(
       {
-        id: screening.id,
-        data: { error_patterns: cleanErrorPatterns as ErrorPatterns },
+        id: student.id,
+        studentData: { service_status: newStatus === 'none' ? null : newStatus },
       },
       {
         onSuccess: () => {
-          updateStudent(
-            { id: student.id, studentData: { service_status: newStatus } },
-            {
-              onSuccess: () => {
-                setUpdatingStudentId(null)
-                toast({ title: 'Status updated' })
-              },
-              onError: () => {
-                setUpdatingStudentId(null)
-                toast({
-                  title: 'Warning',
-                  description: 'Screening updated but failed to update student',
-                  variant: 'destructive',
-                })
-              },
-            }
-          )
+          setUpdatingStudentId(null)
+          toast({ title: 'Status updated' })
         },
-        onError: error => {
+        onError: () => {
           setUpdatingStudentId(null)
           toast({
             title: 'Error updating status',
-            description: error.message,
+            description: 'Failed to update student status',
             variant: 'destructive',
           })
         },
@@ -868,30 +832,35 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 </TableCell> */}
 
                 <TableCell>
-                  <Select
-                    value={latestScreeningByStudent.get(student.id)?.result ?? ''}
-                    onValueChange={value => handleResultChange(student, value)}
-                    disabled={
-                      updatingStudentId === student.id || !latestScreeningByStudent.get(student.id)
-                    }>
-                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
-                      <SelectValue>
-                        <div className='flex items-center gap-2'>
-                          {updatingStudentId === student.id && (
-                            <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
-                          )}
-                          {getResultBadge(latestScreeningByStudent.get(student.id)?.result)}
-                        </div>
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {resultOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {latestScreeningByStudent.get(student.id) ? (
+                    <Select
+                      value={latestScreeningByStudent.get(student.id)?.result ?? ''}
+                      onValueChange={value => handleResultChange(student, value)}
+                      disabled={
+                        updatingStudentId === student.id ||
+                        !latestScreeningByStudent.get(student.id)
+                      }>
+                      <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                        <SelectValue>
+                          <div className='flex items-center gap-2'>
+                            {updatingStudentId === student.id && (
+                              <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
+                            )}
+                            {getResultBadge(latestScreeningByStudent.get(student.id)?.result)}
+                          </div>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {resultOptions.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    getResultBadge(undefined)
+                  )}
                 </TableCell>
 
                 <TableCell>
