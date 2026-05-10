@@ -17,6 +17,9 @@ import {
   Filter,
   X,
   UserPlus,
+  CheckCircle,
+  Clock,
+  PauseCircle,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -92,6 +95,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const [newEAName, setNewEAName] = useState('')
   const [newEAEmail, setNewEAEmail] = useState('')
   const [isCreatingEA, setIsCreatingEA] = useState(false)
+  const [programStatusFilter, setProgramStatusFilter] = useState<string>('all')
 
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -449,7 +453,8 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     resultFilter !== 'all' ||
     consentFilter !== 'all' ||
     eaFilter !== 'all' ||
-    dateFilter !== 'school_year'
+    dateFilter !== 'school_year' ||
+    programStatusFilter !== 'all'
 
   const getActiveFilterCount = () => {
     let count = 0
@@ -458,6 +463,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     if (consentFilter !== 'all') count++
     if (eaFilter !== 'all') count++
     if (dateFilter !== 'school_year') count++
+    if (programStatusFilter !== 'all') count++
     return count
   }
 
@@ -467,6 +473,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     setConsentFilter('all')
     setEaFilter('all')
     setDateFilter('school_year')
+    setProgramStatusFilter('all')
     setCurrentPage(1)
   }
 
@@ -524,6 +531,24 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
       matchesEA
     )
   })
+
+  const caseloadStats = {
+    qualified: filteredStudents.filter(
+      student =>
+        student.program_status === 'qualified' &&
+        student.service_status !== 'paused' &&
+        student.service_status !== 'graduated' &&
+        student.service_status !== 'transferred'
+    ).length,
+    sub: filteredStudents.filter(
+      student =>
+        student.program_status === 'sub' &&
+        student.service_status !== 'paused' &&
+        student.service_status !== 'graduated' &&
+        student.service_status !== 'transferred'
+    ).length,
+    paused: filteredStudents.filter(s => s.service_status === 'paused').length,
+  }
 
   const sortedStudents = [...filteredStudents].sort((a, b) => {
     if (!sortField || !sortOrder) {
@@ -590,11 +615,28 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     return sortOrder === 'asc' ? comparison : -comparison
   })
 
-  const totalStudents = sortedStudents.length
+  const inactiveStatuses = ['paused', 'graduated', 'transferred']
+
+  let programFilteredStudents = sortedStudents
+
+  if (programStatusFilter === 'paused') {
+    programFilteredStudents = sortedStudents.filter(student => student.service_status === 'paused')
+  } else if (programStatusFilter !== 'all') {
+    programFilteredStudents = sortedStudents.filter(
+      student =>
+        student.program_status === programStatusFilter &&
+        !inactiveStatuses.includes(student.service_status ?? '')
+    )
+  }
+
+  const totalStudents = programFilteredStudents.length
   const effectiveItemsPerPage = itemsPerPage === 'all' ? totalStudents : itemsPerPage
   const totalPages = Math.max(1, Math.ceil(totalStudents / effectiveItemsPerPage))
   const startIndex = (currentPage - 1) * effectiveItemsPerPage
-  const paginatedStudents = sortedStudents.slice(startIndex, startIndex + effectiveItemsPerPage)
+  const paginatedStudents = programFilteredStudents.slice(
+    startIndex,
+    startIndex + effectiveItemsPerPage
+  )
 
   const resultOptions = [
     { value: 'no_errors', label: 'No Errors' },
@@ -626,6 +668,64 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   return (
     <div className='space-y-4'>
+      {/* Caseload Stats */}
+      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+        <Card
+          className={`cursor-pointer transition-colors ${
+            programStatusFilter === 'qualified'
+              ? 'ring-2 ring-red-300 bg-red-50'
+              : 'hover:bg-gray-50'
+          }`}
+          onClick={() =>
+            setProgramStatusFilter(program => (program === 'qualified' ? 'all' : 'qualified'))
+          }>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Qualified</CardTitle>
+            <CheckCircle className='h-4 w-4 text-red-500' />
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>{caseloadStats.qualified}</div>
+            <p className='text-xs text-muted-foreground mt-1'>students in program</p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={`cursor-pointer transition-colors ${
+            programStatusFilter === 'sub'
+              ? 'ring-2 ring-orange-300 bg-orange-50'
+              : 'hover:bg-gray-50'
+          }`}
+          onClick={() => setProgramStatusFilter(program => (program === 'sub' ? 'all' : 'sub'))}>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Subs</CardTitle>
+            <Clock className='h-4 w-4 text-orange-500' />
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>{caseloadStats.sub}</div>
+            <p className='text-xs text-muted-foreground mt-1'>students on sub list</p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={`cursor-pointer transition-colors ${
+            programStatusFilter === 'paused'
+              ? 'ring-2 ring-purple-300 bg-purple-50'
+              : 'hover:bg-gray-50'
+          }`}
+          onClick={() =>
+            setProgramStatusFilter(program => (program === 'paused' ? 'all' : 'paused'))
+          }>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Pause / Away</CardTitle>
+            <PauseCircle className='h-4 w-4 text-purple-500' />
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>{caseloadStats.paused}</div>
+            <p className='text-xs text-muted-foreground mt-1'>students paused</p>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className='border border-gray-200 shadow-sm'>
         <Collapsible open={isFiltersExpanded} onOpenChange={setIsFiltersExpanded}>
           <CollapsibleTrigger asChild>
