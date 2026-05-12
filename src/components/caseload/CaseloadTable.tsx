@@ -327,7 +327,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
       {
         onSuccess: () => {
           updateStudent(
-            { id: student.id, studentData: { program_status: newProgram } },
+            { id: student.id, studentData: { program_status: newProgram, service_status: null } },
             {
               onSuccess: () => {
                 setUpdatingStudentId(null)
@@ -672,10 +672,10 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
                 <TableCell>{getStudentGrade(student)}</TableCell>
 
-                <TableCell>{getProgramBadge(student)}</TableCell>
+                {/* <TableCell>{getProgramBadge(student)}</TableCell> */}
 
                 {/* Functionality to be able to change the program but leave it out for now */}
-                {/* <TableCell>
+                <TableCell>
                   <Select
                     value={student.program_status ?? 'none'}
                     onValueChange={value => handleProgramChange(student, value as ProgramStatus)}
@@ -698,7 +698,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                       ))}
                     </SelectContent>
                   </Select>
-                </TableCell> */}
+                </TableCell>
 
                 <TableCell>
                   {latestScreeningByStudent.get(student.id) ? (
