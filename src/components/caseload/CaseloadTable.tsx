@@ -638,7 +638,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 </Button>
               </TableHead>
 
-              <TableHead className='w-[70px]'>
+              <TableHead className='w-[55px]'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('grade')}
@@ -658,7 +658,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 </Button>
               </TableHead>
 
-              <TableHead className='w-[160px]'>
+              <TableHead className='w-[190px]'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('result')}
@@ -668,9 +668,9 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 </Button>
               </TableHead>
 
-              <TableHead className='w-[70px]'>Status</TableHead>
+              <TableHead className='w-[55px]'>Status</TableHead>
 
-              <TableHead className='w-[70px] text-center'>
+              <TableHead className='w-[55px] text-center'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('consent')}
@@ -725,48 +725,40 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 </TableCell>
 
                 <TableCell>
-                  {latestScreeningByStudent.get(student.id) ? (
-                    <div className='flex flex-col gap-0.5'>
-                      <Select
-                        value={latestScreeningByStudent.get(student.id)?.result ?? ''}
-                        onValueChange={value => handleResultChange(student, value)}
-                        disabled={
-                          updatingStudentId === student.id ||
-                          !latestScreeningByStudent.get(student.id)
-                        }>
-                        <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
-                          <SelectValue>
-                            <div className='flex items-center gap-2'>
-                              {updatingStudentId === student.id && (
-                                <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
-                              )}
-                              {getResultBadge(latestScreeningByStudent.get(student.id)?.result)}
-                            </div>
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {RESULT_OPTIONS.map(option => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {(() => {
+                  {latestScreeningByStudent.get(student.id)
+                    ? (() => {
                         const screening = latestScreeningByStudent.get(student.id)
-                        if (screening && !isCurrentSchoolYear(screening.created_at)) {
-                          return (
-                            <span className='text-[10px] text-gray-400 px-1'>
-                              {getSchoolYearLabel(screening.created_at)}
-                            </span>
-                          )
-                        }
-                        return null
-                      })()}
-                    </div>
-                  ) : (
-                    getResultBadge(undefined)
-                  )}
+                        return (
+                          <Select
+                            value={screening?.result ?? ''}
+                            onValueChange={value => handleResultChange(student, value)}
+                            disabled={updatingStudentId === student.id || !screening}>
+                            <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                              <SelectValue>
+                                <div className='flex items-center gap-1.5'>
+                                  {updatingStudentId === student.id && (
+                                    <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
+                                  )}
+                                  {getResultBadge(screening?.result)}
+                                  {screening && !isCurrentSchoolYear(screening.created_at) && (
+                                    <span className='text-[10px] text-gray-400 whitespace-nowrap'>
+                                      {getSchoolYearLabel(screening.created_at)}
+                                    </span>
+                                  )}
+                                </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {RESULT_OPTIONS.map(option => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )
+                      })()
+                    : getResultBadge(undefined)}
                 </TableCell>
 
                 <TableCell>
