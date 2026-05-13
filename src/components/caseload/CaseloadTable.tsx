@@ -434,10 +434,17 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     const matchesSearch = fullName.includes(searchTerm.toLowerCase())
 
     const screening = latestScreeningByStudent.get(student.id)
+
     const matchesCaseload =
       dateFilter === 'school_year'
         ? student.program_status === 'qualified' || student.program_status === 'sub'
         : screening?.program_status === 'qualified' || screening?.program_status === 'sub'
+
+    // const matchesCaseload =
+    //   dateFilter === 'school_year'
+    //     ? (student.program_status === 'qualified' || student.program_status === 'sub') &&
+    //       !!screening
+    //     : screening?.program_status === 'qualified' || screening?.program_status === 'sub'
 
     const matchesGrade = gradeFilter === 'all' || getStudentGrade(student).includes(gradeFilter)
 
