@@ -798,7 +798,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                       }
                       handleAssignEA(student, value)
                     }}>
-                    <SelectTrigger className='w-[110px] h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
                       <SelectValue placeholder='Assign EA'>{getSpeechEAName(student)}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
