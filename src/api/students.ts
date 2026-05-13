@@ -555,4 +555,32 @@ export const studentsApi = {
       throw error
     }
   },
+
+  /**
+   * Get all transfers involving a school (in or out)
+   */
+  getTransfersBySchool: async (schoolId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('student_transfers')
+        .select(
+          `*,
+          student:students!student_id (id, first_name, last_name),
+          from_school:schools!from_school_id (id, name),
+          to_school:schools!to_school_id (id, name),
+          from_grade:school_grades!from_grade_id (id, grade_level),
+          to_grade:school_grades!to_grade_id (id, grade_level)
+        `
+        )
+        .or(`from_school_id.eq.${schoolId},to_school_id.eq.${schoolId}`)
+        .order('transfer_date', { ascending: false })
+
+      if (error) throw error
+
+      return data
+    } catch (error) {
+      console.error('Error fetching school transfer history:', error)
+      throw error
+    }
+  },
 }
