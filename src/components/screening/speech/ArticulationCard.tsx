@@ -309,15 +309,15 @@ const ArticulationCard = ({
                             }
                             className='ml-2 space-y-1'>
                             {stimulabilityOptions.map(option => (
-                              <div key={option} className='flex items-center space-x-2'>
+                              <div key={option.value} className='flex items-center space-x-2'>
                                 <RadioGroupItem
-                                  value={option}
-                                  id={`${sound}-stimulability-${option}`}
+                                  value={option.value}
+                                  id={`${sound}-stimulability-${option.value}`}
                                 />
                                 <Label
-                                  htmlFor={`${sound}-stimulability-${option}`}
+                                  htmlFor={`${sound}-stimulability-${option.value}`}
                                   className='text-xs font-normal cursor-pointer'>
-                                  {option}
+                                  {option.display}
                                 </Label>
                               </div>
                             ))}

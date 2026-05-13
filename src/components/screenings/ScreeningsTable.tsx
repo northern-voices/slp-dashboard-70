@@ -31,6 +31,11 @@ import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { useSchoolGradesBySchool } from '@/hooks/use-school-grades'
 import type { SchoolGrade } from '@/api/schoolGrades'
+import {
+  RESULT_OPTIONS,
+  PROGRAM_OPTIONS,
+  SERVICE_STATUS_OPTIONS,
+} from '@/constants/screeningOptions'
 import ScreeningBulkActions from './ScreeningBulkActions'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import SendReportsModal from './SendReportsModal'
@@ -277,7 +282,7 @@ const ScreeningsTable = ({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {programOptions.map(option => (
+            {PROGRAM_OPTIONS.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -332,7 +337,7 @@ const ScreeningsTable = ({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {statusOptions.map(option => (
+            {SERVICE_STATUS_OPTIONS.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -370,7 +375,7 @@ const ScreeningsTable = ({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {resultOptions.map(option => (
+            {RESULT_OPTIONS.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -693,38 +698,6 @@ const ScreeningsTable = ({
       )
     }
   }
-
-  // Define the result options
-  const resultOptions = [
-    { value: 'no_errors', label: 'No Errors' },
-    { value: 'age_appropriate', label: 'Age Appropriate' },
-    { value: 'monitor', label: 'Monitor' },
-    { value: 'mild', label: 'Mild' },
-    { value: 'moderate', label: 'Moderate' },
-    { value: 'severe', label: 'Severe' },
-    { value: 'profound', label: 'Profound' },
-    { value: 'complex_needs', label: 'Complex Needs' },
-    { value: 'unable_to_screen', label: 'Non-Compliant' },
-    { value: 'absent', label: 'Absent' },
-    { value: 'non_registered_no_consent', label: 'No Consent' },
-    // { value: 'passed', label: 'Passed' },
-  ]
-
-  // Define the program qualification options
-  const programOptions = [
-    { value: 'qualified', label: 'Qualifies' },
-    { value: 'not_in_program', label: 'Not In Program' },
-    { value: 'sub', label: 'Sub' },
-    { value: 'no_consent', label: 'Qualifies - No Consent' },
-    // { value: 'not_set', label: 'Not Set' },
-  ]
-
-  const statusOptions = [
-    { value: 'none', label: 'None' },
-    { value: 'paused', label: 'Pause/Away' },
-    { value: 'graduated', label: 'Graduated' },
-    { value: 'transferred', label: 'Transferred' },
-  ]
 
   const { mutate: deleteScreening, isPending: isDeleting } = useDeleteScreening()
 
