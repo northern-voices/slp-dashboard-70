@@ -98,17 +98,8 @@ export const useTransferStudent = () => {
       // Invalidate both old and new school student lists
       queryClient.invalidateQueries({ queryKey: ['students', 'school', variables.fromSchoolId] })
       queryClient.invalidateQueries({ queryKey: ['students', 'school', variables.toSchoolId] })
-    },
-  })
-}
-
-export const useStudentTransferHistory = (studentId: string) => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: () => studentsApi.getStudentTransferHistory(studentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['student-transfers', studentId] })
+      queryClient.invalidateQueries({ queryKey: ['school-transfers', variables.fromSchoolId] })
+      queryClient.invalidateQueries({ queryKey: ['school-transfers', variables.toSchoolId] })
     },
   })
 }
