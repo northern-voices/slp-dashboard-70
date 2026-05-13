@@ -226,12 +226,16 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
       case 'sub':
         return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
       case 'qualified':
-        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualified</Badge>
+        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
       case 'not_in_program':
         return (
           <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
             Not In Program
           </Badge>
+        )
+      case 'no_consent':
+        return (
+          <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
         )
       default:
         return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
