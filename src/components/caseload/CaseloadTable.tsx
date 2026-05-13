@@ -132,7 +132,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const latestScreeningByStudent = useMemo(() => {
     const map = new Map<string, Screening>()
 
-    let screeningsToProcess = schoolScreenings.filter(s => s.source_table === 'speech')
+    let screeningsToProcess = allSchoolScreenings.filter(s => s.source_table === 'speech')
 
     if (dateFilter.startsWith('sy_')) {
       const [startYear, endYear] = dateFilter.replace('sy_', '').split('-').map(Number)
@@ -152,7 +152,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     })
 
     return map
-  }, [schoolScreenings, dateFilter])
+  }, [allSchoolScreenings, dateFilter])
 
   const { mutate: updateStudent } = useUpdateStudent()
   const { mutate: updateSpeechScreening } = useUpdateSpeechScreening()
@@ -255,6 +255,22 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
       default:
         return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>None</Badge>
     }
+  }
+
+  const isCurrentSchoolYear = (dateStr: string): boolean => {
+    const date = new Date(dateStr)
+    const syStartYear = date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1
+    const now = new Date()
+    const currentSyStartYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1
+
+    return syStartYear === currentSyStartYear
+  }
+
+  const getSchoolYearLabel = (dateStr: string): string => {
+    const date = new Date(dateStr)
+    const startYear = date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1
+
+    return `${startYear}-${String(startYear + 1).slice(2)}`
   }
 
   const handleSort = (field: 'grade' | 'program_status' | 'name' | 'result' | 'consent') => {
@@ -710,31 +726,44 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
                 <TableCell>
                   {latestScreeningByStudent.get(student.id) ? (
-                    <Select
-                      value={latestScreeningByStudent.get(student.id)?.result ?? ''}
-                      onValueChange={value => handleResultChange(student, value)}
-                      disabled={
-                        updatingStudentId === student.id ||
-                        !latestScreeningByStudent.get(student.id)
-                      }>
-                      <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
-                        <SelectValue>
-                          <div className='flex items-center gap-2'>
-                            {updatingStudentId === student.id && (
-                              <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
-                            )}
-                            {getResultBadge(latestScreeningByStudent.get(student.id)?.result)}
-                          </div>
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {RESULT_OPTIONS.map(option => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className='flex flex-col gap-0.5'>
+                      <Select
+                        value={latestScreeningByStudent.get(student.id)?.result ?? ''}
+                        onValueChange={value => handleResultChange(student, value)}
+                        disabled={
+                          updatingStudentId === student.id ||
+                          !latestScreeningByStudent.get(student.id)
+                        }>
+                        <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                          <SelectValue>
+                            <div className='flex items-center gap-2'>
+                              {updatingStudentId === student.id && (
+                                <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
+                              )}
+                              {getResultBadge(latestScreeningByStudent.get(student.id)?.result)}
+                            </div>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {RESULT_OPTIONS.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {(() => {
+                        const screening = latestScreeningByStudent.get(student.id)
+                        if (screening && !isCurrentSchoolYear(screening.created_at)) {
+                          return (
+                            <span className='text-[10px] text-gray-400 px-1'>
+                              {getSchoolYearLabel(screening.created_at)}
+                            </span>
+                          )
+                        }
+                        return null
+                      })()}
+                    </div>
                   ) : (
                     getResultBadge(undefined)
                   )}
