@@ -32,6 +32,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  RESULT_OPTIONS,
+  PROGRAM_OPTIONS,
+  SERVICE_STATUS_OPTIONS,
+} from '@/constants/screeningOptions'
 import { format } from 'date-fns'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import { Screening } from '@/types/database'
@@ -274,7 +279,7 @@ const ScreeningsList = ({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {programOptions.map(option => (
+            {extendedProgramOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -311,7 +316,7 @@ const ScreeningsList = ({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {resultOptions.map(option => (
+            {RESULT_OPTIONS.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -324,28 +329,10 @@ const ScreeningsList = ({
     return getResultBadge(screening.result)
   }
 
-  // Add the options arrays
-  const resultOptions = [
-    { value: 'no_errors', label: 'No Errors' },
-    { value: 'age_appropriate', label: 'Age Appropriate' },
-    { value: 'monitor', label: 'Monitor' },
-    { value: 'mild', label: 'Mild' },
-    { value: 'moderate', label: 'Moderate' },
-    { value: 'severe', label: 'Severe' },
-    { value: 'profound', label: 'Profound' },
-    { value: 'complex_needs', label: 'Complex Needs' },
-    { value: 'unable_to_screen', label: 'Non-Compliant' },
-    { value: 'absent', label: 'Absent' },
-    { value: 'non_registered_no_consent', label: 'No Consent' },
-  ]
-
-  const programOptions = [
-    { value: 'qualified', label: 'Qualifies' },
-    { value: 'not_in_program', label: 'Not In Program' },
-    { value: 'sub', label: 'Sub' },
+  const extendedProgramOptions = [
+    ...PROGRAM_OPTIONS,
     { value: 'paused', label: 'Pause' },
     { value: 'graduated', label: 'Graduated' },
-    { value: 'no_consent', label: 'No Consent' },
   ]
 
   // Apply filters to the speech screenings
