@@ -17,6 +17,7 @@ import EditStudentDialog from './EditStudentDialog'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudentTransferHistory } from '@/hooks/students'
+import TransferHistorySection from './TransferHistorySection'
 
 interface StudentInfoHeaderProps {
   student?: Student | null
@@ -278,6 +279,8 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
               onAssignEA={handleAssignEA}
             />
             <StudentNotes studentId={localStudent.id} formatDate={formatDate} />
+
+            <TransferHistorySection studentId={localStudent.id} />
           </div>
         </div>
 
