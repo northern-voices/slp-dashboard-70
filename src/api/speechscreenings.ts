@@ -36,6 +36,7 @@ interface RawSpeechScreening {
     id: string
     grade_level: string
     academic_year: string
+    school_id: string
   } | null
   users: {
     id: string
@@ -669,7 +670,7 @@ export const speechScreeningsApi = {
         .select(
           `
           *,
-          students!inner (
+          students (
             id,
             first_name,
             last_name,
@@ -682,10 +683,11 @@ export const speechScreeningsApi = {
               name
             )
           ),
-          school_grades (
+          school_grades!inner (
             id,
             grade_level,
-            academic_year
+            academic_year,
+            school_id
           ),
           users (
             id,
@@ -695,7 +697,7 @@ export const speechScreeningsApi = {
         `,
           { count: 'exact' }
         )
-        .eq('students.school_id', schoolId)
+        .eq('school_grades.school_id', schoolId)
 
       // Apply date filter at database level (default to school year)
       if (dateFilter !== 'all') {

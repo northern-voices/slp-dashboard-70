@@ -20,6 +20,15 @@ interface ScreeningTableRowProps {
   getProgramSelector: (screening: Screening) => React.ReactNode
   getStatusSelector: (screening: Screening) => React.ReactNode
   onAddConsent: (screening: Screening) => void
+  transferRecord?: {
+    student_id: string
+    from_school_id: string
+    to_school_id: string
+    transfer_date: string
+    from_school: { id: string; name: string } | null
+    to_school: { id: string; name: string } | null
+  } | null
+  currentSchoolId?: string
 }
 
 const ScreeningTableRow = ({
@@ -36,9 +45,21 @@ const ScreeningTableRow = ({
   getProgramSelector,
   getStatusSelector,
   onAddConsent,
+  transferRecord,
+  currentSchoolId,
 }: ScreeningTableRowProps) => {
   const grade = getScreeningGrade(screening)
   const isLoadingGrade = grade === '...'
+
+  const transferredOut =
+    transferRecord && currentSchoolId && transferRecord.from_school_id === currentSchoolId
+      ? transferRecord.to_school?.name
+      : null
+
+  const transferredIn =
+    transferRecord && currentSchoolId && transferRecord.to_school_id === currentSchoolId
+      ? transferRecord.from_school?.name
+      : null
 
   return (
     <ResponsiveTableRow
@@ -50,7 +71,19 @@ const ScreeningTableRow = ({
                 checked={isSelected}
                 onCheckedChange={checked => onSelect(screening, checked as boolean)}
               />
-              <h3 className='font-medium'>{screening.student_name}</h3>
+              <div className='flex flex-col gap-0.5'>
+                <h3 className='font-medium'>{screening.student_name}</h3>
+                {transferredOut && (
+                  <span className='text-xs font-medium text-orange-600'>
+                    Transferred Out → {transferredOut}
+                  </span>
+                )}
+                {transferredIn && (
+                  <span className='text-xs font-medium text-blue-600'>
+                    Transferred In ← {transferredIn}
+                  </span>
+                )}
+              </div>
             </div>
             <ScreeningRowDropdown
               screening={screening}
@@ -96,10 +129,20 @@ const ScreeningTableRow = ({
         />
       </TableCell>
       <TableCell className='max-w-0'>
-        <div className='truncate'>
+        <div className='flex flex-col gap-0.5'>
           <div className='text-base font-medium truncate' title={screening.student_name}>
             {screening.student_name}
           </div>
+          {transferredOut && (
+            <span className='text-xs font-medium text-orange-600'>
+              Transferred Out → {transferredOut}
+            </span>
+          )}
+          {transferredIn && (
+            <span className='text-xs font-medium text-blue-600'>
+              Transferred In ← {transferredIn}
+            </span>
+          )}
         </div>
       </TableCell>
       <TableCell className='max-w-0'>

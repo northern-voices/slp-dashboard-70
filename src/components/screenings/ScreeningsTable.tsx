@@ -28,7 +28,7 @@ import {
 } from '@/hooks/screenings/use-screening-mutations'
 import { useToast } from '@/hooks/use-toast'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
-import { useStudentsBySchool } from '@/hooks/students/use-students'
+import { useStudentsBySchool, useSchoolTransfers } from '@/hooks/students/use-students'
 import { useSchoolGradesBySchool } from '@/hooks/use-school-grades'
 import type { SchoolGrade } from '@/api/schoolGrades'
 import {
@@ -95,8 +95,8 @@ const ScreeningsTable = ({
   const [consentStudent, setConsentStudent] = useState<Student | null>(null)
 
   const navigate = useNavigate()
+  const { toast } = useToast()
 
-  // If currentSchool is provided, use the school-specific query, otherwise fetch all
   const {
     data: allScreeningsData,
     isLoading: isLoadingAll,
@@ -104,18 +104,14 @@ const ScreeningsTable = ({
     error: errorAll,
   } = useScreenings()
 
-  // Use mutation hooks
   const { mutate: updateSpeechScreening } = useUpdateSpeechScreening()
   const { mutate: updateStudent } = useUpdateStudent()
-  const { toast } = useToast()
 
-  // Fetch students for the school
   const { data: students = [] } = useStudentsBySchool(currentSchool?.id)
-
-  // Fetch grades using React Query
   const { data: grades = [], isLoading: isLoadingGrades } = useSchoolGradesBySchool(
     currentSchool?.id
   )
+  const { data: schoolTransfers = [] } = useSchoolTransfers(currentSchool?.id ?? '')
 
   // Create grades map from React Query data
   const gradesMap = useMemo(() => {
@@ -125,6 +121,16 @@ const ScreeningsTable = ({
     })
     return mapping
   }, [grades])
+
+  const transferByStudentId = useMemo(() => {
+    const map = new Map<string, (typeof schoolTransfers)[0]>()
+    schoolTransfers.forEach(transfer => {
+      if (!map.has(transfer.student_id)) {
+        map.set(transfer.student_id, transfer)
+      }
+    })
+    return map
+  }, [schoolTransfers])
 
   const isFilterActive =
     searchTerm.trim() !== '' ||
@@ -851,6 +857,8 @@ const ScreeningsTable = ({
                   getProgramSelector={getProgramSelector}
                   getStatusSelector={getStatusSelector}
                   onAddConsent={handleAddConsent}
+                  transferRecord={transferByStudentId.get(screening.student_id)}
+                  currentSchoolId={currentSchool?.id ?? ''}
                 />
               ))}
             </TableBody>

@@ -102,3 +102,17 @@ export const useStudentByStudentId = (studentId?: string) => {
     staleTime: 5 * 60 * 1000,
   })
 }
+
+export const useStudentTransferHistory = (studentId: string) =>
+  useQuery({
+    queryKey: ['student-transfers', studentId],
+    queryFn: () => studentsApi.getStudentTransferHistory(studentId),
+    enabled: !!studentId,
+  })
+
+export const useSchoolTransfers = (schoolId: string) =>
+  useQuery({
+    queryKey: ['school-transfers', schoolId],
+    queryFn: () => studentsApi.getTransfersBySchool(schoolId),
+    enabled: !!schoolId,
+  })
