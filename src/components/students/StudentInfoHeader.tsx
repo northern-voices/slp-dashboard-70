@@ -16,6 +16,7 @@ import StudentNotes from './StudentNotes'
 import EditStudentDialog from './EditStudentDialog'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useStudentTransferHistory } from '@/hooks/students'
 
 interface StudentInfoHeaderProps {
   student?: Student | null
@@ -34,13 +35,26 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
   const [currentGrade, setCurrentGrade] = useState<SchoolGrade | null>(null)
   const [isLoadingCurrentGrade, setIsLoadingCurrentGrade] = useState(false)
+
   const { toast } = useToast()
+  const { currentSchool } = useOrganization()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   const { data: consentForms = [] } = useConsentForms(localStudent?.id || '')
-
-  const { currentSchool } = useOrganization()
   const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
+  const { data: transferHistory = [] } = useStudentTransferHistory(localStudent?.id || '')
+
+  const transferredOutRecord = transferHistory.find(
+    transfer => transfer.from_school_id === currentSchool?.id
+  )
+
+  const transferredInRecord = transferHistory.find(
+    transfer => transfer.to_school_id === currentSchool?.id
+  )
+
+  const isViewingFromOldSchool = localStudent?.school_id !== currentSchool?.id
+
   const speechEAs = (schoolDetails?.schoolTeam ?? []).filter(m => m.roles.includes('speech_ea'))
 
   const handleAssignEA = async (staffId: string | null) => {
@@ -69,8 +83,6 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
       return date >= start && date <= end
     })
   })()
-
-  const navigate = useNavigate()
 
   // Update local student when prop changes
   useEffect(() => {
@@ -224,6 +236,32 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
       <CardContent className='p-6'>
         <div className='flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between'>
           <div className='flex-1'>
+            {isViewingFromOldSchool && transferredOutRecord && (
+              <div className='mb-4 rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800'>
+                This student transferred to{' '}
+                <span className='font-semibold'>{transferredOutRecord.to_school?.name}</span> on{' '}
+                {new Date(transferredOutRecord.transfer_date).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+                . Their profile is now managed there.
+              </div>
+            )}
+
+            {!isViewingFromOldSchool && transferredInRecord && (
+              <div className='mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800'>
+                Transferred in from{' '}
+                <span className='font-semibold'>{transferredInRecord.from_school?.name} </span> on{' '}
+                {new Date(transferredInRecord.transfer_date).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+                .
+              </div>
+            )}
+
             <StudentBasicInfo
               student={localStudent}
               hasConsentThisYear={hasConsentThisYear}
