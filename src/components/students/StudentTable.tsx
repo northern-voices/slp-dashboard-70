@@ -108,8 +108,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const consentSet = useMemo(() => new Set(studentIdsWithConsent), [studentIdsWithConsent])
 
   const { data: schoolTransfers = [] } = useSchoolTransfers(activeSchool?.id ?? '')
+
+  type SchoolTransfer = (typeof schoolTransfers)[0]
+
   const transferByStudentId = useMemo(() => {
-    const map = new Map<string, (typeof schoolTransfers)[0]>()
+    const map = new Map<string, SchoolTransfer>()
     schoolTransfers.forEach(transfer => {
       if (!map.has(transfer.student_id)) {
         map.set(transfer.student_id, transfer)
