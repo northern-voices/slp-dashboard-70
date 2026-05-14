@@ -124,8 +124,11 @@ const ScreeningsTable = ({
 
   const transferByStudentId = useMemo(() => {
     const map = new Map<string, (typeof schoolTransfers)[0]>()
-    schoolTransfers.forEach(transfer => map.set(transfer.student_id, transfer))
-
+    schoolTransfers.forEach(transfer => {
+      if (!map.has(transfer.student_id)) {
+        map.set(transfer.student_id, transfer)
+      }
+    })
     return map
   }, [schoolTransfers])
 

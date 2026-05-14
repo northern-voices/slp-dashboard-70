@@ -565,7 +565,7 @@ export const studentsApi = {
         .from('student_transfers')
         .select(
           `*,
-          student:students!student_id (id, first_name, last_name),
+          student:students!student_id (id, student_id, first_name, last_name),
           from_school:schools!from_school_id (id, name),
           to_school:schools!to_school_id (id, name),
           from_grade:school_grades!from_grade_id (id, grade_level),
@@ -573,7 +573,7 @@ export const studentsApi = {
         `
         )
         .or(`from_school_id.eq.${schoolId},to_school_id.eq.${schoolId}`)
-        .order('transfer_date', { ascending: false })
+        .order('created_at', { ascending: false })
 
       if (error) throw error
 
