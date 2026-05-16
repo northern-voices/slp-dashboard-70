@@ -24,3 +24,41 @@ export interface Document {
     last_name: string
   } | null
 }
+
+export const documentsApi = {
+  uploadDocument: async (
+    schoolId: string,
+    type: DocumentType,
+    data: DocumentData
+  ): Promise<void> => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) throw new Error('User not authenticated')
+
+    const filePath = `${schoolId}/${type}/${Date.now()}-${data.file.name}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('documents')
+      .upload(filePath, data.file, { contentType: data.file.type, upsert: false })
+
+    if (uploadError) throw uploadError
+
+    const { error: insertError } = await supabase.from('documents').insert({
+      type,
+      school_id: schoolId,
+      file_path: filePath,
+      file_name: data.file.name,
+      file_type: data.file.type,
+      file_size: data.file.size,
+      additional_notes: data.additional_notes || null,
+      uploaded_by: user.id,
+    })
+
+    if (insertError) {
+      await supabase.storage.from('documents').remove([filePath])
+      throw insertError
+    }
+  },
+}
