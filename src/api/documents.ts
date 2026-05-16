@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase'
-import { string } from 'zod'
 
 export type DocumentType = 'attendance_sheet'
 
@@ -92,6 +91,24 @@ export const documentsApi = {
 
     if (error) throw error
 
-    return (data || []) as Document[]
+    return (data || []) as unknown as Document[]
+  },
+
+  getSignedUrl: async (filePath: string): Promise<string> => {
+    const { data, error } = await supabase.storage
+      .from('documents')
+      .createSignedUrl(filePath, 60 * 60)
+
+    if (error) throw error
+    if (!data?.signedUrl) throw new Error('No signed URL returned')
+    return data.signedUrl
+  },
+
+  deleteDocument: async (id: string, filePath: string): Promise<void> => {
+    const { error: storageError } = await supabase.storage.from('documents').remove([filePath])
+    if (storageError) throw storageError
+
+    const { error: dbError } = await supabase.from('documents').delete().eq('id', id)
+    if (dbError) throw dbError
   },
 }
