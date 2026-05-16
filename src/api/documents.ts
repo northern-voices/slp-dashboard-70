@@ -61,4 +61,37 @@ export const documentsApi = {
       throw insertError
     }
   },
+
+  getDocuments: async (schoolId: string, type?: DocumentType): Promise<Document[]> => {
+    let query = supabase
+      .from('documents')
+      .select(
+        `
+      id,
+      type,
+      school_id,
+      file_path,
+      file_name,
+      file_type,
+      file_size,
+      additional_notes,
+      uploaded_at,
+      uploaded_by:users!documents_uploaded_by_fkey(
+        id,
+        first_name,
+        last_name
+      )
+    `
+      )
+      .eq('school_id', schoolId)
+      .order('uploaded_at', { ascending: false })
+
+    if (type) query = query.eq('type', type)
+
+    const { data, error } = await query
+
+    if (error) throw error
+
+    return (data || []) as Document[]
+  },
 }
