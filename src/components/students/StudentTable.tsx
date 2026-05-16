@@ -37,7 +37,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { useStudentsBySchool } from '@/hooks/students/use-students'
+import { useStudentsBySchool, useSchoolTransfers } from '@/hooks/students/use-students'
 import { useCreateStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { studentsApi } from '@/api/students'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
@@ -90,6 +90,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   }
 
   const { currentSchool } = useOrganization()
+  const createStudentMutation = useCreateStudent()
+  const updateStudentMutation = useUpdateStudent()
 
   const activeSchool = selectedSchool || currentSchool
 
@@ -101,12 +103,24 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     isPlaceholderData,
   } = useStudentsBySchool(activeSchool?.id)
 
-  const createStudentMutation = useCreateStudent()
-  const updateStudentMutation = useUpdateStudent()
-
   const studentIds = students.map(student => student.id)
   const { data: studentIdsWithConsent = [] } = useConsentFormPresence(studentIds)
   const consentSet = useMemo(() => new Set(studentIdsWithConsent), [studentIdsWithConsent])
+
+  const { data: schoolTransfers = [] } = useSchoolTransfers(activeSchool?.id ?? '')
+
+  type SchoolTransfer = (typeof schoolTransfers)[0]
+
+  const transferByStudentId = useMemo(() => {
+    const map = new Map<string, SchoolTransfer>()
+    schoolTransfers.forEach(transfer => {
+      if (!map.has(transfer.student_id)) {
+        map.set(transfer.student_id, transfer)
+      }
+    })
+
+    return map
+  }, [schoolTransfers])
 
   // Fetch all grades for the school
   useEffect(() => {
@@ -624,7 +638,23 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                 className='transition-colors cursor-pointer'
                 onClick={() => handleRowClick(student.id)}>
                 <TableCell className='p-4 font-medium group-hover:bg-gray-100 transition-colors'>
-                  {student.first_name} {student.last_name}
+                  <div className='flex flex-col gap-0.5'>
+                    <span>
+                      {student.first_name} {student.last_name}
+                    </span>
+
+                    {(() => {
+                      const transfer = transferByStudentId.get(student.id)
+                      if (transfer?.to_school_id === activeSchool?.id) {
+                        return (
+                          <span className='text-xs font-medium text-blue-600'>
+                            Transferred In ← {transfer.from_school?.name}
+                          </span>
+                        )
+                      }
+                      return null
+                    })()}
+                  </div>
                 </TableCell>
 
                 <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
