@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Volume2, Mic, Target, TrendingUp, CheckCircle, XCircle, Plus, List } from 'lucide-react'
+import { Target, CheckCircle, XCircle, Plus, List } from 'lucide-react'
 import {
   Form,
   FormControl,
@@ -36,7 +36,7 @@ const reportSchema = z.object({
 
 type ReportFormData = z.infer<typeof reportSchema>
 
-const ReportGenerationForm = () => {
+const SchoolWideGoalSheetsForm = () => {
   const { currentSchool } = useOrganization()
 
   const navigate = useNavigate()
@@ -67,33 +67,24 @@ const ReportGenerationForm = () => {
 
   const initialReports = [
     {
-      value: 'initial-speech-reports',
-      label: 'Initial Speech Reports (School Wide)',
-      description: 'Create detailed speech assessment reports covering multiple students',
-      icon: Mic,
-      tooltip:
-        'Produces comprehensive speech screening reports with articulation assessments, language evaluations, and therapy recommendations.',
-    },
-    {
-      value: 'school-summary-report',
-      label: 'Summary Report (School Wide)',
+      value: 'initial-goal-sheets',
+      label: 'Initial Goal Sheets (School Wide)',
       description:
-        'Generate a school-wide snapshot of screenings with qualified students and recommendations.',
-      icon: Volume2,
+        'Produce individualized goal tracking sheets for all students in selected classes',
+      icon: Target,
       tooltip:
-        'Summarizes school-wide speech screenings, showing qualified students, subs, and recommendations to guide follow-up and planning.',
+        'Generates customized goal sheets with specific objectives, progress tracking metrics, and intervention strategies for each student.',
     },
   ]
 
   const progressReports = [
-    {
-      value: 'progress-speech-reports',
-      label: 'Progress Speech Reports (School Wide)',
-      description: 'Generate progress summaries showing student achievements and therapy outcomes',
-      icon: TrendingUp,
-      tooltip:
-        'Creates comprehensive progress reports highlighting improvements, challenges, and next steps for continued therapy.',
-    },
+    // {
+    //   value: 'progress-goal-sheets',
+    //   label: 'Progress Goal Sheets (School Wide)',
+    //   description: 'Updated goal tracking sheets reflecting current progress metrics for all students',
+    //   icon: Target,
+    //   tooltip: 'Generates updated goal sheets showing progress against initial objectives for each student.',
+    // },
   ]
 
   const isSubmitting = form.formState.isSubmitting
@@ -102,34 +93,21 @@ const ReportGenerationForm = () => {
     console.log(data, 'data from the form')
 
     try {
-      console.log('Generating report with data:', data.reportType)
-
       let result
-      if (data.reportType === 'initial-speech-reports') {
-        result = await edgeFunctionsApi.schoolWideSendStudentReports(
+      if (data.reportType === 'initial-goal-sheets') {
+        result = await edgeFunctionsApi.schoolWideStudentGoalSheets(
           currentSchool.id,
           data.academicYear,
           data.email
         )
-      } else if (data.reportType === 'school-summary-report') {
-        result = await edgeFunctionsApi.schoolSummaryReport(
-          currentSchool.id,
-          data.academicYear,
-          data.email
-        )
-      } else if (data.reportType === 'progress-speech-reports') {
-        result = await edgeFunctionsApi.schoolWideStudentProgressReport(
-          currentSchool.id,
-          data.academicYear,
-          data.email
-        )
+      } else if (data.reportType === 'progress-goal-sheets') {
+        console.warn('progress-goal-sheets not yet mapped')
       }
 
       console.log(result, 'result')
 
       const allReports = [...initialReports, ...progressReports]
 
-      // Show success modal
       setModalType('success')
       setModalMessage(
         `Your ${
@@ -139,21 +117,11 @@ const ReportGenerationForm = () => {
       setIsSuccessModalOpen(true)
     } catch (error: unknown) {
       console.error('Error generating report:', error)
-
-      // Provide specific error messages based on report type
       setModalType('error')
 
-      if (data.reportType === 'initial-speech-reports') {
+      if (data.reportType === 'initial-goal-sheets') {
         setModalMessage(
-          `No speech screenings found for the ${data.academicYear} academic year. Please ensure speech screenings have been completed before generating this report.`
-        )
-      } else if (data.reportType === 'school-summary-report') {
-        setModalMessage(
-          `No screening data found for the ${data.academicYear} academic year. Please ensure screenings have been completed before generating the school summary report.`
-        )
-      } else if (data.reportType === 'progress-speech-reports') {
-        setModalMessage(
-          `No progress data found for the ${data.academicYear} academic year. Please ensure student progress has been tracked before generating this report.`
+          `No student data available for goal sheets in the ${data.academicYear} academic year. Please ensure students have been screened before generating goal sheets.`
         )
       } else {
         setModalMessage('Failed to generate report. Please try again.')
@@ -171,7 +139,7 @@ const ReportGenerationForm = () => {
     setIsSuccessModalOpen(false)
     setModalType('success')
     setModalMessage('')
-    navigate(`/school/${currentSchool.id}/speech-screening-reports`)
+    navigate(`/school/${currentSchool.id}/speech-screening-reports/school-wide-goal-sheets`)
   }
 
   const handleStayOnPage = () => {
@@ -193,7 +161,7 @@ const ReportGenerationForm = () => {
       <Card className='w-full max-w-full overflow-hidden bg-white border border-gray-200 shadow-sm'>
         <CardHeader className='px-4 pb-4 sm:pb-6 sm:px-6'>
           <CardTitle className='text-lg font-semibold text-gray-900 sm:text-xl'>
-            Generate School Wide Report
+            Generate School Wide Goal Sheets
           </CardTitle>
           <p className='mt-2 text-sm leading-relaxed text-gray-600'>
             Create comprehensive reports for multiple students
@@ -499,4 +467,4 @@ const ReportGenerationForm = () => {
   )
 }
 
-export default ReportGenerationForm
+export default SchoolWideGoalSheetsForm
