@@ -78,4 +78,44 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
       }
     )
   }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className='max-w-md'>
+        <DialogHeader>
+          <DialogTitle>Upload Attendance Sheet</DialogTitle>
+        </DialogHeader>
+
+        <form
+          onSubmit={e => {
+            e.preventDefault()
+            e.stopPropagation()
+            return false
+          }}
+          className='space-y-4'>
+          <Label>
+            File <span className='text-destructive'>*</span>
+          </Label>
+
+          <div className='flex items-center gap-3'>
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              onClick={() => fileInputRef.current?.click()}>
+              <Upload className='w-4 h-4 mr-2' />
+              Choose File
+            </Button>
+
+            {file && (
+              <span className='flex items-center gap-1 text-sm text-muted-foreground'>
+                <CheckCircle2 className='w-4 h-4 text-green-500' />
+                {(file as File).name}
+              </span>
+            )}
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
 }
