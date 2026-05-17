@@ -71,14 +71,8 @@ const SpeechStudentReports = () => {
       for (const reportType of selectedReports) {
         if (reportType === 'initial-speech-report') {
           await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
-        } else if (reportType === 'initial-goal-sheet') {
-          await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
         } else if (reportType === 'progress-speech-report') {
           await edgeFunctionsApi.studentProgressReport(selectedScreening.id, recipientEmail)
-        } else if (reportType === 'progress-goal-sheet') {
-          // TODO: map to the correct API call when ready
-          console.warn(`progress-goal-sheet not yet mapped`)
-          continue
         }
       }
 
@@ -154,7 +148,7 @@ const SpeechStudentReports = () => {
 
         {/* Selected Student Info */}
         {selectedStudent && (
-          <div className='p-3 bg-blue-50 rounded-lg border border-blue-200'>
+          <div className='p-3 border border-blue-200 rounded-lg bg-blue-50'>
             <div className='flex items-center gap-2'>
               <User className='w-4 h-4 text-blue-600' />
               <span className='font-medium text-blue-900'>
@@ -183,8 +177,8 @@ const SpeechStudentReports = () => {
 
       {/* Email Section */}
       {selectedStudent && (
-        <div className='mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200'>
-          <h4 className='text-xl font-medium text-gray-700 mb-4 flex items-center gap-2'>
+        <div className='p-4 mt-6 border border-gray-200 rounded-lg bg-gray-50'>
+          <h4 className='flex items-center gap-2 mb-4 text-xl font-medium text-gray-700'>
             <Mail className='w-5 h-5' />
             Send {selectedStudent.first_name}'s Reports
           </h4>
@@ -193,7 +187,7 @@ const SpeechStudentReports = () => {
             {/* Report Selection */}
             <div className='space-y-3'>
               <Label className='text-sm font-medium'>Select Type of Report</Label>
-              <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
+              <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
                 {getAvailableReports().map(report => {
                   const Icon = report.icon
                   const isSelected = selectedReports.includes(report.value)
@@ -215,7 +209,7 @@ const SpeechStudentReports = () => {
                             : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                         }
                       `}>
-                      <div className='flex items-start space-x-3 w-full'>
+                      <div className='flex items-start w-full space-x-3'>
                         <div
                           className={`
                           flex-shrink-0 p-2 rounded-lg
@@ -293,7 +287,7 @@ const SpeechStudentReports = () => {
               onClick={() => handleSendEmail()}
               variant='default'
               size='sm'
-              className='w-full h-9 bg-blue-600 hover:bg-blue-700 text-white'
+              className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
               disabled={
                 !selectedStudent ||
                 !recipientEmail ||
@@ -317,7 +311,7 @@ const SpeechStudentReports = () => {
       {/* Success/Error Modal */}
       <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
         <DialogContent className='mx-auto'>
-          <div className='flex flex-col items-center text-center space-y-6'>
+          <div className='flex flex-col items-center space-y-6 text-center'>
             {/* Icon */}
             <div className='flex justify-center'>
               {modalType === 'success' ? (
@@ -332,25 +326,25 @@ const SpeechStudentReports = () => {
               <DialogTitle className='text-2xl font-semibold text-gray-900'>
                 {modalType === 'success' ? 'Report Sent Successfully!' : 'Error Sending Report'}
               </DialogTitle>
-              <DialogDescription className='text-gray-600 text-base leading-relaxed'>
+              <DialogDescription className='text-base leading-relaxed text-gray-600'>
                 {modalMessage}
               </DialogDescription>
             </div>
 
             {/* Action Buttons */}
-            <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
+            <div className='flex flex-col w-full gap-3 sm:flex-row sm:w-auto'>
               {modalType === 'success' ? (
                 <>
                   <Button
                     onClick={handleStayOnPage}
-                    className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                    className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
                     <Plus className='w-4 h-4' />
                     Send Another Report
                   </Button>
                   <Button
                     onClick={handleGoBackToReports}
                     variant='outline'
-                    className='w-full sm:w-auto px-6 py-2'>
+                    className='w-full px-6 py-2 sm:w-auto'>
                     <List className='w-4 h-4' />
                     Back to Reports
                   </Button>
@@ -358,7 +352,7 @@ const SpeechStudentReports = () => {
               ) : (
                 <Button
                   onClick={handleCloseModal}
-                  className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                  className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
                   Try Again
                 </Button>
               )}
@@ -401,7 +395,7 @@ const SpeechScreeningsTable = ({
 
   if (studentScreenings.length === 0) {
     return (
-      <div className='text-sm text-gray-500 text-center py-4'>
+      <div className='py-4 text-sm text-center text-gray-500'>
         No speech screenings found for this student.
       </div>
     )
@@ -440,9 +434,9 @@ const SpeechScreeningsTable = ({
   }
 
   return (
-    <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+    <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
       {/* Table Header */}
-      <div className='bg-gray-50 border-b border-gray-200 px-6 py-3'>
+      <div className='px-6 py-3 border-b border-gray-200 bg-gray-50'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-3'>
             <span className='text-sm font-medium text-gray-900'>Select a Screening</span>
@@ -451,7 +445,7 @@ const SpeechScreeningsTable = ({
             <div className='flex items-center gap-2'>
               <Badge
                 variant='outline'
-                className='bg-blue-50 text-blue-600 border-blue-300 font-medium px-3 text-center flex items-center justify-center'>
+                className='flex items-center justify-center px-3 font-medium text-center text-blue-600 border-blue-300 bg-blue-50'>
                 Total: {studentScreenings.length}
               </Badge>
             </div>
@@ -461,14 +455,14 @@ const SpeechScreeningsTable = ({
               size='sm'
               disabled={!selectedScreening}
               onClick={() => onSelectScreening(null)}
-              className='h-7 text-xs ml-2'>
+              className='ml-2 text-xs h-7'>
               Clear
             </Button>
           </div>
         </div>
       </div>
 
-      <div className='max-h-96 overflow-y-auto'>
+      <div className='overflow-y-auto max-h-96'>
         <RadioGroup
           value={selectedScreening?.id || ''}
           onValueChange={value => {
@@ -504,7 +498,7 @@ const SpeechScreeningsTable = ({
                           variant='ghost'
                           size='sm'
                           onClick={() => onViewDetails(screening)}
-                          className='h-8 w-8 p-0 hover:bg-gray-100'>
+                          className='w-8 h-8 p-0 hover:bg-gray-100'>
                           <Eye className='w-4 h-4' />
                         </Button>
                       </div>
@@ -514,7 +508,7 @@ const SpeechScreeningsTable = ({
                       <div className='flex items-center gap-2'>
                         {getQualificationBadge(screening)}
                       </div>
-                      <div className='text-sm text-gray-600 space-y-1'>
+                      <div className='space-y-1 text-sm text-gray-600'>
                         <p>
                           <span className='font-medium'>Screener:</span> {screening.screener}
                         </p>
@@ -556,7 +550,7 @@ const SpeechScreeningsTable = ({
                   <TableCell className='max-w-0'>
                     <div className='truncate' title={screening.grade || 'No grade'}>
                       {screening.grade ? (
-                        <div className='text-xs text-gray-500 bg-gray-200 px-3 py-1 rounded-lg inline-block'>
+                        <div className='inline-block px-3 py-1 text-xs text-gray-500 bg-gray-200 rounded-lg'>
                           {screening.grade}
                         </div>
                       ) : (
@@ -569,7 +563,7 @@ const SpeechScreeningsTable = ({
                       variant='ghost'
                       size='sm'
                       onClick={() => onViewDetails(screening)}
-                      className='h-8 w-8 p-0 hover:bg-gray-100'>
+                      className='w-8 h-8 p-0 hover:bg-gray-100'>
                       <Eye className='w-4 h-4' />
                     </Button>
                   </TableCell>
