@@ -54,6 +54,29 @@ const ReportsPageContent = () => {
             </div>
           </div>
 
+          {/* Goal Sheets Section */}
+          <div className='space-y-4'>
+            <h2 className='font-semibold text-gray-700 text-md sm:text-lg'>Goal Sheets</h2>
+            <div className='grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6'>
+              <Card
+                className='transition-shadow bg-white border border-gray-100 shadow-sm cursor-pointer rounded-xl hover:shadow-md'
+                onClick={() => navigate('goal-sheets')}>
+                <CardContent className='px-6 py-3'>
+                  <div className='flex items-center gap-4'>
+                    <div className='flex items-center justify-center flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg'>
+                      <Target className='w-6 h-6 text-orange-600' />
+                    </div>
+                    <div className='flex-1'>
+                      <h3 className='text-lg font-semibold text-gray-900'>
+                        Individual Goal Sheets
+                      </h3>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
           {/* Hearing Reports Section */}
           <div className='space-y-4'>
             <h2 className='font-semibold text-gray-700 text-md sm:text-lg'>Hearing Reports</h2>
