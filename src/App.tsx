@@ -47,6 +47,7 @@ import MonthlyMeetings from './pages/monthly-meetings/MonthlyMeetings'
 import CreateMonthlyMeeting from './pages/monthly-meetings/CreateMonthlyMeeting'
 import EditMonthlyMeeting from './pages/monthly-meetings/EditMonthlyMeeting'
 import Caseload from './pages/Caseload'
+import GoalSheets from './pages/GoalSheets'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -463,6 +464,24 @@ const App = () => (
                       </SchoolRouter>
                     }
                   />
+
+                  <Route
+                    path='/speech-screening-reports/goal-sheets'
+                    element={
+                      <SchoolRouter>
+                        <GoalSheets />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/speech-screening-reports/goal-sheets'
+                    element={
+                      <SchoolRouter>
+                        <GoalSheets />
+                      </SchoolRouter>
+                    }
+                  />
+
                   <Route
                     path='/school/:schoolId/speech-screening-reports/school-wide-hearing'
                     element={
