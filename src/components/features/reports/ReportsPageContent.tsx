@@ -74,6 +74,23 @@ const ReportsPageContent = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              <Card
+                className='transition-shadow bg-white border border-gray-100 shadow-sm cursor-pointer rounded-xl hover:shadow-md'
+                onClick={() => navigate('school-wide-goal-sheets')}>
+                <CardContent className='px-6 py-3'>
+                  <div className='flex items-center gap-4'>
+                    <div className='flex items-center justify-center flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg'>
+                      <FileText className='w-6 h-6 text-orange-600' />
+                    </div>
+                    <div className='flex-1'>
+                      <h3 className='text-lg font-semibold text-gray-900'>
+                        School Wide Goal Sheets
+                      </h3>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
