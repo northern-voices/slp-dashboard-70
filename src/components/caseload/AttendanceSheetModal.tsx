@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
 import { useUploadDocument } from '@/hooks/documents/use-documents'
 import { Upload, Loader2, CheckCircle2 } from 'lucide-react'
@@ -15,6 +16,7 @@ interface AttendanceSheetModalProps {
 }
 
 interface FormValues {
+  sheet_date: string
   additional_notes: string
 }
 
@@ -24,7 +26,7 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
   const uploadMutation = useUploadDocument(schoolId)
 
   const form = useForm<FormValues>({
-    defaultValues: { additional_notes: '' },
+    defaultValues: { sheet_date: '', additional_notes: '' },
   })
 
   const file = form.watch('file' as keyof FormValues) as unknown as File | undefined
@@ -54,11 +56,22 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
 
     const values = form.getValues()
 
+    if (!values.sheet_date) {
+      toast({
+        title: 'Missing field',
+        description: 'Please select a month for this sheet.',
+        variant: 'destructive',
+      })
+
+      return
+    }
+
     await uploadMutation.mutateAsync(
       {
         type: 'attendance_sheet',
         data: {
           file,
+          sheet_date: values.sheet_date + '-01',
           additional_notes: values.additional_notes || undefined,
         },
       },
@@ -119,6 +132,13 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
               className='hidden'
               onChange={handleFileChange}
             />
+          </div>
+
+          <div className='space-y-1'>
+            <Label htmlFor='sheet-date'>
+              Month <span className='text-destructive'>*</span>
+            </Label>
+            <Input id='sheet-date' type='month' {...form.register('sheet_date')} />
           </div>
 
           <div className='space-y-1'>

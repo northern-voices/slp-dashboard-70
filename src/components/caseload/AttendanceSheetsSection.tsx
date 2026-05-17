@@ -77,7 +77,7 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
           <CardTitle className='text-lg font-semibold'>Attendance Sheets</CardTitle>
           <Button size='sm' onClick={() => setIsModalOpen(true)}>
             <Plus className='w-4 h-4' />
-            Add
+            Add Monthly Attendance Sheet
           </Button>
         </CardHeader>
 
@@ -98,7 +98,9 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
                   <div className='flex flex-col'>
                     <span className='text-sm font-medium'>{sheet.file_name}</span>
                     <span className='text-xs text-muted-foreground'>
-                      {format(new Date(sheet.uploaded_at), 'MMM d, yyyy')}
+                      {sheet.sheet_date
+                        ? format(new Date(sheet.sheet_date), 'MMM yyyy')
+                        : format(new Date(sheet.uploaded_at), 'MMM d, yyyy')}
                       {sheet.uploaded_by &&
                         ` · ${sheet.uploaded_by.first_name} ${sheet.uploaded_by.last_name}`}
                     </span>

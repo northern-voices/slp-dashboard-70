@@ -4,6 +4,7 @@ export type DocumentType = 'attendance_sheet'
 
 export interface DocumentData {
   file: File
+  sheet_date: string
   additional_notes?: string
 }
 
@@ -15,6 +16,7 @@ export interface Document {
   file_name: string
   file_type: string
   file_size: number
+  sheet_date: string | null
   additional_notes: string | null
   uploaded_at: string
   uploaded_by: {
@@ -53,6 +55,7 @@ export const documentsApi = {
       file_type: data.file.type,
       file_size: data.file.size,
       additional_notes: data.additional_notes || null,
+      sheet_date: data.sheet_date || null,
       uploaded_by: user.id,
     })
 
@@ -75,6 +78,7 @@ export const documentsApi = {
       file_type,
       file_size,
       additional_notes,
+      sheet_date,
       uploaded_at,
       uploaded_by:users!documents_uploaded_by_fkey(
         id,
