@@ -23,6 +23,10 @@ import { Student, Screening } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useUpdateStudent } from '@/hooks/students'
+import CreateEADialog from '@/components/caseload/CreateEADialog'
+import { SelectSeparator } from '@/components/ui/select'
+import { useToast } from '@/hooks/use-toast'
 
 interface StudentData {
   sessions_attended: number | null
@@ -55,6 +59,11 @@ const MonthlyMeetingsStudentTable = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
+  const [createEAOpen, setCreateEAOpen] = useState(false)
+
+  const { toast } = useToast()
+
+  const updateStudent = useUpdateStudent()
 
   // Fetch grades when component mounts
   useEffect(() => {
@@ -87,6 +96,27 @@ const MonthlyMeetingsStudentTable = ({
   const getSpeechEAName = (student: Student): string => {
     if (!student.speech_ea_id) return '-'
     return speechEAs.find(ea => ea.id === student.speech_ea_id)?.name ?? '-'
+  }
+
+  const handleAssignEA = (student: Student, staffId: string) => {
+    const newEaId = staffId === 'none' ? null : staffId
+
+    updateStudent.mutate(
+      {
+        id: student.id,
+        studentData: { speech_ea_id: newEaId },
+      },
+      {
+        onSuccess: () => toast({ title: 'Speech EA updated' }),
+        onError: () => {
+          toast({
+            title: 'Error',
+            description: 'Failed to update Speech EA.',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
   }
 
   const consentSet = useMemo(() => new Set(studentIdsWithConsent), [studentIdsWithConsent])
@@ -179,8 +209,8 @@ const MonthlyMeetingsStudentTable = ({
     return (
       <div className='flex items-center justify-center py-8'>
         <div className='text-center'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
-          <p className='text-gray-600 text-sm'>Loading students...</p>
+          <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin'></div>
+          <p className='text-sm text-gray-600'>Loading students...</p>
         </div>
       </div>
     )
@@ -249,7 +279,7 @@ const MonthlyMeetingsStudentTable = ({
 
   if (filteredStudents.length === 0) {
     return (
-      <div className='text-center py-8 text-gray-500 text-sm'>
+      <div className='py-8 text-sm text-center text-gray-500'>
         No students with Sub or Qualifies status found for this school.
       </div>
     )
@@ -304,15 +334,41 @@ const MonthlyMeetingsStudentTable = ({
 
               <TableCell>{getQualificationBadge(student)}</TableCell>
 
-              <TableCell className='text-center pl-2'>
+              <TableCell className='pl-2 text-center'>
                 {consentSet.has(student.id) ? (
-                  <FileCheck className='h-5 w-5 text-green-600 mx-auto' />
+                  <FileCheck className='w-5 h-5 mx-auto text-green-600' />
                 ) : (
-                  <FileX className='h-5 w-5 text-red-400 mx-auto' />
+                  <FileX className='w-5 h-5 mx-auto text-red-400' />
                 )}
               </TableCell>
 
-              <TableCell className='text-center'>{getSpeechEAName(student)}</TableCell>
+              <TableCell>
+                <Select
+                  value={student.speech_ea_id ?? 'none'}
+                  onValueChange={value => {
+                    if (value === '__create_new__') {
+                      setCreateEAOpen(true)
+                      return
+                    }
+                    handleAssignEA(student, value)
+                  }}>
+                  <SelectTrigger className='w-full h-8 p-0 truncate border-none hover:bg-transparent focus:ring-0'>
+                    <SelectValue placeholder='Assign EA'>{getSpeechEAName(student)}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='none'>None</SelectItem>
+                    {speechEAs.map(ea => (
+                      <SelectItem key={ea.id} value={ea.id}>
+                        {ea.name}
+                      </SelectItem>
+                    ))}
+                    <SelectSeparator />
+                    <SelectItem value='__create_new__' className='font-medium text-blue-600'>
+                      + Create new EA
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </TableCell>
 
               <TableCell className='text-center'>
                 <Button
@@ -320,14 +376,14 @@ const MonthlyMeetingsStudentTable = ({
                   size='sm'
                   variant='outline'
                   onClick={() => onStudentClick(student)}
-                  className='h-8 w-8 p-0'>
-                  <UserPlus className='h-4 w-4' />
+                  className='w-8 h-8 p-0'>
+                  <UserPlus className='w-4 h-4' />
                 </Button>
               </TableCell>
 
               <TableCell className='text-center'>
                 {hasStudentData(student.id) && (
-                  <CheckCircle2 className='h-5 w-5 text-green-600 mx-auto' />
+                  <CheckCircle2 className='w-5 h-5 mx-auto text-green-600' />
                 )}
               </TableCell>
             </ResponsiveTableRow>
@@ -371,7 +427,7 @@ const MonthlyMeetingsStudentTable = ({
               size='sm'
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className='h-9 w-9 p-0'>
+              className='p-0 h-9 w-9'>
               &larr;
             </Button>
             <Button
@@ -380,12 +436,14 @@ const MonthlyMeetingsStudentTable = ({
               size='sm'
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className='h-9 w-9 p-0'>
+              className='p-0 h-9 w-9'>
               &rarr;
             </Button>
           </div>
         </div>
       </div>
+
+      <CreateEADialog open={createEAOpen} onOpenChange={setCreateEAOpen} schoolId={schoolId} />
     </div>
   )
 }
