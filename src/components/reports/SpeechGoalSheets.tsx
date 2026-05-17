@@ -25,9 +25,9 @@ import {
 } from '@/components/ui/responsive-table'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
-import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
+import { SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/reportOptions'
 
-const SpeechStudentReports = () => {
+const SpeechGoalSheets = () => {
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
   const { user } = useAuth()
@@ -55,7 +55,7 @@ const SpeechStudentReports = () => {
     }
   }, [user?.email])
 
-  const getAvailableReports = () => SPEECH_REPORT_OPTIONS
+  const getAvailableReports = () => SPEECH_GOAL_SHEET_OPTIONS
 
   const handleSendEmail = async () => {
     if (!recipientEmail || selectedReports.length === 0 || !selectedScreening) {
@@ -69,10 +69,11 @@ const SpeechStudentReports = () => {
     try {
       // Process each selected report type
       for (const reportType of selectedReports) {
-        if (reportType === 'initial-speech-report') {
-          await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
-        } else if (reportType === 'progress-speech-report') {
-          await edgeFunctionsApi.studentProgressReport(selectedScreening.id, recipientEmail)
+        if (reportType === 'initial-goal-sheet') {
+          await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
+        } else if (reportType === 'progress-goal-sheet') {
+          console.warn(`progress-goal-sheet not yet mapped`)
+          continue
         }
       }
 
@@ -110,7 +111,7 @@ const SpeechStudentReports = () => {
     setIsSuccessModalOpen(false)
     setModalType('success')
     setModalMessage('')
-    navigate(`/school/${currentSchool.id}/speech-screening-reports`)
+    navigate(`/school/${currentSchool.id}/speech-screening-reports/goal-sheets`)
   }
 
   const handleStayOnPage = () => {
@@ -122,7 +123,6 @@ const SpeechStudentReports = () => {
     setSelectedScreening(null)
     setSelectedReports([])
     setRecipientEmail('')
-    setCustomMessage('')
     setEmailStatus('idle')
     setEmailMessage('')
   }
@@ -180,7 +180,7 @@ const SpeechStudentReports = () => {
         <div className='p-4 mt-6 border border-gray-200 rounded-lg bg-gray-50'>
           <h4 className='flex items-center gap-2 mb-4 text-xl font-medium text-gray-700'>
             <Mail className='w-5 h-5' />
-            Send {selectedStudent.first_name}'s Reports
+            Send {selectedStudent.first_name}'s Goal Sheets
           </h4>
 
           <div className='space-y-4'>
@@ -577,4 +577,4 @@ const SpeechScreeningsTable = ({
   )
 }
 
-export default SpeechStudentReports
+export default SpeechGoalSheets

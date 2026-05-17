@@ -19,10 +19,10 @@ const SchoolWideReports = () => {
         </Button>
       </div>
       <div className='space-y-1 sm:space-y-2'>
-        <h1 className='text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900'>
+        <h1 className='text-xl font-semibold text-gray-900 sm:text-2xl lg:text-3xl'>
           School Wide Speech Reports
         </h1>
-        <p className='text-sm sm:text-base text-gray-600'>
+        <p className='text-sm text-gray-600 sm:text-base'>
           Generate comprehensive school-wide speech reports for students
         </p>
       </div>
