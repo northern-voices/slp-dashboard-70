@@ -83,15 +83,6 @@ const ReportGenerationForm = () => {
       tooltip:
         'Summarizes school-wide speech screenings, showing qualified students, subs, and recommendations to guide follow-up and planning.',
     },
-    {
-      value: 'initial-goal-sheets',
-      label: 'Initial Goal Sheets (School Wide)',
-      description:
-        'Produce individualized goal tracking sheets for all students in selected classes',
-      icon: Target,
-      tooltip:
-        'Generates customized goal sheets with specific objectives, progress tracking metrics, and intervention strategies for each student.',
-    },
   ]
 
   const progressReports = [
@@ -103,15 +94,6 @@ const ReportGenerationForm = () => {
       tooltip:
         'Creates comprehensive progress reports highlighting improvements, challenges, and next steps for continued therapy.',
     },
-    // {
-    //   value: 'progress-goal-sheets',
-    //   label: 'Progress Goal Sheets (School Wide)',
-    //   description:
-    //     'Updated goal tracking sheets reflecting current progress metrics for all students',
-    //   icon: Target,
-    //   tooltip:
-    //     'Generates updated goal sheets showing progress against initial objectives for each student.',
-    // },
   ]
 
   const isSubmitting = form.formState.isSubmitting
@@ -129,12 +111,6 @@ const ReportGenerationForm = () => {
           data.academicYear,
           data.email
         )
-      } else if (data.reportType === 'initial-goal-sheets') {
-        result = await edgeFunctionsApi.schoolWideStudentGoalSheets(
-          currentSchool.id,
-          data.academicYear,
-          data.email
-        )
       } else if (data.reportType === 'school-summary-report') {
         result = await edgeFunctionsApi.schoolSummaryReport(
           currentSchool.id,
@@ -147,9 +123,6 @@ const ReportGenerationForm = () => {
           data.academicYear,
           data.email
         )
-      } else if (data.reportType === 'progress-goal-sheets') {
-        // TODO: map to correct API call when ready
-        console.warn('progress-goal-sheets not yet mapped')
       }
 
       console.log(result, 'result')
@@ -173,10 +146,6 @@ const ReportGenerationForm = () => {
       if (data.reportType === 'initial-speech-reports') {
         setModalMessage(
           `No speech screenings found for the ${data.academicYear} academic year. Please ensure speech screenings have been completed before generating this report.`
-        )
-      } else if (data.reportType === 'initial-goal-sheets') {
-        setModalMessage(
-          `No student data available for goal sheets in the ${data.academicYear} academic year. Please ensure students have been screened before generating goal sheets.`
         )
       } else if (data.reportType === 'school-summary-report') {
         setModalMessage(
@@ -221,23 +190,23 @@ const ReportGenerationForm = () => {
 
   return (
     <TooltipProvider>
-      <Card className='w-full max-w-full bg-white border border-gray-200 shadow-sm overflow-hidden'>
-        <CardHeader className='pb-4 sm:pb-6 px-4 sm:px-6'>
-          <CardTitle className='text-lg sm:text-xl font-semibold text-gray-900'>
+      <Card className='w-full max-w-full overflow-hidden bg-white border border-gray-200 shadow-sm'>
+        <CardHeader className='px-4 pb-4 sm:pb-6 sm:px-6'>
+          <CardTitle className='text-lg font-semibold text-gray-900 sm:text-xl'>
             Generate School Wide Report
           </CardTitle>
-          <p className='text-sm text-gray-600 mt-2 leading-relaxed'>
+          <p className='mt-2 text-sm leading-relaxed text-gray-600'>
             Create comprehensive reports for multiple students
           </p>
         </CardHeader>
-        <CardContent className='px-4 sm:px-6 space-y-6'>
+        <CardContent className='px-4 space-y-6 sm:px-6'>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
               <FormField
                 control={form.control}
                 name='academicYear'
                 render={({ field }) => (
-                  <FormItem className='space-y-3 w-full max-w-full'>
+                  <FormItem className='w-full max-w-full space-y-3'>
                     <FormLabel className='text-sm font-medium text-gray-700'>
                       Select Academic Year
                     </FormLabel>
@@ -271,7 +240,7 @@ const ReportGenerationForm = () => {
                     <FormControl>
                       <div className='space-y-4'>
                         <div className='space-y-3'>
-                          <div className='grid grid-cols-1 lg:grid-cols-3 gap-3'>
+                          <div className='grid grid-cols-1 gap-3 lg:grid-cols-3'>
                             {initialReports.map(type => {
                               const Icon = type.icon
                               const isSelected = field.value === type.value
@@ -294,7 +263,7 @@ const ReportGenerationForm = () => {
                                             : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                                         }
                                       `}>
-                                      <div className='flex items-start space-x-3 w-full'>
+                                      <div className='flex items-start w-full space-x-3'>
                                         <div
                                           className={`
                                           flex-shrink-0 p-2 rounded-lg
@@ -337,7 +306,7 @@ const ReportGenerationForm = () => {
                               )
                             })}
                           </div>
-                          <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
+                          <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
                             {progressReports.map(type => {
                               const Icon = type.icon
                               const isSelected = field.value === type.value
@@ -360,7 +329,7 @@ const ReportGenerationForm = () => {
                                             : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                                         }
                                       `}>
-                                      <div className='flex items-start space-x-3 w-full'>
+                                      <div className='flex items-start w-full space-x-3'>
                                         <div
                                           className={`
                                           flex-shrink-0 p-2 rounded-lg
@@ -415,7 +384,7 @@ const ReportGenerationForm = () => {
                 control={form.control}
                 name='email'
                 render={({ field }) => (
-                  <FormItem className='space-y-3 w-full max-w-full'>
+                  <FormItem className='w-full max-w-full space-y-3'>
                     <FormLabel className='text-sm font-medium text-gray-700'>Email</FormLabel>
                     <FormControl>
                       <Input
@@ -430,14 +399,14 @@ const ReportGenerationForm = () => {
                 )}
               />
 
-              <div className='flex flex-col sm:flex-row gap-3 pt-6 w-full'>
+              <div className='flex flex-col w-full gap-3 pt-6 sm:flex-row'>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       type='button'
                       variant='outline'
                       onClick={handleClearForm}
-                      className='h-9 w-full'
+                      className='w-full h-9'
                       disabled={isSubmitting}>
                       Clear Form
                     </Button>
@@ -452,7 +421,7 @@ const ReportGenerationForm = () => {
                     <Button
                       type='submit'
                       variant='default'
-                      className='h-9 bg-blue-600 hover:bg-blue-700 text-white w-full'
+                      className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
                       disabled={isSubmitting}>
                       {isSubmitting ? (
                         <>
@@ -477,7 +446,7 @@ const ReportGenerationForm = () => {
       {/* Success/Error Modal */}
       <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
         <DialogContent className='mx-auto'>
-          <div className='flex flex-col items-center text-center space-y-6'>
+          <div className='flex flex-col items-center space-y-6 text-center'>
             {/* Icon */}
             <div className='flex justify-center'>
               {modalType === 'success' ? (
@@ -492,25 +461,25 @@ const ReportGenerationForm = () => {
               <DialogTitle className='text-2xl font-semibold text-gray-900'>
                 {modalType === 'success' ? 'Report Generation Started!' : 'Error Generating Report'}
               </DialogTitle>
-              <DialogDescription className='text-gray-600 text-base leading-relaxed'>
+              <DialogDescription className='text-base leading-relaxed text-gray-600'>
                 {modalMessage}
               </DialogDescription>
             </div>
 
             {/* Action Buttons */}
-            <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
+            <div className='flex flex-col w-full gap-3 sm:flex-row sm:w-auto'>
               {modalType === 'success' ? (
                 <>
                   <Button
                     onClick={handleStayOnPage}
-                    className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                    className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
                     <Plus className='w-4 h-4' />
                     Generate Another Report
                   </Button>
                   <Button
                     onClick={handleGoBackToReports}
                     variant='outline'
-                    className='w-full sm:w-auto px-6 py-2'>
+                    className='w-full px-6 py-2 sm:w-auto'>
                     <List className='w-4 h-4' />
                     Back to Reports
                   </Button>
@@ -518,7 +487,7 @@ const ReportGenerationForm = () => {
               ) : (
                 <Button
                   onClick={handleCloseModal}
-                  className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                  className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
                   Continue
                 </Button>
               )}
