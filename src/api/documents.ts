@@ -36,7 +36,8 @@ export const documentsApi = {
 
     if (!user) throw new Error('User not authenticated')
 
-    const filePath = `${schoolId}/${type}/${Date.now()}-${data.file.name}`
+    const safeName = data.file.name.replace(/\s+/g, '_')
+    const filePath = `${schoolId}/${type}/${Date.now()}-${safeName}`
 
     const { error: uploadError } = await supabase.storage
       .from('documents')
