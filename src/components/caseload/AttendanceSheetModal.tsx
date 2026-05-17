@@ -2,11 +2,19 @@ import { useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { useUploadDocument } from '@/hooks/documents/use-documents'
+import { useUploadAttendanceSheet } from '@/hooks/attendanceSheets/use-attendance-sheets'
+import { ProvisionStatus } from '@/api/attendanceSheets'
 import { Upload, Loader2, CheckCircle2 } from 'lucide-react'
 
 interface AttendanceSheetModalProps {
@@ -16,6 +24,7 @@ interface AttendanceSheetModalProps {
 }
 
 interface FormValues {
+  provision_status: ProvisionStatus | ''
   sheet_date: string
   additional_notes: string
 }
@@ -23,12 +32,13 @@ interface FormValues {
 const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModalProps) => {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const uploadMutation = useUploadDocument(schoolId)
+  const uploadMutation = useUploadAttendanceSheet(schoolId)
 
   const form = useForm<FormValues>({
-    defaultValues: { sheet_date: '', additional_notes: '' },
+    defaultValues: { provision_status: '', sheet_date: '', additional_notes: '' },
   })
 
+  const provisionStatus = form.watch('provision_status')
   const file = form.watch('file' as keyof FormValues) as unknown as File | undefined
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +55,27 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
   }
 
   const handleSubmit = async () => {
-    if (!file) {
+    const values = form.getValues()
+
+    if (!values.provision_status) {
+      toast({
+        title: 'Missing field',
+        description: 'Please select a provision status.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (!values.sheet_date) {
+      toast({
+        title: 'Missing field',
+        description: 'Please select a month for this sheet.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (values.provision_status === 'uploaded' && !file) {
       toast({
         title: 'Missing file',
         description: 'Please select an image to upload.',
@@ -54,36 +84,22 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
       return
     }
 
-    const values = form.getValues()
-
-    if (!values.sheet_date) {
-      toast({
-        title: 'Missing field',
-        description: 'Please select a month for this sheet.',
-        variant: 'destructive',
-      })
-
-      return
-    }
-
     await uploadMutation.mutateAsync(
       {
-        type: 'attendance_sheet',
-        data: {
-          file,
-          sheet_date: values.sheet_date + '-01',
-          additional_notes: values.additional_notes || undefined,
-        },
+        provision_status: values.provision_status as ProvisionStatus,
+        sheet_date: values.sheet_date + '-01',
+        file: values.provision_status === 'uploaded' ? file : undefined,
+        additional_notes: values.additional_notes || undefined,
       },
       {
         onSuccess: () => {
-          toast({ title: 'Attendance sheet uploaded' })
+          toast({ title: 'Attendance sheet saved' })
           handleClose()
         },
         onError: () => {
           toast({
             title: 'Error',
-            description: 'Failed to upload. Please try again.',
+            description: 'Failed to save. Please try again.',
             variant: 'destructive',
           })
         },
@@ -95,7 +111,7 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className='max-w-md'>
         <DialogHeader>
-          <DialogTitle>Upload Attendance Sheet</DialogTitle>
+          <DialogTitle>Add Attendance Sheet</DialogTitle>
         </DialogHeader>
 
         <form
@@ -105,35 +121,61 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
             return false
           }}
           className='space-y-4'>
-          <div className='space-y-2'>
+          {/* Provision Status */}
+          <div className='space-y-1'>
             <Label>
-              File <span className='text-destructive'>*</span>
+              Status <span className='text-destructive'>*</span>
             </Label>
-            <div className='flex items-center gap-3'>
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                onClick={() => fileInputRef.current?.click()}>
-                <Upload className='w-4 h-4 mr-2' />
-                Choose File
-              </Button>
-              {file && (
-                <span className='flex items-center gap-1 text-sm text-muted-foreground'>
-                  <CheckCircle2 className='w-4 h-4 text-green-500' />
-                  {(file as File).name}
-                </span>
-              )}
-            </div>
-            <input
-              ref={fileInputRef}
-              type='file'
-              accept='image/*'
-              className='hidden'
-              onChange={handleFileChange}
-            />
+            <Select
+              value={form.watch('provision_status')}
+              onValueChange={val => {
+                form.setValue('provision_status', val as ProvisionStatus)
+                form.setValue('file' as keyof FormValues, undefined as unknown as string)
+                if (fileInputRef.current) fileInputRef.current.value = ''
+              }}>
+              <SelectTrigger>
+                <SelectValue placeholder='Select status' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='uploaded'>Upload Image</SelectItem>
+                <SelectItem value='not_provided'>Not provided by school</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
+          {/* File upload — only when status is uploaded */}
+          {provisionStatus === 'uploaded' && (
+            <div className='space-y-2'>
+              <Label>
+                File <span className='text-destructive'>*</span>
+              </Label>
+              <div className='flex items-center gap-3'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={() => fileInputRef.current?.click()}>
+                  <Upload className='w-4 h-4 mr-2' />
+                  Choose File
+                </Button>
+                {file && (
+                  <span className='flex items-center gap-1 text-sm text-muted-foreground'>
+                    <CheckCircle2 className='w-4 h-4 text-green-500' />
+                    {(file as File).name}
+                  </span>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type='file'
+                accept='image/*'
+                className='hidden'
+                onChange={handleFileChange}
+              />
+            </div>
+          )}
+
+          {/* Month */}
           <div className='space-y-1'>
             <Label htmlFor='sheet-date'>
               Month <span className='text-destructive'>*</span>
@@ -141,6 +183,7 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
             <Input id='sheet-date' type='month' {...form.register('sheet_date')} />
           </div>
 
+          {/* Notes */}
           <div className='space-y-1'>
             <Label htmlFor='notes'>Notes</Label>
             <Textarea
@@ -157,7 +200,7 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
             </Button>
             <Button type='button' onClick={handleSubmit} disabled={uploadMutation.isPending}>
               {uploadMutation.isPending && <Loader2 className='w-4 h-4 mr-2 animate-spin' />}
-              Upload
+              Save
             </Button>
           </div>
         </form>
