@@ -7,17 +7,21 @@ export const SPEECH_REPORT_OPTIONS = [
     description: 'Detailed student assessment and performance overview',
     icon: BookOpen,
   },
-  {
-    value: 'initial-goal-sheet',
-    label: 'Initial Goal Sheet',
-    description: 'Individualized goal tracking sheet with specific objectives and progress metrics',
-    icon: Target,
-  },
+
   {
     value: 'progress-speech-report',
     label: 'Progress Speech Report',
     description: 'Comprehensive progress summary showing achievements and therapy outcomes',
     icon: TrendingUp,
+  },
+]
+
+export const SPEECH_GOAL_SHEET_OPTIONS = [
+  {
+    value: 'initial-goal-sheet',
+    label: 'Initial Goal Sheet',
+    description: 'Individualized goal tracking sheet with specific objectives and progress metrics',
+    icon: Target,
   },
   // {
   //   value: 'progress-goal-sheet',
