@@ -4,6 +4,7 @@ import { useStudentsBySchool } from '@/hooks/students/use-students'
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 import CaseloadTable from '@/components/caseload/CaseloadTable'
+import AttendanceSheetsSection from '@/components/caseload/AttendanceSheetsSection'
 
 const Caseload = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -12,8 +13,8 @@ const Caseload = () => {
 
   if (!currentSchool) {
     return (
-      <div className='text-center py-12'>
-        <div className='text-gray-400 mb-4'>
+      <div className='py-12 text-center'>
+        <div className='mb-4 text-gray-400'>
           <svg className='w-16 h-16 mx-auto' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
             <path
               strokeLinecap='round'
@@ -23,7 +24,7 @@ const Caseload = () => {
             />
           </svg>
         </div>
-        <h3 className='text-lg font-medium text-gray-900 mb-2'>Select a School</h3>
+        <h3 className='mb-2 text-lg font-medium text-gray-900'>Select a School</h3>
         <p className='text-gray-600'>
           Use the school selector in the sidebar to choose which school to view your caseload from.
         </p>
@@ -41,7 +42,7 @@ const Caseload = () => {
       </div>
 
       <div className='relative'>
-        <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+        <Search className='absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2' />
         <Input
           placeholder='Search by student name...'
           value={searchTerm}
@@ -56,6 +57,8 @@ const Caseload = () => {
         schoolId={currentSchool.id}
         searchTerm={searchTerm}
       />
+
+      <AttendanceSheetsSection schoolId={currentSchool.id} />
     </div>
   )
 }
