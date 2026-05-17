@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Volume2, Mic, Target, TrendingUp, CheckCircle, XCircle, Plus, List } from 'lucide-react'
+import { Target, CheckCircle, XCircle, Plus, List } from 'lucide-react'
 import {
   Form,
   FormControl,
@@ -36,7 +36,7 @@ const reportSchema = z.object({
 
 type ReportFormData = z.infer<typeof reportSchema>
 
-const ReportGenerationForm = () => {
+const SchoolWideGoalSheetsForm = () => {
   const { currentSchool } = useOrganization()
 
   const navigate = useNavigate()
@@ -93,8 +93,6 @@ const ReportGenerationForm = () => {
     console.log(data, 'data from the form')
 
     try {
-      console.log('Generating report with data:', data.reportType)
-
       let result
       if (data.reportType === 'initial-goal-sheets') {
         result = await edgeFunctionsApi.schoolWideStudentGoalSheets(
@@ -110,7 +108,6 @@ const ReportGenerationForm = () => {
 
       const allReports = [...initialReports, ...progressReports]
 
-      // Show success modal
       setModalType('success')
       setModalMessage(
         `Your ${
@@ -120,21 +117,11 @@ const ReportGenerationForm = () => {
       setIsSuccessModalOpen(true)
     } catch (error: unknown) {
       console.error('Error generating report:', error)
-
-      // Provide specific error messages based on report type
       setModalType('error')
 
-      if (data.reportType === 'initial-speech-reports') {
+      if (data.reportType === 'initial-goal-sheets') {
         setModalMessage(
-          `No speech screenings found for the ${data.academicYear} academic year. Please ensure speech screenings have been completed before generating this report.`
-        )
-      } else if (data.reportType === 'school-summary-report') {
-        setModalMessage(
-          `No screening data found for the ${data.academicYear} academic year. Please ensure screenings have been completed before generating the school summary report.`
-        )
-      } else if (data.reportType === 'progress-speech-reports') {
-        setModalMessage(
-          `No progress data found for the ${data.academicYear} academic year. Please ensure student progress has been tracked before generating this report.`
+          `No student data available for goal sheets in the ${data.academicYear} academic year. Please ensure students have been screened before generating goal sheets.`
         )
       } else {
         setModalMessage('Failed to generate report. Please try again.')
@@ -480,4 +467,4 @@ const ReportGenerationForm = () => {
   )
 }
 
-export default ReportGenerationForm
+export default SchoolWideGoalSheetsForm
