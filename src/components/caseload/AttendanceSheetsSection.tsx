@@ -69,4 +69,97 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
       }
     )
   }
+
+  return (
+    <>
+      <Card>
+        <CardHeader className='flex flex-row items-center justify-between'>
+          <CardTitle className='text-lg font-semibold'>Attendance Sheets</CardTitle>
+          <Button size='sm' onClick={() => setIsModalOpen(true)}>
+            <Plus className='w-4 h-4' />
+            Add
+          </Button>
+        </CardHeader>
+
+        <CardContent>
+          {isLoading ? (
+            <div>
+              <Loader2 className='w-6 h-6 animate-spin text-muted-foreground' />
+            </div>
+          ) : sheets.length === 0 ? (
+            <div className='flex flex-col items-center gap-2 py-8 text-muted-foreground'>
+              <FileImage className='w-8 h-8' />
+              <p className='text-sm'>No attendance sheets uploaded yet.</p>
+            </div>
+          ) : (
+            <ul className='divide-y'>
+              {sheets.map(sheet => (
+                <li key={sheet.id} className='flex items-center justify-between py-3'>
+                  <div className='flex flex-col'>
+                    <span className='text-sm font-medium'>{sheet.file_name}</span>
+                    <span className='text-xs text-muted-foreground'>
+                      {format(new Date(sheet.uploaded_at), 'MMM d, yyyy')}
+                      {sheet.uploaded_by &&
+                        ` · ${sheet.uploaded_by.first_name} ${sheet.uploaded_by.last_name}`}
+                    </span>
+                  </div>
+                  <div className='flex gap-2'>
+                    <Button size='sm' variant='outline' onClick={() => handleView(sheet)}>
+                      <Eye className='w-4 h-4' />
+                    </Button>
+                    <Button
+                      size='sm'
+                      variant='outline'
+                      onClick={() =>
+                        setSheetToDelete({
+                          id: sheet.id,
+                          filePath: sheet.file_path,
+                          fileName: sheet.file_name,
+                        })
+                      }
+                      disabled={deleteMutation.isPending}>
+                      <Trash2 className='w-4 h-4 text-destructive' />
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <AttendanceSheetModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        schoolId={schoolId}
+      />
+
+      <AlertDialog open={!!sheetToDelete} onOpenChange={() => setSheetToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Attendance Sheet?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <span>{sheetToDelete?.fileName}</span>. This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              onClick={() => {
+                if (sheetToDelete) {
+                  handleDelete(sheetToDelete.id, sheetToDelete.filePath, sheetToDelete.fileName)
+                }
+              }}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  )
 }
+
+export default AttendanceSheetsSection
