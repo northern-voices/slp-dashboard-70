@@ -93,29 +93,58 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
             return false
           }}
           className='space-y-4'>
-          <Label>
-            File <span className='text-destructive'>*</span>
-          </Label>
+          <div className='space-y-2'>
+            <Label>
+              File <span className='text-destructive'>*</span>
+            </Label>
+            <div className='flex items-center gap-3'>
+              <Button
+                type='button'
+                variant='outline'
+                size='sm'
+                onClick={() => fileInputRef.current?.click()}>
+                <Upload className='w-4 h-4 mr-2' />
+                Choose File
+              </Button>
+              {file && (
+                <span className='flex items-center gap-1 text-sm text-muted-foreground'>
+                  <CheckCircle2 className='w-4 h-4 text-green-500' />
+                  {(file as File).name}
+                </span>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type='file'
+              accept='image/*'
+              className='hidden'
+              onChange={handleFileChange}
+            />
+          </div>
 
-          <div className='flex items-center gap-3'>
-            <Button
-              type='button'
-              variant='outline'
-              size='sm'
-              onClick={() => fileInputRef.current?.click()}>
-              <Upload className='w-4 h-4 mr-2' />
-              Choose File
+          <div className='space-y-1'>
+            <Label htmlFor='notes'>Notes</Label>
+            <Textarea
+              id='notes'
+              placeholder='Any additional notes...'
+              rows={3}
+              {...form.register('additional_notes')}
+            />
+          </div>
+
+          <div className='flex justify-end gap-2 pt-2'>
+            <Button type='button' variant='outline' onClick={handleClose}>
+              Cancel
             </Button>
-
-            {file && (
-              <span className='flex items-center gap-1 text-sm text-muted-foreground'>
-                <CheckCircle2 className='w-4 h-4 text-green-500' />
-                {(file as File).name}
-              </span>
-            )}
+            <Button type='button' onClick={handleSubmit} disabled={uploadMutation.isPending}>
+              {uploadMutation.isPending && <Loader2 className='w-4 h-4 mr-2 animate-spin' />}
+              Upload
+            </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
   )
 }
+
+export default AttendanceSheetModal
