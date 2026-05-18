@@ -7,12 +7,23 @@ export const edgeFunctionsApi = {
    * @param overrideEmail - Optional email override for the report
    * @returns Promise with the result data or error
    */
+
+  async _getGeneratedBy(): Promise<string | undefined> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    return user?.id
+  },
+
   async studentProgressReport(speechScreeningId: string, overrideEmail: string) {
     try {
+      const generated_by = await this._getGeneratedBy()
+
       const { data, error } = await supabase.functions.invoke('student-progress-report', {
         body: {
           speech_screening_id: speechScreeningId,
           override_email: overrideEmail,
+          generated_by,
         },
       })
 
@@ -31,10 +42,13 @@ export const edgeFunctionsApi = {
 
   async sendStudentReport(speechScreeningId: string, overrideEmail: string) {
     try {
+      const generated_by = await this._getGeneratedBy()
+
       const { data, error } = await supabase.functions.invoke('send-student-report', {
         body: {
           speech_screening_id: speechScreeningId,
           override_email: overrideEmail,
+          generated_by,
         },
       })
 
@@ -52,10 +66,13 @@ export const edgeFunctionsApi = {
 
   async studentGoalSheet(speechScreeningId: string, overrideEmail: string) {
     try {
+      const generated_by = await this._getGeneratedBy()
+
       const { data, error } = await supabase.functions.invoke('student-goal-sheet', {
         body: {
           speech_screening_id: speechScreeningId,
           override_email: overrideEmail,
+          generated_by,
         },
       })
 
@@ -77,6 +94,8 @@ export const edgeFunctionsApi = {
     overrideEmail: string
   ) {
     try {
+      const generated_by = await this._getGeneratedBy()
+
       const { data, error } = await supabase.functions.invoke(
         'school-wide-student-progress-report',
         {
@@ -84,6 +103,7 @@ export const edgeFunctionsApi = {
             school_id: schoolId,
             academic_year: academicYear,
             override_email: overrideEmail,
+            generated_by,
           },
         }
       )
@@ -102,11 +122,13 @@ export const edgeFunctionsApi = {
 
   async schoolWideStudentGoalSheets(schoolId: string, academicYear: string, overrideEmail: string) {
     try {
+      const generated_by = await this._getGeneratedBy()
       const { data, error } = await supabase.functions.invoke('school-wide-student-goal-sheets', {
         body: {
           school_id: schoolId,
           academic_year: academicYear,
           override_email: overrideEmail,
+          generated_by,
         },
       })
 
@@ -128,11 +150,13 @@ export const edgeFunctionsApi = {
     overrideEmail: string
   ) {
     try {
+      const generated_by = await this._getGeneratedBy()
       const { data, error } = await supabase.functions.invoke('school-wide-send-student-report', {
         body: {
           school_id: schoolId,
           academic_year: academicYear,
           override_email: overrideEmail,
+          generated_by,
         },
       })
 
@@ -150,11 +174,14 @@ export const edgeFunctionsApi = {
 
   async schoolSummaryReport(schoolId: string, academicYear: string, overrideEmail: string) {
     try {
+      const generated_by = await this._getGeneratedBy()
+
       const { data, error } = await supabase.functions.invoke('school-summary-report', {
         body: {
           school_id: schoolId,
           academic_year: academicYear,
           override_email: overrideEmail,
+          generated_by,
         },
       })
 
@@ -172,10 +199,12 @@ export const edgeFunctionsApi = {
 
   async monthlyMeetings(monthlyMeetingId: string, overrideEmail: string) {
     try {
+      const generated_by = await this._getGeneratedBy()
       const { data, error } = await supabase.functions.invoke('monthly-meeting', {
         body: {
           monthly_meeting_id: monthlyMeetingId,
           override_email: overrideEmail,
+          generated_by,
         },
       })
 
@@ -195,10 +224,12 @@ export const edgeFunctionsApi = {
 
   async generateHearingReport(hearingScreeningId: string, overrideEmail: string) {
     try {
+      const generated_by = await this._getGeneratedBy()
       const { data, error } = await supabase.functions.invoke('swift-handler', {
         body: {
           hearing_screening_id: hearingScreeningId,
           override_email: overrideEmail,
+          generated_by,
         },
       })
 
@@ -216,6 +247,7 @@ export const edgeFunctionsApi = {
 
   async schoolWideHearingReports(schoolId: string, academicYear: string, overrideEmail: string) {
     try {
+      const generated_by = await this._getGeneratedBy()
       const { data, error } = await supabase.functions.invoke(
         'school-wide-student-hearing-report',
         {
@@ -223,6 +255,7 @@ export const edgeFunctionsApi = {
             school_id: schoolId,
             academic_year: academicYear,
             override_email: overrideEmail,
+            generated_by,
           },
         }
       )
@@ -241,11 +274,13 @@ export const edgeFunctionsApi = {
 
   async schoolSummaryHearingReport(schoolId: string, academicYear: string, overrideEmail: string) {
     try {
+      const generated_by = await this._getGeneratedBy()
       const { data, error } = await supabase.functions.invoke('school-summary-hearing-report', {
         body: {
           school_id: schoolId,
           academic_year: academicYear,
           override_email: overrideEmail,
+          generated_by,
         },
       })
 
