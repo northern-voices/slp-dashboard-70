@@ -428,7 +428,14 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   const studentIds = useMemo(() => students.map(student => student.id), [students])
   const { data: consentStudentIds = [] } = useConsentFormPresence(studentIds)
-  const consentSet = useMemo(() => new Set(consentStudentIds), [consentStudentIds])
+
+  const consentSet = useMemo(
+    () =>
+      new Set(
+        consentStudentIds.filter(r => r.consent_purpose === 'therapy').map(r => r.student_id)
+      ),
+    [consentStudentIds]
+  )
 
   const getConsentBadge = (student: Student) => {
     if (consentSet.has(student.id)) {

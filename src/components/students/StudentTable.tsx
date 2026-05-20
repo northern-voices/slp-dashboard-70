@@ -105,7 +105,16 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
   const studentIds = students.map(student => student.id)
   const { data: studentIdsWithConsent = [] } = useConsentFormPresence(studentIds)
-  const consentSet = useMemo(() => new Set(studentIdsWithConsent), [studentIdsWithConsent])
+
+  const consentSet = useMemo(
+    () =>
+      new Set(
+        (studentIdsWithConsent ?? [])
+          .filter(r => r.consent_purpose === 'therapy')
+          .map(r => r.student_id)
+      ),
+    [studentIdsWithConsent]
+  )
 
   const { data: schoolTransfers = [] } = useSchoolTransfers(activeSchool?.id ?? '')
 
