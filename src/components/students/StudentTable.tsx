@@ -106,14 +106,28 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const studentIds = students.map(student => student.id)
   const { data: studentIdsWithConsent = [] } = useConsentFormPresence(studentIds)
 
+  // 0-indexed, August = 7, September = 8
+  const getCurrentSchoolYearStart = (): Date => {
+    const now = new Date()
+    const month = now.getMonth()
+    const year = now.getFullYear()
+
+    // Sep 1 of this year else Sep 1 of last year
+    return month >= 8 ? new Date(year, 8, 1) : new Date(year - 1, 8, 1)
+  }
+
+  const schoolYearStart = getCurrentSchoolYearStart()
+
   const consentSet = useMemo(
     () =>
       new Set(
         (studentIdsWithConsent ?? [])
-          .filter(r => r.consent_purpose === 'therapy')
+          .filter(
+            r => r.consent_purpose === 'therapy' && new Date(r.consent_date) >= schoolYearStart
+          )
           .map(r => r.student_id)
       ),
-    [studentIdsWithConsent]
+    [studentIdsWithConsent, schoolYearStart]
   )
 
   const { data: schoolTransfers = [] } = useSchoolTransfers(activeSchool?.id ?? '')
