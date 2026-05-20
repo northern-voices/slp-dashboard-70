@@ -104,15 +104,6 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
       return
     }
 
-    if (!values.parent_guardian.trim()) {
-      toast({
-        title: 'Missing field',
-        description: 'Please enter a parent or a guardian name.',
-        variant: 'destructive',
-      })
-      return
-    }
-
     await uploadMutation.mutateAsync(
       {
         consent_date: values.consent_date,
@@ -274,9 +265,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
 
           {/* Parent/Guardian */}
           <div className='space-y-1'>
-            <Label htmlFor='parent-guardian'>
-              Parent / Guardian <span className='text-destructive'>*</span>
-            </Label>
+            <Label htmlFor='parent-guardian'>Parent / Guardian</Label>
             <Input
               id='parent-guardian'
               placeholder='Enter parent or guardian name'
