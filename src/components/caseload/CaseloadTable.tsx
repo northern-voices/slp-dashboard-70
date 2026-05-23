@@ -180,10 +180,10 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   }
 
   const getResultBadge = (result?: string | null) => {
-    if (!result) return <span className='text-gray-400 text-sm'>—</span>
+    if (!result) return <span className='text-sm text-gray-400'>—</span>
 
     const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
-    if (!config) return <span className='text-gray-400 text-sm'>—</span>
+    if (!config) return <span className='text-sm text-gray-400'>—</span>
 
     return <Badge className={`${config.color} font-medium text-[10px]`}>{config.label}</Badge>
   }
@@ -428,22 +428,45 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   const studentIds = useMemo(() => students.map(student => student.id), [students])
   const { data: consentStudentIds = [] } = useConsentFormPresence(studentIds)
-  const consentSet = useMemo(() => new Set(consentStudentIds), [consentStudentIds])
+
+  // 0-indexed, August = 7, September = 8
+  const getCurrentSchoolYearStart = (): Date => {
+    const now = new Date()
+    const month = now.getMonth()
+    const year = now.getFullYear()
+
+    // Sep 1 of this year else Sep 1 of last year
+    return month >= 8 ? new Date(year, 8, 1) : new Date(year - 1, 8, 1)
+  }
+
+  const schoolYearStart = getCurrentSchoolYearStart()
+
+  const consentSet = useMemo(
+    () =>
+      new Set(
+        (consentStudentIds ?? [])
+          .filter(
+            r => r.consent_purpose === 'therapy' && new Date(r.consent_date) >= schoolYearStart
+          )
+          .map(r => r.student_id)
+      ),
+    [consentStudentIds, schoolYearStart]
+  )
 
   const getConsentBadge = (student: Student) => {
     if (consentSet.has(student.id)) {
-      return <FileCheck className='h-5 w-5 text-green-600 mx-auto' />
+      return <FileCheck className='w-5 h-5 mx-auto text-green-600' />
     }
 
-    return <FileX className='h-5 w-5 text-red-400 mx-auto' />
+    return <FileX className='w-5 h-5 mx-auto text-red-400' />
   }
 
   if (isLoading) {
     return (
       <div className='flex items-center justify-center py-8'>
         <div className='text-center'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4' />
-          <p className='text-gray-600 text-sm'>Loading caseload...</p>
+          <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin' />
+          <p className='text-sm text-gray-600'>Loading caseload...</p>
         </div>
       </div>
     )
@@ -679,7 +702,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                   variant='ghost'
                   onClick={() => handleSort('consent')}
                   className='h-auto p-0 font-medium hover:bg-transparent'>
-                  <span className='w-4 h-4 mr-1 inline-block opacity-0' />
+                  <span className='inline-block w-4 h-4 mr-1 opacity-0' />
                   Consent
                   <span className='ml-1'>{getSortIcon('consent')}</span>
                 </Button>
@@ -802,7 +825,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                       }
                       handleAssignEA(student, value)
                     }}>
-                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0 truncate'>
+                    <SelectTrigger className='w-full h-8 p-0 truncate border-none hover:bg-transparent focus:ring-0'>
                       <SelectValue placeholder='Assign EA'>{getSpeechEAName(student)}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
@@ -813,7 +836,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                         </SelectItem>
                       ))}
                       <SelectSeparator />
-                      <SelectItem value='__create_new__' className='text-blue-600 font-medium'>
+                      <SelectItem value='__create_new__' className='font-medium text-blue-600'>
                         + Create new EA
                       </SelectItem>
                     </SelectContent>
@@ -823,8 +846,8 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 <TableCell className='text-center'>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
-                        <MoreHorizontal className='h-4 w-4' />
+                      <Button variant='ghost' size='sm' className='w-8 h-8 p-0'>
+                        <MoreHorizontal className='w-4 h-4' />
                       </Button>
                     </DropdownMenuTrigger>
 
@@ -889,7 +912,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 size='sm'
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className='h-9 w-9 p-0'>
+                className='p-0 h-9 w-9'>
                 &larr;
               </Button>
               <Button
@@ -897,7 +920,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 size='sm'
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className='h-9 w-9 p-0'>
+                className='p-0 h-9 w-9'>
                 &rarr;
               </Button>
             </div>

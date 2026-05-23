@@ -106,19 +106,19 @@ export const consentFormsApi = {
     }
   },
 
-  getConsentFormPresenceByStudentIds: async (studentIds: string[]): Promise<string[]> => {
+  getConsentFormPresenceByStudentIds: async (
+    studentIds: string[]
+  ): Promise<{ student_id: string; consent_purpose: string; consent_date: string }[]> => {
     if (studentIds.length === 0) return []
     try {
       const { data, error } = await supabase
         .from('consent_forms')
-        .select('student_id')
+        .select('student_id, consent_purpose, consent_date')
         .in('student_id', studentIds)
 
       if (error) throw error
 
-      const unique = [...new Set((data || []).map(r => r.student_id))]
-
-      return unique
+      return data || []
     } catch (error) {
       console.error('Error fetching consent form presence:', error)
       throw error

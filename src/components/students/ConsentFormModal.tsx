@@ -104,15 +104,6 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
       return
     }
 
-    if (!values.parent_guardian.trim()) {
-      toast({
-        title: 'Missing field',
-        description: 'Please enter a parent or a guardian name.',
-        variant: 'destructive',
-      })
-      return
-    }
-
     await uploadMutation.mutateAsync(
       {
         consent_date: values.consent_date,
@@ -252,12 +243,12 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
                   variant='outline'
                   size='sm'
                   onClick={() => fileInputRef.current?.click()}>
-                  <Upload className='mr-2 h-4 w-4' />
+                  <Upload className='w-4 h-4 mr-2' />
                   Choose File
                 </Button>
                 {file && (
                   <span className='flex items-center gap-1 text-sm text-muted-foreground'>
-                    <CheckCircle2 className='h-4 w-4 text-green-500' />
+                    <CheckCircle2 className='w-4 h-4 text-green-500' />
                     {(file as File).name}
                   </span>
                 )}
@@ -274,9 +265,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
 
           {/* Parent/Guardian */}
           <div className='space-y-1'>
-            <Label htmlFor='parent-guardian'>
-              Parent / Guardian <span className='text-destructive'>*</span>
-            </Label>
+            <Label htmlFor='parent-guardian'>Parent / Guardian</Label>
             <Input
               id='parent-guardian'
               placeholder='Enter parent or guardian name'
@@ -301,7 +290,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
               Cancel
             </Button>
             <Button type='button' onClick={handleSubmit} disabled={uploadMutation.isPending}>
-              {uploadMutation.isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+              {uploadMutation.isPending && <Loader2 className='w-4 h-4 mr-2 animate-spin' />}
               Save
             </Button>
           </div>
