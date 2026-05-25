@@ -145,6 +145,10 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     return map
   }, [schoolTransfers])
 
+  const transferredOut = useMemo(() => {
+    return schoolTransfers.filter(t => t.from_school_id === activeSchool?.id)
+  }, [schoolTransfers, activeSchool?.id])
+
   // Fetch all grades for the school
   useEffect(() => {
     const fetchGrades = async () => {
@@ -722,6 +726,45 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
           </div>
         )}
       </div>
+
+      {/* Transferred Out Section */}
+      {transferredOut.length > 0 && (
+        <div className='mt-8'>
+          <h2 className='text-base font-semibold text-gray-700 mb-3'>
+            Transferred Out ({transferredOut.length})
+          </h2>
+          <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
+            <ResponsiveTable className='w-full'>
+              <TableHeader>
+                <tr>
+                  <TableHead className='w-1/3'>Name</TableHead>
+                  <TableHead className='w-1/3'>To School</TableHead>
+                  <TableHead className='w-1/3'>Transfer Date</TableHead>
+                </tr>
+              </TableHeader>
+              <TableBody>
+                {transferredOut.map(transfer => (
+                  <TableRow key={transfer.id} className='bg-gray-50'>
+                    <TableCell className='p-4 font-medium text-gray-500'>
+                      {transfer.student?.first_name} {transfer.student?.last_name}
+                    </TableCell>
+                    <TableCell className='p-4 text-gray-500'>
+                      → {transfer.to_school?.name ?? '—'}
+                    </TableCell>
+                    <TableCell className='p-4 text-gray-500'>
+                      {new Date(transfer.transfer_date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </ResponsiveTable>
+          </div>
+        </div>
+      )}
 
       {filteredStudents.length > 0 && (
         <div className='flex items-center justify-between px-2 py-3'>
