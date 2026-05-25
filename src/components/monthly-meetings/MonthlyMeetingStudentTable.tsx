@@ -41,7 +41,7 @@ interface MonthlyMeetingsStudentTableProps {
   hasStudentData: (studentId: string) => boolean
   schoolId?: string
   screenings?: Screening[]
-  studentIdsWithConsent?: string[]
+  studentIdsWithConsent?: { student_id: string; consent_purpose: string; consent_date: string }[]
 }
 
 const MonthlyMeetingsStudentTable = ({
@@ -119,7 +119,29 @@ const MonthlyMeetingsStudentTable = ({
     )
   }
 
-  const consentSet = useMemo(() => new Set(studentIdsWithConsent), [studentIdsWithConsent])
+  // 0-indexed, August = 7, September = 8
+  const getCurrentSchoolYearStart = (): Date => {
+    const now = new Date()
+    const month = now.getMonth()
+    const year = now.getFullYear()
+
+    // Sep 1 of this year else Sep 1 of last year
+    return month >= 8 ? new Date(year, 8, 1) : new Date(year - 1, 8, 1)
+  }
+
+  const schoolYearStart = getCurrentSchoolYearStart()
+
+  const consentSet = useMemo(
+    () =>
+      new Set(
+        (studentIdsWithConsent ?? [])
+          .filter(
+            r => r.consent_purpose === 'therapy' && new Date(r.consent_date) >= schoolYearStart
+          )
+          .map(r => r.student_id)
+      ),
+    [studentIdsWithConsent, schoolYearStart]
+  )
 
   const mostRecentScreeningByStudent = useMemo(() => {
     const map = new Map<string, Screening>()

@@ -105,7 +105,30 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
   const studentIds = students.map(student => student.id)
   const { data: studentIdsWithConsent = [] } = useConsentFormPresence(studentIds)
-  const consentSet = useMemo(() => new Set(studentIdsWithConsent), [studentIdsWithConsent])
+
+  // 0-indexed, August = 7, September = 8
+  const getCurrentSchoolYearStart = (): Date => {
+    const now = new Date()
+    const month = now.getMonth()
+    const year = now.getFullYear()
+
+    // Sep 1 of this year else Sep 1 of last year
+    return month >= 8 ? new Date(year, 8, 1) : new Date(year - 1, 8, 1)
+  }
+
+  const schoolYearStart = getCurrentSchoolYearStart()
+
+  const consentSet = useMemo(
+    () =>
+      new Set(
+        (studentIdsWithConsent ?? [])
+          .filter(
+            r => r.consent_purpose === 'therapy' && new Date(r.consent_date) >= schoolYearStart
+          )
+          .map(r => r.student_id)
+      ),
+    [studentIdsWithConsent, schoolYearStart]
+  )
 
   const { data: schoolTransfers = [] } = useSchoolTransfers(activeSchool?.id ?? '')
 
@@ -637,7 +660,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                 key={student.id}
                 className='transition-colors cursor-pointer'
                 onClick={() => handleRowClick(student.id)}>
-                <TableCell className='p-4 font-medium group-hover:bg-gray-100 transition-colors'>
+                <TableCell className='p-4 font-medium transition-colors group-hover:bg-gray-100'>
                   <div className='flex flex-col gap-0.5'>
                     <span>
                       {student.first_name} {student.last_name}
@@ -657,15 +680,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   </div>
                 </TableCell>
 
-                <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
+                <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {getStudentGrade(student)}
                 </TableCell>
 
-                <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
+                <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {getQualificationBadge(student)}
                 </TableCell>
 
-                <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
+                <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {parseDateSafely(student.created_at).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
@@ -673,15 +696,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   })}
                 </TableCell>
 
-                <TableCell className='p-4 text-center group-hover:bg-gray-100 transition-colors'>
+                <TableCell className='p-4 text-center transition-colors group-hover:bg-gray-100'>
                   {consentSet.has(student.id) ? (
-                    <FileCheck className='h-5 w-5 text-green-600 mx-auto' />
+                    <FileCheck className='w-5 h-5 mx-auto text-green-600' />
                   ) : (
-                    <FileX className='h-5 w-5 text-red-400 mx-auto' />
+                    <FileX className='w-5 h-5 mx-auto text-red-400' />
                   )}
                 </TableCell>
 
-                <TableCell className='p-4 group-hover:bg-gray-100 transition-colors'>
+                <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {getSpeechEAName(student)}
                 </TableCell>
               </TableRow>
