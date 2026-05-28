@@ -16,6 +16,8 @@ import { supabase } from '@/lib/supabase'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
+import EditPrimarySLPModal from '@/components/dashboard/EditPrimarySLPModal'
+import { getSchoolYear, getRecentSchoolYears } from '@/utils/dateUtils'
 // import DashboardStats from '@/components/DashboardStats'
 // import QuickActions from '@/components/QuickActions'
 // import RecentActivity from '@/components/RecentActivity'
@@ -33,6 +35,11 @@ const DashboardContent = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isAddActivityModalOpen, setIsAddActivityModalOpen] = useState(false)
+  const [isEditSLPModalOpen, setIsEditSLPModalOpen] = useState(false)
+  const [isSavingSLP, setIsSavingSLP] = useState(false)
+  const [selectedYear, setSelectedYear] = useState(() => getSchoolYear())
+
+  const availableYears = getRecentSchoolYears(2)
 
   const {
     userProfile,
@@ -54,8 +61,10 @@ const DashboardContent = () => {
     currentOrganization?.id
   )
 
-  const { data: activities = [], isLoading: isLoadingActivities } =
-    useSchoolActivities(currentSchool)
+  const { data: activities = [], isLoading: isLoadingActivities } = useSchoolActivities(
+    currentSchool,
+    selectedYear
+  )
 
   const userRole = userProfile?.role || 'slp'
   const canEditSchoolDetails = userRole === 'admin' || userRole === 'super_admin'
@@ -169,6 +178,38 @@ const DashboardContent = () => {
     }
   }
 
+  const handleSavePrimarySLP = async (data: {
+    firstName: string
+    lastName: string
+    email: string
+  }) => {
+    if (!currentSchool?.primary_slp_id) return
+
+    setIsSavingSLP(true)
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+        })
+        .eq('id', currentSchool.primary_slp_id)
+
+      if (error) throw error
+
+      queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool.id] })
+      toast.success('Primary SLP updated successfully')
+      setIsEditSLPModalOpen(false)
+    } catch (error) {
+      console.error('Error updating primary SLP:', error)
+      toast.error('Failed to update primary SLP. Please try again.')
+    } finally {
+      setIsSavingSLP(false)
+    }
+  }
+
   const handleEditMember = (member: {
     id: string
     name: string
@@ -185,7 +226,6 @@ const DashboardContent = () => {
     name: string
     roles: string[]
     email: string
-    phone: string
   }) => {
     if (!currentSchool) {
       console.error('No school selected')
@@ -204,7 +244,6 @@ const DashboardContent = () => {
           last_name: lastName,
           roles: member.roles,
           email: member.email,
-          phone: member.phone,
         })
         .eq('id', member.id)
 
@@ -357,10 +396,14 @@ const DashboardContent = () => {
           onEdit={() => setIsEditModalOpen(true)}
           onEditMember={handleEditMember}
           onDeleteMember={handleDeleteMember}
+          onEditPrimarySLP={canEditSchoolDetails ? () => setIsEditSLPModalOpen(true) : undefined}
         />
 
         <ActivityLogCard
           activities={activities}
+          selectedYear={selectedYear}
+          availableYears={availableYears}
+          onYearChange={setSelectedYear}
           onAddActivity={() => setIsAddActivityModalOpen(true)}
           onDeleteActivity={handleDeleteActivity}
           onEditActivity={handleEditActivity}
@@ -403,6 +446,20 @@ const DashboardContent = () => {
           }}
           availableSLPs={availableSLPs}
           isSaving={isSaving}
+        />
+      )}
+
+      {currentSchool?.primary_slp_id && schoolData && (
+        <EditPrimarySLPModal
+          open={isEditSLPModalOpen}
+          onOpenChange={setIsEditSLPModalOpen}
+          onSave={handleSavePrimarySLP}
+          initialData={{
+            firstName: schoolData.primarySLP.name.split(' ')[0] || '',
+            lastName: schoolData.primarySLP.name.split(' ').slice(1).join(' ') || '',
+            email: schoolData.primarySLP.email,
+          }}
+          isSaving={isSavingSLP}
         />
       )}
     </>
