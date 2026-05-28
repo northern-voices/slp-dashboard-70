@@ -17,6 +17,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
 import EditPrimarySLPModal from '@/components/dashboard/EditPrimarySLPModal'
+import { getSchoolYear, getRecentSchoolYears } from '@/utils/dateUtils'
 // import DashboardStats from '@/components/DashboardStats'
 // import QuickActions from '@/components/QuickActions'
 // import RecentActivity from '@/components/RecentActivity'
@@ -36,6 +37,9 @@ const DashboardContent = () => {
   const [isAddActivityModalOpen, setIsAddActivityModalOpen] = useState(false)
   const [isEditSLPModalOpen, setIsEditSLPModalOpen] = useState(false)
   const [isSavingSLP, setIsSavingSLP] = useState(false)
+  const [selectedYear, setSelectedYear] = useState(() => getSchoolYear())
+
+  const availableYears = getRecentSchoolYears(2)
 
   const {
     userProfile,
@@ -57,8 +61,10 @@ const DashboardContent = () => {
     currentOrganization?.id
   )
 
-  const { data: activities = [], isLoading: isLoadingActivities } =
-    useSchoolActivities(currentSchool)
+  const { data: activities = [], isLoading: isLoadingActivities } = useSchoolActivities(
+    currentSchool,
+    selectedYear
+  )
 
   const userRole = userProfile?.role || 'slp'
   const canEditSchoolDetails = userRole === 'admin' || userRole === 'super_admin'
@@ -395,6 +401,9 @@ const DashboardContent = () => {
 
         <ActivityLogCard
           activities={activities}
+          selectedYear={selectedYear}
+          availableYears={availableYears}
+          onYearChange={setSelectedYear}
           onAddActivity={() => setIsAddActivityModalOpen(true)}
           onDeleteActivity={handleDeleteActivity}
           onEditActivity={handleEditActivity}
