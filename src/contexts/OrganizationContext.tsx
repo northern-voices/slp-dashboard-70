@@ -42,7 +42,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   const [userProfile, setUserProfile] = useState<SLPProfile | null>(null)
   const [availableSchools, setAvailableSchoolsState] = useLocalStorage<School[]>(
     'availableSchools',
-    [],
+    []
   )
   const [isLoading, setIsLoading] = useState(true)
   const [isInitialized, setIsInitialized] = useState(false)
@@ -50,7 +50,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   // Use localStorage to persist the selected school
   const [currentSchool, setCurrentSchoolState] = useLocalStorage<School | null>(
     'selectedSchool',
-    null,
+    null
   )
 
   // Store the setter function in a ref to prevent recreation
@@ -83,7 +83,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
           `
           *,
           organization:organizations(*)
-        `,
+        `
         )
         .eq('id', user.id)
         .single()
@@ -182,10 +182,13 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
       // Validate and restore persisted school if it exists
       // Use the current value from state, not the parameter
       const currentSchoolValue = currentSchool
+
       if (currentSchoolValue) {
-        const isValidSchool = transformedSchools.find(s => s.id === currentSchoolValue.id)
-        if (!isValidSchool) {
+        const freshSchool = transformedSchools.find(s => s.id === currentSchoolValue.id)
+        if (!freshSchool) {
           clearCurrentSchool()
+        } else {
+          setCurrentSchool(freshSchool)
         }
       }
 
@@ -238,7 +241,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
       setCurrentSchool,
       clearCurrentSchool,
       refreshData,
-    ],
+    ]
   )
 
   return <OrganizationContext.Provider value={value}>{children}</OrganizationContext.Provider>

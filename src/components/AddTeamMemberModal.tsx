@@ -72,7 +72,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
             <DialogTitle>Add Team Member</DialogTitle>
           </div>
           <DialogDescription>
-            Add a new member to the school team. Fill in all the required information below.
+            Add a new member to the school team. Fill in the required information below.
           </DialogDescription>
         </DialogHeader>
 
@@ -181,15 +181,19 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
             {/* Email Field */}
             <div className='space-y-2'>
               <Label htmlFor='email' className='text-sm font-medium text-gray-700'>
-                Email Address <span className='text-red-500'>*</span>
+                Email Address
               </Label>
               <Input
                 id='email'
                 type='email'
                 placeholder='e.g., emily.carter@nvschools.edu'
-                {...register('email', { required: true })}
+                {...register('email', {
+                  validate: value =>
+                    !value ||
+                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ||
+                    'Please enter a valid email',
+                })}
                 className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
-                required
               />
             </div>
 
