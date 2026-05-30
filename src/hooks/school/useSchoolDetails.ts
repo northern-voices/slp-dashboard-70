@@ -51,7 +51,7 @@ export const useSchoolDetails = (currentSchool: School | null) => {
           primarySLPData = {
             name: `${slpUser.first_name} ${slpUser.last_name}`,
             email: slpUser.email,
-            phone: currentSchool.phone ? formatPhoneNumber(currentSchool.phone) : '',
+            phone: '',
           }
         }
       }

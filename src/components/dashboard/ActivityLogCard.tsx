@@ -1,5 +1,12 @@
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -17,6 +24,9 @@ import { Activity } from '@/types/database'
 
 interface ActivityLogCardProps {
   activities: Activity[]
+  selectedYear: string
+  availableYears: string[]
+  onYearChange: (year: string) => void
   onAddActivity: () => void
   onDeleteActivity?: (activityId: string) => void
   onEditActivity?: (
@@ -38,6 +48,9 @@ const ACTIVITY_TYPE_LABELS: Record<string, string> = {
 
 const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
   activities,
+  selectedYear,
+  availableYears,
+  onYearChange,
   onAddActivity,
   onDeleteActivity,
   onEditActivity,
@@ -79,15 +92,31 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
             </div>
           </div>
 
-          <Button
-            onClick={onAddActivity}
-            size='sm'
-            className='h-8 px-3 text-xs font-medium text-white rounded-lg bg-brand hover:bg-brand/90'>
-            <div className='flex items-center space-x-1.5'>
-              <Plus className='w-3.5 h-3.5' />
-              <span className='leading-none'>Add Activity</span>
-            </div>
-          </Button>
+          <div className='flex items-center space-x-2'>
+            <Select value={selectedYear} onValueChange={onYearChange}>
+              <SelectTrigger className='h-8 w-[120px] text-xs border-gray-200 rounded-lg'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availableYears.map((year, i) => (
+                  <SelectItem key={year} value={year} className='text-xs'>
+                    {year}
+                    {i === 0 ? ' (Current)' : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button
+              onClick={onAddActivity}
+              size='sm'
+              className='h-8 px-3 text-xs font-medium text-white rounded-lg bg-brand hover:bg-brand/90'>
+              <div className='flex items-center space-x-1.5'>
+                <Plus className='w-3.5 h-3.5' />
+                <span className='leading-none'>Add Activity</span>
+              </div>
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -126,7 +155,7 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
                     <Button
                       variant='ghost'
                       size='sm'
-                      className='shrink-0 ml-2 h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50'
+                      className='w-8 h-8 p-0 ml-2 text-gray-400 shrink-0 hover:text-red-600 hover:bg-red-50'
                       onClick={() => setActivityToDeleteId(activity.id)}
                       aria-label='Delete activity'>
                       <Trash2 className='w-4 h-4' />
@@ -137,7 +166,7 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
                     <Button
                       variant='ghost'
                       size='sm'
-                      className='shrink-0 ml-2 h-8 w-8 p-0 text-gray-400 hover:text-blue-600 hover:bg-blue-50'
+                      className='w-8 h-8 p-0 ml-2 text-gray-400 shrink-0 hover:text-blue-600 hover:bg-blue-50'
                       onClick={() => {
                         setActivityToEdit(activity)
                         setEditForm({
@@ -203,11 +232,11 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
             <AlertDialogTitle>Edit Activity</AlertDialogTitle>
           </AlertDialogHeader>
 
-          <div className='space-y-3 py-2'>
+          <div className='py-2 space-y-3'>
             <div>
               <label className='text-xs font-medium text-gray-700'>Activity Type</label>
               <select
-                className='mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm'
+                className='w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md'
                 value={editForm.activity_type}
                 onChange={e => setEditForm(f => ({ ...f, activity_type: e.target.value }))}>
                 {Object.entries(ACTIVITY_TYPE_LABELS).map(([value, label]) => (
@@ -222,7 +251,7 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
               <label className='text-xs font-medium text-gray-700'>Date</label>
               <input
                 type='date'
-                className='mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm'
+                className='w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md'
                 value={editForm.activity_date.slice(0, 10)}
                 onChange={e => setEditForm(f => ({ ...f, activity_date: e.target.value }))}
               />
@@ -231,7 +260,7 @@ const ActivityLogCard: React.FC<ActivityLogCardProps> = ({
             <div>
               <label className='text-xs font-medium text-gray-700'>Notes</label>
               <textarea
-                className='mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm'
+                className='w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-md'
                 rows={3}
                 value={editForm.notes}
                 onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}

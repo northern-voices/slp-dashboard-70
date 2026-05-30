@@ -86,3 +86,34 @@ export const parseDateSafely = (dateString: string): Date => {
   // For other formats, use the standard Date constructor
   return new Date(dateString)
 }
+
+// 0-indexed: 7 = August start of school year, 8 = September start of school year
+const SCHOOL_YEAR_START_MONTH = 7
+
+export const getSchoolYear = (date: Date = new Date()): string => {
+  const month = date.getMonth()
+  const year = date.getFullYear()
+
+  return month >= SCHOOL_YEAR_START_MONTH ? `${year}-${year + 1}` : `${year - 1}-${year}`
+}
+
+export const getSchoolYearRange = (schoolYear: string): { start: string; end: string } => {
+  const startYear = parseInt(schoolYear.split('-')[0])
+  const startMonth = SCHOOL_YEAR_START_MONTH === 7 ? '08-01' : '09-01'
+  const endMonth = SCHOOL_YEAR_START_MONTH === 7 ? '07-31' : '08-31'
+
+  return {
+    start: `${startYear}-${startMonth}`,
+    end: `${startYear + 1}-${endMonth}`,
+  }
+}
+
+export const getRecentSchoolYears = (count: number = 5): string[] => {
+  const current = getSchoolYear()
+  const startYear = parseInt(current.split('-')[0])
+
+  return Array.from({ length: count }, (_, i) => {
+    const y = startYear - i
+    return `${y}-${y + 1}`
+  })
+}

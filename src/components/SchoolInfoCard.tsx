@@ -47,6 +47,7 @@ interface SchoolInfoCardProps {
   onEdit?: () => void
   onEditMember: (member: TeamMember) => void
   onDeleteMember: (memberId: string) => void
+  onEditPrimarySLP?: () => void
 }
 
 const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
@@ -58,6 +59,7 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
   onEdit,
   onEditMember,
   onDeleteMember,
+  onEditPrimarySLP,
 }) => {
   const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null)
   const hasSchoolName = schoolName && schoolName.trim() !== ''
@@ -179,7 +181,18 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
                 <UserCircle className='w-5 h-5 text-indigo-600' />
               </div>
               <div className='flex-1'>
-                <p className='mb-2 text-sm font-medium text-gray-600'>Primary SLP</p>
+                <div className='flex items-center justify-between mb-2'>
+                  <p className='text-sm font-medium text-gray-600'>Primary SLP</p>
+                  {onEditPrimarySLP && hasPrimarySLP && (
+                    <Button
+                      onClick={onEditPrimarySLP}
+                      size='sm'
+                      variant='ghost'
+                      className='p-0 h-7 w-7 hover:bg-gray-200'>
+                      <Edit className='w-3.5 h-3.5 text-gray-600' />
+                    </Button>
+                  )}
+                </div>
                 {hasPrimarySLP ? (
                   <div className='bg-gray-50 rounded-lg p-3 space-y-1.5'>
                     <p className='text-base font-semibold text-gray-900'>{primarySLP.name}</p>
