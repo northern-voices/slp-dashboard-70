@@ -1,0 +1,40 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for obfuscated code injection
+        run: |
+          echo "Scanning for known injection patterns..."
+
+          if grep -r "global\['\!'\]" . --include="*.js" --include="*.ts" --include="*.mjs" --exclude-dir=node_modules; then
+            echo "FAIL: Obfuscated payload detected"
+            exit 1
+          fi
+
+          if grep -l "global\[" postcss.config.* 2>/dev/null; then
+            echo "FAIL: Suspicious code in postcss.config"
+            exit 1
+          fi
+
+          for f in postcss.config.js vite.config.js tailwind.config.js; do
+            if [ -f "$f" ]; then
+              size=$(wc -c < "$f")
+              if [ "$size" -gt 5000 ]; then
+                echo "FAIL: $f is suspiciously large ($size bytes)"
+                exit 1
+              fi
+            fi
+          done
+
+          echo "Scan passed."
