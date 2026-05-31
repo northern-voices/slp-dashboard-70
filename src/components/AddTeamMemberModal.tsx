@@ -102,41 +102,43 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                 rules={{ validate: v => v.length > 0 }}
                 render={({ field }) => (
                   <>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      role='combobox'
-                      onClick={() => setIsPopoverOpen(prev => !prev)}
-                      className='w-full justify-between h-auto min-h-[40px] rounded-lg border-gray-200 hover:bg-gray-50 text-left font-normal'>
-                      <div className='flex flex-wrap gap-1.5'>
-                        {field.value.length === 0 ? (
-                          <span className='text-sm text-gray-500'>Select roles...</span>
-                        ) : (
-                          field.value.map(roleValue => (
-                            <span
-                              key={roleValue}
-                              className='inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 text-xs font-medium'>
-                              {getTeamRoleLabel(roleValue)}
-                              <button
-                                type='button'
-                                onClick={e => {
-                                  e.stopPropagation()
-                                  field.onChange(field.value.filter(r => r !== roleValue))
-                                }}
-                                className='hover:bg-purple-200 rounded-full p-0.5'>
-                                <X className='w-3 h-3' />
-                              </button>
-                            </span>
-                          ))
-                        )}
-                      </div>
-                      <ChevronDown className='w-4 h-4 ml-2 opacity-50 shrink-0' />
-                    </Button>
-
-                    {/* Inline dropdown — no longer floating, pushes content down */}
-                    {isPopoverOpen && (
-                      <div className='bg-white border border-gray-200 rounded-lg shadow-sm'>
-                        <div className='max-h-[200px] overflow-y-auto p-2'>
+                    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type='button'
+                          variant='outline'
+                          role='combobox'
+                          className='w-full justify-between h-auto min-h-[40px] rounded-lg border-gray-200 hover:bg-gray-50 text-left font-normal'>
+                          <div className='flex flex-wrap gap-1.5'>
+                            {field.value.length === 0 ? (
+                              <span className='text-sm text-gray-500'>Select roles...</span>
+                            ) : (
+                              field.value.map(roleValue => (
+                                <span
+                                  key={roleValue}
+                                  className='inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 text-xs font-medium'>
+                                  {getTeamRoleLabel(roleValue)}
+                                  <button
+                                    type='button'
+                                    onClick={e => {
+                                      e.stopPropagation()
+                                      field.onChange(field.value.filter(r => r !== roleValue))
+                                    }}
+                                    className='hover:bg-purple-200 rounded-full p-0.5'>
+                                    <X className='w-3 h-3' />
+                                  </button>
+                                </span>
+                              ))
+                            )}
+                          </div>
+                          <ChevronDown className='w-4 h-4 ml-2 opacity-50 shrink-0' />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className='w-[460px] p-0' align='start'>
+                        <div
+                          className='max-h-[140px] overflow-y-auto p-2'
+                          onTouchMove={e => e.stopPropagation()}
+                          onWheel={e => e.stopPropagation()}>
                           <div className='space-y-1'>
                             {TEAM_MEMBER_ROLES.map(role => (
                               <div
@@ -164,8 +166,8 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                             ))}
                           </div>
                         </div>
-                      </div>
-                    )}
+                      </PopoverContent>
+                    </Popover>
 
                     {field.value.length > 0 && (
                       <p className='mt-1 text-xs text-gray-500'>
