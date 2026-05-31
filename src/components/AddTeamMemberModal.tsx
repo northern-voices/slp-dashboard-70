@@ -35,13 +35,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
   onOpenChange,
   onAddMember,
 }) => {
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    formState: { errors },
-  } = useForm<TeamMember>({
+  const { register, handleSubmit, control, reset } = useForm<TeamMember>({
     defaultValues: {
       name: '',
       roles: [],
