@@ -239,6 +239,28 @@ const ScreeningsTable = ({
     const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
     if (!config) return null
 
+    if (result === 'complex_needs') {
+      return (
+        <Badge className={`${config.color} font-medium text-[10px] leading-tight`}>
+          <span className='flex flex-col items-center'>
+            <span>Complex Needs</span>
+            <span>(Unable to Screen)</span>
+          </span>
+        </Badge>
+      )
+    }
+
+    if (result === 'unable_to_screen') {
+      return (
+        <Badge className={`${config.color} font-medium text-[10px] leading-tight`}>
+          <span className='flex flex-col items-center'>
+            <span>Student Refusal /</span>
+            <span>Compliance</span>
+          </span>
+        </Badge>
+      )
+    }
+
     return <Badge className={`${config.color} font-medium text-[10px]`}>{config.label}</Badge>
   }
 
