@@ -6,9 +6,12 @@ export const SCREENING_RESULTS = {
   moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800' },
   severe: { label: 'Severe', color: 'bg-red-100 text-red-800' },
   profound: { label: 'Profound', color: 'bg-red-300 text-red-800' },
-  complex_needs: { label: 'Complex Needs', color: 'bg-purple-300 text-purple-800' },
+  complex_needs: {
+    label: 'Complex Needs (Unable to Screen)',
+    color: 'bg-purple-300 text-purple-800',
+  },
   unable_to_screen: {
-    label: 'Non-Compliant',
+    label: 'Student Refusal / Compliance',
     color: 'bg-purple-100 text-purple-800',
   },
   absent: { label: 'Absent', color: 'bg-gray-100 text-gray-800' },
