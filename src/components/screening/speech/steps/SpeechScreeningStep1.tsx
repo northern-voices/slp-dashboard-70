@@ -251,10 +251,10 @@ const SpeechScreeningStep1 = ({
             Student Information
           </CardTitle>
         </CardHeader>
-        <CardContent className='space-y-6 p-0'>
+        <CardContent className='p-0 space-y-6'>
           <div>
-            <Label htmlFor='grade' className='mb-3 block text-sm font-medium text-gray-700'>
-              Grade Level <span className='text-red-500 text-lg'>*</span>
+            <Label htmlFor='grade' className='block mb-3 text-sm font-medium text-gray-700'>
+              Grade Level <span className='text-lg text-red-500'>*</span>
             </Label>
             <Select value={selectedGrade} onValueChange={handleGradeChange}>
               <SelectTrigger>
@@ -271,8 +271,8 @@ const SpeechScreeningStep1 = ({
           </div>
           {selectedGrade && (
             <div>
-              <Label className='mb-3 block text-sm font-medium text-gray-700'>
-                Select Student <span className='text-red-500 text-lg'>*</span>
+              <Label className='block mb-3 text-sm font-medium text-gray-700'>
+                Select Student <span className='text-lg text-red-500'>*</span>
               </Label>
               <div>
                 <StudentSearchSelector
@@ -284,12 +284,12 @@ const SpeechScreeningStep1 = ({
             </div>
           )}
           {selectedStudent && (
-            <div className='mt-6 p-4 bg-blue-50 rounded-lg'>
-              <h4 className='text-sm font-semibold text-blue-900 mb-2'>Selected Student</h4>
-              <p className='text-sm text-blue-800 font-medium'>
+            <div className='p-4 mt-6 rounded-lg bg-blue-50'>
+              <h4 className='mb-2 text-sm font-semibold text-blue-900'>Selected Student</h4>
+              <p className='text-sm font-medium text-blue-800'>
                 {selectedStudent.first_name} {selectedStudent.last_name}
               </p>
-              <p className='text-xs text-blue-600 mt-1'>Grade: {selectedGrade}</p>
+              <p className='mt-1 text-xs text-blue-600'>Grade: {selectedGrade}</p>
             </div>
           )}
 
@@ -297,8 +297,8 @@ const SpeechScreeningStep1 = ({
 
           {selectedGrade && (
             <div>
-              <Label className='mb-3 block text-sm font-medium text-gray-700'>
-                Academic Year <span className='text-red-500 text-lg'>*</span>
+              <Label className='block mb-3 text-sm font-medium text-gray-700'>
+                Academic Year <span className='text-lg text-red-500'>*</span>
               </Label>
               <Select
                 value={(() => {
@@ -383,7 +383,7 @@ const SpeechScreeningStep1 = ({
                       ? 'text-gray-400'
                       : ''
                   }`}>
-                  No Consent
+                  No Consent (Test)
                 </Label>
               </div>
               {/* {localNoConsentValue && (
@@ -431,7 +431,7 @@ const SpeechScreeningStep1 = ({
                 <Label
                   htmlFor='complex_needs'
                   className={`text-sm font-medium ${localAbsentValue || localNoConsentValue ? 'text-gray-400' : ''}`}>
-                  Complex Needs
+                  Complex Needs (unable to screen)
                 </Label>
               </div>
 
@@ -466,7 +466,7 @@ const SpeechScreeningStep1 = ({
                 <Label
                   htmlFor='unable_to_screen'
                   className={`text-sm font-medium ${localAbsentValue || localNoConsentValue ? 'text-gray-400' : ''}`}>
-                  Unable to Screen (Compliance)
+                  Student Refusal / Compliance (unable to screen)
                 </Label>
               </div>
 
