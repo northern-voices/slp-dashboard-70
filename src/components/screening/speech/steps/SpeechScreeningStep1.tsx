@@ -3,7 +3,7 @@ import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Textarea } from '@/components/ui/textarea'
+// import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -45,9 +45,6 @@ const SpeechScreeningStep1 = ({
   onUnableToScreenChange,
   afterStudentContent,
 }: SpeechScreeningStep1Props) => {
-  const { currentSchool } = useOrganization()
-
-  // Fetch available school grades for the current organization
   const { data: schoolGrades } = useSchoolGrades()
 
   const currentAcademicYear = useMemo(() => {
@@ -58,7 +55,6 @@ const SpeechScreeningStep1 = ({
     return `${start}-${start + 1}`
   }, [])
 
-  // Use local state for immediate UI response, sync with form
   const [localAbsentValue, setLocalAbsentValue] = useState<boolean>(
     () => (form.getValues('absent.isAbsent') as boolean) || false
   )
@@ -66,7 +62,6 @@ const SpeechScreeningStep1 = ({
     () => (form.getValues('no_consent.isNoConsent') as boolean) || false
   )
 
-  // Memoized handler for absent checkbox to prevent unnecessary re-renders
   const handleAbsentChange = useCallback(
     (checked: boolean) => {
       if (checked && localNoConsentValue) return
@@ -100,7 +95,6 @@ const SpeechScreeningStep1 = ({
     [form, onAbsentChange, localNoConsentValue]
   )
 
-  // Memoized handler for no consent checkbox to prevent unnecessary re-renders
   const handleNoConsentChange = useCallback(
     (checked: boolean) => {
       if (checked && localAbsentValue) return
@@ -118,7 +112,6 @@ const SpeechScreeningStep1 = ({
         notes: form.getValues('no_consent.notes') || '',
       })
 
-      // Reset priority_re_screen if no qualifying condition remains
       if (
         !checked &&
         !localAbsentValue &&
@@ -133,7 +126,6 @@ const SpeechScreeningStep1 = ({
     [form, onAbsentChange, onNoConsentChange, localAbsentValue]
   )
 
-  // Sync local state with form state on mount
   useEffect(() => {
     const formAbsentValue = form.getValues('absent.isAbsent')
     if (formAbsentValue !== localAbsentValue) {
@@ -146,11 +138,9 @@ const SpeechScreeningStep1 = ({
     }
   }, [form, localAbsentValue, localNoConsentValue])
 
-  // Filter grades based on selected grade level and get unique academic years
   const availableGradeIds = React.useMemo(() => {
     if (!selectedGrade) return []
 
-    // Calculate current academic year correctly
     const currentDate = new Date()
     const currentYear = currentDate.getFullYear()
     const currentMonth = currentDate.getMonth() // 0-indexed (Jan = 0)
