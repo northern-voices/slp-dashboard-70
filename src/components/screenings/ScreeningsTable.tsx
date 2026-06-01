@@ -816,7 +816,6 @@ const ScreeningsTable = ({
                 </TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>Status</TableHead>
                 <TableHead className='w-1/6 min-w-[80px]'>
                   <Button
                     variant='ghost'
@@ -855,7 +854,6 @@ const ScreeningsTable = ({
                   getScreeningGrade={getScreeningGrade}
                   getResultSelector={getResultSelector}
                   getProgramSelector={getProgramSelector}
-                  getStatusSelector={getStatusSelector}
                   onAddConsent={handleAddConsent}
                   transferRecord={transferByStudentId.get(screening.student_id)}
                   currentSchoolId={currentSchool?.id ?? ''}
