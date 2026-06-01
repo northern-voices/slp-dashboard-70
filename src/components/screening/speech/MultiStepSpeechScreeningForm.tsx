@@ -261,7 +261,7 @@ const MultiStepSpeechScreeningForm = ({
     if (sub) return 'sub'
     if (qualifies) return 'qualified'
 
-    return 'not_in_program'
+    return 'none'
   }
 
   const determineServiceStatus = (formData): Student['service_status'] => {

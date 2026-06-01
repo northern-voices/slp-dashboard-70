@@ -14,7 +14,7 @@ export const RESULT_OPTIONS = [
 
 export const PROGRAM_OPTIONS = [
   { value: 'qualified', label: 'Qualifies' },
-  { value: 'not_in_program', label: 'Not In Program' },
+  { value: 'none', label: 'Not In Program' },
   { value: 'sub', label: 'Sub' },
   { value: 'no_consent', label: 'Qualifies - No Consent' },
 ]

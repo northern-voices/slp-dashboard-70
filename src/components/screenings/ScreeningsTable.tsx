@@ -259,7 +259,9 @@ const ScreeningsTable = ({
   }
 
   const getProgramValue = (screening: Screening): string => {
-    return screening.program_status ?? 'not_in_program'
+    const status = screening.program_status
+    if (!status || status === 'none') return 'none'
+    return status
   }
 
   const getProgramSelector = (screening: Screening) => {
