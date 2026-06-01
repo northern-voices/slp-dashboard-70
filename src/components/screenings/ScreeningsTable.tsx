@@ -239,6 +239,28 @@ const ScreeningsTable = ({
     const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
     if (!config) return null
 
+    if (result === 'complex_needs') {
+      return (
+        <Badge className={`${config.color} font-medium text-[10px] leading-tight`}>
+          <span className='flex flex-col items-center'>
+            <span>Complex Needs</span>
+            <span>(Unable to Screen)</span>
+          </span>
+        </Badge>
+      )
+    }
+
+    if (result === 'unable_to_screen') {
+      return (
+        <Badge className={`${config.color} font-medium text-[10px] leading-tight`}>
+          <span className='flex flex-col items-center'>
+            <span>Student Refusal /</span>
+            <span>Compliance</span>
+          </span>
+        </Badge>
+      )
+    }
+
     return <Badge className={`${config.color} font-medium text-[10px]`}>{config.label}</Badge>
   }
 
@@ -252,19 +274,16 @@ const ScreeningsTable = ({
     if (screening.program_status === 'qualified') {
       return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
     }
-    if (screening.program_status === 'not_in_program') {
-      return (
-        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
-          Not In Program
-        </Badge>
-      )
-    }
 
-    return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
+    return (
+      <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Not In Program</Badge>
+    )
   }
 
   const getProgramValue = (screening: Screening): string => {
-    return screening.program_status ?? 'none'
+    const status = screening.program_status
+    if (!status || status === 'none') return 'none'
+    return status
   }
 
   const getProgramSelector = (screening: Screening) => {
@@ -357,7 +376,6 @@ const ScreeningsTable = ({
   }
 
   const getResultSelector = (screening: Screening) => {
-    // For speech screenings, show editable dropdown
     if (screening.source_table === 'speech') {
       const isThisScreeningUpdating = updatingScreeningId === screening.id
 
@@ -391,7 +409,6 @@ const ScreeningsTable = ({
       )
     }
 
-    // For hearing screenings or when not editable, show badge
     return getResultBadge(screening.result)
   }
 
@@ -816,7 +833,6 @@ const ScreeningsTable = ({
                 </TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>Status</TableHead>
                 <TableHead className='w-1/6 min-w-[80px]'>
                   <Button
                     variant='ghost'
@@ -855,7 +871,6 @@ const ScreeningsTable = ({
                   getScreeningGrade={getScreeningGrade}
                   getResultSelector={getResultSelector}
                   getProgramSelector={getProgramSelector}
-                  getStatusSelector={getStatusSelector}
                   onAddConsent={handleAddConsent}
                   transferRecord={transferByStudentId.get(screening.student_id)}
                   currentSchoolId={currentSchool?.id ?? ''}

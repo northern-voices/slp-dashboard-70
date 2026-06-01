@@ -3,7 +3,7 @@ import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Textarea } from '@/components/ui/textarea'
+// import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -45,12 +45,16 @@ const SpeechScreeningStep1 = ({
   onUnableToScreenChange,
   afterStudentContent,
 }: SpeechScreeningStep1Props) => {
-  const { currentSchool } = useOrganization()
-
-  // Fetch available school grades for the current organization
   const { data: schoolGrades } = useSchoolGrades()
 
-  // Use local state for immediate UI response, sync with form
+  const currentAcademicYear = useMemo(() => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth()
+    const start = month < 7 ? year - 1 : year
+    return `${start}-${start + 1}`
+  }, [])
+
   const [localAbsentValue, setLocalAbsentValue] = useState<boolean>(
     () => (form.getValues('absent.isAbsent') as boolean) || false
   )
@@ -58,7 +62,6 @@ const SpeechScreeningStep1 = ({
     () => (form.getValues('no_consent.isNoConsent') as boolean) || false
   )
 
-  // Memoized handler for absent checkbox to prevent unnecessary re-renders
   const handleAbsentChange = useCallback(
     (checked: boolean) => {
       if (checked && localNoConsentValue) return
@@ -92,7 +95,6 @@ const SpeechScreeningStep1 = ({
     [form, onAbsentChange, localNoConsentValue]
   )
 
-  // Memoized handler for no consent checkbox to prevent unnecessary re-renders
   const handleNoConsentChange = useCallback(
     (checked: boolean) => {
       if (checked && localAbsentValue) return
@@ -110,7 +112,6 @@ const SpeechScreeningStep1 = ({
         notes: form.getValues('no_consent.notes') || '',
       })
 
-      // Reset priority_re_screen if no qualifying condition remains
       if (
         !checked &&
         !localAbsentValue &&
@@ -125,7 +126,6 @@ const SpeechScreeningStep1 = ({
     [form, onAbsentChange, onNoConsentChange, localAbsentValue]
   )
 
-  // Sync local state with form state on mount
   useEffect(() => {
     const formAbsentValue = form.getValues('absent.isAbsent')
     if (formAbsentValue !== localAbsentValue) {
@@ -138,11 +138,9 @@ const SpeechScreeningStep1 = ({
     }
   }, [form, localAbsentValue, localNoConsentValue])
 
-  // Filter grades based on selected grade level and get unique academic years
   const availableGradeIds = React.useMemo(() => {
     if (!selectedGrade) return []
 
-    // Calculate current academic year correctly
     const currentDate = new Date()
     const currentYear = currentDate.getFullYear()
     const currentMonth = currentDate.getMonth() // 0-indexed (Jan = 0)
@@ -204,20 +202,18 @@ const SpeechScreeningStep1 = ({
   // Set default grade ID when academic year options are available
   useEffect(() => {
     if (selectedGrade && availableGradeIds.length > 0) {
-      // Calculate current academic year correctly
-      const currentDate = new Date()
-      const currentYear = currentDate.getFullYear()
-      const currentMonth = currentDate.getMonth()
-      const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-      const currentAcademicYear = `${academicYearStart}-${academicYearStart + 1}`
-
       const matchingGrade = availableGradeIds.find(g => g.academic_year === currentAcademicYear)
 
       if (matchingGrade && !matchingGrade.id.startsWith('placeholder-')) {
         onGradeIdChange(matchingGrade.id)
       }
+
+      // Set default academic year on form if not already set
+      if (!form.getValues('academic_year')) {
+        form.setValue('academic_year', currentAcademicYear)
+      }
     }
-  }, [selectedGrade, availableGradeIds, onGradeIdChange])
+  }, [selectedGrade, availableGradeIds, onGradeIdChange, currentAcademicYear, form])
 
   // Reset student selection when grade level changes
   // Grade ID will be set during form submission through backend validation
@@ -251,10 +247,10 @@ const SpeechScreeningStep1 = ({
             Student Information
           </CardTitle>
         </CardHeader>
-        <CardContent className='space-y-6 p-0'>
+        <CardContent className='p-0 space-y-6'>
           <div>
-            <Label htmlFor='grade' className='mb-3 block text-sm font-medium text-gray-700'>
-              Grade Level <span className='text-red-500 text-lg'>*</span>
+            <Label htmlFor='grade' className='block mb-3 text-sm font-medium text-gray-700'>
+              Grade Level <span className='text-lg text-red-500'>*</span>
             </Label>
             <Select value={selectedGrade} onValueChange={handleGradeChange}>
               <SelectTrigger>
@@ -271,8 +267,8 @@ const SpeechScreeningStep1 = ({
           </div>
           {selectedGrade && (
             <div>
-              <Label className='mb-3 block text-sm font-medium text-gray-700'>
-                Select Student <span className='text-red-500 text-lg'>*</span>
+              <Label className='block mb-3 text-sm font-medium text-gray-700'>
+                Select Student <span className='text-lg text-red-500'>*</span>
               </Label>
               <div>
                 <StudentSearchSelector
@@ -284,12 +280,12 @@ const SpeechScreeningStep1 = ({
             </div>
           )}
           {selectedStudent && (
-            <div className='mt-6 p-4 bg-blue-50 rounded-lg'>
-              <h4 className='text-sm font-semibold text-blue-900 mb-2'>Selected Student</h4>
-              <p className='text-sm text-blue-800 font-medium'>
+            <div className='p-4 mt-6 rounded-lg bg-blue-50'>
+              <h4 className='mb-2 text-sm font-semibold text-blue-900'>Selected Student</h4>
+              <p className='text-sm font-medium text-blue-800'>
                 {selectedStudent.first_name} {selectedStudent.last_name}
               </p>
-              <p className='text-xs text-blue-600 mt-1'>Grade: {selectedGrade}</p>
+              <p className='mt-1 text-xs text-blue-600'>Grade: {selectedGrade}</p>
             </div>
           )}
 
@@ -297,18 +293,11 @@ const SpeechScreeningStep1 = ({
 
           {selectedGrade && (
             <div>
-              <Label className='mb-3 block text-sm font-medium text-gray-700'>
-                Academic Year <span className='text-red-500 text-lg'>*</span>
+              <Label className='block mb-3 text-sm font-medium text-gray-700'>
+                Academic Year <span className='text-lg text-red-500'>*</span>
               </Label>
               <Select
-                value={(() => {
-                  const currentDate = new Date()
-                  const currentYear = currentDate.getFullYear()
-                  const currentMonth = currentDate.getMonth()
-                  const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-                  const currentAcademicYear = `${academicYearStart}-${academicYearStart + 1}`
-                  return currentAcademicYear
-                })()}
+                value={(form.watch('academic_year') as string) || currentAcademicYear}
                 onValueChange={handleAcademicYearChange}>
                 <SelectTrigger>
                   <SelectValue placeholder='Select academic year' />
@@ -383,7 +372,7 @@ const SpeechScreeningStep1 = ({
                       ? 'text-gray-400'
                       : ''
                   }`}>
-                  No Consent
+                  No Consent (Test)
                 </Label>
               </div>
               {/* {localNoConsentValue && (
@@ -431,7 +420,7 @@ const SpeechScreeningStep1 = ({
                 <Label
                   htmlFor='complex_needs'
                   className={`text-sm font-medium ${localAbsentValue || localNoConsentValue ? 'text-gray-400' : ''}`}>
-                  Complex Needs
+                  Complex Needs (unable to screen)
                 </Label>
               </div>
 
@@ -466,7 +455,7 @@ const SpeechScreeningStep1 = ({
                 <Label
                   htmlFor='unable_to_screen'
                   className={`text-sm font-medium ${localAbsentValue || localNoConsentValue ? 'text-gray-400' : ''}`}>
-                  Unable to Screen (Compliance)
+                  Student Refusal / Compliance (unable to screen)
                 </Label>
               </div>
 
