@@ -261,9 +261,7 @@ const MultiStepSpeechScreeningForm = ({
     if (sub) return 'sub'
     if (qualifies) return 'qualified'
 
-    // If none of the above are true, check if they explicitly don't qualify
-    // For now, default to 'none' if nothing is selected
-    return 'none'
+    return 'not_in_program'
   }
 
   const determineServiceStatus = (formData): Student['service_status'] => {
@@ -732,7 +730,7 @@ const MultiStepSpeechScreeningForm = ({
         {renderCurrentStep()}
 
         {/* Action Buttons */}
-        <div className='flex justify-between items-center pt-6 border-t'>
+        <div className='flex items-center justify-between pt-6 border-t'>
           <div className='flex space-x-3'>
             <Button type='button' variant='destructive' onClick={onCancel}>
               Cancel

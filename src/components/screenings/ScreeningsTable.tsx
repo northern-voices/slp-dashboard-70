@@ -252,19 +252,14 @@ const ScreeningsTable = ({
     if (screening.program_status === 'qualified') {
       return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
     }
-    if (screening.program_status === 'not_in_program') {
-      return (
-        <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
-          Not In Program
-        </Badge>
-      )
-    }
 
-    return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
+    return (
+      <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Not In Program</Badge>
+    )
   }
 
   const getProgramValue = (screening: Screening): string => {
-    return screening.program_status ?? 'none'
+    return screening.program_status ?? 'not_in_program'
   }
 
   const getProgramSelector = (screening: Screening) => {

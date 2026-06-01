@@ -237,8 +237,13 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         return (
           <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
         )
+
       default:
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
+        return (
+          <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
+            Not In Program
+          </Badge>
+        )
     }
   }
 
