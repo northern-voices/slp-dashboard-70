@@ -50,6 +50,14 @@ const SpeechScreeningStep1 = ({
   // Fetch available school grades for the current organization
   const { data: schoolGrades } = useSchoolGrades()
 
+  const currentAcademicYear = useMemo(() => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth()
+    const start = month < 7 ? year - 1 : year
+    return `${start}-${start + 1}`
+  }, [])
+
   // Use local state for immediate UI response, sync with form
   const [localAbsentValue, setLocalAbsentValue] = useState<boolean>(
     () => (form.getValues('absent.isAbsent') as boolean) || false
@@ -204,20 +212,18 @@ const SpeechScreeningStep1 = ({
   // Set default grade ID when academic year options are available
   useEffect(() => {
     if (selectedGrade && availableGradeIds.length > 0) {
-      // Calculate current academic year correctly
-      const currentDate = new Date()
-      const currentYear = currentDate.getFullYear()
-      const currentMonth = currentDate.getMonth()
-      const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-      const currentAcademicYear = `${academicYearStart}-${academicYearStart + 1}`
-
       const matchingGrade = availableGradeIds.find(g => g.academic_year === currentAcademicYear)
 
       if (matchingGrade && !matchingGrade.id.startsWith('placeholder-')) {
         onGradeIdChange(matchingGrade.id)
       }
+
+      // Set default academic year on form if not already set
+      if (!form.getValues('academic_year')) {
+        form.setValue('academic_year', currentAcademicYear)
+      }
     }
-  }, [selectedGrade, availableGradeIds, onGradeIdChange])
+  }, [selectedGrade, availableGradeIds, onGradeIdChange, currentAcademicYear, form])
 
   // Reset student selection when grade level changes
   // Grade ID will be set during form submission through backend validation
@@ -301,14 +307,7 @@ const SpeechScreeningStep1 = ({
                 Academic Year <span className='text-lg text-red-500'>*</span>
               </Label>
               <Select
-                value={(() => {
-                  const currentDate = new Date()
-                  const currentYear = currentDate.getFullYear()
-                  const currentMonth = currentDate.getMonth()
-                  const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-                  const currentAcademicYear = `${academicYearStart}-${academicYearStart + 1}`
-                  return currentAcademicYear
-                })()}
+                value={(form.watch('academic_year') as string) || currentAcademicYear}
                 onValueChange={handleAcademicYearChange}>
                 <SelectTrigger>
                   <SelectValue placeholder='Select academic year' />
