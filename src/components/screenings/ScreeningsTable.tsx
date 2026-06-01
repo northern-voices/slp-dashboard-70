@@ -357,16 +357,6 @@ const ScreeningsTable = ({
     if (screening.source_table === 'speech') {
       const isThisScreeningUpdating = updatingScreeningId === screening.id
 
-      const readOnlyResults = [
-        'absent',
-        'non_registered_no_consent',
-        'complex_needs',
-        'unable_to_screen',
-      ]
-      if (screening.result && readOnlyResults.includes(screening.result)) {
-        return getResultBadge(screening.result)
-      }
-
       return (
         <Select
           value={screening.result || ''}
