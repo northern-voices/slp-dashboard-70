@@ -44,6 +44,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {
@@ -215,6 +216,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsLoading(false)
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
@@ -395,6 +397,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       acceptInvitation,
       checkUserExists,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [user, isLoading]
   )
 

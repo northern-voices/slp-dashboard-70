@@ -45,6 +45,7 @@ export const useManagement = () => {
     }
 
     fetchUsers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentOrganization?.id])
 
   const filteredSchools = availableSchools.filter(school =>
