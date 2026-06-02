@@ -6,6 +6,7 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { School } from '@/types/database'
 import { SchoolFormData } from '@/components/management/SchoolForm'
 import { OrgUser } from '@/types/database'
+import { UserEditFormData } from '@/components/management/UserEditModal'
 
 export const useManagement = () => {
   const [schoolFormOpen, setSchoolFormOpen] = useState(false)
@@ -18,6 +19,8 @@ export const useManagement = () => {
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null)
   const [schoolSearch, setSchoolSearch] = useState('')
   const [users, setUsers] = useState<OrgUser[]>([])
+  const [editingUser, setEditingUser] = useState<OrgUser | null>(null)
+  const [userEditOpen, setUserEditOpen] = useState(false)
 
   const { toast } = useToast()
 
@@ -129,9 +132,24 @@ export const useManagement = () => {
     // Will refresh the real users list here once we replace mockSLPs with a query
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleEditUser = (user: any) => {
-    console.log('Edit user:', user)
+  const handleEditUser = (user: OrgUser) => {
+    setEditingUser(user)
+    setUserEditOpen(true)
+  }
+
+  const handleSaveUser = async (userId: string, data: UserEditFormData) => {
+    const { error } = await supabase
+      .from('users')
+      .update({ first_name: data.first_name, last_name: data.last_name, role: data.role })
+      .eq('id', userId)
+
+    if (error) {
+      toast({ title: 'Failed to update user', description: error.message, variant: 'destructive' })
+      return
+    }
+
+    toast({ title: 'User updated successfully' })
+    setUsers(prev => prev.map(u => (u.id === userId ? { ...u, ...data } : u)))
   }
 
   const handleDeactivateUser = async (userId: string) => {
@@ -181,6 +199,8 @@ export const useManagement = () => {
     schoolSearch,
     users,
     filteredSchools,
+    editingUser,
+    userEditOpen,
 
     // Setters
     setSchoolFormOpen,
@@ -192,6 +212,8 @@ export const useManagement = () => {
     setEditingSchool,
     setSelectedSchool,
     setSchoolSearch,
+    setUserEditOpen,
+    setEditingUser,
 
     // Handlers
     handleSaveSchool,
@@ -203,6 +225,6 @@ export const useManagement = () => {
     handleEditUser,
     handleDeactivateUser,
     handleResendInvite,
-    getStatusBadge,
+    handleSaveUser,
   }
 }

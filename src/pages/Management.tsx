@@ -1,7 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Building2, Users, Settings } from 'lucide-react'
+import { Building2, Users } from 'lucide-react'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import ManagementStats from '@/components/management/ManagementStats'
 import SchoolForm from '@/components/management/SchoolForm'
 import UserInviteModal from '@/components/management/UserInviteModal'
 import NotificationSettingsModal from '@/components/management/NotificationSettingsModal'
@@ -13,6 +12,7 @@ import UsersTabContent from '@/components/management/UsersTabContent'
 import SettingsTabContent from '@/components/management/SettingsTabContent'
 // import SLPSchoolBrowser from '@/components/slp/SLPSchoolBrowser'
 import { useManagement } from '@/hooks/useManagement'
+import UserEditModal from '@/components/management/UserEditModal'
 
 const ManagementContent = () => {
   const { userProfile } = useOrganization()
@@ -29,6 +29,8 @@ const ManagementContent = () => {
     schoolSearch,
     users,
     filteredSchools,
+    editingUser,
+    userEditOpen,
 
     // Setters
     setSchoolFormOpen,
@@ -40,6 +42,8 @@ const ManagementContent = () => {
     setEditingSchool,
     setSelectedSchool,
     setSchoolSearch,
+    setUserEditOpen,
+    setEditingUser,
 
     // Handlers
     handleSaveSchool,
@@ -51,6 +55,7 @@ const ManagementContent = () => {
     handleEditUser,
     handleDeactivateUser,
     handleResendInvite,
+    handleSaveUser,
   } = useManagement()
 
   const userRole = userProfile?.role || 'slp'
@@ -174,6 +179,16 @@ const ManagementContent = () => {
       <OrganizationSettingsModal
         isOpen={organizationSettingsOpen}
         onClose={() => setOrganizationSettingsOpen(false)}
+      />
+
+      <UserEditModal
+        isOpen={userEditOpen}
+        onClose={() => {
+          setUserEditOpen(false)
+          setEditingUser(null)
+        }}
+        user={editingUser}
+        onSave={handleSaveUser}
       />
     </main>
   )
