@@ -31,11 +31,12 @@ interface AuthContextType {
   acceptInvitation: (
     token: string,
     userData: {
-      email?: string
-      password?: string
-      organizationName?: string
-      firstName?: string
-      lastName?: string
+      email: string
+      password: string
+      organizationId: string
+      firstName: string
+      lastName: string
+      role: string
     }
   ) => Promise<void>
   checkUserExists: (email: string) => Promise<boolean>
@@ -299,25 +300,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     async (
       token: string,
       userData: {
-        email?: string
-        password?: string
-        organizationName?: string
-        firstName?: string
-        lastName?: string
+        email: string
+        password: string
+        organizationId: string
+        firstName: string
+        lastName: string
+        role: string
       }
     ) => {
       setIsLoading(true)
       try {
-        // Example: If invitation includes signup
-        if (userData.email && userData.password) {
-          await signup(
-            userData.email,
-            userData.password,
-            userData.organizationName || '',
-            userData.firstName || '',
-            userData.lastName || ''
-          )
-        }
+        // Sign up — trigger will read organization_id from metadata directly
+        const { data, error } = await supabase.auth.signUp({
+          email: userData.email,
+          password: userData.password,
+          options: {
+            data: {
+              organization_id: userData.organizationId,
+              first_name: userData.firstName,
+              last_name: userData.lastName,
+              role: userData.role,
+            },
+            emailRedirectTo: `${window.location.origin}/auth/verify-email`,
+          },
+        })
+
+        if (error) throw error
+        if (!data.user) throw new Error('Failed to create account. Please try again.')
+
+        // Mark the invite as used so it can't be reused
+        await supabase
+          .from('organization_invitations')
+          .update({ accepted_at: new Date().toISOString() })
+          .eq('token', token)
       } catch (error) {
         console.error('Accept invitation error:', error)
         throw error
@@ -325,7 +340,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsLoading(false)
       }
     },
-    [signup]
+    []
   )
 
   const checkUserExists = useCallback(async (email: string): Promise<boolean> => {
