@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Plus, Search, Trash2 } from 'lucide-react'
+import { Plus, Search, Trash2, MapPin, Phone, User } from 'lucide-react'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface SchoolsTabContentProps {
@@ -37,7 +37,7 @@ const SchoolsTabContent = ({
   onDeleteSchool,
 }: SchoolsTabContentProps) => {
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
-  const [selectedSchoolForDeletion, setSelectedSchoolForDeletion] = useState<School>(null)
+  const [selectedSchoolForDeletion, setSelectedSchoolForDeletion] = useState<School | null>(null)
   const { userProfile } = useOrganization()
 
   const isAdmin = userProfile?.role === 'admin' || userProfile?.role === 'super_admin'
@@ -84,29 +84,31 @@ const SchoolsTabContent = ({
 
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
         {filteredSchools.map(school => (
-          <Card key={school.id} className='transition-shadow hover:shadow-md'>
-            <CardHeader>
-              <div className='flex items-center justify-between'>
-                <CardTitle className='text-lg'>{school.name}</CardTitle>
-              </div>
-              <CardDescription>
+          <Card key={school.id} className='overflow-hidden transition-shadow hover:shadow-md'>
+            <CardHeader className='pb-3'>
+              <CardTitle className='text-base font-semibold leading-snug'>{school.name}</CardTitle>
+              <CardDescription className='flex items-center gap-1.5'>
+                <MapPin className='w-3 h-3 shrink-0' />
                 {school.city}
                 {school.state ? `, ${school.state}` : ''}
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className='space-y-2'>
-                <p className='text-sm'>
-                  <strong>Phone:</strong> {school.phone || '—'}
-                </p>
-                <p className='text-sm'>
-                  <strong>Assigned SLP:</strong>{' '}
-                  {school.primary_slp
-                    ? `${school.primary_slp.first_name} ${school.primary_slp.last_name}`
-                    : '—'}
-                </p>
+            <CardContent className='pt-0'>
+              <div className='pb-4 space-y-2 border-b border-gray-100'>
+                <div className='flex items-center gap-2 text-sm text-gray-600'>
+                  <Phone className='w-3.5 h-3.5 text-gray-400 shrink-0' />
+                  <span>{school.phone || '—'}</span>
+                </div>
+                <div className='flex items-center gap-2 text-sm text-gray-600'>
+                  <User className='w-3.5 h-3.5 text-gray-400 shrink-0' />
+                  <span>
+                    {school.primary_slp
+                      ? `${school.primary_slp.first_name} ${school.primary_slp.last_name}`
+                      : 'No SLP assigned'}
+                  </span>
+                </div>
               </div>
-              <div className='flex mt-4 space-x-2'>
+              <div className='flex gap-2 pt-3'>
                 <Button variant='outline' size='sm' onClick={() => onEditSchool(school)}>
                   Edit
                 </Button>

@@ -221,14 +221,17 @@ const UsersTable = ({
                     <TableCell>{getRoleBadge(user.role)}</TableCell>
                     <TableCell>{getStatusBadge(user.is_active ? 'active' : 'inactive')}</TableCell>
                     <TableCell>
-                      <div className='text-sm text-gray-600'>
+                      <div className='flex flex-wrap gap-1'>
                         {user.schools && user.schools.length > 0 ? (
-                          <div className='flex items-center gap-1'>
-                            <Users className='w-3 h-3 text-gray-400' />
-                            <span>{user.schools.map(s => s.name).join(', ')}</span>
-                          </div>
+                          user.schools.map(school => (
+                            <span
+                              key={school.id}
+                              className='inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100'>
+                              {school.name}
+                            </span>
+                          ))
                         ) : (
-                          <span className='italic text-gray-400'>No assignments</span>
+                          <span className='text-sm italic text-gray-400'>No assignments</span>
                         )}
                       </div>
                     </TableCell>
