@@ -35,13 +35,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
   onOpenChange,
   onAddMember,
 }) => {
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    formState: { errors },
-  } = useForm<TeamMember>({
+  const { register, handleSubmit, control, reset } = useForm<TeamMember>({
     defaultValues: {
       name: '',
       roles: [],
@@ -77,7 +71,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className='py-4 space-y-5'>
+          <div className='py-4 space-y-5 max-h-[60vh] overflow-y-auto pr-1'>
             {/* Name Field */}
             <div className='space-y-2'>
               <Label htmlFor='name' className='text-sm font-medium text-gray-700'>
@@ -134,40 +128,46 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                           <ChevronDown className='w-4 h-4 ml-2 opacity-50 shrink-0' />
                         </Button>
                       </PopoverTrigger>
+
                       <PopoverContent className='w-[460px] p-0' align='start'>
-                        <div
-                          className='max-h-[300px] overflow-y-auto p-2'
-                          onTouchMove={e => e.stopPropagation()}
-                          onWheel={e => e.stopPropagation()}>
-                          <div className='space-y-1'>
-                            {TEAM_MEMBER_ROLES.map(role => (
-                              <div
-                                key={role.value}
-                                className='flex items-center p-2 space-x-2 rounded-md cursor-pointer hover:bg-gray-50'
-                                onClick={() => {
-                                  const newRoles = field.value.includes(role.value)
-                                    ? field.value.filter(r => r !== role.value)
-                                    : [...field.value, role.value]
-                                  field.onChange(newRoles)
-                                }}>
-                                <Checkbox
-                                  checked={field.value.includes(role.value)}
-                                  onCheckedChange={() => {
+                        <div className='relative'>
+                          <div
+                            className='max-h-[200px] overflow-y-auto p-2'
+                            onTouchMove={e => e.stopPropagation()}
+                            onWheel={e => e.stopPropagation()}>
+                            <div className='space-y-1'>
+                              {TEAM_MEMBER_ROLES.map(role => (
+                                <div
+                                  key={role.value}
+                                  className='flex items-center p-2 space-x-2 rounded-md cursor-pointer hover:bg-gray-50'
+                                  onClick={() => {
                                     const newRoles = field.value.includes(role.value)
                                       ? field.value.filter(r => r !== role.value)
                                       : [...field.value, role.value]
                                     field.onChange(newRoles)
-                                  }}
-                                />
-                                <label className='flex-1 text-sm text-gray-700 cursor-pointer'>
-                                  {role.label}
-                                </label>
-                              </div>
-                            ))}
+                                  }}>
+                                  <Checkbox
+                                    checked={field.value.includes(role.value)}
+                                    onCheckedChange={() => {
+                                      const newRoles = field.value.includes(role.value)
+                                        ? field.value.filter(r => r !== role.value)
+                                        : [...field.value, role.value]
+                                      field.onChange(newRoles)
+                                    }}
+                                  />
+                                  <label className='flex-1 text-sm text-gray-700 cursor-pointer'>
+                                    {role.label}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
                           </div>
+                          {/* Scroll hint */}
+                          <div className='absolute bottom-0 left-0 right-0 h-8 rounded-b-lg pointer-events-none bg-gradient-to-t from-white to-transparent' />
                         </div>
                       </PopoverContent>
                     </Popover>
+
                     {field.value.length > 0 && (
                       <p className='mt-1 text-xs text-gray-500'>
                         {field.value.length} role{field.value.length !== 1 ? 's' : ''} selected

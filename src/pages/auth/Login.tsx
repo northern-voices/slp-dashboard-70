@@ -136,14 +136,14 @@ const Login = () => {
           {isLoading ? 'Signing in...' : 'Sign In'}
         </Button>
 
-        <div className='text-center'>
+        {/* <div className='text-center'>
           <span className='text-sm text-gray-600'>
             Don't have an account?{' '}
-            <Link to='/auth/signup' className='text-blue-600 hover:text-blue-500 font-medium'>
+            <Link to='/auth/signup' className='font-medium text-blue-600 hover:text-blue-500'>
               Sign up
             </Link>
           </span>
-        </div>
+        </div> */}
       </form>
     </AuthLayout>
   )

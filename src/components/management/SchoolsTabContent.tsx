@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { School } from '@/types/database'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import {
   AlertDialog,
@@ -14,18 +14,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Plus, Search, Trash2 } from 'lucide-react'
+import { Plus, Search, Trash2, MapPin, Phone, User } from 'lucide-react'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface SchoolsTabContentProps {
   schoolSearch: string
   setSchoolSearch: (value: string) => void
-  filteredSchools: any[]
+  filteredSchools: School[]
   onAddSchool: () => void
-  onEditSchool: (school: any) => void
-  onViewSchoolDetails: (school: any) => void
-  onDeleteSchool?: (schoolId: number) => void
-  getStatusBadge: (status: string) => React.ReactNode
+  onEditSchool: (school: School) => void
+  onViewSchoolDetails: (school: School) => void
+  onDeleteSchool?: (schoolId: string) => void
 }
 
 const SchoolsTabContent = ({
@@ -36,15 +35,14 @@ const SchoolsTabContent = ({
   onEditSchool,
   onViewSchoolDetails,
   onDeleteSchool,
-  getStatusBadge,
 }: SchoolsTabContentProps) => {
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
-  const [selectedSchoolForDeletion, setSelectedSchoolForDeletion] = useState<any>(null)
+  const [selectedSchoolForDeletion, setSelectedSchoolForDeletion] = useState<School | null>(null)
   const { userProfile } = useOrganization()
 
   const isAdmin = userProfile?.role === 'admin' || userProfile?.role === 'super_admin'
 
-  const handleDeleteClick = (school: any) => {
+  const handleDeleteClick = (school: School) => {
     setSelectedSchoolForDeletion(school)
     setDeleteConfirmation('')
   }
@@ -66,50 +64,58 @@ const SchoolsTabContent = ({
 
   return (
     <div className='space-y-6'>
-      <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
+      <div className='flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center'>
         <h2 className='text-xl font-semibold'>School Management</h2>
-        <Button onClick={onAddSchool}>
-          <Plus className='w-4 h-4 mr-2' />
-          Add School
-        </Button>
+        {isAdmin && (
+          <Button onClick={onAddSchool}>
+            <Plus className='w-4 h-4 mr-2' />
+            Add School
+          </Button>
+        )}
       </div>
 
       <div className='relative'>
-        <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
+        <Search className='absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-3 top-1/2' />
         <Input
           placeholder='Search schools...'
           value={schoolSearch}
           onChange={e => setSchoolSearch(e.target.value)}
-          className='pl-10 max-w-md'
+          className='max-w-md pl-10'
         />
       </div>
 
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+      <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
         {filteredSchools.map(school => (
-          <Card key={school.id} className='hover:shadow-md transition-shadow'>
-            <CardHeader>
-              <div className='flex items-center justify-between'>
-                <CardTitle className='text-lg'>{school.name}</CardTitle>
-                {getStatusBadge(school.status)}
-              </div>
-              <CardDescription>{school.address}</CardDescription>
+          <Card key={school.id} className='overflow-hidden transition-shadow hover:shadow-md'>
+            <CardHeader className='pb-3'>
+              <CardTitle className='text-base font-semibold leading-snug'>{school.name}</CardTitle>
+              <CardDescription className='flex items-center gap-1.5'>
+                <MapPin className='w-3 h-3 shrink-0' />
+                {school.city}
+                {school.state ? `, ${school.state}` : ''}
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className='space-y-2'>
-                <p className='text-sm'>
-                  <strong>Principal:</strong> {school.principal}
-                </p>
-                <p className='text-sm'>
-                  <strong>Students:</strong> {school.studentCount}
-                </p>
-                <p className='text-sm'>
-                  <strong>SLPs Assigned:</strong> {school.slpCount}
-                </p>
+            <CardContent className='pt-0'>
+              <div className='pb-4 space-y-2 border-b border-gray-100'>
+                <div className='flex items-center gap-2 text-sm text-gray-600'>
+                  <Phone className='w-3.5 h-3.5 text-gray-400 shrink-0' />
+                  <span>{school.phone || '—'}</span>
+                </div>
+                <div className='flex items-center gap-2 text-sm text-gray-600'>
+                  <User className='w-3.5 h-3.5 text-gray-400 shrink-0' />
+                  <span>
+                    {school.primary_slp
+                      ? `${school.primary_slp.first_name} ${school.primary_slp.last_name}`
+                      : 'No SLP assigned'}
+                  </span>
+                </div>
               </div>
-              <div className='flex space-x-2 mt-4'>
-                <Button variant='outline' size='sm' onClick={() => onEditSchool(school)}>
-                  Edit
-                </Button>
+              <div className='flex gap-2 pt-3'>
+                {isAdmin && (
+                  <Button variant='outline' size='sm' onClick={() => onEditSchool(school)}>
+                    Edit
+                  </Button>
+                )}
                 <Button variant='outline' size='sm' onClick={() => onViewSchoolDetails(school)}>
                   View Details
                 </Button>
@@ -135,7 +141,7 @@ const SchoolsTabContent = ({
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <div className='py-4'>
-                        <p className='text-sm text-gray-700 mb-2'>
+                        <p className='mb-2 text-sm text-gray-700'>
                           To confirm deletion, please type the school name:{' '}
                           <span className='font-semibold'>{selectedSchoolForDeletion?.name}</span>
                         </p>

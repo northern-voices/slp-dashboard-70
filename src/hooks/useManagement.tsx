@@ -1,6 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { School } from '@/types/database'
+import { SchoolFormData } from '@/components/management/SchoolForm'
+import { OrgUser } from '@/types/database'
+import { UserEditFormData } from '@/components/management/UserEditModal'
 
 export const useManagement = () => {
   const [schoolFormOpen, setSchoolFormOpen] = useState(false)
@@ -9,115 +15,114 @@ export const useManagement = () => {
   const [notificationSettingsOpen, setNotificationSettingsOpen] = useState(false)
   const [screeningTemplatesOpen, setScreeningTemplatesOpen] = useState(false)
   const [organizationSettingsOpen, setOrganizationSettingsOpen] = useState(false)
-  const [editingSchool, setEditingSchool] = useState(null)
-  const [selectedSchool, setSelectedSchool] = useState(null)
+  const [editingSchool, setEditingSchool] = useState<School | null>(null)
+  const [selectedSchool, setSelectedSchool] = useState<School | null>(null)
   const [schoolSearch, setSchoolSearch] = useState('')
+  const [users, setUsers] = useState<OrgUser[]>([])
+  const [editingUser, setEditingUser] = useState<OrgUser | null>(null)
+  const [userEditOpen, setUserEditOpen] = useState(false)
+
   const { toast } = useToast()
 
-  const [mockSchools, setMockSchools] = useState([
-    {
-      id: 1,
-      name: 'Lincoln Elementary School',
-      address: '123 Main St, Springfield, IL',
-      principal: 'Dr. Jane Smith',
-      principalEmail: 'jsmith@springfield.edu',
-      phone: '(555) 123-4567',
-      district: 'Springfield District 22',
-      studentCount: 245,
-      slpCount: 2,
-      status: 'active',
-      grades: ['K', '1', '2', '3', '4', '5'],
-      notes: 'Renovated building in 2022',
-    },
-    {
-      id: 2,
-      name: 'Washington Middle School',
-      address: '456 Oak Ave, Springfield, IL',
-      principal: 'Mr. John Davis',
-      principalEmail: 'jdavis@springfield.edu',
-      phone: '(555) 987-6543',
-      district: 'Springfield District 22',
-      studentCount: 380,
-      slpCount: 3,
-      status: 'active',
-      grades: ['6', '7', '8'],
-      notes: 'STEM focus program',
-    },
-  ])
+  const { availableSchools, refreshData, currentOrganization } = useOrganization()
 
-  const [mockSLPs, setMockSLPs] = useState([
-    {
-      id: '1',
-      name: 'Dr. Sarah Johnson',
-      email: 'sarah.johnson@district.edu',
-      schools: ['Lincoln Elementary', 'Roosevelt High'],
-      role: 'slp',
-      status: 'active',
-      lastActive: '2024-11-20',
-      licenseNumber: 'SLP-12345',
-    },
-    {
-      id: '2',
-      name: 'Ms. Emily Chen',
-      email: 'emily.chen@district.edu',
-      schools: ['Washington Middle'],
-      role: 'supervisor',
-      status: 'active',
-      lastActive: '2024-11-19',
-      licenseNumber: 'SLP-67890',
-    },
-  ])
+  useEffect(() => {
+    if (!currentOrganization?.id) return
 
-  const filteredSchools = mockSchools.filter(school =>
+    const fetchUsers = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*, schools(id, name)')
+        .eq('organization_id', currentOrganization.id)
+        .order('first_name')
+
+      if (error) {
+        toast({ title: 'Failed to load users', description: error.message, variant: 'destructive' })
+        return
+      }
+
+      setUsers(data || [])
+    }
+
+    fetchUsers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentOrganization?.id])
+
+  const filteredSchools = availableSchools.filter(school =>
     school.name.toLowerCase().includes(schoolSearch.toLowerCase())
   )
 
-  const handleSaveSchool = (schoolData: any) => {
-    if (editingSchool) {
-      setMockSchools(prev =>
-        prev.map(school =>
-          school.id === editingSchool.id
-            ? {
-                ...school,
-                ...schoolData,
-                grades: schoolData.grades || [],
-              }
-            : school
-        )
-      )
-    } else {
-      const newSchool = {
-        id: mockSchools.length + 1,
-        ...schoolData,
-        studentCount: 0,
-        slpCount: 0,
-        grades: schoolData.grades || [],
-      }
-      setMockSchools(prev => [...prev, newSchool])
+  const handleSaveSchool = async (schoolData: SchoolFormData) => {
+    const payload = {
+      name: schoolData.name,
+      street_address: schoolData.address,
+      city: schoolData.city,
+      region: schoolData.state,
+      postal_code: schoolData.zip,
+      country: 'Canada',
+      principal_name: schoolData.principal_name,
+      principal_email: schoolData.principal_email,
+      phone: schoolData.phone,
     }
+
+    if (editingSchool) {
+      const { error } = await supabase.from('schools').update(payload).eq('id', editingSchool.id)
+      if (error) {
+        toast({
+          title: 'Failed to update school',
+          description: error.message,
+          variant: 'destructive',
+        })
+        return
+      }
+      toast({ title: 'School updated successfully' })
+    } else {
+      const { error } = await supabase
+        .from('schools')
+        .insert({ ...payload, organization_id: currentOrganization?.id })
+      if (error) {
+        toast({
+          title: 'Failed to create school',
+          description: error.message,
+          variant: 'destructive',
+        })
+        return
+      }
+      toast({ title: 'School created successfully' })
+    }
+
+    await refreshData()
     setEditingSchool(null)
   }
 
-  const handleEditSchool = (school: any) => {
+  const handleEditSchool = (school: School) => {
     setEditingSchool(school)
     setSchoolFormOpen(true)
   }
 
-  const handleViewSchoolDetails = (school: any) => {
+  const handleViewSchoolDetails = (school: School) => {
     setSelectedSchool(school)
     setSchoolDetailsOpen(true)
   }
 
-  const handleEditFromDetails = (school: any) => {
+  const handleEditFromDetails = (school: School) => {
     setSchoolDetailsOpen(false)
     setEditingSchool(school)
     setSchoolFormOpen(true)
   }
 
-  const handleDeleteSchool = (schoolId: number) => {
-    const schoolToDelete = mockSchools.find(school => school.id === schoolId)
-    setMockSchools(prev => prev.filter(school => school.id !== schoolId))
-
+  const handleDeleteSchool = async (schoolId: string) => {
+    const schoolToDelete = availableSchools.find(school => school.id === schoolId)
+    const { error } = await supabase.from('schools').delete().eq('id', schoolId)
+    if (error) {
+      toast({
+        title: 'Failed to delete school',
+        description: error.message,
+        variant: 'destructive',
+      })
+      return
+    }
+    await refreshData()
     toast({
       title: 'School deleted',
       description: `${schoolToDelete?.name} has been successfully deleted.`,
@@ -125,34 +130,47 @@ export const useManagement = () => {
     })
   }
 
-  const handleInviteUser = (userData: any) => {
-    const newUser = {
-      id: (mockSLPs.length + 1).toString(),
-      name: `${userData.firstName} ${userData.lastName}`,
-      email: userData.email,
-      role: userData.role,
-      status: 'pending',
-      schools: userData.selectedSchools
-        .map((id: string) => mockSchools.find(school => school.id.toString() === id)?.name || '')
-        .filter(Boolean),
-      lastActive: 'Never',
-      licenseNumber: userData.licenseNumber,
+  const handleInviteUser = () => {
+    // Will refresh the real users list here once we replace mockSLPs with a query
+  }
+
+  const handleEditUser = (user: OrgUser) => {
+    setEditingUser(user)
+    setUserEditOpen(true)
+  }
+
+  const handleSaveUser = async (userId: string, data: UserEditFormData) => {
+    const { error } = await supabase
+      .from('users')
+      .update({ first_name: data.first_name, last_name: data.last_name, role: data.role })
+      .eq('id', userId)
+
+    if (error) {
+      toast({ title: 'Failed to update user', description: error.message, variant: 'destructive' })
+      return
     }
-    setMockSLPs(prev => [...prev, newUser])
+
+    toast({ title: 'User updated successfully' })
+    setUsers(prev => prev.map(u => (u.id === userId ? { ...u, ...data } : u)))
   }
 
-  const handleEditUser = (user: any) => {
-    console.log('Edit user:', user)
-  }
+  const handleDeactivateUser = async (userId: string) => {
+    const user = users.find(u => u.id === userId)
+    const { error } = await supabase
+      .from('users')
+      .update({ is_active: !user?.is_active })
+      .eq('id', userId)
 
-  const handleDeactivateUser = (userId: string) => {
-    setMockSLPs(prev =>
-      prev.map(user =>
-        user.id === userId
-          ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
-          : user
-      )
-    )
+    if (error) {
+      toast({
+        title: 'Failed to update user',
+        description: error.message,
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setUsers(prev => prev.map(u => (u.id === userId ? { ...u, is_active: !u.is_active } : u)))
   }
 
   const handleResendInvite = (userId: string) => {
@@ -162,34 +180,12 @@ export const useManagement = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className='bg-green-100 text-green-800'>Active</Badge>
+        return <Badge className='text-green-800 bg-green-100'>Active</Badge>
       case 'inactive':
         return <Badge variant='outline'>Inactive</Badge>
       default:
         return <Badge variant='secondary'>{status}</Badge>
     }
-  }
-
-  const getGradeLabel = (grade: string) => {
-    const gradeLabels: Record<string, string> = {
-      Headstart: 'Headstart',
-      PreK: 'Pre-K',
-      K: 'Kindergarten',
-      '1': '1st Grade',
-      '2': '2nd Grade',
-      '3': '3rd Grade',
-      '4': '4th Grade',
-      '5': '5th Grade',
-      '6': '6th Grade',
-      '7': '7th Grade',
-      '8': '8th Grade',
-      '9': '9th Grade',
-      '10': '10th Grade',
-      '11': '11th Grade',
-      '12': '12th Grade',
-    }
-
-    return gradeLabels[grade] || grade
   }
 
   return {
@@ -203,9 +199,10 @@ export const useManagement = () => {
     editingSchool,
     selectedSchool,
     schoolSearch,
-    mockSchools,
-    mockSLPs,
+    users,
     filteredSchools,
+    editingUser,
+    userEditOpen,
 
     // Setters
     setSchoolFormOpen,
@@ -217,6 +214,8 @@ export const useManagement = () => {
     setEditingSchool,
     setSelectedSchool,
     setSchoolSearch,
+    setUserEditOpen,
+    setEditingUser,
 
     // Handlers
     handleSaveSchool,
@@ -228,7 +227,6 @@ export const useManagement = () => {
     handleEditUser,
     handleDeactivateUser,
     handleResendInvite,
-    getStatusBadge,
-    getGradeLabel,
+    handleSaveUser,
   }
 }

@@ -151,7 +151,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
       // Fetch available schools for the organization
       const { data: schoolsData, error: schoolsError } = await supabase
         .from('schools')
-        .select('*')
+        .select('*, primary_slp:users!primary_slp_id(first_name, last_name)')
         .eq('organization_id', userData.organization_id)
         .order('name')
 
@@ -173,6 +173,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         principal_email: school.principal_email || '',
         phone: school.phone || '',
         primary_slp_id: school.primary_slp_id || null,
+        primary_slp: school.primary_slp || null,
         created_at: school.created_at,
         updated_at: school.updated_at,
       }))

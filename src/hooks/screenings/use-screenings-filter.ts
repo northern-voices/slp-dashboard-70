@@ -212,7 +212,8 @@ export const useScreeningsFilter = ({
         matchesLanguageComprehension &&
         matchesPriorityRescreen &&
         matchesRecommendations &&
-        matchesClinicalNotes
+        matchesClinicalNotes &&
+        screening.service_status !== 'transferred'
       )
     }
   )

@@ -1,7 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Building2, Users, Settings } from 'lucide-react'
+import { Building2, Users } from 'lucide-react'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import ManagementStats from '@/components/management/ManagementStats'
 import SchoolForm from '@/components/management/SchoolForm'
 import UserInviteModal from '@/components/management/UserInviteModal'
 import NotificationSettingsModal from '@/components/management/NotificationSettingsModal'
@@ -13,6 +12,7 @@ import UsersTabContent from '@/components/management/UsersTabContent'
 import SettingsTabContent from '@/components/management/SettingsTabContent'
 // import SLPSchoolBrowser from '@/components/slp/SLPSchoolBrowser'
 import { useManagement } from '@/hooks/useManagement'
+import UserEditModal from '@/components/management/UserEditModal'
 
 const ManagementContent = () => {
   const { userProfile } = useOrganization()
@@ -27,8 +27,10 @@ const ManagementContent = () => {
     editingSchool,
     selectedSchool,
     schoolSearch,
-    mockSLPs,
+    users,
     filteredSchools,
+    editingUser,
+    userEditOpen,
 
     // Setters
     setSchoolFormOpen,
@@ -40,6 +42,8 @@ const ManagementContent = () => {
     setEditingSchool,
     setSelectedSchool,
     setSchoolSearch,
+    setUserEditOpen,
+    setEditingUser,
 
     // Handlers
     handleSaveSchool,
@@ -51,23 +55,20 @@ const ManagementContent = () => {
     handleEditUser,
     handleDeactivateUser,
     handleResendInvite,
-    getStatusBadge,
+    handleSaveUser,
   } = useManagement()
 
   const userRole = userProfile?.role || 'slp'
-  const userName = userProfile
-    ? `${userProfile.first_name} ${userProfile.last_name}`
-    : 'Dr. Sarah Johnson'
 
   // SLP view - only show assigned schools
   if (userRole === 'slp') {
     return (
-      <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
+      <main className='flex-1 p-4 pb-8 md:p-6 lg:p-8'>
         <div className='mb-6 md:mb-8'>
-          <h1 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2'>
+          <h1 className='mb-2 text-xl font-semibold text-gray-900 md:text-2xl lg:text-3xl'>
             Schools
           </h1>
-          <p className='text-gray-600 text-sm md:text-base'>
+          <p className='text-sm text-gray-600 md:text-base'>
             View your assigned schools and manage students
           </p>
         </div>
@@ -79,20 +80,21 @@ const ManagementContent = () => {
 
   // Admin/Supervisor view - full management capabilities
   return (
-    <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
+    <main className='flex-1 p-4 pb-8 md:p-6 lg:p-8'>
       <div className='mb-6 md:mb-8'>
-        <h1 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2'>
+        <h1 className='mb-2 text-xl font-semibold text-gray-900 md:text-2xl lg:text-3xl'>
           Management
         </h1>
-        <p className='text-gray-600 text-sm md:text-base'>
+        <p className='text-sm text-gray-600 md:text-base'>
           Manage schools, users, and system settings
         </p>
       </div>
 
-      <ManagementStats />
+      {/* // TODO: Ask Lisa if she needs this */}
+      {/* <ManagementStats /> */}
 
       <Tabs defaultValue='schools' className='space-y-6'>
-        <TabsList className='w-full justify-start flex-wrap h-auto p-1'>
+        <TabsList className='flex-wrap justify-start w-full h-auto p-1'>
           <TabsTrigger value='schools' className='flex items-center flex-shrink-0'>
             <Building2 className='w-4 h-4 mr-2' />
             Schools
@@ -101,10 +103,11 @@ const ManagementContent = () => {
             <Users className='w-4 h-4 mr-2' />
             Users
           </TabsTrigger>
-          <TabsTrigger value='settings' className='flex items-center flex-shrink-0'>
+          {/* // TODO: Ideate on how the settings will work  */}
+          {/* <TabsTrigger value='settings' className='flex items-center flex-shrink-0'>
             <Settings className='w-4 h-4 mr-2' />
             Settings
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         <TabsContent value='schools'>
@@ -116,13 +119,12 @@ const ManagementContent = () => {
             onEditSchool={handleEditSchool}
             onViewSchoolDetails={handleViewSchoolDetails}
             onDeleteSchool={handleDeleteSchool}
-            getStatusBadge={getStatusBadge}
           />
         </TabsContent>
 
         <TabsContent value='users'>
           <UsersTabContent
-            mockSLPs={mockSLPs}
+            users={users}
             onInviteUser={() => setUserInviteOpen(true)}
             onEditUser={handleEditUser}
             onDeactivateUser={handleDeactivateUser}
@@ -177,6 +179,16 @@ const ManagementContent = () => {
       <OrganizationSettingsModal
         isOpen={organizationSettingsOpen}
         onClose={() => setOrganizationSettingsOpen(false)}
+      />
+
+      <UserEditModal
+        isOpen={userEditOpen}
+        onClose={() => {
+          setUserEditOpen(false)
+          setEditingUser(null)
+        }}
+        user={editingUser}
+        onSave={handleSaveUser}
       />
     </main>
   )
