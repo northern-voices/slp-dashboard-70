@@ -85,7 +85,8 @@ const ManagementContent = () => {
         </p>
       </div>
 
-      <ManagementStats />
+      {/* // TODO: Ask Lisa if she needs this */}
+      {/* <ManagementStats /> */}
 
       <Tabs defaultValue='schools' className='space-y-6'>
         <TabsList className='flex-wrap justify-start w-full h-auto p-1'>
