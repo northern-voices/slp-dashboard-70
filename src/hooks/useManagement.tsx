@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { School } from '@/types/database'
 
 export const useManagement = () => {
   const [schoolFormOpen, setSchoolFormOpen] = useState(false)
@@ -11,8 +12,8 @@ export const useManagement = () => {
   const [notificationSettingsOpen, setNotificationSettingsOpen] = useState(false)
   const [screeningTemplatesOpen, setScreeningTemplatesOpen] = useState(false)
   const [organizationSettingsOpen, setOrganizationSettingsOpen] = useState(false)
-  const [editingSchool, setEditingSchool] = useState(null)
-  const [selectedSchool, setSelectedSchool] = useState(null)
+  const [editingSchool, setEditingSchool] = useState<School | null>(null)
+  const [selectedSchool, setSelectedSchool] = useState<School | null>(null)
   const [schoolSearch, setSchoolSearch] = useState('')
   const { toast } = useToast()
 
@@ -45,22 +46,22 @@ export const useManagement = () => {
     school.name.toLowerCase().includes(schoolSearch.toLowerCase())
   )
 
-  const handleSaveSchool = (_schoolData: any) => {
+  const handleSaveSchool = (_schoolData: Partial<School>) => {
     // Will wire to real DB insert/update when SchoolForm is rebuilt
     setEditingSchool(null)
   }
 
-  const handleEditSchool = (school: any) => {
+  const handleEditSchool = (school: School) => {
     setEditingSchool(school)
     setSchoolFormOpen(true)
   }
 
-  const handleViewSchoolDetails = (school: any) => {
+  const handleViewSchoolDetails = (school: School) => {
     setSelectedSchool(school)
     setSchoolDetailsOpen(true)
   }
 
-  const handleEditFromDetails = (school: any) => {
+  const handleEditFromDetails = (school: School) => {
     setSchoolDetailsOpen(false)
     setEditingSchool(school)
     setSchoolFormOpen(true)

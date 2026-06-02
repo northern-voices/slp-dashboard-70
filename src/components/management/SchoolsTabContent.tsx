@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { School } from '@/types/database'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,10 +20,10 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 interface SchoolsTabContentProps {
   schoolSearch: string
   setSchoolSearch: (value: string) => void
-  filteredSchools: any[]
+  filteredSchools: School[]
   onAddSchool: () => void
-  onEditSchool: (school: any) => void
-  onViewSchoolDetails: (school: any) => void
+  onEditSchool: (school: School) => void
+  onViewSchoolDetails: (school: School) => void
   onDeleteSchool?: (schoolId: string) => void
 }
 
@@ -36,12 +37,12 @@ const SchoolsTabContent = ({
   onDeleteSchool,
 }: SchoolsTabContentProps) => {
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
-  const [selectedSchoolForDeletion, setSelectedSchoolForDeletion] = useState<any>(null)
+  const [selectedSchoolForDeletion, setSelectedSchoolForDeletion] = useState<School>(null)
   const { userProfile } = useOrganization()
 
   const isAdmin = userProfile?.role === 'admin' || userProfile?.role === 'super_admin'
 
-  const handleDeleteClick = (school: any) => {
+  const handleDeleteClick = (school: School) => {
     setSelectedSchoolForDeletion(school)
     setDeleteConfirmation('')
   }
@@ -87,7 +88,6 @@ const SchoolsTabContent = ({
             <CardHeader>
               <div className='flex items-center justify-between'>
                 <CardTitle className='text-lg'>{school.name}</CardTitle>
-                {school.status}
               </div>
               <CardDescription>
                 {school.city}

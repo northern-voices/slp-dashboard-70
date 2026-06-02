@@ -1,13 +1,13 @@
-import React from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Building2, User, Phone, AtSign, MapPin } from 'lucide-react'
+import { School } from '@/types/database'
 
 interface SchoolDetailsModalProps {
   isOpen: boolean
   onClose: () => void
-  school: any
-  onEdit: (school: any) => void
+  school: School | null
+  onEdit: (school: School) => void
 }
 
 const SchoolDetailsModal = ({ isOpen, onClose, school, onEdit }: SchoolDetailsModalProps) => {
