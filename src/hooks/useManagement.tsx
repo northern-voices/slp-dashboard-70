@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { School } from '@/types/database'
+import { SchoolFormData } from '@/components/management/SchoolForm'
 
 export const useManagement = () => {
   const [schoolFormOpen, setSchoolFormOpen] = useState(false)
@@ -17,7 +18,7 @@ export const useManagement = () => {
   const [schoolSearch, setSchoolSearch] = useState('')
   const { toast } = useToast()
 
-  const { availableSchools, refreshData } = useOrganization()
+  const { availableSchools, refreshData, currentOrganization } = useOrganization()
 
   const [mockSLPs, setMockSLPs] = useState([
     {
@@ -46,8 +47,45 @@ export const useManagement = () => {
     school.name.toLowerCase().includes(schoolSearch.toLowerCase())
   )
 
-  const handleSaveSchool = (_schoolData: Partial<School>) => {
-    // Will wire to real DB insert/update when SchoolForm is rebuilt
+  const handleSaveSchool = async (schoolData: SchoolFormData) => {
+    const payload = {
+      name: schoolData.name,
+      street_address: schoolData.address,
+      city: schoolData.city,
+      region: schoolData.state,
+      postal_code: schoolData.zip,
+      principal_name: schoolData.principal_name,
+      principal_email: schoolData.principal_email,
+      phone: schoolData.phone,
+    }
+
+    if (editingSchool) {
+      const { error } = await supabase.from('schools').update(payload).eq('id', editingSchool.id)
+      if (error) {
+        toast({
+          title: 'Failed to update school',
+          description: error.message,
+          variant: 'destructive',
+        })
+        return
+      }
+      toast({ title: 'School updated successfully' })
+    } else {
+      const { error } = await supabase
+        .from('schools')
+        .insert({ ...payload, organization_id: currentOrganization?.id })
+      if (error) {
+        toast({
+          title: 'Failed to create school',
+          description: error.message,
+          variant: 'destructive',
+        })
+        return
+      }
+      toast({ title: 'School created successfully' })
+    }
+
+    await refreshData()
     setEditingSchool(null)
   }
 
@@ -90,6 +128,7 @@ export const useManagement = () => {
     // Will refresh the real users list here once we replace mockSLPs with a query
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleEditUser = (user: any) => {
     console.log('Edit user:', user)
   }
@@ -117,28 +156,6 @@ export const useManagement = () => {
       default:
         return <Badge variant='secondary'>{status}</Badge>
     }
-  }
-
-  const getGradeLabel = (grade: string) => {
-    const gradeLabels: Record<string, string> = {
-      Headstart: 'Headstart',
-      PreK: 'Pre-K',
-      K: 'Kindergarten',
-      '1': '1st Grade',
-      '2': '2nd Grade',
-      '3': '3rd Grade',
-      '4': '4th Grade',
-      '5': '5th Grade',
-      '6': '6th Grade',
-      '7': '7th Grade',
-      '8': '8th Grade',
-      '9': '9th Grade',
-      '10': '10th Grade',
-      '11': '11th Grade',
-      '12': '12th Grade',
-    }
-
-    return gradeLabels[grade] || grade
   }
 
   return {
@@ -177,6 +194,5 @@ export const useManagement = () => {
     handleDeactivateUser,
     handleResendInvite,
     getStatusBadge,
-    getGradeLabel,
   }
 }
