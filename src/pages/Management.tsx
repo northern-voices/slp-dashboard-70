@@ -97,10 +97,11 @@ const ManagementContent = () => {
             <Users className='w-4 h-4 mr-2' />
             Users
           </TabsTrigger>
-          <TabsTrigger value='settings' className='flex items-center flex-shrink-0'>
+          {/* // TODO: Ideate on how the settings will work  */}
+          {/* <TabsTrigger value='settings' className='flex items-center flex-shrink-0'>
             <Settings className='w-4 h-4 mr-2' />
             Settings
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         <TabsContent value='schools'>
