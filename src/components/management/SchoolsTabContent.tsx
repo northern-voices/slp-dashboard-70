@@ -66,10 +66,12 @@ const SchoolsTabContent = ({
     <div className='space-y-6'>
       <div className='flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center'>
         <h2 className='text-xl font-semibold'>School Management</h2>
-        <Button onClick={onAddSchool}>
-          <Plus className='w-4 h-4 mr-2' />
-          Add School
-        </Button>
+        {isAdmin && (
+          <Button onClick={onAddSchool}>
+            <Plus className='w-4 h-4 mr-2' />
+            Add School
+          </Button>
+        )}
       </div>
 
       <div className='relative'>
@@ -109,9 +111,11 @@ const SchoolsTabContent = ({
                 </div>
               </div>
               <div className='flex gap-2 pt-3'>
-                <Button variant='outline' size='sm' onClick={() => onEditSchool(school)}>
-                  Edit
-                </Button>
+                {isAdmin && (
+                  <Button variant='outline' size='sm' onClick={() => onEditSchool(school)}>
+                    Edit
+                  </Button>
+                )}
                 <Button variant='outline' size='sm' onClick={() => onViewSchoolDetails(school)}>
                   View Details
                 </Button>
