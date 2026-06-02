@@ -6,6 +6,26 @@ import AuthLayout from '@/components/auth/AuthLayout'
 import AuthFormField from '@/components/auth/AuthFormField'
 import PasswordStrengthIndicator from '@/components/auth/PasswordStrengthIndicator'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
+import type { PostgrestError } from '@supabase/supabase-js'
+
+interface InvitationData {
+  email: string
+  role: string
+  organizationName: string
+  organizationId: string
+}
+
+interface InvitationResponse {
+  email: string
+  role: string
+  accepted_at: string | null
+  expires_at: string
+  organizations: {
+    id: string
+    name: string
+  }
+}
 
 const AcceptInvitation = () => {
   const { token } = useParams()
@@ -13,8 +33,10 @@ const AcceptInvitation = () => {
   const { toast } = useToast()
   const { acceptInvitation } = useAuth()
 
+  const [isFetching, setIsFetching] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
-  const [invitationData, setInvitationData] = useState<any>(null)
+  const [invitationData, setInvitationData] = useState<InvitationData | null>(null)
+  const [inviteError, setInviteError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -24,15 +46,47 @@ const AcceptInvitation = () => {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    // Simulate fetching invitation data from token
-    if (token) {
-      setInvitationData({
-        email: 'invited.user@example.com',
-        role: 'slp',
-        organizationName: 'Springfield School District',
-        invitedBy: 'Dr. Sarah Johnson',
-      })
+    if (!token) {
+      setInviteError('No invitation token found in this link.')
+      setIsFetching(false)
+      return
     }
+
+    const fetchInvitation = async () => {
+      const { data, error } = (await supabase
+        .from('organization_invitations')
+        .select('email, role, accepted_at, expires_at, organizations(id, name)')
+        .eq('token', token)
+        .single()) as { data: InvitationResponse | null; error: PostgrestError | null }
+
+      if (error || !data) {
+        setInviteError('This invitation link is invalid or does not exist.')
+        setIsFetching(false)
+        return
+      }
+
+      if (data.accepted_at) {
+        setInviteError('This invitation has already been used.')
+        setIsFetching(false)
+        return
+      }
+
+      if (new Date(data.expires_at) < new Date()) {
+        setInviteError('This invitation link has expired. Please ask for a new one.')
+        setIsFetching(false)
+        return
+      }
+
+      setInvitationData({
+        email: data.email,
+        role: data.role,
+        organizationName: data.organizations.name,
+        organizationId: data.organizations.id,
+      })
+      setIsFetching(false)
+    }
+
+    fetchInvitation()
   }, [token])
 
   const validateForm = () => {
@@ -40,8 +94,11 @@ const AcceptInvitation = () => {
 
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required'
     if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required'
-    if (!formData.password) newErrors.password = 'Password is required'
-    if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters'
+    if (!formData.password) {
+      newErrors.password = 'Password is required'
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters'
+    }
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match'
     }
@@ -53,27 +110,31 @@ const AcceptInvitation = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm()) return
-    if (!token) return
+    if (!validateForm() || !token || !invitationData) return
 
     setIsLoading(true)
     try {
       await acceptInvitation(token, {
-        ...formData,
         email: invitationData.email,
+        password: formData.password,
+        organizationId: invitationData.organizationId,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         role: invitationData.role,
       })
 
       toast({
         title: 'Account created successfully',
-        description: "Welcome to the platform! Let's complete your profile.",
+        description: 'Please check your email to verify your account.',
       })
 
-      navigate('/onboarding')
+      navigate(`/auth/verify-email/pending?email=${encodeURIComponent(invitationData.email)}`, {
+        replace: true,
+      })
     } catch (error) {
       toast({
         title: 'Failed to accept invitation',
-        description: 'Please check the invitation link and try again.',
+        description: error instanceof Error ? error.message : 'Please try again.',
         variant: 'destructive',
       })
     } finally {
@@ -81,27 +142,41 @@ const AcceptInvitation = () => {
     }
   }
 
-  if (!invitationData) {
+  // Loading state
+  if (isFetching) {
     return (
       <AuthLayout title='Loading...'>
         <div className='text-center'>
-          <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin'></div>
-          <p className='text-gray-600'>Validating invitation...</p>
+          <div className='w-8 h-8 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin' />
+          <p className='text-gray-600'>Validating your invitation...</p>
+        </div>
+      </AuthLayout>
+    )
+  }
+
+  // Error state
+  if (inviteError) {
+    return (
+      <AuthLayout title='Invalid Invitation'>
+        <div className='p-4 text-center rounded-lg bg-red-50'>
+          <p className='font-medium text-red-700'>{inviteError}</p>
+          <p className='mt-2 text-sm text-red-500'>
+            Contact your administrator if you believe this is a mistake.
+          </p>
         </div>
       </AuthLayout>
     )
   }
 
   return (
-    <AuthLayout title='Accept Invitation' subtitle={`Join ${invitationData.organizationName}`}>
+    <AuthLayout title='Accept Invitation' subtitle={`Join ${invitationData!.organizationName}`}>
       <div className='p-4 mb-6 rounded-lg bg-blue-50'>
         <h3 className='mb-2 font-medium text-blue-900'>You've been invited to join:</h3>
-        <p className='text-blue-800'>{invitationData.organizationName}</p>
+        <p className='text-blue-800'>{invitationData!.organizationName}</p>
         <p className='mt-1 text-sm text-blue-600'>
           Role:{' '}
-          {invitationData.role === 'slp' ? 'Speech-Language Pathologist' : invitationData.role}
+          {invitationData!.role === 'slp' ? 'Speech-Language Pathologist' : invitationData!.role}
         </p>
-        <p className='text-sm text-blue-600'>Invited by: {invitationData.invitedBy}</p>
       </div>
 
       <form onSubmit={handleSubmit} className='space-y-6'>
@@ -114,7 +189,6 @@ const AcceptInvitation = () => {
             error={errors.firstName}
             required
           />
-
           <AuthFormField
             label='Last Name'
             placeholder='Enter your last name'
@@ -128,7 +202,7 @@ const AcceptInvitation = () => {
         <div className='space-y-2'>
           <label className='block text-sm font-medium text-gray-700'>Email Address</label>
           <div className='px-4 py-3 text-gray-600 border border-gray-200 rounded-lg bg-gray-50'>
-            {invitationData.email}
+            {invitationData!.email}
           </div>
         </div>
 
