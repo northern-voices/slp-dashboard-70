@@ -72,7 +72,7 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
             <div className='space-y-2'>
               <Label htmlFor='name'>School Name *</Label>
               <Input
@@ -98,7 +98,7 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
             />
           </div>
 
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
             <div className='space-y-2'>
               <Label htmlFor='principal'>Principal Name</Label>
               <Input id='principal' {...register('principal')} placeholder='Enter principal name' />
@@ -115,7 +115,7 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
             </div>
           </div>
 
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
             <div className='space-y-2'>
               <Label htmlFor='phone'>Phone Number</Label>
               <Input id='phone' {...register('phone')} placeholder='Enter phone number' />
@@ -142,7 +142,7 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
             </div>
           </div>
 
-          <div className='border rounded-lg p-4 bg-gray-50'>
+          <div className='p-4 border rounded-lg bg-gray-50'>
             <Controller
               name='grades'
               control={control}
