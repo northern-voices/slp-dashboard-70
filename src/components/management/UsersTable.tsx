@@ -103,6 +103,10 @@ const UsersTable = ({
             SLP
           </Badge>
         )
+      case 'super_admin':
+        return (
+          <Badge className='font-medium bg-rose-50 text-rose-700 border-rose-200'>Root Admin</Badge>
+        )
       default:
         return <Badge variant='secondary'>{role}</Badge>
     }
