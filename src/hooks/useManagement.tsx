@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 export const useManagement = () => {
   const [schoolFormOpen, setSchoolFormOpen] = useState(false)
@@ -14,36 +16,7 @@ export const useManagement = () => {
   const [schoolSearch, setSchoolSearch] = useState('')
   const { toast } = useToast()
 
-  const [mockSchools, setMockSchools] = useState([
-    {
-      id: 1,
-      name: 'Lincoln Elementary School',
-      address: '123 Main St, Springfield, IL',
-      principal: 'Dr. Jane Smith',
-      principalEmail: 'jsmith@springfield.edu',
-      phone: '(555) 123-4567',
-      district: 'Springfield District 22',
-      studentCount: 245,
-      slpCount: 2,
-      status: 'active',
-      grades: ['K', '1', '2', '3', '4', '5'],
-      notes: 'Renovated building in 2022',
-    },
-    {
-      id: 2,
-      name: 'Washington Middle School',
-      address: '456 Oak Ave, Springfield, IL',
-      principal: 'Mr. John Davis',
-      principalEmail: 'jdavis@springfield.edu',
-      phone: '(555) 987-6543',
-      district: 'Springfield District 22',
-      studentCount: 380,
-      slpCount: 3,
-      status: 'active',
-      grades: ['6', '7', '8'],
-      notes: 'STEM focus program',
-    },
-  ])
+  const { availableSchools, refreshData } = useOrganization()
 
   const [mockSLPs, setMockSLPs] = useState([
     {
@@ -68,33 +41,12 @@ export const useManagement = () => {
     },
   ])
 
-  const filteredSchools = mockSchools.filter(school =>
+  const filteredSchools = availableSchools.filter(school =>
     school.name.toLowerCase().includes(schoolSearch.toLowerCase())
   )
 
-  const handleSaveSchool = (schoolData: any) => {
-    if (editingSchool) {
-      setMockSchools(prev =>
-        prev.map(school =>
-          school.id === editingSchool.id
-            ? {
-                ...school,
-                ...schoolData,
-                grades: schoolData.grades || [],
-              }
-            : school
-        )
-      )
-    } else {
-      const newSchool = {
-        id: mockSchools.length + 1,
-        ...schoolData,
-        studentCount: 0,
-        slpCount: 0,
-        grades: schoolData.grades || [],
-      }
-      setMockSchools(prev => [...prev, newSchool])
-    }
+  const handleSaveSchool = (_schoolData: any) => {
+    // Will wire to real DB insert/update when SchoolForm is rebuilt
     setEditingSchool(null)
   }
 
@@ -114,10 +66,18 @@ export const useManagement = () => {
     setSchoolFormOpen(true)
   }
 
-  const handleDeleteSchool = (schoolId: number) => {
-    const schoolToDelete = mockSchools.find(school => school.id === schoolId)
-    setMockSchools(prev => prev.filter(school => school.id !== schoolId))
-
+  const handleDeleteSchool = async (schoolId: string) => {
+    const schoolToDelete = availableSchools.find(school => school.id === schoolId)
+    const { error } = await supabase.from('schools').delete().eq('id', schoolId)
+    if (error) {
+      toast({
+        title: 'Failed to delete school',
+        description: error.message,
+        variant: 'destructive',
+      })
+      return
+    }
+    await refreshData()
     toast({
       title: 'School deleted',
       description: `${schoolToDelete?.name} has been successfully deleted.`,
@@ -191,7 +151,6 @@ export const useManagement = () => {
     editingSchool,
     selectedSchool,
     schoolSearch,
-    mockSchools,
     mockSLPs,
     filteredSchools,
 

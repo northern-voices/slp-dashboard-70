@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import {
   AlertDialog,
@@ -24,8 +23,7 @@ interface SchoolsTabContentProps {
   onAddSchool: () => void
   onEditSchool: (school: any) => void
   onViewSchoolDetails: (school: any) => void
-  onDeleteSchool?: (schoolId: number) => void
-  getStatusBadge: (status: string) => React.ReactNode
+  onDeleteSchool?: (schoolId: string) => void
 }
 
 const SchoolsTabContent = ({
@@ -36,7 +34,6 @@ const SchoolsTabContent = ({
   onEditSchool,
   onViewSchoolDetails,
   onDeleteSchool,
-  getStatusBadge,
 }: SchoolsTabContentProps) => {
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const [selectedSchoolForDeletion, setSelectedSchoolForDeletion] = useState<any>(null)
@@ -90,20 +87,21 @@ const SchoolsTabContent = ({
             <CardHeader>
               <div className='flex items-center justify-between'>
                 <CardTitle className='text-lg'>{school.name}</CardTitle>
-                {getStatusBadge(school.status)}
+                {school.status}
               </div>
               <CardDescription>{school.address}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className='space-y-2'>
                 <p className='text-sm'>
-                  <strong>Principal:</strong> {school.principal}
+                  <strong>Principal:</strong> {school.principal_name || '—'}
                 </p>
                 <p className='text-sm'>
-                  <strong>Students:</strong> {school.studentCount}
+                  <strong>Phone:</strong> {school.phone || '—'}
                 </p>
-                <p className='text-sm'>
-                  <strong>SLPs Assigned:</strong> {school.slpCount}
+                <p className='text-sm text-gray-500'>
+                  {school.city}
+                  {school.state ? `, ${school.state}` : ''}
                 </p>
               </div>
               <div className='flex mt-4 space-x-2'>
