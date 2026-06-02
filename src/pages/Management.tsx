@@ -27,7 +27,7 @@ const ManagementContent = () => {
     editingSchool,
     selectedSchool,
     schoolSearch,
-    mockSLPs,
+    users,
     filteredSchools,
 
     // Setters
@@ -51,23 +51,19 @@ const ManagementContent = () => {
     handleEditUser,
     handleDeactivateUser,
     handleResendInvite,
-    getStatusBadge,
   } = useManagement()
 
   const userRole = userProfile?.role || 'slp'
-  const userName = userProfile
-    ? `${userProfile.first_name} ${userProfile.last_name}`
-    : 'Dr. Sarah Johnson'
 
   // SLP view - only show assigned schools
   if (userRole === 'slp') {
     return (
-      <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
+      <main className='flex-1 p-4 pb-8 md:p-6 lg:p-8'>
         <div className='mb-6 md:mb-8'>
-          <h1 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2'>
+          <h1 className='mb-2 text-xl font-semibold text-gray-900 md:text-2xl lg:text-3xl'>
             Schools
           </h1>
-          <p className='text-gray-600 text-sm md:text-base'>
+          <p className='text-sm text-gray-600 md:text-base'>
             View your assigned schools and manage students
           </p>
         </div>
@@ -79,12 +75,12 @@ const ManagementContent = () => {
 
   // Admin/Supervisor view - full management capabilities
   return (
-    <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
+    <main className='flex-1 p-4 pb-8 md:p-6 lg:p-8'>
       <div className='mb-6 md:mb-8'>
-        <h1 className='text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 mb-2'>
+        <h1 className='mb-2 text-xl font-semibold text-gray-900 md:text-2xl lg:text-3xl'>
           Management
         </h1>
-        <p className='text-gray-600 text-sm md:text-base'>
+        <p className='text-sm text-gray-600 md:text-base'>
           Manage schools, users, and system settings
         </p>
       </div>
@@ -92,7 +88,7 @@ const ManagementContent = () => {
       <ManagementStats />
 
       <Tabs defaultValue='schools' className='space-y-6'>
-        <TabsList className='w-full justify-start flex-wrap h-auto p-1'>
+        <TabsList className='flex-wrap justify-start w-full h-auto p-1'>
           <TabsTrigger value='schools' className='flex items-center flex-shrink-0'>
             <Building2 className='w-4 h-4 mr-2' />
             Schools
@@ -116,13 +112,12 @@ const ManagementContent = () => {
             onEditSchool={handleEditSchool}
             onViewSchoolDetails={handleViewSchoolDetails}
             onDeleteSchool={handleDeleteSchool}
-            getStatusBadge={getStatusBadge}
           />
         </TabsContent>
 
         <TabsContent value='users'>
           <UsersTabContent
-            mockSLPs={mockSLPs}
+            users={users}
             onInviteUser={() => setUserInviteOpen(true)}
             onEditUser={handleEditUser}
             onDeactivateUser={handleDeactivateUser}

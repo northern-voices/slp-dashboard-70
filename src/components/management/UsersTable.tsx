@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   Table,
   TableBody,
@@ -19,28 +19,18 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { MoreHorizontal, Search, Edit, UserX, Mail, Users } from 'lucide-react'
+import { MoreHorizontal, Search, Edit, UserX, Users } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  role: string
-  status: string
-  schools: string[]
-  lastActive: string
-  licenseNumber?: string
-}
+import { OrgUser } from '@/types/database'
 
 interface UsersTableProps {
-  users: User[]
-  onEditUser: (user: User) => void
+  users: OrgUser[]
+  onEditUser: (user: OrgUser) => void
   onDeactivateUser: (userId: string) => void
   onResendInvite: (userId: string) => void
   selectedUsers?: string[]
@@ -60,11 +50,13 @@ const UsersTable = ({
   const [statusFilter, setStatusFilter] = useState('all')
 
   const filteredUsers = users.filter(user => {
+    const fullName = `${user.first_name} ${user.last_name}`.toLowerCase()
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fullName.includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
-    const matchesStatus = statusFilter === 'all' || user.status === statusFilter
+    const matchesStatus =
+      statusFilter === 'all' || (statusFilter === 'active' ? user.is_active : !user.is_active)
 
     return matchesSearch && matchesRole && matchesStatus
   })
@@ -199,7 +191,6 @@ const UsersTable = ({
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Schools</TableHead>
-                  <TableHead>Last Active</TableHead>
                   <TableHead className='w-16'></TableHead>
                 </TableRow>
               </TableHeader>
@@ -211,35 +202,31 @@ const UsersTable = ({
                         <Checkbox
                           checked={selectedUsers.includes(user.id)}
                           onCheckedChange={checked => handleSelectUser(user.id, !!checked)}
-                          aria-label={`Select ${user.name}`}
+                          aria-label={`Select ${user.first_name} ${user.last_name}`}
                         />
                       </TableCell>
                     )}
                     <TableCell>
                       <div className='space-y-1'>
-                        <div className='text-sm font-medium text-gray-900'>{user.name}</div>
+                        <div className='text-sm font-medium text-gray-900'>
+                          {user.first_name} {user.last_name}
+                        </div>
                         <div className='text-sm text-gray-500'>{user.email}</div>
-                        {user.licenseNumber && (
-                          <div className='text-xs text-gray-400'>License: {user.licenseNumber}</div>
-                        )}
                       </div>
                     </TableCell>
                     <TableCell>{getRoleBadge(user.role)}</TableCell>
-                    <TableCell>{getStatusBadge(user.status)}</TableCell>
+                    <TableCell>{getStatusBadge(user.is_active ? 'active' : 'inactive')}</TableCell>
                     <TableCell>
                       <div className='text-sm text-gray-600'>
-                        {user.schools.length > 0 ? (
+                        {user.schools && user.schools.length > 0 ? (
                           <div className='flex items-center gap-1'>
                             <Users className='w-3 h-3 text-gray-400' />
-                            <span>{user.schools.join(', ')}</span>
+                            <span>{user.schools.map(s => s.name).join(', ')}</span>
                           </div>
                         ) : (
                           <span className='italic text-gray-400'>No assignments</span>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className='text-sm font-medium text-gray-500'>{user.lastActive}</div>
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -256,19 +243,11 @@ const UsersTable = ({
                             <Edit className='w-4 h-4 mr-2' />
                             Edit User
                           </DropdownMenuItem>
-                          {user.status === 'pending' && (
-                            <DropdownMenuItem
-                              onClick={() => onResendInvite(user.id)}
-                              className='text-sm'>
-                              <Mail className='w-4 h-4 mr-2' />
-                              Resend Invite
-                            </DropdownMenuItem>
-                          )}
                           <DropdownMenuItem
                             onClick={() => onDeactivateUser(user.id)}
                             className='text-sm text-red-600'>
                             <UserX className='w-4 h-4 mr-2' />
-                            {user.status === 'active' ? 'Deactivate' : 'Activate'}
+                            {user.is_active ? 'Deactivate' : 'Activate'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

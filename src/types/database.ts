@@ -1,3 +1,4 @@
+import { boolean } from 'zod'
 import { ErrorPatterns } from './screening-form'
 
 export type UserRole = 'super_admin' | 'admin' | 'slp' | 'hearing_technician'
@@ -131,6 +132,19 @@ export interface Screening {
 
   // Source table information for deletion
   source_table?: 'speech' | 'hearing'
+}
+
+export interface OrgUser {
+  id: string
+  email: string
+  first_name: string
+  last_name: string
+  role: string
+  is_active: boolean
+  organization_id: string
+  created_at: string
+  updated_at: string
+  schools?: { is: string; name: string }[]
 }
 
 export interface School {

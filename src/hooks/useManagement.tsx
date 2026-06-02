@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { School } from '@/types/database'
 import { SchoolFormData } from '@/components/management/SchoolForm'
+import { OrgUser } from '@/types/database'
 
 export const useManagement = () => {
   const [schoolFormOpen, setSchoolFormOpen] = useState(false)
@@ -16,32 +17,32 @@ export const useManagement = () => {
   const [editingSchool, setEditingSchool] = useState<School | null>(null)
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null)
   const [schoolSearch, setSchoolSearch] = useState('')
+  const [users, setUsers] = useState<OrgUser[]>([])
+
   const { toast } = useToast()
 
   const { availableSchools, refreshData, currentOrganization } = useOrganization()
 
-  const [mockSLPs, setMockSLPs] = useState([
-    {
-      id: '1',
-      name: 'Dr. Sarah Johnson',
-      email: 'sarah.johnson@district.edu',
-      schools: ['Lincoln Elementary', 'Roosevelt High'],
-      role: 'slp',
-      status: 'active',
-      lastActive: '2024-11-20',
-      licenseNumber: 'SLP-12345',
-    },
-    {
-      id: '2',
-      name: 'Ms. Emily Chen',
-      email: 'emily.chen@district.edu',
-      schools: ['Washington Middle'],
-      role: 'supervisor',
-      status: 'active',
-      lastActive: '2024-11-19',
-      licenseNumber: 'SLP-67890',
-    },
-  ])
+  useEffect(() => {
+    if (!currentOrganization?.id) return
+
+    const fetchUsers = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*, schools(id, name)')
+        .eq('organization_id', currentOrganization.id)
+        .order('first_name')
+
+      if (error) {
+        toast({ title: 'Failed to load users', description: error.message, variant: 'destructive' })
+        return
+      }
+
+      setUsers(data || [])
+    }
+
+    fetchUsers()
+  }, [currentOrganization?.id])
 
   const filteredSchools = availableSchools.filter(school =>
     school.name.toLowerCase().includes(schoolSearch.toLowerCase())
@@ -133,14 +134,23 @@ export const useManagement = () => {
     console.log('Edit user:', user)
   }
 
-  const handleDeactivateUser = (userId: string) => {
-    setMockSLPs(prev =>
-      prev.map(user =>
-        user.id === userId
-          ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
-          : user
-      )
-    )
+  const handleDeactivateUser = async (userId: string) => {
+    const user = users.find(u => u.id === userId)
+    const { error } = await supabase
+      .from('users')
+      .update({ is_active: !user?.is_active })
+      .eq('id', userId)
+
+    if (error) {
+      toast({
+        title: 'Failed to update user',
+        description: error.message,
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setUsers(prev => prev.map(u => (u.id === userId ? { ...u, is_active: !u.is_active } : u)))
   }
 
   const handleResendInvite = (userId: string) => {
@@ -169,7 +179,7 @@ export const useManagement = () => {
     editingSchool,
     selectedSchool,
     schoolSearch,
-    mockSLPs,
+    users,
     filteredSchools,
 
     // Setters
