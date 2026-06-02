@@ -1,4 +1,4 @@
-import React from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -28,6 +28,7 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<SchoolFormData>({
     defaultValues: {
@@ -41,6 +42,19 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
       phone: school?.phone || '',
     },
   })
+
+  useEffect(() => {
+    reset({
+      name: school?.name || '',
+      address: school?.address || '',
+      city: school?.city || '',
+      state: school?.state || '',
+      zip: school?.zip || '',
+      principal_name: school?.principal_name || '',
+      principal_email: school?.principal_email || '',
+      phone: school?.phone || '',
+    })
+  }, [school, reset])
 
   const onSubmit = (data: SchoolFormData) => {
     onSave(data)
