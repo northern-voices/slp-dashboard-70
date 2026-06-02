@@ -66,7 +66,7 @@ const SchoolsTabContent = ({
 
   return (
     <div className='space-y-6'>
-      <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
+      <div className='flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center'>
         <h2 className='text-xl font-semibold'>School Management</h2>
         <Button onClick={onAddSchool}>
           <Plus className='w-4 h-4 mr-2' />
@@ -75,18 +75,18 @@ const SchoolsTabContent = ({
       </div>
 
       <div className='relative'>
-        <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
+        <Search className='absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-3 top-1/2' />
         <Input
           placeholder='Search schools...'
           value={schoolSearch}
           onChange={e => setSchoolSearch(e.target.value)}
-          className='pl-10 max-w-md'
+          className='max-w-md pl-10'
         />
       </div>
 
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+      <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
         {filteredSchools.map(school => (
-          <Card key={school.id} className='hover:shadow-md transition-shadow'>
+          <Card key={school.id} className='transition-shadow hover:shadow-md'>
             <CardHeader>
               <div className='flex items-center justify-between'>
                 <CardTitle className='text-lg'>{school.name}</CardTitle>
@@ -106,7 +106,7 @@ const SchoolsTabContent = ({
                   <strong>SLPs Assigned:</strong> {school.slpCount}
                 </p>
               </div>
-              <div className='flex space-x-2 mt-4'>
+              <div className='flex mt-4 space-x-2'>
                 <Button variant='outline' size='sm' onClick={() => onEditSchool(school)}>
                   Edit
                 </Button>
@@ -135,7 +135,7 @@ const SchoolsTabContent = ({
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <div className='py-4'>
-                        <p className='text-sm text-gray-700 mb-2'>
+                        <p className='mb-2 text-sm text-gray-700'>
                           To confirm deletion, please type the school name:{' '}
                           <span className='font-semibold'>{selectedSchoolForDeletion?.name}</span>
                         </p>
