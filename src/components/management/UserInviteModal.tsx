@@ -45,6 +45,42 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
 
     setIsLoading(true)
     try {
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', formData.email.trim().toLowerCase())
+        .eq('organization_id', currentOrganization.id)
+        .maybeSingle()
+
+      if (existingUser) {
+        toast({
+          title: 'User already exists',
+          description: 'A user with this email address is already in your organization.',
+          variant: 'destructive',
+        })
+
+        return
+      }
+
+      const { data: existingInvite } = await supabase
+        .from('organization_invitations')
+        .select('id')
+        .eq('email', formData.email.trim().toLowerCase())
+        .eq('organization_id', currentOrganization.id)
+        .is('accepted_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle()
+
+      if (existingInvite) {
+        toast({
+          title: 'Invitation already sent',
+          description: 'A pending invitation already exists for this email address.',
+          variant: 'destructive',
+        })
+
+        return
+      }
+
       const { data, error } = await supabase
         .from('organization_invitations')
         .insert({
