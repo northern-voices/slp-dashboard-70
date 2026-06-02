@@ -1,66 +1,63 @@
-import React from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { useToast } from '@/hooks/use-toast'
-import GradeManagement from './GradeManagement'
+import { School } from '@/types/database'
 
-interface SchoolFormData {
+export interface SchoolFormData {
   name: string
   address: string
-  principal: string
-  principalEmail: string
+  city: string
+  state: string
+  zip: string
+  principal_name: string
+  principal_email: string
   phone: string
-  district: string
-  status: string
-  notes: string
-  grades: string[]
 }
 
 interface SchoolFormProps {
   isOpen: boolean
   onClose: () => void
-  school?: Partial<SchoolFormData>
+  school?: School | null
   onSave: (schoolData: SchoolFormData) => void
 }
 
 const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
-  const { toast } = useToast()
   const {
     register,
     handleSubmit,
-    control,
+    reset,
     formState: { errors },
   } = useForm<SchoolFormData>({
     defaultValues: {
       name: school?.name || '',
       address: school?.address || '',
-      principal: school?.principal || '',
-      principalEmail: school?.principalEmail || '',
+      city: school?.city || '',
+      state: school?.state || '',
+      zip: school?.zip || '',
+      principal_name: school?.principal_name || '',
+      principal_email: school?.principal_email || '',
       phone: school?.phone || '',
-      district: school?.district || '',
-      status: school?.status || 'active',
-      notes: school?.notes || '',
-      grades: school?.grades || [],
     },
   })
 
+  useEffect(() => {
+    reset({
+      name: school?.name || '',
+      address: school?.address || '',
+      city: school?.city || '',
+      state: school?.state || '',
+      zip: school?.zip || '',
+      principal_name: school?.principal_name || '',
+      principal_email: school?.principal_email || '',
+      phone: school?.phone || '',
+    })
+  }, [school, reset])
+
   const onSubmit = (data: SchoolFormData) => {
     onSave(data)
-    toast({
-      title: 'Success',
-      description: school ? 'School updated successfully' : 'School created successfully',
-    })
     onClose()
   }
 
@@ -72,95 +69,59 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className='space-y-2'>
+            <Label htmlFor='name'>School Name *</Label>
+            <Input
+              id='name'
+              {...register('name', { required: true })}
+              placeholder='Enter school name'
+            />
+            {errors.name && <p className='text-sm text-red-500'>School name is required</p>}
+          </div>
+
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
             <div className='space-y-2'>
-              <Label htmlFor='name'>School Name *</Label>
+              <Label htmlFor='principal_name'>Principal Name</Label>
               <Input
-                id='name'
-                {...register('name', { required: true })}
-                placeholder='Enter school name'
+                id='principal_name'
+                {...register('principal_name')}
+                placeholder='Enter principal name'
               />
             </div>
-
             <div className='space-y-2'>
-              <Label htmlFor='district'>District</Label>
-              <Input id='district' {...register('district')} placeholder='Enter district name' />
-            </div>
-          </div>
-
-          <div className='space-y-2'>
-            <Label htmlFor='address'>Address</Label>
-            <Textarea
-              id='address'
-              {...register('address')}
-              placeholder='Enter full address'
-              rows={2}
-            />
-          </div>
-
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='principal'>Principal Name</Label>
-              <Input id='principal' {...register('principal')} placeholder='Enter principal name' />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='principalEmail'>Principal Email</Label>
+              <Label htmlFor='principal_email'>Principal Email</Label>
               <Input
-                id='principalEmail'
+                id='principal_email'
                 type='email'
-                {...register('principalEmail')}
+                {...register('principal_email')}
                 placeholder='Enter principal email'
               />
             </div>
           </div>
 
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='phone'>Phone Number</Label>
-              <Input id='phone' {...register('phone')} placeholder='Enter phone number' />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='status'>Status</Label>
-              <Controller
-                name='status'
-                control={control}
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='active'>Active</SelectItem>
-                      <SelectItem value='inactive'>Inactive</SelectItem>
-                      <SelectItem value='pending'>Pending</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
+          <div className='space-y-2'>
+            <Label htmlFor='address'>Street Address</Label>
+            <Input id='address' {...register('address')} placeholder='Enter street address' />
           </div>
 
-          <div className='border rounded-lg p-4 bg-gray-50'>
-            <Controller
-              name='grades'
-              control={control}
-              rules={{ validate: v => v.length > 0 }}
-              render={({ field }) => (
-                <GradeManagement selectedGrades={field.value} onGradesChange={field.onChange} />
-              )}
-            />
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
+            <div className='space-y-2'>
+              <Label htmlFor='city'>City</Label>
+              <Input id='city' {...register('city')} placeholder='City' />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='state'>Province / State</Label>
+              <Input id='state' {...register('state')} placeholder='Province or state' />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='zip'>Postal Code</Label>
+              <Input id='zip' {...register('zip')} placeholder='Postal code' />
+            </div>
           </div>
 
           <div className='space-y-2'>
-            <Label htmlFor='notes'>Notes</Label>
-            <Textarea
-              id='notes'
-              {...register('notes')}
-              placeholder='Additional notes about the school'
-              rows={3}
-            />
+            <Label htmlFor='phone'>Phone Number</Label>
+            <Input id='phone' {...register('phone')} placeholder='Enter phone number' />
           </div>
 
           <div className='flex gap-3 pt-4'>

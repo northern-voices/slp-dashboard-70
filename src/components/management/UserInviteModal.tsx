@@ -1,199 +1,207 @@
-
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
-import { Mail, UserPlus } from 'lucide-react';
+import React, { useState } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useToast } from '@/hooks/use-toast'
+import { Mail, UserPlus, Copy, Check } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface UserInviteModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onInvite: (userData: any) => void;
+  isOpen: boolean
+  onClose: () => void
+  onInvite: () => void
 }
 
 const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) => {
-  const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    role: 'slp',
-    licenseNumber: '',
-    selectedSchools: [] as string[]
-  });
+  const { toast } = useToast()
+  const { currentOrganization, userProfile } = useOrganization()
 
-  const mockSchools = [
-    { id: '1', name: 'Lincoln Elementary School' },
-    { id: '2', name: 'Washington Middle School' },
-    { id: '3', name: 'Roosevelt High School' },
-    { id: '4', name: 'Jefferson Elementary' }
-  ];
+  const [formData, setFormData] = useState({ email: '', role: 'slp' })
+  const [isLoading, setIsLoading] = useState(false)
+  const [inviteLink, setInviteLink] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
-      return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!formData.email.trim()) {
+      toast({ title: 'Error', description: 'Email is required.', variant: 'destructive' })
+      return
     }
 
-    if (!formData.email.includes('@')) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid email address",
-        variant: "destructive"
-      });
-      return;
+    if (!currentOrganization) {
+      toast({ title: 'Error', description: 'No organization found.', variant: 'destructive' })
+      return
     }
 
-    // Generate invitation link (in real app, this would come from backend)
-    const invitationToken = `invite_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const invitationLink = `${window.location.origin}/invite/${invitationToken}`;
+    setIsLoading(true)
+    try {
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', formData.email.trim().toLowerCase())
+        .eq('organization_id', currentOrganization.id)
+        .maybeSingle()
 
-    onInvite({ ...formData, invitationLink });
-    
-    toast({
-      title: "Invitation Sent",
-      description: `Invitation sent to ${formData.email}. They will receive an email with a link to join the organization.`
-    });
-    
-    // Reset form
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      role: 'slp',
-      licenseNumber: '',
-      selectedSchools: []
-    });
-    onClose();
-  };
+      if (existingUser) {
+        toast({
+          title: 'User already exists',
+          description: 'A user with this email address is already in your organization.',
+          variant: 'destructive',
+        })
 
-  const handleSchoolToggle = (schoolId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedSchools: prev.selectedSchools.includes(schoolId)
-        ? prev.selectedSchools.filter(id => id !== schoolId)
-        : [...prev.selectedSchools, schoolId]
-    }));
-  };
+        return
+      }
+
+      const { data: existingInvite } = await supabase
+        .from('organization_invitations')
+        .select('id')
+        .eq('email', formData.email.trim().toLowerCase())
+        .eq('organization_id', currentOrganization.id)
+        .is('accepted_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle()
+
+      if (existingInvite) {
+        toast({
+          title: 'Invitation already sent',
+          description: 'A pending invitation already exists for this email address.',
+          variant: 'destructive',
+        })
+
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('organization_invitations')
+        .insert({
+          organization_id: currentOrganization.id,
+          email: formData.email.trim().toLowerCase(),
+          role: formData.role,
+          invited_by: userProfile?.id ?? null,
+        })
+        .select('token')
+        .single()
+
+      if (error) throw error
+
+      const link = `${window.location.origin}/invite/${data.token}`
+      setInviteLink(link)
+      onInvite()
+    } catch (error) {
+      toast({
+        title: 'Failed to create invitation',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCopy = async () => {
+    if (!inviteLink) return
+    await navigator.clipboard.writeText(inviteLink)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleClose = () => {
+    setFormData({ email: '', role: 'slp' })
+    setInviteLink(null)
+    setCopied(false)
+    onClose()
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className='max-w-md'>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5" />
+          <DialogTitle className='flex items-center gap-2'>
+            <UserPlus className='w-5 h-5' />
             Invite New User
           </DialogTitle>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name *</Label>
-              <Input
-                id="firstName"
-                value={formData.firstName}
-                onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                placeholder="Enter first name"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name *</Label>
-              <Input
-                id="lastName"
-                value={formData.lastName}
-                onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                placeholder="Enter last name"
-                required
-              />
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address *</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="Enter email address"
-                className="pl-10"
-                required
-              />
+        {inviteLink ? (
+          // Success state — show the generated link
+          <div className='space-y-4'>
+            <p className='text-sm text-gray-600'>
+              Invitation created. Copy the link below and send it to{' '}
+              <strong>{formData.email}</strong>.
+            </p>
+            <div className='flex items-center gap-2 p-3 border border-gray-200 rounded-lg bg-gray-50'>
+              <p className='flex-1 text-xs text-gray-700 break-all'>{inviteLink}</p>
+              <Button type='button' size='sm' variant='outline' onClick={handleCopy}>
+                {copied ? (
+                  <Check className='w-4 h-4 text-green-600' />
+                ) : (
+                  <Copy className='w-4 h-4' />
+                )}
+              </Button>
             </div>
+            <Button className='w-full' onClick={handleClose}>
+              Done
+            </Button>
           </div>
+        ) : (
+          // Form state
+          <form onSubmit={handleSubmit} className='space-y-5'>
+            <div className='space-y-2'>
+              <Label htmlFor='email'>Email Address *</Label>
+              <div className='relative'>
+                <Mail className='absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2' />
+                <Input
+                  id='email'
+                  type='email'
+                  value={formData.email}
+                  onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder='Enter email address'
+                  className='pl-10'
+                  required
+                />
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
+            <div className='space-y-2'>
+              <Label htmlFor='role'>Role</Label>
+              <Select
+                value={formData.role}
+                onValueChange={value => setFormData(prev => ({ ...prev, role: value }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="slp">Speech-Language Pathologist</SelectItem>
-                  <SelectItem value="supervisor">Supervisor</SelectItem>
-                  <SelectItem value="admin">Administrator</SelectItem>
+                  <SelectItem value='slp'>Speech-Language Pathologist</SelectItem>
+                  <SelectItem value='hearing_technician'>Hearing Technician</SelectItem>
+                  <SelectItem value='admin'>Administrator</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="licenseNumber">License Number</Label>
-              <Input
-                id="licenseNumber"
-                value={formData.licenseNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, licenseNumber: e.target.value }))}
-                placeholder="Enter license number"
-              />
-            </div>
-          </div>
 
-          <div className="space-y-3">
-            <Label>Assign to Schools</Label>
-            <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border rounded-md p-3">
-              {mockSchools.map((school) => (
-                <div key={school.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`school-${school.id}`}
-                    checked={formData.selectedSchools.includes(school.id)}
-                    onCheckedChange={() => handleSchoolToggle(school.id)}
-                  />
-                  <Label htmlFor={`school-${school.id}`} className="text-sm font-normal">
-                    {school.name}
-                  </Label>
-                </div>
-              ))}
+            <div className='flex gap-3 pt-2'>
+              <Button type='submit' className='flex-1' disabled={isLoading}>
+                <Mail className='w-4 h-4 mr-2' />
+                {isLoading ? 'Creating...' : 'Create Invite Link'}
+              </Button>
+              <Button type='button' variant='outline' onClick={handleClose} className='flex-1'>
+                Cancel
+              </Button>
             </div>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button type="submit" className="flex-1">
-              <Mail className="w-4 h-4 mr-2" />
-              Send Invitation
-            </Button>
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              Cancel
-            </Button>
-          </div>
-        </form>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default UserInviteModal;
+export default UserInviteModal

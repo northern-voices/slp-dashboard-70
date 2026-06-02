@@ -1,42 +1,41 @@
-
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { UserPlus } from 'lucide-react';
-import UsersTable from './UsersTable';
+import { Button } from '@/components/ui/button'
+import { UserPlus } from 'lucide-react'
+import UsersTable from './UsersTable'
+import { OrgUser } from '@/types/database'
 
 interface UsersTabContentProps {
-  mockSLPs: any[];
-  onInviteUser: () => void;
-  onEditUser: (user: any) => void;
-  onDeactivateUser: (userId: string) => void;
-  onResendInvite: (userId: string) => void;
+  users: OrgUser[]
+  onInviteUser: () => void
+  onEditUser: (user: OrgUser) => void
+  onDeactivateUser: (userId: string) => void
+  onResendInvite: (userId: string) => void
 }
 
 const UsersTabContent = ({
-  mockSLPs,
+  users,
   onInviteUser,
   onEditUser,
   onDeactivateUser,
-  onResendInvite
+  onResendInvite,
 }: UsersTabContentProps) => {
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-xl font-semibold">User Management</h2>
+    <div className='space-y-6'>
+      <div className='flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center'>
+        <h2 className='text-xl font-semibold'>User Management</h2>
         <Button onClick={onInviteUser}>
-          <UserPlus className="w-4 h-4 mr-2" />
+          <UserPlus className='w-4 h-4 mr-2' />
           Invite User
         </Button>
       </div>
 
-      <UsersTable 
-        users={mockSLPs}
+      <UsersTable
+        users={users}
         onEditUser={onEditUser}
         onDeactivateUser={onDeactivateUser}
         onResendInvite={onResendInvite}
       />
     </div>
-  );
-};
+  )
+}
 
-export default UsersTabContent;
+export default UsersTabContent
