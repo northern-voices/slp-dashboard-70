@@ -89,19 +89,21 @@ const SchoolsTabContent = ({
                 <CardTitle className='text-lg'>{school.name}</CardTitle>
                 {school.status}
               </div>
-              <CardDescription>{school.address}</CardDescription>
+              <CardDescription>
+                {school.city}
+                {school.state ? `, ${school.state}` : ''}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className='space-y-2'>
                 <p className='text-sm'>
-                  <strong>Principal:</strong> {school.principal_name || '—'}
-                </p>
-                <p className='text-sm'>
                   <strong>Phone:</strong> {school.phone || '—'}
                 </p>
-                <p className='text-sm text-gray-500'>
-                  {school.city}
-                  {school.state ? `, ${school.state}` : ''}
+                <p className='text-sm'>
+                  <strong>Assigned SLP:</strong>{' '}
+                  {school.primary_slp
+                    ? `${school.primary_slp.first_name} ${school.primary_slp.last_name}`
+                    : '—'}
                 </p>
               </div>
               <div className='flex mt-4 space-x-2'>

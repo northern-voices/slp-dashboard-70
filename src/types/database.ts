@@ -145,6 +145,7 @@ export interface School {
   principal_email: string
   phone: string
   primary_slp_id?: string | null
+  primary_slp?: { first_name: string; last_name: string } | null
   created_at: string
   updated_at: string
 }
