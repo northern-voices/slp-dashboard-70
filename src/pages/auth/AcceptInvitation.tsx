@@ -7,24 +7,12 @@ import AuthFormField from '@/components/auth/AuthFormField'
 import PasswordStrengthIndicator from '@/components/auth/PasswordStrengthIndicator'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import type { PostgrestError } from '@supabase/supabase-js'
 
 interface InvitationData {
   email: string
   role: string
   organizationName: string
   organizationId: string
-}
-
-interface InvitationResponse {
-  email: string
-  role: string
-  accepted_at: string | null
-  expires_at: string
-  organizations: {
-    id: string
-    name: string
-  }
 }
 
 const AcceptInvitation = () => {
@@ -53,40 +41,41 @@ const AcceptInvitation = () => {
     }
 
     const fetchInvitation = async () => {
-      const { data, error } = (await supabase
-        .from('organization_invitations')
-        .select('email, role, accepted_at, expires_at, organizations(id, name)')
-        .eq('token', token)
-        .single()) as { data: InvitationResponse | null; error: PostgrestError | null }
+      const { data, error } = await supabase.rpc('get_invitation_by_token', { invite_token: token })
 
-      if (error || !data) {
+      const invite = data?.[0]
+
+      if (error || !invite) {
         setInviteError('This invitation link is invalid or does not exist.')
         setIsFetching(false)
         return
       }
 
-      if (data.accepted_at) {
+      if (invite.accepted_at) {
         setInviteError('This invitation has already been used.')
         setIsFetching(false)
         return
       }
 
-      if (new Date(data.expires_at) < new Date()) {
+      if (new Date(invite.expires_at) < new Date()) {
         setInviteError('This invitation link has expired. Please ask for a new one.')
         setIsFetching(false)
         return
       }
 
       setInvitationData({
-        email: data.email,
-        role: data.role,
-        organizationName: data.organizations.name,
-        organizationId: data.organizations.id,
+        email: invite.email,
+        role: invite.role,
+        organizationName: invite.organization_name,
+        organizationId: invite.organization_id,
       })
       setIsFetching(false)
     }
 
-    fetchInvitation()
+    fetchInvitation().catch(() => {
+      setInviteError('Something went wrong. Please try again.')
+      setIsFetching(false)
+    })
   }, [token])
 
   const validateForm = () => {
