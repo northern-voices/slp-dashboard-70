@@ -125,20 +125,8 @@ export const useManagement = () => {
     })
   }
 
-  const handleInviteUser = (userData: any) => {
-    const newUser = {
-      id: (mockSLPs.length + 1).toString(),
-      name: `${userData.firstName} ${userData.lastName}`,
-      email: userData.email,
-      role: userData.role,
-      status: 'pending',
-      schools: userData.selectedSchools
-        .map((id: string) => mockSchools.find(school => school.id.toString() === id)?.name || '')
-        .filter(Boolean),
-      lastActive: 'Never',
-      licenseNumber: userData.licenseNumber,
-    }
-    setMockSLPs(prev => [...prev, newUser])
+  const handleInviteUser = () => {
+    // Will refresh the real users list here once we replace mockSLPs with a query
   }
 
   const handleEditUser = (user: any) => {
@@ -162,7 +150,7 @@ export const useManagement = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className='bg-green-100 text-green-800'>Active</Badge>
+        return <Badge className='text-green-800 bg-green-100'>Active</Badge>
       case 'inactive':
         return <Badge variant='outline'>Inactive</Badge>
       default:
