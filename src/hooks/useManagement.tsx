@@ -59,6 +59,7 @@ export const useManagement = () => {
       city: schoolData.city,
       region: schoolData.state,
       postal_code: schoolData.zip,
+      country: 'Canada',
       principal_name: schoolData.principal_name,
       principal_email: schoolData.principal_email,
       phone: schoolData.phone,
