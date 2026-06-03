@@ -49,6 +49,8 @@ import EditMonthlyMeeting from './pages/monthly-meetings/EditMonthlyMeeting'
 import Caseload from './pages/Caseload'
 import GoalSheets from './pages/GoalSheets'
 import SchoolWideGoalSheets from './pages/SchoolWideGoalSheets'
+import MfaChallenge from './pages/auth/MfaChallenge'
+import MfaEnroll from './pages/auth/MfaEnroll'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -137,6 +139,9 @@ const App = () => (
                     </PublicRoute>
                   }
                 />
+
+                <Route path='/auth/mfa' element={<MfaChallenge />} />
+                <Route path='/auth/mfa/enroll' element={<MfaEnroll />} />
 
                 {/* Onboarding Route */}
                 <Route path='/onboarding' element={<Onboarding />} />

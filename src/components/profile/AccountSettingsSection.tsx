@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import {
   Form,
   FormControl,
@@ -25,9 +24,19 @@ interface PasswordFormData {
 }
 
 const AccountSettingsSection = () => {
-  const { toast } = useToast()
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
   const [showPasswordForm, setShowPasswordForm] = useState(false)
+
+  const { toast } = useToast()
+  const navigate = useNavigate()
+  const [mfaFactor, setMfaFactor] = useState<{ id: string } | null>(null)
+  const [mfaLoading, setMfaLoading] = useState(true)
+
+  useEffect(() => {
+    supabase.auth.mfa.listFactors().then(({ data }) => {
+      setMfaFactor(data?.totp?.[0] ?? null)
+      setMfaLoading(false)
+    })
+  }, [])
 
   const passwordForm = useForm<PasswordFormData>({
     defaultValues: {
@@ -54,16 +63,6 @@ const AccountSettingsSection = () => {
     })
     setShowPasswordForm(false)
     passwordForm.reset()
-  }
-
-  const handleTwoFactorToggle = (enabled: boolean) => {
-    setTwoFactorEnabled(enabled)
-    toast({
-      title: enabled ? '2FA Enabled' : '2FA Disabled',
-      description: enabled
-        ? 'Two-factor authentication has been enabled for your account.'
-        : 'Two-factor authentication has been disabled for your account.',
-    })
   }
 
   const handleLogoutAllDevices = () => {
@@ -169,11 +168,24 @@ const AccountSettingsSection = () => {
             <div>
               <Label className='text-base font-medium'>Two-Factor Authentication</Label>
               <p className='text-sm text-muted-foreground'>
-                Add an extra layer of security to your account
+                {mfaLoading
+                  ? 'Checking status...'
+                  : mfaFactor
+                    ? '2FA is active on your account'
+                    : '2FA is not set up'}
               </p>
             </div>
           </div>
-          <Switch checked={twoFactorEnabled} onCheckedChange={handleTwoFactorToggle} />
+          <Button
+            variant='outline'
+            onClick={() =>
+              navigate('/auth/mfa/enroll', {
+                state: { returnTo: '/profile?tab=account' },
+              })
+            }
+            disabled={mfaLoading}>
+            {mfaFactor ? 'Re-enroll' : 'Set Up 2FA'}
+          </Button>
         </div>
 
         {/* Active Sessions */}
