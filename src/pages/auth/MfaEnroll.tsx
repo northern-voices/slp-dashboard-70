@@ -84,9 +84,10 @@ const MfaEnroll = () => {
 
         {qrCode ? (
           <div className='flex flex-col items-center gap-3'>
-            <div
-              className='p-3 bg-white border border-gray-200 rounded-lg'
-              dangerouslySetInnerHTML={{ __html: qrCode }}
+            <img
+              src={qrCode}
+              alt='Scan this QR code with your authenticator app'
+              className='w-48 h-48 p-2 bg-white border border-gray-200 rounded-lg'
             />
             <button
               type='button'
