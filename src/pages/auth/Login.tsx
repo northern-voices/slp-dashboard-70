@@ -91,10 +91,10 @@ const Login = () => {
 
       const hasFactors = (factorsData?.totp?.length ?? 0) > 0
 
-      if (!hasFactors) {
-        navigate('/auth/mfa/enroll', { replace: true })
-      } else if (aalData?.nextLevel === 'aal2' && aalData?.currentLevel !== 'aal2') {
+      if (hasFactors && aalData?.nextLevel === 'aal2' && aalData?.currentLevel !== 'aal2') {
         navigate('/auth/mfa', { state: { from: { pathname: from } }, replace: true })
+      } else if (!hasFactors) {
+        navigate('/auth/email-otp', { state: { from: { pathname: from } }, replace: true })
       } else {
         toast({ title: 'Login successful', description: 'Welcome back!' })
         navigate(from, { replace: true })
