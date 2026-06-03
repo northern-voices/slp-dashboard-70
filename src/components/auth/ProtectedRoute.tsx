@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -11,41 +11,42 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, isLoading } = useAuth()
   const location = useLocation()
-  const [mfaStatus, setMfaStatus] = useState<
-    'checking' | 'ok' | 'needs-enroll' | 'needs-challenge'
-  >('checking')
-  const checkedUserId = useRef<string | null>(null)
+  const [mfaChecked, setMfaChecked] = useState(false)
+  const [mfaRedirect, setMfaRedirect] = useState<
+    'none' | 'enroll' | 'totp-challenge' | 'email-challenge'
+  >('none')
 
   useEffect(() => {
-    if (!user || isLoading) return
-    // Only re-check when the user changes (not on every route navigation)
-    if (checkedUserId.current === user.id) return
+    setMfaChecked(false)
+    setMfaRedirect('none')
 
-    checkedUserId.current = user.id
+    if (!user) {
+      setMfaChecked(true)
+      return
+    }
 
     Promise.all([
       supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
       supabase.auth.mfa.listFactors(),
-    ]).then(([{ data: aalData }, { data: factorsData }]) => {
-      const hasFactors = (factorsData?.totp?.length ?? 0) > 0
-      if (!hasFactors) {
-        setMfaStatus('needs-enroll')
-      } else if (aalData?.nextLevel === 'aal2' && aalData?.currentLevel !== 'aal2') {
-        setMfaStatus('needs-challenge')
-      } else {
-        setMfaStatus('ok')
-      }
-    })
-  }, [user, isLoading])
+    ])
+      .then(([{ data: aal }, { data: factors }]) => {
+        const hasFactors = (factors?.totp?.length ?? 0) > 0
+        if (hasFactors) {
+          if (aal?.nextLevel === 'aal2' && aal?.currentLevel !== 'aal2') {
+            setMfaRedirect('totp-challenge')
+          }
+        } else {
+          const emailVerified = sessionStorage.getItem(`email_mfa_${user.id}`) === 'true'
+          if (!emailVerified) {
+            setMfaRedirect('email-challenge')
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => setMfaChecked(true))
+  }, [user?.id])
 
-  useEffect(() => {
-    if (!user) {
-      setMfaStatus('checking')
-      checkedUserId.current = null
-    }
-  }, [user])
-
-  if (isLoading || (user && mfaStatus === 'checking')) {
+  if (isLoading) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
         <LoadingSpinner size='lg' />
@@ -57,12 +58,24 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to='/auth/login' state={{ from: location }} replace />
   }
 
-  if (mfaStatus === 'needs-enroll') {
+  if (!mfaChecked) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <LoadingSpinner size='lg' />
+      </div>
+    )
+  }
+
+  if (mfaRedirect === 'enroll') {
     return <Navigate to='/auth/mfa/enroll' replace />
   }
 
-  if (mfaStatus === 'needs-challenge') {
+  if (mfaRedirect === 'totp-challenge') {
     return <Navigate to='/auth/mfa' state={{ from: location }} replace />
+  }
+
+  if (mfaRedirect === 'email-challenge') {
+    return <Navigate to='/auth/email-otp' state={{ from: location }} replace />
   }
 
   return <>{children}</>
