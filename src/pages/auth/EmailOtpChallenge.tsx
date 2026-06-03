@@ -39,13 +39,22 @@ const EmailOtpChallenge = () => {
       setEmail(user.email)
       setUserId(user.id)
 
-      await supabase.auth.signInWithOtp({
+      const { error: otpError } = await supabase.auth.signInWithOtp({
         email: user.email,
         options: {
           shouldCreateUser: false,
           emailRedirectTo: `${window.location.origin}/auth/email-otp`,
         },
       })
+      if (otpError) {
+        console.error('Failed to send OTP:', otpError)
+        toast({
+          title: 'Failed to send verification code',
+          description: otpError.message,
+          variant: 'destructive',
+        })
+        return
+      }
       setCodeSent(true)
     }
 
