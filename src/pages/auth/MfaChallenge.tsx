@@ -7,18 +7,18 @@ import { useToast } from '@/hooks/use-toast'
 import AuthLayout from '@/components/auth/AuthLayout'
 import { supabase } from '@/lib/supabase'
 import { ShieldCheck } from 'lucide-react'
-
 interface LocationState {
   from: { pathname: string }
 }
 
 const MfaChallenge = () => {
+  const [factorId, setFactorId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
   const navigate = useNavigate()
   const location = useLocation()
   const { toast } = useToast()
   const [code, setCode] = useState('')
-  const [factorId, setFactorId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
 
   const from = (location.state as LocationState)?.from?.pathname || '/'
 

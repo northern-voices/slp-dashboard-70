@@ -7,21 +7,21 @@ import { useToast } from '@/hooks/use-toast'
 import AuthLayout from '@/components/auth/AuthLayout'
 import { supabase } from '@/lib/supabase'
 import { ShieldCheck } from 'lucide-react'
-
 interface LocationState {
   returnTo?: string
 }
 
 const MfaEnroll = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { toast } = useToast()
   const [qrCode, setQrCode] = useState<string | null>(null)
   const [secret, setSecret] = useState<string | null>(null)
   const [factorId, setFactorId] = useState<string | null>(null)
   const [code, setCode] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
   const [showSecret, setShowSecret] = useState(false)
+
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { toast } = useToast()
 
   const returnTo = (location.state as LocationState)?.returnTo || '/'
 
@@ -48,6 +48,7 @@ const MfaEnroll = () => {
     }
 
     startEnrollment()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleVerify = async (e: React.FormEvent) => {
