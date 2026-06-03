@@ -65,6 +65,21 @@ const AccountSettingsSection = () => {
     passwordForm.reset()
   }
 
+  const handleSwitchToEmail = async () => {
+    if (!mfaFactor) return
+    try {
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: mfaFactor.id })
+      if (error) throw error
+      setMfaFactor(null)
+      toast({
+        title: 'Switched to email verification',
+        description: 'You will receive a code by email on your next login.',
+      })
+    } catch {
+      toast({ title: 'Failed to switch', description: 'Please try again.', variant: 'destructive' })
+    }
+  }
+
   const handleLogoutAllDevices = () => {
     toast({
       title: 'Sessions Ended',
@@ -162,7 +177,7 @@ const AccountSettingsSection = () => {
         </div>
 
         {/* Two-Factor Authentication */}
-        <div className='flex items-center justify-between py-4 border-t'>
+        <div className='py-4 space-y-3 border-t'>
           <div className='flex items-center space-x-3'>
             <Shield className='w-5 h-5 text-brand' />
             <div>
@@ -171,21 +186,43 @@ const AccountSettingsSection = () => {
                 {mfaLoading
                   ? 'Checking status...'
                   : mfaFactor
-                    ? '2FA is active on your account'
-                    : '2FA is not set up'}
+                    ? 'Active method: Authenticator App (TOTP)'
+                    : 'Active method: Email Verification'}
               </p>
             </div>
           </div>
-          <Button
-            variant='outline'
-            onClick={() =>
-              navigate('/auth/mfa/enroll', {
-                state: { returnTo: '/profile?tab=account' },
-              })
-            }
-            disabled={mfaLoading}>
-            {mfaFactor ? 'Re-enroll' : 'Set Up 2FA'}
-          </Button>
+          {!mfaLoading && (
+            <div className='flex flex-wrap gap-2'>
+              {mfaFactor ? (
+                <>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={() =>
+                      navigate('/auth/mfa/enroll', { state: { returnTo: '/profile?tab=account' } })
+                    }>
+                    Re-enroll Authenticator
+                  </Button>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    className='text-red-600 hover:text-red-700 hover:bg-red-50'
+                    onClick={handleSwitchToEmail}>
+                    Switch to Email Verification
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() =>
+                    navigate('/auth/mfa/enroll', { state: { returnTo: '/profile?tab=account' } })
+                  }>
+                  Switch to Authenticator App
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Active Sessions */}
