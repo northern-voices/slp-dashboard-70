@@ -670,8 +670,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                       const transfer = transferByStudentId.get(student.id)
                       if (transfer?.to_school_id === activeSchool?.id) {
                         return (
-                          <span className='text-xs font-medium text-blue-600'>
-                            Transferred In ← {transfer.from_school?.name}
+                          <span className='flex flex-col text-xs font-medium text-blue-600'>
+                            <span>Transferred In ← {transfer.from_school?.name}</span>
+                            <span>
+                              {parseDateSafely(transfer.created_at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </span>
                           </span>
                         )
                       }
