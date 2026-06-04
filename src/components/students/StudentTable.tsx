@@ -636,21 +636,21 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                 </Button>
               </TableHead>
 
-              <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
+              {/* <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead> */}
 
               <TableHead className='w-1/6 min-w-[150px]'>
                 <Button
                   variant='ghost'
                   onClick={() => handleSort('date')}
                   className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
-                  Date Created
+                  Profile Created
                   <span className='ml-1'>{getSortIcon('date')}</span>
                 </Button>
               </TableHead>
 
-              <TableHead className='w-1/6 text-center'>Consent</TableHead>
+              {/* <TableHead className='w-1/6 text-center'>Consent</TableHead> */}
 
-              <TableHead className='w-1/6 min-w-[150px]'>Speech EA</TableHead>
+              {/* <TableHead className='w-1/6 min-w-[150px]'>Speech EA</TableHead> */}
             </tr>
           </TableHeader>
 
@@ -670,8 +670,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                       const transfer = transferByStudentId.get(student.id)
                       if (transfer?.to_school_id === activeSchool?.id) {
                         return (
-                          <span className='text-xs font-medium text-blue-600'>
-                            Transferred In ← {transfer.from_school?.name}
+                          <span className='flex flex-col text-xs font-medium text-blue-600'>
+                            <span>Transferred In ← {transfer.from_school?.name}</span>
+                            <span>
+                              {parseDateSafely(transfer.created_at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </span>
                           </span>
                         )
                       }
@@ -684,9 +691,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   {getStudentGrade(student)}
                 </TableCell>
 
-                <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
+                {/* <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {getQualificationBadge(student)}
-                </TableCell>
+                </TableCell> */}
 
                 <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {parseDateSafely(student.created_at).toLocaleDateString('en-US', {
@@ -696,17 +703,17 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   })}
                 </TableCell>
 
-                <TableCell className='p-4 text-center transition-colors group-hover:bg-gray-100'>
+                {/* <TableCell className='p-4 text-center transition-colors group-hover:bg-gray-100'>
                   {consentSet.has(student.id) ? (
                     <FileCheck className='w-5 h-5 mx-auto text-green-600' />
                   ) : (
                     <FileX className='w-5 h-5 mx-auto text-red-400' />
                   )}
-                </TableCell>
+                </TableCell> */}
 
-                <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
+                {/* <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {getSpeechEAName(student)}
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))}
           </TableBody>
