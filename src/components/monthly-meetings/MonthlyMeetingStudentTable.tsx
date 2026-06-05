@@ -31,6 +31,7 @@ import SortControls, { SortOption } from '@/components/ui/SortControls'
 
 interface StudentData {
   sessions_attended: number | null
+  sessions_absent: number | null
   meeting_notes: string
 }
 
