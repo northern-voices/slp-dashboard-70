@@ -1,6 +1,96 @@
 import { supabase } from '@/lib/supabase'
 import { UserRole } from '@/types/database'
 
+const MONTHLY_MEETING_SELECT = `
+  *,
+  facilitator:users!facilitator_id (
+    id,
+    first_name,
+    last_name,
+    email
+  ),
+  monthly_meeting_student_updates (
+    id,
+    student_id,
+    sessions_attended,
+    sessions_absent,
+    meeting_notes,
+    students (
+      id,
+      first_name,
+      last_name,
+      student_id,
+      school_id,
+      current_grade_id,
+      program_status,
+      speech_screenings (
+        created_at,
+        school_grades (
+          id,
+          grade_level,
+          academic_year
+        )
+      )
+    )
+  )
+`
+
+const MONTHLY_MEETING_INNER_SELECT = `
+  *,
+  facilitator:users!facilitator_id (
+    id,
+    first_name,
+    last_name,
+    email
+  ),
+  monthly_meeting_student_updates!inner (
+    id,
+    student_id,
+    sessions_attended,
+    sessions_absent,
+    meeting_notes,
+    students (
+      id,
+      first_name,
+      last_name,
+      student_id,
+      school_id,
+      current_grade_id,
+      program_status,
+      speech_screenings (
+        created_at,
+        school_grades (
+          id,
+          grade_level,
+          academic_year
+        )
+      )
+    )
+  )
+`
+
+export type StudentData = Record<
+  string,
+  {
+    sessions_attended: number | null
+    sessions_absent: number | null
+    meeting_notes: string
+  }
+>
+
+export const buildStudentUpdates = (studentData: StudentData) =>
+  Object.entries(studentData)
+    .filter(
+      ([_, d]) =>
+        d.sessions_attended !== null || d.sessions_absent !== null || d.meeting_notes.trim() !== ''
+    )
+    .map(([student_id, d]) => ({
+      student_id,
+      sessions_attended: d.sessions_attended,
+      sessions_absent: d.sessions_absent,
+      meeting_notes: d.meeting_notes.trim() || null,
+    }))
+
 export type StudentUpdatePayload = {
   student_id: string
   sessions_attended?: number | null
@@ -197,41 +287,7 @@ export const monthlyMeetingsApi = {
       }
 
       // Build base query with student updates
-      const query = supabase.from('monthly_meetings').select(
-        `
-          *,
-          facilitator:users!facilitator_id (
-            id,
-            first_name,
-            last_name,
-            email
-          ),
-          monthly_meeting_student_updates (
-            id,
-            student_id,
-            sessions_attended,
-            sessions_absent,
-            meeting_notes,
-            students (
-              id,
-              first_name,
-              last_name,
-              student_id,
-              school_id,
-              current_grade_id,
-              program_status,
-              speech_screenings (
-                created_at,
-                school_grades (
-                  id,
-                  grade_level,
-                  academic_year
-                )
-              )
-            )
-          )
-        `
-      )
+      const query = supabase.from('monthly_meetings').select(MONTHLY_MEETING_SELECT)
 
       const { data, error } = await query.order('meeting_date', { ascending: false }).limit(10000)
 
@@ -268,40 +324,7 @@ export const monthlyMeetingsApi = {
       // Query monthly meetings that have updates for this student
       const query = supabase
         .from('monthly_meetings')
-        .select(
-          `
-          *,
-          facilitator:users!facilitator_id (
-            id,
-            first_name,
-            last_name,
-            email
-          ),
-          monthly_meeting_student_updates!inner (
-            id,
-            student_id,
-            sessions_attended,
-            sessions_absent,
-            meeting_notes,
-            students (
-              id,
-              first_name,
-              last_name,
-              student_id,
-              school_id,
-              current_grade_id,
-              speech_screenings (
-                created_at,
-                school_grades (
-                  id,
-                  grade_level,
-                  academic_year
-                )
-              )
-            )
-          )
-        `
-        )
+        .select(MONTHLY_MEETING_INNER_SELECT)
         .eq('monthly_meeting_student_updates.student_id', studentId)
 
       const { data, error } = await query.order('meeting_date', { ascending: false })
@@ -394,41 +417,7 @@ export const monthlyMeetingsApi = {
       }
 
       // Build base query with student updates
-      let query = supabase.from('monthly_meetings').select(
-        `
-          *,
-          facilitator:users!facilitator_id (
-            id,
-            first_name,
-            last_name,
-            email
-          ),
-          monthly_meeting_student_updates (
-            id,
-            student_id,
-            sessions_attended,
-            sessions_absent,
-            meeting_notes,
-            students (
-              id,
-              first_name,
-              last_name,
-              student_id,
-              school_id,
-              current_grade_id,
-              program_status,
-              speech_screenings (
-                created_at,
-                school_grades (
-                  id,
-                  grade_level,
-                  academic_year
-                )
-              )
-            )
-          )
-        `
-      )
+      let query = supabase.from('monthly_meetings').select(MONTHLY_MEETING_SELECT)
 
       // Apply date filter at database level (default to school year)
       if (dateFilter !== 'all') {
@@ -453,40 +442,7 @@ export const monthlyMeetingsApi = {
   getById: async (id: string): Promise<MonthlyMeeting> => {
     const { data, error } = await supabase
       .from('monthly_meetings')
-      .select(
-        `
-        *,
-        facilitator:users!facilitator_id (
-          id,
-          first_name,
-          last_name,
-          email
-        ),
-        monthly_meeting_student_updates (
-          id,
-          student_id,
-          sessions_attended,
-          meeting_notes,
-          students (
-            id,
-            first_name,
-            last_name,
-            student_id,
-            school_id,
-            current_grade_id,
-            program_status,
-            speech_screenings (
-              created_at,
-              school_grades (
-                id,
-                grade_level,
-                academic_year
-              )
-            )
-          )
-        )
-      `
-      )
+      .select(MONTHLY_MEETING_SELECT)
       .eq('id', id)
       .single()
 
@@ -566,41 +522,7 @@ export const monthlyMeetingsApi = {
       // Fetch the complete meeting with all relations
       const { data: completeMeeting, error: fetchError } = await supabase
         .from('monthly_meetings')
-        .select(
-          `
-          *,
-          facilitator:users!facilitator_id (
-            id,
-            first_name,
-            last_name,
-            email
-          ),
-          monthly_meeting_student_updates (
-            id,
-            student_id,
-            sessions_attended,
-            sessions_absent,
-            meeting_notes,
-            students (
-              id,
-              first_name,
-              last_name,
-              student_id,
-              school_id,
-              current_grade_id,
-              program_status,
-              speech_screenings (
-                created_at,
-                school_grades (
-                  id,
-                  grade_level,
-                  academic_year
-                )
-              )
-            )
-          )
-        `
-        )
+        .select(MONTHLY_MEETING_SELECT)
         .eq('id', newMeeting.id)
         .single()
 
@@ -662,41 +584,7 @@ export const monthlyMeetingsApi = {
       // Fetch the complete updated meeting with all relations
       const { data: completeMeeting, error: fetchError } = await supabase
         .from('monthly_meetings')
-        .select(
-          `
-          *,
-          facilitator:users!facilitator_id (
-            id,
-            first_name,
-            last_name,
-            email
-          ),
-          monthly_meeting_student_updates (
-            id,
-            student_id,
-            sessions_attended,
-            sessions_absent,
-            meeting_notes,
-            students (
-              id,
-              first_name,
-              last_name,
-              student_id,
-              school_id,
-              current_grade_id,
-              program_status,
-              speech_screenings (
-                created_at,
-                school_grades (
-                  id,
-                  grade_level,
-                  academic_year
-                )
-              )
-            )
-          )
-        `
-        )
+        .select(MONTHLY_MEETING_SELECT)
         .eq('id', id)
         .single()
 
