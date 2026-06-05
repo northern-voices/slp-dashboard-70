@@ -29,6 +29,7 @@ import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog
 import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
 import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
+import { type StudentData, buildStudentUpdates } from '@/api/monthlymeetings'
 
 interface MeetingFormData {
   meeting_title: string
@@ -41,8 +42,6 @@ interface MeetingFormData {
   additional_notes: string
   action_plan: string
 }
-
-type StudentData = Record<string, { sessions_attended: number | null; meeting_notes: string }>
 
 class PageErrorBoundary extends Component<
   { children: ReactNode },
@@ -208,13 +207,7 @@ const CreateMonthlyMeetingContent = () => {
       return
     }
 
-    const student_updates = Object.entries(studentData)
-      .filter(([_, d]) => d.sessions_attended !== null || d.meeting_notes.trim() !== '')
-      .map(([student_id, d]) => ({
-        student_id,
-        sessions_attended: d.sessions_attended,
-        meeting_notes: d.meeting_notes.trim() || null,
-      }))
+    const student_updates = buildStudentUpdates(studentData)
 
     const submitData = {
       meeting_title: data.meeting_title.trim(),
@@ -279,7 +272,12 @@ const CreateMonthlyMeetingContent = () => {
 
   const hasStudentData = (studentId: string) => {
     const data = studentData[studentId]
-    return data && (data.sessions_attended !== null || data.meeting_notes.trim() !== '')
+    return (
+      data &&
+      (data.sessions_attended !== null ||
+        data.sessions_absent !== null ||
+        data.meeting_notes.trim() !== '')
+    )
   }
 
   return (

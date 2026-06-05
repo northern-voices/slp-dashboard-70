@@ -135,14 +135,12 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
                                   {format(parseDateSafely(meeting.meeting_date), 'MMM d, yyyy')}
                                 </p>
                                 <p>
-                                  <span className='font-medium'>Sessions:</span>{' '}
+                                  <span className='font-medium'>Sessions Attended:</span>{' '}
                                   {studentUpdate?.sessions_attended ?? 'N/A'}
                                 </p>
                                 <p>
-                                  <span className='font-medium'>Facilitator:</span>{' '}
-                                  {meeting.facilitator
-                                    ? `${meeting.facilitator.first_name} ${meeting.facilitator.last_name}`
-                                    : 'N/A'}
+                                  <span className='font-medium'>Sessions Absent:</span>{' '}
+                                  {studentUpdate?.sessions_absent ?? 'N/A'}
                                 </p>
                               </div>
                             </div>
@@ -159,22 +157,24 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
                             </div>
                           </TableCell>
                           <TableCell>
-                            {studentUpdate?.sessions_attended !== null &&
-                            studentUpdate?.sessions_attended !== undefined ? (
-                              <Badge className='bg-blue-100 text-blue-800 text-[10px]'>
-                                {studentUpdate.sessions_attended}{' '}
-                                {studentUpdate.sessions_attended === 1 ? 'session' : 'sessions'}
-                              </Badge>
-                            ) : (
-                              <span className='text-sm italic text-gray-500'>Not recorded</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <span className='text-sm text-gray-600'>
-                              {meeting.facilitator
-                                ? `${meeting.facilitator.first_name} ${meeting.facilitator.last_name}`
-                                : 'N/A'}
-                            </span>
+                            <div className='flex flex-col gap-1'>
+                              {studentUpdate?.sessions_attended !== null &&
+                              studentUpdate?.sessions_attended !== undefined ? (
+                                <Badge className='bg-blue-100 text-blue-800 text-[10px] w-fit'>
+                                  {studentUpdate.sessions_attended}{' '}
+                                  {studentUpdate.sessions_attended === 1 ? 'attended' : 'attended'}
+                                </Badge>
+                              ) : (
+                                <span className='text-sm italic text-gray-500'>Not recorded</span>
+                              )}
+                              {studentUpdate?.sessions_absent !== null &&
+                                studentUpdate?.sessions_absent !== undefined && (
+                                  <Badge className='bg-orange-100 text-orange-800 text-[10px] w-fit'>
+                                    {studentUpdate.sessions_absent}{' '}
+                                    {studentUpdate.sessions_absent === 1 ? 'absent' : 'absent'}
+                                  </Badge>
+                                )}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <DropdownMenu>
