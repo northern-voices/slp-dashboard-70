@@ -40,7 +40,14 @@ interface MeetingFormData {
   action_plan: string
 }
 
-type StudentData = Record<string, { sessions_attended: number | null; meeting_notes: string }>
+type StudentData = Record<
+  string,
+  {
+    sessions_attended: number | null
+    sessions_absent: number | null
+    meeting_notes: string
+  }
+>
 
 const EditMonthlyMeetingContent = () => {
   const [showStudentModal, setShowStudentModal] = useState(false)
@@ -140,10 +147,12 @@ const EditMonthlyMeetingContent = () => {
     }
 
     const fetchedStudentData: StudentData = {}
+
     if (meetingData.student_updates?.length > 0) {
       meetingData.student_updates.forEach(update => {
         fetchedStudentData[update.student_id] = {
           sessions_attended: update.sessions_attended,
+          sessions_absent: update.sessions_absent,
           meeting_notes: update.meeting_notes || '',
         }
       })
@@ -212,10 +221,16 @@ const EditMonthlyMeetingContent = () => {
     }
 
     const student_updates = Object.entries(studentData)
-      .filter(([_, d]) => d.sessions_attended !== null || d.meeting_notes.trim() !== '')
+      .filter(
+        ([_, d]) =>
+          d.sessions_attended !== null ||
+          d.sessions_absent !== null ||
+          d.meeting_notes.trim() !== ''
+      )
       .map(([student_id, d]) => ({
         student_id,
         sessions_attended: d.sessions_attended,
+        sessions_absent: d.sessions_absent,
         meeting_notes: d.meeting_notes.trim() || null,
       }))
 
