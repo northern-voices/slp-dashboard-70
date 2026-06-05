@@ -42,7 +42,14 @@ interface MeetingFormData {
   action_plan: string
 }
 
-type StudentData = Record<string, { sessions_attended: number | null; meeting_notes: string }>
+type StudentData = Record<
+  string,
+  {
+    sessions_attended: number | null
+    sessions_absent: number | null
+    meeting_notes: string
+  }
+>
 
 class PageErrorBoundary extends Component<
   { children: ReactNode },
@@ -209,10 +216,16 @@ const CreateMonthlyMeetingContent = () => {
     }
 
     const student_updates = Object.entries(studentData)
-      .filter(([_, d]) => d.sessions_attended !== null || d.meeting_notes.trim() !== '')
+      .filter(
+        ([_, d]) =>
+          d.sessions_attended !== null ||
+          d.sessions_absent !== null ||
+          d.meeting_notes.trim() !== ''
+      )
       .map(([student_id, d]) => ({
         student_id,
         sessions_attended: d.sessions_attended,
+        sessions_absent: d.sessions_absent,
         meeting_notes: d.meeting_notes.trim() || null,
       }))
 
@@ -279,7 +292,12 @@ const CreateMonthlyMeetingContent = () => {
 
   const hasStudentData = (studentId: string) => {
     const data = studentData[studentId]
-    return data && (data.sessions_attended !== null || data.meeting_notes.trim() !== '')
+    return (
+      data &&
+      (data.sessions_attended !== null ||
+        data.sessions_absent !== null ||
+        data.meeting_notes.trim() !== '')
+    )
   }
 
   return (
