@@ -20,8 +20,16 @@ import LastScreeningCard from '@/components/monthly-meetings/LastScreeningCard'
 import LastMeetingCard from '@/components/monthly-meetings/LastMeetingCard'
 import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
 import { Student } from '@/types/database'
+import { SelectTrigger } from '@radix-ui/react-select'
 
-type StudentData = Record<string, { sessions_attended: number | null; meeting_notes: string }>
+type StudentData = Record<
+  string,
+  {
+    sessions_attended: number | null
+    sessions_absent: number | null
+    meeting_notes: string
+  }
+>
 
 interface StudentDetailsModalProps {
   open: boolean
@@ -185,6 +193,31 @@ const StudentDetailsModal = ({
                 }
               }}
               placeholder='Enter number of sessions attended'
+            />
+          </div>
+
+          <div className='space-y-2'>
+            <Label htmlFor='modal_sessions_absent'>Sessions Absent</Label>
+            <Input
+              id='modal_sessions_absent'
+              type='number'
+              min='0'
+              value={
+                selectedStudent?.id ? (studentData[selectedStudent.id]?.sessions_absent ?? '') : ''
+              }
+              onChange={e => {
+                if (selectedStudent?.id) {
+                  const value = e.target.value === '' ? null : parseInt(e.target.value)
+                  setStudentData(prev => ({
+                    ...prev,
+                    [selectedStudent.id]: {
+                      ...prev[selectedStudent.id],
+                      sessions_absent: value,
+                    },
+                  }))
+                }
+              }}
+              placeholder='Enter number of sessions absent'
             />
           </div>
 
