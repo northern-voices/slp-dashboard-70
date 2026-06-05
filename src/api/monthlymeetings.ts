@@ -4,6 +4,7 @@ import { UserRole } from '@/types/database'
 export type StudentUpdatePayload = {
   student_id: string
   sessions_attended?: number | null
+  sessions_absent?: number | null
   meeting_notes?: string | null
 }
 
@@ -25,6 +26,7 @@ export interface StudentUpdate {
   id: string
   student_id: string
   sessions_attended: number | null
+  sessions_absent: number | null
   meeting_notes: string | null
   // Joined data
   student?: {
@@ -91,6 +93,7 @@ interface RawMonthlyMeeting {
     id: string
     student_id: string
     sessions_attended: number | null
+    sessions_absent: number | null
     meeting_notes: string | null
     students: {
       id: string
@@ -161,6 +164,7 @@ const transformMonthlyMeeting = (meeting: RawMonthlyMeeting): MonthlyMeeting => 
       id: update.id,
       student_id: update.student_id,
       sessions_attended: update.sessions_attended,
+      sessions_absent: update.sessions_absent,
       meeting_notes: update.meeting_notes,
       student: update.students
         ? {
@@ -206,6 +210,7 @@ export const monthlyMeetingsApi = {
             id,
             student_id,
             sessions_attended,
+            sessions_absent,
             meeting_notes,
             students (
               id,
@@ -276,6 +281,7 @@ export const monthlyMeetingsApi = {
             id,
             student_id,
             sessions_attended,
+            sessions_absent,
             meeting_notes,
             students (
               id,
@@ -342,6 +348,7 @@ export const monthlyMeetingsApi = {
               id: update.id,
               student_id: update.student_id,
               sessions_attended: update.sessions_attended,
+              sessions_absent: update.sessions_absent,
               meeting_notes: update.meeting_notes,
               student: update.students
                 ? {
@@ -400,6 +407,7 @@ export const monthlyMeetingsApi = {
             id,
             student_id,
             sessions_attended,
+            sessions_absent,
             meeting_notes,
             students (
               id,
@@ -541,6 +549,7 @@ export const monthlyMeetingsApi = {
           monthly_meeting_id: newMeeting.id,
           student_id: update.student_id,
           sessions_attended: update.sessions_attended || null,
+          sessions_absent: update.sessions_absent || null,
           meeting_notes: update.meeting_notes || null,
         }))
 
@@ -570,6 +579,7 @@ export const monthlyMeetingsApi = {
             id,
             student_id,
             sessions_attended,
+            sessions_absent,
             meeting_notes,
             students (
               id,
@@ -637,6 +647,7 @@ export const monthlyMeetingsApi = {
             monthly_meeting_id: id,
             student_id: update.student_id,
             sessions_attended: update.sessions_attended || null,
+            sessions_absent: update.sessions_absent || null,
             meeting_notes: update.meeting_notes || null,
           }))
 
@@ -664,6 +675,7 @@ export const monthlyMeetingsApi = {
             id,
             student_id,
             sessions_attended,
+            sessions_absent,
             meeting_notes,
             students (
               id,
@@ -753,6 +765,7 @@ export const monthlyMeetingsApi = {
         id: newUpdate.id,
         student_id: newUpdate.student_id,
         sessions_attended: newUpdate.sessions_attended,
+        sessions_absent: newUpdate.sessions_absent,
         meeting_notes: newUpdate.meeting_notes,
         student: newUpdate.students
           ? {
@@ -776,6 +789,7 @@ export const monthlyMeetingsApi = {
     id: string,
     data: Partial<{
       sessions_attended: number | null
+      sessions_absent: number | null
       meeting_notes: string | null
     }>
   ): Promise<StudentUpdate> => {
@@ -824,6 +838,7 @@ export const monthlyMeetingsApi = {
         id: updatedUpdate.id,
         student_id: updatedUpdate.student_id,
         sessions_attended: updatedUpdate.sessions_attended,
+        sessions_absent: updatedUpdate.sessions_absent,
         meeting_notes: updatedUpdate.meeting_notes,
         student: updatedUpdate.students
           ? {
