@@ -21,15 +21,7 @@ import LastMeetingCard from '@/components/monthly-meetings/LastMeetingCard'
 import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
 import { Student } from '@/types/database'
 import { SelectTrigger } from '@radix-ui/react-select'
-
-type StudentData = Record<
-  string,
-  {
-    sessions_attended: number | null
-    sessions_absent: number | null
-    meeting_notes: string
-  }
->
+import { type StudentData } from '@/api/monthlymeetings'
 
 interface StudentDetailsModalProps {
   open: boolean

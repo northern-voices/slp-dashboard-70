@@ -28,12 +28,7 @@ import CreateEADialog from '@/components/caseload/CreateEADialog'
 import { SelectSeparator } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
-
-interface StudentData {
-  sessions_attended: number | null
-  sessions_absent: number | null
-  meeting_notes: string
-}
+import { type StudentData } from '@/api/monthlymeetings'
 
 interface MonthlyMeetingsStudentTableProps {
   students: Student[]
