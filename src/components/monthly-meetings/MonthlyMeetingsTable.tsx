@@ -26,6 +26,7 @@ import MonthlyMeetingsSkeleton from '@/components/skeletons/MonthlyMeetingsSkele
 import MonthlyMeetingTableRow from '@/components/monthly-meetings/MonthlyMeetingTableRow'
 import MonthlyMeetingDeleteDialog from '@/components/monthly-meetings/MonthlyMeetingDeleteDialog'
 import MonthlyMeetingsSendReportDialog from '@/components/monthly-meetings/MonthlyMeetingsSendReportDialog'
+import SortControls, { SortOption } from '@/components/ui/SortControls'
 
 interface MonthlyMeetingsTableProps {
   searchTerm: string
@@ -40,7 +41,7 @@ const MonthlyMeetingsTable = ({
 }: MonthlyMeetingsTableProps) => {
   const { currentSchool } = useOrganization()
   const [selectedMeetings, setSelectedMeetings] = useState<MonthlyMeeting[]>([])
-  const [sortField, setSortField] = useState<'meeting_date' | 'meeting_title' | null>(null)
+  const [sortField, setSortField] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [selectedMeetingForDetails, setSelectedMeetingForDetails] = useState<MonthlyMeeting | null>(
     null
@@ -128,25 +129,6 @@ const MonthlyMeetingsTable = ({
     currentPage * pageSize
   )
 
-  const handleSort = (field: 'meeting_date' | 'meeting_title') => {
-    if (sortField !== field) {
-      setSortField(field)
-      setSortOrder('desc')
-    } else if (sortOrder === 'desc') {
-      setSortOrder('asc')
-    } else {
-      setSortField(null)
-      setSortOrder(null)
-    }
-  }
-
-  const getSortIcon = (field: 'meeting_date' | 'meeting_title') => {
-    if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
-    if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
-    if (sortOrder === 'desc') return <ChevronDown className='w-4 h-4' />
-    return <ChevronUp className='w-4 h-4 opacity-30' />
-  }
-
   // const getStatusBadge = (meetingDate: string) => {
   //   const now = new Date()
   //   const date = new Date(meetingDate)
@@ -208,6 +190,11 @@ const MonthlyMeetingsTable = ({
     )
   }
 
+  const sortOptions: SortOption[] = [
+    { label: 'Meeting Title', value: 'meeting_title', defaultDirection: 'asc' },
+    { label: 'Date', value: 'meeting_date', defaultDirection: 'desc' },
+  ]
+
   return (
     <div className='space-y-4'>
       {isSomeSelected && (
@@ -217,6 +204,14 @@ const MonthlyMeetingsTable = ({
           onClearSelection={() => setSelectedMeetings([])}
         />
       )}
+
+      <SortControls
+        sortField={sortField}
+        setSortField={setSortField}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        options={sortOptions}
+      />
 
       <div className='flex justify-end mb-3'>
         <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
@@ -231,29 +226,16 @@ const MonthlyMeetingsTable = ({
               <TableHead className='w-12'>
                 <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
               </TableHead>
-              <TableHead className='w-1/3 min-w-[200px]'>
-                <Button
-                  variant='ghost'
-                  onClick={() => handleSort('meeting_title')}
-                  className='h-auto p-0 font-medium hover:bg-transparent'>
-                  Meeting Title
-                  <span className='ml-1'>{getSortIcon('meeting_title')}</span>
-                </Button>
-              </TableHead>
+              <TableHead className='w-1/3 min-w-[200px]'>Meeting Title</TableHead>
 
               <TableHead className='w-1/6 min-w-[150px]'>Type</TableHead>
 
-              <TableHead className='w-1/6 min-w-[120px]'>
-                <Button
-                  variant='ghost'
-                  onClick={() => handleSort('meeting_date')}
-                  className='h-auto p-0 font-medium hover:bg-transparent'>
-                  Date
-                  <span className='ml-1'>{getSortIcon('meeting_date')}</span>
-                </Button>
-              </TableHead>
+              <TableHead className='w-1/6 min-w-[120px]'>Date</TableHead>
+
               <TableHead className='w-1/4 min-w-[180px]'>Attendees</TableHead>
+
               <TableHead className='w-1/6 min-w-[120px]'>Facilitator</TableHead>
+
               <TableHead className='w-12'></TableHead>
             </tr>
           </TableHeader>

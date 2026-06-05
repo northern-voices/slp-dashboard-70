@@ -34,7 +34,7 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
   const [selectedMeetingForDetails, setSelectedMeetingForDetails] = useState<MonthlyMeeting | null>(
-    null,
+    null
   )
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
@@ -101,7 +101,7 @@ const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetin
                     {meetings.map(meeting => {
                       // Find the student update for this specific student
                       const studentUpdate = meeting.student_updates?.find(
-                        update => update.student_id === studentId,
+                        update => update.student_id === studentId
                       )
 
                       return (
