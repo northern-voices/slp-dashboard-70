@@ -575,6 +575,16 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
       comparison = cA - cB
     }
 
+    if (sortField === 'speech_ea') {
+      const eaA = getSpeechEAName(a)
+      const eaB = getSpeechEAName(b)
+      // Students with no EA assigned goes to bottom
+      if (eaA === '-' && eaB === '-') comparison = 0
+      else if (eaA === '-') return 1
+      else if (eaB === '-') return -1
+      else comparison = eaA.localeCompare(eaB)
+    }
+
     return sortOrder === 'asc' ? comparison : -comparison
   })
 
@@ -607,6 +617,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     { label: 'Program Status', value: 'program_status', defaultDirection: 'asc' },
     { label: 'Result', value: 'result', defaultDirection: 'asc' },
     { label: 'Consent', value: 'consent', defaultDirection: 'asc' },
+    { label: 'Speech EA', value: 'speech_ea', defaultDirection: 'asc' },
   ]
 
   return (
