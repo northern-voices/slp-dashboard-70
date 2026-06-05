@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ChevronUp, ChevronDown } from 'lucide-react'
 import {
   ResponsiveTable,
   TableHeader,
@@ -23,6 +22,7 @@ import HearingScreeningsPagination from './HearingScreeningsPagination'
 import HearingScreeningDeleteDialog from './HearingScreeningDeleteDialog'
 import HearingScreeningTableRow from '@/components/screenings/hearing/HearingScreeningTableRow'
 import ConsentFormModal from '@/components/students/ConsentFormModal'
+import SortControls, { SortOption } from '@/components/ui/SortControls'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -49,7 +49,7 @@ const HearingScreeningsTable = ({
   setSelectedScreenings,
   deduplicateFilter,
 }: HearingScreeningsTableProps) => {
-  const [sortField, setSortField] = useState<'date' | 'name' | 'grade' | null>(null)
+  const [sortField, setSortField] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
@@ -240,18 +240,6 @@ const HearingScreeningsTable = ({
     currentPage * pageSize
   )
 
-  const handleSort = (field: 'date' | 'name' | 'grade') => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : sortOrder === 'desc' ? null : 'asc')
-      if (sortOrder === 'desc') {
-        setSortField(null)
-      }
-    } else {
-      setSortField(field)
-      setSortOrder('asc')
-    }
-  }
-
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedScreenings(paginatedScreenings)
@@ -354,15 +342,6 @@ const HearingScreeningsTable = ({
     setConsentStudent(student)
   }
 
-  const SortIcon = ({ field }: { field: 'date' | 'name' | 'grade' }) => {
-    if (sortField !== field) return null
-    return sortOrder === 'asc' ? (
-      <ChevronUp className='w-4 h-4 inline ml-1' />
-    ) : (
-      <ChevronDown className='w-4 h-4 inline ml-1' />
-    )
-  }
-
   if (isLoading) {
     return (
       <div className='flex justify-center items-center h-64'>
@@ -370,6 +349,12 @@ const HearingScreeningsTable = ({
       </div>
     )
   }
+
+  const sortOptions: SortOption[] = [
+    { label: 'Student Name', value: 'name', defaultDirection: 'asc' },
+    { label: 'Grade', value: 'grade', defaultDirection: 'asc' },
+    { label: 'Date', value: 'date', defaultDirection: 'desc' },
+  ]
 
   return (
     <div className='space-y-4'>
@@ -384,6 +369,14 @@ const HearingScreeningsTable = ({
           onClearSelection={() => setSelectedScreenings([])}
         />
       )}
+
+      <SortControls
+        sortField={sortField}
+        setSortField={setSortField}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        options={sortOptions}
+      />
 
       <div className='flex justify-end mb-3'>
         <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
@@ -404,15 +397,15 @@ const HearingScreeningsTable = ({
                   onCheckedChange={handleSelectAll}
                 />
               </TableHead>
-              <TableHead
-                className='cursor-pointer hover:bg-gray-50'
-                onClick={() => handleSort('name')}>
-                Student Info
-                <SortIcon field='name' />
-              </TableHead>
+
+              <TableHead>Student Info</TableHead>
+
               <TableHead className='min-w-[220px]'>Right Ear</TableHead>
+
               <TableHead className='min-w-[220px]'>Left Ear</TableHead>
+
               <TableHead className='w-[200px]'>Results</TableHead>
+
               {/* <TableHead>Screener</TableHead>
               <TableHead
                 className='cursor-pointer hover:bg-gray-50'
@@ -420,9 +413,11 @@ const HearingScreeningsTable = ({
                 Date
                 <SortIcon field='date' />
               </TableHead> */}
+
               <TableHead className='text-right'></TableHead>
             </tr>
           </TableHeader>
+
           <TableBody>
             {paginatedScreenings.length === 0 ? (
               <tr>
