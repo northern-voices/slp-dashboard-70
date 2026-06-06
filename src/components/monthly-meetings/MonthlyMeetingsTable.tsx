@@ -32,12 +32,14 @@ interface MonthlyMeetingsTableProps {
   searchTerm: string
   dateRangeFilter: string
   facilitatorFilter: string
+  meetingTypeFilter: string
 }
 
 const MonthlyMeetingsTable = ({
   searchTerm,
   dateRangeFilter,
   facilitatorFilter,
+  meetingTypeFilter,
 }: MonthlyMeetingsTableProps) => {
   const { currentSchool } = useOrganization()
   const [selectedMeetings, setSelectedMeetings] = useState<MonthlyMeeting[]>([])
@@ -59,7 +61,7 @@ const MonthlyMeetingsTable = ({
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, dateRangeFilter, facilitatorFilter, sortField, sortOrder])
+  }, [searchTerm, dateRangeFilter, facilitatorFilter, sortField, sortOrder, meetingTypeFilter])
 
   const {
     data: meetings = [],
@@ -83,6 +85,8 @@ const MonthlyMeetingsTable = ({
     const matchesFacilitator =
       facilitatorFilter === 'all' || meeting.facilitator_id === facilitatorFilter
 
+    const matchesType = meeting.meeting_type === meetingTypeFilter
+
     let matchesDateRange = true
     if (dateRangeFilter !== 'all' && dateRangeFilter !== 'school_year') {
       const meetingDate = new Date(meeting.meeting_date)
@@ -103,7 +107,7 @@ const MonthlyMeetingsTable = ({
       }
     }
 
-    return matchesSearch && matchesFacilitator && matchesDateRange
+    return matchesSearch && matchesFacilitator && matchesDateRange && matchesType
   })
 
   const sortedMeetings = [...filteredMeetings].sort((a, b) => {
@@ -117,6 +121,11 @@ const MonthlyMeetingsTable = ({
         return sortOrder === 'asc'
           ? (a.meeting_title || '').localeCompare(b.meeting_title || '')
           : (b.meeting_title || '').localeCompare(a.meeting_title || '')
+      case 'facilitator': {
+        const nameA = a.facilitator ? `${a.facilitator.last_name} ${a.facilitator.first_name}` : ''
+        const nameB = b.facilitator ? `${b.facilitator.last_name} ${b.facilitator.first_name}` : ''
+        return sortOrder === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA)
+      }
       default:
         return 0
     }
@@ -193,6 +202,7 @@ const MonthlyMeetingsTable = ({
   const sortOptions: SortOption[] = [
     { label: 'Meeting Title', value: 'meeting_title', defaultDirection: 'asc' },
     { label: 'Date', value: 'meeting_date', defaultDirection: 'desc' },
+    { label: 'Facilitator', value: 'facilitator', defaultDirection: 'asc' },
   ]
 
   return (
@@ -227,8 +237,6 @@ const MonthlyMeetingsTable = ({
                 <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
               </TableHead>
               <TableHead className='w-1/3 min-w-[200px]'>Meeting Title</TableHead>
-
-              <TableHead className='w-1/6 min-w-[150px]'>Type</TableHead>
 
               <TableHead className='w-1/6 min-w-[120px]'>Date</TableHead>
 

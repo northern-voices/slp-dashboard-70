@@ -10,7 +10,6 @@ import {
 import { ResponsiveTableRow, TableCell } from '@/components/ui/responsive-table'
 import { Eye, Mail, MoreHorizontal, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
-import { MeetingTypeBadge } from '@/utils/meetingTypes'
 
 interface MonthlyMeetingTableRowProps {
   meeting: MonthlyMeeting
@@ -70,11 +69,6 @@ const MonthlyMeetingTableRow = ({
           </div>
           <div className='text-sm text-gray-600 space-y-1'>
             <p>
-              <span className='font-medium'>Type:</span>{' '}
-              <MeetingTypeBadge type={meeting.meeting_type} />
-            </p>
-
-            <p>
               <span className='font-medium'>Date:</span>{' '}
               {format(new Date(meeting.meeting_date), 'MMM d, yyyy')}
             </p>
@@ -103,10 +97,6 @@ const MonthlyMeetingTableRow = ({
             {meeting.meeting_title}
           </div>
         </div>
-      </TableCell>
-
-      <TableCell>
-        <MeetingTypeBadge type={meeting.meeting_type} />
       </TableCell>
 
       <TableCell className='max-w-0'>
