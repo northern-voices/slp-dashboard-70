@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import MonthlyMeetingsFilters from '@/components/monthly-meetings/MonthlyMeetingsFilters'
 import MonthlyMeetingsTable from '@/components/monthly-meetings/MonthlyMeetingsTable'
 
@@ -13,13 +14,7 @@ const MonthlyMeetingsContent = () => {
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
   const [facilitatorFilter, setFacilitatorFilter] = useState('all')
 
-  const userRole = userProfile?.role || 'slp'
-  const userName = userProfile
-    ? `${userProfile.first_name} ${userProfile.last_name}`
-    : 'Dr. Sarah Johnson'
-
   const handleCreateMeeting = () => {
-    // Navigate with school context if available
     if (currentSchool?.id) {
       navigate(`/school/${currentSchool.id}/monthly-meetings/create`)
     } else {
@@ -45,28 +40,42 @@ const MonthlyMeetingsContent = () => {
         </div>
       </div>
 
-      <div className='space-y-6'>
-        <MonthlyMeetingsFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          dateRangeFilter={dateRangeFilter}
-          setDateRangeFilter={setDateRangeFilter}
-          facilitatorFilter={facilitatorFilter}
-          setFacilitatorFilter={setFacilitatorFilter}
-        />
+      <Tabs defaultValue='progress_checkin' className='space-y-6'>
+        <TabsList className='flex-wrap justify-start w-full h-auto p-1'>
+          <TabsTrigger value='progress_checkin' className='flex-shrink-0'>
+            Progress Check-in
+          </TabsTrigger>
+          <TabsTrigger value='coaching_call' className='flex-shrink-0'>
+            Coaching Call
+          </TabsTrigger>
+          <TabsTrigger value='school_visit_summary' className='flex-shrink-0'>
+            School Visit Summary
+          </TabsTrigger>
+        </TabsList>
 
-        <MonthlyMeetingsTable
-          searchTerm={searchTerm}
-          dateRangeFilter={dateRangeFilter}
-          facilitatorFilter={facilitatorFilter}
-        />
-      </div>
+        {(['progress_checkin', 'coaching_call', 'school_visit_summary'] as const).map(type => (
+          <TabsContent key={type} value={type} className='space-y-6'>
+            <MonthlyMeetingsFilters
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              dateRangeFilter={dateRangeFilter}
+              setDateRangeFilter={setDateRangeFilter}
+              facilitatorFilter={facilitatorFilter}
+              setFacilitatorFilter={setFacilitatorFilter}
+            />
+            <MonthlyMeetingsTable
+              searchTerm={searchTerm}
+              dateRangeFilter={dateRangeFilter}
+              facilitatorFilter={facilitatorFilter}
+              meetingTypeFilter={type}
+            />
+          </TabsContent>
+        ))}
+      </Tabs>
     </main>
   )
 }
 
-const MonthlyMeetings = () => {
-  return <MonthlyMeetingsContent />
-}
+const MonthlyMeetings = () => <MonthlyMeetingsContent />
 
 export default MonthlyMeetings
