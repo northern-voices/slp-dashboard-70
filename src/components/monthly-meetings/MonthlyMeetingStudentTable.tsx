@@ -33,7 +33,7 @@ import { type StudentData } from '@/api/monthlymeetings'
 interface MonthlyMeetingsStudentTableProps {
   students: Student[]
   isLoading: boolean
-  studentData: Record<string, StudentData>
+  studentData: StudentData
   onStudentClick: (student: Student) => void
   hasStudentData: (studentId: string) => boolean
   schoolId?: string
