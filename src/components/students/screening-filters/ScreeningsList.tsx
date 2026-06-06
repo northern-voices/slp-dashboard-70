@@ -244,17 +244,10 @@ const ScreeningsList = ({
   }
 
   const getProgramValue = (screening: Screening): string => {
-    const metadata = screening.error_patterns?.screening_metadata
-    const consent = screening.error_patterns?.consent
+    const status = screening.program_status
+    if (!status || status === 'none') return 'none'
 
-    if (consent?.no_consent) return 'no_consent'
-    if (metadata?.graduated) return 'graduated'
-    if (metadata?.paused) return 'paused'
-    if (metadata?.sub) return 'sub'
-    if (metadata?.qualifies_for_speech_program) return 'qualified'
-    if (metadata?.qualifies_for_speech_program === false) return 'not_in_program'
-
-    return 'none'
+    return status
   }
 
   const getProgramSelector = (screening: Screening) => {
@@ -329,11 +322,7 @@ const ScreeningsList = ({
     return getResultBadge(screening.result)
   }
 
-  const extendedProgramOptions = [
-    ...PROGRAM_OPTIONS,
-    { value: 'paused', label: 'Pause' },
-    { value: 'graduated', label: 'Graduated' },
-  ]
+  const extendedProgramOptions = [...PROGRAM_OPTIONS]
 
   // Apply filters to the speech screenings
   const filteredSpeechScreenings = speechScreenings.filter(screening => {
@@ -803,31 +792,16 @@ const ScreeningsList = ({
   }
 
   const getQualificationBadge = (screening: Screening) => {
-    const programStatus = screening.program_status
-    const serviceStatus = screening.service_status
+    if (screening.program_status === 'no_consent')
+      return <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
+    if (screening.program_status === 'sub')
+      return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
+    if (screening.program_status === 'qualified')
+      return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
 
-    if (serviceStatus === 'graduated')
-      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-    if (serviceStatus === 'paused')
-      return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
-
-    switch (programStatus) {
-      case 'no_consent':
-        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>No Consent</Badge>
-      case 'sub':
-        return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
-      case 'qualified':
-        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
-      case 'not_in_program':
-        return (
-          <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
-            Not In Program
-          </Badge>
-        )
-      case 'none':
-      default:
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Not Set</Badge>
-    }
+    return (
+      <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Not In Program</Badge>
+    )
   }
 
   // Helper functions for hearing screenings

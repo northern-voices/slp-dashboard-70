@@ -48,6 +48,40 @@ interface RawSpeechScreening {
 const mapProgramStatus = (raw?: ProgramStatus | null): ProgramStatus => raw || 'none'
 const mapServiceStatus = (raw?: ServiceStatus | null): ServiceStatus => raw || 'none'
 
+const deriveProgramFromErrorPatterns = (
+  errorPatterns: ErrorPatterns | null | undefined
+): ProgramStatus => {
+  const metadata = errorPatterns?.screening_metadata
+  const consent = errorPatterns?.consent
+
+  if (consent?.no_consent) return 'no_consent'
+  if (metadata?.sub) return 'sub'
+  if (metadata?.qualifies_for_speech_program === true) return 'qualified'
+  return 'none'
+}
+
+const applyPerScreeningProgramStatus = (screenings: Screening[]): Screening[] => {
+  const byStudent = new Map<string, Screening[]>()
+  for (const s of screenings) {
+    if (!byStudent.has(s.student_id)) byStudent.set(s.student_id, [])
+    byStudent.get(s.student_id)!.push(s)
+  }
+
+  return screenings.map(screening => {
+    const studentScreenings = byStudent.get(screening.student_id) || []
+    const latest = [...studentScreenings].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )[0]
+
+    if (latest?.id === screening.id) return screening
+
+    return {
+      ...screening,
+      program_status: deriveProgramFromErrorPatterns(screening.error_patterns),
+    }
+  })
+}
+
 // Helper function to get user's organization schools
 const getUserOrganizationSchools = async (organizationId: string): Promise<string[]> => {
   try {
@@ -220,7 +254,7 @@ export const speechScreeningsApi = {
         )
       }
 
-      return data && transformedData
+      return data && applyPerScreeningProgramStatus(transformedData)
     } catch (error) {
       console.error('Error fetching speech screenings:', error)
       throw error
@@ -309,7 +343,7 @@ export const speechScreeningsApi = {
         service_status: mapServiceStatus(screening.students?.service_status),
       }))
 
-      return transformedData
+      return applyPerScreeningProgramStatus(transformedData)
     } catch (error) {
       console.error('Error fetching speech screenings by student:', error)
       throw error
@@ -752,7 +786,7 @@ export const speechScreeningsApi = {
         service_status: mapServiceStatus(screening.students?.service_status),
       }))
 
-      return { data: transformedData, totalCount: count ?? 0 }
+      return { data: applyPerScreeningProgramStatus(transformedData), totalCount: count ?? 0 }
     } catch (error) {
       console.error('Error fetching speech screenings by school:', error)
       throw error
