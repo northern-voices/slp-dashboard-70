@@ -429,6 +429,7 @@ const EditMonthlyMeetingContent = () => {
                               setShowStudentModal(true)
                             }}
                             hasStudentData={hasStudentData}
+                            schoolId={currentSchool?.id}
                             studentIdsWithConsent={studentIdsWithConsent}
                           />
                         </div>
