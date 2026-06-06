@@ -121,6 +121,11 @@ const MonthlyMeetingsTable = ({
         return sortOrder === 'asc'
           ? (a.meeting_title || '').localeCompare(b.meeting_title || '')
           : (b.meeting_title || '').localeCompare(a.meeting_title || '')
+      case 'facilitator': {
+        const nameA = a.facilitator ? `${a.facilitator.last_name} ${a.facilitator.first_name}` : ''
+        const nameB = b.facilitator ? `${b.facilitator.last_name} ${b.facilitator.first_name}` : ''
+        return sortOrder === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA)
+      }
       default:
         return 0
     }
@@ -197,6 +202,7 @@ const MonthlyMeetingsTable = ({
   const sortOptions: SortOption[] = [
     { label: 'Meeting Title', value: 'meeting_title', defaultDirection: 'asc' },
     { label: 'Date', value: 'meeting_date', defaultDirection: 'desc' },
+    { label: 'Facilitator', value: 'facilitator', defaultDirection: 'asc' },
   ]
 
   return (
