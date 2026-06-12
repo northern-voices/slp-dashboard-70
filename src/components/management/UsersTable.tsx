@@ -109,7 +109,7 @@ const UsersTable = ({
         )
       case 'hearing_technician':
         return (
-          <Badge className='font-medium bg-sky-50 text-sky-700 border-sky-200'>
+          <Badge className='font-medium bg-sky-50 text-sky-700 border-sky-200 whitespace-nowrap'>
             Hearing Technician
           </Badge>
         )
