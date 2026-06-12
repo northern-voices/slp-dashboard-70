@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { ChevronUp, ChevronDown, MoreHorizontal, Loader2, FileCheck, FileX } from 'lucide-react'
+import { MoreHorizontal, Loader2, FileCheck, FileX } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +49,7 @@ import CaseloadStats from './CaseloadStats'
 import CaseloadFilters from './CaseloadFilter'
 import CreateEADialog from './CreateEADialog'
 import ConsentFormModal from '../students/ConsentFormModal'
+import SortControls, { SortOption } from '@/components/ui/SortControls'
 
 interface CaseloadTableProps {
   students: Student[]
@@ -59,9 +60,7 @@ interface CaseloadTableProps {
 
 const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTableProps) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
-  const [sortField, setSortField] = useState<
-    'grade' | 'program_status' | 'name' | 'result' | 'consent' | null
-  >('program_status')
+  const [sortField, setSortField] = useState<string | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(50)
@@ -282,20 +281,6 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     return `${startYear}-${String(startYear + 1).slice(2)}`
   }
 
-  const handleSort = (field: 'grade' | 'program_status' | 'name' | 'result' | 'consent') => {
-    if (sortField !== field) {
-      setSortField(field)
-      setSortOrder('desc')
-    } else if (sortOrder === 'desc') {
-      setSortOrder('asc')
-    } else {
-      setSortField(null)
-      setSortOrder(null)
-    }
-
-    setCurrentPage(1)
-  }
-
   const handleResultChange = (student: Student, newResult: string) => {
     const screening = latestScreeningByStudent.get(student.id)
     if (!screening) return
@@ -404,13 +389,6 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         },
       }
     )
-  }
-
-  const getSortIcon = (field: 'grade' | 'program_status' | 'name' | 'result' | 'consent') => {
-    if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
-    if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
-
-    return <ChevronDown className='w-4 h-4' />
   }
 
   const hasActiveFilters =
@@ -597,6 +575,16 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
       comparison = cA - cB
     }
 
+    if (sortField === 'speech_ea') {
+      const eaA = getSpeechEAName(a)
+      const eaB = getSpeechEAName(b)
+      // Students with no EA assigned goes to bottom
+      if (eaA === '-' && eaB === '-') comparison = 0
+      else if (eaA === '-') return 1
+      else if (eaB === '-') return -1
+      else comparison = eaA.localeCompare(eaB)
+    }
+
     return sortOrder === 'asc' ? comparison : -comparison
   })
 
@@ -622,6 +610,15 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     startIndex,
     startIndex + effectiveItemsPerPage
   )
+
+  const sortOptions: SortOption[] = [
+    { label: 'Student', value: 'name', defaultDirection: 'asc' },
+    { label: 'Grade', value: 'grade', defaultDirection: 'asc' },
+    { label: 'Program Status', value: 'program_status', defaultDirection: 'asc' },
+    { label: 'Result', value: 'result', defaultDirection: 'asc' },
+    { label: 'Consent', value: 'consent', defaultDirection: 'asc' },
+    { label: 'Speech EA', value: 'speech_ea', defaultDirection: 'asc' },
+  ]
 
   return (
     <div className='space-y-4'>
@@ -650,6 +647,14 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         onPageReset={() => setCurrentPage(1)}
       />
 
+      <SortControls
+        sortField={sortField}
+        setSortField={setSortField}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        options={sortOptions}
+      />
+
       <div className='flex justify-end mb-3'>
         <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
           {totalStudents} student{totalStudents !== 1 ? 's' : ''} found
@@ -660,58 +665,17 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         <ResponsiveTable className='w-full'>
           <TableHeader>
             <tr>
-              <TableHead className='w-1/5 min-w-[180px]'>
-                <Button
-                  variant='ghost'
-                  onClick={() => handleSort('name')}
-                  className='h-auto p-0 font-medium hover:bg-transparent'>
-                  Student
-                  <span className='ml-1'>{getSortIcon('name')}</span>
-                </Button>
-              </TableHead>
+              <TableHead className='w-1/5 min-w-[180px]'>Student</TableHead>
 
-              <TableHead className='w-[55px]'>
-                <Button
-                  variant='ghost'
-                  onClick={() => handleSort('grade')}
-                  className='h-auto p-0 font-medium hover:bg-transparent'>
-                  Grade
-                  <span className='ml-1'>{getSortIcon('grade')}</span>
-                </Button>
-              </TableHead>
+              <TableHead className='w-[55px]'>Grade</TableHead>
 
-              <TableHead className='w-[70px]'>
-                <Button
-                  variant='ghost'
-                  onClick={() => handleSort('program_status')}
-                  className='h-auto p-0 font-medium hover:bg-transparent'>
-                  Program
-                  <span className='ml-1'>{getSortIcon('program_status')}</span>
-                </Button>
-              </TableHead>
+              <TableHead className='w-[70px]'>Program</TableHead>
 
-              <TableHead className='w-[190px]'>
-                <Button
-                  variant='ghost'
-                  onClick={() => handleSort('result')}
-                  className='h-auto p-0 font-medium hover:bg-transparent'>
-                  Result
-                  <span className='ml-1'>{getSortIcon('result')}</span>
-                </Button>
-              </TableHead>
+              <TableHead className='w-[190px]'>Result</TableHead>
 
               <TableHead className='w-[55px]'>Status</TableHead>
 
-              <TableHead className='w-[55px] text-center'>
-                <Button
-                  variant='ghost'
-                  onClick={() => handleSort('consent')}
-                  className='h-auto p-0 font-medium hover:bg-transparent'>
-                  <span className='inline-block w-4 h-4 mr-1 opacity-0' />
-                  Consent
-                  <span className='ml-1'>{getSortIcon('consent')}</span>
-                </Button>
-              </TableHead>
+              <TableHead className='w-[55px] text-center'>Consent</TableHead>
 
               <TableHead className='w-[150px]'>Speech EA</TableHead>
 

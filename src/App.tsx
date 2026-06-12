@@ -49,6 +49,7 @@ import EditMonthlyMeeting from './pages/monthly-meetings/EditMonthlyMeeting'
 import Caseload from './pages/Caseload'
 import GoalSheets from './pages/GoalSheets'
 import SchoolWideGoalSheets from './pages/SchoolWideGoalSheets'
+import RoleGuard from './components/auth/RoleGuard'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -625,7 +626,9 @@ const App = () => (
                     path='/management'
                     element={
                       <SchoolRouter>
-                        <Management />
+                        <RoleGuard allowedRoles={['admin', 'super_admin']}>
+                          <Management />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -650,7 +653,9 @@ const App = () => (
                     path='/school/:schoolId/management'
                     element={
                       <SchoolRouter>
-                        <Management />
+                        <RoleGuard allowedRoles={['admin', 'super_admin']}>
+                          <Management />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />

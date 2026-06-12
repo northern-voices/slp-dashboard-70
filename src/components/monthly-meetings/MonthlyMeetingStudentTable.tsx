@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { FileCheck, FileX, ChevronUp, ChevronDown, CheckCircle2, UserPlus } from 'lucide-react'
+import { FileCheck, FileX, CheckCircle2, UserPlus } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -27,16 +27,13 @@ import { useUpdateStudent } from '@/hooks/students'
 import CreateEADialog from '@/components/caseload/CreateEADialog'
 import { SelectSeparator } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-
-interface StudentData {
-  sessions_attended: number | null
-  meeting_notes: string
-}
+import SortControls, { SortOption } from '@/components/ui/SortControls'
+import { type StudentData } from '@/api/monthlymeetings'
 
 interface MonthlyMeetingsStudentTableProps {
   students: Student[]
   isLoading: boolean
-  studentData: Record<string, StudentData>
+  studentData: StudentData
   onStudentClick: (student: Student) => void
   hasStudentData: (studentId: string) => boolean
   schoolId?: string
@@ -55,7 +52,7 @@ const MonthlyMeetingsStudentTable = ({
   studentIdsWithConsent = [],
 }: MonthlyMeetingsStudentTableProps) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
-  const [sortField, setSortField] = useState<'grade' | 'program_status' | null>('program_status')
+  const [sortField, setSortField] = useState<string | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>('all')
@@ -153,31 +150,6 @@ const MonthlyMeetingsStudentTable = ({
     })
     return map
   }, [screenings])
-
-  const handleSort = (field: 'grade' | 'program_status') => {
-    if (sortField !== field) {
-      setSortField(field)
-      setSortOrder('desc')
-    } else if (sortOrder === 'desc') {
-      setSortOrder('asc')
-    } else if (sortOrder === 'asc') {
-      setSortField(null)
-      setSortOrder(null)
-    }
-    setCurrentPage(1)
-  }
-
-  const getSortIcon = (field: 'grade' | 'program_status') => {
-    if (sortField !== field) {
-      return <ChevronUp className='w-4 h-4 opacity-30' />
-    }
-    if (sortOrder === 'asc') {
-      return <ChevronUp className='w-4 h-4' />
-    } else if (sortOrder === 'desc') {
-      return <ChevronDown className='w-4 h-4' />
-    }
-    return <ChevronUp className='w-4 h-4 opacity-30' />
-  }
 
   // Helper function to get student's current grade
   const getStudentGrade = (student: Student): string => {
@@ -307,34 +279,31 @@ const MonthlyMeetingsStudentTable = ({
     )
   }
 
+  const sortOptions: SortOption[] = [
+    { label: 'Grade', value: 'grade', defaultDirection: 'asc' },
+    { label: 'Program Status', value: 'program_status', defaultDirection: 'asc' },
+  ]
+
   return (
     <div className='space-y-4'>
+      <div className='flex justify-end mt-4'>
+        <SortControls
+          sortField={sortField}
+          setSortField={setSortField}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          options={sortOptions}
+        />
+      </div>
+
       <ResponsiveTable className='w-full'>
         <TableHeader>
           <tr>
             <TableHead className='w-1/2'>Name</TableHead>
 
-            <TableHead className='w-1/2'>
-              <Button
-                type='button'
-                variant='ghost'
-                onClick={() => handleSort('grade')}
-                className='h-auto p-0 font-medium hover:bg-transparent'>
-                Grade
-                <span className='ml-1'>{getSortIcon('grade')}</span>
-              </Button>
-            </TableHead>
+            <TableHead className='w-1/2'>Grade</TableHead>
 
-            <TableHead className='pr-10'>
-              <Button
-                type='button'
-                variant='ghost'
-                onClick={() => handleSort('program_status')}
-                className='h-auto p-0 font-medium hover:bg-transparent'>
-                Program Status
-                <span className='ml-1'>{getSortIcon('program_status')}</span>
-              </Button>
-            </TableHead>
+            <TableHead className='pr-10'>Program Status</TableHead>
 
             <TableHead className='w-[60px] text-center font-medium'>Consent</TableHead>
 

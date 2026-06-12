@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { User, Settings as SettingsIcon, /* HandHeart, */ Menu } from 'lucide-react'
+import { User, Settings as SettingsIcon, /* HandHeart, */ Menu, Building2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,13 +16,13 @@ import MobileNavMenu from '@/components/navigation/MobileNavMenu'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown'
 import { ScreeningFormData } from '@/types/screening'
 import { useToast } from '@/hooks/use-toast'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserRole } from '@/types/database'
 
 interface HeaderProps {
-  userRole?: UserRole
+  userRole?: UserRole | null
   userName?: string
   className?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,8 +41,15 @@ const Header = ({
   const { toast } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
-  const { currentSchool } = useOrganization()
+  const { currentSchool, userProfile: orgUserProfile, isLoading } = useOrganization()
   const { logout } = useAuth()
+  const [resolvedRole, setResolvedRole] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isLoading && orgUserProfile?.role) {
+      setResolvedRole(orgUserProfile.role)
+    }
+  }, [isLoading, orgUserProfile?.role])
 
   const initials = userName
     .split(' ')
@@ -195,6 +202,16 @@ const Header = ({
                     Settings
                   </a>
                 </DropdownMenuItem>
+                {(resolvedRole === 'admin' || resolvedRole === 'super_admin') && (
+                  <DropdownMenuItem
+                    className='text-gray-700 hover:bg-gray-50 focus:bg-gray-50 rounded-lg px-3 py-2'
+                    asChild>
+                    <Link to='/management' className='flex items-center'>
+                      <Building2 className='mr-3 h-4 w-4' />
+                      Management
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator className='bg-gray-100 my-2' />
                 <DropdownMenuItem
                   onClick={logout}

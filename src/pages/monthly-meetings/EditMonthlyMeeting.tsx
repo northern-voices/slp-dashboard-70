@@ -29,6 +29,7 @@ import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDi
 import { useGetMonthlyMeetingById } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { MeetingTypeBadge } from '@/utils/meetingTypes'
+import { type StudentData, buildStudentUpdates } from '@/api/monthlymeetings'
 
 interface MeetingFormData {
   meeting_title: string
@@ -39,8 +40,6 @@ interface MeetingFormData {
   additional_notes: string
   action_plan: string
 }
-
-type StudentData = Record<string, { sessions_attended: number | null; meeting_notes: string }>
 
 const EditMonthlyMeetingContent = () => {
   const [showStudentModal, setShowStudentModal] = useState(false)
@@ -140,10 +139,12 @@ const EditMonthlyMeetingContent = () => {
     }
 
     const fetchedStudentData: StudentData = {}
+
     if (meetingData.student_updates?.length > 0) {
       meetingData.student_updates.forEach(update => {
         fetchedStudentData[update.student_id] = {
           sessions_attended: update.sessions_attended,
+          sessions_absent: update.sessions_absent,
           meeting_notes: update.meeting_notes || '',
         }
       })
@@ -211,13 +212,7 @@ const EditMonthlyMeetingContent = () => {
       return
     }
 
-    const student_updates = Object.entries(studentData)
-      .filter(([_, d]) => d.sessions_attended !== null || d.meeting_notes.trim() !== '')
-      .map(([student_id, d]) => ({
-        student_id,
-        sessions_attended: d.sessions_attended,
-        meeting_notes: d.meeting_notes.trim() || null,
-      }))
+    const student_updates = buildStudentUpdates(studentData)
 
     const submitData = {
       meeting_title: data.meeting_title.trim(),
@@ -434,6 +429,7 @@ const EditMonthlyMeetingContent = () => {
                               setShowStudentModal(true)
                             }}
                             hasStudentData={hasStudentData}
+                            schoolId={currentSchool?.id}
                             studentIdsWithConsent={studentIdsWithConsent}
                           />
                         </div>

@@ -43,6 +43,7 @@ import DeleteScreeningDialog from './DeleteScreeningDialog'
 import ScreeningTableRow from './ScreeningTableRow'
 import { useScreeningsFilter } from '@/hooks/screenings/use-screenings-filter'
 import ConsentFormModal from '@/components/students/ConsentFormModal'
+import SortControls, { SortOption } from '@/components/ui/SortControls'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -185,7 +186,8 @@ const ScreeningsTable = ({
     sortedScreenings,
     sortField,
     sortOrder,
-    handleSort,
+    setSortField,
+    setSortOrder,
     getScreeningGrade,
   } = useScreeningsFilter({
     screenings: schoolScreenings,
@@ -225,13 +227,6 @@ const ScreeningsTable = ({
   ])
 
   const paginatedScreenings = sortedScreenings
-
-  const getSortIcon = (field: 'date' | 'name' | 'grade') => {
-    if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
-    if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
-    if (sortOrder === 'desc') return <ChevronDown className='w-4 h-4' />
-    return <ChevronUp className='w-4 h-4 opacity-30' />
-  }
 
   const getResultBadge = (result?: string) => {
     if (!result) return null
@@ -779,6 +774,12 @@ const ScreeningsTable = ({
     paginatedScreenings.every(s => selectedScreenings.some(sel => sel.id === s.id))
   const isSomeSelected = selectedScreenings.length > 0
 
+  const sortOptions: SortOption[] = [
+    { label: 'Student', value: 'name', defaultDirection: 'asc' },
+    { label: 'Grade', value: 'grade', defaultDirection: 'asc' },
+    { label: 'Date', value: 'date', defaultDirection: 'desc' },
+  ]
+
   if (isLoading) {
     return <ScreeningsTableSkeleton />
   }
@@ -809,6 +810,14 @@ const ScreeningsTable = ({
           />
         )}
 
+        <SortControls
+          sortField={sortField}
+          setSortField={setSortField}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          options={sortOptions}
+        />
+
         <div className='flex justify-end mb-3'>
           <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
             {filteredScreenings.length} screening{filteredScreenings.length !== 1 ? 's' : ''} found
@@ -822,35 +831,12 @@ const ScreeningsTable = ({
                 <TableHead className='w-12'>
                   <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
                 </TableHead>
-                <TableHead className='w-1/4 min-w-[200px]'>
-                  <Button
-                    variant='ghost'
-                    onClick={() => handleSort('name')}
-                    className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
-                    Student
-                    <span className='ml-1'>{getSortIcon('name')}</span>
-                  </Button>
-                </TableHead>
+                <TableHead className='w-1/4 min-w-[200px]'>Student</TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
-                <TableHead className='w-1/6 min-w-[80px]'>
-                  <Button
-                    variant='ghost'
-                    onClick={() => handleSort('grade')}
-                    className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
-                    Grade
-                    <span className='ml-1'>{getSortIcon('grade')}</span>
-                  </Button>
-                </TableHead>
-                <TableHead className='w-1/6 min-w-[100px]'>
-                  <Button
-                    variant='ghost'
-                    onClick={() => handleSort('date')}
-                    className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
-                    Date
-                    <span className='ml-1'>{getSortIcon('date')}</span>
-                  </Button>
-                </TableHead>
+                <TableHead className='w-1/6 min-w-[80px]'>Grade</TableHead>
+                <TableHead className='w-1/6 min-w-[100px]'>Date</TableHead>
+
                 <TableHead className='w-1/6 min-w-[120px] bg-gray-25/80'>Screener</TableHead>
                 <TableHead className='w-12'></TableHead>
               </tr>

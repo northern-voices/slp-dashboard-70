@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useLocation } from 'react-router-dom'
@@ -9,24 +9,30 @@ import { getNavigationGroups } from './sidebar/sidebarNavigationData'
 import { UserRole } from '@/types/database'
 
 interface AppSidebarProps {
-  userRole?: UserRole
+  userRole?: UserRole | null
   userName?: string
   className?: string
 }
 
 const AppSidebar = ({
-  userRole = 'slp',
   userName = 'Dr. Sarah Johnson',
   className,
 }: AppSidebarProps) => {
-  const { userProfile, currentSchool } = useOrganization()
+  const { userProfile, currentSchool, isLoading } = useOrganization()
   const location = useLocation()
+  const [resolvedRole, setResolvedRole] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isLoading && userProfile?.role) {
+      setResolvedRole(userProfile.role)
+    }
+  }, [isLoading, userProfile?.role])
 
   const navigationGroups = getNavigationGroups(
     location,
-    userRole,
+    resolvedRole,
     userProfile as unknown as Record<string, unknown>,
-    currentSchool,
+    currentSchool
   )
 
   return (
