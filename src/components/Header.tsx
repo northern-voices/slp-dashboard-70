@@ -16,7 +16,7 @@ import MobileNavMenu from '@/components/navigation/MobileNavMenu'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown'
 import { ScreeningFormData } from '@/types/screening'
 import { useToast } from '@/hooks/use-toast'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserRole } from '@/types/database'
@@ -206,10 +206,10 @@ const Header = ({
                   <DropdownMenuItem
                     className='text-gray-700 hover:bg-gray-50 focus:bg-gray-50 rounded-lg px-3 py-2'
                     asChild>
-                    <a href='/management' className='flex items-center'>
+                    <Link to='/management' className='flex items-center'>
                       <Building2 className='mr-3 h-4 w-4' />
                       Management
-                    </a>
+                    </Link>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator className='bg-gray-100 my-2' />
