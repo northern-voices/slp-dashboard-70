@@ -9,7 +9,7 @@ import { getNavigationGroups } from './sidebar/sidebarNavigationData'
 import { UserRole } from '@/types/database'
 
 interface AppSidebarProps {
-  userRole?: UserRole
+  userRole?: UserRole | null
   userName?: string
   className?: string
 }
@@ -26,7 +26,7 @@ const AppSidebar = ({
     location,
     userRole,
     userProfile as unknown as Record<string, unknown>,
-    currentSchool,
+    currentSchool
   )
 
   return (

@@ -22,7 +22,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { UserRole } from '@/types/database'
 
 interface HeaderProps {
-  userRole?: UserRole
+  userRole?: UserRole | null
   userName?: string
   className?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
