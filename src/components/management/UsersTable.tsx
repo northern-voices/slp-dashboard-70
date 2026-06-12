@@ -107,6 +107,12 @@ const UsersTable = ({
         return (
           <Badge className='font-medium bg-rose-50 text-rose-700 border-rose-200'>Root Admin</Badge>
         )
+      case 'hearing_technician':
+        return (
+          <Badge className='font-medium bg-sky-50 text-sky-700 border-sky-200'>
+            Hearing Technician
+          </Badge>
+        )
       default:
         return <Badge variant='secondary'>{role}</Badge>
     }
