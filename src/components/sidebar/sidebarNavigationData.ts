@@ -121,18 +121,6 @@ export const getNavigationGroups = (
     //     (useSchoolRoutes &&
     //       location.pathname.startsWith(`/school/${currentSchool.id}/school-support`)),
     // },
-    ...(userRole === 'admin' || userRole === 'super_admin'
-      ? [
-          {
-            title: 'Management',
-            url: useSchoolRoutes ? `/school/${currentSchool.id}/management` : '/management',
-            icon: Building2,
-            isActive:
-              location.pathname === '/management' ||
-              (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/management`),
-          },
-        ]
-      : []),
   ]
 
   const groups: NavigationGroup[] = [
