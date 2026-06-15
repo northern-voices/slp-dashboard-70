@@ -307,9 +307,38 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   const handleProgramChange = (student: Student, newProgram: ProgramStatus) => {
     const screening = latestScreeningByStudent.get(student.id)
-    if (!screening) return
+    if (!screening && newProgram !== 'no_consent') return
 
     setUpdatingStudentId(student.id)
+
+    const doStudentUpdate = () => {
+      updateStudent(
+        {
+          id: student.id,
+          studentData: { program_status: newProgram, service_status: null },
+        },
+        {
+          onSuccess: () => {
+            setUpdatingStudentId(null)
+            toast({ title: 'Program updated' })
+          },
+          onError: () => {
+            setUpdatingStudentId(null)
+            toast({
+              title: 'Warning',
+              description: 'Failed to update the student',
+              variant: 'destructive',
+            })
+          },
+        }
+      )
+    }
+
+    if (!screening) {
+      doStudentUpdate()
+      return
+    }
+
     const currentErrorPatterns = screening.error_patterns || ({} as ErrorPatterns)
 
     const cleanErrorPatterns: Partial<ErrorPatterns> = {
@@ -347,7 +376,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                 setUpdatingStudentId(null)
                 toast({
                   title: 'Warning',
-                  description: 'Screening update but failed to update the student',
+                  description: 'Failed to update the student',
                   variant: 'destructive',
                 })
               },
