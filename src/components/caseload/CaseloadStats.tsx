@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, Clock, PauseCircle } from 'lucide-react'
+import { CheckCircle, Clock, PauseCircle, FileX } from 'lucide-react'
 
 interface CaseloadStatsProps {
-  stats: { qualified: number; sub: number; paused: number }
+  stats: { qualified: number; sub: number; paused: number; no_consent: number }
   activeFilter: string
   onFilterChange: (filter: string) => void
 }
@@ -11,7 +11,7 @@ const CaseloadStats = ({ stats, activeFilter, onFilterChange }: CaseloadStatsPro
   const toggle = (value: string) => onFilterChange(activeFilter === value ? 'all' : value)
 
   return (
-    <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+    <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
       <Card
         className={`cursor-pointer transition-colors ${
           activeFilter === 'qualified' ? 'ring-2 ring-red-300 bg-red-50' : 'hover:bg-gray-50'
@@ -54,6 +54,21 @@ const CaseloadStats = ({ stats, activeFilter, onFilterChange }: CaseloadStatsPro
         <CardContent>
           <div className='text-2xl font-bold'>{stats.paused}</div>
           <p className='text-xs text-muted-foreground mt-1'>students paused</p>
+        </CardContent>
+      </Card>
+
+      <Card
+        className={`cursor-pointer transition-colors ${
+          activeFilter === 'no_consent' ? 'ring-2 ring-gray-300 bg-gray-50' : 'hover:bg-gray-50'
+        }`}
+        onClick={() => toggle('no_consent')}>
+        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+          <CardTitle className='text-sm font-medium'>No Consent</CardTitle>
+          <FileX className='h-4 w-4 text-gray-500' />
+        </CardHeader>
+        <CardContent>
+          <div className='text-2xl font-bold'>{stats.no_consent}</div>
+          <p className='text-xs text-muted-foreground mt-1'>awaiting consent</p>
         </CardContent>
       </Card>
     </div>
