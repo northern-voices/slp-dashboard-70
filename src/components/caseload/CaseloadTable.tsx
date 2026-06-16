@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { MoreHorizontal, Loader2, FileCheck, FileX, Search } from 'lucide-react'
+import { MoreHorizontal, Loader2, FileCheck, FileX, Search, X, Delete } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +32,7 @@ import {
   SERVICE_STATUS_OPTIONS,
 } from '@/constants/screeningOptions'
 import { GRADE_MAPPING } from '@/constants/app'
+import { supabase } from '@/lib/supabase'
 import { Student } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
@@ -51,6 +52,7 @@ import CaseloadFilters from './CaseloadFilter'
 import CreateEADialog from './CreateEADialog'
 import ConsentFormModal from '../students/ConsentFormModal'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
+import DeleteEADialog from './DeleteEADialog'
 
 interface CaseloadTableProps {
   students: Student[]
@@ -74,6 +76,8 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
   const [createEAForStudent, setCreateEAForStudent] = useState<Student | null>(null)
   const [programStatusFilter, setProgramStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [eaToDelete, setEaToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [isDeletingEA, setIsDeletingEA] = useState(false)
 
   const navigate = useNavigate()
 
@@ -105,7 +109,9 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
   }, [schoolId])
 
   const { currentSchool } = useOrganization()
-  const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
+  const { data: schoolDetails, refetch: refetchSchoolDetails } = useSchoolDetails(
+    currentSchool ?? null
+  )
 
   const { data: allScreeningsData } = useScreeningsBySchool(schoolId, 'all', 1, 10000)
   const allSchoolScreenings = useMemo(
@@ -177,6 +183,28 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         },
       }
     )
+  }
+
+  const handleConfirmDeleteEA = async () => {
+    if (!eaToDelete) return
+    setIsDeletingEA(true)
+
+    const { error } = await supabase.from('school_staff').delete().eq('id', eaToDelete.id)
+
+    setIsDeletingEA(false)
+
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to remove Speech EA.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    refetchSchoolDetails()
+    toast({ title: 'Speech EA removed' })
+    setEaToDelete(null)
   }
 
   const getResultBadge = (result?: string | null) => {
@@ -850,8 +878,22 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                     <SelectContent>
                       <SelectItem value='none'>None</SelectItem>
                       {speechEAs.map(ea => (
-                        <SelectItem key={ea.id} value={ea.id}>
-                          {ea.name}
+                        <SelectItem key={ea.id} value={ea.id} className='pr-8'>
+                          <div className='flex items-center justify-between w-full gap-2'>
+                            <span className='truncate'>{ea.name}</span>
+                            <button
+                              onPointerDown={e => e.stopPropagation()}
+                              onPointerUp={e => e.stopPropagation()}
+                              onClick={e => {
+                                e.stopPropagation()
+                                e.preventDefault()
+                                setEaToDelete(ea)
+                              }}
+                              className='shrink-0 text-gray-400 hover:text-red-500 transition-colors'
+                              title={`Remove ${ea.name}`}>
+                              <X className='w-3.5 h-3.5' />
+                            </button>
+                          </div>
                         </SelectItem>
                       ))}
                       <SelectSeparator />
@@ -965,6 +1007,14 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
           if (createEAForStudent) handleAssignEA(createEAForStudent, newEaId)
           setCreateEAForStudent(null)
         }}
+      />
+
+      <DeleteEADialog
+        open={!!eaToDelete}
+        eaName={eaToDelete?.name ?? ''}
+        isDeleting={isDeletingEA}
+        onConfirm={handleConfirmDeleteEA}
+        onCancel={() => setEaToDelete(null)}
       />
     </div>
   )
