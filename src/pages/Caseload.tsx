@@ -1,6 +1,7 @@
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import CaseloadTable from '@/components/caseload/CaseloadTable'
+import TransferredStudentsTable from '@/components/caseload/TransferredStudentsTable'
 import AttendanceSheetsSection from '@/components/caseload/AttendanceSheetsSection'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -27,6 +28,9 @@ const Caseload = () => {
           </TabsTrigger>
           <TabsTrigger value='graduated' className='flex-shrink-0'>
             Graduated
+          </TabsTrigger>
+          <TabsTrigger value='transferred' className='flex-shrink-0'>
+            Transferred
           </TabsTrigger>
         </TabsList>
 
@@ -55,6 +59,10 @@ const Caseload = () => {
             schoolId={currentSchool.id}
             statusGroup='graduated'
           />
+        </TabsContent>
+
+        <TabsContent value='transferred' className='space-y-6'>
+          <TransferredStudentsTable schoolId={currentSchool.id} />
         </TabsContent>
       </Tabs>
 
