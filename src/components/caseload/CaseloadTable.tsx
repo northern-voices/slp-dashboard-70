@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { MoreHorizontal, Loader2, FileCheck, FileX } from 'lucide-react'
+import { MoreHorizontal, Loader2, FileCheck, FileX, Search } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +45,7 @@ import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { useUpdateSpeechScreening } from '@/hooks/screenings'
 import { ProgramStatus, ServiceStatus } from '@/types/database'
 import { ErrorPatterns } from '@/types/screening-form'
+import { Input } from '@/components/ui/input'
 import CaseloadStats from './CaseloadStats'
 import CaseloadFilters from './CaseloadFilter'
 import CreateEADialog from './CreateEADialog'
@@ -55,10 +56,9 @@ interface CaseloadTableProps {
   students: Student[]
   isLoading: boolean
   schoolId?: string
-  searchTerm: string
 }
 
-const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTableProps) => {
+const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [sortField, setSortField] = useState<string | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
@@ -73,6 +73,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   const [dateFilter, setDateFilter] = useState<string>('school_year')
   const [createEAOpen, setCreateEAOpen] = useState(false)
   const [programStatusFilter, setProgramStatusFilter] = useState<string>('all')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const navigate = useNavigate()
 
@@ -660,6 +661,16 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         activeFilter={programStatusFilter}
         onFilterChange={setProgramStatusFilter}
       />
+
+      <div className='relative'>
+        <Search className='absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2' />
+        <Input
+          placeholder='Search by student name...'
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className='pl-10'
+        />
+      </div>
 
       <CaseloadFilters
         gradeFilter={gradeFilter}
