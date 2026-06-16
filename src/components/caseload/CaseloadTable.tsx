@@ -71,7 +71,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
   const [consentFilter, setConsentFilter] = useState<'all' | 'yes' | 'no'>('all')
   const [eaFilter, setEaFilter] = useState<string>('all')
   const [dateFilter, setDateFilter] = useState<string>('school_year')
-  const [createEAOpen, setCreateEAOpen] = useState(false)
+  const [createEAForStudent, setCreateEAForStudent] = useState<Student | null>(null)
   const [programStatusFilter, setProgramStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -839,7 +839,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                     value={student.speech_ea_id ?? 'none'}
                     onValueChange={value => {
                       if (value === '__create_new__') {
-                        setCreateEAOpen(true)
+                        setCreateEAForStudent(student)
                         return
                       }
                       handleAssignEA(student, value)
@@ -955,7 +955,17 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         />
       )}
 
-      <CreateEADialog open={createEAOpen} onOpenChange={setCreateEAOpen} schoolId={schoolId} />
+      <CreateEADialog
+        open={!!createEAForStudent}
+        onOpenChange={open => {
+          if (!open) setCreateEAForStudent(null)
+        }}
+        schoolId={schoolId}
+        onCreated={newEaId => {
+          if (createEAForStudent) handleAssignEA(createEAForStudent, newEaId)
+          setCreateEAForStudent(null)
+        }}
+      />
     </div>
   )
 }
