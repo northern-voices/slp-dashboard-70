@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Component } from 'react'
+import type { ReactNode } from 'react'
+
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -39,6 +41,28 @@ interface MeetingFormData {
   meeting_type: string
   additional_notes: string
   action_plan: string
+}
+
+class PageErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  state = { hasError: false, error: null }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className='p-8 text-red-600'>
+          Something went wrong loading this page. Please refresh and try again.
+        </div>
+      )
+    }
+    return this.props.children
+  }
 }
 
 const EditMonthlyMeetingContent = () => {
@@ -101,11 +125,14 @@ const EditMonthlyMeetingContent = () => {
 
   const loadDraft = () => {
     const saved = localStorage.getItem(draftKey)
-
     if (saved) {
-      const { formData, studentData: savedStudentData } = JSON.parse(saved)
-      reset(formData)
-      setStudentData(savedStudentData)
+      try {
+        const { formData, studentData: savedStudentData } = JSON.parse(saved)
+        reset(formData)
+        setStudentData(savedStudentData)
+      } catch {
+        localStorage.removeItem(draftKey) // Clear the bad draft
+      }
     }
     setShowRestoreDialog(false)
   }
@@ -541,7 +568,11 @@ const EditMonthlyMeetingContent = () => {
 }
 
 const EditMonthlyMeeting = () => {
-  return <EditMonthlyMeetingContent />
+  return (
+    <PageErrorBoundary>
+      <EditMonthlyMeetingContent />
+    </PageErrorBoundary>
+  )
 }
 
 export default EditMonthlyMeeting
