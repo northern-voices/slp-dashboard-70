@@ -93,7 +93,7 @@ export const getNavigationGroups = (
       skeleton: ReportsSkeleton,
     },
     {
-      title: 'Monthly Meetings',
+      title: 'Meetings / Attendance',
       url: useSchoolRoutes ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings',
       icon: Building2,
       isActive:
