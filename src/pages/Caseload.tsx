@@ -2,6 +2,7 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import CaseloadTable from '@/components/caseload/CaseloadTable'
 import AttendanceSheetsSection from '@/components/caseload/AttendanceSheetsSection'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const Caseload = () => {
   const { currentSchool } = useOrganization()
@@ -16,7 +17,46 @@ const Caseload = () => {
         </div>
       </div>
 
-      <CaseloadTable students={students} isLoading={isLoading} schoolId={currentSchool.id} />
+      <Tabs defaultValue='active' className='space-y-6'>
+        <TabsList className='flex-wrap justify-start w-full h-auto p-1'>
+          <TabsTrigger value='active' className='flex-shrink-0'>
+            Active
+          </TabsTrigger>
+          <TabsTrigger value='paused' className='flex-shrink-0'>
+            Pause/Away
+          </TabsTrigger>
+          <TabsTrigger value='graduated' className='flex-shrink-0'>
+            Graduated
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value='active' className='space-y-6'>
+          <CaseloadTable
+            students={students}
+            isLoading={isLoading}
+            schoolId={currentSchool.id}
+            statusGroup='active'
+          />
+        </TabsContent>
+
+        <TabsContent value='paused' className='space-y-6'>
+          <CaseloadTable
+            students={students}
+            isLoading={isLoading}
+            schoolId={currentSchool.id}
+            statusGroup='paused'
+          />
+        </TabsContent>
+
+        <TabsContent value='graduated' className='space-y-6'>
+          <CaseloadTable
+            students={students}
+            isLoading={isLoading}
+            schoolId={currentSchool.id}
+            statusGroup='graduated'
+          />
+        </TabsContent>
+      </Tabs>
 
       <AttendanceSheetsSection schoolId={currentSchool.id} />
     </div>

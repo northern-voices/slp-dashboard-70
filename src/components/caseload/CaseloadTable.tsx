@@ -58,9 +58,15 @@ interface CaseloadTableProps {
   students: Student[]
   isLoading: boolean
   schoolId?: string
+  statusGroup?: 'active' | 'paused' | 'graduated'
 }
 
-const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) => {
+const CaseloadTable = ({
+  students,
+  isLoading,
+  schoolId,
+  statusGroup = 'active',
+}: CaseloadTableProps) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [sortField, setSortField] = useState<string | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
@@ -516,16 +522,20 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     const screening = latestScreeningByStudent.get(student.id)
 
     const matchesCaseload =
-      student.service_status !== 'graduated' &&
-      student.service_status !== 'transferred' &&
-      student.service_status !== 'paused' &&
-      (dateFilter === 'school_year'
-        ? student.program_status === 'qualified' ||
-          student.program_status === 'sub' ||
-          student.program_status === 'no_consent'
-        : screening?.program_status === 'qualified' ||
-          screening?.program_status === 'sub' ||
-          screening?.program_status === 'no_consent')
+      statusGroup === 'paused'
+        ? student.service_status === 'paused'
+        : statusGroup === 'graduated'
+          ? student.service_status === 'graduated'
+          : student.service_status !== 'graduated' &&
+            student.service_status !== 'transferred' &&
+            student.service_status !== 'paused' &&
+            (dateFilter === 'school_year'
+              ? student.program_status === 'qualified' ||
+                student.program_status === 'sub' ||
+                student.program_status === 'no_consent'
+              : screening?.program_status === 'qualified' ||
+                screening?.program_status === 'sub' ||
+                screening?.program_status === 'no_consent')
 
     // TODO: Code for getting caseload for only this school year
     // const matchesCaseload =
