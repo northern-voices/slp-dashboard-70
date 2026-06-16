@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { MoreHorizontal, Loader2, FileCheck, FileX, Search, X, Delete } from 'lucide-react'
+import TransferStudentDialog from '../students/TransferStudentDialog'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,6 +86,9 @@ const CaseloadTable = ({
   const [searchTerm, setSearchTerm] = useState('')
   const [eaToDelete, setEaToDelete] = useState<{ id: string; name: string } | null>(null)
   const [isDeletingEA, setIsDeletingEA] = useState(false)
+  const [transferStudentTarget, setTransferStudentTarget] = useState<Student | null>(null)
+
+  const queryClient = useQueryClient()
 
   const navigate = useNavigate()
 
@@ -240,27 +245,8 @@ const CaseloadTable = ({
     return 'N/A'
   }
 
-  const getProgramStatus = (student: Student): string => {
-    if (student.service_status === 'graduated') return 'graduated'
-    if (student.service_status === 'paused') return 'paused'
-    if (student.service_status === 'transferred') return 'transferred'
-    return student.program_status || 'none'
-  }
-
   const getProgramBadge = (student: Student) => {
-    switch (getProgramStatus(student)) {
-      case 'graduated':
-        return (
-          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-        )
-      case 'paused':
-        return (
-          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Paused</Badge>
-        )
-      case 'transferred':
-        return (
-          <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Transferred</Badge>
-        )
+    switch (student.program_status || 'none') {
       case 'qualified':
         return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
       case 'sub':
@@ -930,6 +916,22 @@ const CaseloadTable = ({
                       <DropdownMenuItem onClick={() => setConsentStudent(student)}>
                         Add Consent
                       </DropdownMenuItem>
+
+                      {student.service_status !== 'paused' && (
+                        <DropdownMenuItem onClick={() => handleStatusChange(student, 'paused')}>
+                          Pause / Away
+                        </DropdownMenuItem>
+                      )}
+
+                      {student.service_status !== 'graduated' && (
+                        <DropdownMenuItem onClick={() => handleStatusChange(student, 'graduated')}>
+                          Graduate
+                        </DropdownMenuItem>
+                      )}
+
+                      <DropdownMenuItem onClick={() => setTransferStudentTarget(student)}>
+                        Transfer Student
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -1026,6 +1028,20 @@ const CaseloadTable = ({
         onConfirm={handleConfirmDeleteEA}
         onCancel={() => setEaToDelete(null)}
       />
+
+      {transferStudentTarget && (
+        <TransferStudentDialog
+          student={transferStudentTarget}
+          open={!!transferStudentTarget}
+          onOpenChange={open => {
+            if (!open) setTransferStudentTarget(null)
+          }}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['students', 'by-school', schoolId] })
+            setTransferStudentTarget(null)
+          }}
+        />
+      )}
     </div>
   )
 }
