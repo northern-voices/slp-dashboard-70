@@ -13,6 +13,9 @@ import {
   Delete,
   PauseCircle,
   GraduationCap,
+  User,
+  FilePlus,
+  ArrowRightLeft,
 } from 'lucide-react'
 import TransferStudentDialog from '../students/TransferStudentDialog'
 import { useQueryClient } from '@tanstack/react-query'
@@ -902,26 +905,31 @@ const CaseloadTable = ({
 
                     <DropdownMenuContent align='end'>
                       <DropdownMenuItem onClick={() => handleNavigate(student.id)}>
+                        <User className='w-4 h-4 mr-2' />
                         View Student
                       </DropdownMenuItem>
 
                       <DropdownMenuItem onClick={() => setConsentStudent(student)}>
+                        <FilePlus className='w-4 h-4 mr-2' />
                         Add Consent
                       </DropdownMenuItem>
 
                       {student.service_status !== 'paused' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(student, 'paused')}>
+                          <PauseCircle className='w-4 h-4 mr-2' />
                           Pause / Away
                         </DropdownMenuItem>
                       )}
 
                       {student.service_status !== 'graduated' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(student, 'graduated')}>
+                          <GraduationCap className='w-4 h-4 mr-2' />
                           Graduate
                         </DropdownMenuItem>
                       )}
 
                       <DropdownMenuItem onClick={() => setTransferStudentTarget(student)}>
+                        <ArrowRightLeft className='w-4 h-4 mr-2' />
                         Transfer Student
                       </DropdownMenuItem>
                     </DropdownMenuContent>
