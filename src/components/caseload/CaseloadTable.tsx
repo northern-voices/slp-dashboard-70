@@ -38,11 +38,7 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
-import {
-  RESULT_OPTIONS,
-  PROGRAM_OPTIONS,
-  SERVICE_STATUS_OPTIONS,
-} from '@/constants/screeningOptions'
+import { RESULT_OPTIONS, PROGRAM_OPTIONS } from '@/constants/screeningOptions'
 import { GRADE_MAPPING } from '@/constants/app'
 import { supabase } from '@/lib/supabase'
 import { Student } from '@/types/database'
@@ -228,13 +224,26 @@ const CaseloadTable = ({
     setEaToDelete(null)
   }
 
+  const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {
+    complex_needs: 'Complex Needs',
+    unable_to_screen: 'Refusal / Non-Compliant',
+  }
+
   const getResultBadge = (result?: string | null) => {
     if (!result) return <span className='text-sm text-gray-400'>—</span>
 
     const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
     if (!config) return <span className='text-sm text-gray-400'>—</span>
 
-    return <Badge className={`${config.color} font-medium text-[10px]`}>{config.label}</Badge>
+    const label = RESULT_BADGE_LABELS[result as keyof typeof SCREENING_RESULTS] ?? config.label
+
+    return (
+      <Badge
+        title={config.label}
+        className={`${config.color} font-medium text-[10px] whitespace-nowrap`}>
+        {label}
+      </Badge>
+    )
   }
 
   const speechEAs =
@@ -271,25 +280,6 @@ const CaseloadTable = ({
             Not In Program
           </Badge>
         )
-    }
-  }
-
-  const getStatusBadge = (student: Student) => {
-    switch (student.service_status) {
-      case 'graduated':
-        return (
-          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-        )
-      case 'paused':
-        return (
-          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Paused</Badge>
-        )
-      case 'transferred':
-        return (
-          <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Transferred</Badge>
-        )
-      default:
-        return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>None</Badge>
     }
   }
 
