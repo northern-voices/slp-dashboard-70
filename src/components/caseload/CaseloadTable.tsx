@@ -222,21 +222,18 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
         return (
           <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Paused</Badge>
         )
-      case 'sub':
-        return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
+      case 'transferred':
+        return (
+          <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>Transferred</Badge>
+        )
       case 'qualified':
         return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
-      case 'not_in_program':
-        return (
-          <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
-            Not In Program
-          </Badge>
-        )
+      case 'sub':
+        return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
       case 'no_consent':
         return (
           <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
         )
-
       default:
         return (
           <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
@@ -307,7 +304,6 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
 
   const handleProgramChange = (student: Student, newProgram: ProgramStatus) => {
     const screening = latestScreeningByStudent.get(student.id)
-    if (!screening && newProgram !== 'no_consent') return
 
     setUpdatingStudentId(student.id)
 
@@ -491,13 +487,16 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     const screening = latestScreeningByStudent.get(student.id)
 
     const matchesCaseload =
-      dateFilter === 'school_year'
+      student.service_status !== 'graduated' &&
+      student.service_status !== 'transferred' &&
+      student.service_status !== 'paused' &&
+      (dateFilter === 'school_year'
         ? student.program_status === 'qualified' ||
           student.program_status === 'sub' ||
           student.program_status === 'no_consent'
         : screening?.program_status === 'qualified' ||
           screening?.program_status === 'sub' ||
-          screening?.program_status === 'no_consent'
+          screening?.program_status === 'no_consent')
 
     // TODO: Code for getting caseload for only this school year
     // const matchesCaseload =
@@ -529,21 +528,8 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
   })
 
   const caseloadStats = {
-    qualified: filteredStudents.filter(
-      student =>
-        student.program_status === 'qualified' &&
-        student.service_status !== 'paused' &&
-        student.service_status !== 'graduated' &&
-        student.service_status !== 'transferred'
-    ).length,
-    sub: filteredStudents.filter(
-      student =>
-        student.program_status === 'sub' &&
-        student.service_status !== 'paused' &&
-        student.service_status !== 'graduated' &&
-        student.service_status !== 'transferred'
-    ).length,
-    paused: filteredStudents.filter(s => s.service_status === 'paused').length,
+    qualified: filteredStudents.filter(s => s.program_status === 'qualified').length,
+    sub: filteredStudents.filter(s => s.program_status === 'sub').length,
     no_consent: filteredStudents.filter(s => s.program_status === 'no_consent').length,
   }
 
@@ -570,8 +556,20 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     }
 
     if (sortField === 'program_status') {
-      const order = { qualified: 0, sub: 1, paused: 2, graduated: 3, transferred: 4, none: 5 }
-      comparison = (order[getProgramStatus(a)] ?? 99) - (order[getProgramStatus(b)] ?? 99)
+      const programOrder = { qualified: 0, sub: 1, no_consent: 2, none: 3 }
+
+      const aIsPaused = a.service_status === 'paused'
+      const bIsPaused = b.service_status === 'paused'
+
+      // paused students go to the bottom
+      if (aIsPaused !== bIsPaused) {
+        comparison = aIsPaused ? 1 : -1
+      } else {
+        comparison =
+          (programOrder[a.program_status as keyof typeof programOrder] ?? 99) -
+          (programOrder[b.program_status as keyof typeof programOrder] ?? 99)
+      }
+
       if (comparison === 0) {
         const indexA = GRADE_MAPPING.findIndex(g => getStudentGrade(a).includes(g.value))
         const indexB = GRADE_MAPPING.findIndex(g => getStudentGrade(b).includes(g.value))
@@ -622,7 +620,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
     return sortOrder === 'asc' ? comparison : -comparison
   })
 
-  const inactiveStatuses = ['paused', 'graduated', 'transferred']
+  const inactiveStatuses = ['paused']
 
   let programFilteredStudents = sortedStudents
 
@@ -745,7 +743,7 @@ const CaseloadTable = ({ students, isLoading, schoolId, searchTerm }: CaseloadTa
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {PROGRAM_OPTIONS.map(option => (
+                      {PROGRAM_OPTIONS.filter(option => option.value !== 'none').map(option => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
