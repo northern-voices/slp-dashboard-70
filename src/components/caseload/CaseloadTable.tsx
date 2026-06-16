@@ -718,7 +718,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
 
               <TableHead className='w-[55px]'>Status</TableHead>
 
-              <TableHead className='w-[55px] text-center'>Consent</TableHead>
+              <TableHead className='w-[100px] text-center'>Therapy Consent</TableHead>
 
               <TableHead className='w-[150px]'>Speech EA</TableHead>
 
