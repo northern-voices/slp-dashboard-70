@@ -825,7 +825,14 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                   </Select>
                 </TableCell>
 
-                <TableCell className='text-center'>{getConsentBadge(student)}</TableCell>
+                <TableCell className='text-center'>
+                  <button
+                    onClick={() => setConsentStudent(student)}
+                    className='cursor-pointer hover:opacity-70 transition-opacity'
+                    title='Add consent'>
+                    {getConsentBadge(student)}
+                  </button>
+                </TableCell>
 
                 <TableCell>
                   <Select
