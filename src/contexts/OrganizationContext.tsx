@@ -157,7 +157,20 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         .order('name')
 
       if (isRestrictedRole) {
-        schoolsQuery = schoolsQuery.eq('primary_slp_id', user.id)
+        const { data: assignments } = await supabase
+          .from('user_school_assignments')
+          .select('school_id')
+          .eq('user_id', user.id)
+
+        const assignedSchoolIds = (assignments || []).map(a => a.school_id)
+
+        if (assignedSchoolIds.length === 0) {
+          setAvailableSchoolsState([])
+          setIsInitialized(true)
+          return
+        }
+
+        schoolsQuery = schoolsQuery.in('id', assignedSchoolIds)
       }
 
       // Fetch available schools for the organization
