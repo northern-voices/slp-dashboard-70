@@ -3,7 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { MoreHorizontal, Loader2, FileCheck, FileX, Search, X, Delete } from 'lucide-react'
+import {
+  MoreHorizontal,
+  Loader2,
+  FileCheck,
+  FileX,
+  Search,
+  X,
+  Delete,
+  PauseCircle,
+  GraduationCap,
+} from 'lucide-react'
 import TransferStudentDialog from '../students/TransferStudentDialog'
 import { useQueryClient } from '@tanstack/react-query'
 import {
@@ -679,6 +689,23 @@ const CaseloadTable = ({
 
   return (
     <div className='space-y-4'>
+      {statusGroup !== 'active' && (
+        <div
+          className={`flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium ${
+            statusGroup === 'paused'
+              ? 'bg-purple-50 border-purple-200 text-purple-800'
+              : 'bg-blue-50 border-blue-200 text-blue-800'
+          }`}>
+          {statusGroup === 'paused' ? (
+            <PauseCircle className='w-4 h-4' />
+          ) : (
+            <GraduationCap className='w-4 h-4' />
+          )}
+          Showing students who are currently{' '}
+          {statusGroup === 'paused' ? 'Paused / Away' : 'Graduated'}.
+        </div>
+      )}
+
       {/* Caseload Stats */}
       <CaseloadStats
         stats={caseloadStats}
@@ -739,8 +766,6 @@ const CaseloadTable = ({
               <TableHead className='w-[70px]'>Program</TableHead>
 
               <TableHead className='w-[190px]'>Result</TableHead>
-
-              <TableHead className='w-[55px]'>Status</TableHead>
 
               <TableHead className='w-[100px] text-center'>Therapy Consent</TableHead>
 
@@ -822,31 +847,6 @@ const CaseloadTable = ({
                         )
                       })()
                     : getResultBadge(undefined)}
-                </TableCell>
-
-                <TableCell>
-                  <Select
-                    value={student.service_status ?? 'none'}
-                    onValueChange={value => handleStatusChange(student, value as ServiceStatus)}
-                    disabled={updatingStudentId === student.id}>
-                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
-                      <SelectValue>
-                        <div className='flex items-center gap-2'>
-                          {updatingStudentId === student.id && (
-                            <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
-                          )}
-                          {getStatusBadge(student)}
-                        </div>
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SERVICE_STATUS_OPTIONS.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </TableCell>
 
                 <TableCell className='text-center'>
