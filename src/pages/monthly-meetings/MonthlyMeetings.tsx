@@ -9,7 +9,7 @@ import MonthlyMeetingsTable from '@/components/monthly-meetings/MonthlyMeetingsT
 import AttendanceSheetsSection from '@/components/caseload/AttendanceSheetsSection'
 
 const MonthlyMeetingsContent = () => {
-  const { userProfile, currentSchool } = useOrganization()
+  const { currentSchool } = useOrganization()
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
