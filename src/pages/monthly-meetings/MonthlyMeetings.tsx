@@ -25,7 +25,21 @@ const MonthlyMeetingsContent = () => {
 
   return (
     <main className='max-w-7xl mx-auto'>
-      <div className='mb-8'>{/* ...unchanged header... */}</div>
+      <div className='mb-8'>
+        <div className='flex items-center justify-between mb-6'>
+          <div>
+            <h1 className='text-3xl font-semibold text-gray-900 mb-2'>Monthly Meetings</h1>
+            <p className='text-gray-600'>
+              Manage and track all monthly meetings
+              {currentSchool && ` for ${currentSchool.name}`}
+            </p>
+          </div>
+          <Button onClick={handleCreateMeeting} className='bg-blue-600 hover:bg-blue-700'>
+            <Plus className='w-4 h-4 mr-2' />
+            Create Monthly Meeting
+          </Button>
+        </div>
+      </div>
 
       <Tabs defaultValue='progress_checkin' className='space-y-6'>
         <TabsList className='flex-wrap justify-start w-full h-auto p-1'>
