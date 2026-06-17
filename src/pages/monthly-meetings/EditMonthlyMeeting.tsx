@@ -128,10 +128,17 @@ const EditMonthlyMeetingContent = () => {
     if (saved) {
       try {
         const { formData, studentData: savedStudentData } = JSON.parse(saved)
+        const sanitized = Object.fromEntries(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Object.entries(savedStudentData).map(([id, d]: [string, any]) => [
+            id,
+            { ...d, meeting_notes: d.meeting_notes ?? '' },
+          ])
+        )
         reset(formData)
-        setStudentData(savedStudentData)
+        setStudentData(sanitized)
       } catch {
-        localStorage.removeItem(draftKey) // Clear the bad draft
+        localStorage.removeItem(draftKey)
       }
     }
     setShowRestoreDialog(false)
@@ -301,7 +308,7 @@ const EditMonthlyMeetingContent = () => {
 
   const hasStudentData = (studentId: string) => {
     const data = studentData[studentId]
-    return data && (data.sessions_attended !== null || data.meeting_notes.trim() !== '')
+    return data && (data.sessions_attended !== null || (data.meeting_notes ?? '').trim() !== '')
   }
 
   return (

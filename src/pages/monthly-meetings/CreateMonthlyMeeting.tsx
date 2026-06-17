@@ -145,11 +145,23 @@ const CreateMonthlyMeetingContent = () => {
   const loadDraft = () => {
     const saved = localStorage.getItem(draftKey)
     if (saved) {
-      const { formData, studentData: savedStudentData } = JSON.parse(saved)
-      reset(formData)
-      setStudentData(savedStudentData)
+      try {
+        const { formData, studentData: savedStudentData } = JSON.parse(saved)
+        const sanitized = Object.fromEntries(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Object.entries(savedStudentData).map(([id, d]: [string, any]) => [
+            id,
+            { ...d, meeting_notes: d.meeting_notes ?? '' },
+          ])
+        )
+        reset(formData)
+        setStudentData(sanitized)
+      } catch {
+        localStorage.removeItem(draftKey)
+      }
     }
     setHasDraft(false)
+    setShowRestoreDialog(false)
   }
 
   const clearDraft = () => {
@@ -276,7 +288,7 @@ const CreateMonthlyMeetingContent = () => {
       data &&
       (data.sessions_attended !== null ||
         data.sessions_absent !== null ||
-        data.meeting_notes.trim() !== '')
+        (data.meeting_notes ?? '').trim() !== '')
     )
   }
 
