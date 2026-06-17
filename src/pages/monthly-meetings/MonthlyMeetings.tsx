@@ -9,11 +9,14 @@ import MonthlyMeetingsTable from '@/components/monthly-meetings/MonthlyMeetingsT
 import AttendanceSheetsSection from '@/components/caseload/AttendanceSheetsSection'
 
 const MonthlyMeetingsContent = () => {
-  const { currentSchool } = useOrganization()
-  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
   const [facilitatorFilter, setFacilitatorFilter] = useState('all')
+  const [activeTab, setActiveTab] = useState('progress_checkin')
+
+  const navigate = useNavigate()
+
+  const { currentSchool } = useOrganization()
 
   const handleCreateMeeting = () => {
     if (currentSchool?.id) {
@@ -34,14 +37,17 @@ const MonthlyMeetingsContent = () => {
               {currentSchool && ` for ${currentSchool.name}`}
             </p>
           </div>
-          <Button onClick={handleCreateMeeting} className='bg-blue-600 hover:bg-blue-700'>
-            <Plus className='w-4 h-4 mr-2' />
-            Create Monthly Meeting
-          </Button>
+
+          {activeTab !== 'attendance' && (
+            <Button onClick={handleCreateMeeting} className='bg-blue-600 hover:bg-blue-700'>
+              <Plus className='w-4 h-4 mr-2' />
+              Create Monthly Meeting
+            </Button>
+          )}
         </div>
       </div>
 
-      <Tabs defaultValue='progress_checkin' className='space-y-6'>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-6'>
         <TabsList className='flex-wrap justify-start w-full h-auto p-1'>
           <TabsTrigger value='progress_checkin' className='flex-shrink-0'>
             Progress Check-in
