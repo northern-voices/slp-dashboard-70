@@ -125,7 +125,7 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
             <ul className='divide-y'>
               {sheets.map(sheet => (
                 <li key={sheet.id} className='flex items-center justify-between py-3'>
-                  <div className='flex flex-col'>
+                  <div className='flex flex-col gap-1'>
                     {editingId === sheet.id ? (
                       <Input
                         value={editValue}
@@ -144,7 +144,7 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
                       </span>
                     )}
                     {sheet.provision_status === 'uploaded' && sheet.file_name && (
-                      <span className='text-xs text-muted-foreground'>{sheet.file_name}</span>
+                      <span className='text-xs text-muted-foreground mt-2'>{sheet.file_name}</span>
                     )}
                     <span className='text-xs text-muted-foreground'>
                       {sheet.sheet_date
