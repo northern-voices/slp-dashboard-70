@@ -101,6 +101,9 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
                         ? 'Not provided by school'
                         : (sheet.label ?? sheet.file_name)}
                     </span>
+                    {sheet.provision_status === 'uploaded' && sheet.file_name && (
+                      <span className='text-xs text-muted-foreground'>{sheet.file_name}</span>
+                    )}
                     <span className='text-xs text-muted-foreground'>
                       {sheet.sheet_date
                         ? format(new Date(sheet.sheet_date), 'MMMM yyyy')
