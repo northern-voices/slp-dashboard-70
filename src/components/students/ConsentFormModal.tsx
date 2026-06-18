@@ -81,6 +81,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
       })
       return
     }
+
     if (!values.consent_type) {
       toast({
         title: 'Missing field',
@@ -89,14 +90,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
       })
       return
     }
-    if (values.consent_type === 'verbal' && !values.verbal_consent_details.trim()) {
-      toast({
-        title: 'Missing field',
-        description: 'Please enter verbal consent details.',
-        variant: 'destructive',
-      })
-      return
-    }
+
     if (values.consent_type === 'written' && !file) {
       toast({
         title: 'Missing file',
@@ -230,9 +224,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
           {consentType === 'verbal' && (
             <div className='space-y-3'>
               <div className='space-y-1'>
-                <Label htmlFor='verbal-details'>
-                  Verbal Consent Details <span className='text-destructive'>*</span>
-                </Label>
+                <Label htmlFor='verbal-details'>Verbal Consent Details</Label>
                 <Textarea
                   id='verbal-details'
                   placeholder='Describe the verbal consent given...'
