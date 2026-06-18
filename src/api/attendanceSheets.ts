@@ -4,7 +4,7 @@ export type ProvisionStatus = 'uploaded' | 'not_provided'
 
 export interface AttendanceSheetData {
   provision_status: ProvisionStatus
-  sheet_date: string
+  label: string
   file?: File
   additional_notes?: string
 }
@@ -18,6 +18,7 @@ export interface AttendanceSheet {
   file_type: string | null
   file_size: number | null
   sheet_date: string | null
+  label: string | null
   additional_notes: string | null
   uploaded_at: string
   uploaded_by: {
@@ -61,7 +62,8 @@ export const attendanceSheetsApi = {
       file_name: fileName,
       file_type: fileType,
       file_size: fileSize,
-      sheet_date: data.sheet_date || null,
+      sheet_date: new Date().toISOString().split('T')[0],
+      label: data.label || null,
       additional_notes: data.additional_notes || null,
       uploaded_by: user.id,
     })
@@ -77,28 +79,35 @@ export const attendanceSheetsApi = {
       .from('attendance_sheets')
       .select(
         `
-          id,
-          school_id,
-          provision_status,
-          file_path,
-          file_name,
-          file_type,
-          file_size,
-          sheet_date,
-          additional_notes,
-          uploaded_at,
-          uploaded_by:users!attendance_sheets_uploaded_by_fkey(
             id,
-            first_name,
-            last_name
-          )
-        `
+            school_id,
+            provision_status,
+            file_path,
+            file_name,
+            file_type,
+            file_size,
+            sheet_date,
+            label,
+            additional_notes,
+            uploaded_at,
+            uploaded_by:users!attendance_sheets_uploaded_by_fkey(
+              id,
+              first_name,
+              last_name
+            )
+          `
       )
       .eq('school_id', schoolId)
       .order('sheet_date', { ascending: false, nullsFirst: false })
 
     if (error) throw error
     return (data || []) as unknown as AttendanceSheet[]
+  },
+
+  updateLabel: async (id: string, label: string): Promise<void> => {
+    const { error } = await supabase.from('attendance_sheets').update({ label }).eq('id', id)
+
+    if (error) throw error
   },
 
   getSignedUrl: async (filePath: string): Promise<string> => {

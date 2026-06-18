@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { useForm } from 'react-hook-form'
+import { format } from 'date-fns'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,7 +26,7 @@ interface AttendanceSheetModalProps {
 
 interface FormValues {
   provision_status: ProvisionStatus | ''
-  sheet_date: string
+  label: string
   additional_notes: string
 }
 
@@ -35,7 +36,11 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
   const uploadMutation = useUploadAttendanceSheet(schoolId)
 
   const form = useForm<FormValues>({
-    defaultValues: { provision_status: '', sheet_date: '', additional_notes: '' },
+    defaultValues: {
+      provision_status: 'uploaded',
+      label: `${format(new Date(), 'MMMM')} Attendance`,
+      additional_notes: '',
+    },
   })
 
   const provisionStatus = form.watch('provision_status')
@@ -66,19 +71,10 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
       return
     }
 
-    if (!values.sheet_date) {
-      toast({
-        title: 'Missing field',
-        description: 'Please select a month for this sheet.',
-        variant: 'destructive',
-      })
-      return
-    }
-
     if (values.provision_status === 'uploaded' && !file) {
       toast({
         title: 'Missing file',
-        description: 'Please select an image to upload.',
+        description: 'Please select a file to upload.',
         variant: 'destructive',
       })
       return
@@ -87,7 +83,7 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
     await uploadMutation.mutateAsync(
       {
         provision_status: values.provision_status as ProvisionStatus,
-        sheet_date: values.sheet_date + '-01',
+        label: values.label,
         file: values.provision_status === 'uploaded' ? file : undefined,
         additional_notes: values.additional_notes || undefined,
       },
@@ -122,7 +118,7 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
           }}
           className='space-y-4'>
           {/* Provision Status */}
-          <div className='space-y-1'>
+          <div className='space-y-1 hidden'>
             <Label>
               Status <span className='text-destructive'>*</span>
             </Label>
@@ -137,10 +133,18 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
                 <SelectValue placeholder='Select status' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='uploaded'>Upload Image</SelectItem>
+                <SelectItem value='uploaded'>Upload File</SelectItem>
                 <SelectItem value='not_provided'>Not provided by school</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Label */}
+          <div className='space-y-1'>
+            <Label htmlFor='label'>
+              Name <span className='text-destructive'>*</span>
+            </Label>
+            <Input id='label' type='text' {...form.register('label')} />
           </div>
 
           {/* File upload — only when status is uploaded */}
@@ -168,20 +172,12 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
               <input
                 ref={fileInputRef}
                 type='file'
-                accept='image/*'
+                accept='image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
                 className='hidden'
                 onChange={handleFileChange}
               />
             </div>
           )}
-
-          {/* Month */}
-          <div className='space-y-1'>
-            <Label htmlFor='sheet-date'>
-              Month <span className='text-destructive'>*</span>
-            </Label>
-            <Input id='sheet-date' type='month' {...form.register('sheet_date')} />
-          </div>
 
           {/* Notes */}
           <div className='space-y-1'>

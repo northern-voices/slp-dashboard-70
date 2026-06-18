@@ -10,7 +10,7 @@ import {
   FileX,
   Search,
   X,
-  Delete,
+  Info,
   PauseCircle,
   GraduationCap,
   User,
@@ -41,6 +41,7 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { RESULT_OPTIONS, PROGRAM_OPTIONS } from '@/constants/screeningOptions'
 import { GRADE_MAPPING } from '@/constants/app'
 import { supabase } from '@/lib/supabase'
@@ -69,7 +70,7 @@ interface CaseloadTableProps {
   students: Student[]
   isLoading: boolean
   schoolId?: string
-  statusGroup?: 'active' | 'paused' | 'graduated'
+  statusGroup?: 'all' | 'active' | 'paused' | 'graduated'
 }
 
 const CaseloadTable = ({
@@ -253,9 +254,7 @@ const CaseloadTable = ({
     schoolDetails?.schoolTeam?.filter(member => member.roles.includes('speech_ea')) ?? []
 
   const getSpeechEAName = (student: Student): string => {
-    if (!student.speech_ea_id) return '-'
-
-    return speechEAs.find(ea => ea.id === student.speech_ea_id)?.name ?? '-'
+    return speechEAs.find(ea => ea.id === student.speech_ea_id)?.name ?? ''
   }
 
   const getStudentGrade = (student: Student): string => {
@@ -283,6 +282,23 @@ const CaseloadTable = ({
             Not In Program
           </Badge>
         )
+    }
+  }
+
+  const getServiceStatusTag = (student: Student) => {
+    switch (student.service_status) {
+      case 'paused':
+        return (
+          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
+            Paused / Away
+          </Badge>
+        )
+      case 'graduated':
+        return (
+          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+        )
+      default:
+        return null
     }
   }
 
@@ -510,21 +526,26 @@ const CaseloadTable = ({
 
     const screening = latestScreeningByStudent.get(student.id)
 
-    const matchesCaseload =
-      statusGroup === 'paused'
-        ? student.service_status === 'paused'
-        : statusGroup === 'graduated'
-          ? student.service_status === 'graduated'
-          : student.service_status !== 'graduated' &&
-            student.service_status !== 'transferred' &&
-            student.service_status !== 'paused' &&
-            (dateFilter === 'school_year'
-              ? student.program_status === 'qualified' ||
-                student.program_status === 'sub' ||
-                student.program_status === 'no_consent'
-              : screening?.program_status === 'qualified' ||
-                screening?.program_status === 'sub' ||
-                screening?.program_status === 'no_consent')
+    const matchesCaseload = (() => {
+      if (statusGroup === 'all') return true
+      if (statusGroup === 'paused') return student.service_status === 'paused'
+      if (statusGroup === 'graduated') return student.service_status === 'graduated'
+
+      // active
+      if (
+        student.service_status === 'graduated' ||
+        student.service_status === 'transferred' ||
+        student.service_status === 'paused'
+      )
+        return false
+
+      const programStatus =
+        dateFilter === 'school_year' ? student.program_status : screening?.program_status
+
+      return (
+        programStatus === 'qualified' || programStatus === 'sub' || programStatus === 'no_consent'
+      )
+    })()
 
     // TODO: Code for getting caseload for only this school year
     // const matchesCaseload =
@@ -682,7 +703,7 @@ const CaseloadTable = ({
 
   return (
     <div className='space-y-4'>
-      {statusGroup !== 'active' && (
+      {statusGroup !== 'active' && statusGroup !== 'all' && (
         <div
           className={`flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium ${
             statusGroup === 'paused'
@@ -772,7 +793,12 @@ const CaseloadTable = ({
             {paginatedStudents.map(student => (
               <ResponsiveTableRow key={student.id}>
                 <TableCell className='font-medium'>
-                  {student.first_name} {student.last_name}
+                  <div className='flex flex-col gap-1 items-start'>
+                    <span>
+                      {student.first_name} {student.last_name}
+                    </span>
+                    {statusGroup === 'all' && getServiceStatusTag(student)}
+                  </div>
                 </TableCell>
 
                 <TableCell>{getStudentGrade(student)}</TableCell>
@@ -840,7 +866,18 @@ const CaseloadTable = ({
                       )
                     })()
                   ) : (
-                    <span className='text-sm text-gray-400 italic'>No Screening Recorded</span>
+                    <div className='flex items-center gap-1.5'>
+                      <span className='text-sm text-gray-400 italic'>No Screening Recorded</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className='w-3.5 h-3.5 text-gray-400 cursor-help shrink-0' />
+                        </TooltipTrigger>
+                        <TooltipContent className='max-w-[220px] text-center'>
+                          No screening on record. This can happen if the student transferred from
+                          another school or if a previous screening was removed.
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                   )}
                 </TableCell>
 
@@ -864,10 +901,18 @@ const CaseloadTable = ({
                       handleAssignEA(student, value)
                     }}>
                     <SelectTrigger className='w-full h-8 p-0 truncate border-none hover:bg-transparent focus:ring-0'>
-                      <SelectValue placeholder='Assign EA'>{getSpeechEAName(student)}</SelectValue>
+                      <SelectValue placeholder='Assign EA'>
+                        {student.speech_ea_id ? (
+                          getSpeechEAName(student)
+                        ) : (
+                          <span className='text-sm text-gray-400 italic'>
+                            No Speech EA assigned
+                          </span>
+                        )}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='none'>None</SelectItem>
+                      <SelectItem value='none'>-</SelectItem>
                       {speechEAs.map(ea => (
                         <SelectItem key={ea.id} value={ea.id} className='pr-8'>
                           <div className='flex items-center justify-between w-full gap-2'>

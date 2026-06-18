@@ -128,10 +128,17 @@ const EditMonthlyMeetingContent = () => {
     if (saved) {
       try {
         const { formData, studentData: savedStudentData } = JSON.parse(saved)
+        const sanitized = Object.fromEntries(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Object.entries(savedStudentData).map(([id, d]: [string, any]) => [
+            id,
+            { ...d, meeting_notes: d.meeting_notes ?? '' },
+          ])
+        )
         reset(formData)
-        setStudentData(savedStudentData)
+        setStudentData(sanitized)
       } catch {
-        localStorage.removeItem(draftKey) // Clear the bad draft
+        localStorage.removeItem(draftKey)
       }
     }
     setShowRestoreDialog(false)
@@ -262,7 +269,10 @@ const EditMonthlyMeetingContent = () => {
             description: 'The monthly meeting has been successfully updated.',
           })
           navigate(
-            currentSchool?.id ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings'
+            currentSchool?.id
+              ? `/school/${currentSchool.id}/monthly-meetings`
+              : '/monthly-meetings',
+            { state: { activeTab: watchedValues.meeting_type } }
           )
           setIsSubmitting(false)
         },
@@ -288,20 +298,20 @@ const EditMonthlyMeetingContent = () => {
       setPendingNavigation(destination)
       setShowLeaveDialog(true)
     } else {
-      navigate(destination)
+      navigate(destination, { state: { activeTab: watchedValues.meeting_type } })
     }
   }
 
   const confirmLeave = () => {
     setShowLeaveDialog(false)
     if (pendingNavigation) {
-      navigate(pendingNavigation)
+      navigate(pendingNavigation, { state: { activeTab: watchedValues.meeting_type } })
     }
   }
 
   const hasStudentData = (studentId: string) => {
     const data = studentData[studentId]
-    return data && (data.sessions_attended !== null || data.meeting_notes.trim() !== '')
+    return data && (data.sessions_attended !== null || (data.meeting_notes ?? '').trim() !== '')
   }
 
   return (
@@ -314,7 +324,7 @@ const EditMonthlyMeetingContent = () => {
             onClick={handleCancel}
             className='text-gray-600 hover:text-gray-900'>
             <ChevronLeft className='w-4 h-4 mr-1' />
-            Back to Monthly Meetings
+            Back
           </Button>
           <div className='w-px h-4 bg-gray-300' />
           <h1 className='text-2xl font-semibold text-gray-900'>Edit Monthly Meeting</h1>
