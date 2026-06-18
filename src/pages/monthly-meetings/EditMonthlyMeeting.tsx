@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Component } from 'react'
+import type { ReactNode } from 'react'
+
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -29,6 +31,7 @@ import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDi
 import { useGetMonthlyMeetingById } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { MeetingTypeBadge } from '@/utils/meetingTypes'
+import { type StudentData, buildStudentUpdates } from '@/api/monthlymeetings'
 
 interface MeetingFormData {
   meeting_title: string
@@ -40,7 +43,27 @@ interface MeetingFormData {
   action_plan: string
 }
 
-type StudentData = Record<string, { sessions_attended: number | null; meeting_notes: string }>
+class PageErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  state = { hasError: false, error: null }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className='p-8 text-red-600'>
+          Something went wrong loading this page. Please refresh and try again.
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 const EditMonthlyMeetingContent = () => {
   const [showStudentModal, setShowStudentModal] = useState(false)
@@ -102,11 +125,21 @@ const EditMonthlyMeetingContent = () => {
 
   const loadDraft = () => {
     const saved = localStorage.getItem(draftKey)
-
     if (saved) {
-      const { formData, studentData: savedStudentData } = JSON.parse(saved)
-      reset(formData)
-      setStudentData(savedStudentData)
+      try {
+        const { formData, studentData: savedStudentData } = JSON.parse(saved)
+        const sanitized = Object.fromEntries(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Object.entries(savedStudentData).map(([id, d]: [string, any]) => [
+            id,
+            { ...d, meeting_notes: d.meeting_notes ?? '' },
+          ])
+        )
+        reset(formData)
+        setStudentData(sanitized)
+      } catch {
+        localStorage.removeItem(draftKey)
+      }
     }
     setShowRestoreDialog(false)
   }
@@ -140,10 +173,12 @@ const EditMonthlyMeetingContent = () => {
     }
 
     const fetchedStudentData: StudentData = {}
+
     if (meetingData.student_updates?.length > 0) {
       meetingData.student_updates.forEach(update => {
         fetchedStudentData[update.student_id] = {
           sessions_attended: update.sessions_attended,
+          sessions_absent: update.sessions_absent,
           meeting_notes: update.meeting_notes || '',
         }
       })
@@ -211,13 +246,7 @@ const EditMonthlyMeetingContent = () => {
       return
     }
 
-    const student_updates = Object.entries(studentData)
-      .filter(([_, d]) => d.sessions_attended !== null || d.meeting_notes.trim() !== '')
-      .map(([student_id, d]) => ({
-        student_id,
-        sessions_attended: d.sessions_attended,
-        meeting_notes: d.meeting_notes.trim() || null,
-      }))
+    const student_updates = buildStudentUpdates(studentData)
 
     const submitData = {
       meeting_title: data.meeting_title.trim(),
@@ -240,7 +269,10 @@ const EditMonthlyMeetingContent = () => {
             description: 'The monthly meeting has been successfully updated.',
           })
           navigate(
-            currentSchool?.id ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings'
+            currentSchool?.id
+              ? `/school/${currentSchool.id}/monthly-meetings`
+              : '/monthly-meetings',
+            { state: { activeTab: watchedValues.meeting_type } }
           )
           setIsSubmitting(false)
         },
@@ -266,20 +298,20 @@ const EditMonthlyMeetingContent = () => {
       setPendingNavigation(destination)
       setShowLeaveDialog(true)
     } else {
-      navigate(destination)
+      navigate(destination, { state: { activeTab: watchedValues.meeting_type } })
     }
   }
 
   const confirmLeave = () => {
     setShowLeaveDialog(false)
     if (pendingNavigation) {
-      navigate(pendingNavigation)
+      navigate(pendingNavigation, { state: { activeTab: watchedValues.meeting_type } })
     }
   }
 
   const hasStudentData = (studentId: string) => {
     const data = studentData[studentId]
-    return data && (data.sessions_attended !== null || data.meeting_notes.trim() !== '')
+    return data && (data.sessions_attended !== null || (data.meeting_notes ?? '').trim() !== '')
   }
 
   return (
@@ -292,7 +324,7 @@ const EditMonthlyMeetingContent = () => {
             onClick={handleCancel}
             className='text-gray-600 hover:text-gray-900'>
             <ChevronLeft className='w-4 h-4 mr-1' />
-            Back to Monthly Meetings
+            Back
           </Button>
           <div className='w-px h-4 bg-gray-300' />
           <h1 className='text-2xl font-semibold text-gray-900'>Edit Monthly Meeting</h1>
@@ -434,6 +466,7 @@ const EditMonthlyMeetingContent = () => {
                               setShowStudentModal(true)
                             }}
                             hasStudentData={hasStudentData}
+                            schoolId={currentSchool?.id}
                             studentIdsWithConsent={studentIdsWithConsent}
                           />
                         </div>
@@ -545,7 +578,11 @@ const EditMonthlyMeetingContent = () => {
 }
 
 const EditMonthlyMeeting = () => {
-  return <EditMonthlyMeetingContent />
+  return (
+    <PageErrorBoundary>
+      <EditMonthlyMeetingContent />
+    </PageErrorBoundary>
+  )
 }
 
 export default EditMonthlyMeeting

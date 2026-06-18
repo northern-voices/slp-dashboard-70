@@ -9,7 +9,7 @@ export const RESULT_OPTIONS = [
   { value: 'complex_needs', label: 'Complex Needs (Unable to Screen)' },
   { value: 'unable_to_screen', label: 'Student Refusal / Compliance' },
   { value: 'absent', label: 'Absent' },
-  { value: 'non_registered_no_consent', label: 'No Consent' },
+  { value: 'non_registered_no_consent', label: 'No Consent (Test)' },
 ]
 
 export const PROGRAM_OPTIONS = [

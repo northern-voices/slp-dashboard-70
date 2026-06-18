@@ -20,9 +20,10 @@ interface CreateEADialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   schoolId?: string
+  onCreated?: (newEaId: string) => void
 }
 
-const CreateEADialog = ({ open, onOpenChange, schoolId }: CreateEADialogProps) => {
+const CreateEADialog = ({ open, onOpenChange, schoolId, onCreated }: CreateEADialogProps) => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [isCreating, setIsCreating] = useState(false)
@@ -47,20 +48,25 @@ const CreateEADialog = ({ open, onOpenChange, schoolId }: CreateEADialogProps) =
     const lastName = rest.join(' ')
 
     try {
-      const { error } = await supabase.from('school_staff').insert({
-        school_id: schoolId,
-        first_name: firstName,
-        last_name: lastName || '',
-        roles: ['speech_ea'],
-        email: email.trim() || null,
-        is_active: true,
-      })
+      const { data, error } = await supabase
+        .from('school_staff')
+        .insert({
+          school_id: schoolId,
+          first_name: firstName,
+          last_name: lastName || '',
+          roles: ['speech_ea'],
+          email: email.trim() || null,
+          is_active: true,
+        })
+        .select('id')
+        .single()
 
       if (error) throw error
 
       queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool?.id] })
       toast({ title: 'Speech EA added successfully' })
       handleClose(false)
+      onCreated?.(data.id)
     } catch {
       toast({ title: 'Error', description: 'Failed to create Speech EA', variant: 'destructive' })
     } finally {

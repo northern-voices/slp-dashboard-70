@@ -29,7 +29,7 @@ export const consentFormsApi = {
 
       // Only upload file for written consent
 
-      if (formData.consent_type === 'written' && formData.file) {
+      if (formData.file) {
         filePath = `${studentId}/${Date.now()}-${formData.file.name}`
 
         const { error: uploadError } = await supabase.storage

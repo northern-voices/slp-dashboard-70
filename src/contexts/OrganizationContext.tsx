@@ -148,12 +148,33 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
 
       setCurrentOrganization(transformedOrganization)
 
-      // Fetch available schools for the organization
-      const { data: schoolsData, error: schoolsError } = await supabase
+      const isRestrictedRole = userData.role === 'slp' || userData.role === 'hearing_technician'
+
+      let schoolsQuery = supabase
         .from('schools')
         .select('*, primary_slp:users!primary_slp_id(first_name, last_name)')
         .eq('organization_id', userData.organization_id)
         .order('name')
+
+      if (isRestrictedRole) {
+        const { data: assignments } = await supabase
+          .from('user_school_assignments')
+          .select('school_id')
+          .eq('user_id', user.id)
+
+        const assignedSchoolIds = (assignments || []).map(a => a.school_id)
+
+        if (assignedSchoolIds.length === 0) {
+          setAvailableSchoolsState([])
+          setIsInitialized(true)
+          return
+        }
+
+        schoolsQuery = schoolsQuery.in('id', assignedSchoolIds)
+      }
+
+      // Fetch available schools for the organization
+      const { data: schoolsData, error: schoolsError } = await schoolsQuery
 
       if (schoolsError) {
         console.error('Error fetching schools:', schoolsError)

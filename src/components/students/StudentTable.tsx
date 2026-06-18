@@ -44,6 +44,7 @@ import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import StudentsSkeleton from '@/components/skeletons/StudentsSkeleton'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
+import SortControls, { SortOption } from '@/components/ui/SortControls'
 
 interface StudentTableProps {
   selectedSchool?: School | null
@@ -69,7 +70,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const [isLoadingGrades, setIsLoadingGrades] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
-  const [sortField, setSortField] = useState<'name' | 'grade' | 'date' | null>(null)
+  const [sortField, setSortField] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -415,24 +416,6 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     }
   }
 
-  const handleSort = (field: 'name' | 'grade' | 'date') => {
-    if (sortField !== field) {
-      setSortField(field)
-      setSortOrder('desc')
-    } else if (sortOrder === 'desc') {
-      setSortOrder('asc')
-    } else {
-      setSortField(null)
-      setSortOrder(null)
-    }
-  }
-
-  const getSortIcon = (field: 'name' | 'grade' | 'date') => {
-    if (sortField !== field) return <ChevronUp className='w-4 h-4 opacity-30' />
-    if (sortOrder === 'asc') return <ChevronUp className='w-4 h-4' />
-    return <ChevronDown className='w-4 h-4' />
-  }
-
   const handleAddStudent = async (data: NewStudentFormData) => {
     if (!activeSchool) {
       toast({
@@ -579,6 +562,12 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     return <StudentsSkeleton />
   }
 
+  const sortOptions: SortOption[] = [
+    { label: 'Name', value: 'name', defaultDirection: 'asc' },
+    { label: 'Grade', value: 'grade', defaultDirection: 'asc' },
+    { label: 'Profile Created', value: 'date', defaultDirection: 'desc' },
+  ]
+
   return (
     <div className='space-y-6'>
       {/* Header */}
@@ -605,6 +594,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         setProgramFilter={setProgramFilter}
       />
 
+      {/* Sort Controls */}
+      <SortControls
+        sortField={sortField}
+        setSortField={setSortField}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        options={sortOptions}
+      />
+
       {/* Students Table */}
       <div className='flex justify-end mb-3'>
         <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
@@ -616,41 +614,13 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         <ResponsiveTable className='w-full'>
           <TableHeader>
             <tr>
-              <TableHead className='w-1/4 min-w-[200px]'>
-                <Button
-                  variant='ghost'
-                  onClick={() => handleSort('name')}
-                  className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
-                  Name
-                  <span className='ml-1'>{getSortIcon('name')}</span>
-                </Button>
-              </TableHead>
+              <TableHead className='w-1/4 min-w-[200px]'>Name</TableHead>
+              <TableHead className='w-1/6 min-w-[120px]'>Grade</TableHead>
+              <TableHead className='w-1/6 min-w-[150px]'>Profile Created</TableHead>
 
-              <TableHead className='w-1/6 min-w-[120px]'>
-                <Button
-                  variant='ghost'
-                  onClick={() => handleSort('grade')}
-                  className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
-                  Grade
-                  <span className='ml-1'>{getSortIcon('grade')}</span>
-                </Button>
-              </TableHead>
+              {/* <TableHead className='w-1/6 text-center'>Consent</TableHead> */}
 
-              <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
-
-              <TableHead className='w-1/6 min-w-[150px]'>
-                <Button
-                  variant='ghost'
-                  onClick={() => handleSort('date')}
-                  className='h-auto p-0 font-medium bg-transparent hover:bg-transparent'>
-                  Date Created
-                  <span className='ml-1'>{getSortIcon('date')}</span>
-                </Button>
-              </TableHead>
-
-              <TableHead className='w-1/6 text-center'>Consent</TableHead>
-
-              <TableHead className='w-1/6 min-w-[150px]'>Speech EA</TableHead>
+              {/* <TableHead className='w-1/6 min-w-[150px]'>Speech EA</TableHead> */}
             </tr>
           </TableHeader>
 
@@ -670,8 +640,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                       const transfer = transferByStudentId.get(student.id)
                       if (transfer?.to_school_id === activeSchool?.id) {
                         return (
-                          <span className='text-xs font-medium text-blue-600'>
-                            Transferred In ← {transfer.from_school?.name}
+                          <span className='flex flex-col text-xs font-medium text-blue-600'>
+                            <span>Transferred In ← {transfer.from_school?.name}</span>
+                            <span>
+                              {parseDateSafely(transfer.created_at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </span>
                           </span>
                         )
                       }
@@ -684,9 +661,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   {getStudentGrade(student)}
                 </TableCell>
 
-                <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
+                {/* <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {getQualificationBadge(student)}
-                </TableCell>
+                </TableCell> */}
 
                 <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {parseDateSafely(student.created_at).toLocaleDateString('en-US', {
@@ -696,17 +673,17 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   })}
                 </TableCell>
 
-                <TableCell className='p-4 text-center transition-colors group-hover:bg-gray-100'>
+                {/* <TableCell className='p-4 text-center transition-colors group-hover:bg-gray-100'>
                   {consentSet.has(student.id) ? (
                     <FileCheck className='w-5 h-5 mx-auto text-green-600' />
                   ) : (
                     <FileX className='w-5 h-5 mx-auto text-red-400' />
                   )}
-                </TableCell>
+                </TableCell> */}
 
-                <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
+                {/* <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {getSpeechEAName(student)}
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))}
           </TableBody>

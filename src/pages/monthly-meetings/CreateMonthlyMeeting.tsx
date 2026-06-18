@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Component } from 'react'
 import type { ReactNode } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,7 @@ import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog
 import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
 import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
+import { type StudentData, buildStudentUpdates } from '@/api/monthlymeetings'
 
 interface MeetingFormData {
   meeting_title: string
@@ -41,8 +42,6 @@ interface MeetingFormData {
   additional_notes: string
   action_plan: string
 }
-
-type StudentData = Record<string, { sessions_attended: number | null; meeting_notes: string }>
 
 class PageErrorBoundary extends Component<
   { children: ReactNode },
@@ -76,9 +75,13 @@ const CreateMonthlyMeetingContent = () => {
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
 
   const navigate = useNavigate()
+  const location = useLocation()
+
   const { toast } = useToast()
   const { currentSchool } = useOrganization()
   const { user } = useAuth()
+
+  const meetingTypeFromNav = location.state?.meeting_type ?? 'progress_checkin'
 
   const draftKey = `monthly-meeting-draft-${currentSchool?.id || 'no-school'}`
 
@@ -93,8 +96,13 @@ const CreateMonthlyMeetingContent = () => {
   } = useForm<MeetingFormData>({
     defaultValues: {
       meeting_title: (() => {
-        const today = new Date()
-        return `${today.toLocaleDateString('en-US', { month: 'long' })} Monthly Meeting`
+        const month = new Date().toLocaleDateString('en-US', { month: 'long' })
+        const titleMap: Record<string, string> = {
+          progress_checkin: `${month} Monthly Meeting`,
+          coaching_call: `${month} Coaching Call`,
+          school_visit_summary: `${month} School Visit Summary`,
+        }
+        return titleMap[meetingTypeFromNav] ?? `${month} Monthly Meeting`
       })(),
       facilitator_id: user?.id || '',
       attendees: [],
@@ -105,7 +113,7 @@ const CreateMonthlyMeetingContent = () => {
           '0'
         )}-${String(today.getDate()).padStart(2, '0')}`
       })(),
-      meeting_type: 'progress_checkin',
+      meeting_type: meetingTypeFromNav,
       topics: '',
       school_visit_purpose: '',
       additional_notes: '',
@@ -146,11 +154,23 @@ const CreateMonthlyMeetingContent = () => {
   const loadDraft = () => {
     const saved = localStorage.getItem(draftKey)
     if (saved) {
-      const { formData, studentData: savedStudentData } = JSON.parse(saved)
-      reset(formData)
-      setStudentData(savedStudentData)
+      try {
+        const { formData, studentData: savedStudentData } = JSON.parse(saved)
+        const sanitized = Object.fromEntries(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Object.entries(savedStudentData).map(([id, d]: [string, any]) => [
+            id,
+            { ...d, meeting_notes: d.meeting_notes ?? '' },
+          ])
+        )
+        reset(formData)
+        setStudentData(sanitized)
+      } catch {
+        localStorage.removeItem(draftKey)
+      }
     }
     setHasDraft(false)
+    setShowRestoreDialog(false)
   }
 
   const clearDraft = () => {
@@ -208,13 +228,7 @@ const CreateMonthlyMeetingContent = () => {
       return
     }
 
-    const student_updates = Object.entries(studentData)
-      .filter(([_, d]) => d.sessions_attended !== null || d.meeting_notes.trim() !== '')
-      .map(([student_id, d]) => ({
-        student_id,
-        sessions_attended: d.sessions_attended,
-        meeting_notes: d.meeting_notes.trim() || null,
-      }))
+    const student_updates = buildStudentUpdates(studentData)
 
     const submitData = {
       meeting_title: data.meeting_title.trim(),
@@ -238,7 +252,8 @@ const CreateMonthlyMeetingContent = () => {
           description: 'The monthly meeting has been successfully saved.',
         })
         navigate(
-          currentSchool?.id ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings'
+          currentSchool?.id ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings',
+          { state: { activeTab: meetingTypeFromNav } }
         )
         setIsSubmitting(false)
       },
@@ -259,7 +274,7 @@ const CreateMonthlyMeetingContent = () => {
       setPendingNavigation(destination)
       setShowLeaveDialog(true)
     } else {
-      navigate(destination)
+      navigate(destination, { state: { activeTab: meetingTypeFromNav } })
     }
   }
 
@@ -273,13 +288,18 @@ const CreateMonthlyMeetingContent = () => {
   const confirmLeave = () => {
     setShowLeaveDialog(false)
     if (pendingNavigation) {
-      navigate(pendingNavigation)
+      navigate(pendingNavigation, { state: { activeTab: meetingTypeFromNav } })
     }
   }
 
   const hasStudentData = (studentId: string) => {
     const data = studentData[studentId]
-    return data && (data.sessions_attended !== null || data.meeting_notes.trim() !== '')
+    return (
+      data &&
+      (data.sessions_attended !== null ||
+        data.sessions_absent !== null ||
+        (data.meeting_notes ?? '').trim() !== '')
+    )
   }
 
   return (
@@ -291,7 +311,7 @@ const CreateMonthlyMeetingContent = () => {
           onClick={handleCancel}
           className='text-gray-600 hover:text-gray-900'>
           <ChevronLeft className='w-4 h-4 mr-1' />
-          Back to Monthly Meetings
+          Back
         </Button>
         <div className='w-px h-4 bg-gray-300' />
         <h1 className='text-2xl font-semibold text-gray-900'>Create Monthly Meeting</h1>
@@ -422,7 +442,7 @@ const CreateMonthlyMeetingContent = () => {
                 </p>
               </div>
 
-              <div className='space-y-2'>
+              <div className='space-y-2 hidden'>
                 <Label htmlFor='meeting_type'>Meeting Type *</Label>
                 <Controller
                   name='meeting_type'

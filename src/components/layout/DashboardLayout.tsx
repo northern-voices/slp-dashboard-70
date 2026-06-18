@@ -5,9 +5,9 @@ import Header from '@/components/Header'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
 const DashboardLayout = () => {
-  const { userProfile } = useOrganization()
+  const { userProfile, isLoading } = useOrganization()
 
-  const userRole = userProfile?.role || 'slp'
+  const userRole = userProfile?.role ?? (isLoading ? null : 'slp')
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`
     : 'Dr. Sarah Johnson'

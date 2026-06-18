@@ -52,6 +52,7 @@ import SchoolWideGoalSheets from './pages/SchoolWideGoalSheets'
 import MfaChallenge from './pages/auth/MfaChallenge'
 import MfaEnroll from './pages/auth/MfaEnroll'
 import EmailOtpChallenge from './pages/auth/EmailOtpChallenge'
+import RoleGuard from './components/auth/RoleGuard'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -632,7 +633,9 @@ const App = () => (
                     path='/management'
                     element={
                       <SchoolRouter>
-                        <Management />
+                        <RoleGuard allowedRoles={['admin', 'super_admin']}>
+                          <Management />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -657,7 +660,9 @@ const App = () => (
                     path='/school/:schoolId/management'
                     element={
                       <SchoolRouter>
-                        <Management />
+                        <RoleGuard allowedRoles={['admin', 'super_admin']}>
+                          <Management />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />

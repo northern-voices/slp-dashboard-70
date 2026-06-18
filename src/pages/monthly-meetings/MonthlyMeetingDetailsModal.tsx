@@ -179,18 +179,35 @@ const MonthlyMeetingDetailsModal = ({
 
                     {/* Sessions and Notes Grid */}
                     <div className='grid grid-cols-1 md:grid-cols-[200px_1fr] gap-1'>
-                      {/* Sessions Attended - Left Column */}
-                      <div className='flex flex-col gap-2'>
-                        <h5 className='text-xs font-semibold text-gray-600'>Sessions Attended:</h5>
-                        {update.sessions_attended !== null &&
-                        update.sessions_attended !== undefined ? (
-                          <Badge className='text-blue-800 bg-blue-100 w-fit'>
-                            {update.sessions_attended}{' '}
-                            {update.sessions_attended === 1 ? 'session' : 'sessions'}
-                          </Badge>
-                        ) : (
-                          <span className='text-sm italic text-gray-500'>Not recorded</span>
-                        )}
+                      {/* Left Column */}
+                      <div className='flex flex-col gap-3'>
+                        <div className='flex flex-col gap-2'>
+                          <h5 className='text-xs font-semibold text-gray-600'>
+                            Sessions Attended:
+                          </h5>
+                          {update.sessions_attended !== null &&
+                          update.sessions_attended !== undefined ? (
+                            <Badge className='text-blue-800 bg-blue-100 w-fit'>
+                              {update.sessions_attended}{' '}
+                              {update.sessions_attended === 1 ? 'session' : 'sessions'}
+                            </Badge>
+                          ) : (
+                            <span className='text-sm italic text-gray-500'>Not recorded</span>
+                          )}
+                        </div>
+
+                        <div className='flex flex-col gap-2'>
+                          <h5 className='text-xs font-semibold text-gray-600'>Sessions Absent:</h5>
+                          {update.sessions_absent !== null &&
+                          update.sessions_absent !== undefined ? (
+                            <Badge className='text-orange-800 bg-orange-100 w-fit'>
+                              {update.sessions_absent}{' '}
+                              {update.sessions_absent === 1 ? 'session' : 'sessions'}
+                            </Badge>
+                          ) : (
+                            <span className='text-sm italic text-gray-500'>Not recorded</span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Meeting Notes - Right Column */}

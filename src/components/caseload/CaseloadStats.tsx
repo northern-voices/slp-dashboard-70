@@ -1,17 +1,33 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, Clock, PauseCircle } from 'lucide-react'
+import { CheckCircle, Clock, FileX, Users } from 'lucide-react'
 
 interface CaseloadStatsProps {
-  stats: { qualified: number; sub: number; paused: number }
+  stats: { qualified: number; sub: number; no_consent: number }
   activeFilter: string
   onFilterChange: (filter: string) => void
 }
 
 const CaseloadStats = ({ stats, activeFilter, onFilterChange }: CaseloadStatsProps) => {
   const toggle = (value: string) => onFilterChange(activeFilter === value ? 'all' : value)
+  const total = stats.qualified + stats.sub + stats.no_consent
 
   return (
-    <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+    <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+      <Card
+        className={`cursor-pointer transition-colors ${
+          activeFilter === 'all' ? 'ring-2 ring-blue-300 bg-blue-50' : 'hover:bg-gray-50'
+        }`}
+        onClick={() => onFilterChange('all')}>
+        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+          <CardTitle className='text-sm font-medium'>Total</CardTitle>
+          <Users className='h-4 w-4 text-blue-600' />
+        </CardHeader>
+        <CardContent>
+          <div className='text-2xl font-bold'>{total}</div>
+          <p className='text-xs text-muted-foreground mt-1'>total students</p>
+        </CardContent>
+      </Card>
+
       <Card
         className={`cursor-pointer transition-colors ${
           activeFilter === 'qualified' ? 'ring-2 ring-red-300 bg-red-50' : 'hover:bg-gray-50'
@@ -44,16 +60,16 @@ const CaseloadStats = ({ stats, activeFilter, onFilterChange }: CaseloadStatsPro
 
       <Card
         className={`cursor-pointer transition-colors ${
-          activeFilter === 'paused' ? 'ring-2 ring-purple-300 bg-purple-50' : 'hover:bg-gray-50'
+          activeFilter === 'no_consent' ? 'ring-2 ring-gray-300 bg-gray-50' : 'hover:bg-gray-50'
         }`}
-        onClick={() => toggle('paused')}>
+        onClick={() => toggle('no_consent')}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>Pause / Away</CardTitle>
-          <PauseCircle className='h-4 w-4 text-purple-500' />
+          <CardTitle className='text-sm font-medium'>No Consent</CardTitle>
+          <FileX className='h-4 w-4 text-gray-500' />
         </CardHeader>
         <CardContent>
-          <div className='text-2xl font-bold'>{stats.paused}</div>
-          <p className='text-xs text-muted-foreground mt-1'>students paused</p>
+          <div className='text-2xl font-bold'>{stats.no_consent}</div>
+          <p className='text-xs text-muted-foreground mt-1'>awaiting consent</p>
         </CardContent>
       </Card>
     </div>

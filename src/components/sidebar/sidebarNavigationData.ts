@@ -34,7 +34,7 @@ export interface NavigationGroup {
 
 export const getNavigationGroups = (
   location: Location,
-  userRole: string,
+  userRole: string | null,
   userProfile: Record<string, unknown> | null,
   currentSchool?: { id: string; name?: string } | null
 ): NavigationGroup[] => {
@@ -93,7 +93,7 @@ export const getNavigationGroups = (
       skeleton: ReportsSkeleton,
     },
     {
-      title: 'Monthly Meetings',
+      title: 'Meetings',
       url: useSchoolRoutes ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings',
       icon: Building2,
       isActive:
@@ -121,14 +121,6 @@ export const getNavigationGroups = (
     //     (useSchoolRoutes &&
     //       location.pathname.startsWith(`/school/${currentSchool.id}/school-support`)),
     // },
-    {
-      title: 'Management',
-      url: useSchoolRoutes ? `/school/${currentSchool.id}/management` : '/management',
-      icon: Building2,
-      isActive:
-        location.pathname === '/management' ||
-        (useSchoolRoutes && location.pathname === `/school/${currentSchool.id}/management`),
-    },
   ]
 
   const groups: NavigationGroup[] = [

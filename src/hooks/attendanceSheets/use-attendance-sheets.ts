@@ -21,6 +21,17 @@ export const useUploadAttendanceSheet = (schoolId: string) => {
     },
   })
 }
+export const useUpdateAttendanceSheetLabel = (schoolId: string) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, label }: { id: string; label: string }) =>
+      attendanceSheetsApi.updateLabel(id, label),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attendance-sheets', schoolId] })
+    },
+  })
+}
 
 export const useDeleteAttendanceSheet = (schoolId: string) => {
   const queryClient = useQueryClient()

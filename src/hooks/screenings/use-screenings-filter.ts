@@ -41,7 +41,7 @@ export const useScreeningsFilter = ({
   gradesMap,
   isLoadingGrades,
 }: UseScreeningsFilterParams) => {
-  const [sortField, setSortField] = useState<'date' | 'name' | 'grade' | null>(null)
+  const [sortField, setSortField] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
 
   const getScreeningGrade = (screening: Screening): string => {
@@ -261,6 +261,8 @@ export const useScreeningsFilter = ({
     sortedScreenings,
     sortField,
     sortOrder,
+    setSortField,
+    setSortOrder,
     handleSort,
     getScreeningGrade,
   }

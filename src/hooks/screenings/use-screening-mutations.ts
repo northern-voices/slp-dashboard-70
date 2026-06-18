@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { screeningsApi } from '@/api/screenings'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { Screening } from '@/types/database'
+import { Screening, ProgramStatus } from '@/types/database'
 import { ErrorPatterns } from '@/types/screening-form'
 
 // Type for the create speech screening input
@@ -103,23 +103,31 @@ export const useUpdateSpeechScreening = () => {
 
       const previousScreenings = queryClient.getQueriesData({ queryKey: ['screenings'] })
 
+      const deriveProgram = (errorPatterns: ErrorPatterns | null | undefined): ProgramStatus => {
+        const metadata = errorPatterns?.screening_metadata
+        const consent = errorPatterns?.consent
+        if (consent?.no_consent) return 'no_consent'
+        if (metadata?.sub) return 'sub'
+        if (metadata?.qualifies_for_speech_program === true) return 'qualified'
+        return 'none'
+      }
+
+      const applyUpdate = (screening: Screening) => {
+        if (screening.id !== id) return screening
+        const newErrorPatterns = data.error_patterns || screening.error_patterns
+        return {
+          ...screening,
+          ...data,
+          error_patterns: newErrorPatterns,
+          ...(data.error_patterns ? { program_status: deriveProgram(data.error_patterns) } : {}),
+        }
+      }
+
       queryClient.setQueriesData({ queryKey: ['screenings'] }, (old: unknown) => {
         if (!old) return old
 
-        // Flat array shape
-        if (Array.isArray(old)) {
-          return old.map(screening =>
-            screening.id === id
-              ? {
-                  ...screening,
-                  ...data,
-                  error_patterns: data.error_patterns || screening.error_patterns,
-                }
-              : screening
-          )
-        }
+        if (Array.isArray(old)) return old.map(applyUpdate)
 
-        // Paginated shape { screenings: [], totalCount: number }
         if (
           typeof old === 'object' &&
           'screenings' in old &&
@@ -127,15 +135,7 @@ export const useUpdateSpeechScreening = () => {
         ) {
           return {
             ...old,
-            screenings: (old as PaginatedScreenings).screenings.map((screening: Screening) =>
-              screening.id === id
-                ? {
-                    ...screening,
-                    ...data,
-                    error_patterns: data.error_patterns || screening.error_patterns,
-                  }
-                : screening
-            ),
+            screenings: (old as PaginatedScreenings).screenings.map(applyUpdate),
           }
         }
 
