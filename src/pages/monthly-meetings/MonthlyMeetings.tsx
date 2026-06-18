@@ -8,6 +8,12 @@ import MonthlyMeetingsFilters from '@/components/monthly-meetings/MonthlyMeeting
 import MonthlyMeetingsTable from '@/components/monthly-meetings/MonthlyMeetingsTable'
 import AttendanceSheetsSection from '@/components/caseload/AttendanceSheetsSection'
 
+const buttonLabels: Record<string, string> = {
+  progress_checkin: 'Create Monthly Meeting',
+  coaching_call: 'Create Coaching Call Meeting',
+  school_visit_summary: 'Create School Visit Meeting',
+}
+
 const MonthlyMeetingsContent = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
@@ -19,11 +25,11 @@ const MonthlyMeetingsContent = () => {
   const { currentSchool } = useOrganization()
 
   const handleCreateMeeting = () => {
-    if (currentSchool?.id) {
-      navigate(`/school/${currentSchool.id}/monthly-meetings/create`)
-    } else {
-      navigate('/monthly-meetings/create')
-    }
+    const path = currentSchool?.id
+      ? `/school/${currentSchool.id}/monthly-meetings/create`
+      : '/monthly-meetings/create'
+
+    navigate(path, { state: { meeting_type: activeTab } })
   }
 
   return (
@@ -41,7 +47,7 @@ const MonthlyMeetingsContent = () => {
           {activeTab !== 'attendance' && (
             <Button onClick={handleCreateMeeting} className='bg-blue-600 hover:bg-blue-700'>
               <Plus className='w-4 h-4 mr-2' />
-              Create Monthly Meeting
+              {buttonLabels[activeTab]}
             </Button>
           )}
         </div>

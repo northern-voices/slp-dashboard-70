@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Component } from 'react'
 import type { ReactNode } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -75,9 +75,13 @@ const CreateMonthlyMeetingContent = () => {
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
 
   const navigate = useNavigate()
+  const location = useLocation()
+
   const { toast } = useToast()
   const { currentSchool } = useOrganization()
   const { user } = useAuth()
+
+  const meetingTypeFromNav = location.state?.meeting_type ?? 'progress_checkin'
 
   const draftKey = `monthly-meeting-draft-${currentSchool?.id || 'no-school'}`
 
@@ -92,8 +96,13 @@ const CreateMonthlyMeetingContent = () => {
   } = useForm<MeetingFormData>({
     defaultValues: {
       meeting_title: (() => {
-        const today = new Date()
-        return `${today.toLocaleDateString('en-US', { month: 'long' })} Monthly Meeting`
+        const month = new Date().toLocaleDateString('en-US', { month: 'long' })
+        const titleMap: Record<string, string> = {
+          progress_checkin: `${month} Monthly Meeting`,
+          coaching_call: `${month} Coaching Call`,
+          school_visit_summary: `${month} School Visit Summary`,
+        }
+        return titleMap[meetingTypeFromNav] ?? `${month} Monthly Meeting`
       })(),
       facilitator_id: user?.id || '',
       attendees: [],
@@ -104,7 +113,7 @@ const CreateMonthlyMeetingContent = () => {
           '0'
         )}-${String(today.getDate()).padStart(2, '0')}`
       })(),
-      meeting_type: 'progress_checkin',
+      meeting_type: meetingTypeFromNav,
       topics: '',
       school_visit_purpose: '',
       additional_notes: '',
@@ -432,7 +441,7 @@ const CreateMonthlyMeetingContent = () => {
                 </p>
               </div>
 
-              <div className='space-y-2'>
+              <div className='space-y-2 hidden'>
                 <Label htmlFor='meeting_type'>Meeting Type *</Label>
                 <Controller
                   name='meeting_type'
