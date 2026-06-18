@@ -35,7 +35,7 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
   const uploadMutation = useUploadAttendanceSheet(schoolId)
 
   const form = useForm<FormValues>({
-    defaultValues: { provision_status: '', sheet_date: '', additional_notes: '' },
+    defaultValues: { provision_status: 'uploaded', sheet_date: '', additional_notes: '' },
   })
 
   const provisionStatus = form.watch('provision_status')
@@ -122,7 +122,7 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
           }}
           className='space-y-4'>
           {/* Provision Status */}
-          <div className='space-y-1'>
+          <div className='space-y-1 hidden'>
             <Label>
               Status <span className='text-destructive'>*</span>
             </Label>
