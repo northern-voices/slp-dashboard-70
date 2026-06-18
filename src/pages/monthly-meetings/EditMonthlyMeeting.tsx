@@ -269,7 +269,10 @@ const EditMonthlyMeetingContent = () => {
             description: 'The monthly meeting has been successfully updated.',
           })
           navigate(
-            currentSchool?.id ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings'
+            currentSchool?.id
+              ? `/school/${currentSchool.id}/monthly-meetings`
+              : '/monthly-meetings',
+            { state: { activeTab: watchedValues.meeting_type } }
           )
           setIsSubmitting(false)
         },
@@ -295,14 +298,14 @@ const EditMonthlyMeetingContent = () => {
       setPendingNavigation(destination)
       setShowLeaveDialog(true)
     } else {
-      navigate(destination)
+      navigate(destination, { state: { activeTab: watchedValues.meeting_type } })
     }
   }
 
   const confirmLeave = () => {
     setShowLeaveDialog(false)
     if (pendingNavigation) {
-      navigate(pendingNavigation)
+      navigate(pendingNavigation, { state: { activeTab: watchedValues.meeting_type } })
     }
   }
 
