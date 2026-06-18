@@ -12,12 +12,14 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
+import { Input } from '@/components/ui/input'
 import {
   useAttendanceSheets,
+  useUpdateAttendanceSheetLabel,
   useDeleteAttendanceSheet,
 } from '@/hooks/attendanceSheets/use-attendance-sheets'
 import { attendanceSheetsApi, AttendanceSheet } from '@/api/attendanceSheets'
-import { Loader2, Plus, Trash2, Eye, FileImage, FileX } from 'lucide-react'
+import { Loader2, Plus, Trash2, Eye, FileImage, FileX, Pencil, Check, X } from 'lucide-react'
 import { format } from 'date-fns'
 import AttendanceSheetModal from './AttendanceSheetModal'
 
@@ -33,6 +35,10 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
     filePath: string | null
     fileName: string
   } | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState('')
+
+  const updateLabelMutation = useUpdateAttendanceSheetLabel(schoolId)
 
   const { data: sheets = [], isLoading } = useAttendanceSheets(schoolId)
   const deleteMutation = useDeleteAttendanceSheet(schoolId)
@@ -50,6 +56,30 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
       })
     }
   }
+
+  const handleEditStart = (sheet: AttendanceSheet) => {
+    setEditingId(sheet.id)
+    setEditValue(sheet.label ?? sheet.file_name ?? '')
+  }
+
+  const handleEditSave = (id: string) => {
+    if (!editValue.trim()) return
+    updateLabelMutation.mutate(
+      { id, label: editValue.trim() },
+      {
+        onSuccess: () => setEditingId(null),
+        onError: () => {
+          toast({
+            title: 'Error',
+            description: 'Failed to rename. Please try again.',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
+  }
+
+  const handleEditCancel = () => setEditingId(null)
 
   const handleDelete = (id: string, filePath: string | null, fileName: string) => {
     deleteMutation.mutate(
@@ -95,12 +125,27 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
             <ul className='divide-y'>
               {sheets.map(sheet => (
                 <li key={sheet.id} className='flex items-center justify-between py-3'>
-                  <div className='flex flex-col'>
-                    <span className='text-sm font-medium'>
-                      {sheet.provision_status === 'not_provided'
-                        ? 'Not provided by school'
-                        : sheet.file_name}
-                    </span>
+                  <div className='flex flex-col gap-1'>
+                    {editingId === sheet.id ? (
+                      <Input
+                        value={editValue}
+                        onChange={e => setEditValue(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleEditSave(sheet.id)
+                          if (e.key === 'Escape') handleEditCancel()
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <span className='text-sm font-medium'>
+                        {sheet.provision_status === 'not_provided'
+                          ? 'Not provided by school'
+                          : (sheet.label ?? sheet.file_name)}
+                      </span>
+                    )}
+                    {sheet.provision_status === 'uploaded' && sheet.file_name && (
+                      <span className='text-xs text-muted-foreground mt-2'>{sheet.file_name}</span>
+                    )}
                     <span className='text-xs text-muted-foreground'>
                       {sheet.sheet_date
                         ? format(new Date(sheet.sheet_date), 'MMMM yyyy')
@@ -110,29 +155,49 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
                     </span>
                   </div>
                   <div className='flex gap-2'>
-                    {sheet.provision_status === 'uploaded' && (
-                      <Button size='sm' variant='outline' onClick={() => handleView(sheet)}>
-                        <Eye className='w-4 h-4' />
-                      </Button>
+                    {editingId === sheet.id ? (
+                      <>
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          onClick={() => handleEditSave(sheet.id)}
+                          disabled={updateLabelMutation.isPending}>
+                          <Check className='w-4 h-4 text-green-600' />
+                        </Button>
+                        <Button size='sm' variant='outline' onClick={handleEditCancel}>
+                          <X className='w-4 h-4' />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        {sheet.provision_status === 'uploaded' && (
+                          <Button size='sm' variant='outline' onClick={() => handleView(sheet)}>
+                            <Eye className='w-4 h-4' />
+                          </Button>
+                        )}
+                        {sheet.provision_status === 'not_provided' && (
+                          <Button size='sm' variant='outline' disabled>
+                            <FileX className='w-4 h-4 text-muted-foreground' />
+                          </Button>
+                        )}
+                        <Button size='sm' variant='outline' onClick={() => handleEditStart(sheet)}>
+                          <Pencil className='w-4 h-4' />
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          onClick={() =>
+                            setSheetToDelete({
+                              id: sheet.id,
+                              filePath: sheet.file_path,
+                              fileName: sheet.file_name ?? 'this record',
+                            })
+                          }
+                          disabled={deleteMutation.isPending}>
+                          <Trash2 className='w-4 h-4 text-destructive' />
+                        </Button>
+                      </>
                     )}
-                    {sheet.provision_status === 'not_provided' && (
-                      <Button size='sm' variant='outline' disabled>
-                        <FileX className='w-4 h-4 text-muted-foreground' />
-                      </Button>
-                    )}
-                    <Button
-                      size='sm'
-                      variant='outline'
-                      onClick={() =>
-                        setSheetToDelete({
-                          id: sheet.id,
-                          filePath: sheet.file_path,
-                          fileName: sheet.file_name ?? 'this record',
-                        })
-                      }
-                      disabled={deleteMutation.isPending}>
-                      <Trash2 className='w-4 h-4 text-destructive' />
-                    </Button>
                   </div>
                 </li>
               ))}
