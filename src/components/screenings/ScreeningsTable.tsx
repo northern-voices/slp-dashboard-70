@@ -228,35 +228,26 @@ const ScreeningsTable = ({
 
   const paginatedScreenings = sortedScreenings
 
-  const getResultBadge = (result?: string) => {
-    if (!result) return null
+  const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {
+    complex_needs: 'Complex Needs',
+    unable_to_screen: 'Refusal / Non-Compliant',
+  }
+
+  const getResultBadge = (result?: string | null) => {
+    if (!result) return <span className='text-sm text-gray-400'>—</span>
 
     const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
-    if (!config) return null
+    if (!config) return <span className='text-sm text-gray-400'>—</span>
 
-    if (result === 'complex_needs') {
-      return (
-        <Badge className={`${config.color} font-medium text-[10px] leading-tight`}>
-          <span className='flex flex-col items-center'>
-            <span>Complex Needs</span>
-            <span>(Unable to Screen)</span>
-          </span>
-        </Badge>
-      )
-    }
+    const label = RESULT_BADGE_LABELS[result as keyof typeof SCREENING_RESULTS] ?? config.label
 
-    if (result === 'unable_to_screen') {
-      return (
-        <Badge className={`${config.color} font-medium text-[10px] leading-tight`}>
-          <span className='flex flex-col items-center'>
-            <span>Student Refusal /</span>
-            <span>Compliance</span>
-          </span>
-        </Badge>
-      )
-    }
-
-    return <Badge className={`${config.color} font-medium text-[10px]`}>{config.label}</Badge>
+    return (
+      <Badge
+        title={config.label}
+        className={`${config.color} font-medium text-[10px] whitespace-nowrap`}>
+        {label}
+      </Badge>
+    )
   }
 
   const getQualificationBadge = (screening: Screening) => {
