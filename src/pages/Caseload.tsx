@@ -17,7 +17,7 @@ const Caseload = () => {
         </div>
       </div>
 
-      <Tabs defaultValue='active' className='space-y-6'>
+      <Tabs defaultValue='all' className='space-y-6'>
         <TabsList className='flex-wrap justify-start w-full h-auto p-1'>
           <TabsTrigger value='all' className='flex-shrink-0'>
             All

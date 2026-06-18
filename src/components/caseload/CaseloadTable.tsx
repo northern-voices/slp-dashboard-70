@@ -290,15 +290,13 @@ const CaseloadTable = ({
     switch (student.service_status) {
       case 'paused':
         return (
-          <span className='text-[10px] font-medium text-purple-700 bg-purple-100 rounded px-1.5 py-0.5'>
+          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
             Paused / Away
-          </span>
+          </Badge>
         )
       case 'graduated':
         return (
-          <span className='text-[10px] font-medium text-blue-700 bg-blue-100 rounded px-1.5 py-0.5'>
-            Graduated
-          </span>
+          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
         )
       default:
         return null
@@ -529,23 +527,26 @@ const CaseloadTable = ({
 
     const screening = latestScreeningByStudent.get(student.id)
 
-    const matchesCaseload =
-      statusGroup === 'all'
-        ? true
-        : statusGroup === 'paused'
-          ? student.service_status === 'paused'
-          : statusGroup === 'graduated'
-            ? student.service_status === 'graduated'
-            : student.service_status !== 'graduated' &&
-              student.service_status !== 'transferred' &&
-              student.service_status !== 'paused' &&
-              (dateFilter === 'school_year'
-                ? student.program_status === 'qualified' ||
-                  student.program_status === 'sub' ||
-                  student.program_status === 'no_consent'
-                : screening?.program_status === 'qualified' ||
-                  screening?.program_status === 'sub' ||
-                  screening?.program_status === 'no_consent')
+    const matchesCaseload = (() => {
+      if (statusGroup === 'all') return true
+      if (statusGroup === 'paused') return student.service_status === 'paused'
+      if (statusGroup === 'graduated') return student.service_status === 'graduated'
+
+      // active
+      if (
+        student.service_status === 'graduated' ||
+        student.service_status === 'transferred' ||
+        student.service_status === 'paused'
+      )
+        return false
+
+      const programStatus =
+        dateFilter === 'school_year' ? student.program_status : screening?.program_status
+
+      return (
+        programStatus === 'qualified' || programStatus === 'sub' || programStatus === 'no_consent'
+      )
+    })()
 
     // TODO: Code for getting caseload for only this school year
     // const matchesCaseload =
@@ -793,7 +794,7 @@ const CaseloadTable = ({
             {paginatedStudents.map(student => (
               <ResponsiveTableRow key={student.id}>
                 <TableCell className='font-medium'>
-                  <div className='flex flex-col gap-1'>
+                  <div className='flex flex-col gap-1 items-start'>
                     <span>
                       {student.first_name} {student.last_name}
                     </span>
