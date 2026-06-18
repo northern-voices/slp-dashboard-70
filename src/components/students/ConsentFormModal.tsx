@@ -39,6 +39,7 @@ const minDate = () => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString
 const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) => {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const verbalFileInputRef = useRef<HTMLInputElement>(null)
   const uploadMutation = useUploadConsentForm(student.id)
 
   const form = useForm<ConsentFormValues>({
@@ -65,6 +66,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
   const handleClose = () => {
     form.reset()
     if (fileInputRef.current) fileInputRef.current.value = ''
+    if (verbalFileInputRef.current) verbalFileInputRef.current.value = ''
     onClose()
   }
 
@@ -113,7 +115,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
           values.consent_type === 'verbal' ? values.verbal_consent_details : undefined,
         parent_guardian: values.parent_guardian || undefined,
         additional_notes: values.additional_notes || undefined,
-        file: values.consent_type === 'written' ? file : undefined,
+        file,
       },
       {
         onSuccess: () => {
@@ -182,7 +184,13 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
             </Label>
             <Select
               value={form.watch('consent_purpose')}
-              onValueChange={val => form.setValue('consent_purpose', val as ConsentPurpose)}>
+              onValueChange={val => {
+                form.setValue('consent_type', val as ConsentType)
+                form.setValue('verbal_consent_details', '')
+                form.setValue('file' as keyof ConsentFormValues, undefined as unknown as string)
+                if (fileInputRef.current) fileInputRef.current.value = ''
+                if (verbalFileInputRef.current) verbalFileInputRef.current.value = ''
+              }}>
               <SelectTrigger>
                 <SelectValue placeholder='Select purpose' />
               </SelectTrigger>
@@ -204,7 +212,9 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
                 form.setValue('consent_type', val as ConsentType)
                 form.setValue('verbal_consent_details', '')
                 form.setValue('file' as keyof ConsentFormValues, undefined as unknown as string)
+
                 if (fileInputRef.current) fileInputRef.current.value = ''
+                if (verbalFileInputRef.current) verbalFileInputRef.current.value = ''
               }}>
               <SelectTrigger>
                 <SelectValue placeholder='Select consent type' />
@@ -218,16 +228,47 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
 
           {/* Verbal — details textarea */}
           {consentType === 'verbal' && (
-            <div className='space-y-1'>
-              <Label htmlFor='verbal-details'>
-                Verbal Consent Details <span className='text-destructive'>*</span>
-              </Label>
-              <Textarea
-                id='verbal-details'
-                placeholder='Describe the verbal consent given...'
-                rows={3}
-                {...form.register('verbal_consent_details')}
-              />
+            <div className='space-y-3'>
+              <div className='space-y-1'>
+                <Label htmlFor='verbal-details'>
+                  Verbal Consent Details <span className='text-destructive'>*</span>
+                </Label>
+                <Textarea
+                  id='verbal-details'
+                  placeholder='Describe the verbal consent given...'
+                  rows={3}
+                  {...form.register('verbal_consent_details')}
+                />
+              </div>
+
+              <div className='space-y-1'>
+                <Label>
+                  Supporting File <span className='text-muted-foreground text-xs'>(optional)</span>
+                </Label>
+                <div className='flex items-center gap-3'>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='sm'
+                    onClick={() => verbalFileInputRef.current?.click()}>
+                    <Upload className='w-4 h-4 mr-2' />
+                    Choose File
+                  </Button>
+                  {file && (
+                    <span className='flex items-center gap-1 text-sm text-muted-foreground'>
+                      <CheckCircle2 className='w-4 h-4 text-green-500' />
+                      {(file as File).name}
+                    </span>
+                  )}
+                </div>
+                <input
+                  ref={verbalFileInputRef}
+                  type='file'
+                  accept='image/*,audio/*,application/pdf'
+                  className='hidden'
+                  onChange={handleFileChange}
+                />
+              </div>
             </div>
           )}
 
