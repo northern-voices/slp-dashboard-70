@@ -52,7 +52,9 @@ const ScreeningTableRow = ({
   const transferredOut =
     transferRecord && currentSchoolId && transferRecord.from_school_id === currentSchoolId
       ? transferRecord.to_school?.name
-      : null
+      : !transferRecord && currentSchoolId && screening.school_id !== currentSchoolId
+        ? screening.school_name
+        : null
 
   const transferredIn =
     transferRecord && currentSchoolId && transferRecord.to_school_id === currentSchoolId
