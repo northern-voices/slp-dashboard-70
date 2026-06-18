@@ -99,7 +99,7 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
                     <span className='text-sm font-medium'>
                       {sheet.provision_status === 'not_provided'
                         ? 'Not provided by school'
-                        : sheet.file_name}
+                        : (sheet.label ?? sheet.file_name)}
                     </span>
                     <span className='text-xs text-muted-foreground'>
                       {sheet.sheet_date
