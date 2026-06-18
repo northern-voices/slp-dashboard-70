@@ -78,7 +78,7 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
     if (values.provision_status === 'uploaded' && !file) {
       toast({
         title: 'Missing file',
-        description: 'Please select an image to upload.',
+        description: 'Please select a file to upload.',
         variant: 'destructive',
       })
       return
@@ -137,7 +137,7 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
                 <SelectValue placeholder='Select status' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='uploaded'>Upload Image</SelectItem>
+                <SelectItem value='uploaded'>Upload File</SelectItem>
                 <SelectItem value='not_provided'>Not provided by school</SelectItem>
               </SelectContent>
             </Select>
@@ -168,7 +168,7 @@ const AttendanceSheetModal = ({ isOpen, onClose, schoolId }: AttendanceSheetModa
               <input
                 ref={fileInputRef}
                 type='file'
-                accept='image/*'
+                accept='image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
                 className='hidden'
                 onChange={handleFileChange}
               />
