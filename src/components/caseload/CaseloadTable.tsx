@@ -10,7 +10,7 @@ import {
   FileX,
   Search,
   X,
-  Delete,
+  Info,
   PauseCircle,
   GraduationCap,
   User,
@@ -41,6 +41,7 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/responsive-table'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { RESULT_OPTIONS, PROGRAM_OPTIONS } from '@/constants/screeningOptions'
 import { GRADE_MAPPING } from '@/constants/app'
 import { supabase } from '@/lib/supabase'
@@ -867,7 +868,18 @@ const CaseloadTable = ({
                       )
                     })()
                   ) : (
-                    <span className='text-sm text-gray-400 italic'>No Screening Recorded</span>
+                    <div className='flex items-center gap-1.5'>
+                      <span className='text-sm text-gray-400 italic'>No Screening Recorded</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className='w-3.5 h-3.5 text-gray-400 cursor-help shrink-0' />
+                        </TooltipTrigger>
+                        <TooltipContent className='max-w-[220px] text-center'>
+                          No screening on record. This can happen if the student transferred from
+                          another school or if a previous screening was removed.
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                   )}
                 </TableCell>
 
