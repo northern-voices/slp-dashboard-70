@@ -19,6 +19,9 @@ const Caseload = () => {
 
       <Tabs defaultValue='active' className='space-y-6'>
         <TabsList className='flex-wrap justify-start w-full h-auto p-1'>
+          <TabsTrigger value='all' className='flex-shrink-0'>
+            All
+          </TabsTrigger>
           <TabsTrigger value='active' className='flex-shrink-0'>
             Active
           </TabsTrigger>
@@ -32,6 +35,15 @@ const Caseload = () => {
             Transferred
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value='all' className='space-y-6'>
+          <CaseloadTable
+            students={students}
+            isLoading={isLoading}
+            schoolId={currentSchool.id}
+            statusGroup='all'
+          />
+        </TabsContent>
 
         <TabsContent value='active' className='space-y-6'>
           <CaseloadTable
