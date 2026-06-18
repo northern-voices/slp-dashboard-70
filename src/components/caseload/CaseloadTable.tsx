@@ -254,9 +254,7 @@ const CaseloadTable = ({
     schoolDetails?.schoolTeam?.filter(member => member.roles.includes('speech_ea')) ?? []
 
   const getSpeechEAName = (student: Student): string => {
-    if (!student.speech_ea_id) return '-'
-
-    return speechEAs.find(ea => ea.id === student.speech_ea_id)?.name ?? '-'
+    return speechEAs.find(ea => ea.id === student.speech_ea_id)?.name ?? ''
   }
 
   const getStudentGrade = (student: Student): string => {
@@ -903,10 +901,18 @@ const CaseloadTable = ({
                       handleAssignEA(student, value)
                     }}>
                     <SelectTrigger className='w-full h-8 p-0 truncate border-none hover:bg-transparent focus:ring-0'>
-                      <SelectValue placeholder='Assign EA'>{getSpeechEAName(student)}</SelectValue>
+                      <SelectValue placeholder='Assign EA'>
+                        {student.speech_ea_id ? (
+                          getSpeechEAName(student)
+                        ) : (
+                          <span className='text-sm text-gray-400 italic'>
+                            No Speech EA assigned
+                          </span>
+                        )}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='none'>None</SelectItem>
+                      <SelectItem value='none'>-</SelectItem>
                       {speechEAs.map(ea => (
                         <SelectItem key={ea.id} value={ea.id} className='pr-8'>
                           <div className='flex items-center justify-between w-full gap-2'>
