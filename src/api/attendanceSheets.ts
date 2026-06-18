@@ -104,6 +104,12 @@ export const attendanceSheetsApi = {
     return (data || []) as unknown as AttendanceSheet[]
   },
 
+  updateLabel: async (id: string, label: string): Promise<void> => {
+    const { error } = await supabase.from('attendance_sheets').update({ label }).eq('id', id)
+
+    if (error) throw error
+  },
+
   getSignedUrl: async (filePath: string): Promise<string> => {
     const { data, error } = await supabase.storage
       .from('attendance-sheets')
