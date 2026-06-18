@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
@@ -18,9 +18,10 @@ const MonthlyMeetingsContent = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [dateRangeFilter, setDateRangeFilter] = useState('all')
   const [facilitatorFilter, setFacilitatorFilter] = useState('all')
-  const [activeTab, setActiveTab] = useState('progress_checkin')
 
   const navigate = useNavigate()
+  const location = useLocation()
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab ?? 'progress_checkin')
 
   const { currentSchool } = useOrganization()
 
@@ -37,9 +38,9 @@ const MonthlyMeetingsContent = () => {
       <div className='mb-8'>
         <div className='flex items-center justify-between mb-6'>
           <div>
-            <h1 className='text-3xl font-semibold text-gray-900 mb-2'>Monthly Meetings</h1>
+            <h1 className='text-3xl font-semibold text-gray-900 mb-2'>Meetings</h1>
             <p className='text-gray-600'>
-              Manage and track all monthly meetings
+              Manage and track all meetings
               {currentSchool && ` for ${currentSchool.name}`}
             </p>
           </div>

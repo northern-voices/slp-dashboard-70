@@ -321,7 +321,7 @@ const EditMonthlyMeetingContent = () => {
             onClick={handleCancel}
             className='text-gray-600 hover:text-gray-900'>
             <ChevronLeft className='w-4 h-4 mr-1' />
-            Back to Monthly Meetings
+            Back
           </Button>
           <div className='w-px h-4 bg-gray-300' />
           <h1 className='text-2xl font-semibold text-gray-900'>Edit Monthly Meeting</h1>

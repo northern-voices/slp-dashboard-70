@@ -252,7 +252,8 @@ const CreateMonthlyMeetingContent = () => {
           description: 'The monthly meeting has been successfully saved.',
         })
         navigate(
-          currentSchool?.id ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings'
+          currentSchool?.id ? `/school/${currentSchool.id}/monthly-meetings` : '/monthly-meetings',
+          { state: { activeTab: meetingTypeFromNav } }
         )
         setIsSubmitting(false)
       },
@@ -273,7 +274,7 @@ const CreateMonthlyMeetingContent = () => {
       setPendingNavigation(destination)
       setShowLeaveDialog(true)
     } else {
-      navigate(destination)
+      navigate(destination, { state: { activeTab: meetingTypeFromNav } })
     }
   }
 
@@ -287,7 +288,7 @@ const CreateMonthlyMeetingContent = () => {
   const confirmLeave = () => {
     setShowLeaveDialog(false)
     if (pendingNavigation) {
-      navigate(pendingNavigation)
+      navigate(pendingNavigation, { state: { activeTab: meetingTypeFromNav } })
     }
   }
 
@@ -310,7 +311,7 @@ const CreateMonthlyMeetingContent = () => {
           onClick={handleCancel}
           className='text-gray-600 hover:text-gray-900'>
           <ChevronLeft className='w-4 h-4 mr-1' />
-          Back to Monthly Meetings
+          Back
         </Button>
         <div className='w-px h-4 bg-gray-300' />
         <h1 className='text-2xl font-semibold text-gray-900'>Create Monthly Meeting</h1>
