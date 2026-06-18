@@ -91,15 +91,6 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
       return
     }
 
-    if (values.consent_type === 'written' && !file) {
-      toast({
-        title: 'Missing file',
-        description: 'Please upload a file for written consent.',
-        variant: 'destructive',
-      })
-      return
-    }
-
     await uploadMutation.mutateAsync(
       {
         consent_date: values.consent_date,
@@ -267,9 +258,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
           {/* Written — file upload */}
           {consentType === 'written' && (
             <div className='space-y-2'>
-              <Label>
-                Upload Form <span className='text-destructive'>*</span>
-              </Label>
+              <Label>Upload Form</Label>
               <div className='flex items-center gap-3'>
                 <Button
                   type='button'
