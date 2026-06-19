@@ -75,7 +75,10 @@ const HearingScreeningsTable = ({
 
   const transferStudentById = useMemo(() => {
     const map = new Map<string, (typeof schoolTransfers)[0]>()
-    schoolTransfers.forEach(transfer => {
+    const sorted = [...schoolTransfers].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+    sorted.forEach(transfer => {
       if (!map.has(transfer.student_id)) {
         map.set(transfer.student_id, transfer)
       }

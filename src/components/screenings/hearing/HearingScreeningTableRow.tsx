@@ -46,7 +46,9 @@ const HearingScreeningTableRow = ({
 }: HearingScreeningTableRowProps) => {
   const transferredOut =
     transferRecord && currentSchoolId && transferRecord.from_school_id === currentSchoolId
-      ? transferRecord.to_school?.name
+      ? screening.school_id !== currentSchoolId
+        ? screening.school_name
+        : transferRecord.to_school?.name
       : !transferRecord && currentSchoolId && screening.school_id !== currentSchoolId
         ? screening.school_name
         : null
