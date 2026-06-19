@@ -95,6 +95,7 @@ const ScreeningTableRow = ({
               onEmailReport={onEmailReport}
               onDelete={onDelete}
               onAddConsent={onAddConsent}
+              isTransferredOut={!!transferredOut}
             />
           </div>
           <div className='flex items-center gap-2'>{getResultSelector(screening)}</div>
@@ -182,6 +183,7 @@ const ScreeningTableRow = ({
           onEmailReport={onEmailReport}
           onDelete={onDelete}
           onAddConsent={onAddConsent}
+          isTransferredOut={!!transferredOut}
         />
       </TableCell>
     </ResponsiveTableRow>
