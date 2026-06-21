@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { useForm } from 'react-hook-form'
-import { Lock, Shield, LogOut } from 'lucide-react'
+import { Lock, LogOut, Mail, Smartphone } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
@@ -25,6 +25,7 @@ interface PasswordFormData {
 
 const AccountSettingsSection = () => {
   const [showPasswordForm, setShowPasswordForm] = useState(false)
+  const [preference, setPreference] = useState<'email' | 'totp'>('email')
 
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -32,10 +33,18 @@ const AccountSettingsSection = () => {
   const [mfaLoading, setMfaLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.mfa.listFactors().then(({ data }) => {
-      setMfaFactor(data?.totp?.[0] ?? null)
-      setMfaLoading(false)
-    })
+    Promise.all([supabase.auth.mfa.listFactors(), supabase.auth.getUser()]).then(
+      ([
+        { data: factors },
+        {
+          data: { user },
+        },
+      ]) => {
+        setMfaFactor(factors?.totp?.[0] ?? null)
+        setPreference(user?.user_metadata?.preferred_mfa ?? 'email')
+        setMfaLoading(false)
+      }
+    )
   }, [])
 
   const passwordForm = useForm<PasswordFormData>({
@@ -66,18 +75,24 @@ const AccountSettingsSection = () => {
   }
 
   const handleSwitchToEmail = async () => {
-    if (!mfaFactor) return
     try {
-      const { error } = await supabase.auth.mfa.unenroll({ factorId: mfaFactor.id })
+      const { error } = await supabase.auth.updateUser({
+        data: { preferred_mfa: 'email' },
+      })
       if (error) throw error
-      setMfaFactor(null)
       toast({
         title: 'Switched to email verification',
         description: 'You will receive a code by email on your next login.',
       })
+      setPreference('email')
     } catch {
       toast({ title: 'Failed to switch', description: 'Please try again.', variant: 'destructive' })
     }
+  }
+
+  const handleSwitchToTotp = async () => {
+    await supabase.auth.updateUser({ data: { preferred_mfa: 'totp' } })
+    navigate('/auth/mfa/enroll', { state: { returnTo: '/profile?tab=account' } })
   }
 
   const handleLogoutAllDevices = () => {
@@ -177,50 +192,84 @@ const AccountSettingsSection = () => {
         </div>
 
         {/* Two-Factor Authentication */}
-        <div className='py-4 space-y-3 border-t'>
-          <div className='flex items-center space-x-3'>
-            <Shield className='w-5 h-5 text-brand' />
-            <div>
-              <Label className='text-base font-medium'>Two-Factor Authentication</Label>
-              <p className='text-sm text-muted-foreground'>
-                {mfaLoading
-                  ? 'Checking status...'
-                  : mfaFactor
-                    ? 'Active method: Authenticator App (TOTP)'
-                    : 'Active method: Email Verification'}
-              </p>
-            </div>
+        <div className='py-4 space-y-4 border-t'>
+          <div>
+            <Label className='text-base font-medium'>Two-Factor Authentication</Label>
+            <p className='text-sm text-muted-foreground'>
+              Choose how you verify your identity when signing in
+            </p>
           </div>
-          {!mfaLoading && (
-            <div className='flex flex-wrap gap-2'>
-              {mfaFactor ? (
-                <>
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    onClick={() =>
-                      navigate('/auth/mfa/enroll', { state: { returnTo: '/profile?tab=account' } })
-                    }>
-                    Re-enroll Authenticator
-                  </Button>
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    className='text-red-600 hover:text-red-700 hover:bg-red-50'
-                    onClick={handleSwitchToEmail}>
-                    Switch to Email Verification
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={() =>
-                    navigate('/auth/mfa/enroll', { state: { returnTo: '/profile?tab=account' } })
-                  }>
-                  Switch to Authenticator App
-                </Button>
-              )}
+
+          {mfaLoading ? (
+            <p className='text-sm text-muted-foreground'>Checking status...</p>
+          ) : (
+            <div className='grid gap-3'>
+              {/* Email Option */}
+              <div
+                className={`flex items-start justify-between p-4 rounded-lg border-2 transition-colors ${
+                  preference === 'email' ? 'border-brand bg-brand/5' : 'border-border bg-muted/20'
+                }`}>
+                <div className='flex items-start gap-3'>
+                  <Mail className='w-5 h-5 mt-0.5 text-muted-foreground' />
+                  <div>
+                    <p className='text-sm font-medium'>Email Verification</p>
+                    <p className='text-xs text-muted-foreground mt-0.5'>
+                      A 6-digit code is sent to your email each time you sign in
+                    </p>
+                  </div>
+                </div>
+                <div className='flex items-center gap-2 ml-4 shrink-0'>
+                  {preference === 'email' ? (
+                    <span className='px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700'>
+                      Active
+                    </span>
+                  ) : (
+                    <Button variant='outline' size='sm' onClick={handleSwitchToEmail}>
+                      Switch
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Authenticator App Option */}
+              <div
+                className={`flex items-start justify-between p-4 rounded-lg border-2 transition-colors ${
+                  preference === 'totp' ? 'border-brand bg-brand/5' : 'border-border bg-muted/20'
+                }`}>
+                <div className='flex items-start gap-3'>
+                  <Smartphone className='w-5 h-5 mt-0.5 text-muted-foreground' />
+                  <div>
+                    <p className='text-sm font-medium'>Authenticator App</p>
+                    <p className='text-xs text-muted-foreground mt-0.5'>
+                      Use Google Authenticator or Authy for a time-based code
+                    </p>
+                  </div>
+                </div>
+                <div className='flex items-center gap-2 ml-4 shrink-0'>
+                  {preference === 'totp' ? (
+                    <>
+                      <span className='px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700'>
+                        Active
+                      </span>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        className='text-muted-foreground'
+                        onClick={() =>
+                          navigate('/auth/mfa/enroll', {
+                            state: { returnTo: '/profile?tab=account' },
+                          })
+                        }>
+                        Re-enroll
+                      </Button>
+                    </>
+                  ) : (
+                    <Button variant='outline' size='sm' onClick={handleSwitchToTotp}>
+                      Switch
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>

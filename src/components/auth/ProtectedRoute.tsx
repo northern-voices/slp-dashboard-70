@@ -29,17 +29,20 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
       supabase.auth.mfa.listFactors(),
     ])
-      .then(([{ data: aal }, { data: factors }]) => {
+      .then(async ([{ data: aal }, { data: factors }]) => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        const preference = user?.user_metadata?.preferred_mfa ?? 'email'
         const hasFactors = (factors?.totp?.length ?? 0) > 0
-        if (hasFactors) {
+
+        if (preference === 'totp' && hasFactors) {
           if (aal?.nextLevel === 'aal2' && aal?.currentLevel !== 'aal2') {
             setMfaRedirect('totp-challenge')
           }
         } else {
           const emailVerified = sessionStorage.getItem(`email_mfa_${user.id}`) === 'true'
-          if (!emailVerified) {
-            setMfaRedirect('email-challenge')
-          }
+          if (!emailVerified) setMfaRedirect('email-challenge')
         }
       })
       .catch(() => {})

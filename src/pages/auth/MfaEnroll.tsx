@@ -27,9 +27,16 @@ const MfaEnroll = () => {
 
   useEffect(() => {
     const startEnrollment = async () => {
-      // Unenroll any existing factors first (handles re-enrollment from profile)
       const { data: existing } = await supabase.auth.mfa.listFactors()
-      for (const factor of existing?.totp ?? []) {
+
+      // If already has a verified TOTP factor, no need to re-enroll
+      if ((existing?.totp?.length ?? 0) > 0) {
+        navigate(returnTo, { replace: true })
+        return
+      }
+
+      // Unenroll any unverified leftover factors before starting fresh
+      for (const factor of existing?.all ?? []) {
         await supabase.auth.mfa.unenroll({ factorId: factor.id })
       }
 
@@ -59,6 +66,7 @@ const MfaEnroll = () => {
     try {
       const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code })
       if (error) throw error
+      await supabase.auth.updateUser({ data: { preferred_mfa: 'totp' } })
       toast({ title: 'Two-factor authentication enabled' })
       navigate(returnTo, { replace: true })
     } catch {
