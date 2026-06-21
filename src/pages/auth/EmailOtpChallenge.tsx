@@ -104,7 +104,9 @@ const EmailOtpChallenge = () => {
   }
 
   return (
-    <AuthLayout title='Check Your Email' subtitle={`We sent a 6-digit code to ${email || 'your email'}`}>
+    <AuthLayout
+      title='Check Your Email'
+      subtitle={`We sent a 6-digit code to ${email || 'your email'}`}>
       <div className='space-y-6'>
         {codeSent && (
           <div className='flex items-start gap-3 p-4 text-sm text-blue-800 rounded-lg bg-blue-50'>
@@ -130,10 +132,7 @@ const EmailOtpChallenge = () => {
             />
           </div>
 
-          <Button
-            type='submit'
-            className='w-full'
-            disabled={isLoading || code.length !== 6 || !codeSent}>
+          <Button type='submit' className='w-full' disabled={isLoading || code.length !== 6}>
             <ShieldCheck className='w-4 h-4 mr-2' />
             {isLoading ? 'Verifying...' : 'Verify'}
           </Button>
