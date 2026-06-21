@@ -95,6 +95,13 @@ const AccountSettingsSection = () => {
     navigate('/auth/mfa/enroll', { state: { returnTo: '/profile?tab=account' } })
   }
 
+  const handleReenroll = async () => {
+    if (mfaFactor) {
+      await supabase.auth.mfa.unenroll({ factorId: mfaFactor.id })
+    }
+    navigate('/auth/mfa/enroll', { state: { returnTo: '/profile?tab=account' } })
+  }
+
   const handleLogoutAllDevices = () => {
     toast({
       title: 'Sessions Ended',
@@ -255,11 +262,7 @@ const AccountSettingsSection = () => {
                         variant='ghost'
                         size='sm'
                         className='text-muted-foreground'
-                        onClick={() =>
-                          navigate('/auth/mfa/enroll', {
-                            state: { returnTo: '/profile?tab=account' },
-                          })
-                        }>
+                        onClick={handleReenroll}>
                         Re-enroll
                       </Button>
                     </>
