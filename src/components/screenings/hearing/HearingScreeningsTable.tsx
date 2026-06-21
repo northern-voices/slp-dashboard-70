@@ -11,7 +11,7 @@ import {
 import { useHearingScreenings } from '@/hooks/screenings/use-hearing-screenings'
 import { useDeleteHearingScreening } from '@/hooks/screenings/use-screening-hearing-mutations'
 import { Screening, Student } from '@/types/database'
-import { useStudentsBySchool } from '@/hooks/students/use-students'
+import { useStudentsBySchool, useSchoolTransfers } from '@/hooks/students/use-students'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
 import SendReportsModal from '@/components/screenings/SendReportsModal'
@@ -70,6 +70,22 @@ const HearingScreeningsTable = ({
 
   // Fetch students for the school
   const { data: students = [] } = useStudentsBySchool(currentSchool?.id)
+
+  const { data: schoolTransfers = [] } = useSchoolTransfers(currentSchool?.id ?? '')
+
+  const transferStudentById = useMemo(() => {
+    const map = new Map<string, (typeof schoolTransfers)[0]>()
+    const sorted = [...schoolTransfers].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+    sorted.forEach(transfer => {
+      if (!map.has(transfer.student_id)) {
+        map.set(transfer.student_id, transfer)
+      }
+    })
+
+    return map
+  }, [schoolTransfers])
 
   // Delete mutation
   const deleteScreeningMutation = useDeleteHearingScreening()
@@ -437,6 +453,8 @@ const HearingScreeningsTable = ({
                   onSendReport={handleSendReport}
                   onDelete={handleDeleteClick}
                   onAddConsent={handleAddConsent}
+                  transferRecord={transferStudentById.get(screening.student_id)}
+                  currentSchoolId={currentSchool?.id ?? ''}
                 />
               ))
             )}

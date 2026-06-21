@@ -125,11 +125,16 @@ const ScreeningsTable = ({
 
   const transferByStudentId = useMemo(() => {
     const map = new Map<string, (typeof schoolTransfers)[0]>()
-    schoolTransfers.forEach(transfer => {
+    const sorted = [...schoolTransfers].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+
+    sorted.forEach(transfer => {
       if (!map.has(transfer.student_id)) {
         map.set(transfer.student_id, transfer)
       }
     })
+
     return map
   }, [schoolTransfers])
 
@@ -273,6 +278,13 @@ const ScreeningsTable = ({
   }
 
   const getProgramSelector = (screening: Screening) => {
+    const transferRecord = transferByStudentId.get(screening.student_id)
+    const isTransferredOut =
+      transferRecord?.from_school_id === currentSchool?.id ||
+      (!transferRecord && !!currentSchool?.id && screening.school_id !== currentSchool?.id)
+
+    if (isTransferredOut) return getQualificationBadge(screening)
+
     // For speech screenings, show editable dropdown
     if (screening.source_table === 'speech') {
       const isThisScreeningUpdating = updatingProgramId === screening.id
@@ -329,6 +341,13 @@ const ScreeningsTable = ({
   }
 
   const getStatusSelector = (screening: Screening) => {
+    const transferRecord = transferByStudentId.get(screening.student_id)
+    const isTransferredOut =
+      transferRecord?.from_school_id === currentSchool?.id ||
+      (!transferRecord && !!currentSchool?.id && screening.school_id !== currentSchool?.id)
+
+    if (isTransferredOut) return getStatusBadge(screening)
+
     if (screening.source_table === 'speech') {
       const isThisScreeningUpdating = updatingProgramId === screening.id
 
@@ -362,6 +381,13 @@ const ScreeningsTable = ({
   }
 
   const getResultSelector = (screening: Screening) => {
+    const transferRecord = transferByStudentId.get(screening.student_id)
+    const isTransferredOut =
+      transferRecord?.from_school_id === currentSchool?.id ||
+      (!transferRecord && !!currentSchool?.id && screening.school_id !== currentSchool?.id)
+
+    if (isTransferredOut) return getResultBadge(screening.result)
+
     if (screening.source_table === 'speech') {
       const isThisScreeningUpdating = updatingScreeningId === screening.id
 

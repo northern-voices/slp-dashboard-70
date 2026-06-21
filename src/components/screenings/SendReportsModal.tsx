@@ -13,7 +13,7 @@ import { Mail, Send, CheckCircle, XCircle, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { useAuth } from '@/contexts/AuthContext'
-import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
+import { SPEECH_REPORT_OPTIONS, SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/reportOptions'
 
 interface SendReportsModalProps {
   isOpen: boolean
@@ -119,8 +119,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
       ]
     }
 
-    // For speech screenings, show the speech report options
-    return SPEECH_REPORT_OPTIONS
+    return [...SPEECH_REPORT_OPTIONS, ...SPEECH_GOAL_SHEET_OPTIONS]
   }
 
   return (

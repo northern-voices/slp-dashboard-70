@@ -16,6 +16,7 @@ interface ScreeningRowDropdownProps {
   onEmailReport: (screening: Screening) => void
   onDelete: (screening: Screening) => void
   onAddConsent: (screening: Screening) => void
+  isTransferredOut?: boolean
 }
 
 const ScreeningRowDropdown = ({
@@ -26,6 +27,7 @@ const ScreeningRowDropdown = ({
   onEmailReport,
   onDelete,
   onAddConsent,
+  isTransferredOut,
 }: ScreeningRowDropdownProps) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
@@ -40,15 +42,19 @@ const ScreeningRowDropdown = ({
         View Details
       </DropdownMenuItem>
 
-      <DropdownMenuItem onClick={() => onViewStudent(screening)}>
-        <User className='w-4 h-4 mr-2' />
-        View Student
-      </DropdownMenuItem>
+      {!isTransferredOut && (
+        <DropdownMenuItem onClick={() => onViewStudent(screening)}>
+          <User className='w-4 h-4 mr-2' />
+          View Student
+        </DropdownMenuItem>
+      )}
 
-      <DropdownMenuItem onClick={() => onAddConsent(screening)}>
-        <FilePlus className='w-4 h-4 mr-2' />
-        Add Consent
-      </DropdownMenuItem>
+      {!isTransferredOut && (
+        <DropdownMenuItem onClick={() => onAddConsent(screening)}>
+          <FilePlus className='w-4 h-4 mr-2' />
+          Add Consent
+        </DropdownMenuItem>
+      )}
 
       <DropdownMenuItem onClick={() => onEmailReport(screening)}>
         <Mail className='w-4 h-4 mr-2' />

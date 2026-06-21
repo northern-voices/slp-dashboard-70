@@ -301,7 +301,6 @@ export const studentsApi = {
       first_name: string
       last_name: string
       student_id: string
-      school_id?: string
       date_of_birth?: string
       qualifies_for_program: boolean
       current_grade_id?: string

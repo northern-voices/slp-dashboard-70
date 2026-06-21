@@ -21,6 +21,15 @@ interface HearingScreeningTableRowProps {
   onSendReport: (screening: Screening) => void
   onDelete: (screening: Screening) => void
   onAddConsent: (screening: Screening) => void
+  transferRecord?: {
+    student_id: string
+    from_school_id: string
+    to_school_id: string
+    transfer_date: string
+    from_school: { id: string; name: string } | null
+    to_school: { id: string; name: string } | null
+  } | null
+  currentSchoolId?: string
 }
 
 const HearingScreeningTableRow = ({
@@ -32,7 +41,18 @@ const HearingScreeningTableRow = ({
   onSendReport,
   onDelete,
   onAddConsent,
+  transferRecord,
+  currentSchoolId,
 }: HearingScreeningTableRowProps) => {
+  const transferredOut =
+    transferRecord && currentSchoolId && transferRecord.from_school_id === currentSchoolId
+      ? screening.school_id !== currentSchoolId
+        ? screening.school_name
+        : transferRecord.to_school?.name
+      : !transferRecord && currentSchoolId && screening.school_id !== currentSchoolId
+        ? screening.school_name
+        : null
+
   return (
     <ResponsiveTableRow>
       <TableCell>
@@ -47,6 +67,11 @@ const HearingScreeningTableRow = ({
           <div className='font-semibold text-sm text-gray-900'>
             {screening.student_name || 'Unknown Student'}
           </div>
+          {transferredOut && (
+            <span className='text-xs font-medium text-orange-600'>
+              Transferred Out → {transferredOut}
+            </span>
+          )}
           <div className='text-xs text-gray-600'>Grade: {screening.grade || 'N/A'}</div>
           {screening.result && (
             <Badge variant='secondary' className='text-xs mt-1'>

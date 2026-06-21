@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
+import { useToast } from '@/hooks/use-toast'
 
 interface User {
   id: string
@@ -57,6 +58,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const { toast } = useToast()
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const transformUser = (supabaseUser: SupabaseUser, userMetadata?: any): User => {
     return {
@@ -93,7 +96,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.error('Error getting session:', error)
           setUser(null)
         } else if (session?.user) {
-          setUser(transformUser(session.user))
+          const loggedInUser = transformUser(session.user)
+          setUser(loggedInUser)
         } else {
           setUser(null)
         }
@@ -112,9 +116,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
-        setUser(transformUser(session.user))
+        const transformedUser = transformUser(session.user)
+        setUser(transformedUser)
       } else {
         setUser(null)
+        if (event === 'SIGNED_OUT') {
+          toast({
+            title: 'Session expired',
+            description: 'Your session has expired. Please sign in again.',
+            variant: 'destructive',
+          })
+        }
       }
       setIsLoading(false)
     })
