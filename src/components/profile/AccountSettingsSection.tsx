@@ -125,9 +125,7 @@ const AccountSettingsSection = () => {
           <Lock className='w-5 h-5 mr-2' />
           Account Security
         </CardTitle>
-        <CardDescription>
-          Manage your password, two-factor authentication, and active sessions
-        </CardDescription>
+        <CardDescription>Manage your account</CardDescription>
       </CardHeader>
       <CardContent className='space-y-6'>
         {/* Password Section */}
@@ -287,7 +285,7 @@ const AccountSettingsSection = () => {
         </div>
 
         {/* Active Sessions */}
-        <div className='pt-4 space-y-4 border-t'>
+        {/* <div className='pt-4 space-y-4 border-t'>
           <div className='flex items-center justify-between'>
             <div>
               <Label className='text-base font-medium'>Active Sessions</Label>
@@ -321,7 +319,7 @@ const AccountSettingsSection = () => {
               </Button>
             </div>
           </div>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   )
