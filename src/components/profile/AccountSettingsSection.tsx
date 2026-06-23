@@ -92,7 +92,16 @@ const AccountSettingsSection = () => {
 
   const handleSwitchToTotp = async () => {
     await supabase.auth.updateUser({ data: { preferred_mfa: 'totp' } })
-    navigate('/auth/mfa/enroll', { state: { returnTo: '/profile?tab=account' } })
+
+    if (mfaFactor) {
+      setPreference('totp')
+      toast({
+        title: 'Switched to authenticator app',
+        description: 'You will use your authenticator app on your next login.',
+      })
+    } else {
+      navigate('/auth/mfa/enroll', { state: { returnTo: '/profile?tab=account' } })
+    }
   }
 
   const handleReenroll = async () => {
