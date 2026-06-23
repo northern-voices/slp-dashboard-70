@@ -22,6 +22,7 @@ const EmailOtpChallenge = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isResending, setIsResending] = useState(false)
   const [codeSent, setCodeSent] = useState(false)
+  const [hasTotpFactor, setHasTotpFactor] = useState(false)
 
   const from = (location.state as LocationState)?.from?.pathname || '/'
 
@@ -31,11 +32,14 @@ const EmailOtpChallenge = () => {
         data: { user },
       } = await supabase.auth.getUser()
 
+      const { data: factors } = await supabase.auth.mfa.listFactors()
+
       if (!user?.email) {
         navigate('/auth/login', { replace: true })
         return
       }
 
+      setHasTotpFactor((factors?.totp?.length ?? 0) > 0)
       setEmail(user.email)
       setUserId(user.id)
 
@@ -147,6 +151,19 @@ const EmailOtpChallenge = () => {
             {isResending ? 'Sending...' : "Didn't receive it? Resend code"}
           </button>
         </div>
+
+        {hasTotpFactor && (
+          <div className='text-center'>
+            <button
+              type='button'
+              onClick={() => {
+                navigate('/auth/mfa', { state: { from: { pathname: from } } })
+              }}
+              className='text-sm text-muted-foreground hover:underline'>
+              Use authenticator app instead
+            </button>
+          </div>
+        )}
       </div>
     </AuthLayout>
   )
