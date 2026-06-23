@@ -221,7 +221,7 @@ const AccountSettingsSection = () => {
               {/* Email Option */}
               <div
                 className={`flex items-start justify-between p-4 rounded-lg border-2 transition-colors ${
-                  preference === 'email' ? 'border-brand bg-brand/5' : 'border-border bg-muted/20'
+                  preference === 'email' ? 'border-border bg-brand/5' : 'border-border bg-muted/20'
                 }`}>
                 <div className='flex items-start gap-3'>
                   <Mail className='w-5 h-5 mt-0.5 text-muted-foreground' />
@@ -248,7 +248,7 @@ const AccountSettingsSection = () => {
               {/* Authenticator App Option */}
               <div
                 className={`flex items-start justify-between p-4 rounded-lg border-2 transition-colors ${
-                  preference === 'totp' ? 'border-brand bg-brand/5' : 'border-border bg-muted/20'
+                  preference === 'totp' ? 'border-border bg-brand/5' : 'border-border bg-muted/20'
                 }`}>
                 <div className='flex items-start gap-3'>
                   <Smartphone className='w-5 h-5 mt-0.5 text-muted-foreground' />
@@ -265,6 +265,7 @@ const AccountSettingsSection = () => {
                       <span className='px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700'>
                         Active
                       </span>
+                      <div className='w-px h-4 bg-border' />
                       <Button
                         variant='ghost'
                         size='sm'
