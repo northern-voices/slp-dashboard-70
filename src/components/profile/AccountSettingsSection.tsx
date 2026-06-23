@@ -129,9 +129,8 @@ const AccountSettingsSection = () => {
   }
 
   const handleSwitchToTotp = async () => {
-    await supabase.auth.updateUser({ data: { preferred_mfa: 'totp' } })
-
     if (mfaFactor) {
+      await supabase.auth.updateUser({ data: { preferred_mfa: 'totp' } })
       setPreference('totp')
       toast({
         title: 'Switched to authenticator app',

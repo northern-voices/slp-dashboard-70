@@ -161,7 +161,7 @@ const PersonalInformationSection = () => {
                     )}
                   />
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name='licenseNumber'
                     render={({ field }) => (
@@ -173,7 +173,7 @@ const PersonalInformationSection = () => {
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
                 </div>
 
                 {isEditing && (
