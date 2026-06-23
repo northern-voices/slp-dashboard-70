@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { useForm } from 'react-hook-form'
-import { Lock, LogOut, Mail, Smartphone } from 'lucide-react'
+import { Lock, Mail, Smartphone } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
@@ -146,12 +146,12 @@ const AccountSettingsSection = () => {
     navigate('/auth/mfa/enroll', { state: { returnTo: '/profile?tab=account' } })
   }
 
-  const handleLogoutAllDevices = () => {
-    toast({
-      title: 'Sessions Ended',
-      description: 'You have been logged out from all other devices.',
-    })
-  }
+  // const handleLogoutAllDevices = () => {
+  //   toast({
+  //     title: 'Sessions Ended',
+  //     description: 'You have been logged out from all other devices.',
+  //   })
+  // }
 
   return (
     <Card>
