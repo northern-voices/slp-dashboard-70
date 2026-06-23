@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { useForm } from 'react-hook-form'
-import { Lock, Mail, Smartphone } from 'lucide-react'
+import { Lock, Mail, Smartphone, Eye, EyeOff } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
@@ -26,11 +26,14 @@ interface PasswordFormData {
 const AccountSettingsSection = () => {
   const [showPasswordForm, setShowPasswordForm] = useState(false)
   const [preference, setPreference] = useState<'email' | 'totp'>('email')
+  const [mfaFactor, setMfaFactor] = useState<{ id: string } | null>(null)
+  const [mfaLoading, setMfaLoading] = useState(true)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false)
 
   const { toast } = useToast()
   const navigate = useNavigate()
-  const [mfaFactor, setMfaFactor] = useState<{ id: string } | null>(null)
-  const [mfaLoading, setMfaLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([supabase.auth.mfa.listFactors(), supabase.auth.getUser()]).then(
@@ -189,7 +192,19 @@ const AccountSettingsSection = () => {
                         <FormItem>
                           <FormLabel>Current Password</FormLabel>
                           <FormControl>
-                            <Input {...field} type='password' />
+                            <div className='relative'>
+                              <Input {...field} type={showCurrentPassword ? 'text' : 'password'} />
+                              <button
+                                type='button'
+                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'>
+                                {showCurrentPassword ? (
+                                  <EyeOff className='w-4 h-4' />
+                                ) : (
+                                  <Eye className='w-4 h-4' />
+                                )}
+                              </button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -203,7 +218,19 @@ const AccountSettingsSection = () => {
                         <FormItem>
                           <FormLabel>New Password</FormLabel>
                           <FormControl>
-                            <Input {...field} type='password' />
+                            <div className='relative'>
+                              <Input {...field} type={showNewPassword ? 'text' : 'password'} />
+                              <button
+                                type='button'
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'>
+                                {showNewPassword ? (
+                                  <EyeOff className='w-4 h-4' />
+                                ) : (
+                                  <Eye className='w-4 h-4' />
+                                )}
+                              </button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -217,7 +244,22 @@ const AccountSettingsSection = () => {
                         <FormItem>
                           <FormLabel>Confirm New Password</FormLabel>
                           <FormControl>
-                            <Input {...field} type='password' />
+                            <div className='relative'>
+                              <Input
+                                {...field}
+                                type={showConfirmNewPassword ? 'text' : 'password'}
+                              />
+                              <button
+                                type='button'
+                                onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'>
+                                {showConfirmNewPassword ? (
+                                  <EyeOff className='w-4 h-4' />
+                                ) : (
+                                  <Eye className='w-4 h-4' />
+                                )}
+                              </button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
