@@ -55,7 +55,7 @@ const AccountSettingsSection = () => {
     },
   })
 
-  const onPasswordSubmit = (data: PasswordFormData) => {
+  const onPasswordSubmit = async (data: PasswordFormData) => {
     if (data.newPassword !== data.confirmPassword) {
       toast({
         title: 'Error',
@@ -65,11 +65,46 @@ const AccountSettingsSection = () => {
       return
     }
 
-    console.log('Updating password:', data)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user?.email) return
+
+    // Verify current password
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: data.currentPassword,
+    })
+
+    if (signInError) {
+      toast({
+        title: 'Incorrect password',
+        description: 'Your current password is incorrect.',
+        variant: 'destructive',
+      })
+
+      return
+    }
+
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: data.newPassword,
+    })
+
+    if (updateError) {
+      toast({
+        title: 'Failed to update password',
+        description: updateError.message,
+        variant: 'destructive',
+      })
+
+      return
+    }
+
     toast({
-      title: 'Password Updated',
+      title: 'Password updated',
       description: 'Your password has been changed successfully.',
     })
+
     setShowPasswordForm(false)
     passwordForm.reset()
   }
