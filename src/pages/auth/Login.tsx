@@ -89,15 +89,22 @@ const Login = () => {
         supabase.auth.mfa.listFactors(),
       ])
 
+      const {
+        data: { user: freshUser },
+      } = await supabase.auth.getUser()
+
+      const preference = freshUser?.user_metadata?.preferred_mfa ?? 'email'
       const hasFactors = (factorsData?.totp?.length ?? 0) > 0
 
-      if (hasFactors && aalData?.nextLevel === 'aal2' && aalData?.currentLevel !== 'aal2') {
+      if (
+        preference === 'totp' &&
+        hasFactors &&
+        aalData?.nextLevel === 'aal2' &&
+        aalData?.currentLevel !== 'aal2'
+      ) {
         navigate('/auth/mfa', { state: { from: { pathname: from } }, replace: true })
-      } else if (!hasFactors) {
-        navigate('/auth/email-otp', { state: { from: { pathname: from } }, replace: true })
       } else {
-        toast({ title: 'Login successful', description: 'Welcome back!' })
-        navigate(from, { replace: true })
+        navigate('/auth/email-otp', { state: { from: { pathname: from } }, replace: true })
       }
     } catch (error) {
       console.error('Login error:', error)
