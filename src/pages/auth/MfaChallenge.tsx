@@ -12,6 +12,7 @@ interface LocationState {
 }
 
 const MfaChallenge = () => {
+  const [isInitializing, setIsInitializing] = useState(true)
   const [factorId, setFactorId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -25,12 +26,14 @@ const MfaChallenge = () => {
   useEffect(() => {
     supabase.auth.mfa.listFactors().then(({ data }) => {
       const factor = data?.totp?.[0]
+
       if (!factor) {
         // No factor found — send to enroll
-        navigate('/auth/mfa/enroll', { replace: true })
+        navigate('/auth/email-otp', { state: { from: { pathname: from } }, replace: true })
         return
       }
       setFactorId(factor.id)
+      setIsInitializing(false)
     })
   }, [navigate])
 
@@ -54,6 +57,8 @@ const MfaChallenge = () => {
       setIsLoading(false)
     }
   }
+
+  if (isInitializing) return null
 
   return (
     <AuthLayout
@@ -81,6 +86,15 @@ const MfaChallenge = () => {
           <ShieldCheck className='w-4 h-4 mr-2' />
           {isLoading ? 'Verifying...' : 'Verify'}
         </Button>
+
+        <div className='text-center'>
+          <button
+            type='button'
+            onClick={() => navigate('/auth/email-otp', { state: { from: { pathname: from } } })}
+            className='text-sm text-muted-foreground hover:underline'>
+            Use email verification instead
+          </button>
+        </div>
       </form>
     </AuthLayout>
   )
