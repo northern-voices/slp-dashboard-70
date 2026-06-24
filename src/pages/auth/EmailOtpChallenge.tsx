@@ -43,6 +43,14 @@ const EmailOtpChallenge = () => {
       setEmail(user.email)
       setUserId(user.id)
 
+      const lastSent = sessionStorage.getItem(`otp_sent_${user.email}`)
+      const now = Date.now()
+
+      if (lastSent && now - parseInt(lastSent) < 60000) {
+        setCodeSent(true)
+        return
+      }
+
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: user.email,
         options: {
@@ -59,6 +67,8 @@ const EmailOtpChallenge = () => {
         })
         return
       }
+
+      sessionStorage.setItem(`otp_sent_${user.email}`, now.toString())
       setCodeSent(true)
     }
 
@@ -99,6 +109,8 @@ const EmailOtpChallenge = () => {
           emailRedirectTo: `${window.location.origin}/auth/email-otp`,
         },
       })
+
+      sessionStorage.setItem(`otp_sent_${email}`, Date.now().toString())
       toast({ title: 'Code resent', description: 'Check your email for a new code.' })
     } catch {
       toast({ title: 'Failed to resend', description: 'Please try again.', variant: 'destructive' })
