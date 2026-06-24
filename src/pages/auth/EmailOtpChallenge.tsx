@@ -32,7 +32,6 @@ const EmailOtpChallenge = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser()
-
       const { data: factors } = await supabase.auth.mfa.listFactors()
 
       if (!user?.email) {
@@ -45,43 +44,11 @@ const EmailOtpChallenge = () => {
       setUserId(user.id)
 
       const urlParams = new URLSearchParams(window.location.search)
-
       if (urlParams.get('magic') === '1' && user) {
         sessionStorage.setItem(`email_mfa_${user.id}`, 'true')
         navigate(from, { replace: true })
         return
       }
-
-      const lastSent = sessionStorage.getItem(`otp_sent_${user.email}`)
-      const now = Date.now()
-
-      if (lastSent && now - parseInt(lastSent) < 60000) {
-        const elapsed = Math.floor((now - parseInt(lastSent)) / 1000)
-        setResendCountdown(Math.max(0, 60 - elapsed))
-        setCodeSent(true)
-        return
-      }
-
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: user.email,
-        options: {
-          shouldCreateUser: false,
-          emailRedirectTo: `${window.location.origin}/auth/email-otp?magic=1`,
-        },
-      })
-      if (otpError) {
-        console.error('Failed to send OTP:', otpError)
-        toast({
-          title: 'Failed to send verification code',
-          description: otpError.message,
-          variant: 'destructive',
-        })
-        return
-      }
-
-      sessionStorage.setItem(`otp_sent_${user.email}`, now.toString())
-      setResendCountdown(60)
-      setCodeSent(true)
     }
 
     init()
@@ -119,11 +86,13 @@ const EmailOtpChallenge = () => {
     }
   }
 
-  const handleResend = async () => {
+  const handleSendCode = async () => {
     if (!email) return
+
     setIsResending(true)
+
     try {
-      await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
           shouldCreateUser: false,
@@ -131,64 +100,91 @@ const EmailOtpChallenge = () => {
         },
       })
 
-      sessionStorage.setItem(`otp_sent_${email}`, Date.now().toString())
+      if (error) throw error
+      const now = Date.now()
+      sessionStorage.setItem(`otp_sent_${email}`, now.toString())
+
       setResendCountdown(60)
-      toast({ title: 'Code resent', description: 'Check your email for a new code.' })
-    } catch {
-      toast({ title: 'Failed to resend', description: 'Please try again.', variant: 'destructive' })
+      setCodeSent(true)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Please try again'
+      toast({ title: 'Failed to send code', description: message, variant: 'destructive' })
     } finally {
       setIsResending(false)
     }
   }
 
+  const handleResend = async () => {
+    await handleSendCode()
+  }
+
   return (
     <AuthLayout
       title='Check Your Email'
-      subtitle={`We sent a 6-digit code to ${email || 'your email'}`}>
+      subtitle={
+        codeSent
+          ? `We sent a 6-digit code to ${email || 'your email'}`
+          : `We'll send a verification code to ${email || `your email`}`
+      }>
       <div className='space-y-6'>
-        {codeSent && (
-          <div className='flex items-start gap-3 p-4 text-sm text-blue-800 rounded-lg bg-blue-50'>
-            <Mail className='w-4 h-4 mt-0.5 shrink-0' />
-            <p>
-              A verification code was sent to <strong>{email}</strong>. It expires in 10 minutes.
-            </p>
+        {!codeSent ? (
+          <div className='space-y-4'>
+            <div className='flex items-start gap-3 p-4 text-sm text-blue-800 rounded-lg bg-blue-50'>
+              <Mail className='w-4 h-4 mt-0.5 shrink-0' />
+              <p>
+                A 6-digit verification code will be sent to <strong>{email}</strong>
+              </p>
+            </div>
+            <Button onClick={handleSendCode} className='w-full' disabled={isResending}>
+              {isResending ? 'Sending...' : 'Send Verification Code'}
+            </Button>
           </div>
+        ) : (
+          // Post-send state
+
+          <>
+            <div className='flex items-start gap-3 p-4 text-sm text-blue-800 rounded-lg bg-blue-50'>
+              <Mail className='w-4 h-4 mt-0.5 shrink-0' />
+              <p>
+                A verification code was sent to <strong>{email}</strong>. It expires in 10 minutes
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className='space-y-4'>
+              <div className='space-y-2'>
+                <Label htmlFor='code'>Verification Code</Label>
+                <Input
+                  id='code'
+                  value={code}
+                  onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder='000000'
+                  inputMode='numeric'
+                  maxLength={6}
+                  className='font-mono text-2xl tracking-widest text-center'
+                  autoFocus
+                />
+              </div>
+              <Button type='submit' className='w-full' disabled={isLoading || code.length !== 6}>
+                <ShieldCheck className='w-4 h-4 mr-2' />
+                {isLoading ? 'Verifying...' : 'Verify'}
+              </Button>
+            </form>
+
+            <div className='text-center'>
+              <button
+                type='button'
+                onClick={handleResend}
+                className='text-sm text-blue-600 hover:underline disabled:opacity-50'
+                disabled={isResending || resendCountdown > 0}>
+                {resendCountdown > 0
+                  ? `Resend available in ${resendCountdown}s`
+                  : isResending
+                    ? 'Sending...'
+                    : "Didn't receive it? Resend code"}
+              </button>
+            </div>
+          </>
         )}
-
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='code'>Verification Code</Label>
-            <Input
-              id='code'
-              value={code}
-              onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder='000000'
-              inputMode='numeric'
-              maxLength={6}
-              className='font-mono text-2xl tracking-widest text-center'
-              autoFocus
-            />
-          </div>
-
-          <Button type='submit' className='w-full' disabled={isLoading || code.length !== 6}>
-            <ShieldCheck className='w-4 h-4 mr-2' />
-            {isLoading ? 'Verifying...' : 'Verify'}
-          </Button>
-        </form>
-
-        <div className='text-center'>
-          <button
-            type='button'
-            onClick={handleResend}
-            disabled={isResending || resendCountdown > 0}
-            className='text-sm text-blue-600 hover:underline disabled:opacity-50'>
-            {resendCountdown > 0
-              ? `Resend available in ${resendCountdown}s`
-              : isResending
-                ? 'Sending...'
-                : "Didn't receive it? Resend code"}
-          </button>
-        </div>
 
         {hasTotpFactor && (
           <div className='text-center'>
