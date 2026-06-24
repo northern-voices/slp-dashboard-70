@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
@@ -14,6 +14,16 @@ const ForgotPassword = () => {
 
   const { resetPassword } = useAuth()
   const { toast } = useToast()
+
+  useEffect(() => {
+    if (resendCountdown <= 0) return
+
+    const timer = setInterval(() => {
+      setResendCountdown(prev => Math.max(0, prev - 1))
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [resendCountdown])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,6 +41,9 @@ const ForgotPassword = () => {
     try {
       await resetPassword(email)
       setIsSubmitted(true)
+
+      setResendCountdown(60)
+
       toast({
         title: 'Reset email sent',
         description: 'Check your email for password reset instructions.',
@@ -69,10 +82,24 @@ const ForgotPassword = () => {
           <p className='text-gray-600'>
             We've sent a password reset link to <strong>{email}</strong>
           </p>
-          <p className='text-sm text-gray-500'>
-            Didn't receive the email? Check your spam folder or try again.
-          </p>
-          <div className='space-y-2'>
+
+          <div>
+            {resendCountdown > 0 ? (
+              <p className='text-sm text-gray-500'>Resend available in {resendCountdown}s</p>
+            ) : (
+              <button
+                type='button'
+                onClick={async () => {
+                  await resetPassword(email)
+                  setResendCountdown(60)
+                }}
+                className='text-sm text-blue-600 hover:underline'>
+                Resend email
+              </button>
+            )}
+          </div>
+
+          <div className='flex flex-col space-y-2'>
             <Button variant='outline' onClick={() => setIsSubmitted(false)} className='w-full'>
               Try Different Email
             </Button>

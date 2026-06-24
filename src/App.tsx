@@ -101,14 +101,7 @@ const App = () => (
                     </PublicRoute>
                   }
                 />
-                <Route
-                  path='/auth/reset-password/'
-                  element={
-                    <PublicRoute>
-                      <ResetPassword />
-                    </PublicRoute>
-                  }
-                />
+                <Route path='/auth/reset-password/' element={<ResetPassword />} />
                 <Route
                   path='/auth/verify-email'
                   element={

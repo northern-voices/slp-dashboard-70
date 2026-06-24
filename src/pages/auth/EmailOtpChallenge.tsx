@@ -23,6 +23,7 @@ const EmailOtpChallenge = () => {
   const [isResending, setIsResending] = useState(false)
   const [codeSent, setCodeSent] = useState(false)
   const [hasTotpFactor, setHasTotpFactor] = useState(false)
+  const [resendCountdown, setResendCountdown] = useState(0)
 
   const from = (location.state as LocationState)?.from?.pathname || '/'
 
@@ -47,6 +48,8 @@ const EmailOtpChallenge = () => {
       const now = Date.now()
 
       if (lastSent && now - parseInt(lastSent) < 60000) {
+        const elapsed = Math.floor((now - parseInt(lastSent)) / 1000)
+        setResendCountdown(Math.max(0, 60 - elapsed))
         setCodeSent(true)
         return
       }
@@ -69,11 +72,21 @@ const EmailOtpChallenge = () => {
       }
 
       sessionStorage.setItem(`otp_sent_${user.email}`, now.toString())
+      setResendCountdown(60)
       setCodeSent(true)
     }
 
     init()
   }, [navigate])
+
+  useEffect(() => {
+    if (resendCountdown <= 0) return
+    const timer = setInterval(() => {
+      setResendCountdown(prev => Math.max(0, prev - 1))
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [resendCountdown])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -111,6 +124,7 @@ const EmailOtpChallenge = () => {
       })
 
       sessionStorage.setItem(`otp_sent_${email}`, Date.now().toString())
+      setResendCountdown(60)
       toast({ title: 'Code resent', description: 'Check your email for a new code.' })
     } catch {
       toast({ title: 'Failed to resend', description: 'Please try again.', variant: 'destructive' })
@@ -158,9 +172,13 @@ const EmailOtpChallenge = () => {
           <button
             type='button'
             onClick={handleResend}
-            disabled={isResending}
+            disabled={isResending || resendCountdown > 0}
             className='text-sm text-blue-600 hover:underline disabled:opacity-50'>
-            {isResending ? 'Sending...' : "Didn't receive it? Resend code"}
+            {resendCountdown > 0
+              ? `Resend available in ${resendCountdown}s`
+              : isResending
+                ? 'Sending...'
+                : "Didn't receive it? Resend code"}
           </button>
         </div>
 
