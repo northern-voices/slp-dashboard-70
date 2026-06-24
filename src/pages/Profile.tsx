@@ -38,10 +38,10 @@ const Profile = () => {
             <Settings className='w-4 h-4 mr-2' />
             Account
           </TabsTrigger>
-          <TabsTrigger value='notifications' className='flex items-center flex-shrink-0'>
+          {/* <TabsTrigger value='notifications' className='flex items-center flex-shrink-0'>
             <Bell className='w-4 h-4 mr-2' />
             Notifications
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
         <TabsContent value='personal' className='space-y-6'>
           <PersonalInformationSection />
@@ -49,9 +49,9 @@ const Profile = () => {
         <TabsContent value='account' className='space-y-6'>
           <AccountSettingsSection />
         </TabsContent>
-        <TabsContent value='notifications' className='space-y-6'>
+        {/* <TabsContent value='notifications' className='space-y-6'>
           <NotificationPreferencesSection />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </>
   )

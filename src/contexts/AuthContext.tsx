@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         const transformedUser = transformUser(session.user)
         setUser(transformedUser)
@@ -128,7 +128,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           })
         }
       }
-
       setIsLoading(false)
     })
 
@@ -159,12 +158,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = useCallback(async () => {
     try {
+      Object.keys(sessionStorage)
+        .filter(k => k.startsWith('email_mfa_'))
+        .forEach(k => sessionStorage.removeItem(k))
+
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error('Logout error:', error)
         throw error
       }
-      // User state will be updated by the auth state change listener
     } catch (error) {
       console.error('Logout error:', error)
       throw error
