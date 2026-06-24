@@ -44,6 +44,14 @@ const EmailOtpChallenge = () => {
       setEmail(user.email)
       setUserId(user.id)
 
+      const urlParams = new URLSearchParams(window.location.search)
+
+      if (urlParams.get('magic') === '1' && user) {
+        sessionStorage.setItem(`email_mfa_${user.id}`, 'true')
+        navigate(from, { replace: true })
+        return
+      }
+
       const lastSent = sessionStorage.getItem(`otp_sent_${user.email}`)
       const now = Date.now()
 
@@ -58,7 +66,7 @@ const EmailOtpChallenge = () => {
         email: user.email,
         options: {
           shouldCreateUser: false,
-          emailRedirectTo: `${window.location.origin}/auth/email-otp`,
+          emailRedirectTo: `${window.location.origin}/auth/email-otp?magic=1`,
         },
       })
       if (otpError) {
@@ -119,7 +127,7 @@ const EmailOtpChallenge = () => {
         email,
         options: {
           shouldCreateUser: false,
-          emailRedirectTo: `${window.location.origin}/auth/email-otp`,
+          emailRedirectTo: `${window.location.origin}/auth/email-otp?magic=1`,
         },
       })
 
