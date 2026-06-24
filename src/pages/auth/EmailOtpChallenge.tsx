@@ -164,6 +164,18 @@ const EmailOtpChallenge = () => {
             </button>
           </div>
         )}
+
+        <div className='text-center'>
+          <button
+            type='button'
+            onClick={async () => {
+              await supabase.auth.signOut()
+              navigate('/auth/login', { replace: true })
+            }}
+            className='text-sm text-muted-foreground hover:underline'>
+            Sign in with a different account
+          </button>
+        </div>
       </div>
     </AuthLayout>
   )
