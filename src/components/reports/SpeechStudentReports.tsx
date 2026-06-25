@@ -33,7 +33,6 @@ const SpeechStudentReports = () => {
   const { user } = useAuth()
 
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [recipientEmail, setRecipientEmail] = useState('')
   const [customMessage, setCustomMessage] = useState('')
@@ -47,6 +46,7 @@ const SpeechStudentReports = () => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
+  const [selectedReport, setSelectedReport] = useState<string | null>(null)
 
   // Pre-fill email with current user's email on component mount
   useEffect(() => {
@@ -58,9 +58,7 @@ const SpeechStudentReports = () => {
   const getAvailableReports = () => SPEECH_REPORT_OPTIONS
 
   const handleSendEmail = async () => {
-    if (!recipientEmail || selectedReports.length === 0 || !selectedScreening) {
-      return
-    }
+    if (!recipientEmail || !selectedReport || !selectedScreening) return
 
     setIsEmailLoading(true)
     setEmailStatus('idle')
@@ -68,20 +66,17 @@ const SpeechStudentReports = () => {
 
     try {
       // Process each selected report type
-      for (const reportType of selectedReports) {
-        if (reportType === 'initial-speech-report') {
-          await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
-        } else if (reportType === 'progress-speech-report') {
-          await edgeFunctionsApi.studentProgressReport(selectedScreening.id, recipientEmail)
-        }
+
+      if (selectedReport === 'initial-speech-report') {
+        await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
+      } else if (selectedReport === 'progress-speech-report') {
+        await edgeFunctionsApi.studentProgressReport(selectedScreening.id, recipientEmail)
       }
 
       // Show success modal if any reports were processed
-      if (selectedReports.length > 0) {
-        setModalType('success')
-        setModalMessage(`Reports sent successfully to ${recipientEmail}`)
-        setIsSuccessModalOpen(true)
-      }
+      setModalType('success')
+      setModalMessage(`Reports sent successfully to ${recipientEmail}`)
+      setIsSuccessModalOpen(true)
     } catch (error) {
       console.error('Error sending email:', error)
       setModalType('error')
@@ -120,7 +115,7 @@ const SpeechStudentReports = () => {
     // Clear all selections
     setSelectedStudent(null)
     setSelectedScreening(null)
-    setSelectedReports([])
+    setSelectedReport(null)
     setRecipientEmail('')
     setCustomMessage('')
     setEmailStatus('idle')
@@ -166,16 +161,13 @@ const SpeechStudentReports = () => {
             <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
               {getAvailableReports().map(report => {
                 const Icon = report.icon
-                const isSelected = selectedReports.includes(report.value)
+                const isSelected = selectedReport === report.value
+
                 return (
                   <div
                     key={report.value}
                     onClick={() => {
-                      if (isSelected) {
-                        setSelectedReports(selectedReports.filter(r => r !== report.value))
-                      } else {
-                        setSelectedReports([...selectedReports, report.value])
-                      }
+                      setSelectedReport(report.value === selectedReport ? null : report.value)
                     }}
                     className={`
                     relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full
@@ -293,7 +285,7 @@ const SpeechStudentReports = () => {
               disabled={
                 !selectedStudent ||
                 !recipientEmail ||
-                selectedReports.length === 0 ||
+                !selectedReport ||
                 isEmailLoading ||
                 !selectedScreening
               }>
