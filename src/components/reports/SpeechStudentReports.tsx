@@ -162,7 +162,7 @@ const SpeechStudentReports = () => {
         {/* Select Type of Report — now above the screenings table */}
         {selectedStudent && (
           <div className='space-y-3'>
-            <Label className='text-sm font-medium'>Select Type of Report</Label>
+            <Label className='text-xl font-medium'>Select Type of Report</Label>
             <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
               {getAvailableReports().map(report => {
                 const Icon = report.icon
