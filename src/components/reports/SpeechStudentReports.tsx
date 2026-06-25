@@ -47,6 +47,7 @@ const SpeechStudentReports = () => {
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
   const [selectedReport, setSelectedReport] = useState<string | null>(null)
+  const [comparisonScreenings, setComparisonScreenings] = useState<Screening[]>([])
 
   // Pre-fill email with current user's email on component mount
   useEffect(() => {
@@ -58,7 +59,9 @@ const SpeechStudentReports = () => {
   const getAvailableReports = () => SPEECH_REPORT_OPTIONS
 
   const handleSendEmail = async () => {
-    if (!recipientEmail || !selectedReport || !selectedScreening) return
+    if (!recipientEmail || !selectedReport) return
+    if (selectedReport === 'initial-speech-report' && !selectedScreening) return
+    if (selectedReport === 'progress-speech-report' && comparisonScreenings.length < 2) return
 
     setIsEmailLoading(true)
     setEmailStatus('idle')
@@ -70,7 +73,11 @@ const SpeechStudentReports = () => {
       if (selectedReport === 'initial-speech-report') {
         await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
       } else if (selectedReport === 'progress-speech-report') {
-        await edgeFunctionsApi.studentProgressReport(selectedScreening.id, recipientEmail)
+        await edgeFunctionsApi.studentProgressReport(
+          comparisonScreenings[0].id,
+          comparisonScreenings[1].id,
+          recipientEmail
+        )
       }
 
       // Show success modal if any reports were processed
@@ -89,7 +96,8 @@ const SpeechStudentReports = () => {
 
   const handleStudentSelect = (student: Student | null) => {
     setSelectedStudent(student)
-    setSelectedScreening(null) // Clear selected screening when student changes
+    setSelectedScreening(null)
+    setComparisonScreenings([])
   }
 
   const handleSelectScreening = (screening: Screening | null) => {
@@ -120,12 +128,29 @@ const SpeechStudentReports = () => {
     setCustomMessage('')
     setEmailStatus('idle')
     setEmailMessage('')
+    setComparisonScreenings([])
   }
 
   const handleCloseModal = () => {
     setIsSuccessModalOpen(false)
     setModalType('success')
     setModalMessage('')
+  }
+
+  const handleSelectComparisonScreening = (screening: Screening) => {
+    setComparisonScreenings(prev => {
+      const existingIndex = prev.findIndex(s => s.id === screening.id)
+
+      if (existingIndex !== -1) {
+        return prev.filter(s => s.id !== screening.id)
+      }
+
+      if (prev.length === 2) {
+        return [prev[0], screening]
+      }
+
+      return [...prev, screening]
+    })
   }
 
   return (
@@ -167,7 +192,10 @@ const SpeechStudentReports = () => {
                   <div
                     key={report.value}
                     onClick={() => {
-                      setSelectedReport(report.value === selectedReport ? null : report.value)
+                      const newValue = report.value === selectedReport ? null : report.value
+                      setSelectedReport(newValue)
+                      setSelectedScreening(null)
+                      setComparisonScreenings([])
                     }}
                     className={`
                     relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full
@@ -224,6 +252,9 @@ const SpeechStudentReports = () => {
                 selectedScreening={selectedScreening}
                 onSelectScreening={handleSelectScreening}
                 onViewDetails={handleViewDetails}
+                mode={selectedReport === 'progress-speech-report' ? 'comparison' : 'single'}
+                comparisonScreenings={comparisonScreenings}
+                onSelectedComparisonScreening={handleSelectComparisonScreening}
               />
             </div>
           )}
@@ -287,7 +318,9 @@ const SpeechStudentReports = () => {
                 !recipientEmail ||
                 !selectedReport ||
                 isEmailLoading ||
-                !selectedScreening
+                (selectedReport === 'progress-speech-report'
+                  ? comparisonScreenings.length < 2
+                  : !selectedScreening)
               }>
               <Send className='w-4 h-4 mr-2' />
               {isEmailLoading ? 'Sending...' : 'Send Reports'}
@@ -364,11 +397,17 @@ const SpeechScreeningsTable = ({
   selectedScreening,
   onSelectScreening,
   onViewDetails,
+  mode = 'single',
+  comparisonScreenings = [],
+  onSelectedComparisonScreening,
 }: {
   studentId: string
   selectedScreening: Screening | null
   onSelectScreening: (screening: Screening | null) => void
   onViewDetails: (screening: Screening) => void
+  mode?: 'single' | 'comparison'
+  comparisonScreenings?: Screening[]
+  onSelectedComparisonScreening?: (screening: Screening) => void
 }) => {
   const { data: screeningsData, isLoading, error } = useSpeechScreeningsByStudent(studentId)
 
@@ -457,12 +496,151 @@ const SpeechScreeningsTable = ({
       </div>
 
       <div className='overflow-y-auto max-h-96'>
-        <RadioGroup
-          value={selectedScreening?.id || ''}
-          onValueChange={value => {
-            const screening = studentScreenings.find(s => s.id === value)
-            onSelectScreening(screening || null)
-          }}>
+        {mode === 'single' ? (
+          <RadioGroup
+            value={selectedScreening?.id || ''}
+            onValueChange={value => {
+              const screening = studentScreenings.find(s => s.id === value)
+              onSelectScreening(screening || null)
+            }}>
+            <ResponsiveTable className='w-full'>
+              <TableHeader>
+                <tr>
+                  <TableHead className='w-12'></TableHead>
+                  <TableHead className='w-1/6 min-w-[100px]'>Date</TableHead>
+                  <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
+                  <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
+                  <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
+                  <TableHead className='w-1/6 min-w-[80px]'>Grade</TableHead>
+                  <TableHead className='w-12'></TableHead>
+                </tr>
+              </TableHeader>
+              <TableBody>
+                {studentScreenings.map(screening => (
+                  <ResponsiveTableRow
+                    key={screening.id}
+                    onClick={
+                      mode === 'comparison'
+                        ? () => onSelectedComparisonScreening?.(screening)
+                        : undefined
+                    }
+                    className={mode === 'comparison' ? 'cursor-pointer' : ''}
+                    mobileCardContent={
+                      <div className='space-y-3'>
+                        <div className='flex items-center justify-between'>
+                          <div className='flex items-center gap-2'>
+                            {mode === 'comparison' ? (
+                              (() => {
+                                const idx = comparisonScreenings.findIndex(
+                                  s => s.id === screening.id
+                                )
+                                return idx !== -1 ? (
+                                  <div className='w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center'>
+                                    {idx + 1}
+                                  </div>
+                                ) : (
+                                  <div className='w-6 h-6 rounded-full border-2 border-gray-300' />
+                                )
+                              })()
+                            ) : (
+                              <RadioGroupItem value={screening.id} id={`mobile-${screening.id}`} />
+                            )}
+                            <h3 className='font-medium'>
+                              {format(new Date(screening.created_at), 'MMM dd, yyyy')}
+                            </h3>
+                          </div>
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            onClick={() => onViewDetails(screening)}
+                            className='w-8 h-8 p-0 hover:bg-gray-100'>
+                            <Eye className='w-4 h-4' />
+                          </Button>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                          {getResultBadge(screening.result || screening.screening_result)}
+                        </div>
+                        <div className='flex items-center gap-2'>
+                          {getQualificationBadge(screening)}
+                        </div>
+                        <div className='space-y-1 text-sm text-gray-600'>
+                          <p>
+                            <span className='font-medium'>Screener:</span> {screening.screener}
+                          </p>
+                          {screening.grade && (
+                            <p>
+                              <span className='font-medium'>Grade:</span> {screening.grade}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    }>
+                    <TableCell>
+                      {mode === 'comparison' ? (
+                        (() => {
+                          const idx = comparisonScreenings.findIndex(s => s.id === screening.id)
+                          return idx !== -1 ? (
+                            <div className='w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center'>
+                              {idx + 1}
+                            </div>
+                          ) : (
+                            <div className='w-6 h-6 rounded-full border-2 border-gray-300' />
+                          )
+                        })()
+                      ) : (
+                        <RadioGroupItem
+                          value={screening.id}
+                          id={`desktop-${screening.id}`}
+                          className='mt-1.5'
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className='max-w-0'>
+                      <div className='truncate'>
+                        <div className='text-sm font-medium text-gray-900'>
+                          {format(new Date(screening.created_at), 'MMM dd, yyyy')}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className='max-w-0'>
+                      <div className='truncate'>
+                        {getResultBadge(screening.result || screening.screening_result)}
+                      </div>
+                    </TableCell>
+                    <TableCell className='max-w-0'>
+                      <div className='truncate'>{getQualificationBadge(screening)}</div>
+                    </TableCell>
+                    <TableCell className='max-w-0'>
+                      <div className='truncate' title={screening.screener}>
+                        {screening.screener}
+                      </div>
+                    </TableCell>
+                    <TableCell className='max-w-0'>
+                      <div className='truncate' title={screening.grade || 'No grade'}>
+                        {screening.grade ? (
+                          <div className='inline-block px-3 py-1 text-xs text-gray-500 bg-gray-200 rounded-lg'>
+                            {screening.grade}
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        onClick={() => onViewDetails(screening)}
+                        className='w-8 h-8 p-0 hover:bg-gray-100'>
+                        <Eye className='w-4 h-4' />
+                      </Button>
+                    </TableCell>
+                  </ResponsiveTableRow>
+                ))}
+              </TableBody>
+            </ResponsiveTable>
+          </RadioGroup>
+        ) : (
           <ResponsiveTable className='w-full'>
             <TableHeader>
               <tr>
@@ -479,11 +657,30 @@ const SpeechScreeningsTable = ({
               {studentScreenings.map(screening => (
                 <ResponsiveTableRow
                   key={screening.id}
+                  onClick={
+                    mode === 'comparison'
+                      ? () => onSelectedComparisonScreening?.(screening)
+                      : undefined
+                  }
+                  className={mode === 'comparison' ? 'cursor-pointer' : ''}
                   mobileCardContent={
                     <div className='space-y-3'>
                       <div className='flex items-center justify-between'>
                         <div className='flex items-center gap-2'>
-                          <RadioGroupItem value={screening.id} id={`mobile-${screening.id}`} />
+                          {mode === 'comparison' ? (
+                            (() => {
+                              const idx = comparisonScreenings.findIndex(s => s.id === screening.id)
+                              return idx !== -1 ? (
+                                <div className='w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center'>
+                                  {idx + 1}
+                                </div>
+                              ) : (
+                                <div className='w-6 h-6 rounded-full border-2 border-gray-300' />
+                              )
+                            })()
+                          ) : (
+                            <RadioGroupItem value={screening.id} id={`mobile-${screening.id}`} />
+                          )}
                           <h3 className='font-medium'>
                             {format(new Date(screening.created_at), 'MMM dd, yyyy')}
                           </h3>
@@ -515,11 +712,24 @@ const SpeechScreeningsTable = ({
                     </div>
                   }>
                   <TableCell>
-                    <RadioGroupItem
-                      value={screening.id}
-                      id={`desktop-${screening.id}`}
-                      className='mt-1.5'
-                    />
+                    {mode === 'comparison' ? (
+                      (() => {
+                        const idx = comparisonScreenings.findIndex(s => s.id === screening.id)
+                        return idx !== -1 ? (
+                          <div className='w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center'>
+                            {idx + 1}
+                          </div>
+                        ) : (
+                          <div className='w-6 h-6 rounded-full border-2 border-gray-300' />
+                        )
+                      })()
+                    ) : (
+                      <RadioGroupItem
+                        value={screening.id}
+                        id={`desktop-${screening.id}`}
+                        className='mt-1.5'
+                      />
+                    )}
                   </TableCell>
                   <TableCell className='max-w-0'>
                     <div className='truncate'>
@@ -565,7 +775,7 @@ const SpeechScreeningsTable = ({
               ))}
             </TableBody>
           </ResponsiveTable>
-        </RadioGroup>
+        )}
       </div>
     </div>
   )
