@@ -159,7 +159,70 @@ const SpeechStudentReports = () => {
           </div>
         )}
 
-        {/* Speech Screens Table */}
+        {/* Select Type of Report — now above the screenings table */}
+        {selectedStudent && (
+          <div className='space-y-3'>
+            <Label className='text-sm font-medium'>Select Type of Report</Label>
+            <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
+              {getAvailableReports().map(report => {
+                const Icon = report.icon
+                const isSelected = selectedReports.includes(report.value)
+                return (
+                  <div
+                    key={report.value}
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedReports(selectedReports.filter(r => r !== report.value))
+                      } else {
+                        setSelectedReports([...selectedReports, report.value])
+                      }
+                    }}
+                    className={`
+                    relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full
+                    ${
+                      isSelected
+                        ? 'border-blue-600 bg-blue-50 shadow-sm'
+                        : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                    }
+                  `}>
+                    <div className='flex items-start w-full space-x-3'>
+                      <div
+                        className={`
+                      flex-shrink-0 p-2 rounded-lg
+                      ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}
+                    `}>
+                        <Icon className='w-4 h-4' />
+                      </div>
+                      <div className='flex-1 min-w-0 overflow-hidden'>
+                        <h3
+                          className={`
+                        text-sm font-medium leading-tight truncate
+                        ${isSelected ? 'text-blue-900' : 'text-gray-900'}
+                      `}>
+                          {report.label}
+                        </h3>
+                        <p
+                          className={`
+                        text-xs mt-1 leading-tight
+                        ${isSelected ? 'text-blue-700' : 'text-gray-500'}
+                      `}>
+                          {report.description}
+                        </p>
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <div className='absolute top-2 right-2'>
+                        <div className='w-2 h-2 bg-blue-600 rounded-full'></div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Screenings Table */}
         <div className='space-y-3'>
           {selectedStudent && (
             <div className='space-y-3'>
@@ -175,7 +238,7 @@ const SpeechStudentReports = () => {
         </div>
       </div>
 
-      {/* Email Section */}
+      {/* Email Section — report selector removed from here */}
       {selectedStudent && (
         <div className='p-4 mt-6 border border-gray-200 rounded-lg bg-gray-50'>
           <h4 className='flex items-center gap-2 mb-4 text-xl font-medium text-gray-700'>
@@ -184,68 +247,7 @@ const SpeechStudentReports = () => {
           </h4>
 
           <div className='space-y-4'>
-            {/* Report Selection */}
-            <div className='space-y-3'>
-              <Label className='text-sm font-medium'>Select Type of Report</Label>
-              <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
-                {getAvailableReports().map(report => {
-                  const Icon = report.icon
-                  const isSelected = selectedReports.includes(report.value)
-                  return (
-                    <div
-                      key={report.value}
-                      onClick={() => {
-                        if (isSelected) {
-                          setSelectedReports(selectedReports.filter(r => r !== report.value))
-                        } else {
-                          setSelectedReports([...selectedReports, report.value])
-                        }
-                      }}
-                      className={`
-                        relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full
-                        ${
-                          isSelected
-                            ? 'border-blue-600 bg-blue-50 shadow-sm'
-                            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
-                        }
-                      `}>
-                      <div className='flex items-start w-full space-x-3'>
-                        <div
-                          className={`
-                          flex-shrink-0 p-2 rounded-lg
-                          ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}
-                        `}>
-                          <Icon className='w-4 h-4' />
-                        </div>
-                        <div className='flex-1 min-w-0 overflow-hidden'>
-                          <h3
-                            className={`
-                            text-sm font-medium leading-tight truncate
-                            ${isSelected ? 'text-blue-900' : 'text-gray-900'}
-                          `}>
-                            {report.label}
-                          </h3>
-                          <p
-                            className={`
-                            text-xs mt-1 leading-tight
-                            ${isSelected ? 'text-blue-700' : 'text-gray-500'}
-                          `}>
-                            {report.description}
-                          </p>
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <div className='absolute top-2 right-2'>
-                          <div className='w-2 h-2 bg-blue-600 rounded-full'></div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Email Details */}
+            {/* Recipient Email */}
             <div className='space-y-3'>
               <div className='space-y-1'>
                 <Label htmlFor='recipient' className='text-sm font-medium'>
