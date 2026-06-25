@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
-import { CheckCircle, Mail, User, Send, Eye, Plus, List, XCircle } from 'lucide-react'
+import { CheckCircle, Mail, User, Send, Eye, Plus, List, XCircle, X } from 'lucide-react'
 import { Student } from '@/types/database'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import { Screening } from '@/types/database'
@@ -34,7 +33,6 @@ const SpeechStudentReports = () => {
 
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
-  const [recipientEmail, setRecipientEmail] = useState('')
   const [customMessage, setCustomMessage] = useState('')
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [selectedScreeningForDetails, setSelectedScreeningForDetails] = useState<Screening | null>(
@@ -48,18 +46,20 @@ const SpeechStudentReports = () => {
   const [modalMessage, setModalMessage] = useState('')
   const [selectedReport, setSelectedReport] = useState<string | null>(null)
   const [comparisonScreenings, setComparisonScreenings] = useState<Screening[]>([])
+  const [recipientEmails, setRecipientEmails] = useState<string[]>([])
+  const [emailInput, setEmailInput] = useState('')
 
   // Pre-fill email with current user's email on component mount
   useEffect(() => {
     if (user?.email) {
-      setRecipientEmail(user.email)
+      setRecipientEmails([user.email])
     }
   }, [user?.email])
 
   const getAvailableReports = () => SPEECH_REPORT_OPTIONS
 
   const handleSendEmail = async () => {
-    if (!recipientEmail || !selectedReport) return
+    if (!selectedReport || recipientEmails.length === 0) return
     if (selectedReport === 'initial-speech-report' && !selectedScreening) return
     if (selectedReport === 'progress-speech-report' && comparisonScreenings.length < 2) return
 
@@ -68,21 +68,21 @@ const SpeechStudentReports = () => {
     setEmailMessage('')
 
     try {
-      // Process each selected report type
-
-      if (selectedReport === 'initial-speech-report') {
-        await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
-      } else if (selectedReport === 'progress-speech-report') {
-        await edgeFunctionsApi.studentProgressReport(
-          comparisonScreenings[0].id,
-          comparisonScreenings[1].id,
-          recipientEmail
-        )
+      for (const email of recipientEmails) {
+        if (selectedReport === 'initial-speech-report') {
+          await edgeFunctionsApi.sendStudentReport(selectedScreening.id, email)
+        } else if (selectedReport === 'progress-speech-report') {
+          await edgeFunctionsApi.studentProgressReport(
+            comparisonScreenings[0].id,
+            comparisonScreenings[1].id,
+            email
+          )
+        }
       }
 
       // Show success modal if any reports were processed
       setModalType('success')
-      setModalMessage(`Reports sent successfully to ${recipientEmail}`)
+      setModalMessage(`Reports sent successfully to ${recipientEmails.join(', ')}`)
       setIsSuccessModalOpen(true)
     } catch (error) {
       console.error('Error sending email:', error)
@@ -124,7 +124,8 @@ const SpeechStudentReports = () => {
     setSelectedStudent(null)
     setSelectedScreening(null)
     setSelectedReport(null)
-    setRecipientEmail('')
+    setRecipientEmails([])
+    setEmailInput('')
     setCustomMessage('')
     setEmailStatus('idle')
     setEmailMessage('')
@@ -274,16 +275,64 @@ const SpeechStudentReports = () => {
             <div className='space-y-3'>
               <div className='space-y-1'>
                 <Label htmlFor='recipient' className='text-sm font-medium'>
-                  Recipient Email
+                  Recipient Email(s)
                 </Label>
-                <Input
-                  id='recipient'
-                  type='email'
-                  placeholder='Enter recipient email address'
-                  value={recipientEmail}
-                  onChange={e => setRecipientEmail(e.target.value)}
-                  className='h-12'
-                />
+
+                <div className='min-h-[42px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'>
+                  <div className='flex flex-wrap gap-2'>
+                    {recipientEmails.map((email, index) => (
+                      <Badge
+                        key={index}
+                        variant='secondary'
+                        className='flex items-center gap-1 px-2 py-1'>
+                        <span>{email}</span>
+                        <button
+                          type='button'
+                          className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'
+                          onClick={() =>
+                            setRecipientEmails(recipientEmails.filter(e => e !== email))
+                          }>
+                          <X className='w-3 h-3' />
+                        </button>
+                      </Badge>
+                    ))}
+                    <input
+                      type='email'
+                      id='recipient'
+                      value={emailInput}
+                      onChange={e => setEmailInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          const trimmed = emailInput.trim()
+
+                          if (trimmed && !recipientEmails.includes(trimmed)) {
+                            setRecipientEmails([...recipientEmails, trimmed])
+                            setEmailInput('')
+                          }
+                        } else if (
+                          e.key === 'Backspace' &&
+                          emailInput === '' &&
+                          recipientEmails.length > 0
+                        ) {
+                          setRecipientEmails(recipientEmails.slice(0, -1))
+                        }
+                      }}
+                      onBlur={() => {
+                        const trimmed = emailInput.trim()
+                        if (trimmed && !recipientEmails.includes(trimmed)) {
+                          setRecipientEmails([...recipientEmails, trimmed])
+                          setEmailInput('')
+                        }
+                      }}
+                      placeholder={recipientEmails.length === 0 ? 'Type email and press Enter' : ''}
+                      className='flex-1 min-w-[120px] outline-none bg-transparent'
+                    />
+                  </div>
+                </div>
+                <p className='text-xs text-gray-500'>
+                  Press Enter to add. Click x or Backspace to remove.
+                </p>
               </div>
             </div>
           </div>
@@ -315,7 +364,7 @@ const SpeechStudentReports = () => {
               className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
               disabled={
                 !selectedStudent ||
-                !recipientEmail ||
+                recipientEmails.length === 0 ||
                 !selectedReport ||
                 isEmailLoading ||
                 (selectedReport === 'progress-speech-report'
