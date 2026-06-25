@@ -306,7 +306,11 @@ const SpeechStudentReports = () => {
                           e.preventDefault()
                           const trimmed = emailInput.trim()
 
-                          if (trimmed && !recipientEmails.includes(trimmed)) {
+                          if (
+                            trimmed &&
+                            !recipientEmails.includes(trimmed) &&
+                            recipientEmails.length < 5
+                          ) {
                             setRecipientEmails([...recipientEmails, trimmed])
                             setEmailInput('')
                           }
@@ -320,18 +324,24 @@ const SpeechStudentReports = () => {
                       }}
                       onBlur={() => {
                         const trimmed = emailInput.trim()
-                        if (trimmed && !recipientEmails.includes(trimmed)) {
+                        if (
+                          trimmed &&
+                          !recipientEmails.includes(trimmed) &&
+                          recipientEmails.length < 5
+                        ) {
                           setRecipientEmails([...recipientEmails, trimmed])
                           setEmailInput('')
                         }
                       }}
-                      placeholder={recipientEmails.length === 0 ? 'Type email and press Enter' : ''}
+                      placeholder={
+                        recipientEmails.length === 0 ? 'Type email and press Enter (max 5)' : ''
+                      }
                       className='flex-1 min-w-[120px] outline-none bg-transparent'
                     />
                   </div>
                 </div>
                 <p className='text-xs text-gray-500'>
-                  Press Enter to add. Click x or Backspace to remove.
+                  Press Enter to add up to 5 recipients. Click x or Backspace to remove.
                 </p>
               </div>
             </div>
