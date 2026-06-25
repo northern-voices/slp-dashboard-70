@@ -14,9 +14,7 @@ interface ResponsiveTableProps {
   className?: string
 }
 
-interface ResponsiveTableRowProps {
-  children: React.ReactNode
-  className?: string
+interface ResponsiveTableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   mobileCardContent?: React.ReactNode
 }
 

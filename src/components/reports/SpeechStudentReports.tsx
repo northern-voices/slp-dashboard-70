@@ -519,32 +519,11 @@ const SpeechScreeningsTable = ({
                 {studentScreenings.map(screening => (
                   <ResponsiveTableRow
                     key={screening.id}
-                    onClick={
-                      mode === 'comparison'
-                        ? () => onSelectedComparisonScreening?.(screening)
-                        : undefined
-                    }
-                    className={mode === 'comparison' ? 'cursor-pointer' : ''}
                     mobileCardContent={
                       <div className='space-y-3'>
                         <div className='flex items-center justify-between'>
                           <div className='flex items-center gap-2'>
-                            {mode === 'comparison' ? (
-                              (() => {
-                                const idx = comparisonScreenings.findIndex(
-                                  s => s.id === screening.id
-                                )
-                                return idx !== -1 ? (
-                                  <div className='w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center'>
-                                    {idx + 1}
-                                  </div>
-                                ) : (
-                                  <div className='w-6 h-6 rounded-full border-2 border-gray-300' />
-                                )
-                              })()
-                            ) : (
-                              <RadioGroupItem value={screening.id} id={`mobile-${screening.id}`} />
-                            )}
+                            <RadioGroupItem value={screening.id} id={`mobile-${screening.id}`} />
                             <h3 className='font-medium'>
                               {format(new Date(screening.created_at), 'MMM dd, yyyy')}
                             </h3>
@@ -576,24 +555,11 @@ const SpeechScreeningsTable = ({
                       </div>
                     }>
                     <TableCell>
-                      {mode === 'comparison' ? (
-                        (() => {
-                          const idx = comparisonScreenings.findIndex(s => s.id === screening.id)
-                          return idx !== -1 ? (
-                            <div className='w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center'>
-                              {idx + 1}
-                            </div>
-                          ) : (
-                            <div className='w-6 h-6 rounded-full border-2 border-gray-300' />
-                          )
-                        })()
-                      ) : (
-                        <RadioGroupItem
-                          value={screening.id}
-                          id={`desktop-${screening.id}`}
-                          className='mt-1.5'
-                        />
-                      )}
+                      <RadioGroupItem
+                        value={screening.id}
+                        id={`desktop-${screening.id}`}
+                        className='mt-1.5'
+                      />
                     </TableCell>
                     <TableCell className='max-w-0'>
                       <div className='truncate'>
