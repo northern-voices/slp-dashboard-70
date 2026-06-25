@@ -49,6 +49,8 @@ const SpeechStudentReports = () => {
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
   const [emailInput, setEmailInput] = useState('')
 
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+
   // Pre-fill email with current user's email on component mount
   useEffect(() => {
     if (user?.email) {
@@ -308,6 +310,7 @@ const SpeechStudentReports = () => {
 
                           if (
                             trimmed &&
+                            isValidEmail(trimmed) &&
                             !recipientEmails.includes(trimmed) &&
                             recipientEmails.length < 5
                           ) {
@@ -324,8 +327,10 @@ const SpeechStudentReports = () => {
                       }}
                       onBlur={() => {
                         const trimmed = emailInput.trim()
+
                         if (
                           trimmed &&
+                          isValidEmail(trimmed) &&
                           !recipientEmails.includes(trimmed) &&
                           recipientEmails.length < 5
                         ) {
