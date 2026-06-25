@@ -140,6 +140,10 @@ const SpeechStudentReports = () => {
     setModalMessage('')
   }
 
+  const handleClearComparison = () => {
+    setComparisonScreenings([])
+  }
+
   const handleSelectComparisonScreening = (screening: Screening) => {
     setComparisonScreenings(prev => {
       const existingIndex = prev.findIndex(s => s.id === screening.id)
@@ -258,6 +262,7 @@ const SpeechStudentReports = () => {
                 mode={selectedReport === 'progress-speech-report' ? 'comparison' : 'single'}
                 comparisonScreenings={comparisonScreenings}
                 onSelectedComparisonScreening={handleSelectComparisonScreening}
+                onClearComparison={handleClearComparison}
               />
             </div>
           )}
@@ -464,6 +469,7 @@ const SpeechScreeningsTable = ({
   mode = 'single',
   comparisonScreenings = [],
   onSelectedComparisonScreening,
+  onClearComparison,
 }: {
   studentId: string
   selectedScreening: Screening | null
@@ -472,6 +478,7 @@ const SpeechScreeningsTable = ({
   mode?: 'single' | 'comparison'
   comparisonScreenings?: Screening[]
   onSelectedComparisonScreening?: (screening: Screening) => void
+  onClearComparison?: () => void
 }) => {
   const { data: screeningsData, isLoading, error } = useSpeechScreeningsByStudent(studentId)
 
@@ -550,8 +557,12 @@ const SpeechScreeningsTable = ({
             <Button
               variant='outline'
               size='sm'
-              disabled={!selectedScreening}
-              onClick={() => onSelectScreening(null)}
+              disabled={
+                mode === 'comparison' ? comparisonScreenings.length === 0 : !selectedScreening
+              }
+              onClick={() =>
+                mode === 'comparison' ? onClearComparison?.() : onSelectScreening(null)
+              }
               className='ml-2 text-xs h-7'>
               Clear
             </Button>
