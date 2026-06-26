@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   ResponsiveTable,
   ResponsiveTableRow,
@@ -778,12 +779,21 @@ const SpeechScreeningsTable = ({
                           {mode === 'comparison' ? (
                             (() => {
                               const idx = comparisonScreenings.findIndex(s => s.id === screening.id)
-                              return idx !== -1 ? (
-                                <div className='w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center'>
-                                  {idx + 1}
+                              const isSelected = idx !== -1
+                              return (
+                                <div className='flex items-center gap-1.5'>
+                                  <Checkbox
+                                    checked={isSelected}
+                                    onCheckedChange={() =>
+                                      onSelectedComparisonScreening?.(screening)
+                                    }
+                                  />
+                                  {isSelected && (
+                                    <div className='w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center'>
+                                      {idx + 1}
+                                    </div>
+                                  )}
                                 </div>
-                              ) : (
-                                <div className='w-6 h-6 rounded-full border-2 border-gray-300' />
                               )
                             })()
                           ) : (
@@ -822,16 +832,23 @@ const SpeechScreeningsTable = ({
                       </div>
                     </div>
                   }>
-                  <TableCell>
+                  <TableCell onClick={e => e.stopPropagation()}>
                     {mode === 'comparison' ? (
                       (() => {
                         const idx = comparisonScreenings.findIndex(s => s.id === screening.id)
-                        return idx !== -1 ? (
-                          <div className='w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center'>
-                            {idx + 1}
+                        const isSelected = idx !== -1
+                        return (
+                          <div className='flex items-center gap-1.5'>
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => onSelectedComparisonScreening?.(screening)}
+                            />
+                            {isSelected && (
+                              <div className='w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center'>
+                                {idx + 1}
+                              </div>
+                            )}
                           </div>
-                        ) : (
-                          <div className='w-6 h-6 rounded-full border-2 border-gray-300' />
                         )
                       })()
                     ) : (
