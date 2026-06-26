@@ -505,13 +505,27 @@ const SpeechScreeningsTable = ({
     )
   }
 
+  const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {
+    complex_needs: 'Complex Needs',
+    unable_to_screen: 'Refusal / Non-Compliant',
+  }
+
   const getResultBadge = (result: string | undefined) => {
     if (!result) return <Badge variant='secondary'>No Result</Badge>
 
     const config = SCREENING_RESULTS[result.toLowerCase() as keyof typeof SCREENING_RESULTS]
     if (!config) return <Badge variant='secondary'>{result}</Badge>
 
-    return <Badge className={`${config.color} font-medium`}>{config.label}</Badge>
+    const label =
+      RESULT_BADGE_LABELS[result.toLowerCase() as keyof typeof SCREENING_RESULTS] ?? config.label
+
+    return (
+      <Badge
+        title={config.label}
+        className={`${config.color} font-medium text-[10px] whitespace-nowrap`}>
+        {label}
+      </Badge>
+    )
   }
 
   const getQualificationBadge = (screening: Screening) => {
@@ -647,7 +661,7 @@ const SpeechScreeningsTable = ({
                       </div>
                     </TableCell>
                     <TableCell className='max-w-0'>
-                      <div className='truncate'>
+                      <div className='w-full min-w-[120px]'>
                         {getResultBadge(screening.result || screening.screening_result)}
                       </div>
                     </TableCell>
@@ -789,7 +803,7 @@ const SpeechScreeningsTable = ({
                     </div>
                   </TableCell>
                   <TableCell className='max-w-0'>
-                    <div className='truncate'>
+                    <div className='w-full min-w-[120px]'>
                       {getResultBadge(screening.result || screening.screening_result)}
                     </div>
                   </TableCell>
