@@ -25,6 +25,7 @@ import {
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
+import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
 
 const SpeechStudentReports = () => {
   const navigate = useNavigate()
@@ -48,6 +49,8 @@ const SpeechStudentReports = () => {
   const [comparisonScreenings, setComparisonScreenings] = useState<Screening[]>([])
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
   const [emailInput, setEmailInput] = useState('')
+  const [emailHistory, setEmailHistory] = useState<string[]>([])
+  const [suggestions, setSuggestions] = useState<string[]>([])
 
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
@@ -82,6 +85,10 @@ const SpeechStudentReports = () => {
         }
       }
 
+      if (user?.id) {
+        upsertEmailHistory(user.id, recipientEmails).catch(console.error)
+      }
+
       // Show success modal if any reports were processed
       setModalType('success')
       setModalMessage(`Reports sent successfully to ${recipientEmails.join(', ')}`)
@@ -95,6 +102,12 @@ const SpeechStudentReports = () => {
       setIsEmailLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (user?.id) {
+      getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
+    }
+  }, [user?.id])
 
   const handleStudentSelect = (student: Student | null) => {
     setSelectedStudent(student)
@@ -303,14 +316,48 @@ const SpeechStudentReports = () => {
                         </button>
                       </Badge>
                     ))}
-                    <input
-                      type='email'
-                      id='recipient'
-                      value={emailInput}
-                      onChange={e => setEmailInput(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
+                    <div className='relative flex-1 min-w-[120px]'>
+                      <input
+                        type='email'
+                        id='recipient'
+                        value={emailInput}
+                        onChange={e => {
+                          const value = e.target.value
+                          setEmailInput(value)
+                          setSuggestions(
+                            value.length > 0
+                              ? emailHistory.filter(
+                                  history =>
+                                    history.toLowerCase().includes(value.toLowerCase()) &&
+                                    !recipientEmails.includes(history)
+                                )
+                              : []
+                          )
+                        }}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            const trimmed = emailInput.trim()
+
+                            if (
+                              trimmed &&
+                              isValidEmail(trimmed) &&
+                              !recipientEmails.includes(trimmed) &&
+                              recipientEmails.length < 5
+                            ) {
+                              setRecipientEmails([...recipientEmails, trimmed])
+                              setEmailInput('')
+                            }
+                          } else if (
+                            e.key === 'Backspace' &&
+                            emailInput === '' &&
+                            recipientEmails.length > 0
+                          ) {
+                            setRecipientEmails(recipientEmails.slice(0, -1))
+                          }
+                        }}
+                        onBlur={() => {
+                          setSuggestions([])
                           const trimmed = emailInput.trim()
 
                           if (
@@ -322,32 +369,32 @@ const SpeechStudentReports = () => {
                             setRecipientEmails([...recipientEmails, trimmed])
                             setEmailInput('')
                           }
-                        } else if (
-                          e.key === 'Backspace' &&
-                          emailInput === '' &&
-                          recipientEmails.length > 0
-                        ) {
-                          setRecipientEmails(recipientEmails.slice(0, -1))
+                        }}
+                        placeholder={
+                          recipientEmails.length === 0 ? 'Type email and press Enter (max 5)' : ''
                         }
-                      }}
-                      onBlur={() => {
-                        const trimmed = emailInput.trim()
-
-                        if (
-                          trimmed &&
-                          isValidEmail(trimmed) &&
-                          !recipientEmails.includes(trimmed) &&
-                          recipientEmails.length < 5
-                        ) {
-                          setRecipientEmails([...recipientEmails, trimmed])
-                          setEmailInput('')
-                        }
-                      }}
-                      placeholder={
-                        recipientEmails.length === 0 ? 'Type email and press Enter (max 5)' : ''
-                      }
-                      className='flex-1 min-w-[120px] outline-none bg-transparent'
-                    />
+                        className='w-full outline-none bg-transparent'
+                      />
+                      {suggestions.length > 0 && (
+                        <ul className='absolute z-10 left-0 right-0 top-full bg-white border border-gray-200 rounded-md shadow-md mt-1 max-h-40 overflow-y-auto'>
+                          {suggestions.map(email => (
+                            <li
+                              key={email}
+                              onMouseDown={e => {
+                                e.preventDefault()
+                                if (recipientEmails.length < 5) {
+                                  setRecipientEmails(prev => [...prev, email])
+                                  setEmailInput('')
+                                  setSuggestions([])
+                                }
+                              }}
+                              className='px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer truncate'>
+                              {email}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <p className='text-xs text-gray-500'>
