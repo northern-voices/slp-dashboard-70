@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import AuthLayout from '@/components/auth/AuthLayout'
 import AuthFormField from '@/components/auth/AuthFormField'
 import PasswordStrengthIndicator from '@/components/auth/PasswordStrengthIndicator'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
 
 const ResetPassword = () => {
   const navigate = useNavigate()
-  const location = useLocation()
   const { toast } = useToast()
-  const { updatePassword, user } = useAuth()
+  const { updatePassword } = useAuth()
 
   const [isLoading, setIsLoading] = useState(false)
   const [password, setPassword] = useState('')
@@ -20,22 +20,16 @@ const ResetPassword = () => {
   const [token, setToken] = useState<string | null>(null)
 
   useEffect(() => {
-    // Get the token from the URL hash fragment
-    const hash = window.location.hash.substring(1) // Remove the # character
-    const params = new URLSearchParams(hash)
-    const accessToken = params.get('access_token')
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setToken(session?.access_token ?? null)
+      }
+    })
 
-    if (accessToken) {
-      setToken(accessToken)
-    } else {
-      toast({
-        title: 'Invalid reset link',
-        description: 'The password reset link is invalid or has expired. Please request a new one.',
-        variant: 'destructive',
-      })
-      navigate('/auth/forgot-password')
-    }
-  }, [navigate, toast])
+    return () => subscription.unsubscribe()
+  }, [])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}

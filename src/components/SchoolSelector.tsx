@@ -30,18 +30,20 @@ const SchoolSelector = () => {
     // Close dropdown immediately for instant feedback
     setOpen(false)
 
-    // Navigate first for instant UI update
+    let newPath: string
+
     if (currentPath.startsWith('/school/')) {
-      const newPath = currentPath.replace(/^\/school\/[^/]+/, `/school/${school.id}`)
-      navigate(newPath, { replace: true })
+      newPath = currentPath.replace(/^\/school\/[^/]+/, `/school/${school.id}`)
+
+      if (newPath.includes('/speech-screening-reports')) {
+        newPath = `/school/${school.id}/speech-screening-reports`
+      }
     } else {
-      // If we're on a non-school route, navigate to the school dashboard
-      const newPath = `/school/${school.id}`
-      navigate(newPath)
+      newPath = `/school/${school.id}`
     }
 
-    // Update context after navigation (this triggers the data fetch)
-    // Using setTimeout to ensure navigation happens first
+    navigate(newPath, { replace: true })
+
     setTimeout(() => {
       setCurrentSchool(school)
     }, 0)

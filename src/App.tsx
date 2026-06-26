@@ -49,6 +49,9 @@ import EditMonthlyMeeting from './pages/monthly-meetings/EditMonthlyMeeting'
 import Caseload from './pages/Caseload'
 import GoalSheets from './pages/GoalSheets'
 import SchoolWideGoalSheets from './pages/SchoolWideGoalSheets'
+import MfaChallenge from './pages/auth/MfaChallenge'
+import MfaEnroll from './pages/auth/MfaEnroll'
+import EmailOtpChallenge from './pages/auth/EmailOtpChallenge'
 import RoleGuard from './components/auth/RoleGuard'
 
 const queryClient = new QueryClient({
@@ -98,14 +101,7 @@ const App = () => (
                     </PublicRoute>
                   }
                 />
-                <Route
-                  path='/auth/reset-password/'
-                  element={
-                    <PublicRoute>
-                      <ResetPassword />
-                    </PublicRoute>
-                  }
-                />
+                <Route path='/auth/reset-password/' element={<ResetPassword />} />
                 <Route
                   path='/auth/verify-email'
                   element={
@@ -138,6 +134,10 @@ const App = () => (
                     </PublicRoute>
                   }
                 />
+
+                <Route path='/auth/mfa' element={<MfaChallenge />} />
+                <Route path='/auth/mfa/enroll' element={<MfaEnroll />} />
+                <Route path='/auth/email-otp' element={<EmailOtpChallenge />} />
 
                 {/* Onboarding Route */}
                 <Route path='/onboarding' element={<Onboarding />} />

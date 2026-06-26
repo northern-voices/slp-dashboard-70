@@ -95,6 +95,11 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
       if (error) throw error
 
       const link = `${window.location.origin}/invite/${data.token}`
+
+      await supabase.functions.invoke('send-invite-email', {
+        body: { email: formData.email.trim().toLowerCase(), inviteLink: link },
+      })
+
       setInviteLink(link)
       onInvite()
     } catch (error) {

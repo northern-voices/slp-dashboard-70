@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast'
 import AuthLayout from '@/components/auth/AuthLayout'
 import AuthFormField from '@/components/auth/AuthFormField'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
 
 interface LocationState {
   from: {
@@ -77,22 +78,37 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!validateForm()) return
 
     setIsLoading(true)
     try {
       await login(email, password)
-      toast({
-        title: 'Login successful',
-        description: 'Welcome back!',
-      })
-      // Navigate to the originally requested page or home
-      navigate(from, { replace: true })
+
+      const [{ data: aalData }, { data: factorsData }] = await Promise.all([
+        supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+        supabase.auth.mfa.listFactors(),
+      ])
+
+      const {
+        data: { user: freshUser },
+      } = await supabase.auth.getUser()
+
+      const preference = freshUser?.user_metadata?.preferred_mfa ?? 'email'
+      const hasFactors = (factorsData?.totp?.length ?? 0) > 0
+
+      if (
+        preference === 'totp' &&
+        hasFactors &&
+        aalData?.nextLevel === 'aal2' &&
+        aalData?.currentLevel !== 'aal2'
+      ) {
+        navigate('/auth/mfa', { state: { from: { pathname: from } }, replace: true })
+      } else {
+        navigate('/auth/email-otp', { state: { from: { pathname: from } }, replace: true })
+      }
     } catch (error) {
       console.error('Login error:', error)
       const errorMessage = getErrorMessage(error)
-
       toast({
         title: errorMessage.title,
         description: errorMessage.description,

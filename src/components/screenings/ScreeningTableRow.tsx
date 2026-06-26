@@ -51,8 +51,12 @@ const ScreeningTableRow = ({
 
   const transferredOut =
     transferRecord && currentSchoolId && transferRecord.from_school_id === currentSchoolId
-      ? transferRecord.to_school?.name
-      : null
+      ? screening.school_id !== currentSchoolId
+        ? screening.school_name
+        : transferRecord.to_school?.name
+      : !transferRecord && currentSchoolId && screening.school_id !== currentSchoolId
+        ? screening.school_name
+        : null
 
   const transferredIn =
     transferRecord && currentSchoolId && transferRecord.to_school_id === currentSchoolId
@@ -91,6 +95,7 @@ const ScreeningTableRow = ({
               onEmailReport={onEmailReport}
               onDelete={onDelete}
               onAddConsent={onAddConsent}
+              isTransferredOut={!!transferredOut}
             />
           </div>
           <div className='flex items-center gap-2'>{getResultSelector(screening)}</div>
@@ -178,6 +183,7 @@ const ScreeningTableRow = ({
           onEmailReport={onEmailReport}
           onDelete={onDelete}
           onAddConsent={onAddConsent}
+          isTransferredOut={!!transferredOut}
         />
       </TableCell>
     </ResponsiveTableRow>

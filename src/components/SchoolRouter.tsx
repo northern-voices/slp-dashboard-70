@@ -178,8 +178,11 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
   // Show loading while initializing
   if (isLoading || isInitializing) return SkeletonComponent ? <SkeletonComponent /> : null
 
+  const schoolFreeRoutes = ['/profile', '/notifications']
+  const isSchoolFreeRoute = schoolFreeRoutes.some(route => location.pathname.includes(route))
+
   // If no schools available, show error
-  if (availableSchools.length === 0) {
+  if (availableSchools.length === 0 && !isSchoolFreeRoute) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
         <div className='text-center'>
