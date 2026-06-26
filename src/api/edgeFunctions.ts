@@ -15,13 +15,15 @@ export const edgeFunctionsApi = {
     return user?.id
   },
 
-  async studentProgressReport(speechScreeningId: string, overrideEmail: string) {
+  async studentProgressReport(screeningId1: string, screeningId2, overrideEmail: string) {
     try {
       const generated_by = await this._getGeneratedBy()
 
+      //TODO: Fix backend to accept screeningId2
+
       const { data, error } = await supabase.functions.invoke('student-progress-report', {
         body: {
-          speech_screening_id: speechScreeningId,
+          speech_screening_id: screeningId1,
           override_email: overrideEmail,
           generated_by,
         },

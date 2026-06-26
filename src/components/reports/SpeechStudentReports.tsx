@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
-import { CheckCircle, Mail, User, Send, Eye, Plus, List, XCircle } from 'lucide-react'
+import { CheckCircle, Mail, User, Send, Eye, Plus, List, XCircle, X } from 'lucide-react'
 import { Student } from '@/types/database'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import { Screening } from '@/types/database'
@@ -15,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   ResponsiveTable,
   ResponsiveTableRow,
@@ -26,6 +26,7 @@ import {
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
+import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
 
 const SpeechStudentReports = () => {
   const navigate = useNavigate()
@@ -33,9 +34,7 @@ const SpeechStudentReports = () => {
   const { user } = useAuth()
 
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
-  const [recipientEmail, setRecipientEmail] = useState('')
   const [customMessage, setCustomMessage] = useState('')
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [selectedScreeningForDetails, setSelectedScreeningForDetails] = useState<Screening | null>(
@@ -47,41 +46,55 @@ const SpeechStudentReports = () => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
+  const [selectedReport, setSelectedReport] = useState<string | null>(null)
+  const [comparisonScreenings, setComparisonScreenings] = useState<Screening[]>([])
+  const [recipientEmails, setRecipientEmails] = useState<string[]>([])
+  const [emailInput, setEmailInput] = useState('')
+  const [emailHistory, setEmailHistory] = useState<string[]>([])
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [highlightedIndex, setHighlightedIndex] = useState(-1)
+
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
   // Pre-fill email with current user's email on component mount
   useEffect(() => {
     if (user?.email) {
-      setRecipientEmail(user.email)
+      setRecipientEmails([user.email])
     }
   }, [user?.email])
 
   const getAvailableReports = () => SPEECH_REPORT_OPTIONS
 
   const handleSendEmail = async () => {
-    if (!recipientEmail || selectedReports.length === 0 || !selectedScreening) {
-      return
-    }
+    if (!selectedReport || recipientEmails.length === 0) return
+    if (selectedReport === 'initial-speech-report' && !selectedScreening) return
+    if (selectedReport === 'progress-speech-report' && comparisonScreenings.length < 2) return
 
     setIsEmailLoading(true)
     setEmailStatus('idle')
     setEmailMessage('')
 
     try {
-      // Process each selected report type
-      for (const reportType of selectedReports) {
-        if (reportType === 'initial-speech-report') {
-          await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmail)
-        } else if (reportType === 'progress-speech-report') {
-          await edgeFunctionsApi.studentProgressReport(selectedScreening.id, recipientEmail)
+      for (const email of recipientEmails) {
+        if (selectedReport === 'initial-speech-report') {
+          await edgeFunctionsApi.sendStudentReport(selectedScreening.id, email)
+        } else if (selectedReport === 'progress-speech-report') {
+          await edgeFunctionsApi.studentProgressReport(
+            comparisonScreenings[0].id,
+            comparisonScreenings[1].id,
+            email
+          )
         }
       }
 
-      // Show success modal if any reports were processed
-      if (selectedReports.length > 0) {
-        setModalType('success')
-        setModalMessage(`Reports sent successfully to ${recipientEmail}`)
-        setIsSuccessModalOpen(true)
+      if (user?.id) {
+        upsertEmailHistory(user.id, recipientEmails).catch(console.error)
       }
+
+      // Show success modal if any reports were processed
+      setModalType('success')
+      setModalMessage(`Reports sent successfully to ${recipientEmails.join(', ')}`)
+      setIsSuccessModalOpen(true)
     } catch (error) {
       console.error('Error sending email:', error)
       setModalType('error')
@@ -92,9 +105,16 @@ const SpeechStudentReports = () => {
     }
   }
 
+  useEffect(() => {
+    if (user?.id) {
+      getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
+    }
+  }, [user?.id])
+
   const handleStudentSelect = (student: Student | null) => {
     setSelectedStudent(student)
-    setSelectedScreening(null) // Clear selected screening when student changes
+    setSelectedScreening(null)
+    setComparisonScreenings([])
   }
 
   const handleSelectScreening = (screening: Screening | null) => {
@@ -120,17 +140,39 @@ const SpeechStudentReports = () => {
     // Clear all selections
     setSelectedStudent(null)
     setSelectedScreening(null)
-    setSelectedReports([])
-    setRecipientEmail('')
+    setSelectedReport(null)
+    setRecipientEmails([])
+    setEmailInput('')
     setCustomMessage('')
     setEmailStatus('idle')
     setEmailMessage('')
+    setComparisonScreenings([])
   }
 
   const handleCloseModal = () => {
     setIsSuccessModalOpen(false)
     setModalType('success')
     setModalMessage('')
+  }
+
+  const handleClearComparison = () => {
+    setComparisonScreenings([])
+  }
+
+  const handleSelectComparisonScreening = (screening: Screening) => {
+    setComparisonScreenings(prev => {
+      const existingIndex = prev.findIndex(s => s.id === screening.id)
+
+      if (existingIndex !== -1) {
+        return prev.filter(s => s.id !== screening.id)
+      }
+
+      if (prev.length === 2) {
+        return [prev[0], screening]
+      }
+
+      return [...prev, screening]
+    })
   }
 
   return (
@@ -159,7 +201,70 @@ const SpeechStudentReports = () => {
           </div>
         )}
 
-        {/* Speech Screens Table */}
+        {/* Select Type of Report — now above the screenings table */}
+        {selectedStudent && (
+          <div className='space-y-3'>
+            <Label className='text-xl font-medium'>Select Type of Report</Label>
+            <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
+              {getAvailableReports().map(report => {
+                const Icon = report.icon
+                const isSelected = selectedReport === report.value
+
+                return (
+                  <div
+                    key={report.value}
+                    onClick={() => {
+                      const newValue = report.value === selectedReport ? null : report.value
+                      setSelectedReport(newValue)
+                      setSelectedScreening(null)
+                      setComparisonScreenings([])
+                    }}
+                    className={`
+                    relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full
+                    ${
+                      isSelected
+                        ? 'border-blue-600 bg-blue-50 shadow-sm'
+                        : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                    }
+                  `}>
+                    <div className='flex items-start w-full space-x-3'>
+                      <div
+                        className={`
+                      flex-shrink-0 p-2 rounded-lg
+                      ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}
+                    `}>
+                        <Icon className='w-4 h-4' />
+                      </div>
+                      <div className='flex-1 min-w-0 overflow-hidden'>
+                        <h3
+                          className={`
+                        text-sm font-medium leading-tight truncate
+                        ${isSelected ? 'text-blue-900' : 'text-gray-900'}
+                      `}>
+                          {report.label}
+                        </h3>
+                        <p
+                          className={`
+                        text-xs mt-1 leading-tight
+                        ${isSelected ? 'text-blue-700' : 'text-gray-500'}
+                      `}>
+                          {report.description}
+                        </p>
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <div className='absolute top-2 right-2'>
+                        <div className='w-2 h-2 bg-blue-600 rounded-full'></div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Screenings Table */}
         <div className='space-y-3'>
           {selectedStudent && (
             <div className='space-y-3'>
@@ -169,13 +274,17 @@ const SpeechStudentReports = () => {
                 selectedScreening={selectedScreening}
                 onSelectScreening={handleSelectScreening}
                 onViewDetails={handleViewDetails}
+                mode={selectedReport === 'progress-speech-report' ? 'comparison' : 'single'}
+                comparisonScreenings={comparisonScreenings}
+                onSelectedComparisonScreening={handleSelectComparisonScreening}
+                onClearComparison={handleClearComparison}
               />
             </div>
           )}
         </div>
       </div>
 
-      {/* Email Section */}
+      {/* Email Section — report selector removed from here */}
       {selectedStudent && (
         <div className='p-4 mt-6 border border-gray-200 rounded-lg bg-gray-50'>
           <h4 className='flex items-center gap-2 mb-4 text-xl font-medium text-gray-700'>
@@ -184,81 +293,150 @@ const SpeechStudentReports = () => {
           </h4>
 
           <div className='space-y-4'>
-            {/* Report Selection */}
-            <div className='space-y-3'>
-              <Label className='text-sm font-medium'>Select Type of Report</Label>
-              <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
-                {getAvailableReports().map(report => {
-                  const Icon = report.icon
-                  const isSelected = selectedReports.includes(report.value)
-                  return (
-                    <div
-                      key={report.value}
-                      onClick={() => {
-                        if (isSelected) {
-                          setSelectedReports(selectedReports.filter(r => r !== report.value))
-                        } else {
-                          setSelectedReports([...selectedReports, report.value])
-                        }
-                      }}
-                      className={`
-                        relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full
-                        ${
-                          isSelected
-                            ? 'border-blue-600 bg-blue-50 shadow-sm'
-                            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
-                        }
-                      `}>
-                      <div className='flex items-start w-full space-x-3'>
-                        <div
-                          className={`
-                          flex-shrink-0 p-2 rounded-lg
-                          ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}
-                        `}>
-                          <Icon className='w-4 h-4' />
-                        </div>
-                        <div className='flex-1 min-w-0 overflow-hidden'>
-                          <h3
-                            className={`
-                            text-sm font-medium leading-tight truncate
-                            ${isSelected ? 'text-blue-900' : 'text-gray-900'}
-                          `}>
-                            {report.label}
-                          </h3>
-                          <p
-                            className={`
-                            text-xs mt-1 leading-tight
-                            ${isSelected ? 'text-blue-700' : 'text-gray-500'}
-                          `}>
-                            {report.description}
-                          </p>
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <div className='absolute top-2 right-2'>
-                          <div className='w-2 h-2 bg-blue-600 rounded-full'></div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Email Details */}
+            {/* Recipient Email */}
             <div className='space-y-3'>
               <div className='space-y-1'>
                 <Label htmlFor='recipient' className='text-sm font-medium'>
-                  Recipient Email
+                  Recipient Email(s)
                 </Label>
-                <Input
-                  id='recipient'
-                  type='email'
-                  placeholder='Enter recipient email address'
-                  value={recipientEmail}
-                  onChange={e => setRecipientEmail(e.target.value)}
-                  className='h-12'
-                />
+
+                <div className='min-h-[42px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'>
+                  <div className='flex flex-wrap gap-2'>
+                    {recipientEmails.map((email, index) => (
+                      <Badge
+                        key={index}
+                        variant='secondary'
+                        className='flex items-center gap-1 px-2 py-1'>
+                        <span>{email}</span>
+                        <button
+                          type='button'
+                          className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'
+                          onClick={() =>
+                            setRecipientEmails(recipientEmails.filter(e => e !== email))
+                          }>
+                          <X className='w-3 h-3' />
+                        </button>
+                      </Badge>
+                    ))}
+                    <div className='relative flex-1 min-w-[120px]'>
+                      <input
+                        type='email'
+                        id='recipient'
+                        autoComplete='off'
+                        value={emailInput}
+                        onChange={e => {
+                          const value = e.target.value
+                          setEmailInput(value)
+                          setHighlightedIndex(-1)
+                          setSuggestions(
+                            value.length > 0
+                              ? emailHistory.filter(
+                                  history =>
+                                    history.toLowerCase().includes(value.toLowerCase()) &&
+                                    !recipientEmails.includes(history)
+                                )
+                              : []
+                          )
+                        }}
+                        onKeyDown={e => {
+                          if (suggestions.length > 0) {
+                            if (e.key === 'ArrowDown') {
+                              e.preventDefault()
+                              setHighlightedIndex(prev => (prev + 1) % suggestions.length)
+                              return
+                            }
+                            if (e.key === 'ArrowUp') {
+                              e.preventDefault()
+                              setHighlightedIndex(prev =>
+                                prev <= 0 ? suggestions.length - 1 : prev - 1
+                              )
+                              return
+                            }
+                            if (e.key === 'Escape') {
+                              e.preventDefault()
+                              setSuggestions([])
+                              setHighlightedIndex(-1)
+                              return
+                            }
+                            if (e.key === 'Enter' && highlightedIndex >= 0) {
+                              e.preventDefault()
+                              if (recipientEmails.length < 5) {
+                                setRecipientEmails(prev => [...prev, suggestions[highlightedIndex]])
+                                setEmailInput('')
+                                setSuggestions([])
+                                setHighlightedIndex(-1)
+                              }
+                              return
+                            }
+                          }
+
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            const trimmed = emailInput.trim()
+
+                            if (
+                              trimmed &&
+                              isValidEmail(trimmed) &&
+                              !recipientEmails.includes(trimmed) &&
+                              recipientEmails.length < 5
+                            ) {
+                              setRecipientEmails([...recipientEmails, trimmed])
+                              setEmailInput('')
+                            }
+                          } else if (
+                            e.key === 'Backspace' &&
+                            emailInput === '' &&
+                            recipientEmails.length > 0
+                          ) {
+                            setRecipientEmails(recipientEmails.slice(0, -1))
+                          }
+                        }}
+                        onBlur={() => {
+                          setSuggestions([])
+                          setHighlightedIndex(-1)
+                          const trimmed = emailInput.trim()
+
+                          if (
+                            trimmed &&
+                            isValidEmail(trimmed) &&
+                            !recipientEmails.includes(trimmed) &&
+                            recipientEmails.length < 5
+                          ) {
+                            setRecipientEmails([...recipientEmails, trimmed])
+                            setEmailInput('')
+                          }
+                        }}
+                        placeholder={
+                          recipientEmails.length === 0 ? 'Type email and press Enter (max 5)' : ''
+                        }
+                        className='w-full outline-none bg-transparent'
+                      />
+                      {suggestions.length > 0 && (
+                        <ul className='absolute z-10 left-0 right-0 top-full bg-white border border-gray-200 rounded-md shadow-md mt-1 max-h-40 overflow-y-auto'>
+                          {suggestions.map((email, index) => (
+                            <li
+                              key={email}
+                              onMouseDown={e => {
+                                e.preventDefault()
+                                if (recipientEmails.length < 5) {
+                                  setRecipientEmails(prev => [...prev, email])
+                                  setEmailInput('')
+                                  setSuggestions([])
+                                  setHighlightedIndex(-1)
+                                }
+                              }}
+                              className={`px-3 py-2 text-sm cursor-pointer truncate ${index === highlightedIndex ? 'bg-gray-100' : 'hover:bg-gray-100'}`}>
+                              {email}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <p className='text-xs text-gray-500'>
+                  Press Enter to add up to 5 recipients. Click x or Backspace to remove.
+                </p>
               </div>
             </div>
           </div>
@@ -290,10 +468,12 @@ const SpeechStudentReports = () => {
               className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
               disabled={
                 !selectedStudent ||
-                !recipientEmail ||
-                selectedReports.length === 0 ||
+                recipientEmails.length === 0 ||
+                !selectedReport ||
                 isEmailLoading ||
-                !selectedScreening
+                (selectedReport === 'progress-speech-report'
+                  ? comparisonScreenings.length < 2
+                  : !selectedScreening)
               }>
               <Send className='w-4 h-4 mr-2' />
               {isEmailLoading ? 'Sending...' : 'Send Reports'}
@@ -370,11 +550,19 @@ const SpeechScreeningsTable = ({
   selectedScreening,
   onSelectScreening,
   onViewDetails,
+  mode = 'single',
+  comparisonScreenings = [],
+  onSelectedComparisonScreening,
+  onClearComparison,
 }: {
   studentId: string
   selectedScreening: Screening | null
   onSelectScreening: (screening: Screening | null) => void
   onViewDetails: (screening: Screening) => void
+  mode?: 'single' | 'comparison'
+  comparisonScreenings?: Screening[]
+  onSelectedComparisonScreening?: (screening: Screening) => void
+  onClearComparison?: () => void
 }) => {
   const { data: screeningsData, isLoading, error } = useSpeechScreeningsByStudent(studentId)
 
@@ -401,13 +589,27 @@ const SpeechScreeningsTable = ({
     )
   }
 
+  const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {
+    complex_needs: 'Complex Needs',
+    unable_to_screen: 'Refusal / Non-Compliant',
+  }
+
   const getResultBadge = (result: string | undefined) => {
     if (!result) return <Badge variant='secondary'>No Result</Badge>
 
     const config = SCREENING_RESULTS[result.toLowerCase() as keyof typeof SCREENING_RESULTS]
     if (!config) return <Badge variant='secondary'>{result}</Badge>
 
-    return <Badge className={`${config.color} font-medium`}>{config.label}</Badge>
+    const label =
+      RESULT_BADGE_LABELS[result.toLowerCase() as keyof typeof SCREENING_RESULTS] ?? config.label
+
+    return (
+      <Badge
+        title={config.label}
+        className={`${config.color} font-medium text-[10px] whitespace-nowrap`}>
+        {label}
+      </Badge>
+    )
   }
 
   const getQualificationBadge = (screening: Screening) => {
@@ -453,8 +655,12 @@ const SpeechScreeningsTable = ({
             <Button
               variant='outline'
               size='sm'
-              disabled={!selectedScreening}
-              onClick={() => onSelectScreening(null)}
+              disabled={
+                mode === 'comparison' ? comparisonScreenings.length === 0 : !selectedScreening
+              }
+              onClick={() =>
+                mode === 'comparison' ? onClearComparison?.() : onSelectScreening(null)
+              }
               className='ml-2 text-xs h-7'>
               Clear
             </Button>
@@ -463,12 +669,123 @@ const SpeechScreeningsTable = ({
       </div>
 
       <div className='overflow-y-auto max-h-96'>
-        <RadioGroup
-          value={selectedScreening?.id || ''}
-          onValueChange={value => {
-            const screening = studentScreenings.find(s => s.id === value)
-            onSelectScreening(screening || null)
-          }}>
+        {mode === 'single' ? (
+          <RadioGroup
+            value={selectedScreening?.id || ''}
+            onValueChange={value => {
+              const screening = studentScreenings.find(s => s.id === value)
+              onSelectScreening(screening || null)
+            }}>
+            <ResponsiveTable className='w-full'>
+              <TableHeader>
+                <tr>
+                  <TableHead className='w-12'></TableHead>
+                  <TableHead className='w-1/6 min-w-[100px]'>Date</TableHead>
+                  <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
+                  <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
+                  <TableHead className='w-1/6 min-w-[120px]'>Screener</TableHead>
+                  <TableHead className='w-1/6 min-w-[80px]'>Grade</TableHead>
+                  <TableHead className='w-12'></TableHead>
+                </tr>
+              </TableHeader>
+              <TableBody>
+                {studentScreenings.map(screening => (
+                  <ResponsiveTableRow
+                    key={screening.id}
+                    mobileCardContent={
+                      <div className='space-y-3'>
+                        <div className='flex items-center justify-between'>
+                          <div className='flex items-center gap-2'>
+                            <RadioGroupItem value={screening.id} id={`mobile-${screening.id}`} />
+                            <h3 className='font-medium'>
+                              {format(new Date(screening.created_at), 'MMM dd, yyyy')}
+                            </h3>
+                          </div>
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            onClick={e => {
+                              e.stopPropagation()
+                              onViewDetails(screening)
+                            }}
+                            className='w-8 h-8 p-0 hover:bg-gray-100'>
+                            <Eye className='w-4 h-4' />
+                          </Button>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                          {getResultBadge(screening.result || screening.screening_result)}
+                        </div>
+                        <div className='flex items-center gap-2'>
+                          {getQualificationBadge(screening)}
+                        </div>
+                        <div className='space-y-1 text-sm text-gray-600'>
+                          <p>
+                            <span className='font-medium'>Screener:</span> {screening.screener}
+                          </p>
+                          {screening.grade && (
+                            <p>
+                              <span className='font-medium'>Grade:</span> {screening.grade}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    }>
+                    <TableCell>
+                      <RadioGroupItem
+                        value={screening.id}
+                        id={`desktop-${screening.id}`}
+                        className='mt-1.5'
+                      />
+                    </TableCell>
+                    <TableCell className='max-w-0'>
+                      <div className='truncate'>
+                        <div className='text-sm font-medium text-gray-900'>
+                          {format(new Date(screening.created_at), 'MMM dd, yyyy')}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className='max-w-0'>
+                      <div className='w-full min-w-[120px]'>
+                        {getResultBadge(screening.result || screening.screening_result)}
+                      </div>
+                    </TableCell>
+                    <TableCell className='max-w-0'>
+                      <div className='truncate'>{getQualificationBadge(screening)}</div>
+                    </TableCell>
+                    <TableCell className='max-w-0'>
+                      <div className='truncate' title={screening.screener}>
+                        {screening.screener}
+                      </div>
+                    </TableCell>
+                    <TableCell className='max-w-0'>
+                      <div className='truncate' title={screening.grade || 'No grade'}>
+                        {screening.grade ? (
+                          <div className='inline-block px-3 py-1 text-xs text-gray-500 bg-gray-200 rounded-lg'>
+                            {screening.grade}
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        onClick={e => {
+                          e.stopPropagation()
+                          onViewDetails(screening)
+                        }}
+                        className='w-8 h-8 p-0 hover:bg-gray-100'>
+                        <Eye className='w-4 h-4' />
+                      </Button>
+                    </TableCell>
+                  </ResponsiveTableRow>
+                ))}
+              </TableBody>
+            </ResponsiveTable>
+          </RadioGroup>
+        ) : (
           <ResponsiveTable className='w-full'>
             <TableHeader>
               <tr>
@@ -485,11 +802,39 @@ const SpeechScreeningsTable = ({
               {studentScreenings.map(screening => (
                 <ResponsiveTableRow
                   key={screening.id}
+                  onClick={
+                    mode === 'comparison'
+                      ? () => onSelectedComparisonScreening?.(screening)
+                      : undefined
+                  }
+                  className={mode === 'comparison' ? 'cursor-pointer' : ''}
                   mobileCardContent={
                     <div className='space-y-3'>
                       <div className='flex items-center justify-between'>
                         <div className='flex items-center gap-2'>
-                          <RadioGroupItem value={screening.id} id={`mobile-${screening.id}`} />
+                          {mode === 'comparison' ? (
+                            (() => {
+                              const idx = comparisonScreenings.findIndex(s => s.id === screening.id)
+                              const isSelected = idx !== -1
+                              return (
+                                <div className='flex items-center gap-1.5'>
+                                  <Checkbox
+                                    checked={isSelected}
+                                    onCheckedChange={() =>
+                                      onSelectedComparisonScreening?.(screening)
+                                    }
+                                  />
+                                  {isSelected && (
+                                    <div className='w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center'>
+                                      {idx + 1}
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            })()
+                          ) : (
+                            <RadioGroupItem value={screening.id} id={`mobile-${screening.id}`} />
+                          )}
                           <h3 className='font-medium'>
                             {format(new Date(screening.created_at), 'MMM dd, yyyy')}
                           </h3>
@@ -497,7 +842,10 @@ const SpeechScreeningsTable = ({
                         <Button
                           variant='ghost'
                           size='sm'
-                          onClick={() => onViewDetails(screening)}
+                          onClick={e => {
+                            e.stopPropagation()
+                            onViewDetails(screening)
+                          }}
                           className='w-8 h-8 p-0 hover:bg-gray-100'>
                           <Eye className='w-4 h-4' />
                         </Button>
@@ -520,12 +868,32 @@ const SpeechScreeningsTable = ({
                       </div>
                     </div>
                   }>
-                  <TableCell>
-                    <RadioGroupItem
-                      value={screening.id}
-                      id={`desktop-${screening.id}`}
-                      className='mt-1.5'
-                    />
+                  <TableCell onClick={e => e.stopPropagation()}>
+                    {mode === 'comparison' ? (
+                      (() => {
+                        const idx = comparisonScreenings.findIndex(s => s.id === screening.id)
+                        const isSelected = idx !== -1
+                        return (
+                          <div className='flex items-center gap-1.5'>
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => onSelectedComparisonScreening?.(screening)}
+                            />
+                            {isSelected && (
+                              <div className='w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center'>
+                                {idx + 1}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()
+                    ) : (
+                      <RadioGroupItem
+                        value={screening.id}
+                        id={`desktop-${screening.id}`}
+                        className='mt-1.5'
+                      />
+                    )}
                   </TableCell>
                   <TableCell className='max-w-0'>
                     <div className='truncate'>
@@ -535,7 +903,7 @@ const SpeechScreeningsTable = ({
                     </div>
                   </TableCell>
                   <TableCell className='max-w-0'>
-                    <div className='truncate'>
+                    <div className='w-full min-w-[120px]'>
                       {getResultBadge(screening.result || screening.screening_result)}
                     </div>
                   </TableCell>
@@ -562,7 +930,10 @@ const SpeechScreeningsTable = ({
                     <Button
                       variant='ghost'
                       size='sm'
-                      onClick={() => onViewDetails(screening)}
+                      onClick={e => {
+                        e.stopPropagation()
+                        onViewDetails(screening)
+                      }}
                       className='w-8 h-8 p-0 hover:bg-gray-100'>
                       <Eye className='w-4 h-4' />
                     </Button>
@@ -571,7 +942,7 @@ const SpeechScreeningsTable = ({
               ))}
             </TableBody>
           </ResponsiveTable>
-        </RadioGroup>
+        )}
       </div>
     </div>
   )
