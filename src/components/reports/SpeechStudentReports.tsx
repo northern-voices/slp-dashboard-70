@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
-import { CheckCircle, Mail, User, Send, Eye, Plus, List, XCircle, X } from 'lucide-react'
+import { CheckCircle, Mail, User, Send, Eye, X } from 'lucide-react'
 import { Student } from '@/types/database'
 import { Label } from '@/components/ui/label'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
@@ -24,9 +24,10 @@ import {
   TableCell,
 } from '@/components/ui/responsive-table'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
 import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import ReportTypeSelector from './shared/ReportTypeSelector'
+import ReportSendModal from './shared/ReportSendModal'
 
 const SpeechStudentReports = () => {
   const navigate = useNavigate()
@@ -203,65 +204,17 @@ const SpeechStudentReports = () => {
 
         {/* Select Type of Report — now above the screenings table */}
         {selectedStudent && (
-          <div className='space-y-3'>
-            <Label className='text-xl font-medium'>Select Type of Report</Label>
-            <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
-              {getAvailableReports().map(report => {
-                const Icon = report.icon
-                const isSelected = selectedReport === report.value
-
-                return (
-                  <div
-                    key={report.value}
-                    onClick={() => {
-                      const newValue = report.value === selectedReport ? null : report.value
-                      setSelectedReport(newValue)
-                      setSelectedScreening(null)
-                      setComparisonScreenings([])
-                    }}
-                    className={`
-                    relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full
-                    ${
-                      isSelected
-                        ? 'border-blue-600 bg-blue-50 shadow-sm'
-                        : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
-                    }
-                  `}>
-                    <div className='flex items-start w-full space-x-3'>
-                      <div
-                        className={`
-                      flex-shrink-0 p-2 rounded-lg
-                      ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}
-                    `}>
-                        <Icon className='w-4 h-4' />
-                      </div>
-                      <div className='flex-1 min-w-0 overflow-hidden'>
-                        <h3
-                          className={`
-                        text-sm font-medium leading-tight truncate
-                        ${isSelected ? 'text-blue-900' : 'text-gray-900'}
-                      `}>
-                          {report.label}
-                        </h3>
-                        <p
-                          className={`
-                        text-xs mt-1 leading-tight
-                        ${isSelected ? 'text-blue-700' : 'text-gray-500'}
-                      `}>
-                          {report.description}
-                        </p>
-                      </div>
-                    </div>
-                    {isSelected && (
-                      <div className='absolute top-2 right-2'>
-                        <div className='w-2 h-2 bg-blue-600 rounded-full'></div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+          <ReportTypeSelector
+            reports={getAvailableReports()}
+            selectedValues={selectedReport ? [selectedReport] : []}
+            onToggle={value => {
+              const newValue = value === selectedReport ? null : value
+              setSelectedReport(newValue)
+              setSelectedScreening(null)
+              setComparisonScreenings([])
+            }}
+            columns={2}
+          />
         )}
 
         {/* Screenings Table */}
@@ -488,58 +441,14 @@ const SpeechStudentReports = () => {
         screening={selectedScreeningForDetails}
       />
 
-      {/* Success/Error Modal */}
-      <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
-        <DialogContent className='mx-auto'>
-          <div className='flex flex-col items-center space-y-6 text-center'>
-            {/* Icon */}
-            <div className='flex justify-center'>
-              {modalType === 'success' ? (
-                <CheckCircle className='w-16 h-16 text-green-600' />
-              ) : (
-                <XCircle className='w-16 h-16 text-red-600' />
-              )}
-            </div>
-
-            {/* Title and Description */}
-            <div className='space-y-2'>
-              <DialogTitle className='text-2xl font-semibold text-gray-900'>
-                {modalType === 'success' ? 'Report Sent Successfully!' : 'Error Sending Report'}
-              </DialogTitle>
-              <DialogDescription className='text-base leading-relaxed text-gray-600'>
-                {modalMessage}
-              </DialogDescription>
-            </div>
-
-            {/* Action Buttons */}
-            <div className='flex flex-col w-full gap-3 sm:flex-row sm:w-auto'>
-              {modalType === 'success' ? (
-                <>
-                  <Button
-                    onClick={handleStayOnPage}
-                    className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
-                    <Plus className='w-4 h-4' />
-                    Send Another Report
-                  </Button>
-                  <Button
-                    onClick={handleGoBackToReports}
-                    variant='outline'
-                    className='w-full px-6 py-2 sm:w-auto'>
-                    <List className='w-4 h-4' />
-                    Back to Reports
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  onClick={handleCloseModal}
-                  className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
-                  Try Again
-                </Button>
-              )}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ReportSendModal
+        isOpen={isSuccessModalOpen}
+        modalType={modalType}
+        modalMessage={modalMessage}
+        onStayOnPage={handleStayOnPage}
+        onGoBack={handleGoBackToReports}
+        onClose={handleCloseModal}
+      />
     </>
   )
 }
