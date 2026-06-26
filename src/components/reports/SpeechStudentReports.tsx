@@ -52,6 +52,7 @@ const SpeechStudentReports = () => {
   const [emailInput, setEmailInput] = useState('')
   const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [suggestions, setSuggestions] = useState<string[]>([])
+  const [highlightedIndex, setHighlightedIndex] = useState(-1)
 
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
@@ -321,10 +322,12 @@ const SpeechStudentReports = () => {
                       <input
                         type='email'
                         id='recipient'
+                        autoComplete='off'
                         value={emailInput}
                         onChange={e => {
                           const value = e.target.value
                           setEmailInput(value)
+                          setHighlightedIndex(-1)
                           setSuggestions(
                             value.length > 0
                               ? emailHistory.filter(
@@ -336,6 +339,37 @@ const SpeechStudentReports = () => {
                           )
                         }}
                         onKeyDown={e => {
+                          if (suggestions.length > 0) {
+                            if (e.key === 'ArrowDown') {
+                              e.preventDefault()
+                              setHighlightedIndex(prev => (prev + 1) % suggestions.length)
+                              return
+                            }
+                            if (e.key === 'ArrowUp') {
+                              e.preventDefault()
+                              setHighlightedIndex(prev =>
+                                prev <= 0 ? suggestions.length - 1 : prev - 1
+                              )
+                              return
+                            }
+                            if (e.key === 'Escape') {
+                              e.preventDefault()
+                              setSuggestions([])
+                              setHighlightedIndex(-1)
+                              return
+                            }
+                            if (e.key === 'Enter' && highlightedIndex >= 0) {
+                              e.preventDefault()
+                              if (recipientEmails.length < 5) {
+                                setRecipientEmails(prev => [...prev, suggestions[highlightedIndex]])
+                                setEmailInput('')
+                                setSuggestions([])
+                                setHighlightedIndex(-1)
+                              }
+                              return
+                            }
+                          }
+
                           if (e.key === 'Enter') {
                             e.preventDefault()
                             const trimmed = emailInput.trim()
@@ -359,6 +393,7 @@ const SpeechStudentReports = () => {
                         }}
                         onBlur={() => {
                           setSuggestions([])
+                          setHighlightedIndex(-1)
                           const trimmed = emailInput.trim()
 
                           if (
@@ -378,7 +413,7 @@ const SpeechStudentReports = () => {
                       />
                       {suggestions.length > 0 && (
                         <ul className='absolute z-10 left-0 right-0 top-full bg-white border border-gray-200 rounded-md shadow-md mt-1 max-h-40 overflow-y-auto'>
-                          {suggestions.map(email => (
+                          {suggestions.map((email, index) => (
                             <li
                               key={email}
                               onMouseDown={e => {
@@ -387,9 +422,10 @@ const SpeechStudentReports = () => {
                                   setRecipientEmails(prev => [...prev, email])
                                   setEmailInput('')
                                   setSuggestions([])
+                                  setHighlightedIndex(-1)
                                 }
                               }}
-                              className='px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer truncate'>
+                              className={`px-3 py-2 text-sm cursor-pointer truncate ${index === highlightedIndex ? 'bg-gray-100' : 'hover:bg-gray-100'}`}>
                               {email}
                             </li>
                           ))}
