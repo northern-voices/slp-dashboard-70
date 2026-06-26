@@ -606,7 +606,10 @@ const SpeechScreeningsTable = ({
                           <Button
                             variant='ghost'
                             size='sm'
-                            onClick={() => onViewDetails(screening)}
+                            onClick={e => {
+                              e.stopPropagation()
+                              onViewDetails(screening)
+                            }}
                             className='w-8 h-8 p-0 hover:bg-gray-100'>
                             <Eye className='w-4 h-4' />
                           </Button>
@@ -671,7 +674,10 @@ const SpeechScreeningsTable = ({
                       <Button
                         variant='ghost'
                         size='sm'
-                        onClick={() => onViewDetails(screening)}
+                        onClick={e => {
+                          e.stopPropagation()
+                          onViewDetails(screening)
+                        }}
                         className='w-8 h-8 p-0 hover:bg-gray-100'>
                         <Eye className='w-4 h-4' />
                       </Button>
@@ -729,7 +735,10 @@ const SpeechScreeningsTable = ({
                         <Button
                           variant='ghost'
                           size='sm'
-                          onClick={() => onViewDetails(screening)}
+                          onClick={e => {
+                            e.stopPropagation()
+                            onViewDetails(screening)
+                          }}
                           className='w-8 h-8 p-0 hover:bg-gray-100'>
                           <Eye className='w-4 h-4' />
                         </Button>
@@ -807,7 +816,10 @@ const SpeechScreeningsTable = ({
                     <Button
                       variant='ghost'
                       size='sm'
-                      onClick={() => onViewDetails(screening)}
+                      onClick={e => {
+                        e.stopPropagation()
+                        onViewDetails(screening)
+                      }}
                       className='w-8 h-8 p-0 hover:bg-gray-100'>
                       <Eye className='w-4 h-4' />
                     </Button>
