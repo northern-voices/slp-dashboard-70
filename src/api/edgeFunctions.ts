@@ -122,14 +122,18 @@ export const edgeFunctionsApi = {
     }
   },
 
-  async schoolWideStudentGoalSheets(schoolId: string, academicYear: string, overrideEmail: string) {
+  async schoolWideStudentGoalSheets(
+    schoolId: string,
+    academicYear: string,
+    overrideEmails: string[]
+  ) {
     try {
       const generated_by = await this._getGeneratedBy()
       const { data, error } = await supabase.functions.invoke('school-wide-student-goal-sheets', {
         body: {
           school_id: schoolId,
           academic_year: academicYear,
-          override_email: overrideEmail,
+          override_emails: overrideEmails,
           generated_by,
         },
       })
