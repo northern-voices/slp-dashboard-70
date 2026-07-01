@@ -59,15 +59,15 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
 
     try {
       if (isHearingScreening) {
-        await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmail)
+        await edgeFunctionsApi.generateHearingReport(screening.id, [recipientEmail])
       } else {
         for (const reportType of selectedReports) {
           if (reportType === 'initial-speech-report') {
-            await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmail)
+            await edgeFunctionsApi.sendStudentReport(screening.id, [recipientEmail])
           } else if (reportType === 'initial-goal-sheet') {
-            await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmail)
+            await edgeFunctionsApi.studentGoalSheet(screening.id, [recipientEmail])
           } else if (reportType === 'progress-speech-report') {
-            await edgeFunctionsApi.studentProgressReport(screening.id, recipientEmail)
+            await edgeFunctionsApi.studentProgressReport(screening.id, [recipientEmail])
           } else {
             console.warn(`Unknown report type: ${reportType}`)
             continue

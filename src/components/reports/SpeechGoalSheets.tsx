@@ -65,16 +65,16 @@ const SpeechGoalSheets = () => {
 
     setIsEmailLoading(true)
     try {
-      for (const email of recipientEmails) {
-        for (const reportType of selectedReports) {
-          if (reportType === 'initial-goal-sheet') {
-            await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, email)
-          } else if (reportType === 'progress-goal-sheet') {
-            console.warn('progress-goal-sheet not yet mapped')
-          }
+      for (const reportType of selectedReports) {
+        if (reportType === 'initial-goal-sheet') {
+          await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmails)
+        } else if (reportType === 'progress-goal-sheet') {
+          console.warn('progress-goal-sheet not yet mapped')
         }
       }
+
       if (user?.id) upsertEmailHistory(user.id, recipientEmails).catch(console.error)
+
       setModalType('success')
       setModalMessage(`Reports sent successfully to ${recipientEmails.join(', ')}`)
       setIsSuccessModalOpen(true)

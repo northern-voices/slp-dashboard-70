@@ -73,15 +73,16 @@ const HearingStudentReports = () => {
 
     setIsEmailLoading(true)
     try {
-      for (const email of recipientEmails) {
-        await edgeFunctionsApi.generateHearingReport(selectedScreening.id, email)
-      }
+      await edgeFunctionsApi.generateHearingReport(selectedScreening.id, recipientEmails)
+
       if (user?.id) upsertEmailHistory(user.id, recipientEmails).catch(console.error)
+
       setModalType('success')
       setModalMessage(`Reports sent successfully to ${recipientEmails.join(', ')}`)
       setIsSuccessModalOpen(true)
     } catch (error) {
       console.error('Error sending email:', error)
+
       setModalType('error')
       setModalMessage('Failed to send report. Please try again.')
       setIsSuccessModalOpen(true)

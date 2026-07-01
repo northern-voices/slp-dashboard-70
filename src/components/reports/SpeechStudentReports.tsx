@@ -78,12 +78,12 @@ const SpeechStudentReports = () => {
     try {
       for (const email of recipientEmails) {
         if (selectedReport === 'initial-speech-report') {
-          await edgeFunctionsApi.sendStudentReport(selectedScreening.id, email)
+          await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmails)
         } else if (selectedReport === 'progress-speech-report') {
           await edgeFunctionsApi.studentProgressReport(
             comparisonScreenings[0].id,
             comparisonScreenings[1].id,
-            email
+            recipientEmails
           )
         }
       }
