@@ -1,3 +1,6 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
 import { useForm } from 'react-hook-form'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -24,9 +27,8 @@ import {
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
-import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
 import MultiEmailInput from './shared/MultiEmailInput'
+import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
 
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
@@ -42,13 +44,18 @@ const reportSchema = z.object({
 type ReportFormData = z.infer<typeof reportSchema>
 
 const SchoolWideGoalSheetsForm = () => {
-  const { currentSchool } = useOrganization()
-
-  const navigate = useNavigate()
-
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
+  const [emailHistory, setEmailHistory] = useState<string[]>([])
+
+  const { currentSchool } = useOrganization()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
+  }, [user?.id])
 
   const currentYear = new Date().getFullYear()
   const currentMonth = new Date().getMonth() // 0-11, where 0 is January
@@ -108,6 +115,8 @@ const SchoolWideGoalSheetsForm = () => {
       }
 
       console.log(result, 'result')
+
+      if (user?.id) upsertEmailHistory(user.id, data.recipientEmails).catch(console.error)
 
       const allReports = [...initialReports, ...progressReports]
 
@@ -360,7 +369,7 @@ const SchoolWideGoalSheetsForm = () => {
                       <MultiEmailInput
                         recipientEmails={field.value}
                         onChange={field.onChange}
-                        emailHistory={[]}
+                        emailHistory={emailHistory}
                       />
                     </FormControl>
                     <FormMessage />
