@@ -15,16 +15,19 @@ export const edgeFunctionsApi = {
     return user?.id
   },
 
-  async studentProgressReport(screeningId1: string, screeningId2, overrideEmails: string[]) {
+  async studentProgressReport(
+    screeningId1: string,
+    screeningId2: string,
+    overrideEmails: string[]
+  ) {
     try {
       const generated_by = await this._getGeneratedBy()
 
-      //TODO: Fix backend to accept screeningId2
-
       const { data, error } = await supabase.functions.invoke('student-progress-report', {
         body: {
-          speech_screening_id: screeningId1,
-          override_email: overrideEmails,
+          speech_screening_id_1: screeningId1,
+          speech_screening_id_2: screeningId2,
+          override_emails: overrideEmails,
           generated_by,
         },
       })
@@ -34,7 +37,6 @@ export const edgeFunctionsApi = {
         throw error
       }
 
-      console.log('Success', data) // TODO: Temporary remove this
       return data
     } catch (error) {
       console.error('Failed to send student progress report:', error)
@@ -218,8 +220,6 @@ export const edgeFunctionsApi = {
         console.error('Error', error)
         throw error
       }
-
-      console.log(data, 'data')
 
       return data
     } catch (error) {

@@ -9,10 +9,18 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Mail, Send, CheckCircle, XCircle, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { useAuth } from '@/contexts/AuthContext'
+import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import { SPEECH_REPORT_OPTIONS, SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/reportOptions'
 
 interface SendReportsModalProps {
@@ -29,6 +37,10 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
+  const [comparisonScreeningId, setComparisonScreeningId] = useState('')
+
+  const { data: studentScreenings } = useSpeechScreeningsByStudent(screening?.student_id)
+  const comparisonOptions = (studentScreenings || []).filter(s => s.id !== screening?.id)
 
   // Pre-fill email with current user's email when modal opens
   // Auto-select hearing report if it's a hearing screening
@@ -55,6 +67,10 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
       return
     }
 
+    if (selectedReports.includes('progress-speech-report') && !comparisonScreeningId) {
+      return
+    }
+
     setIsEmailLoading(true)
 
     try {
@@ -67,7 +83,9 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
           } else if (reportType === 'initial-goal-sheet') {
             await edgeFunctionsApi.studentGoalSheet(screening.id, [recipientEmail])
           } else if (reportType === 'progress-speech-report') {
-            await edgeFunctionsApi.studentProgressReport(screening.id, [recipientEmail])
+            await edgeFunctionsApi.studentProgressReport(screening.id, comparisonScreeningId, [
+              recipientEmail,
+            ])
           } else {
             console.warn(`Unknown report type: ${reportType}`)
             continue
@@ -96,11 +114,13 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     setModalMessage('')
     setRecipientEmail('')
     setSelectedReports([])
+    setComparisonScreeningId('')
   }
 
   const handleModalClose = () => {
     setRecipientEmail('')
     setSelectedReports([])
+    setComparisonScreeningId('')
     onClose()
   }
 
@@ -194,6 +214,26 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                   )
                 })}
               </div>
+
+              {/* Comparison screening for progress reports */}
+              {selectedReports.includes('progress-speech-report') && (
+                <div>
+                  <Label className='text-sm font-medium'>Compare Against</Label>
+                  <Select value={comparisonScreeningId} onValueChange={setComparisonScreeningId}>
+                    <SelectTrigger className='w-full'>
+                      <SelectValue placeholder='Select a screening to compare against' />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {comparisonOptions.map(s => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {new Date(s.created_at).toLocaleDateString()}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             {/* Email Input */}
@@ -224,6 +264,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                   !recipientEmail ||
                   !screening ||
                   (screening.source_table !== 'hearing' && selectedReports.length === 0) ||
+                  (selectedReports.includes('progress-speech-report') && !comparisonScreeningId) ||
                   isEmailLoading
                 }>
                 <Send className='w-4 h-4 mr-2' />

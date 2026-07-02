@@ -39,6 +39,20 @@ const BulkSendReportsModal = ({
 
   const isHearingOnly = selectedScreenings.every(s => s.source_table === 'hearing')
 
+  const screeningsByStudent = selectedScreenings
+    .filter(s => s.source_table !== 'hearing')
+    .reduce<Record<string, Screening[]>>((acc, student) => {
+      if (!acc[student.student_id]) acc[student.student_id] = []
+      acc[student.student_id].push(student)
+      return acc
+    }, {})
+
+  const progressReportSelected = selectedReports.includes('progress-speech-report')
+
+  const invalidProgressStudents = progressReportSelected
+    ? Object.values(screeningsByStudent).filter(group => group.length !== 2)
+    : []
+
   // Pre-fill email with current user's email when modal opens
   useEffect(() => {
     if (isOpen && user?.email && !recipientEmail) {
@@ -49,16 +63,30 @@ const BulkSendReportsModal = ({
 
   const handleSendReports = async () => {
     if (!recipientEmail || (!isHearingOnly && selectedReports.length === 0)) return
+    if (progressReportSelected && invalidProgressStudents.length > 0) return
+
+    const otherReportTypes = selectedReports.filter(report => report !== 'progress-speech-report')
+    const progressPairs = progressReportSelected
+      ? Object.values(screeningsByStudent).filter(group => group.length === 2)
+      : []
+
+    const screeningsToProcess = selectedScreenings.filter(
+      screening => screening.source_table === 'hearing' || otherReportTypes.length > 0
+    )
 
     setIsLoading(true)
-    setProgress({ current: 0, total: selectedScreenings.length })
+
+    const totalActions = screeningsToProcess.length + progressPairs.length
+
+    setProgress({ current: 0, total: totalActions })
 
     let successCount = 0
     let failCount = 0
+    let completed = 0
 
-    for (let i = 0; i < selectedScreenings.length; i++) {
-      const screening = selectedScreenings[i]
-      setProgress({ current: i + 1, total: selectedScreenings.length })
+    for (const screening of screeningsToProcess) {
+      completed++
+      setProgress({ current: completed, total: totalActions })
 
       try {
         const isHearing = screening.source_table === 'hearing'
@@ -71,8 +99,6 @@ const BulkSendReportsModal = ({
               await edgeFunctionsApi.sendStudentReport(screening.id, [recipientEmail])
             } else if (reportType === 'initial-goal-sheet') {
               await edgeFunctionsApi.studentGoalSheet(screening.id, [recipientEmail])
-            } else if (reportType === 'progress-speech-report') {
-              await edgeFunctionsApi.studentProgressReport(screening.id, [recipientEmail])
             }
           }
         }
@@ -80,7 +106,19 @@ const BulkSendReportsModal = ({
         successCount++
       } catch (error) {
         console.error(`Failed to send report for screening ${screening.id}:`, error)
+        failCount++
+      }
+    }
 
+    for (const pair of progressPairs) {
+      completed++
+      setProgress({ current: completed, total: totalActions })
+
+      try {
+        await edgeFunctionsApi.studentProgressReport(pair[0].id, pair[1].id, [recipientEmail])
+        successCount++
+      } catch (error) {
+        console.error(`Failed to send progress report for student ${pair[0].student_id}:`, error)
         failCount++
       }
     }
@@ -89,8 +127,9 @@ const BulkSendReportsModal = ({
 
     if (failCount === 0) {
       setResultType('success')
-      setResultMessage(`Successfully sent reports for ${successCount} screening(s) to
-  ${recipientEmail}`)
+      setResultMessage(
+        `Successfully sent reports for ${successCount} screening(s) to ${recipientEmail}`
+      )
     } else {
       setResultType('error')
       setResultMessage(`Sent ${successCount} report(s), failed ${failCount}`)
@@ -223,6 +262,14 @@ const BulkSendReportsModal = ({
             </div>
           )}
 
+          {progressReportSelected && invalidProgressStudents.length > 0 && (
+            <div className='p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-sm'>
+              Progress reports require exactly 2 screenings selected per student. Adjust your
+              selection for:{' '}
+              {invalidProgressStudents.map(group => group[0].student_name).join(', ')}
+            </div>
+          )}
+
           {/* Info for hearing screenings */}
           {isHearingOnly && (
             <div className='space-y-3'>
@@ -282,7 +329,10 @@ const BulkSendReportsModal = ({
               size='sm'
               className='w-full h-9 bg-blue-600 hover:bg-blue-700 text-white'
               disabled={
-                !recipientEmail || (!isHearingOnly && selectedReports.length === 0) || isLoading
+                !recipientEmail ||
+                (!isHearingOnly && selectedReports.length === 0) ||
+                (progressReportSelected && invalidProgressStudents.length > 0) ||
+                isLoading
               }>
               {isLoading ? (
                 <Loader2 className='w-4 h-4 mr-2 animate-spin' />
