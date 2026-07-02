@@ -42,7 +42,11 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
   const [comparisonScreeningId, setComparisonScreeningId] = useState('')
 
   const { data: studentScreenings } = useSpeechScreeningsByStudent(screening?.student_id)
-  const comparisonOptions = (studentScreenings || []).filter(s => s.id !== screening?.id)
+  const isAbsentScreening = (s: Screening) =>
+    s.result === 'absent' || s.error_patterns?.attendance?.absent === true
+  const comparisonOptions = (studentScreenings || []).filter(
+    s => s.id !== screening?.id && !isAbsentScreening(s)
+  )
 
   // Pre-fill email with current user's email when modal opens
   // Auto-select hearing report if it's a hearing screening
@@ -229,19 +233,26 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
               {selectedReports.includes('progress-speech-report') && (
                 <div>
                   <Label className='text-sm font-medium'>Compare Against</Label>
-                  <Select value={comparisonScreeningId} onValueChange={setComparisonScreeningId}>
-                    <SelectTrigger className='w-full'>
-                      <SelectValue placeholder='Select a screening to compare against' />
-                    </SelectTrigger>
+                  {comparisonOptions.length === 0 ? (
+                    <div className='mt-1 p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-sm'>
+                      This student needs at least one other (non-absent) speech screening on record
+                      to generate a progress report.
+                    </div>
+                  ) : (
+                    <Select value={comparisonScreeningId} onValueChange={setComparisonScreeningId}>
+                      <SelectTrigger className='w-full'>
+                        <SelectValue placeholder='Select a screening to compare against' />
+                      </SelectTrigger>
 
-                    <SelectContent>
-                      {comparisonOptions.map(s => (
-                        <SelectItem key={s.id} value={s.id}>
-                          {new Date(s.created_at).toLocaleDateString()}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                      <SelectContent>
+                        {comparisonOptions.map(s => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {new Date(s.created_at).toLocaleDateString()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               )}
             </div>
