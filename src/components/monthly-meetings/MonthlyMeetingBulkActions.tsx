@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Trash2, Mail, X, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
 import { useDeleteMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,9 +23,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
+import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 
 interface MonthlyMeetingBulkActionsProps {
   selectedCount: number
@@ -39,12 +40,18 @@ const MonthlyMeetingBulkActions = ({
 }: MonthlyMeetingBulkActionsProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showEmailDialog, setShowEmailDialog] = useState(false)
-  const [bulkEmail, setBulkEmail] = useState('')
+  const [bulkEmails, setBulkEmails] = useState<string[]>([])
+  const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [isSendingEmails, setIsSendingEmails] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteProgress, setDeleteProgress] = useState(0)
   const { toast } = useToast()
+  const { user } = useAuth()
   const deleteMonthlyMeeting = useDeleteMonthlyMeeting()
+
+  useEffect(() => {
+    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
+  }, [user?.id])
 
   const handleBulkDelete = async () => {
     setIsDeleting(true)
@@ -91,19 +98,7 @@ const MonthlyMeetingBulkActions = ({
   }
 
   const handleBulkEmail = async () => {
-    if (!bulkEmail) return
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-    if (!emailRegex.test(bulkEmail)) {
-      toast({
-        title: 'Invalid Email',
-        description: 'Please enter a valid email address.',
-        variant: 'destructive',
-      })
-
-      return
-    }
+    if (bulkEmails.length === 0) return
 
     setIsSendingEmails(true)
 
@@ -112,7 +107,7 @@ const MonthlyMeetingBulkActions = ({
 
     for (const meeting of selectedMeetings) {
       try {
-        await edgeFunctionsApi.monthlyMeetings(meeting.id, [bulkEmail])
+        await edgeFunctionsApi.monthlyMeetings(meeting.id, bulkEmails)
 
         successCount++
       } catch {
@@ -120,15 +115,17 @@ const MonthlyMeetingBulkActions = ({
       }
     }
 
+    if (user?.id) upsertEmailHistory(user.id, bulkEmails).catch(console.error)
+
     setIsSendingEmails(false)
     setShowEmailDialog(false)
-    setBulkEmail('')
+    setBulkEmails([])
     onClearSelection()
 
     if (failCount === 0) {
       toast({
         title: 'Reports Sent',
-        description: `Successfully sent ${successCount} report${successCount > 1 ? 's' : ''} to ${bulkEmail}.`,
+        description: `Successfully sent ${successCount} report${successCount > 1 ? 's' : ''} to ${bulkEmails.join(', ')}.`,
       })
     } else {
       toast({
@@ -222,21 +219,15 @@ const MonthlyMeetingBulkActions = ({
               Send {selectedCount} Meeting Report{selectedCount > 1 ? 's' : ''}
             </DialogTitle>
             <DialogDescription>
-              Send all selected meeting reports to a single email address.
+              Send all selected meeting reports to up to 5 email addresses.
             </DialogDescription>
           </DialogHeader>
           <div className='space-y-4 py-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='bulk-email'>Email Address</Label>
-              <Input
-                id='bulk-email'
-                type='email'
-                placeholder='Enter email address'
-                value={bulkEmail}
-                onChange={e => setBulkEmail(e.target.value)}
-                disabled={isSendingEmails}
-              />
-            </div>
+            <MultiEmailInput
+              recipientEmails={bulkEmails}
+              onChange={setBulkEmails}
+              emailHistory={emailHistory}
+            />
           </div>
           <DialogFooter>
             <Button
@@ -245,7 +236,7 @@ const MonthlyMeetingBulkActions = ({
               disabled={isSendingEmails}>
               Cancel
             </Button>
-            <Button onClick={handleBulkEmail} disabled={isSendingEmails || !bulkEmail}>
+            <Button onClick={handleBulkEmail} disabled={isSendingEmails || bulkEmails.length === 0}>
               {isSendingEmails ? (
                 <>
                   <Loader2 className='w-4 h-4 mr-2 animate-spin' />
