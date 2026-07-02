@@ -7,13 +7,14 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Mail, Send, Loader2, CheckCircle, XCircle, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
+import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
 import { useAuth } from '@/contexts/AuthContext'
 import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
+import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 
 interface BulkSendReportsModalProps {
   isOpen: boolean
@@ -29,7 +30,8 @@ const BulkSendReportsModal = ({
   onSend,
 }: BulkSendReportsModalProps) => {
   const { user } = useAuth()
-  const [recipientEmail, setRecipientEmail] = useState('')
+  const [recipientEmails, setRecipientEmails] = useState<string[]>([])
+  const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [progress, setProgress] = useState({ current: 0, total: 0 })
@@ -55,14 +57,18 @@ const BulkSendReportsModal = ({
 
   // Pre-fill email with current user's email when modal opens
   useEffect(() => {
-    if (isOpen && user?.email && !recipientEmail) {
-      setRecipientEmail(user.email)
+    if (isOpen && user?.email && recipientEmails.length === 0) {
+      setRecipientEmails([user.email])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.email])
 
+  useEffect(() => {
+    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
+  }, [user?.id])
+
   const handleSendReports = async () => {
-    if (!recipientEmail || (!isHearingOnly && selectedReports.length === 0)) return
+    if (recipientEmails.length === 0 || (!isHearingOnly && selectedReports.length === 0)) return
     if (progressReportSelected && invalidProgressStudents.length > 0) return
 
     const otherReportTypes = selectedReports.filter(report => report !== 'progress-speech-report')
@@ -92,13 +98,13 @@ const BulkSendReportsModal = ({
         const isHearing = screening.source_table === 'hearing'
 
         if (isHearing) {
-          await edgeFunctionsApi.generateHearingReport(screening.id, [recipientEmail])
+          await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmails)
         } else {
           for (const reportType of selectedReports) {
             if (reportType === 'initial-speech-report') {
-              await edgeFunctionsApi.sendStudentReport(screening.id, [recipientEmail])
+              await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmails)
             } else if (reportType === 'initial-goal-sheet') {
-              await edgeFunctionsApi.studentGoalSheet(screening.id, [recipientEmail])
+              await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmails)
             }
           }
         }
@@ -115,7 +121,7 @@ const BulkSendReportsModal = ({
       setProgress({ current: completed, total: totalActions })
 
       try {
-        await edgeFunctionsApi.studentProgressReport(pair[0].id, pair[1].id, [recipientEmail])
+        await edgeFunctionsApi.studentProgressReport(pair[0].id, pair[1].id, recipientEmails)
         successCount++
       } catch (error) {
         console.error(`Failed to send progress report for student ${pair[0].student_id}:`, error)
@@ -123,12 +129,14 @@ const BulkSendReportsModal = ({
       }
     }
 
+    if (user?.id) upsertEmailHistory(user.id, recipientEmails).catch(console.error)
+
     setIsLoading(false)
 
     if (failCount === 0) {
       setResultType('success')
       setResultMessage(
-        `Successfully sent reports for ${successCount} screening(s) to ${recipientEmail}`
+        `Successfully sent reports for ${successCount} screening(s) to ${recipientEmails.join(', ')}`
       )
     } else {
       setResultType('error')
@@ -138,7 +146,7 @@ const BulkSendReportsModal = ({
   }
 
   const handleClose = () => {
-    setRecipientEmail('')
+    setRecipientEmails([])
     setSelectedReports([])
     setShowResult(false)
     onClose()
@@ -298,21 +306,11 @@ const BulkSendReportsModal = ({
           )}
 
           {/* Email Input */}
-          <div className='space-y-3'>
-            <div className='space-y-1'>
-              <Label htmlFor='bulk-email' className='text-sm font-medium'>
-                Recipient Email
-              </Label>
-              <Input
-                id='bulk-email'
-                type='email'
-                placeholder='Enter recipient email address'
-                value={recipientEmail}
-                onChange={e => setRecipientEmail(e.target.value)}
-                className='h-12'
-              />
-            </div>
-          </div>
+          <MultiEmailInput
+            recipientEmails={recipientEmails}
+            onChange={setRecipientEmails}
+            emailHistory={emailHistory}
+          />
 
           {/* Progress */}
           {isLoading && (
@@ -329,7 +327,7 @@ const BulkSendReportsModal = ({
               size='sm'
               className='w-full h-9 bg-blue-600 hover:bg-blue-700 text-white'
               disabled={
-                !recipientEmail ||
+                recipientEmails.length === 0 ||
                 (!isHearingOnly && selectedReports.length === 0) ||
                 (progressReportSelected && invalidProgressStudents.length > 0) ||
                 isLoading
