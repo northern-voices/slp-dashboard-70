@@ -7,7 +7,6 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -19,9 +18,11 @@ import {
 import { Mail, Send, CheckCircle, XCircle, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
+import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import { SPEECH_REPORT_OPTIONS, SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/reportOptions'
+import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 
 interface SendReportsModalProps {
   isOpen: boolean
@@ -31,7 +32,8 @@ interface SendReportsModalProps {
 
 const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps) => {
   const { user } = useAuth()
-  const [recipientEmail, setRecipientEmail] = useState('')
+  const [recipientEmails, setRecipientEmails] = useState<string[]>([])
+  const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
@@ -45,8 +47,8 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
   // Pre-fill email with current user's email when modal opens
   // Auto-select hearing report if it's a hearing screening
   useEffect(() => {
-    if (isOpen && user?.email && !recipientEmail) {
-      setRecipientEmail(user.email)
+    if (isOpen && user?.email && recipientEmails.length === 0) {
+      setRecipientEmails([user.email])
     }
 
     // Auto-select hearing report for hearing screenings
@@ -56,8 +58,12 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.email, screening])
 
+  useEffect(() => {
+    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
+  }, [user?.id])
+
   const handleSendEmail = async () => {
-    if (!recipientEmail || !screening) {
+    if (recipientEmails.length === 0 || !screening) {
       return
     }
 
@@ -75,17 +81,19 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
 
     try {
       if (isHearingScreening) {
-        await edgeFunctionsApi.generateHearingReport(screening.id, [recipientEmail])
+        await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmails)
       } else {
         for (const reportType of selectedReports) {
           if (reportType === 'initial-speech-report') {
-            await edgeFunctionsApi.sendStudentReport(screening.id, [recipientEmail])
+            await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmails)
           } else if (reportType === 'initial-goal-sheet') {
-            await edgeFunctionsApi.studentGoalSheet(screening.id, [recipientEmail])
+            await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmails)
           } else if (reportType === 'progress-speech-report') {
-            await edgeFunctionsApi.studentProgressReport(screening.id, comparisonScreeningId, [
-              recipientEmail,
-            ])
+            await edgeFunctionsApi.studentProgressReport(
+              screening.id,
+              comparisonScreeningId,
+              recipientEmails
+            )
           } else {
             console.warn(`Unknown report type: ${reportType}`)
             continue
@@ -93,9 +101,11 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
         }
       }
 
+      if (user?.id) upsertEmailHistory(user.id, recipientEmails).catch(console.error)
+
       // Show success modal
       setModalType('success')
-      setModalMessage(`Reports sent successfully to ${recipientEmail}`)
+      setModalMessage(`Reports sent successfully to ${recipientEmails.join(', ')}`)
       setIsSuccessModalOpen(true)
       onClose()
     } catch (error) {
@@ -112,13 +122,13 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     setIsSuccessModalOpen(false)
     setModalType('success')
     setModalMessage('')
-    setRecipientEmail('')
+    setRecipientEmails([])
     setSelectedReports([])
     setComparisonScreeningId('')
   }
 
   const handleModalClose = () => {
-    setRecipientEmail('')
+    setRecipientEmails([])
     setSelectedReports([])
     setComparisonScreeningId('')
     onClose()
@@ -237,21 +247,11 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
             </div>
 
             {/* Email Input */}
-            <div className='space-y-3'>
-              <div className='space-y-1'>
-                <Label htmlFor='email' className='text-sm font-medium'>
-                  Recipient Email
-                </Label>
-                <Input
-                  id='email'
-                  type='email'
-                  placeholder='Enter recipient email address'
-                  value={recipientEmail}
-                  onChange={e => setRecipientEmail(e.target.value)}
-                  className='h-12'
-                />
-              </div>
-            </div>
+            <MultiEmailInput
+              recipientEmails={recipientEmails}
+              onChange={setRecipientEmails}
+              emailHistory={emailHistory}
+            />
 
             {/* Send Button */}
             <div className='mt-6'>
@@ -261,13 +261,14 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                 size='sm'
                 className='w-full h-9 bg-blue-600 hover:bg-blue-700 text-white'
                 disabled={
-                  !recipientEmail ||
+                  recipientEmails.length === 0 ||
                   !screening ||
                   (screening.source_table !== 'hearing' && selectedReports.length === 0) ||
                   (selectedReports.includes('progress-speech-report') && !comparisonScreeningId) ||
                   isEmailLoading
                 }>
                 <Send className='w-4 h-4 mr-2' />
+
                 {isEmailLoading ? 'Sending...' : 'Send Reports'}
               </Button>
             </div>
