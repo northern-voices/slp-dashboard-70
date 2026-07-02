@@ -112,7 +112,7 @@ const MonthlyMeetingBulkActions = ({
 
     for (const meeting of selectedMeetings) {
       try {
-        await edgeFunctionsApi.monthlyMeetings(meeting.id, bulkEmail)
+        await edgeFunctionsApi.monthlyMeetings(meeting.id, [bulkEmail])
 
         successCount++
       } catch {

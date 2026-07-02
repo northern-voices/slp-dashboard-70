@@ -49,7 +49,7 @@ const MonthlyMeetingsSendReportDialog = ({
 
     setIsSending(true)
     try {
-      await edgeFunctionsApi.monthlyMeetings(meeting.id, email)
+      await edgeFunctionsApi.monthlyMeetings(meeting.id, [email])
       toast({
         title: 'Report Sent',
         description: `Monthly meeting report has been sent to ${email}`,

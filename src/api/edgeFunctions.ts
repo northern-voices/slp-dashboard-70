@@ -51,7 +51,7 @@ export const edgeFunctionsApi = {
       const { data, error } = await supabase.functions.invoke('send-student-report', {
         body: {
           speech_screening_id: speechScreeningId,
-          override_email: overrideEmails,
+          override_emails: overrideEmails,
           generated_by,
         },
       })
@@ -75,7 +75,7 @@ export const edgeFunctionsApi = {
       const { data, error } = await supabase.functions.invoke('student-goal-sheet', {
         body: {
           speech_screening_id: speechScreeningId,
-          override_email: overrideEmails,
+          override_emails: overrideEmails,
           generated_by,
         },
       })
@@ -106,7 +106,7 @@ export const edgeFunctionsApi = {
           body: {
             school_id: schoolId,
             academic_year: academicYear,
-            override_email: overrideEmails,
+            override_emails: overrideEmails,
             generated_by,
           },
         }
@@ -163,7 +163,7 @@ export const edgeFunctionsApi = {
         body: {
           school_id: schoolId,
           academic_year: academicYear,
-          override_email: overrideEmails,
+          override_emails: overrideEmails,
           generated_by,
         },
       })
@@ -188,7 +188,7 @@ export const edgeFunctionsApi = {
         body: {
           school_id: schoolId,
           academic_year: academicYear,
-          override_email: overrideEmails,
+          override_emails: overrideEmails,
           generated_by,
         },
       })
@@ -211,7 +211,7 @@ export const edgeFunctionsApi = {
       const { data, error } = await supabase.functions.invoke('monthly-meeting', {
         body: {
           monthly_meeting_id: monthlyMeetingId,
-          override_email: overrideEmails,
+          override_emails: overrideEmails,
           generated_by,
         },
       })
@@ -234,7 +234,7 @@ export const edgeFunctionsApi = {
       const { data, error } = await supabase.functions.invoke('swift-handler', {
         body: {
           hearing_screening_id: hearingScreeningId,
-          override_email: overrideEmails,
+          override_emails: overrideEmails,
           generated_by,
         },
       })
@@ -260,7 +260,7 @@ export const edgeFunctionsApi = {
           body: {
             school_id: schoolId,
             academic_year: academicYear,
-            override_email: overrideEmails,
+            override_emails: overrideEmails,
             generated_by,
           },
         }
@@ -289,7 +289,7 @@ export const edgeFunctionsApi = {
         body: {
           school_id: schoolId,
           academic_year: academicYear,
-          override_email: overrideEmails,
+          override_emails: overrideEmails,
           generated_by,
         },
       })

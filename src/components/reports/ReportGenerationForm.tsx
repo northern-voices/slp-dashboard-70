@@ -109,19 +109,17 @@ const ReportGenerationForm = () => {
         result = await edgeFunctionsApi.schoolWideSendStudentReports(
           currentSchool.id,
           data.academicYear,
-          data.email
+          [data.email]
         )
       } else if (data.reportType === 'school-summary-report') {
-        result = await edgeFunctionsApi.schoolSummaryReport(
-          currentSchool.id,
-          data.academicYear,
-          data.email
-        )
+        result = await edgeFunctionsApi.schoolSummaryReport(currentSchool.id, data.academicYear, [
+          data.email,
+        ])
       } else if (data.reportType === 'progress-speech-reports') {
         result = await edgeFunctionsApi.schoolWideStudentProgressReport(
           currentSchool.id,
           data.academicYear,
-          data.email
+          [data.email]
         )
       }
 
