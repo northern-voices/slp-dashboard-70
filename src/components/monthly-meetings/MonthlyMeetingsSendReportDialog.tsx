@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
 import { Button } from '@/components/ui/button'
 import {
@@ -9,11 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/contexts/AuthContext'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
+import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
 import { Loader2, Mail } from 'lucide-react'
+import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 
 interface MonthlyMeetingsSendReportDialogProps {
   open: boolean
@@ -26,33 +27,33 @@ const MonthlyMeetingsSendReportDialog = ({
   meeting,
   onClose,
 }: MonthlyMeetingsSendReportDialogProps) => {
-  const [email, setEmail] = useState('')
+  const [emails, setEmails] = useState<string[]>([])
+  const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [isSending, setIsSending] = useState(false)
   const { toast } = useToast()
+  const { user } = useAuth()
+
+  useEffect(() => {
+    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
+  }, [user?.id])
 
   const handleClose = () => {
-    setEmail('')
+    setEmails([])
     onClose()
   }
 
   const handleSend = async () => {
-    if (!meeting || !email) return
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast({
-        title: 'Invalid Email',
-        description: 'Please enter a valid email address.',
-        variant: 'destructive',
-      })
-      return
-    }
+    if (!meeting || emails.length === 0) return
 
     setIsSending(true)
     try {
-      await edgeFunctionsApi.monthlyMeetings(meeting.id, [email])
+      await edgeFunctionsApi.monthlyMeetings(meeting.id, emails)
+
+      if (user?.id) upsertEmailHistory(user.id, emails).catch(console.error)
+
       toast({
         title: 'Report Sent',
-        description: `Monthly meeting report has been sent to ${email}`,
+        description: `Monthly meeting report has been sent to ${emails.join(', ')}`,
       })
       handleClose()
     } catch (error) {
@@ -77,23 +78,17 @@ const MonthlyMeetingsSendReportDialog = ({
           </DialogDescription>
         </DialogHeader>
         <div className='space-y-4 py-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='email'>Email Address</Label>
-            <Input
-              id='email'
-              type='email'
-              placeholder='Enter email address'
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              disabled={isSending}
-            />
-          </div>
+          <MultiEmailInput
+            recipientEmails={emails}
+            onChange={setEmails}
+            emailHistory={emailHistory}
+          />
         </div>
         <DialogFooter>
           <Button variant='outline' onClick={handleClose} disabled={isSending}>
             Cancel
           </Button>
-          <Button onClick={handleSend} disabled={isSending || !email}>
+          <Button onClick={handleSend} disabled={isSending || emails.length === 0}>
             {isSending ? (
               <>
                 <Loader2 className='w-4 h-4 mr-2 animate-spin' />
