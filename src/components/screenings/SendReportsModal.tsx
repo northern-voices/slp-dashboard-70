@@ -22,7 +22,9 @@ import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import { SPEECH_REPORT_OPTIONS, SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/reportOptions'
+import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
+import { Badge } from '@/components/ui/badge'
 
 interface SendReportsModalProps {
   isOpen: boolean
@@ -156,6 +158,44 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     return [...SPEECH_REPORT_OPTIONS, ...SPEECH_GOAL_SHEET_OPTIONS]
   }
 
+  const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {
+    complex_needs: 'Complex Needs',
+    unable_to_screen: 'Refusal / Non-Compliant',
+  }
+
+  const getResultBadge = (result?: string | null) => {
+    if (!result) return <span className='text-sm text-gray-400'>—</span>
+
+    const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
+    if (!config) return <span className='text-sm text-gray-400'>—</span>
+
+    const label = RESULT_BADGE_LABELS[result as keyof typeof SCREENING_RESULTS] ?? config.label
+
+    return (
+      <Badge
+        title={config.label}
+        className={`${config.color} font-medium text-[10px] whitespace-nowrap`}>
+        {label}
+      </Badge>
+    )
+  }
+
+  const getQualificationBadge = (s: Screening) => {
+    if (s.program_status === 'no_consent') {
+      return <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
+    }
+    if (s.program_status === 'sub') {
+      return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
+    }
+    if (s.program_status === 'qualified') {
+      return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
+    }
+
+    return (
+      <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Not In Program</Badge>
+    )
+  }
+
   return (
     <>
       {/* Email Report Modal */}
@@ -247,7 +287,17 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                       <SelectContent>
                         {comparisonOptions.map(s => (
                           <SelectItem key={s.id} value={s.id}>
-                            {new Date(s.created_at).toLocaleDateString()}
+                            <div className='flex items-center gap-2'>
+                              <span>
+                                {new Date(s.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })}
+                              </span>
+                              · {getResultBadge(s.result)} · {getQualificationBadge(s)} ·
+                              <span> {s.grade} </span>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
