@@ -7,13 +7,24 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Mail, Send, CheckCircle, XCircle, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
+import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
 import { useAuth } from '@/contexts/AuthContext'
+import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import { SPEECH_REPORT_OPTIONS, SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/reportOptions'
+import { SCREENING_RESULTS } from '@/constants/screeningResults'
+import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
+import { Badge } from '@/components/ui/badge'
 
 interface SendReportsModalProps {
   isOpen: boolean
@@ -23,18 +34,27 @@ interface SendReportsModalProps {
 
 const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps) => {
   const { user } = useAuth()
-  const [recipientEmail, setRecipientEmail] = useState('')
+  const [recipientEmails, setRecipientEmails] = useState<string[]>([])
+  const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
+  const [comparisonScreeningId, setComparisonScreeningId] = useState('')
+
+  const { data: studentScreenings } = useSpeechScreeningsByStudent(screening?.student_id)
+  const isAbsentScreening = (s: Screening) =>
+    s.result === 'absent' || s.error_patterns?.attendance?.absent === true
+  const comparisonOptions = (studentScreenings || []).filter(
+    s => s.id !== screening?.id && !isAbsentScreening(s)
+  )
 
   // Pre-fill email with current user's email when modal opens
   // Auto-select hearing report if it's a hearing screening
   useEffect(() => {
-    if (isOpen && user?.email && !recipientEmail) {
-      setRecipientEmail(user.email)
+    if (isOpen && user?.email && recipientEmails.length === 0) {
+      setRecipientEmails([user.email])
     }
 
     // Auto-select hearing report for hearing screenings
@@ -44,8 +64,12 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.email, screening])
 
+  useEffect(() => {
+    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
+  }, [user?.id])
+
   const handleSendEmail = async () => {
-    if (!recipientEmail || !screening) {
+    if (recipientEmails.length === 0 || !screening) {
       return
     }
 
@@ -55,19 +79,27 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
       return
     }
 
+    if (selectedReports.includes('progress-speech-report') && !comparisonScreeningId) {
+      return
+    }
+
     setIsEmailLoading(true)
 
     try {
       if (isHearingScreening) {
-        await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmail)
+        await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmails)
       } else {
         for (const reportType of selectedReports) {
           if (reportType === 'initial-speech-report') {
-            await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmail)
+            await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmails)
           } else if (reportType === 'initial-goal-sheet') {
-            await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmail)
+            await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmails)
           } else if (reportType === 'progress-speech-report') {
-            await edgeFunctionsApi.studentProgressReport(screening.id, recipientEmail)
+            await edgeFunctionsApi.studentProgressReport(
+              screening.id,
+              comparisonScreeningId,
+              recipientEmails
+            )
           } else {
             console.warn(`Unknown report type: ${reportType}`)
             continue
@@ -75,9 +107,11 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
         }
       }
 
+      if (user?.id) upsertEmailHistory(user.id, recipientEmails).catch(console.error)
+
       // Show success modal
       setModalType('success')
-      setModalMessage(`Reports sent successfully to ${recipientEmail}`)
+      setModalMessage(`Reports sent successfully to ${recipientEmails.join(', ')}`)
       setIsSuccessModalOpen(true)
       onClose()
     } catch (error) {
@@ -94,13 +128,15 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     setIsSuccessModalOpen(false)
     setModalType('success')
     setModalMessage('')
-    setRecipientEmail('')
+    setRecipientEmails([])
     setSelectedReports([])
+    setComparisonScreeningId('')
   }
 
   const handleModalClose = () => {
-    setRecipientEmail('')
+    setRecipientEmails([])
     setSelectedReports([])
+    setComparisonScreeningId('')
     onClose()
   }
 
@@ -120,6 +156,44 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     }
 
     return [...SPEECH_REPORT_OPTIONS, ...SPEECH_GOAL_SHEET_OPTIONS]
+  }
+
+  const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {
+    complex_needs: 'Complex Needs',
+    unable_to_screen: 'Refusal / Non-Compliant',
+  }
+
+  const getResultBadge = (result?: string | null) => {
+    if (!result) return <span className='text-sm text-gray-400'>—</span>
+
+    const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
+    if (!config) return <span className='text-sm text-gray-400'>—</span>
+
+    const label = RESULT_BADGE_LABELS[result as keyof typeof SCREENING_RESULTS] ?? config.label
+
+    return (
+      <Badge
+        title={config.label}
+        className={`${config.color} font-medium text-[10px] whitespace-nowrap`}>
+        {label}
+      </Badge>
+    )
+  }
+
+  const getQualificationBadge = (s: Screening) => {
+    if (s.program_status === 'no_consent') {
+      return <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
+    }
+    if (s.program_status === 'sub') {
+      return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
+    }
+    if (s.program_status === 'qualified') {
+      return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
+    }
+
+    return (
+      <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Not In Program</Badge>
+    )
   }
 
   return (
@@ -194,24 +268,51 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                   )
                 })}
               </div>
+
+              {/* Comparison screening for progress reports */}
+              {selectedReports.includes('progress-speech-report') && (
+                <div>
+                  <Label className='text-sm font-medium'>Compare Against</Label>
+                  {comparisonOptions.length === 0 ? (
+                    <div className='mt-1 p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-sm'>
+                      This student needs at least one other (non-absent) speech screening on record
+                      to generate a progress report.
+                    </div>
+                  ) : (
+                    <Select value={comparisonScreeningId} onValueChange={setComparisonScreeningId}>
+                      <SelectTrigger className='w-full'>
+                        <SelectValue placeholder='Select a screening to compare against' />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {comparisonOptions.map(s => (
+                          <SelectItem key={s.id} value={s.id}>
+                            <div className='flex items-center gap-2'>
+                              <span>
+                                {new Date(s.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })}
+                              </span>
+                              · {getResultBadge(s.result)} · {getQualificationBadge(s)} ·
+                              <span> {s.grade} </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Email Input */}
-            <div className='space-y-3'>
-              <div className='space-y-1'>
-                <Label htmlFor='email' className='text-sm font-medium'>
-                  Recipient Email
-                </Label>
-                <Input
-                  id='email'
-                  type='email'
-                  placeholder='Enter recipient email address'
-                  value={recipientEmail}
-                  onChange={e => setRecipientEmail(e.target.value)}
-                  className='h-12'
-                />
-              </div>
-            </div>
+            <MultiEmailInput
+              recipientEmails={recipientEmails}
+              onChange={setRecipientEmails}
+              emailHistory={emailHistory}
+            />
 
             {/* Send Button */}
             <div className='mt-6'>
@@ -221,12 +322,14 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                 size='sm'
                 className='w-full h-9 bg-blue-600 hover:bg-blue-700 text-white'
                 disabled={
-                  !recipientEmail ||
+                  recipientEmails.length === 0 ||
                   !screening ||
                   (screening.source_table !== 'hearing' && selectedReports.length === 0) ||
+                  (selectedReports.includes('progress-speech-report') && !comparisonScreeningId) ||
                   isEmailLoading
                 }>
                 <Send className='w-4 h-4 mr-2' />
+
                 {isEmailLoading ? 'Sending...' : 'Send Reports'}
               </Button>
             </div>

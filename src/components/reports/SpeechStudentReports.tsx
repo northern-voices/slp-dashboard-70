@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
-import { CheckCircle, Mail, User, Send, Eye, Plus, List, XCircle, X } from 'lucide-react'
+import { CheckCircle, Mail, User, Send, Eye } from 'lucide-react'
 import { Student } from '@/types/database'
-import { Label } from '@/components/ui/label'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import { Screening } from '@/types/database'
 import { format } from 'date-fns'
@@ -24,9 +23,11 @@ import {
   TableCell,
 } from '@/components/ui/responsive-table'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
 import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import ReportTypeSelector from './shared/ReportTypeSelector'
+import ReportSendModal from './shared/ReportSendModal'
+import MultiEmailInput from './shared/MultiEmailInput'
 
 const SpeechStudentReports = () => {
   const navigate = useNavigate()
@@ -49,12 +50,7 @@ const SpeechStudentReports = () => {
   const [selectedReport, setSelectedReport] = useState<string | null>(null)
   const [comparisonScreenings, setComparisonScreenings] = useState<Screening[]>([])
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
-  const [emailInput, setEmailInput] = useState('')
   const [emailHistory, setEmailHistory] = useState<string[]>([])
-  const [suggestions, setSuggestions] = useState<string[]>([])
-  const [highlightedIndex, setHighlightedIndex] = useState(-1)
-
-  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
   // Pre-fill email with current user's email on component mount
   useEffect(() => {
@@ -75,16 +71,14 @@ const SpeechStudentReports = () => {
     setEmailMessage('')
 
     try {
-      for (const email of recipientEmails) {
-        if (selectedReport === 'initial-speech-report') {
-          await edgeFunctionsApi.sendStudentReport(selectedScreening.id, email)
-        } else if (selectedReport === 'progress-speech-report') {
-          await edgeFunctionsApi.studentProgressReport(
-            comparisonScreenings[0].id,
-            comparisonScreenings[1].id,
-            email
-          )
-        }
+      if (selectedReport === 'initial-speech-report') {
+        await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmails)
+      } else if (selectedReport === 'progress-speech-report') {
+        await edgeFunctionsApi.studentProgressReport(
+          comparisonScreenings[0].id,
+          comparisonScreenings[1].id,
+          recipientEmails
+        )
       }
 
       if (user?.id) {
@@ -142,7 +136,6 @@ const SpeechStudentReports = () => {
     setSelectedScreening(null)
     setSelectedReport(null)
     setRecipientEmails([])
-    setEmailInput('')
     setCustomMessage('')
     setEmailStatus('idle')
     setEmailMessage('')
@@ -203,65 +196,17 @@ const SpeechStudentReports = () => {
 
         {/* Select Type of Report — now above the screenings table */}
         {selectedStudent && (
-          <div className='space-y-3'>
-            <Label className='text-xl font-medium'>Select Type of Report</Label>
-            <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
-              {getAvailableReports().map(report => {
-                const Icon = report.icon
-                const isSelected = selectedReport === report.value
-
-                return (
-                  <div
-                    key={report.value}
-                    onClick={() => {
-                      const newValue = report.value === selectedReport ? null : report.value
-                      setSelectedReport(newValue)
-                      setSelectedScreening(null)
-                      setComparisonScreenings([])
-                    }}
-                    className={`
-                    relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full
-                    ${
-                      isSelected
-                        ? 'border-blue-600 bg-blue-50 shadow-sm'
-                        : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
-                    }
-                  `}>
-                    <div className='flex items-start w-full space-x-3'>
-                      <div
-                        className={`
-                      flex-shrink-0 p-2 rounded-lg
-                      ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}
-                    `}>
-                        <Icon className='w-4 h-4' />
-                      </div>
-                      <div className='flex-1 min-w-0 overflow-hidden'>
-                        <h3
-                          className={`
-                        text-sm font-medium leading-tight truncate
-                        ${isSelected ? 'text-blue-900' : 'text-gray-900'}
-                      `}>
-                          {report.label}
-                        </h3>
-                        <p
-                          className={`
-                        text-xs mt-1 leading-tight
-                        ${isSelected ? 'text-blue-700' : 'text-gray-500'}
-                      `}>
-                          {report.description}
-                        </p>
-                      </div>
-                    </div>
-                    {isSelected && (
-                      <div className='absolute top-2 right-2'>
-                        <div className='w-2 h-2 bg-blue-600 rounded-full'></div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+          <ReportTypeSelector
+            reports={getAvailableReports()}
+            selectedValues={selectedReport ? [selectedReport] : []}
+            onToggle={value => {
+              const newValue = value === selectedReport ? null : value
+              setSelectedReport(newValue)
+              setSelectedScreening(null)
+              setComparisonScreenings([])
+            }}
+            columns={2}
+          />
         )}
 
         {/* Screenings Table */}
@@ -294,151 +239,11 @@ const SpeechStudentReports = () => {
 
           <div className='space-y-4'>
             {/* Recipient Email */}
-            <div className='space-y-3'>
-              <div className='space-y-1'>
-                <Label htmlFor='recipient' className='text-sm font-medium'>
-                  Recipient Email(s)
-                </Label>
-
-                <div className='min-h-[42px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'>
-                  <div className='flex flex-wrap gap-2'>
-                    {recipientEmails.map((email, index) => (
-                      <Badge
-                        key={index}
-                        variant='secondary'
-                        className='flex items-center gap-1 px-2 py-1'>
-                        <span>{email}</span>
-                        <button
-                          type='button'
-                          className='ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5'
-                          onClick={() =>
-                            setRecipientEmails(recipientEmails.filter(e => e !== email))
-                          }>
-                          <X className='w-3 h-3' />
-                        </button>
-                      </Badge>
-                    ))}
-                    <div className='relative flex-1 min-w-[120px]'>
-                      <input
-                        type='email'
-                        id='recipient'
-                        autoComplete='off'
-                        value={emailInput}
-                        onChange={e => {
-                          const value = e.target.value
-                          setEmailInput(value)
-                          setHighlightedIndex(-1)
-                          setSuggestions(
-                            value.length > 0
-                              ? emailHistory.filter(
-                                  history =>
-                                    history.toLowerCase().includes(value.toLowerCase()) &&
-                                    !recipientEmails.includes(history)
-                                )
-                              : []
-                          )
-                        }}
-                        onKeyDown={e => {
-                          if (suggestions.length > 0) {
-                            if (e.key === 'ArrowDown') {
-                              e.preventDefault()
-                              setHighlightedIndex(prev => (prev + 1) % suggestions.length)
-                              return
-                            }
-                            if (e.key === 'ArrowUp') {
-                              e.preventDefault()
-                              setHighlightedIndex(prev =>
-                                prev <= 0 ? suggestions.length - 1 : prev - 1
-                              )
-                              return
-                            }
-                            if (e.key === 'Escape') {
-                              e.preventDefault()
-                              setSuggestions([])
-                              setHighlightedIndex(-1)
-                              return
-                            }
-                            if (e.key === 'Enter' && highlightedIndex >= 0) {
-                              e.preventDefault()
-                              if (recipientEmails.length < 5) {
-                                setRecipientEmails(prev => [...prev, suggestions[highlightedIndex]])
-                                setEmailInput('')
-                                setSuggestions([])
-                                setHighlightedIndex(-1)
-                              }
-                              return
-                            }
-                          }
-
-                          if (e.key === 'Enter') {
-                            e.preventDefault()
-                            const trimmed = emailInput.trim()
-
-                            if (
-                              trimmed &&
-                              isValidEmail(trimmed) &&
-                              !recipientEmails.includes(trimmed) &&
-                              recipientEmails.length < 5
-                            ) {
-                              setRecipientEmails([...recipientEmails, trimmed])
-                              setEmailInput('')
-                            }
-                          } else if (
-                            e.key === 'Backspace' &&
-                            emailInput === '' &&
-                            recipientEmails.length > 0
-                          ) {
-                            setRecipientEmails(recipientEmails.slice(0, -1))
-                          }
-                        }}
-                        onBlur={() => {
-                          setSuggestions([])
-                          setHighlightedIndex(-1)
-                          const trimmed = emailInput.trim()
-
-                          if (
-                            trimmed &&
-                            isValidEmail(trimmed) &&
-                            !recipientEmails.includes(trimmed) &&
-                            recipientEmails.length < 5
-                          ) {
-                            setRecipientEmails([...recipientEmails, trimmed])
-                            setEmailInput('')
-                          }
-                        }}
-                        placeholder={
-                          recipientEmails.length === 0 ? 'Type email and press Enter (max 5)' : ''
-                        }
-                        className='w-full outline-none bg-transparent'
-                      />
-                      {suggestions.length > 0 && (
-                        <ul className='absolute z-10 left-0 right-0 top-full bg-white border border-gray-200 rounded-md shadow-md mt-1 max-h-40 overflow-y-auto'>
-                          {suggestions.map((email, index) => (
-                            <li
-                              key={email}
-                              onMouseDown={e => {
-                                e.preventDefault()
-                                if (recipientEmails.length < 5) {
-                                  setRecipientEmails(prev => [...prev, email])
-                                  setEmailInput('')
-                                  setSuggestions([])
-                                  setHighlightedIndex(-1)
-                                }
-                              }}
-                              className={`px-3 py-2 text-sm cursor-pointer truncate ${index === highlightedIndex ? 'bg-gray-100' : 'hover:bg-gray-100'}`}>
-                              {email}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <p className='text-xs text-gray-500'>
-                  Press Enter to add up to 5 recipients. Click x or Backspace to remove.
-                </p>
-              </div>
-            </div>
+            <MultiEmailInput
+              recipientEmails={recipientEmails}
+              onChange={setRecipientEmails}
+              emailHistory={emailHistory}
+            />
           </div>
 
           {/* Status Message */}
@@ -488,58 +293,14 @@ const SpeechStudentReports = () => {
         screening={selectedScreeningForDetails}
       />
 
-      {/* Success/Error Modal */}
-      <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
-        <DialogContent className='mx-auto'>
-          <div className='flex flex-col items-center space-y-6 text-center'>
-            {/* Icon */}
-            <div className='flex justify-center'>
-              {modalType === 'success' ? (
-                <CheckCircle className='w-16 h-16 text-green-600' />
-              ) : (
-                <XCircle className='w-16 h-16 text-red-600' />
-              )}
-            </div>
-
-            {/* Title and Description */}
-            <div className='space-y-2'>
-              <DialogTitle className='text-2xl font-semibold text-gray-900'>
-                {modalType === 'success' ? 'Report Sent Successfully!' : 'Error Sending Report'}
-              </DialogTitle>
-              <DialogDescription className='text-base leading-relaxed text-gray-600'>
-                {modalMessage}
-              </DialogDescription>
-            </div>
-
-            {/* Action Buttons */}
-            <div className='flex flex-col w-full gap-3 sm:flex-row sm:w-auto'>
-              {modalType === 'success' ? (
-                <>
-                  <Button
-                    onClick={handleStayOnPage}
-                    className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
-                    <Plus className='w-4 h-4' />
-                    Send Another Report
-                  </Button>
-                  <Button
-                    onClick={handleGoBackToReports}
-                    variant='outline'
-                    className='w-full px-6 py-2 sm:w-auto'>
-                    <List className='w-4 h-4' />
-                    Back to Reports
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  onClick={handleCloseModal}
-                  className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
-                  Try Again
-                </Button>
-              )}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ReportSendModal
+        isOpen={isSuccessModalOpen}
+        modalType={modalType}
+        modalMessage={modalMessage}
+        onStayOnPage={handleStayOnPage}
+        onGoBack={handleGoBackToReports}
+        onClose={handleCloseModal}
+      />
     </>
   )
 }

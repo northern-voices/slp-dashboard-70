@@ -4,12 +4,9 @@ import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
-import { CheckCircle, Mail, User, Send, Eye, Plus, List, XCircle } from 'lucide-react'
-import { Student } from '@/types/database'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Mail, User, Send, Eye } from 'lucide-react'
+import { Student, Screening } from '@/types/database'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
-import { Screening } from '@/types/database'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
@@ -24,8 +21,11 @@ import {
   TableCell,
 } from '@/components/ui/responsive-table'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/reportOptions'
+import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import ReportTypeSelector from '@/components/reports/shared/ReportTypeSelector'
+import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
+import ReportSendModal from '@/components/reports/shared/ReportSendModal'
 
 const SpeechGoalSheets = () => {
   const navigate = useNavigate()
@@ -35,54 +35,49 @@ const SpeechGoalSheets = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
-  const [recipientEmail, setRecipientEmail] = useState('')
-  const [customMessage, setCustomMessage] = useState('')
+  const [recipientEmails, setRecipientEmails] = useState<string[]>([])
+  const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [selectedScreeningForDetails, setSelectedScreeningForDetails] = useState<Screening | null>(
     null
   )
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
-  const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  const [emailMessage, setEmailMessage] = useState('')
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
 
-  // Pre-fill email with current user's email on component mount
   useEffect(() => {
-    if (user?.email) {
-      setRecipientEmail(user.email)
-    }
+    if (user?.email) setRecipientEmails([user.email])
   }, [user?.email])
 
-  const getAvailableReports = () => SPEECH_GOAL_SHEET_OPTIONS
+  useEffect(() => {
+    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
+  }, [user?.id])
+
+  const handleToggleReport = (value: string) => {
+    setSelectedReports(prev =>
+      prev.includes(value) ? prev.filter(r => r !== value) : [...prev, value]
+    )
+  }
 
   const handleSendEmail = async () => {
-    if (!recipientEmail || selectedReports.length === 0 || !selectedScreening) {
-      return
-    }
+    if (!selectedScreening || selectedReports.length === 0 || recipientEmails.length === 0) return
 
     setIsEmailLoading(true)
-    setEmailStatus('idle')
-    setEmailMessage('')
-
     try {
-      // Process each selected report type
       for (const reportType of selectedReports) {
         if (reportType === 'initial-goal-sheet') {
-          await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmail)
+          await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmails)
         } else if (reportType === 'progress-goal-sheet') {
-          console.warn(`progress-goal-sheet not yet mapped`)
-          continue
+          console.warn('progress-goal-sheet not yet mapped')
         }
       }
 
-      // Show success modal if any reports were processed
-      if (selectedReports.length > 0) {
-        setModalType('success')
-        setModalMessage(`Reports sent successfully to ${recipientEmail}`)
-        setIsSuccessModalOpen(true)
-      }
+      if (user?.id) upsertEmailHistory(user.id, recipientEmails).catch(console.error)
+
+      setModalType('success')
+      setModalMessage(`Reports sent successfully to ${recipientEmails.join(', ')}`)
+      setIsSuccessModalOpen(true)
     } catch (error) {
       console.error('Error sending email:', error)
       setModalType('error')
@@ -95,42 +90,20 @@ const SpeechGoalSheets = () => {
 
   const handleStudentSelect = (student: Student | null) => {
     setSelectedStudent(student)
-    setSelectedScreening(null) // Clear selected screening when student changes
-  }
-
-  const handleSelectScreening = (screening: Screening | null) => {
-    setSelectedScreening(screening)
-  }
-
-  const handleViewDetails = (screening: Screening) => {
-    setSelectedScreeningForDetails(screening)
-    setIsDetailsModalOpen(true)
+    setSelectedScreening(null)
   }
 
   const handleGoBackToReports = () => {
     setIsSuccessModalOpen(false)
-    setModalType('success')
-    setModalMessage('')
     navigate(`/school/${currentSchool.id}/speech-screening-reports/goal-sheets`)
   }
 
   const handleStayOnPage = () => {
     setIsSuccessModalOpen(false)
-    setModalType('success')
-    setModalMessage('')
-    // Clear all selections
     setSelectedStudent(null)
     setSelectedScreening(null)
     setSelectedReports([])
-    setRecipientEmail('')
-    setEmailStatus('idle')
-    setEmailMessage('')
-  }
-
-  const handleCloseModal = () => {
-    setIsSuccessModalOpen(false)
-    setModalType('success')
-    setModalMessage('')
+    setRecipientEmails([])
   }
 
   return (
@@ -159,20 +132,31 @@ const SpeechGoalSheets = () => {
           </div>
         )}
 
-        {/* Speech Screens Table */}
-        <div className='space-y-3'>
-          {selectedStudent && (
-            <div className='space-y-3'>
-              <h3 className='text-xl font-medium text-gray-700'>Screenings</h3>
-              <SpeechScreeningsTable
-                studentId={selectedStudent.id}
-                selectedScreening={selectedScreening}
-                onSelectScreening={handleSelectScreening}
-                onViewDetails={handleViewDetails}
-              />
-            </div>
-          )}
-        </div>
+        {/* Report Type Selector — above screenings */}
+        {selectedStudent && (
+          <ReportTypeSelector
+            reports={SPEECH_GOAL_SHEET_OPTIONS}
+            selectedValues={selectedReports}
+            onToggle={handleToggleReport}
+            columns={2}
+          />
+        )}
+
+        {/* Speech Screenings Table */}
+        {selectedStudent && (
+          <div className='space-y-3'>
+            <h3 className='text-xl font-medium text-gray-700'>Screenings</h3>
+            <SpeechScreeningsTable
+              studentId={selectedStudent.id}
+              selectedScreening={selectedScreening}
+              onSelectScreening={setSelectedScreening}
+              onViewDetails={screening => {
+                setSelectedScreeningForDetails(screening)
+                setIsDetailsModalOpen(true)
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Email Section */}
@@ -183,117 +167,23 @@ const SpeechGoalSheets = () => {
             Send {selectedStudent.first_name}'s Goal Sheets
           </h4>
 
-          <div className='space-y-4'>
-            {/* Report Selection */}
-            <div className='space-y-3'>
-              <Label className='text-sm font-medium'>Select Type of Report</Label>
-              <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
-                {getAvailableReports().map(report => {
-                  const Icon = report.icon
-                  const isSelected = selectedReports.includes(report.value)
-                  return (
-                    <div
-                      key={report.value}
-                      onClick={() => {
-                        if (isSelected) {
-                          setSelectedReports(selectedReports.filter(r => r !== report.value))
-                        } else {
-                          setSelectedReports([...selectedReports, report.value])
-                        }
-                      }}
-                      className={`
-                        relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 w-full
-                        ${
-                          isSelected
-                            ? 'border-blue-600 bg-blue-50 shadow-sm'
-                            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
-                        }
-                      `}>
-                      <div className='flex items-start w-full space-x-3'>
-                        <div
-                          className={`
-                          flex-shrink-0 p-2 rounded-lg
-                          ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}
-                        `}>
-                          <Icon className='w-4 h-4' />
-                        </div>
-                        <div className='flex-1 min-w-0 overflow-hidden'>
-                          <h3
-                            className={`
-                            text-sm font-medium leading-tight truncate
-                            ${isSelected ? 'text-blue-900' : 'text-gray-900'}
-                          `}>
-                            {report.label}
-                          </h3>
-                          <p
-                            className={`
-                            text-xs mt-1 leading-tight
-                            ${isSelected ? 'text-blue-700' : 'text-gray-500'}
-                          `}>
-                            {report.description}
-                          </p>
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <div className='absolute top-2 right-2'>
-                          <div className='w-2 h-2 bg-blue-600 rounded-full'></div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+          <MultiEmailInput
+            recipientEmails={recipientEmails}
+            onChange={setRecipientEmails}
+            emailHistory={emailHistory}
+          />
 
-            {/* Email Details */}
-            <div className='space-y-3'>
-              <div className='space-y-1'>
-                <Label htmlFor='recipient' className='text-sm font-medium'>
-                  Recipient Email
-                </Label>
-                <Input
-                  id='recipient'
-                  type='email'
-                  placeholder='Enter recipient email address'
-                  value={recipientEmail}
-                  onChange={e => setRecipientEmail(e.target.value)}
-                  className='h-12'
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Status Message */}
-          {emailMessage && (
-            <div
-              className={`mt-4 p-3 rounded-lg border ${
-                emailStatus === 'success'
-                  ? 'bg-green-50 border-green-200 text-green-800'
-                  : emailStatus === 'error'
-                    ? 'bg-red-50 border-red-200 text-red-800'
-                    : 'bg-blue-50 border-blue-200 text-blue-800'
-              }`}>
-              <div className='flex items-center gap-2'>
-                {emailStatus === 'success' && <CheckCircle className='w-4 h-4' />}
-                {emailStatus === 'error' && <span className='text-red-600'>⚠️</span>}
-                <span className='text-sm font-medium'>{emailMessage}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Send Reports */}
           <div className='mt-6'>
             <Button
-              onClick={() => handleSendEmail()}
+              onClick={handleSendEmail}
               variant='default'
               size='sm'
               className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
               disabled={
-                !selectedStudent ||
-                !recipientEmail ||
+                !selectedScreening ||
                 selectedReports.length === 0 ||
-                isEmailLoading ||
-                !selectedScreening
+                recipientEmails.length === 0 ||
+                isEmailLoading
               }>
               <Send className='w-4 h-4 mr-2' />
               {isEmailLoading ? 'Sending...' : 'Send Reports'}
@@ -308,58 +198,14 @@ const SpeechGoalSheets = () => {
         screening={selectedScreeningForDetails}
       />
 
-      {/* Success/Error Modal */}
-      <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
-        <DialogContent className='mx-auto'>
-          <div className='flex flex-col items-center space-y-6 text-center'>
-            {/* Icon */}
-            <div className='flex justify-center'>
-              {modalType === 'success' ? (
-                <CheckCircle className='w-16 h-16 text-green-600' />
-              ) : (
-                <XCircle className='w-16 h-16 text-red-600' />
-              )}
-            </div>
-
-            {/* Title and Description */}
-            <div className='space-y-2'>
-              <DialogTitle className='text-2xl font-semibold text-gray-900'>
-                {modalType === 'success' ? 'Report Sent Successfully!' : 'Error Sending Report'}
-              </DialogTitle>
-              <DialogDescription className='text-base leading-relaxed text-gray-600'>
-                {modalMessage}
-              </DialogDescription>
-            </div>
-
-            {/* Action Buttons */}
-            <div className='flex flex-col w-full gap-3 sm:flex-row sm:w-auto'>
-              {modalType === 'success' ? (
-                <>
-                  <Button
-                    onClick={handleStayOnPage}
-                    className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
-                    <Plus className='w-4 h-4' />
-                    Send Another Report
-                  </Button>
-                  <Button
-                    onClick={handleGoBackToReports}
-                    variant='outline'
-                    className='w-full px-6 py-2 sm:w-auto'>
-                    <List className='w-4 h-4' />
-                    Back to Reports
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  onClick={handleCloseModal}
-                  className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
-                  Try Again
-                </Button>
-              )}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ReportSendModal
+        isOpen={isSuccessModalOpen}
+        modalType={modalType}
+        modalMessage={modalMessage}
+        onStayOnPage={handleStayOnPage}
+        onGoBack={handleGoBackToReports}
+        onClose={() => setIsSuccessModalOpen(false)}
+      />
     </>
   )
 }
