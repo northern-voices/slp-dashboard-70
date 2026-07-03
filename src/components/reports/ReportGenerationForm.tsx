@@ -1,5 +1,8 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,29 +24,38 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
+import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
-import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import MultiEmailInput from './shared/MultiEmailInput'
 
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
   academicYear: z.string().min(1, 'Please select an academic year'),
-  email: z.string().email('Please enter a valid email address'),
+  recipientEmails: z
+    .array(z.string())
+    .min(1, 'Please add at least one email')
+    .refine(emails => emails.every(email => z.string().email().safeParse(email).success), {
+      message: 'One or more emails are invalid. Please remove and re-enter them.',
+    }),
 })
 
 type ReportFormData = z.infer<typeof reportSchema>
 
 const ReportGenerationForm = () => {
-  const { currentSchool } = useOrganization()
-
-  const navigate = useNavigate()
-
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
+  const [emailHistory, setEmailHistory] = useState<string[]>([])
+
+  const { currentSchool } = useOrganization()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
+  }, [user?.id])
 
   const currentYear = new Date().getFullYear()
   const currentMonth = new Date().getMonth() // 0-11, where 0 is January
@@ -61,7 +73,7 @@ const ReportGenerationForm = () => {
     defaultValues: {
       reportType: '',
       academicYear: currentAcademicYear,
-      email: '',
+      recipientEmails: [],
     },
   })
 
@@ -109,23 +121,23 @@ const ReportGenerationForm = () => {
         result = await edgeFunctionsApi.schoolWideSendStudentReports(
           currentSchool.id,
           data.academicYear,
-          data.email
+          data.recipientEmails
         )
       } else if (data.reportType === 'school-summary-report') {
         result = await edgeFunctionsApi.schoolSummaryReport(
           currentSchool.id,
           data.academicYear,
-          data.email
+          data.recipientEmails
         )
       } else if (data.reportType === 'progress-speech-reports') {
         result = await edgeFunctionsApi.schoolWideStudentProgressReport(
           currentSchool.id,
           data.academicYear,
-          data.email
+          data.recipientEmails
         )
       }
 
-      console.log(result, 'result')
+      if (user?.id) upsertEmailHistory(user.id, data.recipientEmails).catch(console.error)
 
       const allReports = [...initialReports, ...progressReports]
 
@@ -134,7 +146,7 @@ const ReportGenerationForm = () => {
       setModalMessage(
         `Your ${
           allReports.find(type => type.value === data.reportType)?.label
-        } is being generated. You'll receive an email at ${data.email} when it's ready.`
+        } is being generated. You'll receive an email at ${data.recipientEmails.join(', ')} when it's ready.`
       )
       setIsSuccessModalOpen(true)
     } catch (error: unknown) {
@@ -382,16 +394,14 @@ const ReportGenerationForm = () => {
 
               <FormField
                 control={form.control}
-                name='email'
+                name='recipientEmails'
                 render={({ field }) => (
                   <FormItem className='w-full max-w-full space-y-3'>
-                    <FormLabel className='text-sm font-medium text-gray-700'>Email</FormLabel>
                     <FormControl>
-                      <Input
-                        type='email'
-                        placeholder='Enter email address'
-                        className='w-full'
-                        {...field}
+                      <MultiEmailInput
+                        recipientEmails={field.value}
+                        onChange={field.onChange}
+                        emailHistory={emailHistory}
                       />
                     </FormControl>
                     <FormMessage />
