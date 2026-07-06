@@ -19,7 +19,7 @@ export interface MonthlyMeetingDraft {
   user_id: string
   school_id: string
   meeting_id: string | null
-  draft_type: MonthlyMeetingDraftFormData
+  draft_type: MonthlyMeetingDraftType
   label: string
   is_label_custom: boolean
   form_data: MonthlyMeetingDraftFormData
