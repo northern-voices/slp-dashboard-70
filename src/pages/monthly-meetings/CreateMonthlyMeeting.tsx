@@ -36,7 +36,6 @@ import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDi
 import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { type StudentData, buildStudentUpdates } from '@/api/monthlymeetings'
-import { Month } from 'date-fns'
 
 interface MeetingFormData {
   meeting_title: string
