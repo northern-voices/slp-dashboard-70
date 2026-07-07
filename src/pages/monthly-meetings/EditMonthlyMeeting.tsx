@@ -26,12 +26,19 @@ import {
 import { Badge } from '@/components/ui/badge'
 import StudentDetailsModal from '@/components/monthly-meetings/StudentDetailsModal'
 import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMeetingStudentTable'
-import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog'
+import MonthlyMeetingDraftPickerDialog from '@/components/monthly-meetings/MonthlyMeetingDraftPickerDialog'
+import {
+  useEditMonthlyMeetingDraft,
+  useDeleteMonthlyMeetingDraft,
+} from '@/hooks/monthly-meetings/use-monthly-meeting-drafts'
+import { useMonthlyMeetingDraftAutosave } from '@/hooks/monthly-meetings/use-monthly-meeting-draft-autosave'
+import type { MonthlyMeetingDraft } from '@/types/monthly-meeting-draft'
 import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
 import { useGetMonthlyMeetingById } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { MeetingTypeBadge } from '@/utils/meetingTypes'
 import { type StudentData, buildStudentUpdates } from '@/api/monthlymeetings'
+import { useWarnBeforeUnload } from '@/hooks/use-warn-before-unload'
 
 interface MeetingFormData {
   meeting_title: string
@@ -95,7 +102,6 @@ const EditMonthlyMeetingContent = () => {
   const studentIds = students.map(student => student.id)
   const { data: studentIdsWithConsent = [] } = useConsentFormPresence(studentIds)
 
-  const draftKey = `monthly-meeting-edit-draft-${meetingId}`
   const {
     register,
     handleSubmit,
@@ -115,37 +121,44 @@ const EditMonthlyMeetingContent = () => {
     },
   })
 
+  const { data: editDraft, isLoading: isEditDraftLoading } = useEditMonthlyMeetingDraft(meetingId)
+  const { activeDraftId, setActiveDraftId, isLabelCustom, setIsLabelCustom, scheduleSave } =
+    useMonthlyMeetingDraftAutosave({
+      schoolId: currentSchool?.id,
+      meetingId: meetingId ?? null,
+      draftType: 'edit',
+    })
+
+  const deleteDraftMutation = useDeleteMonthlyMeetingDraft()
+
   const watchedValues = watch()
 
   useEffect(() => {
     if (isDirty) {
-      localStorage.setItem(draftKey, JSON.stringify({ formData: watchedValues, studentData }))
+      scheduleSave(watchedValues, studentData)
     }
-  }, [watchedValues, studentData, isDirty, draftKey])
+  }, [watchedValues, studentData, isDirty, scheduleSave])
 
-  const loadDraft = () => {
-    const saved = localStorage.getItem(draftKey)
-    if (saved) {
-      try {
-        const { formData, studentData: savedStudentData } = JSON.parse(saved)
-        const sanitized = Object.fromEntries(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          Object.entries(savedStudentData).map(([id, d]: [string, any]) => [
-            id,
-            { ...d, meeting_notes: d.meeting_notes ?? '' },
-          ])
-        )
-        reset(formData)
-        setStudentData(sanitized)
-      } catch {
-        localStorage.removeItem(draftKey)
-      }
-    }
+  useWarnBeforeUnload(isDirty)
+
+  const loadDraft = (draft: MonthlyMeetingDraft) => {
+    const sanitized = Object.fromEntries(
+      Object.entries(draft.student_data).map(([id, d]) => [
+        id,
+        { ...d, meeting_notes: d.meeting_notes ?? '' },
+      ])
+    )
+    reset(draft.form_data)
+    setStudentData(sanitized)
+    setActiveDraftId(draft.id)
+    setIsLabelCustom(draft.is_label_custom)
     setShowRestoreDialog(false)
   }
 
   const clearDraft = () => {
-    localStorage.removeItem(draftKey)
+    if (activeDraftId) {
+      deleteDraftMutation.mutate(activeDraftId)
+    }
   }
 
   const discardChanges = () => {
@@ -153,6 +166,7 @@ const EditMonthlyMeetingContent = () => {
       reset(originalData.formData)
       setStudentData(originalData.studentData)
       clearDraft()
+      setActiveDraftId(null)
     }
   }
 
@@ -160,7 +174,7 @@ const EditMonthlyMeetingContent = () => {
   const { data: meetingData, isLoading, isError } = useGetMonthlyMeetingById(meetingId)
 
   useEffect(() => {
-    if (!meetingData) return
+    if (!meetingData || isEditDraftLoading) return
 
     const fetchedFormData: MeetingFormData = {
       meeting_title: meetingData.meeting_title || '',
@@ -184,17 +198,16 @@ const EditMonthlyMeetingContent = () => {
       })
     }
 
-    const savedDraft = localStorage.getItem(draftKey)
-    if (savedDraft) {
-      setOriginalData({ formData: fetchedFormData, studentData: fetchedStudentData })
+    setOriginalData({ formData: fetchedFormData, studentData: fetchedStudentData })
+
+    if (editDraft) {
       setShowRestoreDialog(true)
     } else {
-      setOriginalData({ formData: fetchedFormData, studentData: fetchedStudentData })
       reset(fetchedFormData)
       setStudentData(fetchedStudentData)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [meetingData])
+  }, [meetingData, isEditDraftLoading])
 
   useEffect(() => {
     if (isError) {
@@ -549,20 +562,26 @@ const EditMonthlyMeetingContent = () => {
         />
       </div>
 
-      <DraftRestoreDialog
+      <MonthlyMeetingDraftPickerDialog
         open={showRestoreDialog}
-        onRestore={() => {
-          loadDraft()
+        mode='edit'
+        drafts={editDraft ? [editDraft] : []}
+        onResume={draft => {
+          loadDraft(draft)
           toast({
             title: 'Draft Restored',
             description: 'Your previous changes have been restored.',
           })
         }}
-        onDiscard={() => {
+        onDismiss={() => {
           if (originalData) {
             reset(originalData.formData)
             setStudentData(originalData.studentData)
-            clearDraft()
+          }
+
+          if (editDraft) {
+            setActiveDraftId(editDraft.id)
+            setIsLabelCustom(editDraft.is_label_custom)
           }
           setShowRestoreDialog(false)
         }}
