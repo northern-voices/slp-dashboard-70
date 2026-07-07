@@ -133,26 +133,39 @@ const MonthlyMeetingDraftPickerDialog = ({
                         size='sm'
                         variant='outline'
                         onClick={() => handleEditSave(draft.id)}
-                        disabled={renameMutation.isPending}>
+                        disabled={renameMutation.isPending}
+                        className='h-auto flex-row items-center justify-center gap-1 px-4 py-2'>
                         <Check className='w-4 h-4 text-green-600' />
-                        Save
+                        <span className='text-sm'>Save</span>
                       </Button>
-                      <Button size='sm' variant='outline' onClick={() => setEditingId(null)}>
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        onClick={() => setEditingId(null)}
+                        className='h-auto flex-row items-center justify-center gap-1 px-4 py-2'>
                         <X className='w-4 h-4' />
-                        Cancel
+                        <span className='text-sm'>Cancel</span>
                       </Button>
                     </>
                   ) : (
                     <>
-                      <Button size='sm' variant='outline' onClick={() => handleEditStart(draft)}>
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        onClick={() => handleEditStart(draft)}
+                        className='h-auto flex-row items-center justify-center gap-1 px-4 py-2'>
                         <Pencil className='w-4 h-4' />
-                        Rename
+                        <span className='text-sm'>Rename</span>
                       </Button>
-                      <Button size='sm' variant='outline' onClick={() => setDraftToDelete(draft)}>
-                        <Trash2 className='w-4 h-4 text-destructive' />
-                        Delete
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        onClick={() => setDraftToDelete(draft)}
+                        className='h-auto flex-row items-center justify-center gap-1 px-4 py-2 border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive'>
+                        <Trash2 className='w-4 h-4' />
+                        <span className='text-sm'>Delete</span>
                       </Button>
-                      <Button size='sm' onClick={() => onResume(draft)}>
+                      <Button size='sm' onClick={() => onResume(draft)} className='h-auto py-2'>
                         Resume
                       </Button>
                     </>
