@@ -88,7 +88,10 @@ const MonthlyMeetingDraftPickerDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onDismiss}>
-        <DialogContent className='sm:max-w-lg'>
+        <DialogContent
+          className='sm:max-w-lg'
+          onInteractOutside={e => e.preventDefault()}
+          onEscapeKeyDown={e => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>
               {mode === 'create' ? 'Resume a draft?' : 'Restore your draft?'}
