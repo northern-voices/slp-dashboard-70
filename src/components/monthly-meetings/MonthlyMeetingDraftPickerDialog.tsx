@@ -89,7 +89,7 @@ const MonthlyMeetingDraftPickerDialog = ({
     <>
       <Dialog open={open} onOpenChange={onDismiss}>
         <DialogContent
-          className='sm:max-w-lg'
+          className='sm:max-w-xl'
           onInteractOutside={e => e.preventDefault()}
           onEscapeKeyDown={e => e.preventDefault()}>
           <DialogHeader>
@@ -135,18 +135,22 @@ const MonthlyMeetingDraftPickerDialog = ({
                         onClick={() => handleEditSave(draft.id)}
                         disabled={renameMutation.isPending}>
                         <Check className='w-4 h-4 text-green-600' />
+                        Save
                       </Button>
                       <Button size='sm' variant='outline' onClick={() => setEditingId(null)}>
                         <X className='w-4 h-4' />
+                        Cancel
                       </Button>
                     </>
                   ) : (
                     <>
                       <Button size='sm' variant='outline' onClick={() => handleEditStart(draft)}>
                         <Pencil className='w-4 h-4' />
+                        Rename
                       </Button>
                       <Button size='sm' variant='outline' onClick={() => setDraftToDelete(draft)}>
                         <Trash2 className='w-4 h-4 text-destructive' />
+                        Delete
                       </Button>
                       <Button size='sm' onClick={() => onResume(draft)}>
                         Resume
