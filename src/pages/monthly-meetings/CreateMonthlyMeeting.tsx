@@ -36,6 +36,7 @@ import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDi
 import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { type StudentData, buildStudentUpdates } from '@/api/monthlymeetings'
+import { useWarnBeforeUnload } from '@/hooks/use-warn-before-unload'
 
 interface MeetingFormData {
   meeting_title: string
@@ -152,6 +153,8 @@ const CreateMonthlyMeetingContent = () => {
       scheduleSave(watchedValues, studentData)
     }
   }, [watchedValues, studentData, isDirty, scheduleSave])
+
+  useWarnBeforeUnload(isDirty)
 
   useEffect(() => {
     const month = new Date().toLocaleDateString('en-US', { month: 'long' })

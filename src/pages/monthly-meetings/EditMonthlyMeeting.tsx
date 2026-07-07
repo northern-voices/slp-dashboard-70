@@ -38,6 +38,7 @@ import { useGetMonthlyMeetingById } from '@/hooks/monthly-meetings/use-monthly-m
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { MeetingTypeBadge } from '@/utils/meetingTypes'
 import { type StudentData, buildStudentUpdates } from '@/api/monthlymeetings'
+import { useWarnBeforeUnload } from '@/hooks/use-warn-before-unload'
 
 interface MeetingFormData {
   meeting_title: string
@@ -137,6 +138,8 @@ const EditMonthlyMeetingContent = () => {
       scheduleSave(watchedValues, studentData)
     }
   }, [watchedValues, studentData, isDirty, scheduleSave])
+
+  useWarnBeforeUnload(isDirty)
 
   const loadDraft = (draft: MonthlyMeetingDraft) => {
     const sanitized = Object.fromEntries(
