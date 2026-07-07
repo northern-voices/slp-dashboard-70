@@ -34,3 +34,54 @@ interface MonthlyMeetingDraftPickerDialogProps {
   onResume: (draft: MonthlyMeetingDraft) => void
   onDismiss: () => void
 }
+
+const MonthlyMeetingDraftPickerDialogProps = ({
+  open,
+  mode,
+  drafts,
+  onResume,
+  onDismiss,
+}: MonthlyMeetingDraftPickerDialogProps) => {
+  const { toast } = useToast()
+  const [isEditingId, setEditingId] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState('')
+  const [draftToDelete, setDraftToDelete] = useState<MonthlyMeetingDraft | null>(null)
+
+  const renameMutation = useRenameMonthlyMeetingDraft()
+  const deleteMutation = useDeleteMonthlyMeetingDraft()
+
+  const handleEditStart = (draft: MonthlyMeetingDraft) => {
+    setEditingId(draft.id)
+    setEditValue(draft.label)
+  }
+
+  const handleEditSave = (id: string) => {
+    if (!editValue.trim()) return
+    renameMutation.mutate(
+      { id, label: editValue.trim() },
+      {
+        onSuccess: () => setEditingId(null),
+        onError: () => {
+          toast({
+            title: 'Error',
+            description: 'Failed to rename draft. Please try again.',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
+  }
+
+  const handleDelete = (draft: MonthlyMeetingDraft) => {
+    deleteMutation.mutate(draft.id, {
+      onSuccess: () => setDraftToDelete(null),
+      onError: () => {
+        toast({
+          title: 'Error',
+          description: 'Failed to delete draft. Please try again.',
+          variant: 'destructive',
+        })
+      },
+    })
+  }
+}
