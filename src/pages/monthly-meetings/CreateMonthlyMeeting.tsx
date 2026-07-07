@@ -25,11 +25,18 @@ import {
 import { Badge } from '@/components/ui/badge'
 import MonthlyMeetingsStudentTable from '@/components/monthly-meetings/MonthlyMeetingStudentTable'
 import StudentDetailsModal from '@/components/monthly-meetings/StudentDetailsModal'
-import DraftRestoreDialog from '@/components/monthly-meetings/DraftRestoreDialog'
+import MonthlyMeetingDraftPickerDialog from '@/components/monthly-meetings/MonthlyMeetingDraftPickerDialog'
+import {
+  useCreateMonthlyMeetingDrafts,
+  useDeleteMonthlyMeetingDraft,
+} from '@/hooks/monthly-meetings/use-monthly-meeting-drafts'
+import { useMonthlyMeetingDraftAutosave } from '@/hooks/monthly-meetings/use-monthly-meeting-draft-autosave'
+import type { MonthlyMeetingDraft } from '@/types/monthly-meeting-draft'
 import UnsavedChangesDialog from '@/components/monthly-meetings/UnsavedChangesDialog'
 import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { type StudentData, buildStudentUpdates } from '@/api/monthlymeetings'
+import { Month } from 'date-fns'
 
 interface MeetingFormData {
   meeting_title: string
@@ -83,8 +90,6 @@ const CreateMonthlyMeetingContent = () => {
 
   const meetingTypeFromNav = location.state?.meeting_type ?? 'progress_checkin'
 
-  const draftKey = `monthly-meeting-draft-${currentSchool?.id || 'no-school'}`
-
   const {
     register,
     handleSubmit,
@@ -122,21 +127,32 @@ const CreateMonthlyMeetingContent = () => {
   })
 
   const [studentData, setStudentData] = useState<StudentData>({})
-  const [hasDraft, setHasDraft] = useState(false)
+  const [hasCheckedDrafts, setHasCheckedDrafts] = useState(false)
 
-  // Detect draft on mount
+  const { data: drafts = [] } = useCreateMonthlyMeetingDrafts(currentSchool?.id)
+  const { activeDraftId, setActiveDraftId, isLabelCustom, setIsLabelCustom, scheduleSave } =
+    useMonthlyMeetingDraftAutosave({
+      schoolId: currentSchool?.id,
+      meetingId: null,
+      draftType: 'create',
+    })
+
+  const deleteDraftMutation = useDeleteMonthlyMeetingDraft()
+
   useEffect(() => {
-    const saved = localStorage.getItem(draftKey)
-    if (saved) setHasDraft(true)
-  }, [draftKey])
+    if (!hasCheckedDrafts && currentSchool?.id) {
+      if (drafts.length > 0) setShowRestoreDialog(true)
+      setHasCheckedDrafts(true)
+    }
+  }, [drafts, hasCheckedDrafts, currentSchool?.id])
 
   // Save draft on changes
   const watchedValues = watch()
   useEffect(() => {
     if (isDirty) {
-      localStorage.setItem(draftKey, JSON.stringify({ formData: watchedValues, studentData }))
+      scheduleSave(watchedValues, studentData)
     }
-  }, [watchedValues, studentData, isDirty, draftKey])
+  }, [watchedValues, studentData, isDirty, scheduleSave])
 
   useEffect(() => {
     const month = new Date().toLocaleDateString('en-US', { month: 'long' })
@@ -151,45 +167,33 @@ const CreateMonthlyMeetingContent = () => {
     }
   }, [watchedValues.meeting_type])
 
-  const loadDraft = () => {
-    const saved = localStorage.getItem(draftKey)
-    if (saved) {
-      try {
-        const { formData, studentData: savedStudentData } = JSON.parse(saved)
-        const sanitized = Object.fromEntries(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          Object.entries(savedStudentData).map(([id, d]: [string, any]) => [
-            id,
-            { ...d, meeting_notes: d.meeting_notes ?? '' },
-          ])
-        )
-        reset(formData)
-        setStudentData(sanitized)
-      } catch {
-        localStorage.removeItem(draftKey)
-      }
-    }
-    setHasDraft(false)
+  const loadDraft = (draft: MonthlyMeetingDraft) => {
+    const sanitized = Object.fromEntries(
+      Object.entries(draft.student_data).map(([id, d]) => [
+        id,
+        { ...d, meeting_notes: d.meeting_notes ?? '' },
+      ])
+    )
+    reset(draft.form_data)
+    setStudentData(sanitized)
+    setActiveDraftId(draft.id)
+    setIsLabelCustom(draft.is_label_custom)
     setShowRestoreDialog(false)
   }
 
   const clearDraft = () => {
-    localStorage.removeItem(draftKey)
+    if (activeDraftId) {
+      deleteDraftMutation.mutate(activeDraftId)
+    }
   }
 
   const discardDraft = () => {
-    localStorage.removeItem(draftKey)
+    clearDraft()
     reset()
     setStudentData({})
-    setHasDraft(false)
+    setActiveDraftId(null)
+    setIsLabelCustom(false)
   }
-
-  // Show restore dialog if draft exists on mount
-  useEffect(() => {
-    if (hasDraft) {
-      setShowRestoreDialog(true)
-    }
-  }, [hasDraft])
 
   const createMonthlyMeetings = useCreateMonthlyMeeting()
   const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
@@ -585,20 +589,18 @@ const CreateMonthlyMeetingContent = () => {
         setStudentData={setStudentData}
       />
 
-      <DraftRestoreDialog
+      <MonthlyMeetingDraftPickerDialog
         open={showRestoreDialog}
-        onRestore={() => {
-          loadDraft()
-          setShowRestoreDialog(false)
+        mode='create'
+        drafts={drafts}
+        onResume={draft => {
+          loadDraft(draft)
           toast({
             title: 'Draft Restored',
             description: 'Your previous draft has been restored.',
           })
         }}
-        onDiscard={() => {
-          discardDraft()
-          setShowRestoreDialog(false)
-        }}
+        onDismiss={() => setShowRestoreDialog(false)}
       />
 
       <UnsavedChangesDialog
