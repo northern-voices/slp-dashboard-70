@@ -574,8 +574,11 @@ const EditMonthlyMeetingContent = () => {
           if (originalData) {
             reset(originalData.formData)
             setStudentData(originalData.studentData)
-            clearDraft()
-            setActiveDraftId(null)
+          }
+
+          if (editDraft) {
+            setActiveDraftId(editDraft.id)
+            setIsLabelCustom(editDraft.is_label_custom)
           }
           setShowRestoreDialog(false)
         }}
