@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -37,6 +37,8 @@ const today = () => new Date().toISOString().split('T')[0]
 const minDate = () => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
 const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) => {
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const verbalFileInputRef = useRef<HTMLInputElement>(null)
@@ -54,17 +56,21 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
   })
 
   const consentType = form.watch('consent_type')
-  const file = form.watch('file' as keyof ConsentFormValues) as unknown as File | undefined
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0]
-    if (selected) {
-      form.setValue('file' as keyof ConsentFormValues, selected as unknown as string)
+    const selected = Array.from(e.target.files ?? [])
+    if (selected.length > 0) {
+      setSelectedFiles(prev => [...prev, ...selected])
     }
+  }
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
   }
 
   const handleClose = () => {
     form.reset()
+    setSelectedFiles([])
     if (fileInputRef.current) fileInputRef.current.value = ''
     if (verbalFileInputRef.current) verbalFileInputRef.current.value = ''
     onClose()
@@ -100,7 +106,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
           values.consent_type === 'verbal' ? values.verbal_consent_details : undefined,
         parent_guardian: values.parent_guardian || undefined,
         additional_notes: values.additional_notes || undefined,
-        file,
+        files: selectedFiles,
       },
       {
         onSuccess: () => {
@@ -170,9 +176,9 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
             <Select
               value={form.watch('consent_purpose')}
               onValueChange={val => {
-                form.setValue('consent_type', val as ConsentType)
+                form.setValue('consent_purpose', val as ConsentPurpose)
                 form.setValue('verbal_consent_details', '')
-                form.setValue('file' as keyof ConsentFormValues, undefined as unknown as string)
+                setSelectedFiles([])
                 if (fileInputRef.current) fileInputRef.current.value = ''
                 if (verbalFileInputRef.current) verbalFileInputRef.current.value = ''
               }}>
@@ -196,7 +202,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
               onValueChange={val => {
                 form.setValue('consent_type', val as ConsentType)
                 form.setValue('verbal_consent_details', '')
-                form.setValue('file' as keyof ConsentFormValues, undefined as unknown as string)
+                setSelectedFiles([])
 
                 if (fileInputRef.current) fileInputRef.current.value = ''
                 if (verbalFileInputRef.current) verbalFileInputRef.current.value = ''
@@ -237,16 +243,32 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
                     <Upload className='w-4 h-4 mr-2' />
                     Choose File
                   </Button>
-                  {file && (
-                    <span className='flex items-center gap-1 text-sm text-muted-foreground'>
-                      <CheckCircle2 className='w-4 h-4 text-green-500' />
-                      {(file as File).name}
-                    </span>
+
+                  {selectedFiles.length > 0 && (
+                    <ul className='mt-1 space-y-1'>
+                      {selectedFiles.map((file, index) => (
+                        <li
+                          key={`${file.name}-${index}`}
+                          className='flex items-center justify-between text-sm text-muted-foreground'>
+                          <span className='flex items-center gap-1'>
+                            <CheckCircle2 className='w-4 h-4 text-green-500' />
+                            {file.name}
+                          </span>
+                          <button
+                            type='button'
+                            className='text-xs underline'
+                            onClick={() => removeFile(index)}>
+                            Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
                   )}
                 </div>
                 <input
                   ref={verbalFileInputRef}
                   type='file'
+                  multiple
                   accept='image/*,audio/*,application/pdf'
                   className='hidden'
                   onChange={handleFileChange}
@@ -268,16 +290,31 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
                   <Upload className='w-4 h-4 mr-2' />
                   Choose File
                 </Button>
-                {file && (
-                  <span className='flex items-center gap-1 text-sm text-muted-foreground'>
-                    <CheckCircle2 className='w-4 h-4 text-green-500' />
-                    {(file as File).name}
-                  </span>
+                {selectedFiles.length > 0 && (
+                  <ul className='mt-1 space-y-1'>
+                    {selectedFiles.map((file, index) => (
+                      <li
+                        key={`${file.name}-${index}`}
+                        className='flex items-center justify-between text-sm text-muted-foreground'>
+                        <span className='flex items-center gap-1'>
+                          <CheckCircle2 className='w-4 h-4 text-green-500' />
+                          {file.name}
+                        </span>
+                        <button
+                          type='button'
+                          className='text-xs underline'
+                          onClick={() => removeFile(index)}>
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
               <input
                 ref={fileInputRef}
                 type='file'
+                multiple
                 accept='image/*'
                 className='hidden'
                 onChange={handleFileChange}
