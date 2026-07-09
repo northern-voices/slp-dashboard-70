@@ -113,6 +113,12 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
                   <div className='flex flex-col'>
                     <span className='text-sm font-medium'>
                       {purposeLabel(form.consent_purpose)} · {typeLabel(form.consent_type)}
+                      {form.file_name && (
+                        <span className='text-muted-foreground font-normal'>
+                          {' '}
+                          - {form.file_name}
+                        </span>
+                      )}
                     </span>
                     <span className='text-xs text-muted-foreground'>
                       {format(new Date(form.consent_date), 'MMM d, yyyy')}

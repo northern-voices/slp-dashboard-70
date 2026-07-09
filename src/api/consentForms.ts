@@ -10,7 +10,7 @@ export interface ConsentFormData {
   verbal_consent_details?: string
   parent_guardian?: string
   additional_notes?: string
-  file?: File
+  files?: File[]
 }
 
 export const consentFormsApi = {
@@ -22,31 +22,44 @@ export const consentFormsApi = {
       } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      let filePath: string | null = null
-      let fileName: string | null = null
-      let fileType: string | null = null
-      let fileSize: number | null = null
+      const files = formData.files ?? []
 
-      // Only upload file for written consent
+      if (files.length === 0) {
+        const { error } = await supabase.from('consent_forms').insert({
+          student_id: studentId,
+          consent_date: formData.consent_date,
+          consent_purpose: formData.consent_purpose,
+          consent_type: formData.consent_type,
+          verbal_consent_details: formData.verbal_consent_details || null,
+          parent_guardian: formData.parent_guardian || null,
+          additional_notes: formData.additional_notes || null,
+          file_path: null,
+          file_name: null,
+          file_type: null,
+          file_size: null,
+          uploaded_by: user.id,
+        })
 
-      if (formData.file) {
-        filePath = `${studentId}/${Date.now()}-${formData.file.name}`
+        if (error) throw error
+        return
+      }
+
+      const uploaded: { path: string; name: string; type: string; size: number }[] = []
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const filePath = `${studentId}/${Date.now()}-${i}-${file.name}`
 
         const { error: uploadError } = await supabase.storage
           .from('consent-forms')
-          .upload(filePath, formData.file, {
-            contentType: formData.file.type,
-            upsert: false,
-          })
+          .upload(filePath, file, { contentType: file.type, upsert: false })
 
         if (uploadError) throw uploadError
 
-        fileName = formData.file.name
-        fileType = formData.file.type
-        fileSize = formData.file.size
+        uploaded.push({ path: filePath, name: file.name, type: file.type, size: file.size })
       }
 
-      const { error: insertError } = await supabase.from('consent_forms').insert({
+      const rows = uploaded.map(file => ({
         student_id: studentId,
         consent_date: formData.consent_date,
         consent_purpose: formData.consent_purpose,
@@ -54,13 +67,14 @@ export const consentFormsApi = {
         verbal_consent_details: formData.verbal_consent_details || null,
         parent_guardian: formData.parent_guardian || null,
         additional_notes: formData.additional_notes || null,
-        file_path: filePath,
-        file_name: fileName,
-        file_type: fileType,
-        file_size: fileSize,
+        file_path: file.path,
+        file_name: file.name,
+        file_type: file.type,
+        file_size: file.size,
         uploaded_by: user.id,
-      })
+      }))
 
+      const { error: insertError } = await supabase.from('consent_forms').insert(rows)
       if (insertError) throw insertError
     } catch (error) {
       console.error('Error uploading consent form:', error)
