@@ -11,10 +11,12 @@ import { Label } from '@/components/ui/label'
 import { Mail, Send, Loader2, CheckCircle, XCircle, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
-import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import { upsertEmailHistory } from '@/api/emailHistory'
 import { useAuth } from '@/contexts/AuthContext'
 import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 
 interface BulkSendReportsModalProps {
   isOpen: boolean
@@ -29,15 +31,16 @@ const BulkSendReportsModal = ({
   selectedScreenings,
   onSend,
 }: BulkSendReportsModalProps) => {
-  const { user } = useAuth()
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
-  const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [progress, setProgress] = useState({ current: 0, total: 0 })
   const [showResult, setShowResult] = useState(false)
   const [resultType, setResultType] = useState<'success' | 'error'>('success')
   const [resultMessage, setResultMessage] = useState('')
+
+  const { user } = useAuth()
+  const { currentSchool } = useOrganization()
 
   const isHearingOnly = selectedScreenings.every(s => s.source_table === 'hearing')
 
@@ -63,9 +66,7 @@ const BulkSendReportsModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.email])
 
-  useEffect(() => {
-    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
-  }, [user?.id])
+  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleSendReports = async () => {
     if (recipientEmails.length === 0 || (!isHearingOnly && selectedReports.length === 0)) return

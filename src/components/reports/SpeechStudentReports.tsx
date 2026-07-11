@@ -24,10 +24,11 @@ import {
 } from '@/components/ui/responsive-table'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
-import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import { upsertEmailHistory } from '@/api/emailHistory'
 import ReportTypeSelector from './shared/ReportTypeSelector'
 import ReportSendModal from './shared/ReportSendModal'
 import MultiEmailInput from './shared/MultiEmailInput'
+import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 
 const SpeechStudentReports = () => {
   const navigate = useNavigate()
@@ -50,7 +51,6 @@ const SpeechStudentReports = () => {
   const [selectedReport, setSelectedReport] = useState<string | null>(null)
   const [comparisonScreenings, setComparisonScreenings] = useState<Screening[]>([])
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
-  const [emailHistory, setEmailHistory] = useState<string[]>([])
 
   // Pre-fill email with current user's email on component mount
   useEffect(() => {
@@ -99,11 +99,7 @@ const SpeechStudentReports = () => {
     }
   }
 
-  useEffect(() => {
-    if (user?.id) {
-      getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
-    }
-  }, [user?.id])
+  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleStudentSelect = (student: Student | null) => {
     setSelectedStudent(student)

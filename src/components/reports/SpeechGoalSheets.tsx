@@ -22,10 +22,11 @@ import {
 } from '@/components/ui/responsive-table'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/reportOptions'
-import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import { upsertEmailHistory } from '@/api/emailHistory'
 import ReportTypeSelector from '@/components/reports/shared/ReportTypeSelector'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 import ReportSendModal from '@/components/reports/shared/ReportSendModal'
+import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 
 const SpeechGoalSheets = () => {
   const navigate = useNavigate()
@@ -36,7 +37,6 @@ const SpeechGoalSheets = () => {
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
-  const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [selectedScreeningForDetails, setSelectedScreeningForDetails] = useState<Screening | null>(
     null
@@ -50,9 +50,7 @@ const SpeechGoalSheets = () => {
     if (user?.email) setRecipientEmails([user.email])
   }, [user?.email])
 
-  useEffect(() => {
-    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
-  }, [user?.id])
+  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleToggleReport = (value: string) => {
     setSelectedReports(prev =>
