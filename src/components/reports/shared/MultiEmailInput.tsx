@@ -132,7 +132,7 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
 
             {suggestions.length > 0 && (
               <ul
-                className={`absolute z-10 left-0 right-0 bg-white border border-gray-200 rounded-md shadow-md mt-1 max-h-40 overflow-y-auto ${openUpward ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+                className={`absolute z-10 left-0 right-0 bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto ${openUpward ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
                 {suggestions.map((email, index) => (
                   <li
                     key={email}
