@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import { TEAM_MEMBER_ROLES, getTeamRoleLabel } from '@/constants/teamRoles'
+import { TEAM_MEMBER_ROLES } from '@/constants/teamRoles'
 import { unformatPhoneNumber } from '@/utils/formatters'
 import {
   Dialog,
@@ -14,8 +14,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { UserPlus, ChevronDown, X } from 'lucide-react'
 
 interface TeamMember {
   name: string
@@ -44,8 +42,6 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
     },
   })
 
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-
   const onSubmit = (data: TeamMember) => {
     onAddMember({
       ...data,
@@ -57,173 +53,112 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[500px]'>
+      <DialogContent className='sm:max-w-[600px] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <div className='flex items-center mb-2 space-x-3'>
-            <div className='flex items-center justify-center w-10 h-10 bg-purple-50 rounded-xl'>
-              <UserPlus className='w-5 h-5 text-purple-600' />
-            </div>
-            <DialogTitle>Add Team Member</DialogTitle>
-          </div>
-          <DialogDescription>
+          <DialogTitle className='text-xl font-semibold text-gray-900'>Add Team Member</DialogTitle>
+          <DialogDescription className='text-sm text-gray-500'>
             Add a new member to the school team. Fill in the required information below.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className='py-4 space-y-5 max-h-[60vh] overflow-y-auto pr-1'>
-            {/* Name Field */}
-            <div className='space-y-2'>
-              <Label htmlFor='name' className='text-sm font-medium text-gray-700'>
-                Full Name <span className='text-red-500'>*</span>
-              </Label>
-              <Input
-                id='name'
-                placeholder='e.g., Emily Carter'
-                {...register('name', { required: true })}
-                className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
-              />
-            </div>
-
-            {/* Role Field */}
-            <div className='space-y-2'>
-              <Label className='text-sm font-medium text-gray-700'>
-                Roles <span className='text-red-500'>*</span>
-              </Label>
-              <Controller
-                name='roles'
-                control={control}
-                rules={{ validate: v => v.length > 0 }}
-                render={({ field }) => (
-                  <>
-                    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          type='button'
-                          variant='outline'
-                          role='combobox'
-                          className='w-full justify-between h-auto min-h-[40px] rounded-lg border-gray-200 hover:bg-gray-50 text-left font-normal'>
-                          <div className='flex flex-wrap gap-1.5'>
-                            {field.value.length === 0 ? (
-                              <span className='text-sm text-gray-500'>Select roles...</span>
-                            ) : (
-                              field.value.map(roleValue => (
-                                <span
-                                  key={roleValue}
-                                  className='inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 text-xs font-medium'>
-                                  {getTeamRoleLabel(roleValue)}
-                                  <button
-                                    type='button'
-                                    onClick={e => {
-                                      e.stopPropagation()
-                                      field.onChange(field.value.filter(r => r !== roleValue))
-                                    }}
-                                    className='hover:bg-purple-200 rounded-full p-0.5'>
-                                    <X className='w-3 h-3' />
-                                  </button>
-                                </span>
-                              ))
-                            )}
-                          </div>
-                          <ChevronDown className='w-4 h-4 ml-2 opacity-50 shrink-0' />
-                        </Button>
-                      </PopoverTrigger>
-
-                      <PopoverContent className='w-[460px] p-0' align='start'>
-                        <div className='relative'>
-                          <div
-                            className='max-h-[150px] overflow-y-auto p-2'
-                            onTouchMove={e => e.stopPropagation()}
-                            onWheel={e => e.stopPropagation()}>
-                            <div className='space-y-1'>
-                              {TEAM_MEMBER_ROLES.map(role => (
-                                <div
-                                  key={role.value}
-                                  className='flex items-center p-2 space-x-2 rounded-md cursor-pointer hover:bg-gray-50'
-                                  onClick={() => {
-                                    const newRoles = field.value.includes(role.value)
-                                      ? field.value.filter(r => r !== role.value)
-                                      : [...field.value, role.value]
-                                    field.onChange(newRoles)
-                                  }}>
-                                  <Checkbox
-                                    checked={field.value.includes(role.value)}
-                                    onCheckedChange={() => {
-                                      const newRoles = field.value.includes(role.value)
-                                        ? field.value.filter(r => r !== role.value)
-                                        : [...field.value, role.value]
-                                      field.onChange(newRoles)
-                                    }}
-                                  />
-                                  <label className='flex-1 text-sm text-gray-700 cursor-pointer'>
-                                    {role.label}
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          {/* Scroll hint */}
-                          <div className='absolute bottom-0 left-0 right-0 h-8 rounded-b-lg pointer-events-none bg-gradient-to-t from-white to-transparent' />
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-
-                    {field.value.length > 0 && (
-                      <p className='mt-1 text-xs text-gray-500'>
-                        {field.value.length} role{field.value.length !== 1 ? 's' : ''} selected
-                      </p>
-                    )}
-                  </>
-                )}
-              />
-            </div>
-
-            {/* Email Field */}
-            <div className='space-y-2'>
-              <Label htmlFor='email' className='text-sm font-medium text-gray-700'>
-                Email Address
-              </Label>
-              <Input
-                id='email'
-                type='email'
-                placeholder='e.g., emily.carter@nvschools.edu'
-                {...register('email', {
-                  validate: value =>
-                    !value ||
-                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ||
-                    'Please enter a valid email',
-                })}
-                className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
-              />
-            </div>
-
-            {/* Phone field */}
-            <div className='space-y-2'>
-              <Label htmlFor='phone' className='text-sm font-medium text-gray-700'>
-                Phone Number
-              </Label>
-              <Input
-                id='phone'
-                type='tel'
-                placeholder='e.g., (555) 123-4567'
-                {...register('phone')}
-                className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
-                maxLength={14}
-              />
-            </div>
+        <form onSubmit={handleSubmit(onSubmit)} className='py-4 space-y-6'>
+          {/* Name Field */}
+          <div className='space-y-2'>
+            <Label htmlFor='name' className='text-sm font-medium text-gray-700'>
+              Full Name <span className='text-red-500'>*</span>
+            </Label>
+            <Input
+              id='name'
+              placeholder='e.g., Emily Carter'
+              {...register('name', { required: true })}
+              className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
+            />
           </div>
 
-          <DialogFooter className='mt-6'>
+          {/* Email Field */}
+          <div className='space-y-2'>
+            <Label htmlFor='email' className='text-sm font-medium text-gray-700'>
+              Email Address <span className='text-red-500'>*</span>
+            </Label>
+            <Input
+              id='email'
+              type='email'
+              placeholder='e.g., emily.carter@nvschools.edu'
+              {...register('email', {
+                required: true,
+                validate: value =>
+                  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || 'Please enter a valid email',
+              })}
+              className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
+            />
+          </div>
+
+          {/* Phone field */}
+          <div className='space-y-2'>
+            <Label htmlFor='phone' className='text-sm font-medium text-gray-700'>
+              Phone Number
+            </Label>
+            <Input
+              id='phone'
+              type='tel'
+              placeholder='e.g., (555) 123-4567'
+              {...register('phone')}
+              className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
+              maxLength={14}
+            />
+          </div>
+
+          {/* Role Field */}
+          <div className='space-y-3'>
+            <Label className='text-sm font-medium text-gray-700'>
+              Role(s) <span className='text-red-500'>*</span>
+            </Label>
+            <Controller
+              name='roles'
+              control={control}
+              rules={{ validate: v => v.length > 0 }}
+              render={({ field }) => (
+                <>
+                  <div className='grid grid-cols-1 gap-3 p-4 overflow-y-auto border border-gray-200 rounded-lg sm:grid-cols-2 max-h-60 bg-gray-50'>
+                    {TEAM_MEMBER_ROLES.map(role => (
+                      <div key={role.value} className='flex items-center space-x-2'>
+                        <Checkbox
+                          id={`role-${role.value}`}
+                          checked={field.value.includes(role.value)}
+                          onCheckedChange={checked => {
+                            const newRoles = checked
+                              ? [...field.value, role.value]
+                              : field.value.filter(r => r !== role.value)
+                            field.onChange(newRoles)
+                          }}
+                          className='border-gray-300'
+                        />
+                        <Label
+                          htmlFor={`role-${role.value}`}
+                          className='text-sm font-normal text-gray-700 cursor-pointer'>
+                          {role.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+
+                  {field.value.length === 0 && (
+                    <p className='text-xs text-red-500'>Please select at least one role</p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          <DialogFooter>
             <Button
               type='button'
               variant='outline'
               onClick={() => onOpenChange(false)}
-              className='leading-none border-gray-200 rounded-lg hover:bg-gray-50'>
+              className='border-gray-200 hover:bg-gray-50'>
               Cancel
             </Button>
-            <Button
-              type='submit'
-              className='leading-none text-white rounded-lg bg-brand hover:bg-brand/90'>
+            <Button type='submit' className='text-white bg-brand hover:bg-brand/90'>
               Add Member
             </Button>
           </DialogFooter>
