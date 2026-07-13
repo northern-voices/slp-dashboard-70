@@ -55,6 +55,7 @@ const deriveProgramFromErrorPatterns = (
   const consent = errorPatterns?.consent
 
   if (consent?.no_consent) return 'no_consent'
+  if (metadata?.graduated) return 'graduated'
   if (metadata?.sub) return 'sub'
   if (metadata?.qualifies_for_speech_program === true) return 'qualified'
   return 'none'

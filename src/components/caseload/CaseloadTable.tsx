@@ -15,7 +15,6 @@ import {
   GraduationCap,
   User,
   FilePlus,
-  ArrowRightLeft,
 } from 'lucide-react'
 import TransferStudentDialog from '../students/TransferStudentDialog'
 import { useQueryClient } from '@tanstack/react-query'
@@ -276,6 +275,10 @@ const CaseloadTable = ({
         return (
           <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
         )
+      case 'graduated':
+        return (
+          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+        )
       default:
         return (
           <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
@@ -292,10 +295,6 @@ const CaseloadTable = ({
           <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
             Paused / Away
           </Badge>
-        )
-      case 'graduated':
-        return (
-          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
         )
       default:
         return null
@@ -391,6 +390,7 @@ const CaseloadTable = ({
         ...(currentErrorPatterns.screening_metadata || {}),
         qualifies_for_speech_program: newProgram === 'qualified',
         sub: newProgram === 'sub',
+        graduated: newProgram === 'graduated',
       } as ErrorPatterns['screening_metadata'],
     }
 
@@ -968,12 +968,12 @@ const CaseloadTable = ({
                         </DropdownMenuItem>
                       )}
 
-                      {student.service_status !== 'graduated' && (
+                      {/* {student.service_status !== 'graduated' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(student, 'graduated')}>
                           <GraduationCap className='w-4 h-4 mr-2' />
                           Graduate
                         </DropdownMenuItem>
-                      )}
+                      )} */}
 
                       {/* <DropdownMenuItem onClick={() => setTransferStudentTarget(student)}>
                         <ArrowRightLeft className='w-4 h-4 mr-2' />

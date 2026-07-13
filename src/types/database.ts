@@ -79,9 +79,15 @@ export interface Student {
   }>
 }
 
-export type ProgramStatus = 'none' | 'qualified' | 'not_in_program' | 'sub' | 'no_consent'
+export type ProgramStatus =
+  | 'none'
+  | 'qualified'
+  | 'not_in_program'
+  | 'sub'
+  | 'no_consent'
+  | 'graduated'
 
-export type ServiceStatus = 'none' | 'paused' | 'graduated' | 'transferred'
+export type ServiceStatus = 'none' | 'paused' | 'transferred'
 
 // Updated Screening interface to match database schema
 export interface Screening {

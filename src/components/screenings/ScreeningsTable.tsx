@@ -265,6 +265,9 @@ const ScreeningsTable = ({
     if (screening.program_status === 'qualified') {
       return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
     }
+    if (screening.program_status === 'graduated') {
+      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+    }
 
     return (
       <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Not In Program</Badge>
@@ -328,9 +331,6 @@ const ScreeningsTable = ({
       return (
         <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause/Away</Badge>
       )
-
-    if (screening.service_status === 'graduated')
-      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
 
     // if (screening.service_status === 'transferred')
     //   return (
@@ -561,6 +561,7 @@ const ScreeningsTable = ({
           ...currentMetadata,
           qualifies_for_speech_program: newProgram === 'qualified',
           sub: newProgram === 'sub',
+          graduated: newProgram === 'graduated',
         } as ErrorPatterns['screening_metadata'],
       }
 
@@ -670,7 +671,6 @@ const ScreeningsTable = ({
         screening_metadata: {
           ...currentMetadata,
           paused: newStatus === 'paused',
-          graduated: newStatus === 'graduated',
           transferred: newStatus === 'transferred',
         } as ErrorPatterns['screening_metadata'],
       }
