@@ -40,12 +40,19 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
       !recipientEmails.includes(trimmed) &&
       recipientEmails.length < 5
     ) {
-      onChange([...recipientEmails, trimmed])
+      const updatedRecipients = [...recipientEmails, trimmed]
+      onChange(updatedRecipients)
       setEmailInput('')
-      setSuggestions([])
+      setSuggestions(emailHistory.filter(history => !updatedRecipients.includes(history)))
       setHighlightedIndex(-1)
     }
   }
+
+  const getMatchingSuggestions = (value: string) =>
+    emailHistory.filter(
+      history =>
+        history.toLowerCase().includes(value.toLowerCase()) && !recipientEmails.includes(history)
+    )
 
   return (
     <div className='space-y-1'>
@@ -76,16 +83,9 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
                 const value = e.target.value
                 setEmailInput(value)
                 setHighlightedIndex(-1)
-                setSuggestions(
-                  value.length > 0
-                    ? emailHistory.filter(
-                        history =>
-                          history.toLowerCase().includes(value.toLowerCase()) &&
-                          !recipientEmails.includes(history)
-                      )
-                    : []
-                )
+                setSuggestions(getMatchingSuggestions(value))
               }}
+              onFocus={() => setSuggestions(getMatchingSuggestions(emailInput))}
               onKeyDown={e => {
                 if (suggestions.length > 0) {
                   if (e.key === 'ArrowDown') {
