@@ -132,7 +132,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                       <PopoverContent className='w-[460px] p-0' align='start'>
                         <div className='relative'>
                           <div
-                            className='max-h-[200px] overflow-y-auto p-2'
+                            className='max-h-[150px] overflow-y-auto p-2'
                             onTouchMove={e => e.stopPropagation()}
                             onWheel={e => e.stopPropagation()}>
                             <div className='space-y-1'>
