@@ -47,12 +47,19 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
       ...data,
       phone: data.phone ? unformatPhoneNumber(data.phone) : '',
     })
-    reset()
-    onOpenChange(false)
+
+    handleOpenChange(false)
+  }
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      reset()
+    }
+    onOpenChange(nextOpen)
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className='sm:max-w-[600px] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle className='text-xl font-semibold text-gray-900'>Add Team Member</DialogTitle>
@@ -154,7 +161,7 @@ const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
             <Button
               type='button'
               variant='outline'
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               className='border-gray-200 hover:bg-gray-50'>
               Cancel
             </Button>
