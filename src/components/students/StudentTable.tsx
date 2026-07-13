@@ -644,7 +644,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
           <TableHeader>
             <tr>
               <TableHead className='w-1/4 min-w-[200px]'>Name</TableHead>
-              <TableHead className='w-1/6 min-w-[120px]'>Grade</TableHead>
+              {/* <TableHead className='w-1/6 min-w-[120px]'>Grade</TableHead> */}
               <TableHead className='w-1/6 min-w-[150px]'>Last Screening</TableHead>
 
               {/* <TableHead className='w-1/6 text-center'>Consent</TableHead> */}
@@ -686,9 +686,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                   </div>
                 </TableCell>
 
-                <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
+                {/* <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {getStudentGrade(student)}
-                </TableCell>
+                </TableCell> */}
 
                 {/* <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {getQualificationBadge(student)}
