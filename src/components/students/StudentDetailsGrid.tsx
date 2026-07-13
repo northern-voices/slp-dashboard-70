@@ -35,7 +35,7 @@ const StudentDetailsGrid = ({
   onAssignEA,
 }: StudentDetailsGridProps) => (
   <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
-    <div className='flex items-start gap-2'>
+    {/* <div className='flex items-start gap-2'>
       <GraduationCap className='w-4 h-4 mt-1 text-gray-400' />
       <div>
         <span className='text-sm font-medium text-gray-700'>Current Grade</span>
@@ -49,7 +49,7 @@ const StudentDetailsGrid = ({
           </p>
         )}
       </div>
-    </div>
+    </div> */}
 
     {student.date_of_birth && (
       <div className='flex items-start gap-2'>
