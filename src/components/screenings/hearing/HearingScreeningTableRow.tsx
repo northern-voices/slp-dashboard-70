@@ -67,11 +67,11 @@ const HearingScreeningTableRow = ({
           <div className='font-semibold text-sm text-gray-900'>
             {screening.student_name || 'Unknown Student'}
           </div>
-          {transferredOut && (
+          {/* {transferredOut && (
             <span className='text-xs font-medium text-orange-600'>
               Transferred Out → {transferredOut}
             </span>
-          )}
+          )} */}
           <div className='text-xs text-gray-600'>Grade: {screening.grade || 'N/A'}</div>
           {screening.result && (
             <Badge variant='secondary' className='text-xs mt-1'>

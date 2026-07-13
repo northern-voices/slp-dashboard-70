@@ -31,9 +31,9 @@ const Caseload = () => {
           <TabsTrigger value='graduated' className='flex-shrink-0'>
             Graduated
           </TabsTrigger>
-          <TabsTrigger value='transferred' className='flex-shrink-0'>
+          {/* <TabsTrigger value='transferred' className='flex-shrink-0'>
             Transferred
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         <TabsContent value='all' className='space-y-6'>
@@ -72,9 +72,9 @@ const Caseload = () => {
           />
         </TabsContent>
 
-        <TabsContent value='transferred' className='space-y-6'>
+        {/* <TabsContent value='transferred' className='space-y-6'>
           <TransferredStudentsTable schoolId={currentSchool.id} />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
   )

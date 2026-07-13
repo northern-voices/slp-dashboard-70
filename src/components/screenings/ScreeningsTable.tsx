@@ -332,10 +332,10 @@ const ScreeningsTable = ({
     if (screening.service_status === 'graduated')
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
 
-    if (screening.service_status === 'transferred')
-      return (
-        <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>Transferred</Badge>
-      )
+    // if (screening.service_status === 'transferred')
+    //   return (
+    //     <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>Transferred</Badge>
+    //   )
 
     return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>None</Badge>
   }

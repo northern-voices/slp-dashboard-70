@@ -973,10 +973,10 @@ const CaseloadTable = ({
                         </DropdownMenuItem>
                       )}
 
-                      <DropdownMenuItem onClick={() => setTransferStudentTarget(student)}>
+                      {/* <DropdownMenuItem onClick={() => setTransferStudentTarget(student)}>
                         <ArrowRightLeft className='w-4 h-4 mr-2' />
                         Transfer Student
-                      </DropdownMenuItem>
+                      </DropdownMenuItem> */}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

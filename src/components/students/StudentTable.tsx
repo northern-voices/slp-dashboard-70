@@ -665,7 +665,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                       {student.first_name} {student.last_name}
                     </span>
 
-                    {(() => {
+                    {/* {(() => {
                       const transfer = transferByStudentId.get(student.id)
                       if (transfer?.to_school_id === activeSchool?.id) {
                         return (
@@ -682,7 +682,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                         )
                       }
                       return null
-                    })()}
+                    })()} */}
                   </div>
                 </TableCell>
 

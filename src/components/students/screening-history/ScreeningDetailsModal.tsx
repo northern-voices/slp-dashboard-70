@@ -563,7 +563,8 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
     }
 
     const showProgramStatus = programStatus && programStatus !== 'none'
-    const showServiceStatus = serviceStatus && serviceStatus !== 'none'
+    const showServiceStatus =
+      serviceStatus && serviceStatus !== 'none' && serviceStatus !== 'transferred'
     const showVocabularySupport = metadata?.vocabulary_support_recommended
 
     if (!showProgramStatus && !showServiceStatus && !showVocabularySupport) return null

@@ -75,7 +75,7 @@ const ScreeningTableRow = ({
               />
               <div className='flex flex-col gap-0.5'>
                 <h3 className='font-medium'>{screening.student_name}</h3>
-                {transferredOut && (
+                {/* {transferredOut && (
                   <span className='text-xs font-medium text-orange-600'>
                     Transferred Out → {transferredOut}
                   </span>
@@ -84,7 +84,7 @@ const ScreeningTableRow = ({
                   <span className='text-xs font-medium text-blue-600'>
                     Transferred In ← {transferredIn}
                   </span>
-                )}
+                )} */}
               </div>
             </div>
             <ScreeningRowDropdown
@@ -135,7 +135,7 @@ const ScreeningTableRow = ({
           <div className='text-base font-medium truncate' title={screening.student_name}>
             {screening.student_name}
           </div>
-          {transferredOut && (
+          {/* {transferredOut && (
             <span className='text-xs font-medium text-orange-600'>
               Transferred Out → {transferredOut}
             </span>
@@ -144,7 +144,7 @@ const ScreeningTableRow = ({
             <span className='text-xs font-medium text-blue-600'>
               Transferred In ← {transferredIn}
             </span>
-          )}
+          )} */}
         </div>
       </TableCell>
       <TableCell className='max-w-0'>
