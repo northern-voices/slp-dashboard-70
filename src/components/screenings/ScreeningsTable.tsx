@@ -305,7 +305,7 @@ const ScreeningsTable = ({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {PROGRAM_OPTIONS.map(option => (
+            {PROGRAM_OPTIONS.filter(option => option.value !== 'no_consent').map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -849,7 +849,7 @@ const ScreeningsTable = ({
                   <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
                 </TableHead>
                 <TableHead className='w-1/4 min-w-[200px]'>Student</TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
+                <TableHead className='w-1/6 min-w-[190px]'>Result</TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
                 <TableHead className='w-1/6 min-w-[80px]'>Grade</TableHead>
                 <TableHead className='w-1/6 min-w-[100px]'>Date</TableHead>

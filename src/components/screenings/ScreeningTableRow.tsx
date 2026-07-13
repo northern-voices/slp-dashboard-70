@@ -151,7 +151,7 @@ const ScreeningTableRow = ({
         <div className='w-full min-w-[120px]'>{getResultSelector(screening)}</div>
       </TableCell>
       <TableCell className='max-w-0'>
-        <div className='w-full min-w-[120px]'>{getProgramSelector(screening)}</div>
+        <div className='w-full min-w-[190x]'>{getProgramSelector(screening)}</div>
       </TableCell>
       <TableCell className='max-w-0'>
         <div className='truncate' title={isLoadingGrade ? '' : grade}>
