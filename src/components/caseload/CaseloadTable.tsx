@@ -525,7 +525,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         dateFilter === 'school_year' ? student.program_status : screening?.program_status
 
       return (
-        programStatus === 'qualified' || programStatus === 'sub' || programStatus === 'no_consent'
+        programStatus === 'qualified' || programStatus === 'sub' || programStatus === 'graduated'
       )
     })()
 

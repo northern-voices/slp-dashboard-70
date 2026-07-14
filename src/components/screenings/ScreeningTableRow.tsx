@@ -77,7 +77,7 @@ const ScreeningTableRow = ({
                 onCheckedChange={checked => onSelect(screening, checked as boolean)}
               />
 
-              <div className='flex flex-col gap-0.5'>
+              <div className='flex flex-col gap-0.5 items-start'>
                 <h3 className='font-medium'>{screening.student_name}</h3>
                 {isPaused && (
                   <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
@@ -140,7 +140,7 @@ const ScreeningTableRow = ({
         />
       </TableCell>
       <TableCell className='max-w-0'>
-        <div className='flex flex-col gap-0.5'>
+        <div className='flex flex-col gap-0.5 items-start'>
           <div className='text-base font-medium truncate' title={screening.student_name}>
             {screening.student_name}
           </div>
