@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useLayoutEffect } from 'react'
 import { X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
@@ -11,10 +11,25 @@ interface MultiEmailInputProps {
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
+const DROPDOWN_MAX_HEIGHT = 160
+
 const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmailInputProps) => {
   const [emailInput, setEmailInput] = useState('')
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
+  const [openUpward, setOpenUpward] = useState(false)
+
+  const inputWrapperRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    if (suggestions.length === 0 || !inputWrapperRef.current) return
+
+    const rect = inputWrapperRef.current.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+
+    setOpenUpward(spaceBelow < DROPDOWN_MAX_HEIGHT && spaceAbove > spaceBelow)
+  }, [suggestions])
 
   const addEmail = (email: string) => {
     const trimmed = email.trim()
@@ -25,12 +40,19 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
       !recipientEmails.includes(trimmed) &&
       recipientEmails.length < 5
     ) {
-      onChange([...recipientEmails, trimmed])
+      const updatedRecipients = [...recipientEmails, trimmed]
+      onChange(updatedRecipients)
       setEmailInput('')
-      setSuggestions([])
+      setSuggestions(emailHistory.filter(history => !updatedRecipients.includes(history)))
       setHighlightedIndex(-1)
     }
   }
+
+  const getMatchingSuggestions = (value: string) =>
+    emailHistory.filter(
+      history =>
+        history.toLowerCase().includes(value.toLowerCase()) && !recipientEmails.includes(history)
+    )
 
   return (
     <div className='space-y-1'>
@@ -51,7 +73,7 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
             </Badge>
           ))}
 
-          <div className='relative flex-1 min-w-[120px]'>
+          <div ref={inputWrapperRef} className='relative flex-1 min-w-[120px]'>
             <input
               type='email'
               id='recipient'
@@ -61,16 +83,9 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
                 const value = e.target.value
                 setEmailInput(value)
                 setHighlightedIndex(-1)
-                setSuggestions(
-                  value.length > 0
-                    ? emailHistory.filter(
-                        history =>
-                          history.toLowerCase().includes(value.toLowerCase()) &&
-                          !recipientEmails.includes(history)
-                      )
-                    : []
-                )
+                setSuggestions(getMatchingSuggestions(value))
               }}
+              onFocus={() => setSuggestions(getMatchingSuggestions(emailInput))}
               onKeyDown={e => {
                 if (suggestions.length > 0) {
                   if (e.key === 'ArrowDown') {
@@ -116,7 +131,8 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
             />
 
             {suggestions.length > 0 && (
-              <ul className='absolute z-10 left-0 right-0 top-full bg-white border border-gray-200 rounded-md shadow-md mt-1 max-h-40 overflow-y-auto'>
+              <ul
+                className={`absolute z-10 left-0 right-0 bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto ${openUpward ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
                 {suggestions.map((email, index) => (
                   <li
                     key={email}

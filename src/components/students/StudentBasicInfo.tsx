@@ -35,10 +35,10 @@ const StudentBasicInfo = ({
       </div>
     </div>
     <div className='flex flex-wrap items-center gap-2 space-x-2'>
-      <Button variant='outline' size='sm' onClick={onTransfer}>
+      {/* <Button variant='outline' size='sm' onClick={onTransfer}>
         <ArrowRightLeft className='w-4 h-4 mr-2' />
         Transfer
-      </Button>
+      </Button> */}
       <Button variant='outline' size='sm' onClick={onEdit}>
         <Edit className='w-4 h-4 mr-2' />
         Edit

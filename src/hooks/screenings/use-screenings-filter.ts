@@ -133,7 +133,7 @@ export const useScreeningsFilter = ({
           if (filter === 'sub') return screening.program_status === 'sub'
           if (filter === 'no_consent') return screening.program_status === 'no_consent'
           if (filter === 'paused') return screening.service_status === 'paused'
-          if (filter === 'graduated') return screening.service_status === 'graduated'
+          if (filter === 'graduated') return screening.program_status === 'graduated'
           return false
         })
       }

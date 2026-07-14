@@ -24,12 +24,13 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
-import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import { upsertEmailHistory } from '@/api/emailHistory'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { Volume2, TrendingUp, CheckCircle, XCircle, Plus, List } from 'lucide-react'
 import MultiEmailInput from './shared/MultiEmailInput'
+import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
@@ -48,16 +49,13 @@ const HearingReportGenerationForm = () => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
-  const [emailHistory, setEmailHistory] = useState<string[]>([])
 
   const { currentSchool } = useOrganization()
   const { toast } = useToast()
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  useEffect(() => {
-    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
-  }, [user?.id])
+  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const currentYear = new Date().getFullYear()
   const currentMonth = new Date().getMonth()

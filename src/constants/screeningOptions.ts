@@ -16,12 +16,12 @@ export const PROGRAM_OPTIONS = [
   { value: 'qualified', label: 'Qualifies' },
   { value: 'none', label: 'Not In Program' },
   { value: 'sub', label: 'Sub' },
+  { value: 'graduated', label: 'Graduated' },
   { value: 'no_consent', label: 'Qualifies - No Consent' },
 ]
 
 export const SERVICE_STATUS_OPTIONS = [
   { value: 'none', label: 'None' },
   { value: 'paused', label: 'Pause/Away' },
-  { value: 'graduated', label: 'Graduated' },
   { value: 'transferred', label: 'Transferred' },
 ]

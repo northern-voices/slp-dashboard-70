@@ -105,6 +105,7 @@ const SpeechScreeningStep1 = ({
         setLocalAbsentValue(false)
         form.setValue('absent', { isAbsent: false, notes: '' })
         onAbsentChange?.(false)
+        form.setValue('priority_re_screen', false)
       }
 
       form.setValue('no_consent', {
@@ -393,7 +394,11 @@ const SpeechScreeningStep1 = ({
                 <Checkbox
                   id='complex_needs'
                   checked={Boolean(form.watch('complex_needs'))}
-                  disabled={localAbsentValue || localNoConsentValue}
+                  disabled={
+                    localAbsentValue ||
+                    localNoConsentValue ||
+                    Boolean(form.watch('unable_to_screen'))
+                  }
                   onCheckedChange={checked => {
                     form.setValue('complex_needs', Boolean(checked))
                     if (checked) {
@@ -419,7 +424,7 @@ const SpeechScreeningStep1 = ({
                 />
                 <Label
                   htmlFor='complex_needs'
-                  className={`text-sm font-medium ${localAbsentValue || localNoConsentValue ? 'text-gray-400' : ''}`}>
+                  className={`text-sm font-medium ${localAbsentValue || localNoConsentValue || Boolean(form.watch('unable_to_screen')) ? 'text-gray-400' : ''}`}>
                   Complex Needs (unable to screen)
                 </Label>
               </div>
@@ -428,7 +433,9 @@ const SpeechScreeningStep1 = ({
                 <Checkbox
                   id='unable_to_screen'
                   checked={Boolean(form.watch('unable_to_screen'))}
-                  disabled={localAbsentValue || localNoConsentValue}
+                  disabled={
+                    localAbsentValue || localNoConsentValue || Boolean(form.watch('complex_needs'))
+                  }
                   onCheckedChange={checked => {
                     form.setValue('unable_to_screen', Boolean(checked))
                     if (checked) {
@@ -454,13 +461,12 @@ const SpeechScreeningStep1 = ({
                 />
                 <Label
                   htmlFor='unable_to_screen'
-                  className={`text-sm font-medium ${localAbsentValue || localNoConsentValue ? 'text-gray-400' : ''}`}>
+                  className={`text-sm font-medium ${localAbsentValue || localNoConsentValue || Boolean(form.watch('complex_needs')) ? 'text-gray-400' : ''}`}>
                   Student Refusal / Compliance (unable to screen)
                 </Label>
               </div>
 
               {localAbsentValue ||
-              localNoConsentValue ||
               Boolean(form.watch('complex_needs')) ||
               Boolean(form.watch('unable_to_screen')) ? (
                 <div className='flex items-center space-x-2'>

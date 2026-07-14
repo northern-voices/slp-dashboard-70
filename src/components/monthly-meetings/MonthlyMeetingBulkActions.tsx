@@ -24,8 +24,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
-import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import { upsertEmailHistory } from '@/api/emailHistory'
+import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface MonthlyMeetingBulkActionsProps {
   selectedCount: number
@@ -41,17 +43,17 @@ const MonthlyMeetingBulkActions = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showEmailDialog, setShowEmailDialog] = useState(false)
   const [bulkEmails, setBulkEmails] = useState<string[]>([])
-  const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [isSendingEmails, setIsSendingEmails] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteProgress, setDeleteProgress] = useState(0)
+
   const { toast } = useToast()
   const { user } = useAuth()
+  const { currentSchool } = useOrganization()
+
   const deleteMonthlyMeeting = useDeleteMonthlyMeeting()
 
-  useEffect(() => {
-    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
-  }, [user?.id])
+  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleBulkDelete = async () => {
     setIsDeleting(true)

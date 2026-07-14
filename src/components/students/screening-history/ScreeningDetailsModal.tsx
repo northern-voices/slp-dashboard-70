@@ -534,6 +534,8 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
 
     const getProgramLabel = (status: string) => {
       switch (status) {
+        case 'graduated':
+          return 'Graduated'
         case 'sub':
           return 'Sub'
         case 'qualified':
@@ -550,8 +552,6 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
 
     const getServiceLabel = (status: string) => {
       switch (status) {
-        case 'graduated':
-          return 'Graduated'
         case 'paused':
           return 'Pause/Away'
         case 'transferred':
@@ -563,7 +563,8 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
     }
 
     const showProgramStatus = programStatus && programStatus !== 'none'
-    const showServiceStatus = serviceStatus && serviceStatus !== 'none'
+    const showServiceStatus =
+      serviceStatus && serviceStatus !== 'none' && serviceStatus !== 'transferred'
     const showVocabularySupport = metadata?.vocabulary_support_recommended
 
     if (!showProgramStatus && !showServiceStatus && !showVocabularySupport) return null

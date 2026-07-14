@@ -150,6 +150,8 @@ const ScreeningsTable = ({
     (languageComprehensionFilter !== '' && languageComprehensionFilter !== 'all') ||
     (priorityRescreenFilter !== '' && priorityRescreenFilter !== 'all')
 
+  const shouldFetchAll = isFilterActive || deduplicateByStudent
+
   const {
     data: schoolScreeningsData,
     isLoading: isLoadingSchool,
@@ -158,8 +160,8 @@ const ScreeningsTable = ({
   } = useScreeningsBySchool(
     currentSchool?.id,
     dateRangeFilter === 'school_year' ? 'school_year' : 'all',
-    isFilterActive ? 1 : currentPage,
-    isFilterActive ? 10000 : pageSize
+    shouldFetchAll ? 1 : currentPage,
+    shouldFetchAll ? 10000 : pageSize
   )
 
   const totalCount = schoolScreeningsData?.totalCount ?? 0
@@ -231,6 +233,7 @@ const ScreeningsTable = ({
     priorityRescreenFilter,
   ])
 
+  const foundCount = shouldFetchAll ? filteredScreenings.length : totalCount
   const paginatedScreenings = sortedScreenings
 
   const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {
@@ -264,6 +267,9 @@ const ScreeningsTable = ({
     }
     if (screening.program_status === 'qualified') {
       return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
+    }
+    if (screening.program_status === 'graduated') {
+      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
     }
 
     return (
@@ -305,7 +311,7 @@ const ScreeningsTable = ({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {PROGRAM_OPTIONS.map(option => (
+            {PROGRAM_OPTIONS.filter(option => option.value !== 'no_consent').map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -329,13 +335,10 @@ const ScreeningsTable = ({
         <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause/Away</Badge>
       )
 
-    if (screening.service_status === 'graduated')
-      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-
-    if (screening.service_status === 'transferred')
-      return (
-        <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>Transferred</Badge>
-      )
+    // if (screening.service_status === 'transferred')
+    //   return (
+    //     <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>Transferred</Badge>
+    //   )
 
     return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>None</Badge>
   }
@@ -561,6 +564,7 @@ const ScreeningsTable = ({
           ...currentMetadata,
           qualifies_for_speech_program: newProgram === 'qualified',
           sub: newProgram === 'sub',
+          graduated: newProgram === 'graduated',
         } as ErrorPatterns['screening_metadata'],
       }
 
@@ -670,7 +674,6 @@ const ScreeningsTable = ({
         screening_metadata: {
           ...currentMetadata,
           paused: newStatus === 'paused',
-          graduated: newStatus === 'graduated',
           transferred: newStatus === 'transferred',
         } as ErrorPatterns['screening_metadata'],
       }
@@ -837,7 +840,7 @@ const ScreeningsTable = ({
 
         <div className='flex justify-end mb-3'>
           <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
-            {filteredScreenings.length} screening{filteredScreenings.length !== 1 ? 's' : ''} found
+            {foundCount} screening{foundCount !== 1 ? 's' : ''} found
           </span>
         </div>
 
@@ -849,7 +852,7 @@ const ScreeningsTable = ({
                   <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
                 </TableHead>
                 <TableHead className='w-1/4 min-w-[200px]'>Student</TableHead>
-                <TableHead className='w-1/6 min-w-[120px]'>Result</TableHead>
+                <TableHead className='w-1/6 min-w-[190px]'>Result</TableHead>
                 <TableHead className='w-1/6 min-w-[120px]'>Program</TableHead>
                 <TableHead className='w-1/6 min-w-[80px]'>Grade</TableHead>
                 <TableHead className='w-1/6 min-w-[100px]'>Date</TableHead>

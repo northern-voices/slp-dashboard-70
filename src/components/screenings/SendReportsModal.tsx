@@ -18,13 +18,15 @@ import {
 import { Mail, Send, CheckCircle, XCircle, BookOpen } from 'lucide-react'
 import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
-import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import { upsertEmailHistory } from '@/api/emailHistory'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import { SPEECH_REPORT_OPTIONS, SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/reportOptions'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 import { Badge } from '@/components/ui/badge'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 
 interface SendReportsModalProps {
   isOpen: boolean
@@ -33,15 +35,18 @@ interface SendReportsModalProps {
 }
 
 const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps) => {
-  const { user } = useAuth()
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
-  const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
   const [comparisonScreeningId, setComparisonScreeningId] = useState('')
+
+  const { user } = useAuth()
+  const { currentSchool } = useOrganization()
+
+  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const { data: studentScreenings } = useSpeechScreeningsByStudent(screening?.student_id)
   const isAbsentScreening = (s: Screening) =>
@@ -63,10 +68,6 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.email, screening])
-
-  useEffect(() => {
-    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
-  }, [user?.id])
 
   const handleSendEmail = async () => {
     if (recipientEmails.length === 0 || !screening) {

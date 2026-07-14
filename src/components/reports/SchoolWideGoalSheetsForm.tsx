@@ -28,7 +28,8 @@ import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import MultiEmailInput from './shared/MultiEmailInput'
-import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import { upsertEmailHistory } from '@/api/emailHistory'
+import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
@@ -47,15 +48,12 @@ const SchoolWideGoalSheetsForm = () => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
-  const [emailHistory, setEmailHistory] = useState<string[]>([])
 
   const { currentSchool } = useOrganization()
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
-  }, [user?.id])
+  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const currentYear = new Date().getFullYear()
   const currentMonth = new Date().getMonth() // 0-11, where 0 is January
