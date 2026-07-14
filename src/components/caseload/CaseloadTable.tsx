@@ -590,16 +590,16 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     if (sortField === 'program_status') {
       const programOrder = { qualified: 0, sub: 1, graduated: 2, none: 3 }
 
-      const aIsPaused = a.service_status === 'paused'
-      const bIsPaused = b.service_status === 'paused'
+      comparison =
+        (programOrder[a.program_status as keyof typeof programOrder] ?? 99) -
+        (programOrder[b.program_status as keyof typeof programOrder] ?? 99)
 
-      // paused students go to the bottom
-      if (aIsPaused !== bIsPaused) {
-        comparison = aIsPaused ? 1 : -1
-      } else {
-        comparison =
-          (programOrder[a.program_status as keyof typeof programOrder] ?? 99) -
-          (programOrder[b.program_status as keyof typeof programOrder] ?? 99)
+      if (comparison === 0) {
+        const aIsPaused = a.service_status === 'paused'
+        const bIsPaused = b.service_status === 'paused'
+        if (aIsPaused !== bIsPaused) {
+          comparison = aIsPaused ? 1 : -1
+        }
       }
 
       if (comparison === 0) {
