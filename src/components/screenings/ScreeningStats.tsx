@@ -132,7 +132,25 @@ const ScreeningStats = ({
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.totalScreenings}</div>
-          <p className='text-xs text-muted-foreground mt-1'>{rawCounts.total} screenings</p>
+          <div className='flex gap-2 mt-2'>
+            <button
+              className='text-xs text-blue-600 hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleClearAll()
+              }}>
+              {stats.totalScreenings} students
+            </button>
+            <span className='text-xs text-muted-foreground'>·</span>
+            <button
+              className='text-xs text-muted-foreground hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleClearAll()
+              }}>
+              {rawCounts.total} screenings
+            </button>
+          </div>
         </CardContent>
       </Card>
 
