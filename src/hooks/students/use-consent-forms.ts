@@ -44,3 +44,12 @@ export const useConsentFormPresence = (studentIds: string[]) => {
     staleTime: 5 * 60 * 1000,
   })
 }
+
+export const useConsentFormsBySchool = (schoolId?: string) => {
+  return useQuery({
+    queryKey: ['consent-forms', 'by-school', schoolId],
+    queryFn: () => consentFormsApi.getConsentFormsBySchool(schoolId!),
+    enabled: !!schoolId,
+    staleTime: 5 * 60 * 1000,
+  })
+}
