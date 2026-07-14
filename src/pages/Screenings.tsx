@@ -127,6 +127,7 @@ const ScreeningsContent = () => {
           onFilterClick={handleStatFilterClick}
           onClearAllFilters={clearAllFilters}
           dateRangeFilter={dateRangeFilter}
+          activeProgramFilter={qualifiesForSpeechProgramFilter}
         />
       </div>
 
