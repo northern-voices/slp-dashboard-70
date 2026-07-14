@@ -19,6 +19,16 @@ import {
 import TransferStudentDialog from '../students/TransferStudentDialog'
 import { useQueryClient } from '@tanstack/react-query'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -78,6 +88,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(50)
   const [consentStudent, setConsentStudent] = useState<Student | null>(null)
+  const [pauseConfirmStudent, setPauseConfirmStudent] = useState<Student | null>(null)
 
   const [gradeFilter, setGradeFilter] = useState<string>('all')
   const [resultFilter, setResultFilter] = useState<string>('all')
@@ -928,7 +939,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                       </DropdownMenuItem>
 
                       {student.service_status !== 'paused' && (
-                        <DropdownMenuItem onClick={() => handleStatusChange(student, 'paused')}>
+                        <DropdownMenuItem onClick={() => setPauseConfirmStudent(student)}>
                           <PauseCircle className='w-4 h-4 mr-2' />
                           Pause / Away
                         </DropdownMenuItem>
@@ -1055,6 +1066,34 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
           }}
         />
       )}
+
+      <AlertDialog
+        open={!!pauseConfirmStudent}
+        onOpenChange={open => {
+          if (!open) setPauseConfirmStudent(null)
+        }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Pause / mark student away?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will pause services for {pauseConfirmStudent?.first_name}{' '}
+              {pauseConfirmStudent?.last_name}. You can reactivate them later from this table.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPauseConfirmStudent(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pauseConfirmStudent) handleStatusChange(pauseConfirmStudent, 'paused')
+                setPauseConfirmStudent(null)
+              }}>
+              Pause / Away
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
