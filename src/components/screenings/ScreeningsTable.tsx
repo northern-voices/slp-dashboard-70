@@ -150,6 +150,8 @@ const ScreeningsTable = ({
     (languageComprehensionFilter !== '' && languageComprehensionFilter !== 'all') ||
     (priorityRescreenFilter !== '' && priorityRescreenFilter !== 'all')
 
+  const shouldFetchAll = isFilterActive || deduplicateByStudent
+
   const {
     data: schoolScreeningsData,
     isLoading: isLoadingSchool,
@@ -158,8 +160,8 @@ const ScreeningsTable = ({
   } = useScreeningsBySchool(
     currentSchool?.id,
     dateRangeFilter === 'school_year' ? 'school_year' : 'all',
-    isFilterActive ? 1 : currentPage,
-    isFilterActive ? 10000 : pageSize
+    shouldFetchAll ? 1 : currentPage,
+    shouldFetchAll ? 10000 : pageSize
   )
 
   const totalCount = schoolScreeningsData?.totalCount ?? 0
@@ -231,7 +233,7 @@ const ScreeningsTable = ({
     priorityRescreenFilter,
   ])
 
-  const foundCount = isFilterActive ? filteredScreenings.length : totalCount
+  const foundCount = shouldFetchAll ? filteredScreenings.length : totalCount
   const paginatedScreenings = sortedScreenings
 
   const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {

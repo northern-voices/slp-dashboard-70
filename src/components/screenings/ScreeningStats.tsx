@@ -6,7 +6,7 @@ import ScreeningStatsSkeleton from '@/components/skeletons/ScreeningStatsSkeleto
 
 interface ScreeningStatsProps {
   onFilterClick?: (filterValues: string[], deduplicate: boolean) => void
-  onClearAllFilters?: () => void
+  onClearAllFilters?: (deduplicate?: boolean) => void
   dateRangeFilter?: string
 }
 
@@ -100,9 +100,9 @@ const ScreeningStats = ({
     }
   }
 
-  const handleClearAll = () => {
+  const handleClearAll = (deduplicate?: boolean) => {
     if (onClearAllFilters) {
-      onClearAllFilters()
+      onClearAllFilters(deduplicate)
     }
   }
 
@@ -127,7 +127,9 @@ const ScreeningStats = ({
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
       {/* Total Screenings*/}
-      <Card className='cursor-pointer hover:bg-gray-50 transition-colors' onClick={handleClearAll}>
+      <Card
+        className='cursor-pointer hover:bg-gray-50 transition-colors'
+        onClick={() => handleClearAll()}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <CardTitle className='text-sm font-medium'>Total Screenings</CardTitle>
           <FileText className='h-4 w-4 text-muted-foreground' />
@@ -139,7 +141,7 @@ const ScreeningStats = ({
               className='text-xs text-blue-600 hover:underline'
               onClick={e => {
                 e.stopPropagation()
-                handleClearAll()
+                handleClearAll(true)
               }}>
               {stats.totalScreenings} students
             </button>

@@ -56,7 +56,7 @@ const ScreeningsContent = () => {
   const [recommendationsFilter, setRecommendationsFilter] = useState('all')
   const [clinicalNotesFilter, setClinicalNotesFilter] = useState('all')
 
-  const clearAllFilters = () => {
+  const clearAllFilters = (deduplicate: boolean = false) => {
     setSearchTerm('')
     setResultFilter('all')
     setDateRangeFilter('school_year')
@@ -68,7 +68,7 @@ const ScreeningsContent = () => {
     setPriorityRescreenFilter('all')
     setRecommendationsFilter('all')
     setClinicalNotesFilter('all')
-    setDeduplicateByStudent(false)
+    setDeduplicateByStudent(deduplicate)
   }
 
   const handleStatFilterClick = (filterValues: string[], deduplicate: boolean) => {
