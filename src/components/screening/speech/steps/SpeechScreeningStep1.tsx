@@ -105,6 +105,7 @@ const SpeechScreeningStep1 = ({
         setLocalAbsentValue(false)
         form.setValue('absent', { isAbsent: false, notes: '' })
         onAbsentChange?.(false)
+        form.setValue('priority_re_screen', false)
       }
 
       form.setValue('no_consent', {
@@ -460,7 +461,6 @@ const SpeechScreeningStep1 = ({
               </div>
 
               {localAbsentValue ||
-              localNoConsentValue ||
               Boolean(form.watch('complex_needs')) ||
               Boolean(form.watch('unable_to_screen')) ? (
                 <div className='flex items-center space-x-2'>
