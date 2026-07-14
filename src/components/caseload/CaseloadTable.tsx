@@ -742,9 +742,9 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
 
               <TableHead className='w-[55px]'>Grade</TableHead>
 
-              <TableHead className='w-[70px]'>Program</TableHead>
-
               <TableHead className='w-[190px]'>Result</TableHead>
+
+              <TableHead className='w-[70px]'>Program</TableHead>
 
               <TableHead className='w-[100px] text-center'>Therapy Consent</TableHead>
 
@@ -769,34 +769,6 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                 <TableCell>{getStudentGrade(student)}</TableCell>
 
                 {/* <TableCell>{getProgramBadge(student)}</TableCell> */}
-
-                {/* Functionality to be able to change the program but leave it out for now */}
-                <TableCell>
-                  <Select
-                    value={student.program_status ?? 'none'}
-                    onValueChange={value => handleProgramChange(student, value as ProgramStatus)}
-                    disabled={updatingStudentId === student.id}>
-                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
-                      <SelectValue>
-                        <div className='flex items-center gap-2'>
-                          {updatingStudentId === student.id && (
-                            <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
-                          )}
-                          {getProgramBadge(student)}
-                        </div>
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PROGRAM_OPTIONS.filter(
-                        option => option.value !== 'none' && option.value !== 'no_consent'
-                      ).map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
 
                 <TableCell>
                   {latestScreeningByStudent.get(student.id) ? (
@@ -846,6 +818,34 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                       </Tooltip>
                     </div>
                   )}
+                </TableCell>
+
+                {/* Functionality to be able to change the program but leave it out for now */}
+                <TableCell>
+                  <Select
+                    value={student.program_status ?? 'none'}
+                    onValueChange={value => handleProgramChange(student, value as ProgramStatus)}
+                    disabled={updatingStudentId === student.id}>
+                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                      <SelectValue>
+                        <div className='flex items-center gap-2'>
+                          {updatingStudentId === student.id && (
+                            <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
+                          )}
+                          {getProgramBadge(student)}
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROGRAM_OPTIONS.filter(
+                        option => option.value !== 'none' && option.value !== 'no_consent'
+                      ).map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableCell>
 
                 <TableCell className='text-center'>
