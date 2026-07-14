@@ -2,6 +2,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { ResponsiveTableRow, TableCell } from '@/components/ui/responsive-table'
 import { format } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
+import { Badge } from '@/components/ui/badge'
 import { Loader2 } from 'lucide-react'
 import type { Screening } from '@/types/database'
 import ScreeningRowDropdown from './ScreeningRowDropdown'
@@ -79,7 +80,9 @@ const ScreeningTableRow = ({
               <div className='flex flex-col gap-0.5'>
                 <h3 className='font-medium'>{screening.student_name}</h3>
                 {isPaused && (
-                  <span className='text-xs font-medium text-purple-600'>Paused / Away</span>
+                  <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
+                    Paused / Away
+                  </Badge>
                 )}
                 {/* {transferredOut && (
                   <span className='text-xs font-medium text-orange-600'>
@@ -141,7 +144,12 @@ const ScreeningTableRow = ({
           <div className='text-base font-medium truncate' title={screening.student_name}>
             {screening.student_name}
           </div>
-          {isPaused && <span className='text-xs font-medium text-purple-600'>Paused / Away</span>}
+
+          {isPaused && (
+            <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
+              Paused / Away
+            </Badge>
+          )}
 
           {/* {transferredOut && (
             <span className='text-xs font-medium text-orange-600'>
