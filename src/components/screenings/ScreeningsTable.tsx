@@ -231,6 +231,7 @@ const ScreeningsTable = ({
     priorityRescreenFilter,
   ])
 
+  const foundCount = isFilterActive ? filteredScreenings.length : totalCount
   const paginatedScreenings = sortedScreenings
 
   const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {
@@ -837,7 +838,7 @@ const ScreeningsTable = ({
 
         <div className='flex justify-end mb-3'>
           <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
-            {filteredScreenings.length} screening{filteredScreenings.length !== 1 ? 's' : ''} found
+            {foundCount} screening{foundCount !== 1 ? 's' : ''} found
           </span>
         </div>
 

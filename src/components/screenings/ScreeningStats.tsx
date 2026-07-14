@@ -36,9 +36,11 @@ const ScreeningStats = ({
     10000 // fetch all records
   )
 
-  const schoolScreenings = currentSchool
-    ? (schoolScreeningsData?.screenings ?? [])
-    : (allScreeningsData ?? [])
+  // TODO: Temporarily hide transferred from count for now
+  const schoolScreenings = (
+    currentSchool ? (schoolScreeningsData?.screenings ?? []) : (allScreeningsData ?? [])
+  ).filter(screening => screening.service_status !== 'transferred')
+
   const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
   const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
   const error = currentSchool ? errorSchool : errorAll
