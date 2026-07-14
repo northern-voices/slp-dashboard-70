@@ -529,11 +529,11 @@ const CaseloadTable = ({
     const matchesCaseload = (() => {
       if (statusGroup === 'all') return true
       if (statusGroup === 'paused') return student.service_status === 'paused'
-      if (statusGroup === 'graduated') return student.service_status === 'graduated'
+      if (statusGroup === 'graduated') return student.program_status === 'graduated'
 
       // active
       if (
-        student.service_status === 'graduated' ||
+        student.program_status === 'graduated' ||
         student.service_status === 'transferred' ||
         student.service_status === 'paused'
       )

@@ -259,7 +259,7 @@ const SpeechScreeningsTable = ({
     if (noConsent)
       return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
 
-    if (screening.service_status === 'graduated')
+    if (screening.program_status === 'graduated')
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
     if (screening.service_status === 'paused')
       return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>

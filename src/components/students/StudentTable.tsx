@@ -218,7 +218,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     const serviceStatus = student.service_status
     const programStatus = getProgramStatus(student)
 
-    if (serviceStatus === 'graduated')
+    if (programStatus === 'graduated')
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
     if (serviceStatus === 'paused')
       return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>

@@ -256,8 +256,10 @@ const MultiStepSpeechScreeningForm = ({
     const noConsent = (formData.no_consent as { isNoConsent?: boolean })?.isNoConsent || false
     const sub = (formData.sub as boolean) || false
     const qualifies = (formData.qualifies_for_speech_program as boolean) || false
+    const graduated = (formData.graduated as boolean) || false
 
     if (noConsent) return 'no_consent'
+    if (graduated) return 'graduated'
     if (sub) return 'sub'
     if (qualifies) return 'qualified'
 
@@ -265,10 +267,8 @@ const MultiStepSpeechScreeningForm = ({
   }
 
   const determineServiceStatus = (formData): Student['service_status'] => {
-    const graduated = (formData.graduated as boolean) || false
     const paused = (formData.paused as boolean) || false
 
-    if (graduated) return 'graduated'
     if (paused) return 'paused'
     return 'none'
   }

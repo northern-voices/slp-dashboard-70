@@ -54,7 +54,7 @@ const ScreeningStats = ({
   const latestScreenings = Array.from(latestScreeningByStudent.values())
 
   const graduatedStudentIds = new Set(
-    latestScreenings.filter(s => s.service_status === 'graduated').map(s => s.student_id)
+    latestScreenings.filter(s => s.program_status === 'graduated').map(s => s.student_id)
   )
 
   const qualifiedStudentIds = new Set(
@@ -77,7 +77,7 @@ const ScreeningStats = ({
     qualified: schoolScreenings.filter(s => s.program_status === 'qualified').length,
     sub: schoolScreenings.filter(s => s.program_status === 'sub').length,
     paused: schoolScreenings.filter(s => s.service_status === 'paused').length,
-    graduated: schoolScreenings.filter(s => s.service_status === 'graduated').length,
+    graduated: schoolScreenings.filter(s => s.program_status === 'graduated').length,
     caseload: schoolScreenings.filter(
       s => s.program_status === 'qualified' || s.program_status === 'sub'
     ).length,

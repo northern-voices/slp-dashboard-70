@@ -273,6 +273,7 @@ export const useEditScreening = () => {
       }
 
       const determineProgramStatus = (): ProgramStatus => {
+        if (formData.graduated) return 'graduated'
         if (formData.sub) return 'sub'
         if (formData.qualifies_for_speech_program) return 'qualified'
         if (formData.qualifies_for_speech_program === false) return 'not_in_program'
@@ -280,7 +281,6 @@ export const useEditScreening = () => {
       }
 
       const determineServiceStatus = (): ServiceStatus => {
-        if (formData.graduated) return 'graduated'
         if (formData.paused) return 'paused'
         return 'none'
       }
