@@ -593,7 +593,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
   const sortOptions: SortOption[] = [
     { label: 'Name', value: 'name', defaultDirection: 'asc' },
-    { label: 'Grade', value: 'grade', defaultDirection: 'asc' },
+    // { label: 'Grade', value: 'grade', defaultDirection: 'asc' },
     { label: 'Last Screening', value: 'date', defaultDirection: 'desc' },
   ]
 
