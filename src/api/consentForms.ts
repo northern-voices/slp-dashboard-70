@@ -13,6 +13,31 @@ export interface ConsentFormData {
   files?: File[]
 }
 
+export interface ConsentFormWithStudent {
+  id: string
+  consent_date: string
+  consent_purpose: ConsentPurpose
+  consent_type: ConsentType
+  verbal_consent_details: string | null
+  parent_guardian: string | null
+  additional_notes: string | null
+  file_name: string | null
+  file_path: string | null
+  file_type: string | null
+  file_size: number | null
+  uploaded_at: string
+  student: {
+    id: string
+    first_name: string
+    last_name: string
+  } | null
+  uploaded_by: {
+    id: string
+    first_name: string
+    last_name: string
+  } | null
+}
+
 export const consentFormsApi = {
   // Upload a single file to storage and insert a record
   uploadConsentForm: async (studentId: string, formData: ConsentFormData): Promise<void> => {
@@ -116,6 +141,49 @@ export const consentFormsApi = {
       return data || []
     } catch (error) {
       console.error('Error fetching consent forms:', error)
+      throw error
+    }
+  },
+
+  // Get all consent forms for every student in a school
+  getConsentFormsBySchool: async (schoolId: string): Promise<ConsentFormWithStudent[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('consent_forms')
+        .select(
+          `
+          id,
+          consent_date,
+          consent_purpose,
+          consent_type,
+          verbal_consent_details,
+          parent_guardian,
+          additional_notes,
+          file_name,
+          file_path,
+          file_type,
+          file_size,
+          uploaded_at,
+          student:students!inner(
+            id,
+            first_name,
+            last_name
+          ),
+          uploaded_by:users!consent_forms_uploaded_by_fkey(
+            id,
+            first_name,
+            last_name
+          )
+        `
+        )
+        .eq('students.school_id', schoolId)
+        .order('consent_date', { ascending: false })
+
+      if (error) throw error
+
+      return (data || []) as unknown as ConsentFormWithStudent[]
+    } catch (error) {
+      console.error('Error fetching consent forms for school:', error)
       throw error
     }
   },
