@@ -69,15 +69,9 @@ interface CaseloadTableProps {
   students: Student[]
   isLoading: boolean
   schoolId?: string
-  statusGroup?: 'all' | 'active' | 'paused' | 'graduated'
 }
 
-const CaseloadTable = ({
-  students,
-  isLoading,
-  schoolId,
-  statusGroup = 'active',
-}: CaseloadTableProps) => {
+const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [sortField, setSortField] = useState<string | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
@@ -527,18 +521,6 @@ const CaseloadTable = ({
     const screening = latestScreeningByStudent.get(student.id)
 
     const matchesCaseload = (() => {
-      if (statusGroup === 'all') return true
-      if (statusGroup === 'paused') return student.service_status === 'paused'
-      if (statusGroup === 'graduated') return student.program_status === 'graduated'
-
-      // active
-      if (
-        student.program_status === 'graduated' ||
-        student.service_status === 'transferred' ||
-        student.service_status === 'paused'
-      )
-        return false
-
       const programStatus =
         dateFilter === 'school_year' ? student.program_status : screening?.program_status
 
@@ -579,7 +561,7 @@ const CaseloadTable = ({
   const caseloadStats = {
     qualified: filteredStudents.filter(s => s.program_status === 'qualified').length,
     sub: filteredStudents.filter(s => s.program_status === 'sub').length,
-    no_consent: filteredStudents.filter(s => s.program_status === 'no_consent').length,
+    graduated: filteredStudents.filter(s => s.program_status === 'graduated').length,
   }
 
   const sortedStudents = [...filteredStudents].sort((a, b) => {
@@ -605,7 +587,7 @@ const CaseloadTable = ({
     }
 
     if (sortField === 'program_status') {
-      const programOrder = { qualified: 0, sub: 1, no_consent: 2, none: 3 }
+      const programOrder = { qualified: 0, sub: 1, graduated: 2, none: 3 }
 
       const aIsPaused = a.service_status === 'paused'
       const bIsPaused = b.service_status === 'paused'
@@ -703,23 +685,6 @@ const CaseloadTable = ({
 
   return (
     <div className='space-y-4'>
-      {statusGroup !== 'active' && statusGroup !== 'all' && (
-        <div
-          className={`flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium ${
-            statusGroup === 'paused'
-              ? 'bg-purple-50 border-purple-200 text-purple-800'
-              : 'bg-blue-50 border-blue-200 text-blue-800'
-          }`}>
-          {statusGroup === 'paused' ? (
-            <PauseCircle className='w-4 h-4' />
-          ) : (
-            <GraduationCap className='w-4 h-4' />
-          )}
-          Showing students who are currently{' '}
-          {statusGroup === 'paused' ? 'Paused / Away' : 'Graduated'}.
-        </div>
-      )}
-
       {/* Caseload Stats */}
       <CaseloadStats
         stats={caseloadStats}
@@ -797,7 +762,7 @@ const CaseloadTable = ({
                     <span>
                       {student.first_name} {student.last_name}
                     </span>
-                    {statusGroup === 'all' && getServiceStatusTag(student)}
+                    {getServiceStatusTag(student)}
                   </div>
                 </TableCell>
 
