@@ -63,6 +63,8 @@ const ScreeningTableRow = ({
       ? transferRecord.from_school?.name
       : null
 
+  const isPaused = screening.service_status === 'paused'
+
   return (
     <ResponsiveTableRow
       mobileCardContent={
@@ -73,8 +75,12 @@ const ScreeningTableRow = ({
                 checked={isSelected}
                 onCheckedChange={checked => onSelect(screening, checked as boolean)}
               />
+
               <div className='flex flex-col gap-0.5'>
                 <h3 className='font-medium'>{screening.student_name}</h3>
+                {isPaused && (
+                  <span className='text-xs font-medium text-purple-600'>Paused / Away</span>
+                )}
                 {/* {transferredOut && (
                   <span className='text-xs font-medium text-orange-600'>
                     Transferred Out → {transferredOut}
@@ -135,6 +141,8 @@ const ScreeningTableRow = ({
           <div className='text-base font-medium truncate' title={screening.student_name}>
             {screening.student_name}
           </div>
+          {isPaused && <span className='text-xs font-medium text-purple-600'>Paused / Away</span>}
+
           {/* {transferredOut && (
             <span className='text-xs font-medium text-orange-600'>
               Transferred Out → {transferredOut}

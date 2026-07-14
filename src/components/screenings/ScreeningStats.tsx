@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, CheckCircle, Clock, FileText, Users } from 'lucide-react'
+import { Calendar, CheckCircle, Clock, FileText, PauseCircle, Users } from 'lucide-react'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import ScreeningStatsSkeleton from '@/components/skeletons/ScreeningStatsSkeleton'
@@ -123,7 +123,7 @@ const ScreeningStats = ({
   }
 
   return (
-    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8'>
+    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8'>
       {/* Total Screenings*/}
       <Card className='cursor-pointer hover:bg-gray-50 transition-colors' onClick={handleClearAll}>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
@@ -227,6 +227,38 @@ const ScreeningStats = ({
                 handleCardClick(['sub'], false)
               }}>
               {rawCounts.sub} screenings
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Paused / Away */}
+      <Card
+        className='cursor-pointer hover:bg-gray-50 transition-colors'
+        onClick={() => handleCardClick(['paused'], false)}>
+        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+          <CardTitle className='text-sm font-medium'>Pause / Away</CardTitle>
+          <PauseCircle className='h-4 w-4 text-muted-foreground' />
+        </CardHeader>
+        <CardContent>
+          <div className='text-2xl font-bold'>{stats.pausedScreenings}</div>
+          <div className='flex gap-2 mt-2'>
+            <button
+              className='text-xs text-blue-600 hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['paused'], true)
+              }}>
+              {stats.pausedScreenings} students
+            </button>
+            <span className='text-xs text-muted-foreground'>·</span>
+            <button
+              className='text-xs text-muted-foreground hover:underline'
+              onClick={e => {
+                e.stopPropagation()
+                handleCardClick(['paused'], false)
+              }}>
+              {rawCounts.paused} screenings
             </button>
           </div>
         </CardContent>
