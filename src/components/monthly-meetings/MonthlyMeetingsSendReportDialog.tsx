@@ -12,9 +12,11 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
-import { getEmailHistory, upsertEmailHistory } from '@/api/emailHistory'
+import { upsertEmailHistory } from '@/api/emailHistory'
 import { Loader2, Mail } from 'lucide-react'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 
 interface MonthlyMeetingsSendReportDialogProps {
   open: boolean
@@ -28,14 +30,13 @@ const MonthlyMeetingsSendReportDialog = ({
   onClose,
 }: MonthlyMeetingsSendReportDialogProps) => {
   const [emails, setEmails] = useState<string[]>([])
-  const [emailHistory, setEmailHistory] = useState<string[]>([])
   const [isSending, setIsSending] = useState(false)
   const { toast } = useToast()
   const { user } = useAuth()
 
-  useEffect(() => {
-    if (user?.id) getEmailHistory(user.id).then(setEmailHistory).catch(console.error)
-  }, [user?.id])
+  const { currentSchool } = useOrganization()
+
+  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleClose = () => {
     setEmails([])

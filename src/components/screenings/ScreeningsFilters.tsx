@@ -242,7 +242,7 @@ const ScreeningsFilters = ({
                       { value: 'qualified', label: 'Qualifies' },
                       { value: 'not_in_program', label: 'Not in Program' },
                       { value: 'sub', label: 'Sub' },
-                      { value: 'no_consent', label: 'No Consent' },
+                      // { value: 'no_consent', label: 'No Consent' },
                     ].map(option => (
                       <div key={option.value} className='flex items-center space-x-2'>
                         <input

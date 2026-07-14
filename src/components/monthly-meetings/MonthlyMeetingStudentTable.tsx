@@ -163,7 +163,7 @@ const MonthlyMeetingsStudentTable = ({
   }
 
   const getProgramStatus = (student: Student): string => {
-    if (student.service_status === 'graduated') return 'graduated'
+    if (student.program_status === 'graduated') return 'graduated'
     if (student.service_status === 'paused') return 'paused'
     if (student.service_status === 'transferred') return 'transferred'
     return student.program_status || 'none'

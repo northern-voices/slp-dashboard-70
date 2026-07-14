@@ -55,6 +55,7 @@ const deriveProgramFromErrorPatterns = (
   const consent = errorPatterns?.consent
 
   if (consent?.no_consent) return 'no_consent'
+  if (metadata?.graduated) return 'graduated'
   if (metadata?.sub) return 'sub'
   if (metadata?.qualifies_for_speech_program === true) return 'qualified'
   return 'none'
@@ -704,7 +705,7 @@ export const speechScreeningsApi = {
         .select(
           `
           *,
-          students (
+          students!inner (
             id,
             first_name,
             last_name,
@@ -732,6 +733,7 @@ export const speechScreeningsApi = {
           { count: 'exact' }
         )
         .eq('school_grades.school_id', schoolId)
+        .or('service_status.neq.transferred,service_status.is.null', { foreignTable: 'students' })
 
       // Apply date filter at database level (default to school year)
       if (dateFilter !== 'all') {

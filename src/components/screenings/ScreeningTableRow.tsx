@@ -2,6 +2,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { ResponsiveTableRow, TableCell } from '@/components/ui/responsive-table'
 import { format } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
+import { Badge } from '@/components/ui/badge'
 import { Loader2 } from 'lucide-react'
 import type { Screening } from '@/types/database'
 import ScreeningRowDropdown from './ScreeningRowDropdown'
@@ -63,6 +64,8 @@ const ScreeningTableRow = ({
       ? transferRecord.from_school?.name
       : null
 
+  const isPaused = screening.service_status === 'paused'
+
   return (
     <ResponsiveTableRow
       mobileCardContent={
@@ -73,9 +76,15 @@ const ScreeningTableRow = ({
                 checked={isSelected}
                 onCheckedChange={checked => onSelect(screening, checked as boolean)}
               />
-              <div className='flex flex-col gap-0.5'>
+
+              <div className='flex flex-col gap-0.5 items-start'>
                 <h3 className='font-medium'>{screening.student_name}</h3>
-                {transferredOut && (
+                {isPaused && (
+                  <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
+                    Paused / Away
+                  </Badge>
+                )}
+                {/* {transferredOut && (
                   <span className='text-xs font-medium text-orange-600'>
                     Transferred Out → {transferredOut}
                   </span>
@@ -84,7 +93,7 @@ const ScreeningTableRow = ({
                   <span className='text-xs font-medium text-blue-600'>
                     Transferred In ← {transferredIn}
                   </span>
-                )}
+                )} */}
               </div>
             </div>
             <ScreeningRowDropdown
@@ -131,11 +140,18 @@ const ScreeningTableRow = ({
         />
       </TableCell>
       <TableCell className='max-w-0'>
-        <div className='flex flex-col gap-0.5'>
+        <div className='flex flex-col gap-0.5 items-start'>
           <div className='text-base font-medium truncate' title={screening.student_name}>
             {screening.student_name}
           </div>
-          {transferredOut && (
+
+          {isPaused && (
+            <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
+              Paused / Away
+            </Badge>
+          )}
+
+          {/* {transferredOut && (
             <span className='text-xs font-medium text-orange-600'>
               Transferred Out → {transferredOut}
             </span>
@@ -144,11 +160,11 @@ const ScreeningTableRow = ({
             <span className='text-xs font-medium text-blue-600'>
               Transferred In ← {transferredIn}
             </span>
-          )}
+          )} */}
         </div>
       </TableCell>
       <TableCell className='max-w-0'>
-        <div className='w-full min-w-[120px]'>{getResultSelector(screening)}</div>
+        <div className='w-full min-w-[190px]'>{getResultSelector(screening)}</div>
       </TableCell>
       <TableCell className='max-w-0'>
         <div className='w-full min-w-[120px]'>{getProgramSelector(screening)}</div>

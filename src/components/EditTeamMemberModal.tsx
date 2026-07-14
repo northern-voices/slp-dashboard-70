@@ -59,16 +59,23 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [member])
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && member) {
+      reset(member)
+    }
+    onOpenChange(nextOpen)
+  }
+
   const onSubmit = (data: TeamMember) => {
     onUpdateMember({
       ...data,
       phone: data.phone ? unformatPhoneNumber(data.phone) : '',
     })
-    onOpenChange(false)
+    handleOpenChange(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className='sm:max-w-[600px] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle className='text-xl font-semibold text-gray-900'>
@@ -169,7 +176,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
             <Button
               type='button'
               variant='outline'
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               className='border-gray-200 hover:bg-gray-50'>
               Cancel
             </Button>

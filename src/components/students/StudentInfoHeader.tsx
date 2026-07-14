@@ -237,7 +237,7 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
       <CardContent className='p-6'>
         <div className='flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between'>
           <div className='flex-1'>
-            {isViewingFromOldSchool && transferredOutRecord && (
+            {/* {isViewingFromOldSchool && transferredOutRecord && (
               <div className='mb-4 rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800'>
                 This student transferred to{' '}
                 <span className='font-semibold'>{transferredOutRecord.to_school?.name}</span> on{' '}
@@ -261,7 +261,7 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
                 })}
                 .
               </div>
-            )}
+            )} */}
 
             <StudentBasicInfo
               student={localStudent}
@@ -280,7 +280,7 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
             />
             <StudentNotes studentId={localStudent.id} formatDate={formatDate} />
 
-            <TransferHistorySection studentId={localStudent.id} />
+            {/* <TransferHistorySection studentId={localStudent.id} /> */}
           </div>
         </div>
 

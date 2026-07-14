@@ -179,7 +179,7 @@ const ScreeningsList = ({
       )[0]
       const isLatestScreening = mostRecentScreening?.id === screening.id
 
-      const isServiceStatus = newProgram === 'paused' || newProgram === 'graduated'
+      const isServiceStatus = newProgram === 'paused'
       const mappedProgramStatus = newProgram === 'not_in_program' ? 'none' : newProgram
 
       // Update the screening first
@@ -395,7 +395,7 @@ const ScreeningsList = ({
       } else if (qualifiesForSpeechProgramFilter === 'paused') {
         matchesQualifiesForSpeechProgram = screening.service_status === 'paused'
       } else if (qualifiesForSpeechProgramFilter === 'graduated') {
-        matchesQualifiesForSpeechProgram = screening.service_status === 'graduated'
+        matchesQualifiesForSpeechProgram = screening.program_status === 'graduated'
       }
     }
 

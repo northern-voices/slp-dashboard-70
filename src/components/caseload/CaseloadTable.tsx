@@ -15,10 +15,19 @@ import {
   GraduationCap,
   User,
   FilePlus,
-  ArrowRightLeft,
 } from 'lucide-react'
 import TransferStudentDialog from '../students/TransferStudentDialog'
 import { useQueryClient } from '@tanstack/react-query'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -70,21 +79,16 @@ interface CaseloadTableProps {
   students: Student[]
   isLoading: boolean
   schoolId?: string
-  statusGroup?: 'all' | 'active' | 'paused' | 'graduated'
 }
 
-const CaseloadTable = ({
-  students,
-  isLoading,
-  schoolId,
-  statusGroup = 'active',
-}: CaseloadTableProps) => {
+const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [sortField, setSortField] = useState<string | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(50)
   const [consentStudent, setConsentStudent] = useState<Student | null>(null)
+  const [pauseConfirmStudent, setPauseConfirmStudent] = useState<Student | null>(null)
 
   const [gradeFilter, setGradeFilter] = useState<string>('all')
   const [resultFilter, setResultFilter] = useState<string>('all')
@@ -276,6 +280,10 @@ const CaseloadTable = ({
         return (
           <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
         )
+      case 'graduated':
+        return (
+          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+        )
       default:
         return (
           <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
@@ -292,10 +300,6 @@ const CaseloadTable = ({
           <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
             Paused / Away
           </Badge>
-        )
-      case 'graduated':
-        return (
-          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
         )
       default:
         return null
@@ -391,6 +395,7 @@ const CaseloadTable = ({
         ...(currentErrorPatterns.screening_metadata || {}),
         qualifies_for_speech_program: newProgram === 'qualified',
         sub: newProgram === 'sub',
+        graduated: newProgram === 'graduated',
       } as ErrorPatterns['screening_metadata'],
     }
 
@@ -527,23 +532,11 @@ const CaseloadTable = ({
     const screening = latestScreeningByStudent.get(student.id)
 
     const matchesCaseload = (() => {
-      if (statusGroup === 'all') return true
-      if (statusGroup === 'paused') return student.service_status === 'paused'
-      if (statusGroup === 'graduated') return student.service_status === 'graduated'
-
-      // active
-      if (
-        student.service_status === 'graduated' ||
-        student.service_status === 'transferred' ||
-        student.service_status === 'paused'
-      )
-        return false
-
       const programStatus =
         dateFilter === 'school_year' ? student.program_status : screening?.program_status
 
       return (
-        programStatus === 'qualified' || programStatus === 'sub' || programStatus === 'no_consent'
+        programStatus === 'qualified' || programStatus === 'sub' || programStatus === 'graduated'
       )
     })()
 
@@ -579,7 +572,8 @@ const CaseloadTable = ({
   const caseloadStats = {
     qualified: filteredStudents.filter(s => s.program_status === 'qualified').length,
     sub: filteredStudents.filter(s => s.program_status === 'sub').length,
-    no_consent: filteredStudents.filter(s => s.program_status === 'no_consent').length,
+    paused: filteredStudents.filter(s => s.service_status === 'paused').length,
+    graduated: filteredStudents.filter(s => s.program_status === 'graduated').length,
   }
 
   const sortedStudents = [...filteredStudents].sort((a, b) => {
@@ -605,18 +599,18 @@ const CaseloadTable = ({
     }
 
     if (sortField === 'program_status') {
-      const programOrder = { qualified: 0, sub: 1, no_consent: 2, none: 3 }
+      const programOrder = { qualified: 0, sub: 1, graduated: 2, none: 3 }
 
-      const aIsPaused = a.service_status === 'paused'
-      const bIsPaused = b.service_status === 'paused'
+      comparison =
+        (programOrder[a.program_status as keyof typeof programOrder] ?? 99) -
+        (programOrder[b.program_status as keyof typeof programOrder] ?? 99)
 
-      // paused students go to the bottom
-      if (aIsPaused !== bIsPaused) {
-        comparison = aIsPaused ? 1 : -1
-      } else {
-        comparison =
-          (programOrder[a.program_status as keyof typeof programOrder] ?? 99) -
-          (programOrder[b.program_status as keyof typeof programOrder] ?? 99)
+      if (comparison === 0) {
+        const aIsPaused = a.service_status === 'paused'
+        const bIsPaused = b.service_status === 'paused'
+        if (aIsPaused !== bIsPaused) {
+          comparison = aIsPaused ? 1 : -1
+        }
       }
 
       if (comparison === 0) {
@@ -703,23 +697,6 @@ const CaseloadTable = ({
 
   return (
     <div className='space-y-4'>
-      {statusGroup !== 'active' && statusGroup !== 'all' && (
-        <div
-          className={`flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium ${
-            statusGroup === 'paused'
-              ? 'bg-purple-50 border-purple-200 text-purple-800'
-              : 'bg-blue-50 border-blue-200 text-blue-800'
-          }`}>
-          {statusGroup === 'paused' ? (
-            <PauseCircle className='w-4 h-4' />
-          ) : (
-            <GraduationCap className='w-4 h-4' />
-          )}
-          Showing students who are currently{' '}
-          {statusGroup === 'paused' ? 'Paused / Away' : 'Graduated'}.
-        </div>
-      )}
-
       {/* Caseload Stats */}
       <CaseloadStats
         stats={caseloadStats}
@@ -777,9 +754,9 @@ const CaseloadTable = ({
 
               <TableHead className='w-[55px]'>Grade</TableHead>
 
-              <TableHead className='w-[70px]'>Program</TableHead>
-
               <TableHead className='w-[190px]'>Result</TableHead>
+
+              <TableHead className='w-[70px]'>Program</TableHead>
 
               <TableHead className='w-[100px] text-center'>Therapy Consent</TableHead>
 
@@ -797,39 +774,13 @@ const CaseloadTable = ({
                     <span>
                       {student.first_name} {student.last_name}
                     </span>
-                    {statusGroup === 'all' && getServiceStatusTag(student)}
+                    {getServiceStatusTag(student)}
                   </div>
                 </TableCell>
 
                 <TableCell>{getStudentGrade(student)}</TableCell>
 
                 {/* <TableCell>{getProgramBadge(student)}</TableCell> */}
-
-                {/* Functionality to be able to change the program but leave it out for now */}
-                <TableCell>
-                  <Select
-                    value={student.program_status ?? 'none'}
-                    onValueChange={value => handleProgramChange(student, value as ProgramStatus)}
-                    disabled={updatingStudentId === student.id}>
-                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
-                      <SelectValue>
-                        <div className='flex items-center gap-2'>
-                          {updatingStudentId === student.id && (
-                            <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
-                          )}
-                          {getProgramBadge(student)}
-                        </div>
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PROGRAM_OPTIONS.filter(option => option.value !== 'none').map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
 
                 <TableCell>
                   {latestScreeningByStudent.get(student.id) ? (
@@ -879,6 +830,34 @@ const CaseloadTable = ({
                       </Tooltip>
                     </div>
                   )}
+                </TableCell>
+
+                {/* Functionality to be able to change the program but leave it out for now */}
+                <TableCell>
+                  <Select
+                    value={student.program_status ?? 'none'}
+                    onValueChange={value => handleProgramChange(student, value as ProgramStatus)}
+                    disabled={updatingStudentId === student.id}>
+                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+                      <SelectValue>
+                        <div className='flex items-center gap-2'>
+                          {updatingStudentId === student.id && (
+                            <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
+                          )}
+                          {getProgramBadge(student)}
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROGRAM_OPTIONS.filter(
+                        option => option.value !== 'none' && option.value !== 'no_consent'
+                      ).map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableCell>
 
                 <TableCell className='text-center'>
@@ -960,23 +939,23 @@ const CaseloadTable = ({
                       </DropdownMenuItem>
 
                       {student.service_status !== 'paused' && (
-                        <DropdownMenuItem onClick={() => handleStatusChange(student, 'paused')}>
+                        <DropdownMenuItem onClick={() => setPauseConfirmStudent(student)}>
                           <PauseCircle className='w-4 h-4 mr-2' />
                           Pause / Away
                         </DropdownMenuItem>
                       )}
 
-                      {student.service_status !== 'graduated' && (
+                      {/* {student.service_status !== 'graduated' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(student, 'graduated')}>
                           <GraduationCap className='w-4 h-4 mr-2' />
                           Graduate
                         </DropdownMenuItem>
-                      )}
+                      )} */}
 
-                      <DropdownMenuItem onClick={() => setTransferStudentTarget(student)}>
+                      {/* <DropdownMenuItem onClick={() => setTransferStudentTarget(student)}>
                         <ArrowRightLeft className='w-4 h-4 mr-2' />
                         Transfer Student
-                      </DropdownMenuItem>
+                      </DropdownMenuItem> */}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -1087,6 +1066,34 @@ const CaseloadTable = ({
           }}
         />
       )}
+
+      <AlertDialog
+        open={!!pauseConfirmStudent}
+        onOpenChange={open => {
+          if (!open) setPauseConfirmStudent(null)
+        }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Pause / mark student away?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will pause services for {pauseConfirmStudent?.first_name}{' '}
+              {pauseConfirmStudent?.last_name}. You can reactivate them later from this table.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPauseConfirmStudent(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pauseConfirmStudent) handleStatusChange(pauseConfirmStudent, 'paused')
+                setPauseConfirmStudent(null)
+              }}>
+              Pause / Away
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

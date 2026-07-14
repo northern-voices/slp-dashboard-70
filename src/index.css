@@ -29,13 +29,13 @@
     /* Status Colors - more refined */
     --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 100%;
-    
+
     --success: 142 71% 45%; /* Professional green */
     --success-foreground: 0 0% 100%;
-    
+
     --warning: 38 100% 50%; /* Refined amber */
     --warning-foreground: 210 11% 15%;
-    
+
     --info: 212 100% 47%; /* Matches primary */
     --info-foreground: 0 0% 100%;
 
@@ -63,23 +63,23 @@
     --sidebar-ring: 212 100% 47%;
 
     /* Refined Typography Scale */
-    --font-size-xs: 0.75rem;    /* 12px */
-    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-xs: 0.75rem; /* 12px */
+    --font-size-sm: 0.875rem; /* 14px */
     --font-size-base: 0.9375rem; /* 15px - Attio uses slightly larger base */
-    --font-size-lg: 1.0625rem;  /* 17px */
-    --font-size-xl: 1.1875rem;  /* 19px */
-    --font-size-2xl: 1.375rem;  /* 22px */
-    --font-size-3xl: 1.75rem;   /* 28px */
-    --font-size-4xl: 2.125rem;  /* 34px */
+    --font-size-lg: 1.0625rem; /* 17px */
+    --font-size-xl: 1.1875rem; /* 19px */
+    --font-size-2xl: 1.375rem; /* 22px */
+    --font-size-3xl: 1.75rem; /* 28px */
+    --font-size-4xl: 2.125rem; /* 34px */
 
     /* Refined Spacing Scale - More generous like Attio */
-    --spacing-xs: 0.25rem;      /* 4px */
-    --spacing-sm: 0.5rem;       /* 8px */
-    --spacing-md: 1rem;         /* 16px */
-    --spacing-lg: 1.5rem;       /* 24px */
-    --spacing-xl: 2rem;         /* 32px */
-    --spacing-2xl: 3rem;        /* 48px */
-    --spacing-3xl: 4rem;        /* 64px - Additional large spacing */
+    --spacing-xs: 0.25rem; /* 4px */
+    --spacing-sm: 0.5rem; /* 8px */
+    --spacing-md: 1rem; /* 16px */
+    --spacing-lg: 1.5rem; /* 24px */
+    --spacing-xl: 2rem; /* 32px */
+    --spacing-2xl: 3rem; /* 48px */
+    --spacing-3xl: 4rem; /* 64px - Additional large spacing */
 
     /* Refined Border Radius Scale */
     --radius-sm: 4px;
@@ -121,10 +121,10 @@
 
     --success: 142 71% 55%;
     --success-foreground: 210 11% 4%;
-    
+
     --warning: 38 100% 60%;
     --warning-foreground: 210 11% 4%;
-    
+
     --info: 212 100% 55%;
     --info-foreground: 210 11% 4%;
 
@@ -155,14 +155,22 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family:
+      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   /* Refined Typography Base Styles */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
     letter-spacing: -0.025em; /* Tighter tracking for headings */
   }
@@ -297,34 +305,78 @@
 
 @layer utilities {
   /* Spacing Utilities with new scale */
-  .space-xs { @apply space-y-1 space-x-1; }
-  .space-sm { @apply space-y-2 space-x-2; }
-  .space-md { @apply space-y-4 space-x-4; }
-  .space-lg { @apply space-y-6 space-x-6; }
-  .space-xl { @apply space-y-8 space-x-8; }
-  .space-2xl { @apply space-y-12 space-x-12; }
+  .space-xs {
+    @apply space-y-1 space-x-1;
+  }
+  .space-sm {
+    @apply space-y-2 space-x-2;
+  }
+  .space-md {
+    @apply space-y-4 space-x-4;
+  }
+  .space-lg {
+    @apply space-y-6 space-x-6;
+  }
+  .space-xl {
+    @apply space-y-8 space-x-8;
+  }
+  .space-2xl {
+    @apply space-y-12 space-x-12;
+  }
 
   /* Enhanced Padding Utilities */
-  .p-xs { padding: var(--spacing-xs); }
-  .p-sm { padding: var(--spacing-sm); }
-  .p-md { padding: var(--spacing-md); }
-  .p-lg { padding: var(--spacing-lg); }
-  .p-xl { padding: var(--spacing-xl); }
-  .p-2xl { padding: var(--spacing-2xl); }
+  .p-xs {
+    padding: var(--spacing-xs);
+  }
+  .p-sm {
+    padding: var(--spacing-sm);
+  }
+  .p-md {
+    padding: var(--spacing-md);
+  }
+  .p-lg {
+    padding: var(--spacing-lg);
+  }
+  .p-xl {
+    padding: var(--spacing-xl);
+  }
+  .p-2xl {
+    padding: var(--spacing-2xl);
+  }
 
   /* Enhanced Margin Utilities */
-  .m-xs { margin: var(--spacing-xs); }
-  .m-sm { margin: var(--spacing-sm); }
-  .m-md { margin: var(--spacing-md); }
-  .m-lg { margin: var(--spacing-lg); }
-  .m-xl { margin: var(--spacing-xl); }
-  .m-2xl { margin: var(--spacing-2xl); }
+  .m-xs {
+    margin: var(--spacing-xs);
+  }
+  .m-sm {
+    margin: var(--spacing-sm);
+  }
+  .m-md {
+    margin: var(--spacing-md);
+  }
+  .m-lg {
+    margin: var(--spacing-lg);
+  }
+  .m-xl {
+    margin: var(--spacing-xl);
+  }
+  .m-2xl {
+    margin: var(--spacing-2xl);
+  }
 
   /* Refined Border Radius */
-  .rounded-xs { border-radius: var(--radius-sm); }
-  .rounded-sm { border-radius: var(--radius-md); }
-  .rounded-md { border-radius: var(--radius-lg); }
-  .rounded-lg { border-radius: var(--radius-xl); }
+  .rounded-xs {
+    border-radius: var(--radius-sm);
+  }
+  .rounded-sm {
+    border-radius: var(--radius-md);
+  }
+  .rounded-md {
+    border-radius: var(--radius-lg);
+  }
+  .rounded-lg {
+    border-radius: var(--radius-xl);
+  }
 
   /* Professional Animation Utilities */
   .animate-fade-in {
@@ -415,7 +467,9 @@ body {
 
 /* Mobile-friendly touch targets */
 @media (max-width: 768px) {
-  button, a, [role="button"] {
+  button,
+  a,
+  [role='button'] {
     min-height: 44px;
     min-width: 44px;
   }

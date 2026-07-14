@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { parseDateSafely } from '@/utils/dateUtils'
-import { School } from '@/types/database'
+import { School, Student } from '@/types/database'
 import {
   ResponsiveTable,
   TableHeader,
@@ -69,7 +69,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [isLoadingGrades, setIsLoadingGrades] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(50)
+  const [pageSize, setPageSize] = useState(5)
   const [sortField, setSortField] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -218,7 +218,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     const serviceStatus = student.service_status
     const programStatus = getProgramStatus(student)
 
-    if (serviceStatus === 'graduated')
+    if (programStatus === 'graduated')
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
     if (serviceStatus === 'paused')
       return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
@@ -240,8 +240,34 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     }
   }
 
-  const isWithinDateRange = (dateString: string, range: string): boolean => {
+  const getLastScreeningDate = (student: Student): string | null => {
+    const speechScreenings = student.speech_screenings || []
+    const hearingScreenings = student.hearing_screenings || []
+    const allScreenings = [...speechScreenings, ...hearingScreenings]
+
+    if (allScreenings.length === 0) return null
+
+    return allScreenings.reduce(
+      (latest, screening) =>
+        new Date(screening.created_at) > new Date(latest) ? screening.created_at : latest,
+      allScreenings[0].created_at
+    )
+  }
+
+  const getLastScreeningLabel = (student: Student): string => {
+    const lastScreeningDate = getLastScreeningDate(student)
+    return lastScreeningDate
+      ? parseDateSafely(lastScreeningDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
+      : 'No screenings yet'
+  }
+
+  const isWithinDateRange = (dateString: string | null, range: string): boolean => {
     if (range === 'all') return true
+    if (!dateString) return false
 
     const date = new Date(dateString)
     const now = new Date()
@@ -315,7 +341,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       }
       const matchesGrade = gradeFilter === 'all' || studentGradeLevel === gradeFilter
 
-      const matchesDateRange = isWithinDateRange(student.created_at, dateRangeFilter)
+      const matchesDateRange = isWithinDateRange(getLastScreeningDate(student), dateRangeFilter)
 
       const matchesProgram = programFilter === 'all' || getProgramStatus(student) === programFilter
 
@@ -379,7 +405,10 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         }
 
         case 'date': {
-          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          const dateA = getLastScreeningDate(a)
+          const dateB = getLastScreeningDate(b)
+          comparison =
+            (dateA ? new Date(dateA).getTime() : 0) - (dateB ? new Date(dateB).getTime() : 0)
           break
         }
       }
@@ -564,8 +593,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
 
   const sortOptions: SortOption[] = [
     { label: 'Name', value: 'name', defaultDirection: 'asc' },
-    { label: 'Grade', value: 'grade', defaultDirection: 'asc' },
-    { label: 'Profile Created', value: 'date', defaultDirection: 'desc' },
+    // { label: 'Grade', value: 'grade', defaultDirection: 'asc' },
+    { label: 'Last Screening', value: 'date', defaultDirection: 'desc' },
   ]
 
   return (
@@ -615,8 +644,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
           <TableHeader>
             <tr>
               <TableHead className='w-1/4 min-w-[200px]'>Name</TableHead>
-              <TableHead className='w-1/6 min-w-[120px]'>Grade</TableHead>
-              <TableHead className='w-1/6 min-w-[150px]'>Profile Created</TableHead>
+              {/* <TableHead className='w-1/6 min-w-[120px]'>Grade</TableHead> */}
+              <TableHead className='w-1/6 min-w-[150px]'>Last Screening</TableHead>
 
               {/* <TableHead className='w-1/6 text-center'>Consent</TableHead> */}
 
@@ -636,7 +665,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                       {student.first_name} {student.last_name}
                     </span>
 
-                    {(() => {
+                    {/* {(() => {
                       const transfer = transferByStudentId.get(student.id)
                       if (transfer?.to_school_id === activeSchool?.id) {
                         return (
@@ -653,24 +682,20 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                         )
                       }
                       return null
-                    })()}
+                    })()} */}
                   </div>
                 </TableCell>
 
-                <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
+                {/* <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {getStudentGrade(student)}
-                </TableCell>
+                </TableCell> */}
 
                 {/* <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
                   {getQualificationBadge(student)}
                 </TableCell> */}
 
                 <TableCell className='p-4 transition-colors group-hover:bg-gray-100'>
-                  {parseDateSafely(student.created_at).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
+                  {getLastScreeningLabel(student)}
                 </TableCell>
 
                 {/* <TableCell className='p-4 text-center transition-colors group-hover:bg-gray-100'>
@@ -714,7 +739,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[10, 25, 50, 100].map(size => (
+                {[5, 10, 25, 50, 100].map(size => (
                   <SelectItem key={size} value={String(size)}>
                     {size}
                   </SelectItem>

@@ -2,7 +2,7 @@ export const SCREENING_RESULTS = {
   no_errors: { label: 'No Errors', color: 'bg-green-100 text-green-800' },
   age_appropriate: { label: 'Age Appropriate', color: 'bg-blue-100 text-blue-800' },
   monitor: { label: 'Monitor', color: 'bg-yellow-100 text-yellow-800' },
-  mild: { label: 'Mild', color: 'bg-yellow-100 text-yellow-800' },
+  mild: { label: 'Mild', color: 'bg-amber-100 text-amber-800' },
   moderate: { label: 'Moderate', color: 'bg-orange-100 text-orange-800' },
   severe: { label: 'Severe', color: 'bg-red-100 text-red-800' },
   profound: { label: 'Profound', color: 'bg-red-300 text-red-800' },
@@ -17,7 +17,7 @@ export const SCREENING_RESULTS = {
   absent: { label: 'Absent', color: 'bg-gray-100 text-gray-800' },
   non_registered_no_consent: {
     label: 'No Consent',
-    color: 'bg-gray-100 text-gray-800',
+    color: 'bg-slate-100 text-slate-800',
   },
 } as const
 
