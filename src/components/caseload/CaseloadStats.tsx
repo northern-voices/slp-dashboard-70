@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, Clock, GraduationCap, Users } from 'lucide-react'
+import { CheckCircle, Clock, GraduationCap, PauseCircle, Users } from 'lucide-react'
 
 interface CaseloadStatsProps {
-  stats: { qualified: number; sub: number; graduated: number }
+  stats: { qualified: number; sub: number; paused: number; graduated: number }
   activeFilter: string
   onFilterChange: (filter: string) => void
 }
@@ -55,6 +55,21 @@ const CaseloadStats = ({ stats, activeFilter, onFilterChange }: CaseloadStatsPro
         <CardContent>
           <div className='text-2xl font-bold'>{stats.sub}</div>
           <p className='text-xs text-muted-foreground mt-1'>students on sub list</p>
+        </CardContent>
+      </Card>
+
+      <Card
+        className={`cursor-pointer transition-colors ${
+          activeFilter === 'paused' ? 'ring-2 ring-purple-300 bg-purple-50' : 'hover:bg-gray-50'
+        }`}
+        onClick={() => toggle('paused')}>
+        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+          <CardTitle className='text-sm font-medium'>Pause / Away</CardTitle>
+          <PauseCircle className='h-4 w-4 text-purple-500' />
+        </CardHeader>
+        <CardContent>
+          <div className='text-2xl font-bold'>{stats.paused}</div>
+          <p className='text-xs text-muted-foreground mt-1'>students paused</p>
         </CardContent>
       </Card>
 

@@ -561,6 +561,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
   const caseloadStats = {
     qualified: filteredStudents.filter(s => s.program_status === 'qualified').length,
     sub: filteredStudents.filter(s => s.program_status === 'sub').length,
+    paused: filteredStudents.filter(s => s.service_status === 'paused').length,
     graduated: filteredStudents.filter(s => s.program_status === 'graduated').length,
   }
 
