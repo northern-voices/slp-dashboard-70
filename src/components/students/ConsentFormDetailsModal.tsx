@@ -16,6 +16,7 @@ interface ConsentFormDetails {
   additional_notes: string | null
   file_name: string | null
   file_path: string | null
+  file_type: string | null
   uploaded_at: string
   uploaded_by: {
     id: string
@@ -41,7 +42,9 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
   const [previewError, setPreviewError] = useState(false)
 
   useEffect(() => {
-    if (!isOpen || form?.consent_type !== 'written' || !form?.file_path) {
+    const isImage = form?.file_type?.startsWith('image/') ?? false
+
+    if (!isOpen || !form?.file_path || !isImage) {
       setPreviewUrl(null)
       setPreviewLoading(false)
       setPreviewError(false)
@@ -67,7 +70,7 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
     return () => {
       cancelled = true
     }
-  }, [isOpen, form?.consent_type, form?.file_path])
+  }, [isOpen, form?.file_path, form?.file_type])
 
   if (!form) return null
 
@@ -155,14 +158,14 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
             </div>
           )}
 
-          {/* Written — photo */}
-          {form.consent_type === 'written' && form.file_path && (
+          {/* Uploaded file (image, audio, or PDF — any consent type) */}
+          {form.file_path && (
             <div>
-              <p className='text-xs text-muted-foreground'>Uploaded Form</p>
+              <p className='text-xs text-muted-foreground'>Uploaded File</p>
 
               <div className='mt-1 flex items-center justify-between rounded-md border px-3 py-2'>
                 <span className='truncate text-sm text-muted-foreground'>
-                  {form.file_name || 'Consent form photo'}
+                  {form.file_name || 'Consent form file'}
                 </span>
 
                 <Button
@@ -179,28 +182,30 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
                 </Button>
               </div>
 
-              <div className='mt-2 flex items-center justify-center rounded-md border bg-muted/30 p-2'>
-                {previewLoading && (
-                  <Loader2 className='h-6 w-6 animate-spin text-muted-foreground my-6' />
-                )}
+              {form.file_type?.startsWith('image/') && (
+                <div className='mt-2 flex items-center justify-center rounded-md border bg-muted/30 p-2'>
+                  {previewLoading && (
+                    <Loader2 className='h-6 w-6 animate-spin text-muted-foreground my-6' />
+                  )}
 
-                {!previewLoading && previewError && (
-                  <div className='flex flex-col items-center gap-1 py-6 text-muted-foreground'>
-                    <ImageOff className='h-6 w-6' />
-                    <span className='text-xs'>Could not load preview</span>
-                  </div>
-                )}
+                  {!previewLoading && previewError && (
+                    <div className='flex flex-col items-center gap-1 py-6 text-muted-foreground'>
+                      <ImageOff className='h-6 w-6' />
+                      <span className='text-xs'>Could not load preview</span>
+                    </div>
+                  )}
 
-                {!previewLoading && !previewError && previewUrl && (
-                  <a href={previewUrl} target='_blank' rel='noopener noreferrer'>
-                    <img
-                      src={previewUrl}
-                      alt={form.file_name || 'Consent form'}
-                      className='max-h-80 rounded-md object-contain'
-                    />
-                  </a>
-                )}
-              </div>
+                  {!previewLoading && !previewError && previewUrl && (
+                    <a href={previewUrl} target='_blank' rel='noopener noreferrer'>
+                      <img
+                        src={previewUrl}
+                        alt={form.file_name || 'Consent form'}
+                        className='max-h-80 rounded-md object-contain'
+                      />
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
