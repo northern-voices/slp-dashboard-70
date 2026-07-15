@@ -38,7 +38,6 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
   const { toast } = useToast()
   const [loadingDownload, setLoadingDownload] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState(false)
 
   useEffect(() => {
@@ -46,13 +45,12 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
 
     if (!isOpen || !form?.file_path || !isImage) {
       setPreviewUrl(null)
-      setPreviewLoading(false)
       setPreviewError(false)
       return
     }
 
     let cancelled = false
-    setPreviewLoading(true)
+    setPreviewUrl(null)
     setPreviewError(false)
 
     consentFormsApi
@@ -62,9 +60,6 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
       })
       .catch(() => {
         if (!cancelled) setPreviewError(true)
-      })
-      .finally(() => {
-        if (!cancelled) setPreviewLoading(false)
       })
 
     return () => {
@@ -183,24 +178,31 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
               </div>
 
               {form.file_type?.startsWith('image/') && (
-                <div className='mt-2 flex items-center justify-center rounded-md border bg-muted/30 p-2'>
-                  {previewLoading && (
-                    <Loader2 className='h-6 w-6 animate-spin text-muted-foreground my-6' />
+                <div className='relative mt-2 flex h-64 items-center justify-center overflow-hidden rounded-md border bg-muted/30'>
+                  {!previewUrl && !previewError && (
+                    <>
+                      <div className='absolute inset-0 animate-pulse bg-muted' />
+                      <Loader2 className='relative h-6 w-6 animate-spin text-muted-foreground' />
+                    </>
                   )}
 
-                  {!previewLoading && previewError && (
-                    <div className='flex flex-col items-center gap-1 py-6 text-muted-foreground'>
+                  {previewError && (
+                    <div className='flex flex-col items-center gap-1 text-muted-foreground'>
                       <ImageOff className='h-6 w-6' />
                       <span className='text-xs'>Could not load preview</span>
                     </div>
                   )}
 
-                  {!previewLoading && !previewError && previewUrl && (
-                    <a href={previewUrl} target='_blank' rel='noopener noreferrer'>
+                  {previewUrl && (
+                    <a
+                      href={previewUrl}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='flex h-full w-full items-center justify-center'>
                       <img
                         src={previewUrl}
                         alt={form.file_name || 'Consent form'}
-                        className='max-h-80 rounded-md object-contain'
+                        className='max-h-full max-w-full object-contain'
                       />
                     </a>
                   )}
