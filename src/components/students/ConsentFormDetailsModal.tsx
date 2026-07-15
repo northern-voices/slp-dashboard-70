@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { consentFormsApi } from '@/api/consentForms'
 import { format } from 'date-fns'
-import { ExternalLink, Loader2, Download } from 'lucide-react'
+import { Loader2, Download, ImageOff } from 'lucide-react'
 
 interface ConsentFormDetails {
   id: string
@@ -35,36 +35,48 @@ const purposeLabel = (purpose: string) =>
 
 const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsModalProps) => {
   const { toast } = useToast()
-  const [loadingPhoto, setLoadingPhoto] = useState(false)
   const [loadingDownload, setLoadingDownload] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [previewError, setPreviewError] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen || form?.consent_type !== 'written' || !form?.file_path) {
+      setPreviewUrl(null)
+      setPreviewLoading(false)
+      setPreviewError(false)
+      return
+    }
+
+    let cancelled = false
+    setPreviewLoading(true)
+    setPreviewError(false)
+
+    consentFormsApi
+      .getSignedUrl(form.file_path)
+      .then(url => {
+        if (!cancelled) setPreviewUrl(url)
+      })
+      .catch(() => {
+        if (!cancelled) setPreviewError(true)
+      })
+      .finally(() => {
+        if (!cancelled) setPreviewLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isOpen, form?.consent_type, form?.file_path])
 
   if (!form) return null
-
-  const handleViewPhoto = async () => {
-    if (!form.file_path) return
-
-    setLoadingPhoto(true)
-
-    try {
-      const url = await consentFormsApi.getSignedUrl(form.file_path)
-      window.open(url, '_blank')
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Could not load the photo. Please try again.',
-        variant: 'destructive',
-      })
-    } finally {
-      setLoadingPhoto(false)
-    }
-  }
 
   const handleDownload = async () => {
     if (!form.file_path) return
     setLoadingDownload(true)
 
     try {
-      const url = await consentFormsApi.getSignedUrl(form.file_path)
+      const url = previewUrl ?? (await consentFormsApi.getSignedUrl(form.file_path))
       const response = await fetch(url)
       const blob = await response.blob()
       const objectUrl = URL.createObjectURL(blob)
@@ -147,38 +159,47 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
           {form.consent_type === 'written' && form.file_path && (
             <div>
               <p className='text-xs text-muted-foreground'>Uploaded Form</p>
+
               <div className='mt-1 flex items-center justify-between rounded-md border px-3 py-2'>
                 <span className='truncate text-sm text-muted-foreground'>
                   {form.file_name || 'Consent form photo'}
                 </span>
 
-                <div className='flex gap-2'>
-                  <Button
-                    size='sm'
-                    variant='outline'
-                    onClick={handleDownload}
-                    disabled={loadingDownload}>
-                    {loadingDownload ? (
-                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                    ) : (
-                      <Download className='mr-2 h-4 w-4' />
-                    )}
-                    Download
-                  </Button>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={handleDownload}
+                  disabled={loadingDownload}>
+                  {loadingDownload ? (
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  ) : (
+                    <Download className='mr-2 h-4 w-4' />
+                  )}
+                  Download
+                </Button>
+              </div>
 
-                  <Button
-                    size='sm'
-                    variant='outline'
-                    onClick={handleViewPhoto}
-                    disabled={loadingPhoto}>
-                    {loadingPhoto ? (
-                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                    ) : (
-                      <ExternalLink className='mr-2 h-4 w-4' />
-                    )}
-                    View Photo
-                  </Button>
-                </div>
+              <div className='mt-2 flex items-center justify-center rounded-md border bg-muted/30 p-2'>
+                {previewLoading && (
+                  <Loader2 className='h-6 w-6 animate-spin text-muted-foreground my-6' />
+                )}
+
+                {!previewLoading && previewError && (
+                  <div className='flex flex-col items-center gap-1 py-6 text-muted-foreground'>
+                    <ImageOff className='h-6 w-6' />
+                    <span className='text-xs'>Could not load preview</span>
+                  </div>
+                )}
+
+                {!previewLoading && !previewError && previewUrl && (
+                  <a href={previewUrl} target='_blank' rel='noopener noreferrer'>
+                    <img
+                      src={previewUrl}
+                      alt={form.file_name || 'Consent form'}
+                      className='max-h-80 rounded-md object-contain'
+                    />
+                  </a>
+                )}
               </div>
             </div>
           )}
