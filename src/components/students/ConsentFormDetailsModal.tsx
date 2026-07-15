@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
 import { consentFormsApi } from '@/api/consentForms'
 import { format } from 'date-fns'
-import { Loader2, Download, ImageOff } from 'lucide-react'
+import { Loader2, Download, ImageOff, Pencil, Check, X } from 'lucide-react'
+import { useUpdateConsentFormFileName } from '@/hooks/students/use-consent-forms'
 
 interface ConsentFormDetails {
   id: string
@@ -39,6 +41,16 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
   const [loadingDownload, setLoadingDownload] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewError, setPreviewError] = useState(false)
+  const [fileName, setFileName] = useState(form?.file_name ?? '')
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editedName, setEditedName] = useState('')
+
+  const updateFileNameMutation = useUpdateConsentFormFileName()
+
+  useEffect(() => {
+    setFileName(form?.file_name ?? '')
+    setIsEditingName(false)
+  }, [form?.id])
 
   useEffect(() => {
     const isImage = form?.file_type?.startsWith('image/') ?? false
@@ -81,7 +93,7 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
 
       const a = document.createElement('a')
       a.href = objectUrl
-      a.download = form.file_name || 'consent-form'
+      a.download = fileName || 'consent-form'
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -94,6 +106,37 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
       })
     } finally {
       setLoadingDownload(false)
+    }
+  }
+
+  const handleStartEditing = () => {
+    setEditedName(fileName)
+    setIsEditingName(true)
+  }
+
+  const handleCancelEditing = () => {
+    setIsEditingName(false)
+  }
+
+  const handleSaveFileName = async () => {
+    const trimmed = editedName.trim()
+
+    if (!trimmed || trimmed === fileName) {
+      setIsEditingName(false)
+      return
+    }
+
+    try {
+      await updateFileNameMutation.mutateAsync({ id: form.id, fileName: trimmed })
+      setFileName(trimmed)
+      setIsEditingName(false)
+      toast({ title: 'File renamed', description: 'The file name has been updated.' })
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Could not rename the file. Please try again.',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -159,9 +202,45 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
               <p className='text-xs text-muted-foreground'>Uploaded File</p>
 
               <div className='mt-1 flex items-center justify-between rounded-md border px-3 py-2'>
-                <span className='truncate text-sm text-muted-foreground'>
-                  {form.file_name || 'Consent form file'}
-                </span>
+                {isEditingName ? (
+                  <div className='flex flex-1 items-center gap-2'>
+                    <Input
+                      value={editedName}
+                      onChange={e => setEditedName(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') handleSaveFileName()
+                        if (e.key === 'Escape') handleCancelEditing()
+                      }}
+                      autoFocus
+                      className='h-8'
+                    />
+                    <Button
+                      size='sm'
+                      variant='ghost'
+                      onClick={handleSaveFileName}
+                      disabled={updateFileNameMutation.isPending}
+                      className='h-8 w-8 p-0 shrink-0'>
+                      <Check className='h-4 w-4' />
+                    </Button>
+                    <Button
+                      size='sm'
+                      variant='ghost'
+                      onClick={handleCancelEditing}
+                      disabled={updateFileNameMutation.isPending}
+                      className='h-8 w-8 p-0 shrink-0'>
+                      <X className='h-4 w-4' />
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type='button'
+                    onClick={handleStartEditing}
+                    className='flex flex-1 items-center gap-1.5 truncate text-left text-sm text-muted-foreground hover:text-foreground'
+                    title='Rename file'>
+                    <span className='truncate'>{fileName || 'Consent form file'}</span>
+                    <Pencil className='h-3.5 w-3.5 shrink-0 opacity-50' />
+                  </button>
+                )}
 
                 <Button
                   size='sm'
@@ -201,7 +280,7 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
                       className='flex h-full w-full items-center justify-center'>
                       <img
                         src={previewUrl}
-                        alt={form.file_name || 'Consent form'}
+                        alt={fileName || 'Consent form'}
                         className='max-h-full max-w-full object-contain'
                       />
                     </a>

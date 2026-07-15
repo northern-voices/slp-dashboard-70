@@ -224,6 +224,20 @@ export const consentFormsApi = {
     }
   },
 
+  updateConsentFormFileName: async (id: string, fileName: string): Promise<void> => {
+    try {
+      const { error } = await supabase
+        .from('consent_forms')
+        .update({ file_name: fileName })
+        .eq('id', id)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error updating consent form file name:', error)
+      throw error
+    }
+  },
+
   // Delete a consent form (storage + db record)
   deleteConsentForm: async (id: string, filePath: string | null): Promise<void> => {
     try {

@@ -53,3 +53,15 @@ export const useConsentFormsBySchool = (schoolId?: string) => {
     staleTime: 5 * 60 * 1000,
   })
 }
+
+export const useUpdateConsentFormFileName = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, fileName }: { id: string; fileName: string }) =>
+      consentFormsApi.updateConsentFormFileName(id, fileName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['consent-forms'] })
+    },
+  })
+}
