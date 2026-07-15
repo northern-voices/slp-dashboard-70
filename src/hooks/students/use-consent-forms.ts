@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ConsentFormData, consentFormsApi } from '@/api/consentForms'
+import { BulkConsentFormData, ConsentFormData, consentFormsApi } from '@/api/consentForms'
 
 export const useConsentForms = (studentId: string) => {
   return useQuery({
@@ -20,6 +20,17 @@ export const useUploadConsentForm = (studentId: string) => {
       queryClient.invalidateQueries({
         queryKey: ['consent-forms', studentId],
       })
+    },
+  })
+}
+
+export const useBulkUploadConsentForms = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (formData: BulkConsentFormData) => consentFormsApi.uploadConsentFormsBulk(formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['consentForms'] })
     },
   })
 }
