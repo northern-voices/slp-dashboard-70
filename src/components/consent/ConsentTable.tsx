@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Search, FileText, Loader2, DivideIcon } from 'lucide-react'
+import { Search, FileText, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
   ResponsiveTable,
@@ -91,7 +91,7 @@ const ConsentTable = ({ forms, isLoading }: ConsentTableProps) => {
                 <TableCell>
                   {form.file_name ? (
                     <span className='flex items-center gap-1 text-muted-foreground'>
-                      <FileText />
+                      <FileText className='w-4 h-4' />
                       {form.file_name}
                     </span>
                   ) : (
@@ -128,3 +128,5 @@ const ConsentTable = ({ forms, isLoading }: ConsentTableProps) => {
     </div>
   )
 }
+
+export default ConsentTable
