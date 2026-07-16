@@ -41,13 +41,13 @@ export interface ConsentFormWithStudent {
 export interface BulkConsentFormEntry {
   file: File
   studentId: string
+  purpose: ConsentPurpose
   parentGuardian?: string
   additionalNotes?: string
 }
 
 export interface BulkConsentFormData {
   consent_date?: string
-  consent_purpose: ConsentPurpose
   consent_type: ConsentType
   verbal_consent_details?: string
   entries: BulkConsentFormEntry[]
@@ -174,6 +174,7 @@ export const consentFormsApi = {
         name: string
         type: string
         size: number
+        purpose: ConsentPurpose
         parentGuardian?: string
         additionalNotes?: string
       }[] = []
@@ -194,6 +195,7 @@ export const consentFormsApi = {
           name: entry.file.name,
           type: entry.file.type,
           size: entry.file.size,
+          purpose: entry.purpose,
           parentGuardian: entry.parentGuardian,
           additionalNotes: entry.additionalNotes,
         })
@@ -202,7 +204,7 @@ export const consentFormsApi = {
       const rows = uploaded.map(file => ({
         student_id: file.studentId,
         ...(formData.consent_date ? { consent_date: formData.consent_date } : {}),
-        consent_purpose: formData.consent_purpose,
+        consent_purpose: file.purpose,
         consent_type: formData.consent_type,
         verbal_consent_details: formData.verbal_consent_details || null,
         parent_guardian: file.parentGuardian || null,

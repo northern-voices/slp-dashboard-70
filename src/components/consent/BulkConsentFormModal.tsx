@@ -27,6 +27,7 @@ interface FileRow {
   key: string
   file: File
   studentId: string | null
+  purpose: ConsentPurpose | null
   parentGuardian: string
   additionalNotes: string
 }
@@ -37,7 +38,6 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
   const { data: students = [] } = useStudentsBySchool(schoolId)
   const bulkUploadMutation = useBulkUploadConsentForms()
 
-  const [consentPurpose, setConsentPurpose] = useState<ConsentPurpose | ''>('')
   const [rows, setRows] = useState<FileRow[]>([])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,6 +49,7 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
           key: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
           file,
           studentId: null,
+          purpose: null,
           parentGuardian: '',
           additionalNotes: '',
         })),
@@ -65,24 +66,15 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
   }
 
   const handleClose = () => {
-    setConsentPurpose('')
     setRows([])
     if (fileInputRef.current) fileInputRef.current.value = ''
     onClose()
   }
 
   const allRowsAssigned = rows.length > 0 && rows.every(row => row.studentId)
+  const allRowsHavePurpose = rows.length > 0 && rows.every(row => row.purpose)
 
   const handleSubmit = async () => {
-    if (!consentPurpose) {
-      toast({
-        title: 'Missing field',
-        description: 'Please select a consent purpose.',
-        variant: 'destructive',
-      })
-      return
-    }
-
     if (rows.length === 0) {
       toast({
         title: 'No files selected',
@@ -101,14 +93,24 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
       return
     }
 
+    if (!allRowsHavePurpose) {
+      toast({
+        title: 'Missing purpose',
+        description: 'Select a purpose for every file before uploading.',
+        variant: 'destructive',
+      })
+
+      return
+    }
+
     await bulkUploadMutation.mutateAsync(
       {
-        consent_purpose: consentPurpose as ConsentPurpose,
         consent_type: 'written',
         verbal_consent_details: undefined,
         entries: rows.map(row => ({
           file: row.file,
           studentId: row.studentId as string,
+          purpose: row.purpose as ConsentPurpose,
           parentGuardian: row.parentGuardian || undefined,
           additionalNotes: row.additionalNotes || undefined,
         })),
@@ -140,23 +142,6 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
         </DialogHeader>
 
         <div className='space-y-4'>
-          <div className='space-y-1'>
-            <Label>
-              Purpose <span className='text-destructive'>*</span>
-            </Label>
-            <Select
-              value={consentPurpose}
-              onValueChange={val => setConsentPurpose(val as ConsentPurpose)}>
-              <SelectTrigger>
-                <SelectValue placeholder='Select purpose' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='screening_assessment'>Screening / Assessment</SelectItem>
-                <SelectItem value='therapy'>Therapy</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className='space-y-1'>
             <Label>Files</Label>
             <div>
@@ -196,18 +181,33 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
                     </button>
                   </div>
 
-                  <div className='grid grid-cols-3 gap-2'>
+                  <div className='grid grid-cols-2 gap-2'>
                     <StudentPicker
                       students={students}
                       value={row.studentId}
                       onChange={studentId => updateRow(row.key, { studentId })}
                     />
+
+                    <Select
+                      value={row.purpose ?? ''}
+                      onValueChange={val => updateRow(row.key, { purpose: val as ConsentPurpose })}>
+                      <SelectTrigger className='h-9'>
+                        <SelectValue placeholder='Select Purpose' />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value='screening_assessment'>Screening / Assessment</SelectItem>
+                        <SelectItem value='therapy'>Therapy</SelectItem>
+                      </SelectContent>
+                    </Select>
+
                     <Input
                       placeholder='Parent / Guardian (optional)'
                       value={row.parentGuardian}
                       onChange={e => updateRow(row.key, { parentGuardian: e.target.value })}
                       className='h-9'
                     />
+
                     <Input
                       placeholder='Notes (optional)'
                       value={row.additionalNotes}
