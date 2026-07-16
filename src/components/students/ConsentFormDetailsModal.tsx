@@ -50,7 +50,7 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
   useEffect(() => {
     setFileName(form?.file_name ?? '')
     setIsEditingName(false)
-  }, [form?.id])
+  }, [form?.id, form?.file_name])
 
   useEffect(() => {
     const isImage = form?.file_type?.startsWith('image/') ?? false
