@@ -165,17 +165,10 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
             </div>
           </div>
 
-          {/* Purpose & Type */}
-          <div className='grid grid-cols-2 gap-4'>
-            <div>
-              <p className='text-xs text-muted-foreground'>Purpose</p>
-              <p className='font-medium'>{purposeLabel(form.consent_purpose)}</p>
-            </div>
-
-            <div>
-              <p className='text-xs text-muted-foreground'>Type of Consent</p>
-              <p className='font-medium capitalize'>{form.consent_type}</p>
-            </div>
+          {/* Purpose */}
+          <div>
+            <p className='text-xs text-muted-foreground'>Purpose</p>
+            <p className='font-medium'>{purposeLabel(form.consent_purpose)}</p>
           </div>
 
           {/* Parent / Guardian */}
@@ -187,7 +180,7 @@ const ConsentFormDetailsModal = ({ isOpen, onClose, form }: ConsentFormDetailsMo
           )}
 
           {/* Verbal details */}
-          {form.consent_type === 'verbal' && (
+          {form.verbal_consent_details && (
             <div>
               <p className='text-xs text-muted-foreground'>Verbal Consent Details</p>
               <p className='mt-1 whitespace-pre-wrap rounded-md bg-muted px-3 py-2'>

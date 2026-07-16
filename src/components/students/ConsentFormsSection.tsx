@@ -83,8 +83,6 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
   const purposeLabel = (purpose: string) =>
     purpose === 'screening_assessment' ? 'Screening / Assessment' : 'Therapy'
 
-  const typeLabel = (type: string) => (type === 'verbal' ? 'Verbal' : 'Written')
-
   return (
     <>
       <Card>
@@ -112,7 +110,7 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
                 <li key={form.id} className='flex items-center justify-between py-3'>
                   <div className='flex flex-col'>
                     <span className='text-sm font-medium'>
-                      {purposeLabel(form.consent_purpose)} · {typeLabel(form.consent_type)}
+                      {purposeLabel(form.consent_purpose)}
                       {form.file_name && (
                         <span className='text-muted-foreground font-normal'>
                           {' '}

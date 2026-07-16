@@ -3,14 +3,18 @@ import { supabase } from '@/lib/supabase'
 export type ConsentPurpose = 'screening_assessment' | 'therapy'
 export type ConsentType = 'verbal' | 'written'
 
+export interface ConsentFormFileEntry {
+  file: File
+  purpose: ConsentPurpose
+}
+
 export interface ConsentFormData {
-  consent_date: string
-  consent_purpose: ConsentPurpose
+  consent_date?: string
   consent_type: ConsentType
   verbal_consent_details?: string
   parent_guardian?: string
   additional_notes?: string
-  files?: File[]
+  files?: ConsentFormFileEntry[]
 }
 
 export interface ConsentFormWithStudent {
@@ -62,47 +66,37 @@ export const consentFormsApi = {
       } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const files = formData.files ?? []
+      const uploaded: {
+        path: string
+        name: string
+        type: string
+        size: number
+        purpose: ConsentPurpose
+      }[] = []
 
-      if (files.length === 0) {
-        const { error } = await supabase.from('consent_forms').insert({
-          student_id: studentId,
-          ...(formData.consent_date ? { consent_date: formData.consent_date } : {}),
-          consent_purpose: formData.consent_purpose,
-          consent_type: formData.consent_type,
-          verbal_consent_details: formData.verbal_consent_details || null,
-          parent_guardian: formData.parent_guardian || null,
-          additional_notes: formData.additional_notes || null,
-          file_path: null,
-          file_name: null,
-          file_type: null,
-          file_size: null,
-          uploaded_by: user.id,
-        })
-
-        if (error) throw error
-        return
-      }
-
-      const uploaded: { path: string; name: string; type: string; size: number }[] = []
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const filePath = `${studentId}/${Date.now()}-${i}-${file.name}`
+      for (let i = 0; i < formData.files.length; i++) {
+        const entry = formData.files[i]
+        const filePath = `${studentId}/${Date.now()}-${i}-${entry.file.name}`
 
         const { error: uploadError } = await supabase.storage
           .from('consent-forms')
-          .upload(filePath, file, { contentType: file.type, upsert: false })
+          .upload(filePath, entry.file, { contentType: entry.file.type, upsert: false })
 
         if (uploadError) throw uploadError
 
-        uploaded.push({ path: filePath, name: file.name, type: file.type, size: file.size })
+        uploaded.push({
+          path: filePath,
+          name: entry.file.name,
+          type: entry.file.type,
+          size: entry.file.size,
+          purpose: entry.purpose,
+        })
       }
 
       const rows = uploaded.map(file => ({
         student_id: studentId,
-        consent_date: formData.consent_date,
-        consent_purpose: formData.consent_purpose,
+        ...(formData.consent_date ? { consent_date: formData.consent_date } : {}),
+        consent_purpose: file.purpose,
         consent_type: formData.consent_type,
         verbal_consent_details: formData.verbal_consent_details || null,
         parent_guardian: formData.parent_guardian || null,
