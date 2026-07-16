@@ -14,7 +14,7 @@ import {
 import { FileText, Calendar, Save, Edit } from 'lucide-react'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import EnhancedSpeechScreeningFields from '@/components/screening/speech/EnhancedSpeechScreeningFields'
-import EditStudentDialog from '@/components/screening/EditStudentDialog'
+import EditStudentDialog from '@/components/students/EditStudentDialog'
 import CollapsibleNotesCard from '@/components/screening/CollapsibleNotesCard'
 
 const EditScreeningContent = () => {
@@ -55,7 +55,7 @@ const EditScreeningContent = () => {
       <div className='flex items-center justify-center h-screen'>
         <div className='text-center'>
           <h2 className='text-2xl font-semibold text-gray-900'>Screening not found</h2>
-          <p className='text-gray-600 mt-2'>The screening you're looking for doesn't exist.</p>
+          <p className='mt-2 text-gray-600'>The screening you're looking for doesn't exist.</p>
           <Button onClick={handleGoBack} className='mt-4'>
             Go Back
           </Button>
@@ -76,7 +76,7 @@ const EditScreeningContent = () => {
         </div>
       </div>
 
-      <div className='bg-white rounded-lg border border-gray-200 shadow-sm'>
+      <div className='bg-white border border-gray-200 rounded-lg shadow-sm'>
         <div className='p-6'>
           <div className='space-y-6'>
             <Card>
@@ -87,7 +87,7 @@ const EditScreeningContent = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-4'>
-                <div className='mb-4 py-3 px-5 bg-blue-50 rounded-lg border border-blue-200'>
+                <div className='px-5 py-3 mb-4 border border-blue-200 rounded-lg bg-blue-50'>
                   <div className='flex items-center justify-between'>
                     <div className='flex-1'>
                       <div className='flex items-center gap-2'>
@@ -125,10 +125,10 @@ const EditScreeningContent = () => {
                     </Button>
                   </div>
                 </div>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                   <div>
-                    <Label htmlFor='screening_type' className='mb-2 block'>
-                      Screening Type <span className='text-red-500 text-lg'>*</span>
+                    <Label htmlFor='screening_type' className='block mb-2'>
+                      Screening Type <span className='text-lg text-red-500'>*</span>
                     </Label>
                     <Select
                       value={form.watch('screening_type')}
@@ -143,14 +143,14 @@ const EditScreeningContent = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor='screening_date' className='mb-2 block'>
-                      Screening Date <span className='text-red-500 text-lg'>*</span>
+                    <Label htmlFor='screening_date' className='block mb-2'>
+                      Screening Date <span className='text-lg text-red-500'>*</span>
                     </Label>
                     <Input
                       type='text'
                       value={form.watch('screening_date')}
                       readOnly
-                      className='bg-gray-50 cursor-not-allowed'
+                      className='cursor-not-allowed bg-gray-50'
                     />
                   </div>
                 </div>
@@ -220,9 +220,9 @@ const EditScreeningContent = () => {
 
       <EditStudentDialog
         open={isEditingStudent}
-        editedFirstName={editedFirstName}
-        editedLastName={editedLastName}
-        editedGradeId={editedGradeId}
+        firstName={editedFirstName}
+        lastName={editedLastName}
+        gradeId={editedGradeId}
         availableGrades={availableGrades}
         isLoadingGrades={isLoadingGrades}
         onFirstNameChange={setEditedFirstName}

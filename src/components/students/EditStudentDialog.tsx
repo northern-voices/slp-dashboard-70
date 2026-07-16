@@ -20,7 +20,6 @@ import type { SchoolGrade } from '@/api/schoolGrades'
 
 interface EditStudentDialogProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
   firstName: string
   lastName: string
   gradeId: string
@@ -35,7 +34,6 @@ interface EditStudentDialogProps {
 
 const EditStudentDialog = ({
   open,
-  onOpenChange,
   firstName,
   lastName,
   gradeId,
@@ -59,6 +57,7 @@ const EditStudentDialog = ({
           Update the student's first name, last name, and current grade below.
         </DialogDescription>
       </DialogHeader>
+
       <div className='py-4 space-y-4'>
         <div className='space-y-2'>
           <label className='text-sm font-medium text-gray-700'>First Name</label>
@@ -68,6 +67,7 @@ const EditStudentDialog = ({
             placeholder='First Name'
           />
         </div>
+
         <div className='space-y-2'>
           <label className='text-sm font-medium text-gray-700'>Last Name</label>
           <Input
@@ -76,6 +76,7 @@ const EditStudentDialog = ({
             placeholder='Last Name'
           />
         </div>
+
         <div className='space-y-2'>
           <label className='text-sm font-medium text-gray-700'>Current Grade</label>
           {isLoadingGrades ? (
@@ -98,10 +99,12 @@ const EditStudentDialog = ({
           )}
         </div>
       </div>
+
       <DialogFooter>
         <Button variant='outline' onClick={onCancel}>
           Cancel
         </Button>
+
         <Button onClick={onSave}>Save Changes</Button>
       </DialogFooter>
     </DialogContent>
