@@ -21,8 +21,6 @@ interface ConsentTableProps {
 const purposeLabel = (purpose: string) =>
   purpose === 'screening_assessment' ? 'Screening / Assessment' : 'Therapy'
 
-const typeLabel = (type: string) => (type === 'verbal' ? 'Verbal' : 'Written')
-
 const ConsentTable = ({ forms, isLoading }: ConsentTableProps) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedForm, setSelectedForm] = useState<ConsentFormWithStudent | null>(null)
@@ -65,7 +63,6 @@ const ConsentTable = ({ forms, isLoading }: ConsentTableProps) => {
             <tr>
               <TableHead className='w-1/5 min-w-[180px]'>Student</TableHead>
               <TableHead>Purpose</TableHead>
-              <TableHead>Type</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>File</TableHead>
               <TableHead>Recorded By</TableHead>
@@ -83,8 +80,6 @@ const ConsentTable = ({ forms, isLoading }: ConsentTableProps) => {
                 </TableCell>
 
                 <TableCell>{purposeLabel(form.consent_purpose)}</TableCell>
-
-                <TableCell>{typeLabel(form.consent_type)}</TableCell>
 
                 <TableCell>{format(new Date(form.consent_date), 'MMM d, yyyy')}</TableCell>
 
