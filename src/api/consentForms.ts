@@ -46,7 +46,7 @@ export interface BulkConsentFormEntry {
 }
 
 export interface BulkConsentFormData {
-  consent_date: string
+  consent_date?: string
   consent_purpose: ConsentPurpose
   consent_type: ConsentType
   verbal_consent_details?: string
@@ -67,7 +67,7 @@ export const consentFormsApi = {
       if (files.length === 0) {
         const { error } = await supabase.from('consent_forms').insert({
           student_id: studentId,
-          consent_date: formData.consent_date,
+          ...(formData.consent_date ? { consent_date: formData.consent_date } : {}),
           consent_purpose: formData.consent_purpose,
           consent_type: formData.consent_type,
           verbal_consent_details: formData.verbal_consent_details || null,
@@ -201,7 +201,7 @@ export const consentFormsApi = {
 
       const rows = uploaded.map(file => ({
         student_id: file.studentId,
-        consent_date: formData.consent_date,
+        ...(formData.consent_date ? { consent_date: formData.consent_date } : {}),
         consent_purpose: formData.consent_purpose,
         consent_type: formData.consent_type,
         verbal_consent_details: formData.verbal_consent_details || null,

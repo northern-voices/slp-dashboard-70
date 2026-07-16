@@ -31,16 +31,12 @@ interface FileRow {
   additionalNotes: string
 }
 
-const today = () => new Date().toISOString().split('T')[0]
-const minDate = () => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-
 const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModalProps) => {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { data: students = [] } = useStudentsBySchool(schoolId)
   const bulkUploadMutation = useBulkUploadConsentForms()
 
-  const [consentDate, setConsentDate] = useState(today())
   const [consentPurpose, setConsentPurpose] = useState<ConsentPurpose | ''>('')
   const [rows, setRows] = useState<FileRow[]>([])
 
@@ -69,7 +65,6 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
   }
 
   const handleClose = () => {
-    setConsentDate(today())
     setConsentPurpose('')
     setRows([])
     if (fileInputRef.current) fileInputRef.current.value = ''
@@ -108,7 +103,6 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
 
     await bulkUploadMutation.mutateAsync(
       {
-        consent_date: consentDate,
         consent_purpose: consentPurpose as ConsentPurpose,
         consent_type: 'written',
         verbal_consent_details: undefined,
@@ -146,37 +140,21 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
         </DialogHeader>
 
         <div className='space-y-4'>
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-1'>
-              <Label htmlFor='bulk-consent-date'>
-                Date of Consent <span className='text-destructive'>*</span>
-              </Label>
-              <Input
-                id='bulk-consent-date'
-                type='date'
-                min={minDate()}
-                max={today()}
-                value={consentDate}
-                onChange={e => setConsentDate(e.target.value)}
-              />
-            </div>
-
-            <div className='space-y-1'>
-              <Label>
-                Purpose <span className='text-destructive'>*</span>
-              </Label>
-              <Select
-                value={consentPurpose}
-                onValueChange={val => setConsentPurpose(val as ConsentPurpose)}>
-                <SelectTrigger>
-                  <SelectValue placeholder='Select purpose' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='screening_assessment'>Screening / Assessment</SelectItem>
-                  <SelectItem value='therapy'>Therapy</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className='space-y-1'>
+            <Label>
+              Purpose <span className='text-destructive'>*</span>
+            </Label>
+            <Select
+              value={consentPurpose}
+              onValueChange={val => setConsentPurpose(val as ConsentPurpose)}>
+              <SelectTrigger>
+                <SelectValue placeholder='Select purpose' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='screening_assessment'>Screening / Assessment</SelectItem>
+                <SelectItem value='therapy'>Therapy</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className='space-y-1'>
