@@ -30,7 +30,7 @@ export const useBulkUploadConsentForms = () => {
   return useMutation({
     mutationFn: (formData: BulkConsentFormData) => consentFormsApi.uploadConsentFormsBulk(formData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['consentForms'] })
+      queryClient.invalidateQueries({ queryKey: ['consent-forms'] })
     },
   })
 }

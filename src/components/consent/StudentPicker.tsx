@@ -52,7 +52,11 @@ const StudentPicker = ({ students, value, onChange }: StudentPickerProps) => {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className='w-[var(--radix popover-trigger-width)] p-0' align='start'>
+      <PopoverContent
+        className='w-[var(--radix-popover-trigger-width)] p-0'
+        align='start'
+        onWheel={e => e.stopPropagation()}
+        onTouchMove={e => e.stopPropagation()}>
         <Command shouldFilter={false}>
           <CommandInput
             placeholder='Search students...'
@@ -78,7 +82,7 @@ const StudentPicker = ({ students, value, onChange }: StudentPickerProps) => {
                       value === student.id ? 'opacity-100' : ' opacity-0'
                     )}
                   />
-                  {student.first_name} ${student.last_name}
+                  {student.first_name} {student.last_name}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -88,3 +92,5 @@ const StudentPicker = ({ students, value, onChange }: StudentPickerProps) => {
     </Popover>
   )
 }
+
+export default StudentPicker
