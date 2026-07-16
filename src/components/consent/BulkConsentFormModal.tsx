@@ -10,11 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useBulkUploadConsentForms } from '@/hooks/students/use-consent-forms'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
-import { ConsentPurpose, ConsentType } from '@/api/consentForms'
+import { ConsentPurpose } from '@/api/consentForms'
 import { Upload, Loader2, X, FileText } from 'lucide-react'
 import StudentPicker from './StudentPicker'
 
@@ -43,8 +42,6 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
 
   const [consentDate, setConsentDate] = useState(today())
   const [consentPurpose, setConsentPurpose] = useState<ConsentPurpose | ''>('')
-  const [consentType, setConsentType] = useState<ConsentType | ''>('')
-  const [verbalConsentDetails, setVerbalConsentDetails] = useState('')
   const [rows, setRows] = useState<FileRow[]>([])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,8 +71,6 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
   const handleClose = () => {
     setConsentDate(today())
     setConsentPurpose('')
-    setConsentType('')
-    setVerbalConsentDetails('')
     setRows([])
     if (fileInputRef.current) fileInputRef.current.value = ''
     onClose()
@@ -88,15 +83,6 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
       toast({
         title: 'Missing field',
         description: 'Please select a consent purpose.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    if (!consentType) {
-      toast({
-        title: 'Missing field',
-        description: 'Please select a consent type.',
         variant: 'destructive',
       })
       return
@@ -124,8 +110,8 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
       {
         consent_date: consentDate,
         consent_purpose: consentPurpose as ConsentPurpose,
-        consent_type: consentType as ConsentType,
-        verbal_consent_details: consentType === 'verbal' ? verbalConsentDetails : undefined,
+        consent_type: 'written',
+        verbal_consent_details: undefined,
         entries: rows.map(row => ({
           file: row.file,
           studentId: row.studentId as string,
@@ -152,8 +138,6 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
     )
   }
 
-  const acceptTypes = consentType === 'verbal' ? 'image/*,audio/*,application/pdf' : 'image/*'
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className='max-w-3xl max-h-[90vh] overflow-y-auto'>
@@ -162,7 +146,7 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
         </DialogHeader>
 
         <div className='space-y-4'>
-          <div className='grid grid-cols-3 gap-4'>
+          <div className='grid grid-cols-2 gap-4'>
             <div className='space-y-1'>
               <Label htmlFor='bulk-consent-date'>
                 Date of Consent <span className='text-destructive'>*</span>
@@ -193,35 +177,7 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
                 </SelectContent>
               </Select>
             </div>
-
-            <div className='space-y-1'>
-              <Label>
-                Type of Consent <span className='text-destructive'>*</span>
-              </Label>
-              <Select value={consentType} onValueChange={val => setConsentType(val as ConsentType)}>
-                <SelectTrigger>
-                  <SelectValue placeholder='Select type' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='verbal'>Verbal Consent</SelectItem>
-                  <SelectItem value='written'>Written Consent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
-
-          {consentType === 'verbal' && (
-            <div className='space-y-1'>
-              <Label htmlFor='bulk-verbal-details'>Verbal Consent Details</Label>
-              <Textarea
-                id='bulk-verbal-details'
-                placeholder='Describe the verbal consent given...'
-                rows={2}
-                value={verbalConsentDetails}
-                onChange={e => setVerbalConsentDetails(e.target.value)}
-              />
-            </div>
-          )}
 
           <div className='space-y-1'>
             <Label>Files</Label>
@@ -230,20 +186,16 @@ const BulkConsentFormModal = ({ isOpen, onClose, schoolId }: BulkConsentFormModa
                 type='button'
                 variant='outline'
                 size='sm'
-                onClick={() => fileInputRef.current?.click()}
-                disabled={!consentType}>
+                onClick={() => fileInputRef.current?.click()}>
                 <Upload className='w-4 h-4 mr-2' />
                 Choose Files
               </Button>
             </div>
-            {!consentType && (
-              <p className='text-xs text-muted-foreground'>Select a consent type first.</p>
-            )}
             <input
               ref={fileInputRef}
               type='file'
               multiple
-              accept={acceptTypes}
+              accept='image/*'
               className='hidden'
               onChange={handleFileChange}
             />
