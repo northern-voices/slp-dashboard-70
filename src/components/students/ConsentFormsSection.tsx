@@ -89,7 +89,7 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
         <CardHeader className='flex flex-row items-center justify-between'>
           <CardTitle className='text-lg font-semibold'>Consent Forms</CardTitle>
           <Button size='sm' onClick={() => setIsModalOpen(true)}>
-            <Plus className='h-4 w-4' />
+            <Plus className='w-4 h-4' />
             Add
           </Button>
         </CardHeader>
@@ -97,11 +97,11 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
         <CardContent>
           {isLoading ? (
             <div className='flex justify-center py-6'>
-              <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+              <Loader2 className='w-6 h-6 animate-spin text-muted-foreground' />
             </div>
           ) : forms.length === 0 ? (
             <div className='flex flex-col items-center gap-2 py-8 text-muted-foreground'>
-              <FileImage className='h-8 w-8' />
+              <FileImage className='w-8 h-8' />
               <p className='text-sm'>No consent forms recorded yet.</p>
             </div>
           ) : (
@@ -112,7 +112,7 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
                     <span className='text-sm font-medium'>
                       {purposeLabel(form.consent_purpose)}
                       {form.file_name && (
-                        <span className='text-muted-foreground font-normal'>
+                        <span className='font-normal text-muted-foreground'>
                           {' '}
                           - {form.file_name}
                         </span>
@@ -126,7 +126,7 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
                   </div>
                   <div className='flex gap-2'>
                     <Button size='sm' variant='outline' onClick={() => setSelectedForm(form)}>
-                      <Eye className='h-4 w-4' />
+                      <Eye className='w-4 h-4' />
                     </Button>
                     <Button
                       size='sm'
@@ -139,7 +139,7 @@ const ConsentFormsSection = ({ student }: ConsentFormsSectionProps) => {
                         })
                       }
                       disabled={deleteMutation.isPending}>
-                      <Trash2 className='h-4 w-4 text-destructive' />
+                      <Trash2 className='w-4 h-4 text-destructive' />
                     </Button>
                   </div>
                 </li>
