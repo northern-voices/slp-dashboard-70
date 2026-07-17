@@ -50,12 +50,13 @@ const EditStudentDialog = ({
     onOpenChange={open => {
       if (!open) onCancel()
     }}>
-    <DialogContent>
+    <DialogContent
+      onOpenAutoFocus={e => {
+        e.preventDefault()
+      }}>
       <DialogHeader>
         <DialogTitle>Edit Student Information</DialogTitle>
-        <DialogDescription>
-          Update the student's first name, last name, and current grade below.
-        </DialogDescription>
+        <DialogDescription>Update the student's first name, last name.</DialogDescription>
       </DialogHeader>
 
       <div className='py-4 space-y-4'>
@@ -77,7 +78,7 @@ const EditStudentDialog = ({
           />
         </div>
 
-        <div className='space-y-2'>
+        {/* <div className='space-y-2'>
           <label className='text-sm font-medium text-gray-700'>Current Grade</label>
           {isLoadingGrades ? (
             <div className='flex items-center justify-center py-2'>
@@ -97,7 +98,7 @@ const EditStudentDialog = ({
               </SelectContent>
             </Select>
           )}
-        </div>
+        </div> */}
       </div>
 
       <DialogFooter>
