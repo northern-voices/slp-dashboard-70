@@ -20,7 +20,6 @@ import type { SchoolGrade } from '@/api/schoolGrades'
 
 interface EditStudentDialogProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
   firstName: string
   lastName: string
   gradeId: string
@@ -35,7 +34,6 @@ interface EditStudentDialogProps {
 
 const EditStudentDialog = ({
   open,
-  onOpenChange,
   firstName,
   lastName,
   gradeId,
@@ -52,13 +50,15 @@ const EditStudentDialog = ({
     onOpenChange={open => {
       if (!open) onCancel()
     }}>
-    <DialogContent>
+    <DialogContent
+      onOpenAutoFocus={e => {
+        e.preventDefault()
+      }}>
       <DialogHeader>
         <DialogTitle>Edit Student Information</DialogTitle>
-        <DialogDescription>
-          Update the student's first name, last name, and current grade below.
-        </DialogDescription>
+        <DialogDescription>Update the student's first name, last name.</DialogDescription>
       </DialogHeader>
+
       <div className='py-4 space-y-4'>
         <div className='space-y-2'>
           <label className='text-sm font-medium text-gray-700'>First Name</label>
@@ -68,6 +68,7 @@ const EditStudentDialog = ({
             placeholder='First Name'
           />
         </div>
+
         <div className='space-y-2'>
           <label className='text-sm font-medium text-gray-700'>Last Name</label>
           <Input
@@ -76,7 +77,8 @@ const EditStudentDialog = ({
             placeholder='Last Name'
           />
         </div>
-        <div className='space-y-2'>
+
+        {/* <div className='space-y-2'>
           <label className='text-sm font-medium text-gray-700'>Current Grade</label>
           {isLoadingGrades ? (
             <div className='flex items-center justify-center py-2'>
@@ -96,12 +98,14 @@ const EditStudentDialog = ({
               </SelectContent>
             </Select>
           )}
-        </div>
+        </div> */}
       </div>
+
       <DialogFooter>
         <Button variant='outline' onClick={onCancel}>
           Cancel
         </Button>
+
         <Button onClick={onSave}>Save Changes</Button>
       </DialogFooter>
     </DialogContent>

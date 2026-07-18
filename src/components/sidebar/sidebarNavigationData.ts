@@ -8,6 +8,7 @@ import {
   Stethoscope,
   Ear,
   ClipboardList,
+  ShieldCheck,
 } from 'lucide-react'
 import { Location } from 'react-router-dom'
 import { LucideIcon } from 'lucide-react'
@@ -109,6 +110,16 @@ export const getNavigationGroups = (
       isActive:
         location.pathname === '/caseload' ||
         (useSchoolRoutes && location.pathname.startsWith(`/school/${currentSchool.id}/caseload`)),
+
+      skeleton: CaseloadSkeleton,
+    },
+    {
+      title: 'Consent',
+      url: useSchoolRoutes ? `/school/${currentSchool.id}/consent` : '/consent',
+      icon: ShieldCheck,
+      isActive:
+        location.pathname === '/consent' ||
+        (useSchoolRoutes && location.pathname.startsWith(`/school/${currentSchool.id}/consent`)),
 
       skeleton: CaseloadSkeleton,
     },
