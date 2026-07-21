@@ -267,6 +267,7 @@ const UsersTable = ({
                             if (unassigned.length === 0) return null
                             return (
                               <Select
+                                key={user.schools?.length ?? 0}
                                 onValueChange={schoolId => onAssignSchool?.(user.id, schoolId)}>
                                 <SelectTrigger className='w-32 h-7 text-xs border-dashed'>
                                   <SelectValue placeholder='+ Add school' />
