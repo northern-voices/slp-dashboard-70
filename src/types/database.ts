@@ -150,7 +150,7 @@ export interface OrgUser {
   organization_id: string
   created_at: string
   updated_at: string
-  schools?: { is: string; name: string }[]
+  schools?: { id: string; name: string }[]
 }
 
 export interface School {

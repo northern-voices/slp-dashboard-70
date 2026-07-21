@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { MoreHorizontal, Search, Edit, UserX, Users } from 'lucide-react'
+import { MoreHorizontal, Search, Edit, UserX, Users, X } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,12 +27,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { OrgUser } from '@/types/database'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface UsersTableProps {
   users: OrgUser[]
   onEditUser: (user: OrgUser) => void
   onDeactivateUser: (userId: string) => void
   onResendInvite: (userId: string) => void
+  onAssignSchool?: (userId: string, schoolId: string) => void
+  onUnassignSchool?: (userId: string, schoolId: string) => void
+  canManageAssignments?: boolean
   selectedUsers?: string[]
   onSelectionChange?: (selectedUsers: string[]) => void
 }
@@ -42,9 +46,13 @@ const UsersTable = ({
   onEditUser,
   onDeactivateUser,
   onResendInvite,
+  onAssignSchool,
+  onUnassignSchool,
+  canManageAssignments = false,
   selectedUsers = [],
   onSelectionChange,
 }: UsersTableProps) => {
+  const { availableSchools } = useOrganization()
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -225,22 +233,57 @@ const UsersTable = ({
                       </div>
                     </TableCell>
                     <TableCell>{getRoleBadge(user.role)}</TableCell>
+
                     <TableCell>{getStatusBadge(user.is_active ? 'active' : 'inactive')}</TableCell>
+
                     <TableCell>
-                      <div className='flex flex-wrap gap-1'>
+                      <div className='flex flex-wrap items-center gap-1'>
                         {user.schools && user.schools.length > 0 ? (
                           user.schools.map(school => (
                             <span
                               key={school.id}
-                              className='inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100'>
+                              className='inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100'>
                               {school.name}
+                              {canManageAssignments && (
+                                <button
+                                  type='button'
+                                  onClick={() => onUnassignSchool?.(user.id, school.id)}
+                                  className='hover:text-blue-900'
+                                  aria-label={`Remove ${school.name}`}>
+                                  <X className='w-3 h-3' />
+                                </button>
+                              )}
                             </span>
                           ))
                         ) : (
                           <span className='text-sm italic text-gray-400'>No assignments</span>
                         )}
+
+                        {canManageAssignments &&
+                          (() => {
+                            const unassigned = availableSchools.filter(
+                              school => !user.schools?.some(s => s.id === school.id)
+                            )
+                            if (unassigned.length === 0) return null
+                            return (
+                              <Select
+                                onValueChange={schoolId => onAssignSchool?.(user.id, schoolId)}>
+                                <SelectTrigger className='w-32 h-7 text-xs border-dashed'>
+                                  <SelectValue placeholder='+ Add school' />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {unassigned.map(school => (
+                                    <SelectItem key={school.id} value={school.id}>
+                                      {school.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )
+                          })()}
                       </div>
                     </TableCell>
+
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

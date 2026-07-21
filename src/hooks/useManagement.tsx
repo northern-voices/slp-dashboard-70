@@ -26,24 +26,36 @@ export const useManagement = () => {
 
   const { availableSchools, refreshData, currentOrganization } = useOrganization()
 
-  useEffect(() => {
+  const fetchUsers = async () => {
     if (!currentOrganization?.id) return
 
-    const fetchUsers = async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*, schools(id, name)')
-        .eq('organization_id', currentOrganization.id)
-        .order('first_name')
+    const { data, error } = await supabase
+      .from('users')
+      .select('*, user_school_assignments(school_id, schools(id, name))')
+      .eq('organization_id', currentOrganization.id)
+      .order('first_name')
 
-      if (error) {
-        toast({ title: 'Failed to load users', description: error.message, variant: 'destructive' })
-        return
-      }
-
-      setUsers(data || [])
+    if (error) {
+      toast({ title: 'Failed to load users', description: error.message, variant: 'destructive' })
+      return
     }
 
+    const mappedUsers = (data || []).map(user => {
+      const assignments = user.user_school_assignments as unknown as Array<{
+        school_id: string
+        schools: { id: string; name: string }
+      }>
+
+      return {
+        ...user,
+        schools: assignments.map(assignment => assignment.schools),
+      }
+    })
+
+    setUsers(mappedUsers)
+  }
+
+  useEffect(() => {
     fetchUsers()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentOrganization?.id])
@@ -173,6 +185,43 @@ export const useManagement = () => {
     setUsers(prev => prev.map(u => (u.id === userId ? { ...u, is_active: !u.is_active } : u)))
   }
 
+  const handleAssignSchool = async (userId: string, schoolId: string) => {
+    const { error } = await supabase
+      .from('user_school_assignments')
+      .insert({ user_id: userId, school_id: schoolId })
+
+    if (error) {
+      toast({
+        title: 'Failed to assign school',
+        description: error.message,
+        variant: 'destructive',
+      })
+      return
+    }
+
+    await fetchUsers()
+  }
+
+  const handleUnassignSchool = async (userId: string, schoolId: string) => {
+    const { error } = await supabase
+      .from('user_school_assignments')
+      .delete()
+      .eq('user_id', userId)
+      .eq('school_id', schoolId)
+
+    if (error) {
+      toast({
+        title: 'Failed to remove school',
+        description: error.message,
+        variant: 'destructive',
+      })
+
+      return
+    }
+
+    await fetchUsers()
+  }
+
   const handleResendInvite = (userId: string) => {
     console.log('Resend invite to user:', userId)
   }
@@ -228,5 +277,7 @@ export const useManagement = () => {
     handleDeactivateUser,
     handleResendInvite,
     handleSaveUser,
+    handleAssignSchool,
+    handleUnassignSchool,
   }
 }

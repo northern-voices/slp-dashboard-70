@@ -67,7 +67,7 @@ const DashboardContent = () => {
   )
 
   const userRole = userProfile?.role || 'slp'
-  const canEditSchoolDetails = userRole === 'admin' || userRole === 'super_admin'
+  const canEditSchoolDetails = userRole === 'super_admin'
 
   const userName = userProfile
     ? `${userProfile.first_name} ${userProfile.last_name}`

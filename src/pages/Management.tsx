@@ -55,8 +55,10 @@ const ManagementContent = () => {
     handleInviteUser,
     handleEditUser,
     handleDeactivateUser,
-    handleResendInvite,
     handleSaveUser,
+    handleResendInvite,
+    handleAssignSchool,
+    handleUnassignSchool,
   } = useManagement()
 
   const userRole = userProfile?.role || 'slp'
@@ -139,6 +141,9 @@ const ManagementContent = () => {
             onEditUser={handleEditUser}
             onDeactivateUser={handleDeactivateUser}
             onResendInvite={handleResendInvite}
+            onAssignSchool={handleAssignSchool}
+            onUnassignSchool={handleUnassignSchool}
+            canManageAssignments={userRole === 'super_admin'}
           />
         </TabsContent>
 
