@@ -134,15 +134,27 @@ const UsersTable = ({
             Active
           </Badge>
         )
+      case 'unverified':
+        return (
+          <Badge className='font-medium bg-amber-50 text-amber-700 border-amber-200'>
+            Unverified
+          </Badge>
+        )
+      case 'invited':
+        return (
+          <Badge className='font-medium bg-blue-50 text-blue-700 border-blue-200'>Invited</Badge>
+        )
+      case 'expired':
+        return (
+          <Badge variant='outline' className='text-red-600 border-red-300'>
+            Expired
+          </Badge>
+        )
       case 'inactive':
         return (
           <Badge variant='outline' className='text-gray-600 border-gray-300'>
             Inactive
           </Badge>
-        )
-      case 'pending':
-        return (
-          <Badge className='font-medium bg-amber-50 text-amber-700 border-amber-200'>Pending</Badge>
         )
       default:
         return <Badge variant='secondary'>{status}</Badge>
