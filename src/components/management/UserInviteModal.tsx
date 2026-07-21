@@ -160,6 +160,12 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
                 </p>
               </div>
             )}
+            {!emailSendFailed && (
+              <p className='text-xs text-gray-500'>
+                Prefer to send it yourself? Copy the link below — handy if the email ends up in
+                spam.
+              </p>
+            )}
             <div className='flex items-center gap-2 p-3 border border-gray-200 rounded-lg bg-gray-50'>
               <p className='flex-1 text-xs text-gray-700 break-all'>{inviteLink}</p>
               <Button type='button' size='sm' variant='outline' onClick={handleCopy}>
