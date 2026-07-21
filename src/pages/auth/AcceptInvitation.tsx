@@ -13,6 +13,8 @@ interface InvitationData {
   role: string
   organizationName: string
   organizationId: string
+  schoolId: string | null
+  schoolName: string | null
 }
 
 const AcceptInvitation = () => {
@@ -68,6 +70,8 @@ const AcceptInvitation = () => {
         role: invite.role,
         organizationName: invite.organization_name,
         organizationId: invite.organization_id,
+        schoolId: invite.school_id ?? null,
+        schoolName: invite.school_name ?? null,
       })
       setIsFetching(false)
     }
@@ -110,6 +114,7 @@ const AcceptInvitation = () => {
         firstName: formData.firstName,
         lastName: formData.lastName,
         role: invitationData.role,
+        schoolId: invitationData.schoolId,
       })
 
       toast({

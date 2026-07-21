@@ -23,9 +23,9 @@ interface UserInviteModalProps {
 
 const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) => {
   const { toast } = useToast()
-  const { currentOrganization, userProfile } = useOrganization()
+  const { currentOrganization, userProfile, availableSchools } = useOrganization()
 
-  const [formData, setFormData] = useState({ email: '', role: 'slp' })
+  const [formData, setFormData] = useState({ email: '', role: 'slp', schoolId: '' })
   const [isLoading, setIsLoading] = useState(false)
   const [inviteLink, setInviteLink] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -121,7 +121,7 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
   }
 
   const handleClose = () => {
-    setFormData({ email: '', role: 'slp' })
+    setFormData({ email: '', role: 'slp', schoolId: '' })
     setInviteLink(null)
     setCopied(false)
     onClose()
@@ -181,7 +181,13 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
               <Label htmlFor='role'>Role</Label>
               <Select
                 value={formData.role}
-                onValueChange={value => setFormData(prev => ({ ...prev, role: value }))}>
+                onValueChange={value =>
+                  setFormData(prev => ({
+                    ...prev,
+                    role: value,
+                    schoolId: value === 'admin' ? '' : prev.schoolId,
+                  }))
+                }>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -192,6 +198,26 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
                 </SelectContent>
               </Select>
             </div>
+
+            {formData.role !== 'admin' && (
+              <div className='space-y-2'>
+                <Label htmlFor='school'>School (optional)</Label>
+                <Select
+                  value={formData.schoolId}
+                  onValueChange={value => setFormData(prev => ({ ...prev, schoolId: value }))}>
+                  <SelectTrigger id='school'>
+                    <SelectValue placeholder='Assign a school now (optional)' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableSchools.map(school => (
+                      <SelectItem key={school.id} value={school.id}>
+                        {school.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className='flex gap-3 pt-2'>
               <Button type='submit' className='flex-1' disabled={isLoading}>
