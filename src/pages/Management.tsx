@@ -63,6 +63,10 @@ const ManagementContent = () => {
 
   const userRole = userProfile?.role || 'slp'
 
+  const editingUserWithLiveData = editingUser
+    ? (users.find(user => user.id === editingUser.id) ?? editingUser)
+    : null
+
   // SLP view - only show assigned schools
   if (userRole === 'slp') {
     return (
@@ -208,8 +212,11 @@ const ManagementContent = () => {
           setUserEditOpen(false)
           setEditingUser(null)
         }}
-        user={editingUser}
+        user={editingUserWithLiveData}
         onSave={handleSaveUser}
+        onAssignSchool={handleAssignSchool}
+        onUnassignSchool={handleUnassignSchool}
+        canManageAssignments={userRole === 'super_admin'}
       />
     </main>
   )
