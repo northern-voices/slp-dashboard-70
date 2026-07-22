@@ -63,8 +63,7 @@ const UsersTable = ({
       fullName.includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
-    const matchesStatus =
-      statusFilter === 'all' || (statusFilter === 'active' ? user.is_active : !user.is_active)
+    const matchesStatus = statusFilter === 'all' || user.status === statusFilter
 
     return matchesSearch && matchesRole && matchesStatus
   })
@@ -181,9 +180,10 @@ const UsersTable = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value='all'>All Roles</SelectItem>
+            <SelectItem value='super_admin'>Root Admin</SelectItem>
             <SelectItem value='admin'>Administrator</SelectItem>
-            <SelectItem value='supervisor'>Supervisor</SelectItem>
             <SelectItem value='slp'>SLP</SelectItem>
+            <SelectItem value='hearing_technician'>Hearing Technician</SelectItem>
           </SelectContent>
         </Select>
 

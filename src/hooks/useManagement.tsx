@@ -97,9 +97,10 @@ export const useManagement = () => {
           created_at: invite.created_at,
           updated_at: invite.created_at,
           schools: school ? [school] : [],
-          status: new Date(invite.expires_at) > new Date() ? 'invited' : 'expired',
+          status: (new Date(invite.expires_at) > new Date() ? 'invited' : 'expired') as UserStatus,
         }
       })
+      .sort((a, b) => (a.status === b.status ? 0 : a.status === 'invited' ? -1 : 1))
 
     setUsers([...mappedUsers, ...mappedInvites])
   }
