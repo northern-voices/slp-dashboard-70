@@ -235,6 +235,17 @@ export const useManagement = () => {
     setUsers(prev => prev.map(u => (u.id === userId ? { ...u, is_active: !u.is_active } : u)))
   }
 
+  const handleChangeRole = async (userId: string, role: string) => {
+    const { error } = await supabase.from('users').update({ role }).eq('id', userId)
+
+    if (error) {
+      toast({ title: 'Failed to update role', description: error.message, variant: 'destructive' })
+      return
+    }
+
+    setUsers(prev => prev.map(user => (user.id === userId ? { ...user, role } : user)))
+  }
+
   const handleAssignSchool = async (userId: string, schoolId: string) => {
     const { error } = await supabase
       .from('user_school_assignments')
@@ -329,5 +340,6 @@ export const useManagement = () => {
     handleSaveUser,
     handleAssignSchool,
     handleUnassignSchool,
+    handleChangeRole,
   }
 }

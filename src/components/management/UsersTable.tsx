@@ -36,6 +36,7 @@ interface UsersTableProps {
   onResendInvite: (userId: string) => void
   onAssignSchool?: (userId: string, schoolId: string) => void
   onUnassignSchool?: (userId: string, schoolId: string) => void
+  onChangeRole?: (userId: string, role: string) => void
   canManageAssignments?: boolean
   selectedUsers?: string[]
   onSelectionChange?: (selectedUsers: string[]) => void
@@ -48,6 +49,7 @@ const UsersTable = ({
   onResendInvite,
   onAssignSchool,
   onUnassignSchool,
+  onChangeRole,
   canManageAssignments = false,
   selectedUsers = [],
   onSelectionChange,
@@ -230,6 +232,8 @@ const UsersTable = ({
                 {filteredUsers.map(user => {
                   const isPendingInvite = user.status === 'invited' || user.status === 'expired'
                   const hasName = Boolean(user.first_name || user.last_name)
+                  const canEditRole =
+                    onChangeRole && !isPendingInvite && user.role !== 'super_admin'
 
                   return (
                     <TableRow key={user.id} className='group'>
@@ -250,7 +254,32 @@ const UsersTable = ({
                           {hasName && <div className='text-sm text-gray-500'>{user.email}</div>}
                         </div>
                       </TableCell>
-                      <TableCell>{getRoleBadge(user.role)}</TableCell>
+
+                      <TableCell>
+                        {canEditRole ? (
+                          <Select
+                            value={user.role}
+                            onValueChange={role => onChangeRole(user.id, role)}>
+                            <SelectTrigger
+                              className={`w-auto h-7 gap-1 rounded-full border px-3 text-xs font-medium whitespace-nowrap [&>span]:line-clamp-none ${
+                                user.role === 'admin'
+                                  ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                  : user.role === 'hearing_technician'
+                                    ? 'bg-sky-50 text-sky-700 border-sky-200'
+                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              }`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value='slp'>SLP</SelectItem>
+                              <SelectItem value='hearing_technician'>Hearing Technician</SelectItem>
+                              <SelectItem value='admin'>Administrator</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          getRoleBadge(user.role)
+                        )}
+                      </TableCell>
 
                       <TableCell>{getStatusBadge(user.status)}</TableCell>
 

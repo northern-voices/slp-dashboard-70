@@ -11,6 +11,7 @@ interface UsersTabContentProps {
   onResendInvite: (userId: string) => void
   onAssignSchool: (userId: string, schoolId: string) => void
   onUnassignSchool: (userId: string, schoolId: string) => void
+  onChangeRole: (userId: string, role: string) => void
   canManageAssignments: boolean
 }
 
@@ -22,6 +23,7 @@ const UsersTabContent = ({
   onResendInvite,
   onAssignSchool,
   onUnassignSchool,
+  onChangeRole,
   canManageAssignments,
 }: UsersTabContentProps) => {
   return (
@@ -41,6 +43,7 @@ const UsersTabContent = ({
         onResendInvite={onResendInvite}
         onAssignSchool={onAssignSchool}
         onUnassignSchool={onUnassignSchool}
+        onChangeRole={onChangeRole}
         canManageAssignments={canManageAssignments}
       />
     </div>

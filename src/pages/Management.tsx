@@ -59,6 +59,7 @@ const ManagementContent = () => {
     handleResendInvite,
     handleAssignSchool,
     handleUnassignSchool,
+    handleChangeRole,
   } = useManagement()
 
   const userRole = userProfile?.role || 'slp'
@@ -147,6 +148,7 @@ const ManagementContent = () => {
             onResendInvite={handleResendInvite}
             onAssignSchool={handleAssignSchool}
             onUnassignSchool={handleUnassignSchool}
+            onChangeRole={handleChangeRole}
             canManageAssignments={userRole === 'super_admin'}
           />
         </TabsContent>
