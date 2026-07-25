@@ -134,8 +134,8 @@ export const getNavigationGroups = (
     // },
   ].filter(
     item =>
-      !(userRole === 'slp' && item.title === 'Speech Screenings') &&
-      !(userRole === 'hearing_technician' && item.title === 'Hearing Screenings')
+      !(userRole === 'hearing_technician' && item.title === 'Speech Screenings') &&
+      !(userRole === 'slp' && item.title === 'Hearing Screenings')
   )
 
   const groups: NavigationGroup[] = [
