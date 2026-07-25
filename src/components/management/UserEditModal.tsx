@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, Controller, useWatch } from 'react-hook-form'
+import { X } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { OrgUser } from '@/types/database'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 export interface UserEditFormData {
   first_name: string
@@ -24,9 +26,22 @@ interface UserEditModalProps {
   onClose: () => void
   user: OrgUser | null
   onSave: (userId: string, data: UserEditFormData) => void
+  onAssignSchool?: (userId: string, schoolId: string) => void
+  onUnassignSchool?: (userId: string, schoolId: string) => void
+  canManageAssignments?: boolean
 }
 
-const UserEditModal = ({ isOpen, onClose, user, onSave }: UserEditModalProps) => {
+const UserEditModal = ({
+  isOpen,
+  onClose,
+  user,
+  onSave,
+  onAssignSchool,
+  onUnassignSchool,
+  canManageAssignments = false,
+}: UserEditModalProps) => {
+  const { availableSchools } = useOrganization()
+
   const {
     register,
     handleSubmit,
@@ -41,19 +56,26 @@ const UserEditModal = ({ isOpen, onClose, user, onSave }: UserEditModalProps) =>
     },
   })
 
+  const role = useWatch({ control, name: 'role' })
+
   useEffect(() => {
     reset({
       first_name: user?.first_name || '',
       last_name: user?.last_name || '',
       role: user?.role || 'slp',
     })
-  }, [user, reset])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, reset])
 
   const onSubmit = (data: UserEditFormData) => {
     if (!user) return
     onSave(user.id, data)
     onClose()
   }
+
+  const unassignedSchools = availableSchools.filter(
+    school => !user?.schools?.some(s => s.id === school.id)
+  )
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -102,6 +124,51 @@ const UserEditModal = ({ isOpen, onClose, user, onSave }: UserEditModalProps) =>
               )}
             />
           </div>
+
+          {role !== 'admin' && user && (
+            <div className='space-y-2'>
+              <Label>Schools</Label>
+              <div className='flex flex-wrap items-center gap-1'>
+                {user.schools && user.schools.length > 0 ? (
+                  user.schools.map(school => (
+                    <span
+                      key={school.id}
+                      className='inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100'>
+                      {school.name}
+                      {canManageAssignments && (
+                        <button
+                          type='button'
+                          onClick={() => onUnassignSchool?.(user.id, school.id)}
+                          className='hover:text-blue-900'
+                          aria-label={`Remove ${school.name}`}>
+                          <X className='w-3 h-3' />
+                        </button>
+                      )}
+                    </span>
+                  ))
+                ) : (
+                  <span className='text-sm italic text-gray-400'>No assignments</span>
+                )}
+
+                {canManageAssignments && unassignedSchools.length > 0 && (
+                  <Select
+                    key={user.schools?.length ?? 0}
+                    onValueChange={schoolId => onAssignSchool?.(user.id, schoolId)}>
+                    <SelectTrigger className='w-32 h-7 text-xs border-dashed'>
+                      <SelectValue placeholder='+ Add school' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {unassignedSchools.map(school => (
+                        <SelectItem key={school.id} value={school.id}>
+                          {school.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className='flex gap-3 pt-2'>
             <Button type='submit' className='flex-1'>

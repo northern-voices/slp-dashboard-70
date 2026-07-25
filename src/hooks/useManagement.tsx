@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { School } from '@/types/database'
+import { School, UserStatus } from '@/types/database'
 import { SchoolFormData } from '@/components/management/SchoolForm'
 import { OrgUser } from '@/types/database'
 import { UserEditFormData } from '@/components/management/UserEditModal'
@@ -26,24 +26,86 @@ export const useManagement = () => {
 
   const { availableSchools, refreshData, currentOrganization } = useOrganization()
 
-  useEffect(() => {
+  const fetchUsers = async () => {
     if (!currentOrganization?.id) return
 
-    const fetchUsers = async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*, schools(id, name)')
-        .eq('organization_id', currentOrganization.id)
-        .order('first_name')
+    const { data: usersData, error: usersError } = await supabase
+      .from('users')
+      .select('*, user_school_assignments(school_id, schools(id, name))')
+      .eq('organization_id', currentOrganization.id)
+      .order('first_name')
 
-      if (error) {
-        toast({ title: 'Failed to load users', description: error.message, variant: 'destructive' })
-        return
-      }
-
-      setUsers(data || [])
+    if (usersError) {
+      toast({
+        title: 'Failed to load users',
+        description: usersError.message,
+        variant: 'destructive',
+      })
+      return
     }
 
+    const mappedUsers: OrgUser[] = (usersData || []).map(user => {
+      const assignments = user.user_school_assignments as unknown as Array<{
+        school_id: string
+        schools: { id: string; name: string }
+      }>
+
+      const status: UserStatus = !user.is_active
+        ? 'inactive'
+        : !user.is_email_verified
+          ? 'unverified'
+          : 'active'
+
+      return {
+        ...user,
+        schools: assignments.map(assignment => assignment.schools),
+        status,
+      }
+    })
+
+    const existingEmails = new Set(mappedUsers.map(u => u.email.toLowerCase()))
+
+    const { data: invitesData, error: invitesError } = await supabase
+      .from('organization_invitations')
+      .select('id, email, role, created_at, expires_at, school_id, schools(id, name)')
+      .eq('organization_id', currentOrganization.id)
+      .is('accepted_at', null)
+
+    if (invitesError) {
+      toast({
+        title: 'Failed to load invitations',
+        description: invitesError.message,
+        variant: 'destructive',
+      })
+      setUsers(mappedUsers)
+      return
+    }
+
+    const mappedInvites: OrgUser[] = (invitesData || [])
+      .filter(invite => !existingEmails.has(invite.email.toLowerCase()))
+      .map(invite => {
+        const school = invite.schools as unknown as { id: string; name: string } | null
+
+        return {
+          id: invite.id,
+          email: invite.email,
+          first_name: '',
+          last_name: '',
+          role: invite.role,
+          is_active: false,
+          organization_id: currentOrganization.id,
+          created_at: invite.created_at,
+          updated_at: invite.created_at,
+          schools: school ? [school] : [],
+          status: (new Date(invite.expires_at) > new Date() ? 'invited' : 'expired') as UserStatus,
+        }
+      })
+      .sort((a, b) => (a.status === b.status ? 0 : a.status === 'invited' ? -1 : 1))
+
+    setUsers([...mappedUsers, ...mappedInvites])
+  }
+
+  useEffect(() => {
     fetchUsers()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentOrganization?.id])
@@ -131,7 +193,7 @@ export const useManagement = () => {
   }
 
   const handleInviteUser = () => {
-    // Will refresh the real users list here once we replace mockSLPs with a query
+    fetchUsers()
   }
 
   const handleEditUser = (user: OrgUser) => {
@@ -171,6 +233,54 @@ export const useManagement = () => {
     }
 
     setUsers(prev => prev.map(u => (u.id === userId ? { ...u, is_active: !u.is_active } : u)))
+  }
+
+  const handleChangeRole = async (userId: string, role: string) => {
+    const { error } = await supabase.from('users').update({ role }).eq('id', userId)
+
+    if (error) {
+      toast({ title: 'Failed to update role', description: error.message, variant: 'destructive' })
+      return
+    }
+
+    setUsers(prev => prev.map(user => (user.id === userId ? { ...user, role } : user)))
+  }
+
+  const handleAssignSchool = async (userId: string, schoolId: string) => {
+    const { error } = await supabase
+      .from('user_school_assignments')
+      .insert({ user_id: userId, school_id: schoolId })
+
+    if (error) {
+      toast({
+        title: 'Failed to assign school',
+        description: error.message,
+        variant: 'destructive',
+      })
+      return
+    }
+
+    await fetchUsers()
+  }
+
+  const handleUnassignSchool = async (userId: string, schoolId: string) => {
+    const { error } = await supabase
+      .from('user_school_assignments')
+      .delete()
+      .eq('user_id', userId)
+      .eq('school_id', schoolId)
+
+    if (error) {
+      toast({
+        title: 'Failed to remove school',
+        description: error.message,
+        variant: 'destructive',
+      })
+
+      return
+    }
+
+    await fetchUsers()
   }
 
   const handleResendInvite = (userId: string) => {
@@ -228,5 +338,8 @@ export const useManagement = () => {
     handleDeactivateUser,
     handleResendInvite,
     handleSaveUser,
+    handleAssignSchool,
+    handleUnassignSchool,
+    handleChangeRole,
   }
 }
