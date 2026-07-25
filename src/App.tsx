@@ -215,7 +215,9 @@ const App = () => (
                     path='/screenings'
                     element={
                       <SchoolRouter>
-                        <Screenings />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Screenings />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -223,7 +225,9 @@ const App = () => (
                     path='/screening/speech'
                     element={
                       <SchoolRouter>
-                        <SpeechScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SpeechScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -231,7 +235,9 @@ const App = () => (
                     path='/screening/rescreening'
                     element={
                       <SchoolRouter>
-                        <Rescreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Rescreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -239,7 +245,9 @@ const App = () => (
                     path='/screening/rescreening/:studentId'
                     element={
                       <SchoolRouter>
-                        <Rescreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Rescreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -263,7 +271,9 @@ const App = () => (
                     path='/edit-screening/:screeningId'
                     element={
                       <SchoolRouter>
-                        <EditScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <EditScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -280,7 +290,9 @@ const App = () => (
                     path='/school/:schoolId/screenings'
                     element={
                       <SchoolRouter>
-                        <Screenings />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Screenings />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -288,7 +300,9 @@ const App = () => (
                     path='/school/:schoolId/screening/speech'
                     element={
                       <SchoolRouter>
-                        <SpeechScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SpeechScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -296,7 +310,9 @@ const App = () => (
                     path='/school/:schoolId/screening/speech/:studentId'
                     element={
                       <SchoolRouter>
-                        <SpeechScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SpeechScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -304,7 +320,9 @@ const App = () => (
                     path='/school/:schoolId/screening/rescreening'
                     element={
                       <SchoolRouter>
-                        <Rescreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Rescreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -312,7 +330,9 @@ const App = () => (
                     path='/school/:schoolId/screening/rescreening/:studentId'
                     element={
                       <SchoolRouter>
-                        <Rescreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Rescreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -344,7 +364,9 @@ const App = () => (
                     path='/school/:schoolId/edit-screening/:screeningId'
                     element={
                       <SchoolRouter>
-                        <EditScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <EditScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
