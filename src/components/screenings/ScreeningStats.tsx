@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, CheckCircle, Clock, FileText, PauseCircle, Users } from 'lucide-react'
+import { Calendar, CheckCircle, Clock, FileText, PauseCircle } from 'lucide-react'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import ScreeningStatsSkeleton from '@/components/skeletons/ScreeningStatsSkeleton'
@@ -82,9 +82,6 @@ const ScreeningStats = ({
     sub: schoolScreenings.filter(s => s.program_status === 'sub').length,
     paused: schoolScreenings.filter(s => s.service_status === 'paused').length,
     graduated: schoolScreenings.filter(s => s.program_status === 'graduated').length,
-    caseload: schoolScreenings.filter(
-      s => s.program_status === 'qualified' || s.program_status === 'sub'
-    ).length,
   }
 
   const stats = {
@@ -133,7 +130,7 @@ const ScreeningStats = ({
   }
 
   return (
-    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
+    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8'>
       {/* Total Screenings*/}
       <Card
         className={`cursor-pointer transition-colors ${
@@ -145,8 +142,8 @@ const ScreeningStats = ({
           <FileText className='h-4 w-4 text-blue-600' />
         </CardHeader>
         <CardContent>
-          <div className='text-2xl font-bold'>{stats.totalScreenings}</div>
-          <div className='flex gap-2 mt-2'>
+          <div className='text-2xl font-bold'>{rawCounts.total}</div>
+          <div className='flex flex-col items-start gap-1 mt-2'>
             <button
               className='text-xs text-blue-600 hover:underline'
               onClick={e => {
@@ -155,50 +152,13 @@ const ScreeningStats = ({
               }}>
               {stats.totalScreenings} students
             </button>
-            <span className='text-xs text-muted-foreground'>·</span>
             <button
               className='text-xs text-muted-foreground hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleClearAll()
-              }}>
-              {rawCounts.total} screenings
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Caseload */}
-      <Card
-        className={`cursor-pointer transition-colors ${
-          isActive(['qualified', 'sub'])
-            ? 'ring-2 ring-indigo-300 bg-indigo-50'
-            : 'hover:bg-gray-50'
-        }`}
-        onClick={() => handleCardClick(['qualified', 'sub'], false)}>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>Caseload</CardTitle>
-          <Users className='h-4 w-4 text-indigo-500' />
-        </CardHeader>
-        <CardContent>
-          <div className='text-2xl font-bold'>{stats.caseloadScreenings}</div>
-          <div className='flex gap-2 mt-2'>
-            <button
-              className='text-xs text-blue-600 hover:underline'
               onClick={e => {
                 e.stopPropagation()
                 handleCardClick(['qualified', 'sub'], true)
               }}>
-              {stats.caseloadScreenings} students
-            </button>
-            <span className='text-xs text-muted-foreground'>·</span>
-            <button
-              className='text-xs text-muted-foreground hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleCardClick(['qualified', 'sub'], false)
-              }}>
-              {rawCounts.caseload} screenings
+              {stats.caseloadScreenings} caseload
             </button>
           </div>
         </CardContent>
@@ -215,26 +175,15 @@ const ScreeningStats = ({
           <CheckCircle className='h-4 w-4 text-red-500' />
         </CardHeader>
         <CardContent>
-          <div className='text-2xl font-bold'>{stats.qualifiedScreenings}</div>
-          <div className='flex gap-2 mt-2'>
-            <button
-              className='text-xs text-blue-600 hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleCardClick(['qualified'], true)
-              }}>
-              {stats.qualifiedScreenings} students
-            </button>
-            <span className='text-xs text-muted-foreground'>·</span>
-            <button
-              className='text-xs text-muted-foreground hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleCardClick(['qualified'], false)
-              }}>
-              {rawCounts.qualified} screenings
-            </button>
-          </div>
+          <div className='text-2xl font-bold'>{rawCounts.qualified}</div>
+          <button
+            className='mt-2 text-xs text-blue-600 hover:underline'
+            onClick={e => {
+              e.stopPropagation()
+              handleCardClick(['qualified'], true)
+            }}>
+            {stats.qualifiedScreenings} students
+          </button>
         </CardContent>
       </Card>
 
@@ -249,26 +198,15 @@ const ScreeningStats = ({
           <Clock className='h-4 w-4 text-orange-500' />
         </CardHeader>
         <CardContent>
-          <div className='text-2xl font-bold'>{stats.subsScreenings}</div>
-          <div className='flex gap-2 mt-2'>
-            <button
-              className='text-xs text-blue-600 hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleCardClick(['sub'], true)
-              }}>
-              {stats.subsScreenings} students
-            </button>
-            <span className='text-xs text-muted-foreground'>·</span>
-            <button
-              className='text-xs text-muted-foreground hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleCardClick(['sub'], false)
-              }}>
-              {rawCounts.sub} screenings
-            </button>
-          </div>
+          <div className='text-2xl font-bold'>{rawCounts.sub}</div>
+          <button
+            className='mt-2 text-xs text-blue-600 hover:underline'
+            onClick={e => {
+              e.stopPropagation()
+              handleCardClick(['sub'], true)
+            }}>
+            {stats.subsScreenings} students
+          </button>
         </CardContent>
       </Card>
 
@@ -283,26 +221,15 @@ const ScreeningStats = ({
           <PauseCircle className='h-4 w-4 text-purple-500' />
         </CardHeader>
         <CardContent>
-          <div className='text-2xl font-bold'>{stats.pausedScreenings}</div>
-          <div className='flex gap-2 mt-2'>
-            <button
-              className='text-xs text-blue-600 hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleCardClick(['paused'], true)
-              }}>
-              {stats.pausedScreenings} students
-            </button>
-            <span className='text-xs text-muted-foreground'>·</span>
-            <button
-              className='text-xs text-muted-foreground hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleCardClick(['paused'], false)
-              }}>
-              {rawCounts.paused} screenings
-            </button>
-          </div>
+          <div className='text-2xl font-bold'>{rawCounts.paused}</div>
+          <button
+            className='mt-2 text-xs text-blue-600 hover:underline'
+            onClick={e => {
+              e.stopPropagation()
+              handleCardClick(['paused'], true)
+            }}>
+            {stats.pausedScreenings} students
+          </button>
         </CardContent>
       </Card>
 
@@ -317,26 +244,15 @@ const ScreeningStats = ({
           <Calendar className='h-4 w-4 text-blue-500' />
         </CardHeader>
         <CardContent>
-          <div className='text-2xl font-bold'>{stats.graduatedScreenings}</div>
-          <div className='flex gap-2 mt-2'>
-            <button
-              className='text-xs text-blue-600 hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleCardClick(['graduated'], true)
-              }}>
-              {stats.graduatedScreenings} students
-            </button>
-            <span className='text-xs text-muted-foreground'>·</span>
-            <button
-              className='text-xs text-muted-foreground hover:underline'
-              onClick={e => {
-                e.stopPropagation()
-                handleCardClick(['graduated'], false)
-              }}>
-              {rawCounts.graduated} screenings
-            </button>
-          </div>
+          <div className='text-2xl font-bold'>{rawCounts.graduated}</div>
+          <button
+            className='mt-2 text-xs text-blue-600 hover:underline'
+            onClick={e => {
+              e.stopPropagation()
+              handleCardClick(['graduated'], true)
+            }}>
+            {stats.graduatedScreenings} students
+          </button>
         </CardContent>
       </Card>
     </div>

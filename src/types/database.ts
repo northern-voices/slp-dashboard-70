@@ -3,6 +3,8 @@ import { ErrorPatterns } from './screening-form'
 
 export type UserRole = 'super_admin' | 'admin' | 'slp' | 'hearing_technician'
 
+export type UserStatus = 'active' | 'inactive' | 'unverified' | 'invited' | 'expired'
+
 export interface Organization {
   id: string
   name: string
@@ -150,7 +152,8 @@ export interface OrgUser {
   organization_id: string
   created_at: string
   updated_at: string
-  schools?: { is: string; name: string }[]
+  schools?: { id: string; name: string }[]
+  status: UserStatus
 }
 
 export interface School {

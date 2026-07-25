@@ -9,6 +9,10 @@ interface UsersTabContentProps {
   onEditUser: (user: OrgUser) => void
   onDeactivateUser: (userId: string) => void
   onResendInvite: (userId: string) => void
+  onAssignSchool: (userId: string, schoolId: string) => void
+  onUnassignSchool: (userId: string, schoolId: string) => void
+  onChangeRole: (userId: string, role: string) => void
+  canManageAssignments: boolean
 }
 
 const UsersTabContent = ({
@@ -17,6 +21,10 @@ const UsersTabContent = ({
   onEditUser,
   onDeactivateUser,
   onResendInvite,
+  onAssignSchool,
+  onUnassignSchool,
+  onChangeRole,
+  canManageAssignments,
 }: UsersTabContentProps) => {
   return (
     <div className='space-y-6'>
@@ -33,6 +41,10 @@ const UsersTabContent = ({
         onEditUser={onEditUser}
         onDeactivateUser={onDeactivateUser}
         onResendInvite={onResendInvite}
+        onAssignSchool={onAssignSchool}
+        onUnassignSchool={onUnassignSchool}
+        onChangeRole={onChangeRole}
+        canManageAssignments={canManageAssignments}
       />
     </div>
   )

@@ -13,7 +13,7 @@ import { useConsentForms } from '@/hooks/students/use-consent-forms'
 import StudentBasicInfo from './StudentBasicInfo'
 import StudentDetailsGrid from './StudentDetailsGrid'
 import StudentNotes from './StudentNotes'
-import EditStudentDialog from './EditStudentDialog'
+import EditStudentDialog from '@/components/students/EditStudentDialog'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudentTransferHistory } from '@/hooks/students'
@@ -238,7 +238,7 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
         <div className='flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between'>
           <div className='flex-1'>
             {/* {isViewingFromOldSchool && transferredOutRecord && (
-              <div className='mb-4 rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800'>
+              <div className='px-4 py-3 mb-4 text-sm text-orange-800 border border-orange-200 rounded-md bg-orange-50'>
                 This student transferred to{' '}
                 <span className='font-semibold'>{transferredOutRecord.to_school?.name}</span> on{' '}
                 {new Date(transferredOutRecord.transfer_date).toLocaleDateString('en-US', {
@@ -251,7 +251,7 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
             )}
 
             {!isViewingFromOldSchool && transferredInRecord && (
-              <div className='mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800'>
+              <div className='px-4 py-3 mb-4 text-sm text-blue-800 border border-blue-200 rounded-md bg-blue-50'>
                 Transferred in from{' '}
                 <span className='font-semibold'>{transferredInRecord.from_school?.name} </span> on{' '}
                 {new Date(transferredInRecord.transfer_date).toLocaleDateString('en-US', {
@@ -286,9 +286,6 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
 
         <EditStudentDialog
           open={isEditingName}
-          onOpenChange={open => {
-            if (!open) handleCancelEditName()
-          }}
           firstName={editedFirstName}
           lastName={editedLastName}
           gradeId={editedGradeId}

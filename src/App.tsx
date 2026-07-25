@@ -53,6 +53,7 @@ import MfaChallenge from './pages/auth/MfaChallenge'
 import MfaEnroll from './pages/auth/MfaEnroll'
 import EmailOtpChallenge from './pages/auth/EmailOtpChallenge'
 import RoleGuard from './components/auth/RoleGuard'
+import Consent from './pages/Consent'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -404,6 +405,23 @@ const App = () => (
                     element={
                       <SchoolRouter>
                         <Caseload />
+                      </SchoolRouter>
+                    }
+                  />
+
+                  <Route
+                    path='/consent'
+                    element={
+                      <SchoolRouter>
+                        <Consent />
+                      </SchoolRouter>
+                    }
+                  />
+                  <Route
+                    path='/school/:schoolId/consent'
+                    element={
+                      <SchoolRouter>
+                        <Consent />
                       </SchoolRouter>
                     }
                   />

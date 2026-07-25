@@ -38,6 +38,7 @@ interface AuthContextType {
       firstName: string
       lastName: string
       role: string
+      schoolId: string | null
     }
   ) => Promise<void>
   checkUserExists: (email: string) => Promise<boolean>
@@ -318,6 +319,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         firstName: string
         lastName: string
         role: string
+        schoolId: string | null
       }
     ) => {
       setIsLoading(true)
@@ -332,6 +334,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               first_name: userData.firstName,
               last_name: userData.lastName,
               role: userData.role,
+              school_id: userData.schoolId,
             },
             emailRedirectTo: `${window.location.origin}/auth/verify-email`,
           },

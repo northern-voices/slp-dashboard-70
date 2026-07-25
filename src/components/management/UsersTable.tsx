@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { MoreHorizontal, Search, Edit, UserX, Users } from 'lucide-react'
+import { MoreHorizontal, Search, Edit, UserX, Users, X, Mail } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,12 +27,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { OrgUser } from '@/types/database'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface UsersTableProps {
   users: OrgUser[]
   onEditUser: (user: OrgUser) => void
   onDeactivateUser: (userId: string) => void
   onResendInvite: (userId: string) => void
+  onAssignSchool?: (userId: string, schoolId: string) => void
+  onUnassignSchool?: (userId: string, schoolId: string) => void
+  onChangeRole?: (userId: string, role: string) => void
+  canManageAssignments?: boolean
   selectedUsers?: string[]
   onSelectionChange?: (selectedUsers: string[]) => void
 }
@@ -42,9 +47,14 @@ const UsersTable = ({
   onEditUser,
   onDeactivateUser,
   onResendInvite,
+  onAssignSchool,
+  onUnassignSchool,
+  onChangeRole,
+  canManageAssignments = false,
   selectedUsers = [],
   onSelectionChange,
 }: UsersTableProps) => {
+  const { availableSchools } = useOrganization()
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -55,8 +65,7 @@ const UsersTable = ({
       fullName.includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
-    const matchesStatus =
-      statusFilter === 'all' || (statusFilter === 'active' ? user.is_active : !user.is_active)
+    const matchesStatus = statusFilter === 'all' || user.status === statusFilter
 
     return matchesSearch && matchesRole && matchesStatus
   })
@@ -126,15 +135,27 @@ const UsersTable = ({
             Active
           </Badge>
         )
+      case 'unverified':
+        return (
+          <Badge className='font-medium bg-amber-50 text-amber-700 border-amber-200'>
+            Unverified
+          </Badge>
+        )
+      case 'invited':
+        return (
+          <Badge className='font-medium bg-blue-50 text-blue-700 border-blue-200'>Invited</Badge>
+        )
+      case 'expired':
+        return (
+          <Badge variant='outline' className='text-red-600 border-red-300'>
+            Expired
+          </Badge>
+        )
       case 'inactive':
         return (
           <Badge variant='outline' className='text-gray-600 border-gray-300'>
             Inactive
           </Badge>
-        )
-      case 'pending':
-        return (
-          <Badge className='font-medium bg-amber-50 text-amber-700 border-amber-200'>Pending</Badge>
         )
       default:
         return <Badge variant='secondary'>{status}</Badge>
@@ -161,9 +182,10 @@ const UsersTable = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value='all'>All Roles</SelectItem>
+            <SelectItem value='super_admin'>Root Admin</SelectItem>
             <SelectItem value='admin'>Administrator</SelectItem>
-            <SelectItem value='supervisor'>Supervisor</SelectItem>
             <SelectItem value='slp'>SLP</SelectItem>
+            <SelectItem value='hearing_technician'>Hearing Technician</SelectItem>
           </SelectContent>
         </Select>
 
@@ -174,8 +196,10 @@ const UsersTable = ({
           <SelectContent>
             <SelectItem value='all'>All Status</SelectItem>
             <SelectItem value='active'>Active</SelectItem>
+            <SelectItem value='unverified'>Unverified</SelectItem>
+            <SelectItem value='invited'>Invited</SelectItem>
+            <SelectItem value='expired'>Expired</SelectItem>
             <SelectItem value='inactive'>Inactive</SelectItem>
-            <SelectItem value='pending'>Pending</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -197,76 +221,158 @@ const UsersTable = ({
                       />
                     </TableHead>
                   )}
-                  <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className='min-w-[100px]'>User</TableHead>
+                  <TableHead className='min-w-[190px]'>Role</TableHead>
+                  <TableHead className='min-w-[120px]'>Status</TableHead>
                   <TableHead>Schools</TableHead>
                   <TableHead className='w-16'></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map(user => (
-                  <TableRow key={user.id} className='group'>
-                    {onSelectionChange && (
+                {filteredUsers.map(user => {
+                  const isPendingInvite = user.status === 'invited' || user.status === 'expired'
+                  const hasName = Boolean(user.first_name || user.last_name)
+                  const canEditRole =
+                    onChangeRole && !isPendingInvite && user.role !== 'super_admin'
+
+                  return (
+                    <TableRow key={user.id} className='group'>
+                      {onSelectionChange && (
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedUsers.includes(user.id)}
+                            onCheckedChange={checked => handleSelectUser(user.id, !!checked)}
+                            aria-label={`Select ${hasName ? `${user.first_name} ${user.last_name}` : user.email}`}
+                          />
+                        </TableCell>
+                      )}
                       <TableCell>
-                        <Checkbox
-                          checked={selectedUsers.includes(user.id)}
-                          onCheckedChange={checked => handleSelectUser(user.id, !!checked)}
-                          aria-label={`Select ${user.first_name} ${user.last_name}`}
-                        />
-                      </TableCell>
-                    )}
-                    <TableCell>
-                      <div className='space-y-1'>
-                        <div className='text-sm font-medium text-gray-900'>
-                          {user.first_name} {user.last_name}
+                        <div className='space-y-1'>
+                          <div className='text-sm font-medium text-gray-900'>
+                            {hasName ? `${user.first_name} ${user.last_name}` : user.email}
+                          </div>
+                          {hasName && <div className='text-sm text-gray-500'>{user.email}</div>}
                         </div>
-                        <div className='text-sm text-gray-500'>{user.email}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{getRoleBadge(user.role)}</TableCell>
-                    <TableCell>{getStatusBadge(user.is_active ? 'active' : 'inactive')}</TableCell>
-                    <TableCell>
-                      <div className='flex flex-wrap gap-1'>
-                        {user.schools && user.schools.length > 0 ? (
-                          user.schools.map(school => (
-                            <span
-                              key={school.id}
-                              className='inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100'>
-                              {school.name}
-                            </span>
-                          ))
+                      </TableCell>
+
+                      <TableCell>
+                        {canEditRole ? (
+                          <Select
+                            value={user.role}
+                            onValueChange={role => onChangeRole(user.id, role)}>
+                            <SelectTrigger
+                              className={`w-auto h-7 gap-1 rounded-full border px-3 text-xs font-medium whitespace-nowrap [&>span]:line-clamp-none ${
+                                user.role === 'admin'
+                                  ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                  : user.role === 'hearing_technician'
+                                    ? 'bg-sky-50 text-sky-700 border-sky-200'
+                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              }`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value='slp'>SLP</SelectItem>
+                              <SelectItem value='hearing_technician'>Hearing Technician</SelectItem>
+                              <SelectItem value='admin'>Administrator</SelectItem>
+                            </SelectContent>
+                          </Select>
                         ) : (
-                          <span className='text-sm italic text-gray-400'>No assignments</span>
+                          getRoleBadge(user.role)
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant='ghost'
-                            size='sm'
-                            className='w-8 h-8 p-0 transition-opacity opacity-0 group-hover:opacity-100'>
-                            <MoreHorizontal className='w-4 h-4' />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align='end' className='w-40'>
-                          <DropdownMenuItem onClick={() => onEditUser(user)} className='text-sm'>
-                            <Edit className='w-4 h-4 mr-2' />
-                            Edit User
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => onDeactivateUser(user.id)}
-                            className='text-sm text-red-600'>
-                            <UserX className='w-4 h-4 mr-2' />
-                            {user.is_active ? 'Deactivate' : 'Activate'}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+
+                      <TableCell>{getStatusBadge(user.status)}</TableCell>
+
+                      <TableCell>
+                        <div className='flex flex-wrap items-center gap-1'>
+                          {user.schools && user.schools.length > 0 ? (
+                            user.schools.map(school => (
+                              <span
+                                key={school.id}
+                                className='inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100'>
+                                {school.name}
+                                {canManageAssignments && !isPendingInvite && (
+                                  <button
+                                    type='button'
+                                    onClick={() => onUnassignSchool?.(user.id, school.id)}
+                                    className='hover:text-blue-900'
+                                    aria-label={`Remove ${school.name}`}>
+                                    <X className='w-3 h-3' />
+                                  </button>
+                                )}
+                              </span>
+                            ))
+                          ) : (
+                            <span className='text-sm italic text-gray-400'>No assignments</span>
+                          )}
+
+                          {canManageAssignments &&
+                            !isPendingInvite &&
+                            (() => {
+                              const unassigned = availableSchools.filter(
+                                school => !user.schools?.some(s => s.id === school.id)
+                              )
+                              if (unassigned.length === 0) return null
+                              return (
+                                <Select
+                                  key={user.schools?.length ?? 0}
+                                  onValueChange={schoolId => onAssignSchool?.(user.id, schoolId)}>
+                                  <SelectTrigger className='w-32 h-7 text-xs border-dashed'>
+                                    <SelectValue placeholder='+ Add school' />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {unassigned.map(school => (
+                                      <SelectItem key={school.id} value={school.id}>
+                                        {school.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )
+                            })()}
+                        </div>
+                      </TableCell>
+
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant='ghost'
+                              size='sm'
+                              className='w-8 h-8 p-0 transition-opacity opacity-0 group-hover:opacity-100'>
+                              <MoreHorizontal className='w-4 h-4' />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align='end' className='w-40'>
+                            {isPendingInvite ? (
+                              <DropdownMenuItem
+                                onClick={() => onResendInvite(user.id)}
+                                className='text-sm'>
+                                <Mail className='w-4 h-4 mr-2' />
+                                Resend Invite
+                              </DropdownMenuItem>
+                            ) : (
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() => onEditUser(user)}
+                                  className='text-sm'>
+                                  <Edit className='w-4 h-4 mr-2' />
+                                  Edit User
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => onDeactivateUser(user.id)}
+                                  className='text-sm text-red-600'>
+                                  <UserX className='w-4 h-4 mr-2' />
+                                  {user.is_active ? 'Deactivate' : 'Activate'}
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>

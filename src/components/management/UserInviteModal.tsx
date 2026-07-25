@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { Mail, UserPlus, Copy, Check } from 'lucide-react'
+import { Mail, UserPlus, Copy, Check, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
@@ -23,11 +23,12 @@ interface UserInviteModalProps {
 
 const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) => {
   const { toast } = useToast()
-  const { currentOrganization, userProfile } = useOrganization()
+  const { currentOrganization, userProfile, availableSchools } = useOrganization()
 
-  const [formData, setFormData] = useState({ email: '', role: 'slp' })
+  const [formData, setFormData] = useState({ email: '', role: 'slp', schoolId: '' })
   const [isLoading, setIsLoading] = useState(false)
   const [inviteLink, setInviteLink] = useState<string | null>(null)
+  const [emailSendFailed, setEmailSendFailed] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,6 +89,7 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
           email: formData.email.trim().toLowerCase(),
           role: formData.role,
           invited_by: userProfile?.id ?? null,
+          school_id: formData.schoolId || null,
         })
         .select('token')
         .single()
@@ -96,10 +98,11 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
 
       const link = `${window.location.origin}/invite/${data.token}`
 
-      await supabase.functions.invoke('send-invite-email', {
+      const { error: emailError } = await supabase.functions.invoke('send-invite-email', {
         body: { email: formData.email.trim().toLowerCase(), inviteLink: link },
       })
 
+      setEmailSendFailed(!!emailError)
       setInviteLink(link)
       onInvite()
     } catch (error) {
@@ -121,8 +124,9 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
   }
 
   const handleClose = () => {
-    setFormData({ email: '', role: 'slp' })
+    setFormData({ email: '', role: 'slp', schoolId: '' })
     setInviteLink(null)
+    setEmailSendFailed(false)
     setCopied(false)
     onClose()
   }
@@ -138,12 +142,30 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
         </DialogHeader>
 
         {inviteLink ? (
-          // Success state — show the generated link
+          // Success state — show whether the email went out, plus the link as a backup
           <div className='space-y-4'>
-            <p className='text-sm text-gray-600'>
-              Invitation created. Copy the link below and send it to{' '}
-              <strong>{formData.email}</strong>.
-            </p>
+            {emailSendFailed ? (
+              <div className='flex items-start gap-2 p-3 border rounded-lg border-amber-200 bg-amber-50'>
+                <AlertTriangle className='w-4 h-4 mt-0.5 text-amber-600 shrink-0' />
+                <p className='text-sm text-amber-800'>
+                  Invitation created, but the email to <strong>{formData.email}</strong> couldn't be
+                  sent. Copy the link below and share it directly.
+                </p>
+              </div>
+            ) : (
+              <div className='flex items-start gap-2 p-3 border rounded-lg border-green-200 bg-green-50'>
+                <Check className='w-4 h-4 mt-0.5 text-green-600 shrink-0' />
+                <p className='text-sm text-green-800'>
+                  An invitation email has been sent to <strong>{formData.email}</strong>.
+                </p>
+              </div>
+            )}
+            {!emailSendFailed && (
+              <p className='text-xs text-gray-500'>
+                Prefer to send it yourself? Copy the link below — handy if the email ends up in
+                spam.
+              </p>
+            )}
             <div className='flex items-center gap-2 p-3 border border-gray-200 rounded-lg bg-gray-50'>
               <p className='flex-1 text-xs text-gray-700 break-all'>{inviteLink}</p>
               <Button type='button' size='sm' variant='outline' onClick={handleCopy}>
@@ -181,7 +203,13 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
               <Label htmlFor='role'>Role</Label>
               <Select
                 value={formData.role}
-                onValueChange={value => setFormData(prev => ({ ...prev, role: value }))}>
+                onValueChange={value =>
+                  setFormData(prev => ({
+                    ...prev,
+                    role: value,
+                    schoolId: value === 'admin' ? '' : prev.schoolId,
+                  }))
+                }>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -192,6 +220,26 @@ const UserInviteModal = ({ isOpen, onClose, onInvite }: UserInviteModalProps) =>
                 </SelectContent>
               </Select>
             </div>
+
+            {formData.role !== 'admin' && (
+              <div className='space-y-2'>
+                <Label htmlFor='school'>School (optional)</Label>
+                <Select
+                  value={formData.schoolId}
+                  onValueChange={value => setFormData(prev => ({ ...prev, schoolId: value }))}>
+                  <SelectTrigger id='school'>
+                    <SelectValue placeholder='Assign a school now (optional)' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableSchools.map(school => (
+                      <SelectItem key={school.id} value={school.id}>
+                        {school.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className='flex gap-3 pt-2'>
               <Button type='submit' className='flex-1' disabled={isLoading}>

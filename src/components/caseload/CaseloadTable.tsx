@@ -74,6 +74,8 @@ import CreateEADialog from './CreateEADialog'
 import ConsentFormModal from '../students/ConsentFormModal'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
 import DeleteEADialog from './DeleteEADialog'
+import { Textarea } from '@/components/ui/textarea'
+import { studentsApi } from '@/api/students'
 
 interface CaseloadTableProps {
   students: Student[]
@@ -89,6 +91,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(50)
   const [consentStudent, setConsentStudent] = useState<Student | null>(null)
   const [pauseConfirmStudent, setPauseConfirmStudent] = useState<Student | null>(null)
+  const [pauseReason, setPauseReason] = useState('')
 
   const [gradeFilter, setGradeFilter] = useState<string>('all')
   const [resultFilter, setResultFilter] = useState<string>('all')
@@ -1070,7 +1073,10 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       <AlertDialog
         open={!!pauseConfirmStudent}
         onOpenChange={open => {
-          if (!open) setPauseConfirmStudent(null)
+          if (!open) {
+            setPauseConfirmStudent(null)
+            setPauseReason('')
+          }
         }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1080,14 +1086,46 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
               {pauseConfirmStudent?.last_name}. You can reactivate them later from this table.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          <div className='py-2'>
+            <Label htmlFor='pause-reason' className='text-sm font-medium text-gray-700'>
+              Reason (optional)
+            </Label>
+            <Textarea
+              id='pause-reason'
+              value={pauseReason}
+              onChange={e => setPauseReason(e.target.value)}
+              placeholder='Why is this student being paused/away?'
+              className='mt-2 min-h-[80px]'
+            />
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setPauseConfirmStudent(null)}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                if (pauseConfirmStudent) handleStatusChange(pauseConfirmStudent, 'paused')
+              onClick={async () => {
+                if (!pauseConfirmStudent) return
+                handleStatusChange(pauseConfirmStudent, 'paused')
+
+                if (pauseReason.trim()) {
+                  try {
+                    await studentsApi.createStudentNote(
+                      pauseConfirmStudent.id,
+                      `Paused / Away: ${pauseReason.trim()}`
+                    )
+                  } catch {
+                    toast({
+                      title: 'Error',
+                      description: 'Status updated, but the note failed to save.',
+                      variant: 'destructive',
+                    })
+                  }
+                }
+
                 setPauseConfirmStudent(null)
+                setPauseReason('')
               }}>
               Pause / Away
             </AlertDialogAction>

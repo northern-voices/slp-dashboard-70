@@ -14,9 +14,9 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useUploadConsentForm } from '@/hooks/students/use-consent-forms'
-import { ConsentPurpose, ConsentType } from '@/api/consentForms'
+import { ConsentPurpose } from '@/api/consentForms'
 import { Student } from '@/types/database'
-import { Upload, Loader2, CheckCircle2 } from 'lucide-react'
+import { Upload, Loader2, CheckCircle2, X } from 'lucide-react'
 
 interface ConsentFormModalProps {
   isOpen: boolean
@@ -25,73 +25,77 @@ interface ConsentFormModalProps {
 }
 
 interface ConsentFormValues {
-  consent_date: string
-  consent_purpose: ConsentPurpose | ''
-  consent_type: ConsentType | ''
-  verbal_consent_details: string
   parent_guardian: string
   additional_notes: string
 }
 
-const today = () => new Date().toISOString().split('T')[0]
-const minDate = () => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+interface SelectedFile {
+  key: string
+  file: File
+  purpose: ConsentPurpose | ''
+}
 
 const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) => {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([])
 
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const verbalFileInputRef = useRef<HTMLInputElement>(null)
   const uploadMutation = useUploadConsentForm(student.id)
 
   const form = useForm<ConsentFormValues>({
     defaultValues: {
-      consent_date: today(),
-      consent_purpose: '',
-      consent_type: '',
-      verbal_consent_details: '',
       parent_guardian: '',
       additional_notes: '',
     },
   })
 
-  const consentType = form.watch('consent_type')
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files ?? [])
     if (selected.length > 0) {
-      setSelectedFiles(prev => [...prev, ...selected])
+      setSelectedFiles(prev => [
+        ...prev,
+        ...selected.map(file => ({
+          key: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+          file,
+          purpose: '' as ConsentPurpose | '',
+        })),
+      ])
     }
   }
 
-  const removeFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+  const removeFile = (key: string) => {
+    setSelectedFiles(prev => prev.filter(f => f.key !== key))
+  }
+
+  const updateFilePurpose = (key: string, purpose: ConsentPurpose) => {
+    setSelectedFiles(prev => prev.map(f => (f.key === key ? { ...f, purpose } : f)))
   }
 
   const handleClose = () => {
     form.reset()
     setSelectedFiles([])
     if (fileInputRef.current) fileInputRef.current.value = ''
-    if (verbalFileInputRef.current) verbalFileInputRef.current.value = ''
     onClose()
   }
+
+  const allFilesHavePurpose = selectedFiles.length > 0 && selectedFiles.every(f => f.purpose)
 
   const handleSubmit = async () => {
     const values = form.getValues()
 
-    if (!values.consent_purpose) {
+    if (selectedFiles.length === 0) {
       toast({
-        title: 'Missing field',
-        description: 'Please select a consent purpose.',
+        title: 'No files selected',
+        description: 'Choose at least one file to upload.',
         variant: 'destructive',
       })
       return
     }
 
-    if (!values.consent_type) {
+    if (!allFilesHavePurpose) {
       toast({
-        title: 'Missing field',
-        description: 'Please select a consent type.',
+        title: 'Missing purpose',
+        description: 'Select a purpose for every file before uploading.',
         variant: 'destructive',
       })
       return
@@ -99,14 +103,11 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
 
     await uploadMutation.mutateAsync(
       {
-        consent_date: values.consent_date,
-        consent_purpose: values.consent_purpose as ConsentPurpose,
-        consent_type: values.consent_type as ConsentType,
-        verbal_consent_details:
-          values.consent_type === 'verbal' ? values.verbal_consent_details : undefined,
+        consent_type: 'written',
+        verbal_consent_details: undefined,
         parent_guardian: values.parent_guardian || undefined,
         additional_notes: values.additional_notes || undefined,
-        files: selectedFiles,
+        files: selectedFiles.map(f => ({ file: f.file, purpose: f.purpose as ConsentPurpose })),
       },
       {
         onSuccess: () => {
@@ -154,173 +155,60 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
             </div>
           </div>
 
-          {/* Consent Date */}
-          <div className='space-y-1'>
-            <Label htmlFor='consent-date'>
-              Date of Consent <span className='text-destructive'>*</span>
-            </Label>
-            <Input
-              id='consent-date'
-              type='date'
-              min={minDate()}
-              max={today()}
-              {...form.register('consent_date', { required: true })}
+          {/* Files */}
+          <div className='space-y-2'>
+            <Label>Files</Label>
+            <div>
+              <Button
+                type='button'
+                variant='outline'
+                size='sm'
+                onClick={() => fileInputRef.current?.click()}>
+                <Upload className='w-4 h-4 mr-2' />
+                Choose Files
+              </Button>
+            </div>
+            <input
+              ref={fileInputRef}
+              type='file'
+              multiple
+              accept='image/*'
+              className='hidden'
+              onChange={handleFileChange}
             />
-          </div>
 
-          {/* Consent Purpose */}
-          <div className='space-y-1'>
-            <Label>
-              Purpose <span className='text-destructive'>*</span>
-            </Label>
-            <Select
-              value={form.watch('consent_purpose')}
-              onValueChange={val => {
-                form.setValue('consent_purpose', val as ConsentPurpose)
-                form.setValue('verbal_consent_details', '')
-                setSelectedFiles([])
-                if (fileInputRef.current) fileInputRef.current.value = ''
-                if (verbalFileInputRef.current) verbalFileInputRef.current.value = ''
-              }}>
-              <SelectTrigger>
-                <SelectValue placeholder='Select purpose' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='screening_assessment'>Screening / Assessment</SelectItem>
-                <SelectItem value='therapy'>Therapy</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Consent Type */}
-          <div className='space-y-1'>
-            <Label>
-              Type of Consent <span className='text-destructive'>*</span>
-            </Label>
-            <Select
-              value={form.watch('consent_type')}
-              onValueChange={val => {
-                form.setValue('consent_type', val as ConsentType)
-                form.setValue('verbal_consent_details', '')
-                setSelectedFiles([])
-
-                if (fileInputRef.current) fileInputRef.current.value = ''
-                if (verbalFileInputRef.current) verbalFileInputRef.current.value = ''
-              }}>
-              <SelectTrigger>
-                <SelectValue placeholder='Select consent type' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='verbal'>Verbal Consent</SelectItem>
-                <SelectItem value='written'>Written Consent</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Verbal — details textarea */}
-          {consentType === 'verbal' && (
-            <div className='space-y-3'>
-              <div className='space-y-1'>
-                <Label htmlFor='verbal-details'>Verbal Consent Details</Label>
-                <Textarea
-                  id='verbal-details'
-                  placeholder='Describe the verbal consent given...'
-                  rows={3}
-                  {...form.register('verbal_consent_details')}
-                />
+            {selectedFiles.length > 0 && (
+              <div className='space-y-2'>
+                {selectedFiles.map(f => (
+                  <div key={f.key} className='rounded-md border p-2 space-y-2'>
+                    <div className='flex items-center justify-between gap-2'>
+                      <span className='flex items-center gap-1.5 truncate text-sm'>
+                        <CheckCircle2 className='w-4 h-4 shrink-0 text-green-500' />
+                        <span className='truncate'>{f.file.name}</span>
+                      </span>
+                      <button
+                        type='button'
+                        className='shrink-0 text-muted-foreground hover:text-destructive'
+                        onClick={() => removeFile(f.key)}>
+                        <X className='h-4 w-4' />
+                      </button>
+                    </div>
+                    <Select
+                      value={f.purpose}
+                      onValueChange={val => updateFilePurpose(f.key, val as ConsentPurpose)}>
+                      <SelectTrigger className='h-9'>
+                        <SelectValue placeholder='Select purpose' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='screening_assessment'>Screening / Assessment</SelectItem>
+                        <SelectItem value='therapy'>Therapy</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
               </div>
-
-              <div className='space-y-1'>
-                <Label>
-                  Supporting File <span className='text-muted-foreground text-xs'>(optional)</span>
-                </Label>
-                <div className='flex items-center gap-3'>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    size='sm'
-                    onClick={() => verbalFileInputRef.current?.click()}>
-                    <Upload className='w-4 h-4 mr-2' />
-                    Choose File
-                  </Button>
-
-                  {selectedFiles.length > 0 && (
-                    <ul className='mt-1 space-y-1'>
-                      {selectedFiles.map((file, index) => (
-                        <li
-                          key={`${file.name}-${index}`}
-                          className='flex items-center justify-between text-sm text-muted-foreground'>
-                          <span className='flex items-center gap-1'>
-                            <CheckCircle2 className='w-4 h-4 text-green-500' />
-                            {file.name}
-                          </span>
-                          <button
-                            type='button'
-                            className='text-xs underline'
-                            onClick={() => removeFile(index)}>
-                            Remove
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-                <input
-                  ref={verbalFileInputRef}
-                  type='file'
-                  multiple
-                  accept='image/*,audio/*,application/pdf'
-                  className='hidden'
-                  onChange={handleFileChange}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Written — file upload */}
-          {consentType === 'written' && (
-            <div className='space-y-2'>
-              <Label>Upload Form</Label>
-              <div className='flex items-center gap-3'>
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='sm'
-                  onClick={() => fileInputRef.current?.click()}>
-                  <Upload className='w-4 h-4 mr-2' />
-                  Choose File
-                </Button>
-                {selectedFiles.length > 0 && (
-                  <ul className='mt-1 space-y-1'>
-                    {selectedFiles.map((file, index) => (
-                      <li
-                        key={`${file.name}-${index}`}
-                        className='flex items-center justify-between text-sm text-muted-foreground'>
-                        <span className='flex items-center gap-1'>
-                          <CheckCircle2 className='w-4 h-4 text-green-500' />
-                          {file.name}
-                        </span>
-                        <button
-                          type='button'
-                          className='text-xs underline'
-                          onClick={() => removeFile(index)}>
-                          Remove
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <input
-                ref={fileInputRef}
-                type='file'
-                multiple
-                accept='image/*'
-                className='hidden'
-                onChange={handleFileChange}
-              />
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Parent/Guardian */}
           <div className='space-y-1'>

@@ -3,14 +3,58 @@ import { supabase } from '@/lib/supabase'
 export type ConsentPurpose = 'screening_assessment' | 'therapy'
 export type ConsentType = 'verbal' | 'written'
 
+export interface ConsentFormFileEntry {
+  file: File
+  purpose: ConsentPurpose
+}
+
 export interface ConsentFormData {
-  consent_date: string
-  consent_purpose: ConsentPurpose
+  consent_date?: string
   consent_type: ConsentType
   verbal_consent_details?: string
   parent_guardian?: string
   additional_notes?: string
-  files?: File[]
+  files?: ConsentFormFileEntry[]
+}
+
+export interface ConsentFormWithStudent {
+  id: string
+  consent_date: string
+  consent_purpose: ConsentPurpose
+  consent_type: ConsentType
+  verbal_consent_details: string | null
+  parent_guardian: string | null
+  additional_notes: string | null
+  file_name: string | null
+  file_path: string | null
+  file_type: string | null
+  file_size: number | null
+  uploaded_at: string
+  student: {
+    id: string
+    first_name: string
+    last_name: string
+  } | null
+  uploaded_by: {
+    id: string
+    first_name: string
+    last_name: string
+  } | null
+}
+
+export interface BulkConsentFormEntry {
+  file: File
+  studentId: string
+  purpose: ConsentPurpose
+  parentGuardian?: string
+  additionalNotes?: string
+}
+
+export interface BulkConsentFormData {
+  consent_date?: string
+  consent_type: ConsentType
+  verbal_consent_details?: string
+  entries: BulkConsentFormEntry[]
 }
 
 export const consentFormsApi = {
@@ -22,47 +66,37 @@ export const consentFormsApi = {
       } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const files = formData.files ?? []
+      const uploaded: {
+        path: string
+        name: string
+        type: string
+        size: number
+        purpose: ConsentPurpose
+      }[] = []
 
-      if (files.length === 0) {
-        const { error } = await supabase.from('consent_forms').insert({
-          student_id: studentId,
-          consent_date: formData.consent_date,
-          consent_purpose: formData.consent_purpose,
-          consent_type: formData.consent_type,
-          verbal_consent_details: formData.verbal_consent_details || null,
-          parent_guardian: formData.parent_guardian || null,
-          additional_notes: formData.additional_notes || null,
-          file_path: null,
-          file_name: null,
-          file_type: null,
-          file_size: null,
-          uploaded_by: user.id,
-        })
-
-        if (error) throw error
-        return
-      }
-
-      const uploaded: { path: string; name: string; type: string; size: number }[] = []
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const filePath = `${studentId}/${Date.now()}-${i}-${file.name}`
+      for (let i = 0; i < formData.files.length; i++) {
+        const entry = formData.files[i]
+        const filePath = `${studentId}/${Date.now()}-${i}-${entry.file.name}`
 
         const { error: uploadError } = await supabase.storage
           .from('consent-forms')
-          .upload(filePath, file, { contentType: file.type, upsert: false })
+          .upload(filePath, entry.file, { contentType: entry.file.type, upsert: false })
 
         if (uploadError) throw uploadError
 
-        uploaded.push({ path: filePath, name: file.name, type: file.type, size: file.size })
+        uploaded.push({
+          path: filePath,
+          name: entry.file.name,
+          type: entry.file.type,
+          size: entry.file.size,
+          purpose: entry.purpose,
+        })
       }
 
       const rows = uploaded.map(file => ({
         student_id: studentId,
-        consent_date: formData.consent_date,
-        consent_purpose: formData.consent_purpose,
+        ...(formData.consent_date ? { consent_date: formData.consent_date } : {}),
+        consent_purpose: file.purpose,
         consent_type: formData.consent_type,
         verbal_consent_details: formData.verbal_consent_details || null,
         parent_guardian: formData.parent_guardian || null,
@@ -120,6 +154,113 @@ export const consentFormsApi = {
     }
   },
 
+  // Upload multiple consent form files, each assigned to its own student
+  uploadConsentFormsBulk: async (formData: BulkConsentFormData): Promise<void> => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      const uploaded: {
+        studentId: string
+        path: string
+        name: string
+        type: string
+        size: number
+        purpose: ConsentPurpose
+        parentGuardian?: string
+        additionalNotes?: string
+      }[] = []
+
+      for (let i = 0; i < formData.entries.length; i++) {
+        const entry = formData.entries[i]
+        const filePath = `${entry.studentId}/${Date.now()}-${i}-${entry.file.name}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('consent-forms')
+          .upload(filePath, entry.file, { contentType: entry.file.type, upsert: false })
+
+        if (uploadError) throw uploadError
+
+        uploaded.push({
+          studentId: entry.studentId,
+          path: filePath,
+          name: entry.file.name,
+          type: entry.file.type,
+          size: entry.file.size,
+          purpose: entry.purpose,
+          parentGuardian: entry.parentGuardian,
+          additionalNotes: entry.additionalNotes,
+        })
+      }
+
+      const rows = uploaded.map(file => ({
+        student_id: file.studentId,
+        ...(formData.consent_date ? { consent_date: formData.consent_date } : {}),
+        consent_purpose: file.purpose,
+        consent_type: formData.consent_type,
+        verbal_consent_details: formData.verbal_consent_details || null,
+        parent_guardian: file.parentGuardian || null,
+        additional_notes: file.additionalNotes || null,
+        file_path: file.path,
+        file_name: file.name,
+        file_type: file.type,
+        file_size: file.size,
+        uploaded_by: user.id,
+      }))
+
+      const { error: insertError } = await supabase.from('consent_forms').insert(rows)
+      if (insertError) throw insertError
+    } catch (error) {
+      console.error('Error bulk uploading consent forms:', error)
+      throw error
+    }
+  },
+
+  // Get all consent forms for every student in a school
+  getConsentFormsBySchool: async (schoolId: string): Promise<ConsentFormWithStudent[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('consent_forms')
+        .select(
+          `
+          id,
+          consent_date,
+          consent_purpose,
+          consent_type,
+          verbal_consent_details,
+          parent_guardian,
+          additional_notes,
+          file_name,
+          file_path,
+          file_type,
+          file_size,
+          uploaded_at,
+          student:students!inner(
+            id,
+            first_name,
+            last_name
+          ),
+          uploaded_by:users!consent_forms_uploaded_by_fkey(
+            id,
+            first_name,
+            last_name
+          )
+        `
+        )
+        .eq('students.school_id', schoolId)
+        .order('consent_date', { ascending: false })
+
+      if (error) throw error
+
+      return (data || []) as unknown as ConsentFormWithStudent[]
+    } catch (error) {
+      console.error('Error fetching consent forms for school:', error)
+      throw error
+    }
+  },
+
   getConsentFormPresenceByStudentIds: async (
     studentIds: string[]
   ): Promise<{ student_id: string; consent_purpose: string; consent_date: string }[]> => {
@@ -152,6 +293,20 @@ export const consentFormsApi = {
       return data.signedUrl
     } catch (error) {
       console.error('Error generating a signed URL:', error)
+      throw error
+    }
+  },
+
+  updateConsentFormFileName: async (id: string, fileName: string): Promise<void> => {
+    try {
+      const { error } = await supabase
+        .from('consent_forms')
+        .update({ file_name: fileName })
+        .eq('id', id)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error updating consent form file name:', error)
       throw error
     }
   },

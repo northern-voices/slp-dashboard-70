@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Building2, Users } from 'lucide-react'
+import { Building2, Users, ShieldAlert } from 'lucide-react'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import SchoolForm from '@/components/management/SchoolForm'
 import UserInviteModal from '@/components/management/UserInviteModal'
@@ -13,6 +13,7 @@ import SettingsTabContent from '@/components/management/SettingsTabContent'
 // import SLPSchoolBrowser from '@/components/slp/SLPSchoolBrowser'
 import { useManagement } from '@/hooks/useManagement'
 import UserEditModal from '@/components/management/UserEditModal'
+import AdminTabContent from '@/components/management/AdminTabContent'
 
 const ManagementContent = () => {
   const { userProfile } = useOrganization()
@@ -54,11 +55,18 @@ const ManagementContent = () => {
     handleInviteUser,
     handleEditUser,
     handleDeactivateUser,
-    handleResendInvite,
     handleSaveUser,
+    handleResendInvite,
+    handleAssignSchool,
+    handleUnassignSchool,
+    handleChangeRole,
   } = useManagement()
 
   const userRole = userProfile?.role || 'slp'
+
+  const editingUserWithLiveData = editingUser
+    ? (users.find(user => user.id === editingUser.id) ?? editingUser)
+    : null
 
   // SLP view - only show assigned schools
   if (userRole === 'slp') {
@@ -99,10 +107,19 @@ const ManagementContent = () => {
             <Building2 className='w-4 h-4 mr-2' />
             Schools
           </TabsTrigger>
+
           <TabsTrigger value='users' className='flex items-center flex-shrink-0'>
             <Users className='w-4 h-4 mr-2' />
             Users
           </TabsTrigger>
+
+          {userRole === 'super_admin' && (
+            <TabsTrigger value='super_admin' className='flex items-center flex-shrink-0'>
+              <ShieldAlert className='w-4 h-4 mr-2' />
+              Admin
+            </TabsTrigger>
+          )}
+
           {/* // TODO: Ideate on how the settings will work  */}
           {/* <TabsTrigger value='settings' className='flex items-center flex-shrink-0'>
             <Settings className='w-4 h-4 mr-2' />
@@ -129,8 +146,18 @@ const ManagementContent = () => {
             onEditUser={handleEditUser}
             onDeactivateUser={handleDeactivateUser}
             onResendInvite={handleResendInvite}
+            onAssignSchool={handleAssignSchool}
+            onUnassignSchool={handleUnassignSchool}
+            onChangeRole={handleChangeRole}
+            canManageAssignments={userRole === 'super_admin'}
           />
         </TabsContent>
+
+        {userRole === 'super_admin' && (
+          <TabsContent value='super_admin'>
+            <AdminTabContent />
+          </TabsContent>
+        )}
 
         <TabsContent value='settings'>
           <SettingsTabContent
@@ -187,8 +214,11 @@ const ManagementContent = () => {
           setUserEditOpen(false)
           setEditingUser(null)
         }}
-        user={editingUser}
+        user={editingUserWithLiveData}
         onSave={handleSaveUser}
+        onAssignSchool={handleAssignSchool}
+        onUnassignSchool={handleUnassignSchool}
+        canManageAssignments={userRole === 'super_admin'}
       />
     </main>
   )

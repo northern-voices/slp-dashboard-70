@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ConsentFormData, consentFormsApi } from '@/api/consentForms'
+import { BulkConsentFormData, ConsentFormData, consentFormsApi } from '@/api/consentForms'
 
 export const useConsentForms = (studentId: string) => {
   return useQuery({
@@ -24,6 +24,17 @@ export const useUploadConsentForm = (studentId: string) => {
   })
 }
 
+export const useBulkUploadConsentForms = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (formData: BulkConsentFormData) => consentFormsApi.uploadConsentFormsBulk(formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['consent-forms'] })
+    },
+  })
+}
+
 export const useDeleteConsentForm = (studentId: string) => {
   const queryClient = useQueryClient()
 
@@ -42,5 +53,26 @@ export const useConsentFormPresence = (studentIds: string[]) => {
     queryFn: () => consentFormsApi.getConsentFormPresenceByStudentIds(studentIds),
     enabled: studentIds.length > 0,
     staleTime: 5 * 60 * 1000,
+  })
+}
+
+export const useConsentFormsBySchool = (schoolId?: string) => {
+  return useQuery({
+    queryKey: ['consent-forms', 'by-school', schoolId],
+    queryFn: () => consentFormsApi.getConsentFormsBySchool(schoolId!),
+    enabled: !!schoolId,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export const useUpdateConsentFormFileName = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, fileName }: { id: string; fileName: string }) =>
+      consentFormsApi.updateConsentFormFileName(id, fileName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['consent-forms'] })
+    },
   })
 }
