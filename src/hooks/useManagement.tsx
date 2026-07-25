@@ -283,8 +283,46 @@ export const useManagement = () => {
     await fetchUsers()
   }
 
-  const handleResendInvite = (userId: string) => {
-    console.log('Resend invite to user:', userId)
+  const handleResendInvite = async (invitationId: string) => {
+    const newExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+
+    const { data, error } = await supabase
+      .from('organization_invitations')
+      .update({ expires_at: newExpiresAt })
+      .eq('id', invitationId)
+      .select('email, token')
+      .single()
+
+    if (error) {
+      toast({
+        title: 'Failed to resend invite',
+        description: error.message,
+        variant: 'destructive',
+      })
+
+      return
+    }
+
+    const link = `${window.location.origin}/invite/${data.token}`
+
+    const { error: emailError } = await supabase.functions.invoke('send-invite-email', {
+      body: { email: data.email, inviteLink: link },
+    })
+
+    if (emailError) {
+      toast({
+        title: 'Invite extended, but email failed to send',
+        description: 'Copy the link and share it directly',
+        variant: 'destructive',
+      })
+    } else {
+      toast({
+        title: 'Invitation resent',
+        description: `A new email has been sent to ${data.email}`,
+      })
+    }
+
+    await fetchUsers()
   }
 
   const getStatusBadge = (status: string) => {
