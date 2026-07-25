@@ -221,9 +221,9 @@ const UsersTable = ({
                       />
                     </TableHead>
                   )}
-                  <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className='min-w-[100px]'>User</TableHead>
+                  <TableHead className='min-w-[190px]'>Role</TableHead>
+                  <TableHead className='min-w-[120px]'>Status</TableHead>
                   <TableHead>Schools</TableHead>
                   <TableHead className='w-16'></TableHead>
                 </TableRow>
