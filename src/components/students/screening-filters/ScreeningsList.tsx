@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { useUpdateSpeechScreening } from '@/hooks/screenings/use-screening-mutations'
 import { useStudent } from '@/hooks/students/use-students'
 import { useToast } from '@/hooks/use-toast'
@@ -87,6 +88,11 @@ const ScreeningsList = ({
   // Use React Query to fetch screenings data for the specific student
   // Only fetch if studentId is provided
   const { data: allScreenings, isLoading, error } = useScreeningsByStudent(studentId || '')
+
+  const { userProfile } = useOrganization()
+
+  const isHearingTechnician = userProfile?.role === 'hearing_technician'
+  const isSlp = userProfile?.role === 'slp'
 
   // Separate screenings by type
   const speechScreenings = (allScreenings || []).filter(
@@ -1297,10 +1303,10 @@ const ScreeningsList = ({
     <>
       <div className='space-y-4'>
         {/* Render Speech Screenings Section */}
-        {renderSpeechScreeningsTable(sortedSpeechScreenings)}
+        {!isHearingTechnician && renderSpeechScreeningsTable(sortedSpeechScreenings)}
 
         {/* Render Hearing Screenings Section */}
-        {renderHearingScreeningsTable(sortedHearingScreenings)}
+        {!isSlp && renderHearingScreeningsTable(sortedHearingScreenings)}
       </div>
 
       <ScreeningDetailsModal
