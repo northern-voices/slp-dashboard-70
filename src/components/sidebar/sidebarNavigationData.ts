@@ -132,7 +132,11 @@ export const getNavigationGroups = (
     //     (useSchoolRoutes &&
     //       location.pathname.startsWith(`/school/${currentSchool.id}/school-support`)),
     // },
-  ]
+  ].filter(
+    item =>
+      !(userRole === 'hearing_technician' && item.title === 'Speech Screenings') &&
+      !(userRole === 'slp' && item.title === 'Hearing Screenings')
+  )
 
   const groups: NavigationGroup[] = [
     {

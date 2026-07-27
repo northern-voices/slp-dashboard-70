@@ -106,8 +106,8 @@ const SchoolForm = ({ isOpen, onClose, school, onSave }: SchoolFormProps) => {
 
           <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
             <div className='space-y-2'>
-              <Label htmlFor='city'>City</Label>
-              <Input id='city' {...register('city')} placeholder='City' />
+              <Label htmlFor='city'>City / Community</Label>
+              <Input id='city' {...register('city')} placeholder='City / Community' />
             </div>
             <div className='space-y-2'>
               <Label htmlFor='state'>Province / State</Label>
