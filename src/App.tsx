@@ -215,7 +215,9 @@ const App = () => (
                     path='/screenings'
                     element={
                       <SchoolRouter>
-                        <Screenings />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Screenings />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -223,7 +225,9 @@ const App = () => (
                     path='/screening/speech'
                     element={
                       <SchoolRouter>
-                        <SpeechScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SpeechScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -231,7 +235,9 @@ const App = () => (
                     path='/screening/rescreening'
                     element={
                       <SchoolRouter>
-                        <Rescreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Rescreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -239,7 +245,9 @@ const App = () => (
                     path='/screening/rescreening/:studentId'
                     element={
                       <SchoolRouter>
-                        <Rescreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Rescreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -247,7 +255,9 @@ const App = () => (
                     path='/screenings/hearing'
                     element={
                       <SchoolRouter>
-                        <HearingScreenings />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <HearingScreenings />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -255,7 +265,9 @@ const App = () => (
                     path='/screening/hearing'
                     element={
                       <SchoolRouter>
-                        <HearingScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <HearingScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -263,7 +275,9 @@ const App = () => (
                     path='/edit-screening/:screeningId'
                     element={
                       <SchoolRouter>
-                        <EditScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <EditScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -271,7 +285,9 @@ const App = () => (
                     path='/edit-hearing-screening/:screeningId'
                     element={
                       <SchoolRouter>
-                        <EditHearingScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <EditHearingScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -280,7 +296,9 @@ const App = () => (
                     path='/school/:schoolId/screenings'
                     element={
                       <SchoolRouter>
-                        <Screenings />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Screenings />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -288,7 +306,9 @@ const App = () => (
                     path='/school/:schoolId/screening/speech'
                     element={
                       <SchoolRouter>
-                        <SpeechScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SpeechScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -296,7 +316,9 @@ const App = () => (
                     path='/school/:schoolId/screening/speech/:studentId'
                     element={
                       <SchoolRouter>
-                        <SpeechScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SpeechScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -304,7 +326,9 @@ const App = () => (
                     path='/school/:schoolId/screening/rescreening'
                     element={
                       <SchoolRouter>
-                        <Rescreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Rescreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -312,7 +336,9 @@ const App = () => (
                     path='/school/:schoolId/screening/rescreening/:studentId'
                     element={
                       <SchoolRouter>
-                        <Rescreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <Rescreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -320,7 +346,9 @@ const App = () => (
                     path='/school/:schoolId/screenings/hearing'
                     element={
                       <SchoolRouter>
-                        <HearingScreenings />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <HearingScreenings />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -328,7 +356,9 @@ const App = () => (
                     path='/school/:schoolId/screening/hearing'
                     element={
                       <SchoolRouter>
-                        <HearingScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <HearingScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -336,7 +366,9 @@ const App = () => (
                     path='/school/:schoolId/screening/hearing/:studentId'
                     element={
                       <SchoolRouter>
-                        <HearingScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <HearingScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -344,7 +376,9 @@ const App = () => (
                     path='/school/:schoolId/edit-screening/:screeningId'
                     element={
                       <SchoolRouter>
-                        <EditScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <EditScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -352,7 +386,9 @@ const App = () => (
                     path='/school/:schoolId/edit-hearing-screening/:screeningId'
                     element={
                       <SchoolRouter>
-                        <EditHearingScreening />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <EditHearingScreening />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -439,7 +475,9 @@ const App = () => (
                     path='/speech-screening-reports/school-wide-speech'
                     element={
                       <SchoolRouter>
-                        <SchoolWideReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SchoolWideReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -447,7 +485,9 @@ const App = () => (
                     path='/speech-screening-reports/school-wide-hearing'
                     element={
                       <SchoolRouter>
-                        <SchoolWideHearingReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <SchoolWideHearingReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -455,7 +495,9 @@ const App = () => (
                     path='/speech-screening-reports/speech'
                     element={
                       <SchoolRouter>
-                        <SpeechReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SpeechReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -463,7 +505,9 @@ const App = () => (
                     path='/speech-screening-reports/hearing'
                     element={
                       <SchoolRouter>
-                        <HearingReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <HearingReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -480,7 +524,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/school-wide-speech'
                     element={
                       <SchoolRouter>
-                        <SchoolWideReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SchoolWideReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -489,7 +535,9 @@ const App = () => (
                     path='/speech-screening-reports/goal-sheets'
                     element={
                       <SchoolRouter>
-                        <GoalSheets />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <GoalSheets />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -497,7 +545,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/goal-sheets'
                     element={
                       <SchoolRouter>
-                        <GoalSheets />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <GoalSheets />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -506,7 +556,9 @@ const App = () => (
                     path='/speech-screening-reports/school-wide-goal-sheets'
                     element={
                       <SchoolRouter>
-                        <SchoolWideGoalSheets />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SchoolWideGoalSheets />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -514,7 +566,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/school-wide-goal-sheets'
                     element={
                       <SchoolRouter>
-                        <SchoolWideGoalSheets />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SchoolWideGoalSheets />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -523,7 +577,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/school-wide-hearing'
                     element={
                       <SchoolRouter>
-                        <SchoolWideHearingReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <SchoolWideHearingReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -531,7 +587,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/speech'
                     element={
                       <SchoolRouter>
-                        <SpeechReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SpeechReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -539,7 +597,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/hearing'
                     element={
                       <SchoolRouter>
-                        <HearingReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <HearingReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />

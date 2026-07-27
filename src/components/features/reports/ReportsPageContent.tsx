@@ -1,6 +1,7 @@
 import { User, Ear, Building2, Target, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ElementType } from 'react'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 type ColorKey = 'purple' | 'blue' | 'orange'
 
@@ -90,6 +91,17 @@ const sections: {
 
 const ReportsPageContent = () => {
   const navigate = useNavigate()
+  const { userProfile } = useOrganization()
+
+  const isHearingTechnician = userProfile?.role === 'hearing_technician'
+  const isSlp = userProfile?.role === 'slp'
+
+  const visibleSections = sections.filter(({ label }) => {
+    if (isHearingTechnician) return label === 'Hearing Reports'
+    if (isSlp) return label !== 'Hearing Reports'
+
+    return true
+  })
 
   return (
     <div className='w-full min-h-screen overflow-hidden'>
@@ -97,7 +109,7 @@ const ReportsPageContent = () => {
         <h1 className='text-xl font-semibold text-gray-900 sm:text-2xl lg:text-3xl'>Reports</h1>
 
         <div className='space-y-8'>
-          {sections.map(({ label, color, individual, schoolWide }) => {
+          {visibleSections.map(({ label, color, individual, schoolWide }) => {
             const style = colorStyles[color]
 
             return (
