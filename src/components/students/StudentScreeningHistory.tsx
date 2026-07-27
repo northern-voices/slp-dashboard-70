@@ -6,6 +6,7 @@ import { Student } from '@/types/database'
 import ScreeningFilters from './screening-filters/ScreeningFilters'
 import ScreeningsList from './screening-filters/ScreeningsList'
 import { useScreeningsByStudent } from '@/hooks/screenings/use-screenings'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface StudentScreeningHistoryProps {
   studentId?: string
@@ -36,14 +37,24 @@ const StudentScreeningHistory = ({
   // Fetch screenings to get count
   const { data: screenings = [] } = useScreeningsByStudent(studentId || '')
 
+  const { userProfile } = useOrganization()
+
+  const isHearingTechnician = userProfile?.role === 'hearing_technician'
+  const isSlp = userProfile?.role === 'slp'
+  const visibleScreenings = isHearingTechnician
+    ? screenings.filter(screening => screening.source_table !== 'speech')
+    : isSlp
+      ? screenings.filter(screening => screening.source_table !== 'hearing')
+      : screenings
+
   return (
     <Card>
       <CardHeader>
         <div className='flex items-center justify-between'>
           <CardTitle className='text-2xl font-semibold'>Screening History</CardTitle>
-          {screenings.length > 0 && (
+          {visibleScreenings.length > 0 && (
             <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
-              {screenings.length} screening{screenings.length !== 1 ? 's' : ''}
+              {visibleScreenings.length} screening{visibleScreenings.length !== 1 ? 's' : ''}
             </span>
           )}
         </div>
