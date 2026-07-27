@@ -475,7 +475,9 @@ const App = () => (
                     path='/speech-screening-reports/school-wide-speech'
                     element={
                       <SchoolRouter>
-                        <SchoolWideReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SchoolWideReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -483,7 +485,9 @@ const App = () => (
                     path='/speech-screening-reports/school-wide-hearing'
                     element={
                       <SchoolRouter>
-                        <SchoolWideHearingReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <SchoolWideHearingReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -491,7 +495,9 @@ const App = () => (
                     path='/speech-screening-reports/speech'
                     element={
                       <SchoolRouter>
-                        <SpeechReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SpeechReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -499,7 +505,9 @@ const App = () => (
                     path='/speech-screening-reports/hearing'
                     element={
                       <SchoolRouter>
-                        <HearingReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <HearingReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -516,7 +524,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/school-wide-speech'
                     element={
                       <SchoolRouter>
-                        <SchoolWideReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SchoolWideReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -525,7 +535,9 @@ const App = () => (
                     path='/speech-screening-reports/goal-sheets'
                     element={
                       <SchoolRouter>
-                        <GoalSheets />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <GoalSheets />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -533,7 +545,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/goal-sheets'
                     element={
                       <SchoolRouter>
-                        <GoalSheets />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <GoalSheets />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -542,7 +556,9 @@ const App = () => (
                     path='/speech-screening-reports/school-wide-goal-sheets'
                     element={
                       <SchoolRouter>
-                        <SchoolWideGoalSheets />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SchoolWideGoalSheets />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -550,7 +566,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/school-wide-goal-sheets'
                     element={
                       <SchoolRouter>
-                        <SchoolWideGoalSheets />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SchoolWideGoalSheets />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -559,7 +577,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/school-wide-hearing'
                     element={
                       <SchoolRouter>
-                        <SchoolWideHearingReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <SchoolWideHearingReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -567,7 +587,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/speech'
                     element={
                       <SchoolRouter>
-                        <SpeechReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
+                          <SpeechReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
@@ -575,7 +597,9 @@ const App = () => (
                     path='/school/:schoolId/speech-screening-reports/hearing'
                     element={
                       <SchoolRouter>
-                        <HearingReports />
+                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
+                          <HearingReports />
+                        </RoleGuard>
                       </SchoolRouter>
                     }
                   />
