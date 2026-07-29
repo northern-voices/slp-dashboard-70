@@ -49,7 +49,7 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
             <tbody>
               {context.errors.map((error, i) => (
                 <tr key={i} className='border-b last:border-0'>
-                  <td className='py-2 pr-4 font-medium'> {error.targetSound || error.sound}</td>
+                  <td className='py-2 pr-4 font-medium'>{error.targetSound || error.sound}</td>
                   <td className='py-2 pr-4'>{error.pattern}</td>
                   <td className='py-2 text-gray-600'>{error.example}</td>
                 </tr>
@@ -61,3 +61,5 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
     </div>
   )
 }
+
+export default StudentSpeechReportView
