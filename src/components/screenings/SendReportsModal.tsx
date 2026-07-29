@@ -151,6 +151,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     setRecipientEmails([])
     setSelectedReports([])
     setComparisonScreeningId('')
+    setPassword('')
     onClose()
   }
 
@@ -342,6 +343,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                   !screening ||
                   (screening.source_table !== 'hearing' && selectedReports.length === 0) ||
                   (selectedReports.includes('progress-speech-report') && !comparisonScreeningId) ||
+                  !password.trim() ||
                   isEmailLoading
                 }>
                 <Send className='w-4 h-4 mr-2' />
