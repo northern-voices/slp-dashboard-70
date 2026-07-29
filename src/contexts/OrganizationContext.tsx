@@ -111,6 +111,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         active: true,
         created_at: userData.created_at,
         updated_at: userData.updated_at,
+        default_report_password: userData.default_report_password ?? null,
       }
 
       setUserProfile(transformedProfile)
@@ -144,6 +145,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         phone: organizationData.phone || '',
         created_at: organizationData.created_at,
         updated_at: organizationData.updated_at,
+        default_report_password: organizationData.default_report_password ?? null,
       }
 
       setCurrentOrganization(transformedOrganization)
