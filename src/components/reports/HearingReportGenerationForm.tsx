@@ -31,6 +31,8 @@ import { useState, useEffect } from 'react'
 import { Volume2, TrendingUp, CheckCircle, XCircle, Plus, List } from 'lucide-react'
 import MultiEmailInput from './shared/MultiEmailInput'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
+import ReportPasswordInput from './shared/ReportPasswordInput'
+import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
@@ -41,6 +43,7 @@ const reportSchema = z.object({
     .refine(emails => emails.every(email => z.string().email().safeParse(email).success), {
       message: 'One or more emails are invalid. Please remove and re-enter them.',
     }),
+  password: z.string().min(1, 'Please enter a password'),
 })
 
 type ReportFormData = z.infer<typeof reportSchema>
@@ -71,8 +74,18 @@ const HearingReportGenerationForm = () => {
       reportType: '',
       academicYear: currentAcademicYear,
       recipientEmails: [],
+      password: '',
     },
   })
+
+  const defaultReportPassword = useDefaultReportPassword()
+
+  useEffect(() => {
+    if (defaultReportPassword && !form.getValues('password')) {
+      form.setValue('password', defaultReportPassword)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultReportPassword])
 
   const hearingReports = [
     {
@@ -101,13 +114,15 @@ const HearingReportGenerationForm = () => {
         result = await edgeFunctionsApi.schoolWideHearingReports(
           currentSchool.id,
           data.academicYear,
-          data.recipientEmails
+          data.recipientEmails,
+          data.password
         )
       } else if (data.reportType === 'school-summary-hearing-report') {
         result = await edgeFunctionsApi.schoolSummaryHearingReport(
           currentSchool.id,
           data.academicYear,
-          data.recipientEmails
+          data.recipientEmails,
+          data.password
         )
       }
 
@@ -322,6 +337,19 @@ const HearingReportGenerationForm = () => {
                         onChange={field.onChange}
                         emailHistory={emailHistory}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='password'
+                render={({ field }) => (
+                  <FormItem className='w-full max-w-full space-y-3'>
+                    <FormControl>
+                      <ReportPasswordInput password={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
