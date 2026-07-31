@@ -70,7 +70,11 @@ const ViewReport = () => {
             </Button>
           </div>
 
-          <div ref={printRef} className='bg-white rounded-lg shadow p-8'>
+          <div
+            ref={printRef}
+            className={
+              reportType === 'speech_screening_report' ? '' : 'bg-white rounded-lg shadow p-8'
+            }>
             {reportType === 'speech_screening_report' ? (
               <StudentSpeechReportView data={reportData as never} />
             ) : (
