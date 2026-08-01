@@ -19,6 +19,7 @@ const ViewReport = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [reportType, setReportType] = useState<string | null>(null)
   const [reportData, setReportData] = useState<unknown>(null)
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
 
   const printRef = useRef<HTMLDivElement>(null)
   const handlePrint = useReactToPrint({ contentRef: printRef, documentTitle: 'Report' })
@@ -56,6 +57,37 @@ const ViewReport = () => {
       console.error('Failed to verify report token:', err)
       setErrorMessage('Something went wrong. Please try again.')
       setState('locked')
+    }
+  }
+
+  const handleDownloadPdf = async () => {
+    if (reportType !== 'speech_screening_report') {
+      handlePrint()
+      return
+    }
+
+    setIsGeneratingPdf(true)
+
+    try {
+      const [{ pdf }, { default: StudentSpeechReportPdf }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/reports/pdf/StudentSpeechReportPdf'),
+      ])
+
+      const blob = await pdf(<StudentSpeechReportPdf data={reportData as never} />).toBlob()
+      const url = URL.createObjectURL(blob)
+      const studentName = (reportData as { context?: { student_name?: string } })?.context
+        ?.student_name
+
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${studentName ?? 'Student'} - NVSS Student Report.pdf`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Failed to generate PDF:', err)
+    } finally {
+      setIsGeneratingPdf(false)
     }
   }
 
@@ -126,10 +158,11 @@ const ViewReport = () => {
         )}
 
         <Button
-          onClick={handleUnlock}
-          disabled={!password || state === 'verifying'}
-          className='w-full'>
-          {state === 'verifying' ? 'Verifying...' : 'View Report'}
+          onClick={handleDownloadPdf}
+          variant='outline'
+          disabled={isGeneratingPdf}
+          className='w-4 h-4 mr-2'>
+          {isGeneratingPdf ? 'Generating PDF...' : 'Download / Print PDF'}
         </Button>
       </div>
     </div>
