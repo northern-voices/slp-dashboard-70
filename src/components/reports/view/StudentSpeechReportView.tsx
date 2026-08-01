@@ -51,12 +51,12 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
       <section className='bg-white shadow-sm w-full p-10 break-after-page print:shadow-none print:p-10'>
         <ReportHeader />
 
-        <h1 className='text-4xl font-light text-gray-500 tracking-wide mb-8'>
+        <h1 className='text-4xl font-light text-gray-500 tracking-wide mb-8 text-center'>
           SPEECH SCREEN REPORT
         </h1>
 
         <p className='font-semibold text-gray-900 mb-2'>DEAR PARENT(S)/GUARDIAN(S):</p>
-        <p className='text-gray-700 leading-relaxed mb-6'>
+        <p className='text-gray-700 leading-snug tracking-tight mb-6'>
           A speech and language pathologist (SLP) recently conducted speech screens at your child's
           school. This report outlines your child's results and provides guidance on steps you can
           take to further support your child's speech development.

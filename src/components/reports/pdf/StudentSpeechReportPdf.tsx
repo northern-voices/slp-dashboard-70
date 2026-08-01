@@ -31,8 +31,10 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginBottom: 24,
     letterSpacing: 1,
+    textAlign: 'center',
   },
   label: { fontFamily: 'Helvetica-Bold', color: '#111827', marginBottom: 6, fontSize: 11 },
+  introParagraph: { lineHeight: 1.3, letterSpacing: -0.3, marginBottom: 18, color: '#374151' },
   paragraph: { lineHeight: 1.5, marginBottom: 18, color: '#374151' },
   infoBlock: { marginBottom: 18 },
   infoLine: { marginBottom: 3 },
@@ -111,7 +113,7 @@ const StudentSpeechReportPdf = ({ data }: { data: StudentSpeechReportData }) => 
         <Text style={styles.title}>SPEECH SCREEN REPORT</Text>
 
         <Text style={styles.label}>DEAR PARENT(S)/GUARDIAN(S):</Text>
-        <Text style={styles.paragraph}>
+        <Text style={styles.introParagraph}>
           A speech and language pathologist (SLP) recently conducted speech screens at your child's
           school. This report outlines your child's results and provides guidance on steps you can
           take to further support your child's speech development.
