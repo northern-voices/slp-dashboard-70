@@ -76,3 +76,122 @@ const styles = StyleSheet.create({
   footerLogo: { width: 12, height: 12, marginRight: 4 },
   footerPage: { flexDirection: 'row', alignItems: 'center' },
 })
+
+const ReportHeader = () => (
+  <View style={styles.headerRow}>
+    <Image src='/icon.png' style={styles.logo} />
+    <View>
+      <Text style={styles.headerBrand}>NORTHER VOICES</Text>
+      <Text style={styles.headerSub}>SPEECH SERVICES</Text>
+    </View>
+  </View>
+)
+
+const ReportFooter = ({ page, of }: { page: number; of: number }) => (
+  <View style={styles.footer} fixed>
+    <Text>NORTHERN VOICES SPEECH SERVICES</Text>
+    <View style={styles.footerPage}>
+      <Image src='/icon.png' style={styles.logo} />
+      <Text>
+        {page} of {of}
+      </Text>
+    </View>
+  </View>
+)
+
+const StudentSpeechReportPdf = ({ data }: { data: StudentSpeechReportData }) => {
+  const { context, template } = data
+  const copy = template?.name ? REPORT_RESULTS_TEXT[template.name] : undefined
+
+  return (
+    <Document>
+      <Page size='LETTER' style={styles.page}>
+        <ReportHeader />
+
+        <Text style={styles.title}>SPEECH SCREEN REPORT</Text>
+
+        <Text style={styles.label}>DEAR PARENT(S)/GUARDIAN(S):</Text>
+        <Text style={styles.paragraph}>
+          A speech and language pathologist (SLP) recently conducted speech screens at your child's
+          school. This report outlines your child's results and provides guidance on steps you can
+          take to further support your child's speech development.
+        </Text>
+
+        <Text style={styles.label}>SPEECH SCREEN REPORT:</Text>
+        <View style={styles.infoBlock}>
+          <Text style={styles.infoLine}>Student's Name: {context.student_name}</Text>
+          <Text style={styles.infoLine}>Grade: {context.grade}</Text>
+          <Text style={styles.infoLine}>Date of Screening: {context.date_of_screening}</Text>
+        </View>
+
+        <Text style={styles.resultsLine}>
+          Results:{' '}
+          <Text style={styles.resultsBold}>
+            {copy?.resultsText ?? template?.name ?? 'Results pending'}
+          </Text>
+        </Text>
+
+        {context.errors.length === 0 ? (
+          <Text style={styles.paragraph}>
+            No speech sound errors were identified in this screening.
+          </Text>
+        ) : (
+          <View style={styles.table}>
+            <View style={styles.tableRow}>
+              <Text style={styles.tableHeaderCell}>ERROR SOUND</Text>
+              <Text style={styles.tableHeaderCell}>ERROR PATTERN EXHIBITED</Text>
+              <Text style={styles.tableHeaderCell}>EXAMPLE</Text>
+            </View>
+            {context.errors.map((error, i) => (
+              <View style={styles.tableRow} key={i}>
+                <Text style={styles.tableCell}>{error.targetSound || error.sound}</Text>
+                <Text style={styles.tableCell}>{error.pattern}</Text>
+                <Text style={styles.tableCell}>{error.example}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {copy?.footerNote && <Text style={styles.footerNote}>{copy.footerNote}</Text>}
+
+        <ReportFooter page={1} of={2} />
+      </Page>
+
+      <Page size='LETTER' style={styles.page}>
+        <ReportHeader />
+
+        <Text style={styles.label}>DEVELOPMENTAL SPEECH SOUND CHART:</Text>
+        <Text style={styles.paragraph}>
+          This chart provides a general guideline for when children typically develop and master
+          specific speech sounds. It's important to start practicing these sounds before the age of
+          expected mastery to proactively address any potential speech difficulties.
+        </Text>
+
+        <View style={styles.table}>
+          <View style={styles.tableRow}>
+            <Text style={styles.tableHeaderCell}>AGE RANGE</Text>
+            <Text style={styles.tableHeaderCell}>DEVELOPING SOUNDS</Text>
+            <Text style={styles.tableHeaderCell}>EXPECTED MASTERY</Text>
+          </View>
+          {DEVELOPMENTAL_CHART.map(row => (
+            <View style={styles.tableRow} key={row.ageRange}>
+              <Text style={styles.tableCell}>{row.ageRange}</Text>
+              <Text style={styles.tableCell}>{row.sounds}</Text>
+              <Text style={styles.tableCell}>{row.mastery}</Text>
+            </View>
+          ))}
+        </View>
+
+        <Text style={styles.paragraph}>
+          <Text style={styles.resultsBold}>Please note: </Text>
+          Children are unique and develop speech at their own pace. This chart is meant to serve as
+          a guide, not a strict timeline.
+        </Text>
+
+        <ReportFooter page={2} of={2} />
+      </Page>
+    </Document>
+  )
+}
+
+export default StudentSpeechReportPdf
