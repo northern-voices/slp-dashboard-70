@@ -120,7 +120,7 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
           <p className="font-['Montserrat'] text-sm italic text-gray-600">{copy.footerNote}</p>
         )}
 
-        <ReportFooter page={1} of={2} />
+        <ReportFooter page={1} of={3} />
       </section>
 
       {/* Page 2 */}
@@ -164,7 +164,15 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
           their own pace. This chart is meant to serve as a guide, not a strict timeline.
         </p>
 
-        <ReportFooter page={2} of={2} />
+        <ReportFooter page={2} of={3} />
+      </section>
+
+      <section className='bg-white shadow-sm w-full overflow-hidden'>
+        <img
+          src='/teachspeech-app-poster.png'
+          alt='Free access to the NVSS TeachSpeech app'
+          className='w-full h-auto block'
+        />
       </section>
     </div>
   )

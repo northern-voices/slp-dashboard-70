@@ -142,6 +142,8 @@ const styles = StyleSheet.create({
   },
   footerLogo: { width: 12, height: 12, marginRight: 4 },
   footerPage: { flexDirection: 'row', alignItems: 'center' },
+  posterPage: { padding: 0 },
+  posterImage: { width: '100%', height: '100%' },
 })
 
 const ReportHeader = () => (
@@ -221,7 +223,7 @@ const StudentSpeechReportPdf = ({ data }: { data: StudentSpeechReportData }) => 
 
         {copy?.footerNote && <Text style={styles.footerNote}>{copy.footerNote}</Text>}
 
-        <ReportFooter page={1} of={2} />
+        <ReportFooter page={1} of={3} />
       </Page>
 
       <Page size='LETTER' style={styles.page}>
@@ -255,7 +257,11 @@ const StudentSpeechReportPdf = ({ data }: { data: StudentSpeechReportData }) => 
           a guide, not a strict timeline.
         </Text>
 
-        <ReportFooter page={2} of={2} />
+        <ReportFooter page={2} of={3} />
+      </Page>
+
+      <Page size='LETTER' style={styles.posterPage}>
+        <Image src='/teachspeech-app-poster.png' style={styles.posterImage} />
       </Page>
     </Document>
   )
