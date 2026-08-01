@@ -96,9 +96,9 @@ const ViewReport = () => {
       <div className='min-h-screen bg-gray-50 py-8 px-4'>
         <div className='max-w-3xl mx-auto space-y-4'>
           <div className='flex justify-end'>
-            <Button onClick={handlePrint} variant='outline'>
+            <Button onClick={handleDownloadPdf} variant='outline' disabled={isGeneratingPdf}>
               <Download className='w-4 h-4 mr-2' />
-              Download / Print PDF
+              {isGeneratingPdf ? 'Generating PDF...' : 'Download / Print PDF'}
             </Button>
           </div>
 
@@ -158,11 +158,10 @@ const ViewReport = () => {
         )}
 
         <Button
-          onClick={handleDownloadPdf}
-          variant='outline'
-          disabled={isGeneratingPdf}
-          className='w-4 h-4 mr-2'>
-          {isGeneratingPdf ? 'Generating PDF...' : 'Download / Print PDF'}
+          onClick={handleUnlock}
+          disabled={!password || state === 'verifying'}
+          className='w-full'>
+          {state === 'verifying' ? 'Verifying...' : 'View Report'}
         </Button>
       </div>
     </div>

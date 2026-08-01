@@ -81,7 +81,7 @@ const ReportHeader = () => (
   <View style={styles.headerRow}>
     <Image src='/icon.png' style={styles.logo} />
     <View>
-      <Text style={styles.headerBrand}>NORTHER VOICES</Text>
+      <Text style={styles.headerBrand}>NORTHERN VOICES</Text>
       <Text style={styles.headerSub}>SPEECH SERVICES</Text>
     </View>
   </View>
@@ -91,7 +91,7 @@ const ReportFooter = ({ page, of }: { page: number; of: number }) => (
   <View style={styles.footer} fixed>
     <Text>NORTHERN VOICES SPEECH SERVICES</Text>
     <View style={styles.footerPage}>
-      <Image src='/icon.png' style={styles.logo} />
+      <Image src='/icon.png' style={styles.footerLogo} />
       <Text>
         {page} of {of}
       </Text>

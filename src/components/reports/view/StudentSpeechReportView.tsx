@@ -33,7 +33,7 @@ const ReportHeader = () => (
 
 const ReportFooter = ({ page, of }: { page: number; of: number }) => (
   <div className='flex items-center justify-between border-t border-gray-200 pt-3 mt-10 text-xs text-gray-500'>
-    <span>NORTHERN VOICE SPEECH SERVICES</span>
+    <span>NORTHERN VOICES SPEECH SERVICES</span>
     <span className='flex items-center gap-2'>
       <img src='/icon.png' alt='' className='w-4 h-4' />
       {page} of {of}
