@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   introParagraph: { lineHeight: 1.3, letterSpacing: -0.3, marginBottom: 18, color: '#374151' },
   paragraph: { lineHeight: 1.5, marginBottom: 18, color: '#374151' },
   infoBlock: { marginBottom: 18 },
-  infoLine: { marginBottom: 3 },
+  infoLine: { marginBottom: 1 },
   resultsLine: { textAlign: 'center', marginBottom: 18 },
   resultsBold: { fontFamily: 'Helvetica-Bold' },
   table: { borderWidth: 1, borderColor: '#d1d5db', marginBottom: 18 },

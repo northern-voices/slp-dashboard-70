@@ -63,7 +63,7 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
         </p>
 
         <p className='font-bold text-gray-900 mb-3'>SPEECH SCREEN REPORT:</p>
-        <div className='space-y-1 text-gray-800 mb-6'>
+        <div className='space-y-0.5 text-gray-800 mb-6'>
           <p>Student's Name: {context.student_name}</p>
           <p>Grade: {context.grade}</p>
           <p>Date of Screening: {context.date_of_screening}</p>
