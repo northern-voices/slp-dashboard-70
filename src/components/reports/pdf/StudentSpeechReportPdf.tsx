@@ -1,6 +1,44 @@
-import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
 import { REPORT_RESULTS_TEXT } from '@/constants/reportResultsText'
 import { DEVELOPMENTAL_CHART } from '@/constants/developmentalSpeechChart'
+
+Font.register({
+  family: 'Gotu',
+  src: 'https://fonts.gstatic.com/s/gotu/v18/o-0FIpksx3QOpHoBjqp56hQ.ttf',
+})
+
+Font.register({
+  family: 'Nunito',
+  fonts: [
+    {
+      src: 'https://fonts.gstatic.com/s/nunito/v32/XRXI3I6Li01BKofiOc5wtlZ2di8HDLshdTQ3iqzdXWg.ttf',
+      fontWeight: 400,
+    },
+    {
+      src: 'https://fonts.gstatic.com/s/nunito/v32/XRXI3I6Li01BKofiOc5wtlZ2di8HDFwmdTQ3iqzdXWg.ttf',
+      fontWeight: 700,
+    },
+  ],
+})
+
+Font.register({
+  family: 'Montserrat',
+  fonts: [
+    {
+      src: 'https://fonts.gstatic.com/s/montserrat/v31/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aX9-obK4.ttf',
+      fontWeight: 400,
+    },
+    {
+      src: 'https://fonts.gstatic.com/s/montserrat/v31/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCuM73w5aX9-obK4.ttf',
+      fontWeight: 700,
+    },
+    {
+      src: 'https://fonts.gstatic.com/s/montserrat/v31/JTUFjIg1_i6t8kCHKm459Wx7xQYXK0vOoz6jq6R9WXh0o5C6MLk.ttf',
+      fontWeight: 400,
+      fontStyle: 'italic',
+    },
+  ],
+})
 
 interface ProcessedError {
   sound: string
@@ -20,26 +58,44 @@ interface StudentSpeechReportData {
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 48, fontSize: 11, fontFamily: 'Helvetica', color: '#374151' },
+  page: { padding: 48, fontSize: 11, fontFamily: 'Nunito', color: '#374151' },
   headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 32 },
   logo: { width: 28, height: 28, marginRight: 10 },
-  headerBrand: { fontSize: 10, fontFamily: 'Helvetica-Bold', letterSpacing: 1, color: '#111827' },
-  headerSub: { fontSize: 6, letterSpacing: 2, color: '#6b7280', marginTop: 2 },
+  headerBrand: {
+    fontSize: 10,
+    fontFamily: 'Nunito',
+    fontWeight: 700,
+    letterSpacing: 1,
+    color: '#111827',
+  },
+  headerSub: {
+    fontSize: 6,
+    fontFamily: 'Montserrat',
+    letterSpacing: 2,
+    color: '#6b7280',
+    marginTop: 2,
+  },
   title: {
     fontSize: 30,
-    fontFamily: 'Helvetica',
+    fontFamily: 'Gotu',
     color: '#6b7280',
     marginBottom: 24,
     letterSpacing: 1,
     textAlign: 'center',
   },
-  label: { fontFamily: 'Helvetica-Bold', color: '#111827', marginBottom: 6, fontSize: 11 },
+  label: {
+    fontFamily: 'Nunito',
+    fontWeight: 700,
+    color: '#111827',
+    marginBottom: 6,
+    fontSize: 11,
+  },
   introParagraph: { lineHeight: 1.3, letterSpacing: -0.3, marginBottom: 18, color: '#374151' },
   paragraph: { lineHeight: 1.5, marginBottom: 18, color: '#374151' },
   infoBlock: { marginBottom: 18 },
   infoLine: { marginBottom: 1 },
   resultsLine: { textAlign: 'center', marginBottom: 18 },
-  resultsBold: { fontFamily: 'Helvetica-Bold' },
+  resultsBold: { fontFamily: 'Nunito', fontWeight: 700 },
   table: { borderWidth: 1, borderColor: '#d1d5db', marginBottom: 18 },
   tableRow: { flexDirection: 'row' },
   tableHeaderCell: {
@@ -49,7 +105,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
     padding: 6,
     fontSize: 8,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'Montserrat',
+    fontWeight: 700,
     textAlign: 'center',
   },
   tableCell: {
@@ -60,7 +117,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     textAlign: 'center',
   },
-  footerNote: { fontStyle: 'italic', fontSize: 9, color: '#4b5563' },
+  footerNote: { fontFamily: 'Montserrat', fontStyle: 'italic', fontSize: 9, color: '#4b5563' },
   footer: {
     position: 'absolute',
     bottom: 32,

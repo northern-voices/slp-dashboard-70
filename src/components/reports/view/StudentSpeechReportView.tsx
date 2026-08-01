@@ -26,7 +26,9 @@ const ReportHeader = () => (
     <img src='/icon.png' alt='' className='w-10 h-10' />
     <div className='leading-tight'>
       <p className='font-bold text-sm tracking-wide text-gray-900'>NORTHERN VOICES</p>
-      <p className='text-[10px] tracking-[0.2em] text-gray-500'>SPEECH SERVICES</p>
+      <p className="font-['Montserrat'] text-[10px] tracking-[0.2em] text-gray-500">
+        SPEECH SERVICES
+      </p>
     </div>
   </div>
 )
@@ -46,12 +48,17 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
   const copy = template?.name ? REPORT_RESULTS_TEXT[template.name] : undefined
 
   return (
-    <div className='space-y-6 print:space-y-0'>
+    <div className="space-y-6 print:space-y-0 font-['Nunito']">
+      <link
+        rel='stylesheet'
+        href='https://fonts.googleapis.com/css2?family=Gotu&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;700&display=swap'
+      />
+
       {/* Page 1 */}
       <section className='bg-white shadow-sm w-full p-10 break-after-page print:shadow-none print:p-10'>
         <ReportHeader />
 
-        <h1 className='text-4xl font-light text-gray-500 tracking-wide mb-8 text-center'>
+        <h1 className="text-4xl font-light text-gray-500 tracking-wide mb-8 text-center font-['Gotu']">
           SPEECH SCREEN REPORT
         </h1>
 
@@ -84,13 +91,13 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
           <table className='w-full border border-gray-300 text-sm mb-6 break-inside-avoid'>
             <thead>
               <tr className='bg-gray-50'>
-                <th className='border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide'>
+                <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
                   ERROR SOUND
                 </th>
-                <th className='border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide'>
+                <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
                   ERROR PATTERN EXHIBITED
                 </th>
-                <th className='border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide'>
+                <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
                   EXAMPLE
                 </th>
               </tr>
@@ -109,7 +116,9 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
           </table>
         )}
 
-        {copy?.footerNote && <p className='text-sm italic text-gray-600'>{copy.footerNote}</p>}
+        {copy?.footerNote && (
+          <p className="font-['Montserrat'] text-sm italic text-gray-600">{copy.footerNote}</p>
+        )}
 
         <ReportFooter page={1} of={2} />
       </section>
@@ -128,13 +137,13 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
         <table className='w-full border border-gray-300 text-sm mb-6 break-inside-avoid'>
           <thead>
             <tr className='bg-gray-50'>
-              <th className='border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide'>
+              <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
                 AGE RANGE
               </th>
-              <th className='border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide'>
+              <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
                 DEVELOPING SOUNDS
               </th>
-              <th className='border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide'>
+              <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
                 EXPECTED MASTERY
               </th>
             </tr>
