@@ -22,7 +22,7 @@ interface StudentSpeechReportData {
 }
 
 const ReportHeader = () => (
-  <div className='flex items-center gap-3 mb-6'>
+  <div className='flex items-center gap-3 mb-4'>
     <img src='/icon.png' alt='' className='w-10 h-10' />
     <div className='leading-tight'>
       <p className='font-bold text-sm tracking-wide text-gray-900'>NORTHERN VOICES</p>
@@ -55,28 +55,28 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
       />
 
       {/* Page 1 */}
-      <section className='bg-white shadow-sm w-full p-10 break-after-page print:shadow-none print:p-10'>
+      <section className='bg-white shadow-sm w-full pt-6 px-10 pb-8 break-after-page print:shadow-none print:pt-6 print:px-10 print:pb-8'>
         <ReportHeader />
 
-        <h1 className="text-4xl font-light text-gray-500 tracking-wide mb-6 text-center font-['Gotu']">
+        <h1 className="text-4xl font-light text-gray-500 tracking-wide mb-5 text-center font-['Gotu']">
           SPEECH SCREEN REPORT
         </h1>
 
-        <p className='font-semibold text-gray-900 mb-1.5'>DEAR PARENT(S)/GUARDIAN(S):</p>
-        <p className='text-gray-700 leading-snug tracking-tight mb-4'>
+        <p className='font-semibold text-gray-900 mb-1'>DEAR PARENT(S)/GUARDIAN(S):</p>
+        <p className='text-gray-700 leading-tight tracking-tighter mb-2'>
           A speech and language pathologist (SLP) recently conducted speech screens at your child's
           school. This report outlines your child's results and provides guidance on steps you can
           take to further support your child's speech development.
         </p>
 
-        <p className='font-bold text-gray-900 mb-2'>SPEECH SCREEN REPORT:</p>
-        <div className='space-y-0.5 text-gray-800 mb-4'>
+        <p className='font-bold text-gray-900 mb-1.5'>SPEECH SCREEN REPORT:</p>
+        <div className='space-y-0.5 text-gray-800 mb-3'>
           <p>Student's Name: {context.student_name}</p>
           <p>Grade: {context.grade}</p>
           <p>Date of Screening: {context.date_of_screening}</p>
         </div>
 
-        <p className='text-center text-gray-800 mb-4'>
+        <p className='text-center text-gray-800 mb-3'>
           Results:{' '}
           <span className='font-bold'>
             {copy?.resultsText ?? template?.name ?? 'Results pending'}
@@ -84,11 +84,11 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
         </p>
 
         {context.errors.length === 0 ? (
-          <p className='text-gray-600 mb-4'>
+          <p className='text-gray-600 mb-3'>
             No speech sound errors were identified in this screening.
           </p>
         ) : (
-          <table className='w-full border border-gray-300 text-sm mb-4 break-inside-avoid'>
+          <table className='w-full border border-gray-300 text-sm mb-3 break-inside-avoid'>
             <thead>
               <tr className='bg-gray-50'>
                 <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
@@ -124,7 +124,7 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
       </section>
 
       {/* Page 2 */}
-      <section className='bg-white shadow-sm w-full p-10 print:shadow-none print:p-10'>
+      <section className='bg-white shadow-sm w-full pt-6 px-10 pb-8 print:shadow-none print:pt-6 print:px-10 print:pb-8'>
         <ReportHeader />
 
         <p className='font-bold text-gray-900 mb-3'>DEVELOPMENTAL SPEECH SOUND CHART:</p>
