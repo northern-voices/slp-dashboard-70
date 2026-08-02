@@ -69,12 +69,23 @@ const ViewReport = () => {
     setIsGeneratingPdf(true)
 
     try {
-      const [{ pdf }, { default: StudentSpeechReportPdf }] = await Promise.all([
+      const [{ pdf }, { default: StudentSpeechReportPdf }, { PDFDocument }] = await Promise.all([
         import('@react-pdf/renderer'),
         import('@/components/reports/pdf/StudentSpeechReportPdf'),
+        import('pdf-lib'),
       ])
 
-      const blob = await pdf(<StudentSpeechReportPdf data={reportData as never} />).toBlob()
+      const mainBlob = await pdf(<StudentSpeechReportPdf data={reportData as never} />).toBlob()
+      const mainBytes = await mainBlob.arrayBuffer()
+      const posterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
+
+      const mainDoc = await PDFDocument.load(mainBytes)
+      const posterDoc = await PDFDocument.load(posterBytes)
+      const [posterPage] = await mainDoc.copyPages(posterDoc, [0])
+      mainDoc.addPage(posterPage)
+
+      const mergedBytes = await mainDoc.save()
+      const blob = new Blob([mergedBytes as BlobPart], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const studentName = (reportData as { context?: { student_name?: string } })?.context
         ?.student_name
