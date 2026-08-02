@@ -34,7 +34,7 @@ const ReportHeader = () => (
 )
 
 const ReportFooter = ({ page, of }: { page: number; of: number }) => (
-  <div className='flex items-center justify-between border-t border-gray-200 pt-3 mt-10 text-xs text-gray-500'>
+  <div className='flex items-center justify-between border-t border-gray-200 pt-3 text-xs text-gray-500'>
     <span>NORTHERN VOICES SPEECH SERVICES</span>
     <span className='flex items-center gap-2'>
       <img src='/icon.png' alt='' className='w-4 h-4' />
@@ -55,114 +55,122 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
       />
 
       {/* Page 1 */}
-      <section className='bg-white shadow-sm w-full pt-6 px-10 pb-8 break-after-page print:shadow-none print:pt-6 print:px-10 print:pb-8'>
+      <section className='bg-white shadow-sm w-full aspect-[8.5/11] pt-6 px-10 pb-8 flex flex-col break-after-page print:shadow-none print:pt-6 print:px-10 print:pb-8'>
         <ReportHeader />
 
-        <h1 className="text-4xl font-light text-gray-500 tracking-wide mb-5 text-center font-['Gotu']">
-          SPEECH SCREEN REPORT
-        </h1>
+        <div className='flex-1'>
+          <h1 className="text-4xl font-light text-gray-500 tracking-wide mb-5 text-center font-['Gotu']">
+            SPEECH SCREEN REPORT
+          </h1>
 
-        <p className='font-semibold text-gray-900 mb-1'>DEAR PARENT(S)/GUARDIAN(S):</p>
-        <p className='text-gray-700 leading-tight tracking-tighter mb-2'>
-          A speech and language pathologist (SLP) recently conducted speech screens at your child's
-          school. This report outlines your child's results and provides guidance on steps you can
-          take to further support your child's speech development.
-        </p>
-
-        <p className='font-bold text-gray-900 mb-1.5'>SPEECH SCREEN REPORT:</p>
-        <div className='space-y-0.5 text-gray-800 mb-3'>
-          <p>Student's Name: {context.student_name}</p>
-          <p>Grade: {context.grade}</p>
-          <p>Date of Screening: {context.date_of_screening}</p>
-        </div>
-
-        <p className='text-center text-gray-800 mb-3'>
-          Results:{' '}
-          <span className='font-bold'>
-            {copy?.resultsText ?? template?.name ?? 'Results pending'}
-          </span>
-        </p>
-
-        {context.errors.length === 0 ? (
-          <p className='text-gray-600 mb-3'>
-            No speech sound errors were identified in this screening.
+          <p className='font-semibold text-gray-900 mb-1'>DEAR PARENT(S)/GUARDIAN(S):</p>
+          <p className='text-gray-700 leading-tight tracking-tighter mb-2'>
+            A speech and language pathologist (SLP) recently conducted speech screens at your
+            child's school. This report outlines your child's results and provides guidance on steps
+            you can take to further support your child's speech development.
           </p>
-        ) : (
-          <table className='w-full border border-gray-300 text-sm mb-3 break-inside-avoid'>
-            <thead>
-              <tr className='bg-gray-50'>
-                <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
-                  ERROR SOUND
-                </th>
-                <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
-                  ERROR PATTERN EXHIBITED
-                </th>
-                <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
-                  EXAMPLE
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {context.errors.map((error, i) => (
-                <tr key={i}>
-                  <td className='border border-gray-300 py-2 px-3 text-center'>
-                    {error.targetSound || error.sound}
-                  </td>
-                  <td className='border border-gray-300 py-2 px-3 text-center'>{error.pattern}</td>
-                  <td className='border border-gray-300 py-2 px-3 text-center'>{error.example}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
 
-        {copy?.footerNote && (
-          <p className="font-['Montserrat'] text-sm italic text-gray-600">{copy.footerNote}</p>
-        )}
+          <p className='font-bold text-gray-900 mb-1.5'>SPEECH SCREEN REPORT:</p>
+          <div className='space-y-0.5 text-gray-800 mb-3'>
+            <p>Student's Name: {context.student_name}</p>
+            <p>Grade: {context.grade}</p>
+            <p>Date of Screening: {context.date_of_screening}</p>
+          </div>
+
+          <p className='text-center text-gray-800 mb-3'>
+            Results:{' '}
+            <span className='font-bold'>
+              {copy?.resultsText ?? template?.name ?? 'Results pending'}
+            </span>
+          </p>
+
+          {context.errors.length === 0 ? (
+            <p className='text-gray-600 mb-3'>
+              No speech sound errors were identified in this screening.
+            </p>
+          ) : (
+            <table className='w-full border border-gray-300 text-sm mb-3 break-inside-avoid'>
+              <thead>
+                <tr className='bg-gray-50'>
+                  <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
+                    ERROR SOUND
+                  </th>
+                  <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
+                    ERROR PATTERN EXHIBITED
+                  </th>
+                  <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
+                    EXAMPLE
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {context.errors.map((error, i) => (
+                  <tr key={i}>
+                    <td className='border border-gray-300 py-2 px-3 text-center'>
+                      {error.targetSound || error.sound}
+                    </td>
+                    <td className='border border-gray-300 py-2 px-3 text-center'>
+                      {error.pattern}
+                    </td>
+                    <td className='border border-gray-300 py-2 px-3 text-center'>
+                      {error.example}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {copy?.footerNote && (
+            <p className="font-['Montserrat'] text-sm italic text-gray-600">{copy.footerNote}</p>
+          )}
+        </div>
 
         <ReportFooter page={1} of={3} />
       </section>
 
       {/* Page 2 */}
-      <section className='bg-white shadow-sm w-full pt-6 px-10 pb-8 print:shadow-none print:pt-6 print:px-10 print:pb-8'>
+      <section className='bg-white shadow-sm w-full aspect-[8.5/11] pt-6 px-10 pb-8 flex flex-col print:shadow-none print:pt-6 print:px-10 print:pb-8'>
         <ReportHeader />
 
-        <p className='font-bold text-gray-900 mb-3'>DEVELOPMENTAL SPEECH SOUND CHART:</p>
-        <p className='text-gray-700 leading-relaxed mb-6'>
-          This chart provides a general guideline for when children typically develop and master
-          specific speech sounds. It's important to start practicing these sounds before the age of
-          expected mastery to proactively address any potential speech difficulties.
-        </p>
+        <div className='flex-1'>
+          <p className='font-bold text-gray-900 mb-3'>DEVELOPMENTAL SPEECH SOUND CHART:</p>
+          <p className='text-gray-700 leading-relaxed mb-6'>
+            This chart provides a general guideline for when children typically develop and master
+            specific speech sounds. It's important to start practicing these sounds before the age
+            of expected mastery to proactively address any potential speech difficulties.
+          </p>
 
-        <table className='w-full border border-gray-300 text-sm mb-4 break-inside-avoid'>
-          <thead>
-            <tr className='bg-gray-50'>
-              <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
-                AGE RANGE
-              </th>
-              <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
-                DEVELOPING SOUNDS
-              </th>
-              <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
-                EXPECTED MASTERY
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {DEVELOPMENTAL_CHART.map(row => (
-              <tr key={row.ageRange}>
-                <td className='border border-gray-300 py-2 px-3 text-center'>{row.ageRange}</td>
-                <td className='border border-gray-300 py-2 px-3 text-center'>{row.sounds}</td>
-                <td className='border border-gray-300 py-2 px-3 text-center'>{row.mastery}</td>
+          <table className='w-full border border-gray-300 text-sm mb-4 break-inside-avoid'>
+            <thead>
+              <tr className='bg-gray-50'>
+                <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
+                  AGE RANGE
+                </th>
+                <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
+                  DEVELOPING SOUNDS
+                </th>
+                <th className="font-['Montserrat'] border border-gray-300 py-2 px-3 text-center text-xs font-bold tracking-wide">
+                  EXPECTED MASTERY
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {DEVELOPMENTAL_CHART.map(row => (
+                <tr key={row.ageRange}>
+                  <td className='border border-gray-300 py-2 px-3 text-center'>{row.ageRange}</td>
+                  <td className='border border-gray-300 py-2 px-3 text-center'>{row.sounds}</td>
+                  <td className='border border-gray-300 py-2 px-3 text-center'>{row.mastery}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-        <p className='text-gray-700 leading-relaxed'>
-          <span className='font-bold'>Please note:</span> Children are unique and develop speech at
-          their own pace. This chart is meant to serve as a guide, not a strict timeline.
-        </p>
+          <p className='text-gray-700 leading-relaxed'>
+            <span className='font-bold'>Please note:</span> Children are unique and develop speech
+            at their own pace. This chart is meant to serve as a guide, not a strict timeline.
+          </p>
+        </div>
 
         <ReportFooter page={2} of={3} />
       </section>
