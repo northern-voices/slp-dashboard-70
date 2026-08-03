@@ -55,8 +55,8 @@ const ReportFooter = ({ page, of }: { page: number; of: number }) => (
 )
 
 const Checkbox = ({ label }: { label: string }) => (
-  <div className='flex items-start gap-1.5 mb-1'>
-    <div className='w-2 h-2 border border-gray-700 mt-1 shrink-0' />
+  <div className='flex items-center gap-1.5 mb-1'>
+    <div className='w-2 h-2 border border-gray-700 shrink-0' />
     <span className='text-[8px] leading-tight'>{label}</span>
   </div>
 )
@@ -120,9 +120,6 @@ const GoalWorksheetSection = ({
       <div className='w-[35%] pr-2.5 border-r border-gray-300'>
         <p className='font-bold text-gray-900 text-[9px] mb-0.5'>SOUND:</p>
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
-        <p className="font-['Montserrat'] italic text-[7px] text-gray-500">
-          (write the word the student made the error on)
-        </p>
       </div>
       <div className='w-[65%] pl-2.5'>
         <p className='font-bold text-gray-900 text-[9px] mb-1'>STRATEGIES TO USE:</p>
