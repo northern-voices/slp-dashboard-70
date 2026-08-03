@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   infoLine: { marginBottom: 1 },
   resultsLine: { textAlign: 'center', marginBottom: 6 },
   resultsBold: { fontFamily: 'Nunito', fontWeight: 700 },
-  table: { borderWidth: 1, borderColor: '#d1d5db', marginBottom: 8 },
+  table: { marginBottom: 8 },
   tableRow: { flexDirection: 'row' },
   tableHeaderCell: {
     flex: 1,
@@ -202,13 +202,13 @@ const StudentSpeechReportPdf = ({ data }: { data: StudentSpeechReportData }) => 
           </Text>
         ) : (
           <View style={styles.table}>
-            <View style={styles.tableRow}>
+            <View style={styles.tableRow} wrap={false}>
               <Text style={styles.tableHeaderCell}>ERROR SOUND</Text>
               <Text style={styles.tableHeaderCell}>ERROR PATTERN EXHIBITED</Text>
               <Text style={styles.tableHeaderCell}>EXAMPLE</Text>
             </View>
             {context.errors.map((error, i) => (
-              <View style={styles.tableRow} key={i}>
+              <View style={styles.tableRow} key={i} wrap={false}>
                 <Text style={styles.tableCell}>{error.targetSound || error.sound}</Text>
                 <Text style={styles.tableCell}>{error.pattern}</Text>
                 <Text style={styles.tableCell}>{error.example}</Text>
@@ -233,13 +233,13 @@ const StudentSpeechReportPdf = ({ data }: { data: StudentSpeechReportData }) => 
         </Text>
 
         <View style={styles.table}>
-          <View style={styles.tableRow}>
+          <View style={styles.tableRow} wrap={false}>
             <Text style={styles.tableHeaderCell}>AGE RANGE</Text>
             <Text style={styles.tableHeaderCell}>DEVELOPING SOUNDS</Text>
             <Text style={styles.tableHeaderCell}>EXPECTED MASTERY</Text>
           </View>
           {DEVELOPMENTAL_CHART.map(row => (
-            <View style={styles.tableRow} key={row.ageRange}>
+            <View style={styles.tableRow} key={row.ageRange} wrap={false}>
               <Text style={styles.tableCell}>{row.ageRange}</Text>
               <Text style={styles.tableCell}>{row.sounds}</Text>
               <Text style={styles.tableCell}>{row.mastery}</Text>
