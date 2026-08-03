@@ -169,3 +169,26 @@ const styles = StyleSheet.create({
   footerLogo: { width: 12, height: 12, marginRight: 4 },
   footerPage: { flexDirection: 'row', alignItems: 'center' },
 })
+
+const ReportBanner = () => (
+  <View style={styles.banner} fixed>
+    <Text style={styles.bannerTitle}>Student Progreses REport</Text>
+    <View style={styles.bannerBrand}>
+      <Image src='/icon.png' style={styles.bannerLogo} />
+      <View>
+        <Text style={styles.bannerBrandText}>NORTHERN VOICES</Text>
+        <Text style={styles.bannerBrandSub}>SPEECH SERVICES</Text>
+      </View>
+    </View>
+  </View>
+)
+
+const ReportFooter = () => (
+  <View style={styles.footer} fixed>
+    <Text>NORTHERN VOICES SPEECH SERVICES</Text>
+    <View style={styles.footerPage}>
+      <Image src='/icon.png' style={styles.footerLogo} />
+      <Text render={({ pageNumber, totalPages }) => `${pageNumber} of ${totalPages}`} />
+    </View>
+  </View>
+)
