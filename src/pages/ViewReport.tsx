@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, type ComponentType } from 'react'
 import { useParams } from 'react-router-dom'
 import { useReactToPrint } from 'react-to-print'
 import { supabase } from '@/lib/supabase'
@@ -7,9 +7,49 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Lock, Eye, EyeOff, Download, AlertCircle } from 'lucide-react'
 import StudentSpeechReportView from '@/components/reports/view/StudentSpeechReportView'
+import SpeechGoalSheetView from '@/components/reports/view/SpeechGoalSheetView'
 import GenericReportView from '@/components/reports/view/GenericReportView'
 
 type ViewState = 'locked' | 'verifying' | 'unlocked'
+
+const REPORT_VIEWS: Record<string, ComponentType<{ data: never }>> = {
+  speech_screening_report: StudentSpeechReportView,
+  goal_sheet: SpeechGoalSheetView,
+}
+
+const generateSpeechScreeningPdf = async (reportData: unknown) => {
+  const [{ pdf }, { default: StudentSpeechReportPdf }, { PDFDocument }] = await Promise.all([
+    import('@react-pdf/renderer'),
+    import('@/components/reports/pdf/StudentSpeechReportPdf'),
+    import('pdf-lib'),
+  ])
+
+  const mainBlob = await pdf(<StudentSpeechReportPdf data={reportData as never} />).toBlob()
+  const mainBytes = await mainBlob.arrayBuffer()
+  const posterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
+
+  const mainDoc = await PDFDocument.load(mainBytes)
+  const posterDoc = await PDFDocument.load(posterBytes)
+  const [posterPage] = await mainDoc.copyPages(posterDoc, [0])
+  mainDoc.addPage(posterPage)
+
+  const mergedBytes = await mainDoc.save()
+  return new Blob([mergedBytes as BlobPart], { type: 'application/pdf' })
+}
+
+const generateGoalSheetPdf = async (reportData: unknown) => {
+  const [{ pdf }, { default: SpeechGoalSheetPdf }] = await Promise.all([
+    import('@react-pdf/renderer'),
+    import('@/components/reports/pdf/SpeechGoalSheetPdf'),
+  ])
+
+  return pdf(<SpeechGoalSheetPdf data={reportData as never} />).toBlob()
+}
+
+const PDF_GENERATORS: Record<string, (reportData: unknown) => Promise<Blob>> = {
+  speech_screening_report: generateSpeechScreeningPdf,
+  goal_sheet: generateGoalSheetPdf,
+}
 
 const ViewReport = () => {
   const { token } = useParams<{ token: string }>()
@@ -61,7 +101,8 @@ const ViewReport = () => {
   }
 
   const handleDownloadPdf = async () => {
-    if (reportType !== 'speech_screening_report') {
+    const generator = reportType ? PDF_GENERATORS[reportType] : undefined
+    if (!generator) {
       handlePrint()
       return
     }
@@ -69,23 +110,7 @@ const ViewReport = () => {
     setIsGeneratingPdf(true)
 
     try {
-      const [{ pdf }, { default: StudentSpeechReportPdf }, { PDFDocument }] = await Promise.all([
-        import('@react-pdf/renderer'),
-        import('@/components/reports/pdf/StudentSpeechReportPdf'),
-        import('pdf-lib'),
-      ])
-
-      const mainBlob = await pdf(<StudentSpeechReportPdf data={reportData as never} />).toBlob()
-      const mainBytes = await mainBlob.arrayBuffer()
-      const posterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
-
-      const mainDoc = await PDFDocument.load(mainBytes)
-      const posterDoc = await PDFDocument.load(posterBytes)
-      const [posterPage] = await mainDoc.copyPages(posterDoc, [0])
-      mainDoc.addPage(posterPage)
-
-      const mergedBytes = await mainDoc.save()
-      const blob = new Blob([mergedBytes as BlobPart], { type: 'application/pdf' })
+      const blob = await generator(reportData)
       const url = URL.createObjectURL(blob)
       const studentName = (reportData as { context?: { student_name?: string } })?.context
         ?.student_name
@@ -103,6 +128,8 @@ const ViewReport = () => {
   }
 
   if (state === 'unlocked') {
+    const ReportView = reportType ? REPORT_VIEWS[reportType] : undefined
+
     return (
       <div className='min-h-screen bg-gray-50 py-8 px-4'>
         <div className='max-w-3xl mx-auto space-y-4'>
@@ -113,13 +140,9 @@ const ViewReport = () => {
             </Button>
           </div>
 
-          <div
-            ref={printRef}
-            className={
-              reportType === 'speech_screening_report' ? '' : 'bg-white rounded-lg shadow p-8'
-            }>
-            {reportType === 'speech_screening_report' ? (
-              <StudentSpeechReportView data={reportData as never} />
+          <div ref={printRef} className={ReportView ? '' : 'bg-white rounded-lg shadow p-8'}>
+            {ReportView ? (
+              <ReportView data={reportData as never} />
             ) : (
               <GenericReportView reportType={reportType} data={reportData} />
             )}
