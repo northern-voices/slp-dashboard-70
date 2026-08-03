@@ -18,11 +18,13 @@ interface StudentSpeechReportData {
     grade: string
     errors: ProcessedError[]
     code?: string
+    result?: string
   }
 }
 
 const ERRORS_FIRST_PAGE = 17
 const ERRORS_PER_CONTINUATION_PAGE = 24
+const SEVERITY_RESULTS = new Set(['mild', 'moderate', 'severe', 'profound'])
 
 const chunkErrorRows = (errors: ProcessedError[]): ProcessedError[][] => {
   if (errors.length === 0) return [[]]
@@ -89,6 +91,11 @@ const ErrorsTable = ({ errors }: { errors: ProcessedError[] }) => (
 const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) => {
   const { context, template } = data
   const copy = template?.name ? REPORT_RESULTS_TEXT[template.name] : undefined
+  const resultsText =
+    context.result && SEVERITY_RESULTS.has(context.result)
+      ? context.result.charAt(0).toUpperCase() + context.result.slice(1)
+      : (copy?.resultsText ?? template?.name ?? 'Results pending')
+
   const errorChunks = chunkErrorRows(context.errors)
   const totalPages = errorChunks.length + 2
 
@@ -131,10 +138,7 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
                   </div>
 
                   <p className='text-center text-gray-800 mb-3'>
-                    Results:{' '}
-                    <span className='font-bold'>
-                      {copy?.resultsText ?? template?.name ?? 'Results pending'}
-                    </span>
+                    Results: <span className='font-bold'>{resultsText}</span>
                   </p>
                 </>
               )}

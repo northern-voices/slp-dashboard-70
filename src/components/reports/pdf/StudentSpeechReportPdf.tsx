@@ -40,6 +40,8 @@ Font.register({
   ],
 })
 
+const SEVERITY_RESULTS = new Set(['mild', 'moderate', 'severe', 'profound'])
+
 interface ProcessedError {
   sound: string
   pattern: string
@@ -54,6 +56,7 @@ interface StudentSpeechReportData {
     date_of_screening: string
     grade: string
     errors: ProcessedError[]
+    result?: string
   }
 }
 
@@ -167,6 +170,10 @@ const ReportFooter = () => (
 const StudentSpeechReportPdf = ({ data }: { data: StudentSpeechReportData }) => {
   const { context, template } = data
   const copy = template?.name ? REPORT_RESULTS_TEXT[template.name] : undefined
+  const resultsText =
+    context.result && SEVERITY_RESULTS.has(context.result)
+      ? context.result.charAt(0).toUpperCase() + context.result.slice(1)
+      : (copy?.resultsText ?? template?.name ?? 'Results pending')
 
   return (
     <Document>
@@ -190,10 +197,7 @@ const StudentSpeechReportPdf = ({ data }: { data: StudentSpeechReportData }) => 
         </View>
 
         <Text style={styles.resultsLine}>
-          Results:{' '}
-          <Text style={styles.resultsBold}>
-            {copy?.resultsText ?? template?.name ?? 'Results pending'}
-          </Text>
+          Results: <Text style={styles.resultsBold}>{resultsText}</Text>
         </Text>
 
         {context.errors.length === 0 ? (
