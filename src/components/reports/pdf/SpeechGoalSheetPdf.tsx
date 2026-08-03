@@ -317,3 +317,203 @@ const styles = StyleSheet.create({
   footerLogo: { width: 12, height: 12, marginRight: 4 },
   footerPage: { flexDirection: 'row', alignItems: 'center' },
 })
+
+const ReportBanner = ({ title }: { title: string }) => (
+  <View style={styles.banner} fixed>
+    <Text style={styles.bannerTitle}>{title}</Text>
+    <View style={styles.bannerBrand}>
+      <Image src='/icon.png' style={styles.bannerLogo} />
+      <View>
+        <Text style={styles.bannerBrandText}>NORTHERN VOICES</Text>
+        <Text style={styles.bannerBrandSub}>SPEECH SERVICES</Text>
+      </View>
+    </View>
+  </View>
+)
+
+const ReportFooter = () => (
+  <View style={styles.footer} fixed>
+    <Text>NORTHERN VOICES SPEECH SERVICES</Text>
+    <View style={styles.footerPage}>
+      <Image src='/icon.png' style={styles.footerLogo} />
+      <Text render={({ pageNumber, totalPages }) => `${pageNumber} of ${totalPages}`} />
+    </View>
+  </View>
+)
+
+const Checkbox = ({ label }: { label: string }) => (
+  <View style={styles.checkboxRow}>
+    <View style={styles.checkboxBox} />
+    <Text style={styles.checkboxLabel}>{label}</Text>
+  </View>
+)
+
+const STRATEGY_ITEMS = ['Pointing to mouth', 'Clapping (syllables)', 'Straw (lateral lisp)']
+
+const HOW_DID_THEY_DO_ITEMS = [
+  'Could not say the sound at all',
+  'Can say the sound (but not in words)',
+  'Can say the sound in most words (with adult cues)',
+  'Can say the sound in most words (no adult help)',
+]
+
+const ErrorTable = ({ title, errors }: { title: string; errors: TableError[] }) => (
+  <>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    <View style={styles.table}>
+      <View style={styles.tableRow} wrap={false}>
+        <Text style={styles.tableHeaderCell}>ERROR SOUND</Text>
+        <Text style={styles.tableHeaderCell}>ERROR PATTERN EXHIBITED</Text>
+        <Text style={styles.tableHeaderCell}>EXAMPLE</Text>
+      </View>
+      {errors.map((error, i) => (
+        <View style={styles.tableRow} key={i} wrap={false}>
+          <Text style={styles.tableCell}>{error.sound}</Text>
+          <Text style={styles.tableCell}>{error.pattern}</Text>
+          <Text style={styles.tableCell}>{error.example}</Text>
+        </View>
+      ))}
+    </View>
+  </>
+)
+
+const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error: GoalError }) => (
+  <Page size='LETTER' style={styles.page}>
+    <ReportBanner title='Goal Sheets' />
+
+    <View style={styles.body}>
+      <Text style={styles.studentLine}>STUDENT: {studentName}</Text>
+
+      <View style={styles.soundStrategyRow} wrap={false}>
+        <View style={styles.soundBox}>
+          <Text style={styles.soundLabel}>SOUND:</Text>
+          <Text style={styles.soundValue}>{error.sound}</Text>
+          <Text style={styles.soundHint}>(write the word the student made the error on)</Text>
+        </View>
+        <View style={styles.strategyBox}>
+          <Text style={styles.strategyLabel}>STRATEGIES TO USE:</Text>
+          {STRATEGY_ITEMS.map(item => (
+            <Checkbox key={item} label={item} />
+          ))}
+        </View>
+      </View>
+      {[0, 1, 2].map(i => (
+        <View key={i} style={styles.sessionCard} wrap={false}>
+          <View
+            style={[
+              styles.sessionHeader,
+              i === 1 ? styles.sessionHeaderTan : styles.sessionHeaderDark,
+            ]}>
+            <Text style={i === 1 ? styles.sessionHeaderTextDark : styles.sessionHeaderTextLight}>
+              SESSION {i + 1}
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.sessionBody,
+              i === 1 ? styles.sessionBodyCream : styles.sessionBodyLight,
+            ]}>
+            <View style={styles.sessionLeft}>
+              <Text style={styles.sessionQuestion}>How did the student do?</Text>
+              <Text style={styles.sessionSubQuestion}>Were they able to say the sound?</Text>
+              {HOW_DID_THEY_DO_ITEMS.map(item => (
+                <Checkbox key={item} label={item} />
+              ))}
+            </View>
+            <View style={styles.sessionRight}>
+              <Text style={styles.sessionGoal}>
+                <Text style={styles.italicBold}>Goal: </Text>
+                Student will say the <Text style={styles.bold}>{error.sound}</Text> at the{' '}
+                <Text style={styles.bold}>{error.stimulability_option}</Text> level with 90%
+                accuracy.
+              </Text>
+              <Text style={styles.dateLine}>Date: ______________________</Text>
+
+              <Text style={styles.fieldLabel}>Activities / Games</Text>
+              <View style={styles.blankLine} />
+
+              <Text style={styles.fieldLabel}>
+                Progress / Improvement{' '}
+                <Text style={styles.fieldHint}>
+                  (Speech, confidence, social skills, language, vocabulary, etc.)
+                </Text>
+              </Text>
+              <View style={styles.blankLine} />
+
+              <Text style={styles.fieldLabel}>Additional comments, questions, or concerns</Text>
+              <View style={styles.blankLine} />
+            </View>
+          </View>
+        </View>
+      ))}
+      <View style={styles.masteredRow} wrap={false}>
+        <View style={[styles.masteredPill, styles.masteredPillLeft]}>
+          <View style={styles.radioCircle} />
+          <Text style={styles.masteredPillText}>MASTERED</Text>
+        </View>
+        <View style={styles.masteredPill}>
+          <View style={styles.radioCircle} />
+          <Text style={styles.masteredPillText}>NEEDS MORE PRACTICE</Text>
+        </View>
+      </View>
+    </View>
+
+    <ReportFooter />
+  </Page>
+)
+
+const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
+  const { context } = data
+  const worksheetErrors = [...(context.primary_errors ?? []), ...(context.secondary_errors ?? [])]
+
+  return (
+    <Document>
+      <Page size='LETTER' style={styles.page}>
+        <ReportBanner title='Goal Sheet' />
+
+        <View style={styles.body}>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Student: </Text>
+              {context.student_name}
+            </Text>
+            <Text style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Grade: </Text>
+              {context.grade}
+            </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoItem}>
+              <Text style={styles.infoLabel}>School: </Text>
+              {context.school}
+            </Text>
+            <Text style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Screening Date: </Text>
+              {context.date_of_screening}
+            </Text>
+          </View>
+
+          {context.primary_table_errors?.length > 0 && (
+            <ErrorTable title='SOUND ERRORS' errors={context.primary_table_errors} />
+          )}
+
+          {context.secondary_table_errors?.length > 0 && (
+            <ErrorTable title='SECONDARY SOUND ERRORS' errors={context.secondary_table_errors} />
+          )}
+
+          {context.vocabulary_support && (
+            <Text style={styles.vocabNote}>Vocabulary support recommended</Text>
+          )}
+        </View>
+
+        <ReportFooter />
+      </Page>
+
+      {worksheetErrors.map((error, i) => (
+        <GoalWorksheetPage key={i} studentName={context.student_name} error={error} />
+      ))}
+    </Document>
+  )
+}
+
+export default SpeechGoalSheetPdf
