@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   page: {
     paddingTop: 28,
     paddingRight: 48,
-    paddingBottom: 40,
+    paddingBottom: 72,
     paddingLeft: 48,
     fontSize: 11,
     fontFamily: 'Nunito',
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
 })
 
 const ReportHeader = () => (
-  <View style={styles.headerRow}>
+  <View style={styles.headerRow} fixed>
     <Image src='/icon.png' style={styles.logo} />
     <View>
       <Text style={styles.headerBrand}>NORTHERN VOICES</Text>
@@ -154,14 +154,12 @@ const ReportHeader = () => (
   </View>
 )
 
-const ReportFooter = ({ page, of }: { page: number; of: number }) => (
+const ReportFooter = () => (
   <View style={styles.footer} fixed>
     <Text>NORTHERN VOICES SPEECH SERVICES</Text>
     <View style={styles.footerPage}>
       <Image src='/icon.png' style={styles.footerLogo} />
-      <Text>
-        {page} of {of}
-      </Text>
+      <Text render={({ pageNumber, totalPages }) => `${pageNumber} of ${totalPages + 1}`} />
     </View>
   </View>
 )
@@ -221,7 +219,7 @@ const StudentSpeechReportPdf = ({ data }: { data: StudentSpeechReportData }) => 
 
         {copy?.footerNote && <Text style={styles.footerNote}>{copy.footerNote}</Text>}
 
-        <ReportFooter page={1} of={3} />
+        <ReportFooter />
       </Page>
 
       <Page size='LETTER' style={styles.page}>
@@ -255,7 +253,7 @@ const StudentSpeechReportPdf = ({ data }: { data: StudentSpeechReportData }) => 
           a guide, not a strict timeline.
         </Text>
 
-        <ReportFooter page={2} of={3} />
+        <ReportFooter />
       </Page>
     </Document>
   )
