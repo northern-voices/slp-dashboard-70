@@ -187,3 +187,84 @@ const ReportFooter = () => (
     </View>
   </View>
 )
+
+const MonthlyMeetingReportPdf = ({ data }: { data: MonthlyMeetingReportData }) => {
+  const { context } = data
+  const attendeesText = (context.attendees ?? []).join(', ')
+
+  return (
+    <Document>
+      <Page>
+        <ReportBanner />
+
+        <View style={styles.body}>
+          <Text style={styles.infoLine}>
+            <Text style={styles.infoLabel}>Meeting Title: </Text>
+            {context.meeting_title}
+          </Text>
+          <Text style={styles.infoLine}>
+            <Text style={styles.infoLabel}>Facilitator: </Text>
+            {context.facilitator_name}
+          </Text>
+          <Text style={styles.infoLine}>
+            <Text style={styles.infoLabel}>Date: </Text>
+            {context.meeting_date}
+          </Text>
+          <Text style={styles.infoLine}>
+            <Text style={styles.infoLabel}>School: </Text>
+            {context.school}
+          </Text>
+          <Text style={styles.infoLine}>
+            <Text style={styles.infoLabel}>Attendees: </Text>
+            {attendeesText}
+          </Text>
+
+          {context.has_student_updates && context.student_updates?.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>Student Notes</Text>
+              <View style={styles.table}>
+                <View style={styles.tableRow} wrap={false}>
+                  <Text style={[styles.tableHeaderCell, styles.colStudent]}>STUDENT</Text>
+                  <Text style={[styles.tableHeaderCell, styles.colSessions]}>
+                    SESSIONS ATTENDED
+                  </Text>
+                  <Text style={[styles.tableHeaderCell, styles.colNotes]}>STUDENT NOTES</Text>
+                </View>
+                {context.student_updates.map((update, i) => (
+                  <View style={styles.tableRow} key={i} wrap={false}>
+                    <Text style={[styles.tableCell, styles.colStudent]}>
+                      {update.student_name}
+                      {update.is_sub ? ' (Sub)' : ''}
+                    </Text>
+                    <Text style={[styles.tableCell, styles.colSessions]}>
+                      {update.sessions_attended}
+                    </Text>
+                    <Text style={[styles.tableCell, styles.colNotes]}>{update.meeting_notes}</Text>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
+
+          {context.has_additional_notes && (
+            <View>
+              <Text style={styles.sectionLabel}>Meeting Notes:</Text>
+              <Text style={styles.sectionText}>{context.additional_notes}</Text>
+            </View>
+          )}
+
+          {context.has_action_plan && (
+            <View>
+              <Text style={styles.sectionLabel}>Action Plan:</Text>
+              <Text style={styles.sectionText}>{context.action_plan}</Text>
+            </View>
+          )}
+        </View>
+
+        <ReportFooter />
+      </Page>
+    </Document>
+  )
+}
+
+export default MonthlyMeetingReportPdf
