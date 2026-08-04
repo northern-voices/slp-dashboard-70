@@ -1,4 +1,5 @@
 import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { REPORT_RESULTS_TEXT } from '@/constants/reportResultsText'
 import { DEVELOPMENTAL_CHART } from '@/constants/developmentalSpeechChart'
 
 Font.register({
@@ -39,11 +40,23 @@ Font.register({
   ],
 })
 
-interface NoErrorsReportData {
+const SEVERITY_RESULTS = new Set(['mild', 'moderate', 'severe', 'profound'])
+
+interface ProcessedError {
+  sound: string
+  pattern: string
+  example: string
+  targetSound: string
+}
+
+interface StudentSpeechReportData {
+  template?: { name?: string }
   context: {
     student_name: string
     date_of_screening: string
     grade: string
+    errors: ProcessedError[]
+    result?: string
   }
 }
 
@@ -88,10 +101,12 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     fontSize: 11,
   },
+  introParagraph: { lineHeight: 1.15, letterSpacing: -0.5, marginBottom: 6, color: '#374151' },
   paragraph: { lineHeight: 1.5, marginBottom: 18, color: '#374151' },
-  bold: { fontFamily: 'Nunito', fontWeight: 700 },
-  infoBlock: { marginBottom: 14 },
+  infoBlock: { marginBottom: 6 },
   infoLine: { marginBottom: 1 },
+  resultsLine: { textAlign: 'center', marginBottom: 6 },
+  resultsBold: { fontFamily: 'Nunito', fontWeight: 700 },
   table: { marginBottom: 8 },
   tableRow: { flexDirection: 'row' },
   tableHeaderCell: {
@@ -113,6 +128,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     textAlign: 'center',
   },
+  footerNote: { fontFamily: 'Montserrat', fontStyle: 'italic', fontSize: 9, color: '#4b5563' },
   footer: {
     position: 'absolute',
     bottom: 32,
@@ -151,8 +167,13 @@ const ReportFooter = () => (
   </View>
 )
 
-const NoErrorsSpeechReportPdf = ({ data }: { data: NoErrorsReportData }) => {
-  const { context } = data
+const GenericSpeechScreeningReportPdf = ({ data }: { data: StudentSpeechReportData }) => {
+  const { context, template } = data
+  const copy = template?.name ? REPORT_RESULTS_TEXT[template.name] : undefined
+  const resultsText =
+    context.result && SEVERITY_RESULTS.has(context.result)
+      ? context.result.charAt(0).toUpperCase() + context.result.slice(1)
+      : (copy?.resultsText ?? template?.name ?? 'Results pending')
 
   return (
     <Document>
@@ -161,20 +182,52 @@ const NoErrorsSpeechReportPdf = ({ data }: { data: NoErrorsReportData }) => {
 
         <Text style={styles.title}>SPEECH SCREEN REPORT</Text>
 
+        <Text style={styles.label}>DEAR PARENT(S)/GUARDIAN(S):</Text>
+        <Text style={styles.introParagraph}>
+          A speech and language pathologist (SLP) recently conducted speech screens at your child's
+          school. This report outlines your child's results and provides guidance on steps you can
+          take to further support your child's speech development.
+        </Text>
+
+        <Text style={styles.label}>SPEECH SCREEN REPORT:</Text>
         <View style={styles.infoBlock}>
           <Text style={styles.infoLine}>Student's Name: {context.student_name}</Text>
           <Text style={styles.infoLine}>Grade: {context.grade}</Text>
           <Text style={styles.infoLine}>Date of Screening: {context.date_of_screening}</Text>
         </View>
 
-        <Text style={styles.label}>DEAR PARENT(S)/GUARDIAN(S):</Text>
-        <Text style={styles.paragraph}>
-          A speech and language pathologist (SLP) recently conducted speech screens at your child's
-          school.{' '}
-          <Text style={styles.bold}>
-            We are happy to share that your child did not exhibit any speech sound errors!
-          </Text>
+        <Text style={styles.resultsLine}>
+          Results: <Text style={styles.resultsBold}>{resultsText}</Text>
         </Text>
+
+        {context.errors.length === 0 ? (
+          <Text style={styles.paragraph}>
+            No speech sound errors were identified in this screening.
+          </Text>
+        ) : (
+          <View style={styles.table}>
+            <View style={styles.tableRow} wrap={false}>
+              <Text style={styles.tableHeaderCell}>ERROR SOUND</Text>
+              <Text style={styles.tableHeaderCell}>ERROR PATTERN EXHIBITED</Text>
+              <Text style={styles.tableHeaderCell}>EXAMPLE</Text>
+            </View>
+            {context.errors.map((error, i) => (
+              <View style={styles.tableRow} key={i} wrap={false}>
+                <Text style={styles.tableCell}>{error.targetSound || error.sound}</Text>
+                <Text style={styles.tableCell}>{error.pattern}</Text>
+                <Text style={styles.tableCell}>{error.example}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {copy?.footerNote && <Text style={styles.footerNote}>{copy.footerNote}</Text>}
+
+        <ReportFooter />
+      </Page>
+
+      <Page size='LETTER' style={styles.page}>
+        <ReportHeader />
 
         <Text style={styles.label}>DEVELOPMENTAL SPEECH SOUND CHART:</Text>
         <Text style={styles.paragraph}>
@@ -199,7 +252,7 @@ const NoErrorsSpeechReportPdf = ({ data }: { data: NoErrorsReportData }) => {
         </View>
 
         <Text style={styles.paragraph}>
-          <Text style={styles.bold}>Please note: </Text>
+          <Text style={styles.resultsBold}>Please note: </Text>
           Children are unique and develop speech at their own pace. This chart is meant to serve as
           a guide, not a strict timeline.
         </Text>
@@ -210,4 +263,4 @@ const NoErrorsSpeechReportPdf = ({ data }: { data: NoErrorsReportData }) => {
   )
 }
 
-export default NoErrorsSpeechReportPdf
+export default GenericSpeechScreeningReportPdf
