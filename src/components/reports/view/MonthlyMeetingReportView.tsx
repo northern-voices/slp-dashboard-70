@@ -23,8 +23,8 @@ interface MonthlyMeetingReportData {
 
 // Unverified estimate - recalibrate against a real PDF render with a longer student roster,
 // same way ROWS_FIRST_PAGE/ROWS_PER_CONTINUATION_PAGE were tuned for the progress report.
-const ROWS_FIRST_PAGE = 12
-const ROWS_PER_CONTINUATION_PAGE = 18
+const ROWS_FIRST_PAGE = 18
+const ROWS_PER_CONTINUATION_PAGE = 26
 
 const chunkRows = (updates: StudentUpdate[]): StudentUpdate[][] => {
   if (updates.length === 0) return [[]]
