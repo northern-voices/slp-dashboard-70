@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
     backgroundColor: BANNER_BG,
     paddingVertical: 16,
     paddingHorizontal: 48,
+    marginBottom: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
     color: '#e5eaec',
     marginTop: 2,
   },
-  body: { paddingHorizontal: 48, paddingTop: 20 },
+  body: { paddingHorizontal: 48 },
 
   infoLine: { marginBottom: 8, fontSize: 11 },
   infoLabel: { fontFamily: 'Nunito', fontWeight: 700, color: '#111827' },
