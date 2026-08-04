@@ -61,3 +61,37 @@ const ReportFooter = ({ page, of }: { page: number; of: number }) => (
     </span>
   </div>
 )
+
+const StudentNotesTable = ({ updates }: { updates: StudentUpdate[] }) => (
+  <table className='w-full border border-black text-[10px] mb-3'>
+    <thead>
+      <tr className='bg-[#f2f2f2]'>
+        <th className="font-['Montserrat'] border border-black py-1.5 px-2 text-center text-[8px] font-bold">
+          STUDENT
+        </th>
+        <th className="font-['Montserrat'] border border-black py-1.5 px-2 text-center text-[8px] font-bold">
+          SESSIONS ATTENDED
+        </th>
+        <th className="font-['Montserrat'] border border-black py-1.5 px-2 text-center text-[8px] font-bold">
+          STUDENT NOTES
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {updates.map((update, i) => (
+        <tr key={i}>
+          <td className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
+            {update.student_name}
+            {update.is_sub ? ' (Sub)' : ''}
+          </td>
+          <td className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
+            {update.sessions_attended}
+          </td>
+          <td className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
+            {update.meeting_notes}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+)
