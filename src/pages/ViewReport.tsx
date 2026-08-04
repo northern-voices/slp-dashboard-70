@@ -9,12 +9,14 @@ import { Lock, Eye, EyeOff, Download, AlertCircle } from 'lucide-react'
 import StudentSpeechReportView from '@/components/reports/view/StudentSpeechReportView'
 import SpeechGoalSheetView from '@/components/reports/view/SpeechGoalSheetView'
 import GenericReportView from '@/components/reports/view/GenericReportView'
+import SpeechProgressReportView from '@/components/reports/view/SpeechProgressReportView'
 
 type ViewState = 'locked' | 'verifying' | 'unlocked'
 
 const REPORT_VIEWS: Record<string, ComponentType<{ data: never }>> = {
   speech_screening_report: StudentSpeechReportView,
   goal_sheet: SpeechGoalSheetView,
+  progress_report: SpeechProgressReportView,
 }
 
 const generateSpeechScreeningPdf = async (reportData: unknown) => {
@@ -46,9 +48,19 @@ const generateGoalSheetPdf = async (reportData: unknown) => {
   return pdf(<SpeechGoalSheetPdf data={reportData as never} />).toBlob()
 }
 
+const generateProgressReportPdf = async (reportData: unknown) => {
+  const [{ pdf }, { default: SpeechProgressReportPdf }] = await Promise.all([
+    import('@react-pdf/renderer'),
+    import('@/components/reports/pdf/SpeechProgressReportPdf'),
+  ])
+
+  return pdf(<SpeechProgressReportPdf data={reportData as never} />).toBlob()
+}
+
 const PDF_GENERATORS: Record<string, (reportData: unknown) => Promise<Blob>> = {
   speech_screening_report: generateSpeechScreeningPdf,
   goal_sheet: generateGoalSheetPdf,
+  progress_report: generateProgressReportPdf,
 }
 
 const ViewReport = () => {

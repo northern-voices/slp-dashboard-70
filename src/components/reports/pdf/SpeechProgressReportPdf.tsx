@@ -64,7 +64,7 @@ const BANNER_BG = '#5b7a8b'
 const styles = StyleSheet.create({
   page: {
     paddingTop: 0,
-    paddingBotton: 60,
+    paddingBottom: 60,
     paddingLeft: 0,
     paddingRight: 0,
     fontSize: 10,
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   banner: {
     backgroundColor: BANNER_BG,
     paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: 48,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
 
 const ReportBanner = () => (
   <View style={styles.banner} fixed>
-    <Text style={styles.bannerTitle}>Student Progreses REport</Text>
+    <Text style={styles.bannerTitle}>Student Progress Report</Text>
     <View style={styles.bannerBrand}>
       <Image src='/icon.png' style={styles.bannerLogo} />
       <View>
