@@ -194,7 +194,7 @@ const MonthlyMeetingReportPdf = ({ data }: { data: MonthlyMeetingReportData }) =
 
   return (
     <Document>
-      <Page>
+      <Page size='LETTER' style={styles.page}>
         <ReportBanner />
 
         <View style={styles.body}>

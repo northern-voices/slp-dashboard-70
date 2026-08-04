@@ -10,6 +10,7 @@ import StudentSpeechReportView from '@/components/reports/view/StudentSpeechRepo
 import SpeechGoalSheetView from '@/components/reports/view/SpeechGoalSheetView'
 import GenericReportView from '@/components/reports/view/GenericReportView'
 import SpeechProgressReportView from '@/components/reports/view/SpeechProgressReportView'
+import MonthlyMeetingReportView from '@/components/reports/view/MonthlyMeetingReportView'
 
 type ViewState = 'locked' | 'verifying' | 'unlocked'
 
@@ -17,6 +18,7 @@ const REPORT_VIEWS: Record<string, ComponentType<{ data: never }>> = {
   speech_screening_report: StudentSpeechReportView,
   goal_sheet: SpeechGoalSheetView,
   progress_report: SpeechProgressReportView,
+  monthly_meeting_report: MonthlyMeetingReportView,
 }
 
 const generateSpeechScreeningPdf = async (reportData: unknown) => {
@@ -57,10 +59,20 @@ const generateProgressReportPdf = async (reportData: unknown) => {
   return pdf(<SpeechProgressReportPdf data={reportData as never} />).toBlob()
 }
 
+const generateMonthlyMeetingReportPdf = async (reportData: unknown) => {
+  const [{ pdf }, { default: MonthlyMeetingReportPdf }] = await Promise.all([
+    import('@react-pdf/renderer'),
+    import('@/components/reports/pdf/MonthlyMeetingReportPdf'),
+  ])
+
+  return pdf(<MonthlyMeetingReportPdf data={reportData as never} />).toBlob()
+}
+
 const PDF_GENERATORS: Record<string, (reportData: unknown) => Promise<Blob>> = {
   speech_screening_report: generateSpeechScreeningPdf,
   goal_sheet: generateGoalSheetPdf,
   progress_report: generateProgressReportPdf,
+  monthly_meeting_report: generateMonthlyMeetingReportPdf,
 }
 
 const ViewReport = () => {
