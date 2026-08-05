@@ -88,7 +88,8 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     fontSize: 11,
   },
-  paragraph: { lineHeight: 1.5, marginBottom: 18, color: '#374151' },
+  introParagraph: { lineHeight: 1, letterSpacing: -0.5, marginBottom: 6, color: '#374151' },
+  paragraph: { lineHeight: 1.2, marginBottom: 18, color: '#374151' },
   bold: { fontFamily: 'Nunito', fontWeight: 700 },
   infoBlock: { marginBottom: 14 },
   infoLine: { marginBottom: 1 },
@@ -168,7 +169,7 @@ const NoErrorsSpeechReportPdf = ({ data }: { data: NoErrorsReportData }) => {
         </View>
 
         <Text style={styles.label}>DEAR PARENT(S)/GUARDIAN(S):</Text>
-        <Text style={styles.paragraph}>
+        <Text style={styles.introParagraph}>
           A speech and language pathologist (SLP) recently conducted speech screens at your child's
           school.{' '}
           <Text style={styles.bold}>
