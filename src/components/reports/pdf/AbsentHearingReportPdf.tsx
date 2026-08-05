@@ -163,3 +163,65 @@ const ReportFooter = () => (
     </View>
   </View>
 )
+
+const AbsentHearingReportPdf = ({ data }: { data: HearingReportData }) => {
+  const { context } = data
+
+  return (
+    <Document>
+      <Page size='LETTER' style={styles.page}>
+        <ReportHeader />
+
+        <Text style={styles.title}>HEARING SCREEN REPORT</Text>
+
+        <View style={styles.infoRow}>
+          <Text>Student: {context.student_name}</Text>
+          <Text>Date: {context.date_of_screening}</Text>
+        </View>
+
+        <Text style={styles.label}>DEAR PARENT(S)/GUARDIAN(S):</Text>
+        <Text style={styles.paragraph}>
+          We recently conducted hearing screenings at the school. Unfortunately, we were unable to
+          screen your child due to their <Text style={styles.bold}>absence</Text> on the screening
+          day.
+        </Text>
+
+        <Text style={styles.paragraph}>
+          Since hearing plays a big role in speech, language, and learning, we recommend regular
+          hearing evaluations. Even a mild or temporary hearing loss—such as from ear infections or
+          wax buildup—can impact a child's ability to communicate and excel in school.
+        </Text>
+
+        <Text style={styles.paragraph}>
+          If your child hasn't had a recent hearing test or if you've noticed any signs of hearing
+          difficulties, we encourage you to talk with your doctor and/or audiologist.
+        </Text>
+
+        <Text style={styles.label}>Signs That May Suggest Hearing Difficulties:</Text>
+        {SIGNS_LIST.map((sign, i) => (
+          <View style={styles.listItem} key={i}>
+            <Text style={styles.bullet}>•</Text>
+            <Text style={styles.listText}>{sign}</Text>
+          </View>
+        ))}
+
+        <Text style={[styles.paragraph, { marginTop: 10 }]}>
+          If you have any concerns or would like guidance on what to do next, please do not hesitate
+          to reach out to us or your school. Your child's success and well-being are our top
+          priorities, and we're here to help!
+        </Text>
+
+        <Text style={styles.signature}>L. Brillinger</Text>
+        <Text style={styles.signatureLine}>Lisa Brillinger | CEO NVSS</Text>
+        <Text style={styles.signatureLine}>Speech Language Pathologist</Text>
+        <Text style={styles.signatureLine}>License Number: 1595</Text>
+        <Text style={styles.signatureLine}>lbrillinger@northern-voices.ca</Text>
+        <Text style={styles.signatureLine}>www.northern-voices.ca</Text>
+
+        <ReportFooter />
+      </Page>
+    </Document>
+  )
+}
+
+export default AbsentHearingReportPdf
