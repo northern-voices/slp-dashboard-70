@@ -126,3 +126,94 @@ const styles = StyleSheet.create({
   footerLogo: { width: 12, height: 12, marginRight: 4 },
   footerPage: { flexDirection: 'row', alignItems: 'center' },
 })
+
+const ReportBanner = () => (
+  <View style={styles.banner} fixed>
+    <Text style={styles.bannerTitle}>Meeting Notes</Text>
+    <View style={styles.bannerBrand}>
+      <Image src='/icon.png' style={styles.bannerLogo} />
+      <View>
+        <Text style={styles.bannerBrandText}>NORTHERN VOICES</Text>
+        <Text style={styles.bannerBrandSub}>SPEECH SERVICES</Text>
+      </View>
+    </View>
+  </View>
+)
+
+const ReportFooter = () => (
+  <View style={styles.footer} fixed>
+    <Text>NORTHERN VOICES SPEECH SERVICES</Text>
+    <View style={styles.footerPage}>
+      <Image src='/icon.png' style={styles.footerLogo} />
+      <Text render={({ pageNumber, totalPages }) => `${pageNumber} of ${totalPages}`} />
+    </View>
+  </View>
+)
+
+const CoachingCallSchoolSummaryPdf = ({ data }: { data: CoachingCallSchoolSummaryData }) => {
+  const { context } = data
+  const attendeesText = (context.attendees ?? []).join(', ')
+
+  return (
+    <Document>
+      <Page size='LETTER' style={styles.page}>
+        <ReportBanner />
+
+        <View style={styles.body}>
+          <Text style={styles.infoLine}>
+            <Text style={styles.infoLabel}>Meeting Title: </Text>
+            {context.meeting_title}
+          </Text>
+          <Text style={styles.infoLine}>
+            <Text style={styles.infoLabel}>Facilitator: </Text>
+            {context.facilitator_name}
+          </Text>
+          <Text style={styles.infoLine}>
+            <Text style={styles.infoLabel}>Date: </Text>
+            {context.meeting_date}
+          </Text>
+          <Text style={styles.infoLine}>
+            <Text style={styles.infoLabel}>School: </Text>
+            {context.school}
+          </Text>
+          <Text style={styles.infoLine}>
+            <Text style={styles.infoLabel}>Attendees: </Text>
+            {attendeesText}
+          </Text>
+
+          {context.has_topics && (
+            <View>
+              <Text style={styles.sectionLabel}>Topics Discussed:</Text>
+              <Text style={styles.sectionText}>{context.topics}</Text>
+            </View>
+          )}
+
+          {context.has_visit_purpose && (
+            <View>
+              <Text style={styles.sectionLabel}>Visit Purpose:</Text>
+              <Text style={styles.sectionText}>{context.school_visit_purpose}</Text>
+            </View>
+          )}
+
+          {context.has_additional_notes && (
+            <View>
+              <Text style={styles.sectionLabel}>Meeting Notes:</Text>
+              <Text style={styles.sectionText}>{context.additional_notes}</Text>
+            </View>
+          )}
+
+          {context.has_action_plan && (
+            <View>
+              <Text style={styles.sectionLabel}>Action Plan:</Text>
+              <Text style={styles.sectionText}>{context.action_plan}</Text>
+            </View>
+          )}
+        </View>
+
+        <ReportFooter />
+      </Page>
+    </Document>
+  )
+}
+
+export default CoachingCallSchoolSummaryPdf
