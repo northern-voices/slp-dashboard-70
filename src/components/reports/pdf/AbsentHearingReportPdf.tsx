@@ -20,20 +20,6 @@ Font.register({
 })
 
 Font.register({
-  family: 'Nunito',
-  fonts: [
-    {
-      src: 'https://fonts.gstatic.com/s/nunito/v32/XRXI3I6Li01BKofiOc5wtlZ2di8HDLshdTQ3iqzdXWg.ttf',
-      fontWeight: 400,
-    },
-    {
-      src: 'https://fonts.gstatic.com/s/nunito/v32/XRXI3I6Li01BKofiOc5wtlZ2di8HDFwmdTQ3iqzdXWg.ttf',
-      fontWeight: 700,
-    },
-  ],
-})
-
-Font.register({
   family: 'Montserrat',
   fonts: [
     {
