@@ -1,7 +1,6 @@
-import { Document, Page, Text } from '@react-pdf/renderer'
-import AbsentHearingReportPdf from './AbsentHearingReportPdf'
-import NonCompliantHearingReportPdf from './NonCompliantHearingReportPdf'
-import ComplexNeedsHearingReportPdf from './ComplexNeedsHearingReportPdf'
+import AbsentHearingReportView from './AbsentHearingReportView'
+import NonCompliantHearingReportView from './NonCompliantHearingReportView'
+import ComplexNeedsHearingReportView from './ComplexNeedsHearingReportView'
 
 interface HearingReportData {
   template?: { name?: string }
@@ -30,25 +29,23 @@ interface HearingReportData {
 }
 
 // Placeholder until Pass, Pass - Staff, Fail, and Fail - Staff are built
-const NotYetAvailablePdf = () => (
-  <Document>
-    <Page size='LETTER' style={{ padding: 48, fontSize: 12 }}>
-      <Text>This hearing report template isn't built yet.</Text>
-    </Page>
-  </Document>
+const NotYetAvailableView = () => (
+  <div className='bg-white rounded-lg shadow p-8'>
+    This hearing report template isn't built yet.
+  </div>
 )
 
-const HearingScreenReportPdf = ({ data }: { data: HearingReportData }) => {
+const HearingScreenReportView = ({ data }: { data: HearingReportData }) => {
   switch (data.template?.name) {
     case 'hearing-screen/(A) Absent':
-      return <AbsentHearingReportPdf data={data as never} />
+      return <AbsentHearingReportView data={data as never} />
     case 'hearing-screen/(NC) Non-compliant':
-      return <NonCompliantHearingReportPdf data={data as never} />
+      return <NonCompliantHearingReportView data={data as never} />
     case 'hearing-screen/(CN) Complex Needs':
-      return <ComplexNeedsHearingReportPdf data={data as never} />
+      return <ComplexNeedsHearingReportView data={data as never} />
     default:
-      return <NotYetAvailablePdf />
+      return <NotYetAvailableView />
   }
 }
 
-export default HearingScreenReportPdf
+export default HearingScreenReportView
