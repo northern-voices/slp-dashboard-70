@@ -79,14 +79,16 @@ const CoachingCallSchoolSummaryView = ({ data }: { data: CoachingCallSchoolSumma
           {context.has_topics && (
             <div>
               <p className='font-bold text-gray-900 mb-1 mt-2'>Topics Discussed:</p>
-              <p className='text-sm text-gray-700 leading-relaxed mb-2'>{context.topics}</p>
+              <p className='text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-2'>
+                {context.topics}
+              </p>
             </div>
           )}
 
           {context.has_visit_purpose && (
             <div>
               <p className='font-bold text-gray-900 mb-1 mt-2'>Visit Purpose:</p>
-              <p className='text-sm text-gray-700 leading-relaxed mb-2'>
+              <p className='text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-2'>
                 {context.school_visit_purpose}
               </p>
             </div>
@@ -95,7 +97,7 @@ const CoachingCallSchoolSummaryView = ({ data }: { data: CoachingCallSchoolSumma
           {context.has_additional_notes && (
             <div>
               <p className='font-bold text-gray-900 mb-1 mt-2'>Meeting Notes:</p>
-              <p className='text-sm text-gray-700 leading-relaxed mb-2'>
+              <p className='text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-2'>
                 {context.additional_notes}
               </p>
             </div>
@@ -104,7 +106,9 @@ const CoachingCallSchoolSummaryView = ({ data }: { data: CoachingCallSchoolSumma
           {context.has_action_plan && (
             <div>
               <p className='font-bold text-gray-900 mb-1 mt-2'>Action Plan:</p>
-              <p className='text-sm text-gray-700 leading-relaxed mb-2'>{context.action_plan}</p>
+              <p className='text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-2'>
+                {context.action_plan}
+              </p>
             </div>
           )}
         </div>
