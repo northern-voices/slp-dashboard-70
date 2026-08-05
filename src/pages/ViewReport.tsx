@@ -21,7 +21,15 @@ const REPORT_VIEWS: Record<string, ComponentType<{ data: never }>> = {
   monthly_meeting_report: MonthlyMeetingReportView,
 }
 
+const POSTER_ONLY_TEMPLATES = new Set(['Complex Needs', 'Non Registered No Consent'])
+
 const generateSpeechScreeningPdf = async (reportData: unknown) => {
+  const templateName = (reportData as { template?: { name?: string } })?.template?.name
+  if (templateName && POSTER_ONLY_TEMPLATES.has(templateName)) {
+    const posterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
+    return new Blob([posterBytes], { type: 'application/pdf' })
+  }
+
   const [{ pdf }, { default: StudentSpeechReportPdf }, { PDFDocument }] = await Promise.all([
     import('@react-pdf/renderer'),
     import('@/components/reports/pdf/StudentSpeechReportPdf'),
