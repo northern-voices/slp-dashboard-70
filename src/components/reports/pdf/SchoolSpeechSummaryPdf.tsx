@@ -1,4 +1,5 @@
 import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
 
 Font.register({
   family: 'Gotu',
@@ -200,29 +201,6 @@ const styles = StyleSheet.create({
   footerPage: { flexDirection: 'row', alignItems: 'center' },
 })
 
-const ReportBanner = () => (
-  <View style={styles.banner}>
-    <Text style={styles.bannerTitle}>School Summary Report</Text>
-    <View style={styles.bannerBrand}>
-      <Image src='/icon.png' style={styles.bannerLogo} />
-      <View>
-        <Text style={styles.bannerBrandText}>NORTHERN VOICES</Text>
-        <Text style={styles.bannerBrandSub}>SPEECH SERVICES</Text>
-      </View>
-    </View>
-  </View>
-)
-
-const ReportFooter = ({ page, of }: { page: number; of: number }) => (
-  <View style={styles.footer}>
-    <Text>NORTHERN VOICE SPEECH SERVICES</Text>
-    <View style={styles.footerPage}>
-      <Image src='/icon.png' style={styles.footerLogo} />
-      <Text>{`${page} of ${of}`}</Text>
-    </View>
-  </View>
-)
-
 const SegmentTable = ({ segment }: { segment: PageSegment }) => (
   <>
     {segment.heading && <Text style={styles.blockHeading}>{segment.heading}</Text>}
@@ -294,7 +272,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
         const isLastPage = i === totalPages - 1
         return (
           <Page key={`a-${i}`} size='LETTER' style={styles.page}>
-            <ReportBanner />
+            <ReportBanner title='School Summary Report' />
             <View style={styles.body}>
               {i === 0 && (
                 <>
@@ -317,7 +295,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
                 <SegmentTable key={j} segment={segment} />
               ))}
             </View>
-            {isLastPage && <ReportFooter page={i + 1} of={totalPages} />}
+            <ReportFooter page={i + 1} of={totalPages} brand='NORTHERN VOICES SPEECH SERVICES' />
           </Page>
         )
       })}
@@ -327,7 +305,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
         const isLastPage = pageIndex === totalPages - 1
         return (
           <Page key={`b-${i}`} size='LETTER' style={styles.page}>
-            <ReportBanner />
+            <ReportBanner title='School Summary Report' />
             <View style={styles.body}>
               {i === 0 && (
                 <>
@@ -346,7 +324,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
                 <SegmentTable key={j} segment={segment} />
               ))}
             </View>
-            {isLastPage && <ReportFooter page={pageIndex + 1} of={totalPages} />}
+            <ReportFooter page={i + 1} of={totalPages} brand='NORTHERN VOICES SPEECH SERVICES' />
           </Page>
         )
       })}
