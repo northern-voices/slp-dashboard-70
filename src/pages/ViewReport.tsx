@@ -36,6 +36,14 @@ const REPORT_VIEWS: Record<string, ComponentType<{ data: never }>> = {
   school_wide_speech_screening_reports: BulkReportView,
 }
 
+// Report types that download as a zip of individual student PDFs rather than one file.
+const ZIP_REPORT_TYPES = new Set([
+  'school_wide_hearing_reports',
+  'school_wide_goal_sheets',
+  'school_wide_progress_reports',
+  'school_wide_speech_screening_reports',
+])
+
 const POSTER_ONLY_TEMPLATES = new Set(['Complex Needs', 'Non Registered No Consent'])
 
 const generateSpeechScreeningPdf = async (reportData: unknown) => {
@@ -100,34 +108,64 @@ const generateHearingScreenReportPdf = async (reportData: unknown) => {
   return pdf(<HearingScreenReportPdf data={reportData as never} />).toBlob()
 }
 
-// Renders each document's own Pdf component separately, then merges every page into
-// one PDF with pdf-lib - the same copyPages trick generateSpeechScreeningPdf uses for
-// the poster merge, just generalized to N documents instead of 2.
-const generateBulkReportPdf = async (
-  reportData: unknown,
-  onProgress?: (current: number, total: number) => void
-) => {
-  const [{ pdf }, { default: BulkDocumentPdf }, { PDFDocument }] = await Promise.all([
+// school_summary_report / school_summary_hearing_report always carry exactly one
+// document - no "per student" split applies, so this just renders that one document.
+const generateSchoolSummaryPdf = async (reportData: unknown) => {
+  const [{ pdf }, { default: BulkDocumentPdf }] = await Promise.all([
     import('@react-pdf/renderer'),
     import('@/components/reports/pdf/BulkDocumentPdf'),
-    import('pdf-lib'),
   ])
 
   const documents = (reportData as { documents?: unknown[] })?.documents ?? []
-  const mergedDoc = await PDFDocument.create()
+  return pdf(<BulkDocumentPdf data={documents[0] as never} />).toBlob()
+}
+
+// Renders each document as its own PDF (applying the same poster-only short-circuit
+// generateSpeechScreeningPdf uses, since BulkDocumentPdf's own dispatch has no case
+// for the poster-only speech templates) and zips them, organized into the same
+// grade-directory structure the backend already computes per document.
+const generateBulkReportZip = async (
+  reportData: unknown,
+  onProgress?: (current: number, total: number) => void
+) => {
+  const [{ pdf }, { default: BulkDocumentPdf }, { default: JSZip }] = await Promise.all([
+    import('@react-pdf/renderer'),
+    import('@/components/reports/pdf/BulkDocumentPdf'),
+    import('jszip'),
+  ])
+
+  const documents = (reportData as { documents?: unknown[] })?.documents ?? []
+  const zip = new JSZip()
+  let posterBytes: ArrayBuffer | null = null
 
   for (let i = 0; i < documents.length; i++) {
     onProgress?.(i + 1, documents.length)
 
-    const docBlob = await pdf(<BulkDocumentPdf data={documents[i] as never} />).toBlob()
-    const docBytes = await docBlob.arrayBuffer()
-    const docPdf = await PDFDocument.load(docBytes)
-    const copiedPages = await mergedDoc.copyPages(docPdf, docPdf.getPageIndices())
-    copiedPages.forEach(page => mergedDoc.addPage(page))
+    const doc = documents[i] as {
+      metadata?: { file_name?: string; directory?: string }
+      template?: { name?: string }
+    }
+    const templateName = doc.template?.name
+
+    let docBytes: ArrayBuffer
+    if (templateName && POSTER_ONLY_TEMPLATES.has(templateName)) {
+      if (!posterBytes) {
+        posterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
+      }
+      docBytes = posterBytes
+    } else {
+      const docBlob = await pdf(<BulkDocumentPdf data={documents[i] as never} />).toBlob()
+      docBytes = await docBlob.arrayBuffer()
+    }
+
+    const fileName = doc.metadata?.file_name || `document-${i + 1}`
+    const directory = doc.metadata?.directory
+    const path = directory ? `${directory}/${fileName}.pdf` : `${fileName}.pdf`
+
+    zip.file(path, docBytes)
   }
 
-  const mergedBytes = await mergedDoc.save()
-  return new Blob([mergedBytes as BlobPart], { type: 'application/pdf' })
+  return zip.generateAsync({ type: 'blob' })
 }
 
 const PDF_GENERATORS: Record<string, PdfGenerator> = {
@@ -136,12 +174,12 @@ const PDF_GENERATORS: Record<string, PdfGenerator> = {
   progress_report: generateProgressReportPdf,
   monthly_meeting_report: generateMonthlyMeetingReportPdf,
   hearing_screening_report: generateHearingScreenReportPdf,
-  school_summary_report: generateBulkReportPdf,
-  school_summary_hearing_report: generateBulkReportPdf,
-  school_wide_hearing_reports: generateBulkReportPdf,
-  school_wide_goal_sheets: generateBulkReportPdf,
-  school_wide_progress_reports: generateBulkReportPdf,
-  school_wide_speech_screening_reports: generateBulkReportPdf,
+  school_summary_report: generateSchoolSummaryPdf,
+  school_summary_hearing_report: generateSchoolSummaryPdf,
+  school_wide_hearing_reports: generateBulkReportZip,
+  school_wide_goal_sheets: generateBulkReportZip,
+  school_wide_progress_reports: generateBulkReportZip,
+  school_wide_speech_screening_reports: generateBulkReportZip,
 }
 
 const ViewReport = () => {
@@ -213,12 +251,13 @@ const ViewReport = () => {
         ?.student_name
       const schoolName = (reportData as { school_name?: string })?.school_name
       const academicYear = (reportData as { academic_year?: string })?.academic_year
+      const extension = blob.type === 'application/zip' ? 'zip' : 'pdf'
 
       const downloadName = studentName
-        ? `${studentName} - NVSS Student Report.pdf`
+        ? `${studentName} - NVSS Student Report.${extension}`
         : schoolName
-          ? `${schoolName}${academicYear ? ` - ${academicYear}` : ''} - NVSS Report.pdf`
-          : 'NVSS Report.pdf'
+          ? `${schoolName}${academicYear ? ` - ${academicYear}` : ''} - NVSS Reports.${extension}`
+          : `NVSS Report.${extension}`
 
       const link = document.createElement('a')
       link.href = url
@@ -235,6 +274,7 @@ const ViewReport = () => {
 
   if (state === 'unlocked') {
     const ReportView = reportType ? REPORT_VIEWS[reportType] : undefined
+    const isZipDownload = reportType ? ZIP_REPORT_TYPES.has(reportType) : false
 
     return (
       <div className='min-h-screen bg-gray-50 py-8 px-4'>
@@ -246,7 +286,9 @@ const ViewReport = () => {
                 ? pdfProgress
                   ? `Generating ${pdfProgress.current}/${pdfProgress.total}...`
                   : 'Generating PDF...'
-                : 'Download / Print PDF'}
+                : isZipDownload
+                  ? 'Download Reports (ZIP)'
+                  : 'Download / Print PDF'}
             </Button>
           </div>
 
