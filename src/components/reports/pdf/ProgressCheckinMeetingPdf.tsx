@@ -1,4 +1,5 @@
 import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
 
 Font.register({
   family: 'Gotu',
@@ -165,29 +166,6 @@ const styles = StyleSheet.create({
   footerPage: { flexDirection: 'row', alignItems: 'center' },
 })
 
-const ReportBanner = () => (
-  <View style={styles.banner} fixed>
-    <Text style={styles.bannerTitle}>Meeting Notes</Text>
-    <View style={styles.bannerBrand}>
-      <Image src='/icon.png' style={styles.bannerLogo} />
-      <View>
-        <Text style={styles.bannerBrandText}>NORTHERN VOICES</Text>
-        <Text style={styles.bannerBrandSub}>SPEECH SERVICES</Text>
-      </View>
-    </View>
-  </View>
-)
-
-const ReportFooter = () => (
-  <View style={styles.footer} fixed>
-    <Text>NORTHERN VOICES SPEECH SERVICES</Text>
-    <View style={styles.footerPage}>
-      <Image src='/icon.png' style={styles.footerLogo} />
-      <Text render={({ pageNumber, totalPages }) => `${pageNumber} of ${totalPages}`} />
-    </View>
-  </View>
-)
-
 const ProgressCheckinMeetingPdf = ({ data }: { data: ProgressCheckinMeetingData }) => {
   const { context } = data
   const attendeesText = (context.attendees ?? []).join(', ')
@@ -195,7 +173,7 @@ const ProgressCheckinMeetingPdf = ({ data }: { data: ProgressCheckinMeetingData 
   return (
     <Document>
       <Page size='LETTER' style={styles.page}>
-        <ReportBanner />
+        <ReportBanner title='Meeting Notes' />
 
         <View style={styles.body}>
           <Text style={styles.infoLine}>
@@ -261,7 +239,7 @@ const ProgressCheckinMeetingPdf = ({ data }: { data: ProgressCheckinMeetingData 
           )}
         </View>
 
-        <ReportFooter />
+        <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
       </Page>
     </Document>
   )
