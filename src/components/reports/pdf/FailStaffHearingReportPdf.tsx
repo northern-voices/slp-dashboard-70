@@ -184,7 +184,7 @@ const ReportHeader = () => (
 
 const ReportFooter = ({ page, of }: { page: number; of: number }) => (
   <View style={styles.footer} fixed>
-    <Text>NORTHERN VOICE SPEECH SERVICES</Text>
+    <Text>NORTHERN VOICES SPEECH SERVICES</Text>
     <View style={styles.footerPage}>
       <Image src='/icon.png' style={styles.footerLogo} />
       <Text>
