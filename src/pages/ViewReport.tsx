@@ -12,8 +12,15 @@ import GenericReportView from '@/components/reports/view/GenericReportView'
 import SpeechProgressReportView from '@/components/reports/view/SpeechProgressReportView'
 import MonthlyMeetingReportView from '@/components/reports/view/MonthlyMeetingReportView'
 import HearingScreenReportView from '@/components/reports/view/HearingScreenReportView'
+import BulkReportView from '@/components/reports/view/BulkReportView'
 
 type ViewState = 'locked' | 'verifying' | 'unlocked'
+
+type PdfProgress = { current: number; total: number }
+type PdfGenerator = (
+  reportData: unknown,
+  onProgress?: (current: number, total: number) => void
+) => Promise<Blob>
 
 const REPORT_VIEWS: Record<string, ComponentType<{ data: never }>> = {
   speech_screening_report: StudentSpeechReportView,
@@ -21,6 +28,12 @@ const REPORT_VIEWS: Record<string, ComponentType<{ data: never }>> = {
   progress_report: SpeechProgressReportView,
   monthly_meeting_report: MonthlyMeetingReportView,
   hearing_screening_report: HearingScreenReportView,
+  school_summary_report: BulkReportView,
+  school_summary_hearing_report: BulkReportView,
+  school_wide_hearing_reports: BulkReportView,
+  school_wide_goal_sheets: BulkReportView,
+  school_wide_progress_reports: BulkReportView,
+  school_wide_speech_screening_reports: BulkReportView,
 }
 
 const POSTER_ONLY_TEMPLATES = new Set(['Complex Needs', 'Non Registered No Consent'])
@@ -87,12 +100,48 @@ const generateHearingScreenReportPdf = async (reportData: unknown) => {
   return pdf(<HearingScreenReportPdf data={reportData as never} />).toBlob()
 }
 
-const PDF_GENERATORS: Record<string, (reportData: unknown) => Promise<Blob>> = {
+// Renders each document's own Pdf component separately, then merges every page into
+// one PDF with pdf-lib - the same copyPages trick generateSpeechScreeningPdf uses for
+// the poster merge, just generalized to N documents instead of 2.
+const generateBulkReportPdf = async (
+  reportData: unknown,
+  onProgress?: (current: number, total: number) => void
+) => {
+  const [{ pdf }, { default: BulkDocumentPdf }, { PDFDocument }] = await Promise.all([
+    import('@react-pdf/renderer'),
+    import('@/components/reports/pdf/BulkDocumentPdf'),
+    import('pdf-lib'),
+  ])
+
+  const documents = (reportData as { documents?: unknown[] })?.documents ?? []
+  const mergedDoc = await PDFDocument.create()
+
+  for (let i = 0; i < documents.length; i++) {
+    onProgress?.(i + 1, documents.length)
+
+    const docBlob = await pdf(<BulkDocumentPdf data={documents[i] as never} />).toBlob()
+    const docBytes = await docBlob.arrayBuffer()
+    const docPdf = await PDFDocument.load(docBytes)
+    const copiedPages = await mergedDoc.copyPages(docPdf, docPdf.getPageIndices())
+    copiedPages.forEach(page => mergedDoc.addPage(page))
+  }
+
+  const mergedBytes = await mergedDoc.save()
+  return new Blob([mergedBytes as BlobPart], { type: 'application/pdf' })
+}
+
+const PDF_GENERATORS: Record<string, PdfGenerator> = {
   speech_screening_report: generateSpeechScreeningPdf,
   goal_sheet: generateGoalSheetPdf,
   progress_report: generateProgressReportPdf,
   monthly_meeting_report: generateMonthlyMeetingReportPdf,
   hearing_screening_report: generateHearingScreenReportPdf,
+  school_summary_report: generateBulkReportPdf,
+  school_summary_hearing_report: generateBulkReportPdf,
+  school_wide_hearing_reports: generateBulkReportPdf,
+  school_wide_goal_sheets: generateBulkReportPdf,
+  school_wide_progress_reports: generateBulkReportPdf,
+  school_wide_speech_screening_reports: generateBulkReportPdf,
 }
 
 const ViewReport = () => {
@@ -104,6 +153,7 @@ const ViewReport = () => {
   const [reportType, setReportType] = useState<string | null>(null)
   const [reportData, setReportData] = useState<unknown>(null)
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
+  const [pdfProgress, setPdfProgress] = useState<PdfProgress | null>(null)
 
   const printRef = useRef<HTMLDivElement>(null)
   const handlePrint = useReactToPrint({ contentRef: printRef, documentTitle: 'Report' })
@@ -152,22 +202,34 @@ const ViewReport = () => {
     }
 
     setIsGeneratingPdf(true)
+    setPdfProgress(null)
 
     try {
-      const blob = await generator(reportData)
+      const blob = await generator(reportData, (current, total) =>
+        setPdfProgress({ current, total })
+      )
       const url = URL.createObjectURL(blob)
       const studentName = (reportData as { context?: { student_name?: string } })?.context
         ?.student_name
+      const schoolName = (reportData as { school_name?: string })?.school_name
+      const academicYear = (reportData as { academic_year?: string })?.academic_year
+
+      const downloadName = studentName
+        ? `${studentName} - NVSS Student Report.pdf`
+        : schoolName
+          ? `${schoolName}${academicYear ? ` - ${academicYear}` : ''} - NVSS Report.pdf`
+          : 'NVSS Report.pdf'
 
       const link = document.createElement('a')
       link.href = url
-      link.download = `${studentName ?? 'Student'} - NVSS Student Report.pdf`
+      link.download = downloadName
       link.click()
       URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Failed to generate PDF:', err)
     } finally {
       setIsGeneratingPdf(false)
+      setPdfProgress(null)
     }
   }
 
@@ -180,7 +242,11 @@ const ViewReport = () => {
           <div className='flex justify-end'>
             <Button onClick={handleDownloadPdf} variant='outline' disabled={isGeneratingPdf}>
               <Download className='w-4 h-4 mr-2' />
-              {isGeneratingPdf ? 'Generating PDF...' : 'Download / Print PDF'}
+              {isGeneratingPdf
+                ? pdfProgress
+                  ? `Generating ${pdfProgress.current}/${pdfProgress.total}...`
+                  : 'Generating PDF...'
+                : 'Download / Print PDF'}
             </Button>
           </div>
 
