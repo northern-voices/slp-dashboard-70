@@ -1,4 +1,5 @@
 import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
 
 Font.register({
   family: 'Gotu',
@@ -317,29 +318,6 @@ const styles = StyleSheet.create({
   footerPage: { flexDirection: 'row', alignItems: 'center' },
 })
 
-const ReportBanner = ({ title }: { title: string }) => (
-  <View style={styles.banner} fixed>
-    <Text style={styles.bannerTitle}>{title}</Text>
-    <View style={styles.bannerBrand}>
-      <Image src='/icon.png' style={styles.bannerLogo} />
-      <View>
-        <Text style={styles.bannerBrandText}>NORTHERN VOICES</Text>
-        <Text style={styles.bannerBrandSub}>SPEECH SERVICES</Text>
-      </View>
-    </View>
-  </View>
-)
-
-const ReportFooter = () => (
-  <View style={styles.footer} fixed>
-    <Text>NORTHERN VOICES SPEECH SERVICES</Text>
-    <View style={styles.footerPage}>
-      <Image src='/icon.png' style={styles.footerLogo} />
-      <Text render={({ pageNumber, totalPages }) => `${pageNumber} of ${totalPages}`} />
-    </View>
-  </View>
-)
-
 const Checkbox = ({ label }: { label: string }) => (
   <View style={styles.checkboxRow}>
     <View style={styles.checkboxBox} />
@@ -456,7 +434,7 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
       </View>
     </View>
 
-    <ReportFooter />
+    <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
   </Page>
 )
 
@@ -504,7 +482,7 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
           )}
         </View>
 
-        <ReportFooter />
+        <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
       </Page>
 
       {worksheetErrors.map((error, i) => (
