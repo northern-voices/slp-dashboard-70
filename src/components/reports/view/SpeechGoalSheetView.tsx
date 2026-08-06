@@ -1,3 +1,5 @@
+import { ReportBanner, ReportFooter } from './shared/ReportBannerChrome'
+
 interface TableError {
   sound: string
   pattern: string
@@ -26,33 +28,6 @@ interface SpeechGoalSheetData {
     secondary_table_errors: TableError[]
   }
 }
-
-const ReportBanner = ({ title }: { title: string }) => (
-  <div className='bg-[#5b7a8b] px-10 py-6 flex items-center justify-between'>
-    <h1 className="text-3xl text-white font-['Gotu']">{title}</h1>
-    <div className='flex items-center'>
-      <img src='/icon.png' alt='' className='w-7 h-7 rounded mr-2' />
-      <div className='leading-tight'>
-        <p className='font-bold text-[9px] tracking-wide text-white'>NORTHERN VOICES</p>
-        <p className="font-['Montserrat'] text-[6px] tracking-[0.2em] text-gray-200">
-          SPEECH SERVICES
-        </p>
-      </div>
-    </div>
-  </div>
-)
-
-const ReportFooter = ({ page, of }: { page: number; of: number }) => (
-  <div
-    className='flex items-center justify-between border-t border-gray-200 pt-3 text-xs text-gray-500
-  px-10 pb-6'>
-    <span>NORTHERN VOICES SPEECH SERVICES</span>
-    <span className='flex items-center gap-2'>
-      <img src='/icon.png' alt='' className='w-4 h-4' />
-      {page} of {of}
-    </span>
-  </div>
-)
 
 const Checkbox = ({ label }: { label: string }) => (
   <div className='flex items-center gap-1.5 mb-1'>
@@ -251,7 +226,7 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
           )}
         </div>
 
-        <ReportFooter page={1} of={totalPages} />
+        <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' page={1} of={totalPages} />
       </section>
 
       {worksheetErrors.map((error, i) => (
@@ -263,7 +238,7 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
           <div className='px-10 pt-4 flex flex-col flex-1'>
             <GoalWorksheetSection studentName={context.student_name} error={error} />
           </div>
-          <ReportFooter page={i + 2} of={totalPages} />
+          <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' page={i + 2} of={totalPages} />
         </section>
       ))}
     </div>
