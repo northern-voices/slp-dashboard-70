@@ -1,3 +1,5 @@
+import { ReportBanner, ReportFooter } from './shared/ReportBannerChrome'
+
 interface CaseloadStudent {
   name: string
   result: string
@@ -70,31 +72,6 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
   if (currentPage.length > 0) pages.push(currentPage)
   return pages
 }
-
-const ReportBanner = () => (
-  <div className='bg-[#5b7a8b] px-10 py-6 flex items-center justify-between'>
-    <h1 className="text-3xl text-white font-['Gotu']">Program Caseload</h1>
-    <div className='flex items-center'>
-      <img src='/icon.png' alt='' className='w-7 h-7 rounded mr-2' />
-      <div className='leading-tight'>
-        <p className='font-bold text-[9px] tracking-wide text-white'>NORTHERN VOICES</p>
-        <p className="font-['Montserrat'] text-[6px] tracking-[0.2em] text-gray-200">
-          SPEECH SERVICES
-        </p>
-      </div>
-    </div>
-  </div>
-)
-
-const ReportFooter = ({ page, of }: { page: number; of: number }) => (
-  <div className='flex items-center justify-between border-t border-gray-200 pt-3 text-xs text-gray-500 px-10 pb-6'>
-    <span>NORTHERN VOICE SPEECH SERVICES</span>
-    <span className='flex items-center gap-2'>
-      <img src='/icon.png' alt='' className='w-4 h-4' />
-      {page} of {of}
-    </span>
-  </div>
-)
 
 const SegmentTable = ({ segment }: { segment: PageSegment }) => (
   <>
@@ -172,7 +149,7 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
 
       {pages.length === 0 ? (
         <section className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden print:shadow-none'>
-          <ReportBanner />
+          <ReportBanner title='Program Caseload' />
           <div className='flex-1 px-10 pt-5'>
             <h2 className="text-xl text-gray-600 text-center font-['Gotu'] mb-4">
               Qualified & Sub Students
@@ -180,7 +157,7 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
             <InfoRow />
             <p className='text-sm text-gray-500 mt-4'>No qualified or sub students this year.</p>
           </div>
-          <ReportFooter page={1} of={1} />
+          <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' page={1} of={1} />
         </section>
       ) : (
         pages.map((segments, i) => {
@@ -189,7 +166,7 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
             <section
               key={i}
               className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-              <ReportBanner />
+              <ReportBanner title='Program Caseload' />
               <div className='flex-1 px-10 pt-5'>
                 {i === 0 && (
                   <>
@@ -203,7 +180,13 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
                   <SegmentTable key={j} segment={segment} />
                 ))}
               </div>
-              {isLastPage && <ReportFooter page={i + 1} of={totalPages} />}
+              {isLastPage && (
+                <ReportFooter
+                  brand='NORTHERN VOICES SPEECH SERVICES'
+                  page={i + 1}
+                  of={totalPages}
+                />
+              )}
             </section>
           )
         })
