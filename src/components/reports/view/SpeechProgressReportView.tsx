@@ -1,3 +1,5 @@
+import { ReportBanner, ReportFooter } from './shared/ReportBannerChrome'
+
 interface ProgressTableError {
   sound: string
   pattern: string
@@ -33,31 +35,6 @@ const chunkRows = (errors: ProgressTableError[]): ProgressTableError[][] => {
   }
   return chunks
 }
-
-const ReportBanner = () => (
-  <div className='bg-[#5b7a8b] px-10 py-6 flex items-center justify-between'>
-    <h1 className="text-[28px] text-white font-['Gotu']">Student Progress Report</h1>
-    <div className='flex items-center'>
-      <img src='/icon.png' alt='' className='w-7 h-7 rounded mr-2' />
-      <div className='leading-tight'>
-        <p className='font-bold text-[9px] tracking-wide text-white'>NORTHERN VOICES</p>
-        <p className="font-['Montserrat'] text-[6px] tracking-[0.2em] text-gray-200">
-          SPEECH SERVICES
-        </p>
-      </div>
-    </div>
-  </div>
-)
-
-const ReportFooter = ({ page, of }: { page: number; of: number }) => (
-  <div className='flex items-center justify-between border-t border-gray-200 pt-3 text-xs text-gray-500 px-10 pb-6'>
-    <span>NORTHERN VOICES SPEECH SERVICES</span>
-    <span className='flex items-center gap-2'>
-      <img src='/icon.png' alt='' className='w-4 h-4' />
-      {page} of {of}
-    </span>
-  </div>
-)
 
 const ProgressTable = ({ errors }: { errors: ProgressTableError[] }) => (
   <table className='w-full border border-black text-[10px] mb-3'>
@@ -130,7 +107,7 @@ const SpeechProgressReportView = ({ data }: { data: SpeechProgressReportData }) 
           <section
             key={i}
             className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-            <ReportBanner />
+            <ReportBanner title='Student Progress Report' titleClassName='text-[28px]' />
 
             <div className='flex-1 px-10 pt-5'>
               {isFirstPage && (
@@ -187,7 +164,7 @@ const SpeechProgressReportView = ({ data }: { data: SpeechProgressReportData }) 
               )}
             </div>
 
-            <ReportFooter page={i + 1} of={totalPages} />
+            <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' page={i + 1} of={totalPages} />
           </section>
         )
       })}
