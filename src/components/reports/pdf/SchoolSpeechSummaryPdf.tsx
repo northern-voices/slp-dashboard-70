@@ -295,7 +295,9 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
                 <SegmentTable key={j} segment={segment} />
               ))}
             </View>
-            <ReportFooter page={i + 1} of={totalPages} brand='NORTHERN VOICES SPEECH SERVICES' />
+            {isLastPage && (
+              <ReportFooter page={i + 1} of={totalPages} brand='NORTHERN VOICES SPEECH SERVICES' />
+            )}
           </Page>
         )
       })}
@@ -324,7 +326,9 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
                 <SegmentTable key={j} segment={segment} />
               ))}
             </View>
-            <ReportFooter page={i + 1} of={totalPages} brand='NORTHERN VOICES SPEECH SERVICES' />
+            {isLastPage && (
+              <ReportFooter page={i + 1} of={totalPages} brand='NORTHERN VOICES SPEECH SERVICES' />
+            )}
           </Page>
         )
       })}

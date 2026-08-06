@@ -143,7 +143,7 @@ const SchoolHearingSummaryView = ({ data }: { data: SchoolHearingSummaryData }) 
             </p>
             <p className='text-sm text-gray-500 mt-4'>No students referred or absent this year.</p>
           </div>
-          <ReportFooter brand='NORTHERN VOICE SPEECH SERVICES' page={1} of={1} />
+          <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' page={1} of={1} />
         </section>
       ) : (
         pages.map((segments, i) => {
@@ -165,7 +165,11 @@ const SchoolHearingSummaryView = ({ data }: { data: SchoolHearingSummaryData }) 
                 ))}
               </div>
               {isLastPage && (
-                <ReportFooter brand='NORTHERN VOICE SPEECH SERVICES' page={i + 1} of={totalPages} />
+                <ReportFooter
+                  brand='NORTHERN VOICES SPEECH SERVICES'
+                  page={i + 1}
+                  of={totalPages}
+                />
               )}
             </section>
           )

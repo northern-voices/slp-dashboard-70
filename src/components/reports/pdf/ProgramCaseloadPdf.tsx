@@ -265,7 +265,7 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
             </View>
             <Text style={styles.sectionText}>No qualified or sub students this year.</Text>
           </View>
-          <ReportFooter page={1} of={1} brand='NORTHERN VOICE SPEECH SERVICES' />
+          <ReportFooter page={1} of={1} brand='NORTHERN VOICES SPEECH SERVICES' />
         </Page>
       ) : (
         pages.map((segments, i) => {
@@ -294,7 +294,11 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
                 ))}
               </View>
               {isLastPage && (
-                <ReportFooter page={1} of={1} brand='NORTHERN VOICE SPEECH SERVICES' />
+                <ReportFooter
+                  page={i + 1}
+                  of={pages.length}
+                  brand='NORTHERN VOICES SPEECH SERVICES'
+                />
               )}
             </Page>
           )
