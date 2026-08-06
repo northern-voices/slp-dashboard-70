@@ -2,6 +2,10 @@ import { Document, Page, Text } from '@react-pdf/renderer'
 import AbsentHearingReportPdf from './AbsentHearingReportPdf'
 import NonCompliantHearingReportPdf from './NonCompliantHearingReportPdf'
 import ComplexNeedsHearingReportPdf from './ComplexNeedsHearingReportPdf'
+import PassHearingReportPdf from './PassHearingReportPdf'
+import PassStaffHearingReportPdf from './PassStaffHearingReportPdf'
+import FailHearingReportPdf from './FailHearingReportPdf'
+import FailStaffHearingReportPdf from './FailStaffHearingReportPdf'
 
 interface HearingReportData {
   template?: { name?: string }
@@ -29,7 +33,7 @@ interface HearingReportData {
   }
 }
 
-// Placeholder until Pass, Pass - Staff, Fail, and Fail - Staff are built
+// Placeholder for any hearing template not yet built
 const NotYetAvailablePdf = () => (
   <Document>
     <Page size='LETTER' style={{ padding: 48, fontSize: 12 }}>
@@ -46,6 +50,14 @@ const HearingScreenReportPdf = ({ data }: { data: HearingReportData }) => {
       return <NonCompliantHearingReportPdf data={data as never} />
     case 'hearing-screen/(CN) Complex Needs':
       return <ComplexNeedsHearingReportPdf data={data as never} />
+    case 'hearing-screen/(P) Pass':
+      return <PassHearingReportPdf data={data as never} />
+    case 'hearing-screen/(P) Pass - Staff':
+      return <PassStaffHearingReportPdf data={data as never} />
+    case 'hearing-screen/(F) Fail':
+      return <FailHearingReportPdf data={data as never} />
+    case 'hearing-screen/(F) Fail - Staff':
+      return <FailStaffHearingReportPdf data={data as never} />
     default:
       return <NotYetAvailablePdf />
   }

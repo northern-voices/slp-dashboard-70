@@ -1,6 +1,10 @@
 import AbsentHearingReportView from './AbsentHearingReportView'
 import NonCompliantHearingReportView from './NonCompliantHearingReportView'
 import ComplexNeedsHearingReportView from './ComplexNeedsHearingReportView'
+import PassHearingReportView from './PassHearingReportView'
+import PassStaffHearingReportView from './PassStaffHearingReportView'
+import FailHearingReportView from './FailHearingReportView'
+import FailStaffHearingReportView from './FailStaffHearingReportView'
 
 interface HearingReportData {
   template?: { name?: string }
@@ -28,13 +32,6 @@ interface HearingReportData {
   }
 }
 
-// Placeholder until Pass, Pass - Staff, Fail, and Fail - Staff are built
-const NotYetAvailableView = () => (
-  <div className='bg-white rounded-lg shadow p-8'>
-    This hearing report template isn't built yet.
-  </div>
-)
-
 const HearingScreenReportView = ({ data }: { data: HearingReportData }) => {
   switch (data.template?.name) {
     case 'hearing-screen/(A) Absent':
@@ -43,8 +40,20 @@ const HearingScreenReportView = ({ data }: { data: HearingReportData }) => {
       return <NonCompliantHearingReportView data={data as never} />
     case 'hearing-screen/(CN) Complex Needs':
       return <ComplexNeedsHearingReportView data={data as never} />
+    case 'hearing-screen/(P) Pass':
+      return <PassHearingReportView data={data as never} />
+    case 'hearing-screen/(P) Pass - Staff':
+      return <PassStaffHearingReportView data={data as never} />
+    case 'hearing-screen/(F) Fail':
+      return <FailHearingReportView data={data as never} />
+    case 'hearing-screen/(F) Fail - Staff':
+      return <FailStaffHearingReportView data={data as never} />
     default:
-      return <NotYetAvailableView />
+      return (
+        <div className='bg-white rounded-lg shadow p-8'>
+          This hearing report template isn't built yet.
+        </div>
+      )
   }
 }
 
