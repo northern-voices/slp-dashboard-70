@@ -30,6 +30,8 @@ import { upsertEmailHistory } from '@/api/emailHistory'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import MultiEmailInput from './shared/MultiEmailInput'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
+import ReportPasswordInput from './shared/ReportPasswordInput'
+import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
@@ -40,6 +42,7 @@ const reportSchema = z.object({
     .refine(emails => emails.every(email => z.string().email().safeParse(email).success), {
       message: 'One or more emails are invalid. Please remove and re-enter them.',
     }),
+  password: z.string().min(1, 'Please enter a password'),
 })
 
 type ReportFormData = z.infer<typeof reportSchema>
@@ -72,8 +75,18 @@ const ReportGenerationForm = () => {
       reportType: '',
       academicYear: currentAcademicYear,
       recipientEmails: [],
+      password: '',
     },
   })
+
+  const defaultReportPassword = useDefaultReportPassword()
+
+  useEffect(() => {
+    if (defaultReportPassword && !form.getValues('password')) {
+      form.setValue('password', defaultReportPassword)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultReportPassword])
 
   const initialReports = [
     {
@@ -119,19 +132,22 @@ const ReportGenerationForm = () => {
         result = await edgeFunctionsApi.schoolWideSendStudentReports(
           currentSchool.id,
           data.academicYear,
-          data.recipientEmails
+          data.recipientEmails,
+          data.password
         )
       } else if (data.reportType === 'school-summary-report') {
         result = await edgeFunctionsApi.schoolSummaryReport(
           currentSchool.id,
           data.academicYear,
-          data.recipientEmails
+          data.recipientEmails,
+          data.password
         )
       } else if (data.reportType === 'progress-speech-reports') {
         result = await edgeFunctionsApi.schoolWideStudentProgressReport(
           currentSchool.id,
           data.academicYear,
-          data.recipientEmails
+          data.recipientEmails,
+          data.password
         )
       }
 
@@ -401,6 +417,19 @@ const ReportGenerationForm = () => {
                         onChange={field.onChange}
                         emailHistory={emailHistory}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='password'
+                render={({ field }) => (
+                  <FormItem className='w-full max-w-full space-y-3'>
+                    <FormControl>
+                      <ReportPasswordInput password={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

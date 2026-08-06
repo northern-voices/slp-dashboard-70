@@ -18,7 +18,8 @@ export const edgeFunctionsApi = {
   async studentProgressReport(
     screeningId1: string,
     screeningId2: string,
-    overrideEmails: string[]
+    overrideEmails: string[],
+    password: string
   ) {
     try {
       const generated_by = await this._getGeneratedBy()
@@ -29,6 +30,7 @@ export const edgeFunctionsApi = {
           speech_screening_id_2: screeningId2,
           override_emails: overrideEmails,
           generated_by,
+          password,
         },
       })
 
@@ -44,7 +46,7 @@ export const edgeFunctionsApi = {
     }
   },
 
-  async sendStudentReport(speechScreeningId: string, overrideEmails: string[]) {
+  async sendStudentReport(speechScreeningId: string, overrideEmails: string[], password: string) {
     try {
       const generated_by = await this._getGeneratedBy()
 
@@ -53,6 +55,7 @@ export const edgeFunctionsApi = {
           speech_screening_id: speechScreeningId,
           override_emails: overrideEmails,
           generated_by,
+          password,
         },
       })
 
@@ -68,7 +71,7 @@ export const edgeFunctionsApi = {
     }
   },
 
-  async studentGoalSheet(speechScreeningId: string, overrideEmails: string[]) {
+  async studentGoalSheet(speechScreeningId: string, overrideEmails: string[], password: string) {
     try {
       const generated_by = await this._getGeneratedBy()
 
@@ -77,6 +80,7 @@ export const edgeFunctionsApi = {
           speech_screening_id: speechScreeningId,
           override_emails: overrideEmails,
           generated_by,
+          password,
         },
       })
 
@@ -95,7 +99,8 @@ export const edgeFunctionsApi = {
   async schoolWideStudentProgressReport(
     schoolId: string,
     academicYear: string,
-    overrideEmails: string[]
+    overrideEmails: string[],
+    password: string
   ) {
     try {
       const generated_by = await this._getGeneratedBy()
@@ -108,6 +113,7 @@ export const edgeFunctionsApi = {
             academic_year: academicYear,
             override_emails: overrideEmails,
             generated_by,
+            password,
           },
         }
       )
@@ -127,7 +133,8 @@ export const edgeFunctionsApi = {
   async schoolWideStudentGoalSheets(
     schoolId: string,
     academicYear: string,
-    overrideEmails: string[]
+    overrideEmails: string[],
+    password: string
   ) {
     try {
       const generated_by = await this._getGeneratedBy()
@@ -137,6 +144,7 @@ export const edgeFunctionsApi = {
           academic_year: academicYear,
           override_emails: overrideEmails,
           generated_by,
+          password,
         },
       })
 
@@ -155,7 +163,8 @@ export const edgeFunctionsApi = {
   async schoolWideSendStudentReports(
     schoolId: string,
     academicYear: string,
-    overrideEmails: string[]
+    overrideEmails: string[],
+    password: string
   ) {
     try {
       const generated_by = await this._getGeneratedBy()
@@ -165,6 +174,7 @@ export const edgeFunctionsApi = {
           academic_year: academicYear,
           override_emails: overrideEmails,
           generated_by,
+          password,
         },
       })
 
@@ -180,7 +190,12 @@ export const edgeFunctionsApi = {
     }
   },
 
-  async schoolSummaryReport(schoolId: string, academicYear: string, overrideEmails: string[]) {
+  async schoolSummaryReport(
+    schoolId: string,
+    academicYear: string,
+    overrideEmails: string[],
+    password: string
+  ) {
     try {
       const generated_by = await this._getGeneratedBy()
 
@@ -190,6 +205,7 @@ export const edgeFunctionsApi = {
           academic_year: academicYear,
           override_emails: overrideEmails,
           generated_by,
+          password,
         },
       })
 
@@ -205,7 +221,7 @@ export const edgeFunctionsApi = {
     }
   },
 
-  async monthlyMeetings(monthlyMeetingId: string, overrideEmails: string[]) {
+  async monthlyMeetings(monthlyMeetingId: string, overrideEmails: string[], password: string) {
     try {
       const generated_by = await this._getGeneratedBy()
       const { data, error } = await supabase.functions.invoke('monthly-meeting', {
@@ -213,6 +229,7 @@ export const edgeFunctionsApi = {
           monthly_meeting_id: monthlyMeetingId,
           override_emails: overrideEmails,
           generated_by,
+          password,
         },
       })
 
@@ -228,7 +245,11 @@ export const edgeFunctionsApi = {
     }
   },
 
-  async generateHearingReport(hearingScreeningId: string, overrideEmails: string[]) {
+  async generateHearingReport(
+    hearingScreeningId: string,
+    overrideEmails: string[],
+    password: string
+  ) {
     try {
       const generated_by = await this._getGeneratedBy()
       const { data, error } = await supabase.functions.invoke('swift-handler', {
@@ -236,6 +257,7 @@ export const edgeFunctionsApi = {
           hearing_screening_id: hearingScreeningId,
           override_emails: overrideEmails,
           generated_by,
+          password,
         },
       })
 
@@ -251,7 +273,12 @@ export const edgeFunctionsApi = {
     }
   },
 
-  async schoolWideHearingReports(schoolId: string, academicYear: string, overrideEmails: string[]) {
+  async schoolWideHearingReports(
+    schoolId: string,
+    academicYear: string,
+    overrideEmails: string[],
+    password: string
+  ) {
     try {
       const generated_by = await this._getGeneratedBy()
       const { data, error } = await supabase.functions.invoke(
@@ -262,6 +289,7 @@ export const edgeFunctionsApi = {
             academic_year: academicYear,
             override_emails: overrideEmails,
             generated_by,
+            password,
           },
         }
       )
@@ -281,7 +309,8 @@ export const edgeFunctionsApi = {
   async schoolSummaryHearingReport(
     schoolId: string,
     academicYear: string,
-    overrideEmails: string[]
+    overrideEmails: string[],
+    password: string
   ) {
     try {
       const generated_by = await this._getGeneratedBy()
@@ -291,6 +320,7 @@ export const edgeFunctionsApi = {
           academic_year: academicYear,
           override_emails: overrideEmails,
           generated_by,
+          password,
         },
       })
 

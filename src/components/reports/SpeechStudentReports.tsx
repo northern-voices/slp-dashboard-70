@@ -29,12 +29,10 @@ import ReportTypeSelector from './shared/ReportTypeSelector'
 import ReportSendModal from './shared/ReportSendModal'
 import MultiEmailInput from './shared/MultiEmailInput'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
+import ReportPasswordInput from './shared/ReportPasswordInput'
+import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 
 const SpeechStudentReports = () => {
-  const navigate = useNavigate()
-  const { currentSchool } = useOrganization()
-  const { user } = useAuth()
-
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [customMessage, setCustomMessage] = useState('')
@@ -51,6 +49,12 @@ const SpeechStudentReports = () => {
   const [selectedReport, setSelectedReport] = useState<string | null>(null)
   const [comparisonScreenings, setComparisonScreenings] = useState<Screening[]>([])
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
+  const [password, setPassword] = useState('')
+
+  const defaultReportPassword = useDefaultReportPassword()
+  const navigate = useNavigate()
+  const { currentSchool } = useOrganization()
+  const { user } = useAuth()
 
   // Pre-fill email with current user's email on component mount
   useEffect(() => {
@@ -58,6 +62,13 @@ const SpeechStudentReports = () => {
       setRecipientEmails([user.email])
     }
   }, [user?.email])
+
+  useEffect(() => {
+    if (defaultReportPassword && !password) {
+      setPassword(defaultReportPassword)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultReportPassword])
 
   const getAvailableReports = () => SPEECH_REPORT_OPTIONS
 
@@ -72,12 +83,13 @@ const SpeechStudentReports = () => {
 
     try {
       if (selectedReport === 'initial-speech-report') {
-        await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmails)
+        await edgeFunctionsApi.sendStudentReport(selectedScreening.id, recipientEmails, password)
       } else if (selectedReport === 'progress-speech-report') {
         await edgeFunctionsApi.studentProgressReport(
           comparisonScreenings[0].id,
           comparisonScreenings[1].id,
-          recipientEmails
+          recipientEmails,
+          password
         )
       }
 
@@ -136,6 +148,7 @@ const SpeechStudentReports = () => {
     setEmailStatus('idle')
     setEmailMessage('')
     setComparisonScreenings([])
+    setPassword('')
   }
 
   const handleCloseModal = () => {
@@ -240,6 +253,8 @@ const SpeechStudentReports = () => {
               onChange={setRecipientEmails}
               emailHistory={emailHistory}
             />
+
+            <ReportPasswordInput password={password} onChange={setPassword} />
           </div>
 
           {/* Status Message */}
@@ -271,6 +286,7 @@ const SpeechStudentReports = () => {
                 !selectedStudent ||
                 recipientEmails.length === 0 ||
                 !selectedReport ||
+                !password.trim() ||
                 isEmailLoading ||
                 (selectedReport === 'progress-speech-report'
                   ? comparisonScreenings.length < 2

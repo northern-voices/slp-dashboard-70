@@ -33,6 +33,7 @@ import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
 import VerifyEmail from './pages/auth/VerifyEmail'
 import AcceptInvitation from './pages/auth/AcceptInvitation'
+import ViewReport from './pages/ViewReport'
 import Onboarding from './pages/Onboarding'
 import NotFound from './pages/NotFound'
 import SpeechScreening from './pages/SpeechScreening'
@@ -135,6 +136,8 @@ const App = () => (
                     </PublicRoute>
                   }
                 />
+
+                <Route path='/view-report/:token' element={<ViewReport />} />
 
                 <Route path='/auth/mfa' element={<MfaChallenge />} />
                 <Route path='/auth/mfa/enroll' element={<MfaEnroll />} />
