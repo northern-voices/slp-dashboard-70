@@ -1,3 +1,5 @@
+import { ReportBanner, ReportFooter } from './shared/ReportBannerChrome'
+
 interface SummaryStudent {
   name: string
   grade: string
@@ -77,31 +79,6 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
   if (currentPage.length > 0) pages.push(currentPage)
   return pages
 }
-
-const ReportBanner = () => (
-  <div className='bg-[#5b7a8b] px-10 py-6 flex items-center justify-between'>
-    <h1 className="text-3xl text-white font-['Gotu']">School Summary Report</h1>
-    <div className='flex items-center'>
-      <img src='/icon.png' alt='' className='w-7 h-7 rounded mr-2' />
-      <div className='leading-tight'>
-        <p className='font-bold text-[9px] tracking-wide text-white'>NORTHERN VOICES</p>
-        <p className="font-['Montserrat'] text-[6px] tracking-[0.2em] text-gray-200">
-          SPEECH SERVICES
-        </p>
-      </div>
-    </div>
-  </div>
-)
-
-const ReportFooter = ({ page, of }: { page: number; of: number }) => (
-  <div className='flex items-center justify-between border-t border-gray-200 pt-3 text-xs text-gray-500 px-10 pb-6'>
-    <span>NORTHERN VOICE SPEECH SERVICES</span>
-    <span className='flex items-center gap-2'>
-      <img src='/icon.png' alt='' className='w-4 h-4' />
-      {page} of {of}
-    </span>
-  </div>
-)
 
 const SegmentTable = ({ segment }: { segment: PageSegment }) => (
   <>
@@ -189,7 +166,7 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
           <section
             key={`a-${i}`}
             className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-            <ReportBanner />
+            <ReportBanner title='School Summary Report' />
             <div className='flex-1 px-10 pt-5'>
               {i === 0 && (
                 <>
@@ -212,7 +189,9 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
                 <SegmentTable key={j} segment={segment} />
               ))}
             </div>
-            {isLastPage && <ReportFooter page={i + 1} of={totalPages} />}
+            {isLastPage && (
+              <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' page={i + 1} of={totalPages} />
+            )}
           </section>
         )
       })}
@@ -224,7 +203,7 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
           <section
             key={`b-${i}`}
             className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-            <ReportBanner />
+            <ReportBanner title='School Summary Report' />
             <div className='flex-1 px-10 pt-5'>
               {i === 0 && (
                 <>
@@ -245,7 +224,9 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
                 <SegmentTable key={j} segment={segment} />
               ))}
             </div>
-            {isLastPage && <ReportFooter page={pageIndex + 1} of={totalPages} />}
+            {isLastPage && (
+              <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' page={i + 1} of={totalPages} />
+            )}
           </section>
         )
       })}
