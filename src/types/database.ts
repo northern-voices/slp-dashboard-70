@@ -16,6 +16,7 @@ export interface Organization {
   phone: string
   created_at: string
   updated_at: string
+  default_report_password?: string | null
 }
 
 export interface UserProfile {
@@ -45,6 +46,7 @@ export interface SLPProfile {
   created_at: string
   updated_at: string
   organization?: Organization
+  default_report_password?: string | null
 }
 
 export interface Student {

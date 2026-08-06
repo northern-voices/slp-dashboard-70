@@ -31,6 +31,10 @@ const AccountSettingsSection = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false)
+  const [defaultReportPassword, setDefaultReportPassword] = useState('')
+  const [showDefaultReportPassword, setShowDefaultReportPassword] = useState(false)
+  const [isLoadingReportPassword, setIsLoadingReportPassword] = useState(true)
+  const [isSavingReportPassword, setIsSavingReportPassword] = useState(false)
 
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -48,6 +52,26 @@ const AccountSettingsSection = () => {
         setMfaLoading(false)
       }
     )
+  }, [])
+
+  useEffect(() => {
+    const loadDefaultReportPassword = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data } = await supabase
+        .from('users')
+        .select('default_report_password')
+        .eq('id', user.id)
+        .single()
+
+      setDefaultReportPassword(data?.default_report_password || '')
+      setIsLoadingReportPassword(false)
+    }
+
+    loadDefaultReportPassword()
   }, [])
 
   const passwordForm = useForm<PasswordFormData>({
@@ -126,6 +150,36 @@ const AccountSettingsSection = () => {
     } catch {
       toast({ title: 'Failed to switch', description: 'Please try again.', variant: 'destructive' })
     }
+  }
+
+  const handleSaveDefaultReportPassword = async () => {
+    setIsSavingReportPassword(true)
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      setIsSavingReportPassword(false)
+      return
+    }
+
+    const { error } = await supabase
+      .from('users')
+      .update({ default_report_password: defaultReportPassword })
+      .eq('id', user.id)
+
+    setIsSavingReportPassword(false)
+
+    if (error) {
+      toast({ title: 'Failed to save', description: error.message, variant: 'destructive' })
+      return
+    }
+
+    toast({
+      title: 'Default report password saved',
+      description: 'This will pre-fill the password field whenever you send report.',
+    })
   }
 
   const handleSwitchToTotp = async () => {
@@ -278,6 +332,45 @@ const AccountSettingsSection = () => {
                 </Form>
               </CardContent>
             </Card>
+          )}
+        </div>
+
+        {/* Default Report Password */}
+        <div className='py-4 space-y-4 border-t'>
+          <div>
+            <Label className='text-base font-medium'>Default Report Password</Label>
+            <p className='text-sm text-muted-foreground'>
+              Pre-fills the password field whenever you send a report. You can always change it for
+              an individual send.
+            </p>
+          </div>
+
+          {isLoadingReportPassword ? (
+            <p className='text-sm text-muted-foreground'>Loading...</p>
+          ) : (
+            <div className='flex items-end gap-2'>
+              <div className='relative flex-1'>
+                <Input
+                  value={defaultReportPassword}
+                  onChange={e => setDefaultReportPassword(e.target.value)}
+                  type={showDefaultReportPassword ? 'text' : 'password'}
+                />
+
+                <button
+                  type='button'
+                  onClick={() => setShowDefaultReportPassword(!showDefaultReportPassword)}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'>
+                  {showDefaultReportPassword ? (
+                    <EyeOff className='w-4 h-4' />
+                  ) : (
+                    <Eye className='w-4 h-4' />
+                  )}
+                </button>
+              </div>
+              <Button onClick={handleSaveDefaultReportPassword} disabled={isSavingReportPassword}>
+                {isSavingReportPassword ? 'Saving...' : 'Save'}
+              </Button>
+            </div>
           )}
         </div>
 

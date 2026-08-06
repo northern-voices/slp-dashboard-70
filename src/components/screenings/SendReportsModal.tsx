@@ -27,6 +27,8 @@ import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 import { Badge } from '@/components/ui/badge'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
+import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
+import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 
 interface SendReportsModalProps {
   isOpen: boolean
@@ -42,9 +44,11 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
   const [comparisonScreeningId, setComparisonScreeningId] = useState('')
+  const [password, setPassword] = useState('')
 
   const { user } = useAuth()
   const { currentSchool } = useOrganization()
+  const defaultReportPassword = useDefaultReportPassword()
 
   const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
@@ -69,6 +73,13 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.email, screening])
 
+  useEffect(() => {
+    if (isOpen && !password) {
+      setPassword(defaultReportPassword)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, defaultReportPassword])
+
   const handleSendEmail = async () => {
     if (recipientEmails.length === 0 || !screening) {
       return
@@ -88,18 +99,19 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
 
     try {
       if (isHearingScreening) {
-        await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmails)
+        await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmails, password)
       } else {
         for (const reportType of selectedReports) {
           if (reportType === 'initial-speech-report') {
-            await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmails)
+            await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmails, password)
           } else if (reportType === 'initial-goal-sheet') {
-            await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmails)
+            await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmails, password)
           } else if (reportType === 'progress-speech-report') {
             await edgeFunctionsApi.studentProgressReport(
               screening.id,
               comparisonScreeningId,
-              recipientEmails
+              recipientEmails,
+              password
             )
           } else {
             console.warn(`Unknown report type: ${reportType}`)
@@ -132,12 +144,14 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     setRecipientEmails([])
     setSelectedReports([])
     setComparisonScreeningId('')
+    setPassword('')
   }
 
   const handleModalClose = () => {
     setRecipientEmails([])
     setSelectedReports([])
     setComparisonScreeningId('')
+    setPassword('')
     onClose()
   }
 
@@ -315,6 +329,8 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
               emailHistory={emailHistory}
             />
 
+            <ReportPasswordInput password={password} onChange={setPassword} />
+
             {/* Send Button */}
             <div className='mt-6'>
               <Button
@@ -327,6 +343,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                   !screening ||
                   (screening.source_table !== 'hearing' && selectedReports.length === 0) ||
                   (selectedReports.includes('progress-speech-report') && !comparisonScreeningId) ||
+                  !password.trim() ||
                   isEmailLoading
                 }>
                 <Send className='w-4 h-4 mr-2' />

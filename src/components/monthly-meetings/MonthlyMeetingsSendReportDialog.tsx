@@ -17,6 +17,8 @@ import { Loader2, Mail } from 'lucide-react'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
+import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
+import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 
 interface MonthlyMeetingsSendReportDialogProps {
   open: boolean
@@ -31,15 +33,26 @@ const MonthlyMeetingsSendReportDialog = ({
 }: MonthlyMeetingsSendReportDialogProps) => {
   const [emails, setEmails] = useState<string[]>([])
   const [isSending, setIsSending] = useState(false)
-  const { toast } = useToast()
-  const { user } = useAuth()
+  const [password, setPassword] = useState('')
 
+  const { toast } = useToast()
+
+  const { user } = useAuth()
+  const defaultReportPassword = useDefaultReportPassword()
   const { currentSchool } = useOrganization()
+
+  useEffect(() => {
+    if (open && !password) {
+      setPassword(defaultReportPassword)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, defaultReportPassword])
 
   const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleClose = () => {
     setEmails([])
+    setPassword('')
     onClose()
   }
 
@@ -48,7 +61,7 @@ const MonthlyMeetingsSendReportDialog = ({
 
     setIsSending(true)
     try {
-      await edgeFunctionsApi.monthlyMeetings(meeting.id, emails)
+      await edgeFunctionsApi.monthlyMeetings(meeting.id, emails, password)
 
       if (user?.id) upsertEmailHistory(user.id, emails).catch(console.error)
 
@@ -84,12 +97,16 @@ const MonthlyMeetingsSendReportDialog = ({
             onChange={setEmails}
             emailHistory={emailHistory}
           />
+
+          <ReportPasswordInput password={password} onChange={setPassword} />
         </div>
         <DialogFooter>
           <Button variant='outline' onClick={handleClose} disabled={isSending}>
             Cancel
           </Button>
-          <Button onClick={handleSend} disabled={isSending || emails.length === 0}>
+          <Button
+            onClick={handleSend}
+            disabled={isSending || emails.length === 0 || !password.trim()}>
             {isSending ? (
               <>
                 <Loader2 className='w-4 h-4 mr-2 animate-spin' />

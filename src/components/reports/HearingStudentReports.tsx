@@ -25,6 +25,8 @@ import ReportTypeSelector from '@/components/reports/shared/ReportTypeSelector'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 import ReportSendModal from '@/components/reports/shared/ReportSendModal'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
+import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
+import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 
 const HEARING_REPORT_OPTIONS = [
   {
@@ -36,10 +38,6 @@ const HEARING_REPORT_OPTIONS = [
 ]
 
 const HearingStudentReports = () => {
-  const navigate = useNavigate()
-  const { currentSchool } = useOrganization()
-  const { user } = useAuth()
-
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
@@ -52,11 +50,21 @@ const HearingStudentReports = () => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
+  const [password, setPassword] = useState('')
+  const defaultReportPassword = useDefaultReportPassword()
+
+  const navigate = useNavigate()
+  const { currentSchool } = useOrganization()
+  const { user } = useAuth()
 
   // Pre-fill email with current user's email on component mount
   useEffect(() => {
     if (user?.email) setRecipientEmails([user.email])
   }, [user?.email])
+
+  useEffect(() => {
+    if (defaultReportPassword) setPassword(defaultReportPassword)
+  }, [defaultReportPassword])
 
   const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
@@ -71,7 +79,7 @@ const HearingStudentReports = () => {
 
     setIsEmailLoading(true)
     try {
-      await edgeFunctionsApi.generateHearingReport(selectedScreening.id, recipientEmails)
+      await edgeFunctionsApi.generateHearingReport(selectedScreening.id, recipientEmails, password)
 
       if (user?.id) upsertEmailHistory(user.id, recipientEmails).catch(console.error)
 
@@ -105,6 +113,7 @@ const HearingStudentReports = () => {
     setSelectedScreening(null)
     setSelectedReports([])
     setRecipientEmails([])
+    setPassword('')
   }
 
   return (
@@ -172,6 +181,8 @@ const HearingStudentReports = () => {
             emailHistory={emailHistory}
           />
 
+          <ReportPasswordInput password={password} onChange={setPassword} />
+
           <div className='mt-6'>
             <Button
               onClick={handleSendEmail}
@@ -182,6 +193,7 @@ const HearingStudentReports = () => {
                 !selectedScreening ||
                 selectedReports.length === 0 ||
                 recipientEmails.length === 0 ||
+                !password.trim() ||
                 isEmailLoading
               }>
               <Send className='w-4 h-4 mr-2' />

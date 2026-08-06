@@ -17,6 +17,8 @@ import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
+import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
+import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 
 interface BulkSendReportsModalProps {
   isOpen: boolean
@@ -38,6 +40,8 @@ const BulkSendReportsModal = ({
   const [showResult, setShowResult] = useState(false)
   const [resultType, setResultType] = useState<'success' | 'error'>('success')
   const [resultMessage, setResultMessage] = useState('')
+  const [password, setPassword] = useState('')
+  const defaultReportPassword = useDefaultReportPassword()
 
   const { user } = useAuth()
   const { currentSchool } = useOrganization()
@@ -65,6 +69,13 @@ const BulkSendReportsModal = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.email])
+
+  useEffect(() => {
+    if (isOpen && !password) {
+      setPassword(defaultReportPassword)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, defaultReportPassword])
 
   const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
@@ -99,13 +110,13 @@ const BulkSendReportsModal = ({
         const isHearing = screening.source_table === 'hearing'
 
         if (isHearing) {
-          await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmails)
+          await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmails, password)
         } else {
           for (const reportType of selectedReports) {
             if (reportType === 'initial-speech-report') {
-              await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmails)
+              await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmails, password)
             } else if (reportType === 'initial-goal-sheet') {
-              await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmails)
+              await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmails, password)
             }
           }
         }
@@ -122,7 +133,12 @@ const BulkSendReportsModal = ({
       setProgress({ current: completed, total: totalActions })
 
       try {
-        await edgeFunctionsApi.studentProgressReport(pair[0].id, pair[1].id, recipientEmails)
+        await edgeFunctionsApi.studentProgressReport(
+          pair[0].id,
+          pair[1].id,
+          recipientEmails,
+          password
+        )
         successCount++
       } catch (error) {
         console.error(`Failed to send progress report for student ${pair[0].student_id}:`, error)
@@ -150,12 +166,14 @@ const BulkSendReportsModal = ({
     setRecipientEmails([])
     setSelectedReports([])
     setShowResult(false)
+    setPassword('')
     onClose()
   }
 
   const handleResultClose = () => {
     setShowResult(false)
     onSend('email')
+    setPassword('')
     handleClose()
   }
 
@@ -313,6 +331,8 @@ const BulkSendReportsModal = ({
             emailHistory={emailHistory}
           />
 
+          <ReportPasswordInput password={password} onChange={setPassword} />
+
           {/* Progress */}
           {isLoading && (
             <div className='text-sm text-gray-600'>
@@ -331,6 +351,7 @@ const BulkSendReportsModal = ({
                 recipientEmails.length === 0 ||
                 (!isHearingOnly && selectedReports.length === 0) ||
                 (progressReportSelected && invalidProgressStudents.length > 0) ||
+                !password.trim() ||
                 isLoading
               }>
               {isLoading ? (
