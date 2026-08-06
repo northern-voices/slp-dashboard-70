@@ -141,7 +141,7 @@ const ReportHeader = () => (
 
 const ReportFooter = () => (
   <View style={styles.footer} fixed>
-    <Text>NORTHERN VOICE SPEECH SERVICES</Text>
+    <Text>NORTHERN VOICES SPEECH SERVICES</Text>
     <View style={styles.footerPage}>
       <Image src='/icon.png' style={styles.footerLogo} />
       <Text>1 of 1</Text>
