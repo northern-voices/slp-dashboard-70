@@ -1,4 +1,5 @@
 import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
 
 Font.register({
   family: 'Gotu',
@@ -190,29 +191,6 @@ const styles = StyleSheet.create({
   footerPage: { flexDirection: 'row', alignItems: 'center' },
 })
 
-const ReportBanner = () => (
-  <View style={styles.banner}>
-    <Text style={styles.bannerTitle}>Hearing Summary Report</Text>
-    <View style={styles.bannerBrand}>
-      <Image src='/icon.png' style={styles.bannerLogo} />
-      <View>
-        <Text style={styles.bannerBrandText}>NORTHERN VOICES</Text>
-        <Text style={styles.bannerBrandSub}>SPEECH SERVICES</Text>
-      </View>
-    </View>
-  </View>
-)
-
-const ReportFooter = ({ page, of }: { page: number; of: number }) => (
-  <View style={styles.footer}>
-    <Text>NORTHERN VOICE SPEECH SERVICES</Text>
-    <View style={styles.footerPage}>
-      <Image src='/icon.png' style={styles.footerLogo} />
-      <Text>{`${page} of ${of}`}</Text>
-    </View>
-  </View>
-)
-
 const SegmentTable = ({ segment }: { segment: PageSegment }) => (
   <>
     {segment.heading && <Text style={styles.blockHeading}>{segment.heading}</Text>}
@@ -262,7 +240,7 @@ const SchoolHearingSummaryPdf = ({ data }: { data: SchoolHearingSummaryData }) =
     <Document>
       {pages.length === 0 ? (
         <Page size='LETTER' style={styles.page}>
-          <ReportBanner />
+          <ReportBanner title='Hearing Summary Report' />
           <View style={styles.body}>
             <Text style={styles.infoLine}>
               <Text style={styles.infoLabel}>Screening Date(s): </Text>
@@ -270,14 +248,14 @@ const SchoolHearingSummaryPdf = ({ data }: { data: SchoolHearingSummaryData }) =
             </Text>
             <Text style={styles.sectionText}>No students referred or absent this year.</Text>
           </View>
-          <ReportFooter page={1} of={1} />
+          <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' page={1} of={1} />
         </Page>
       ) : (
         pages.map((segments, i) => {
           const isLastPage = i === pages.length - 1
           return (
             <Page key={i} size='LETTER' style={styles.page}>
-              <ReportBanner />
+              <ReportBanner title='Hearing Summary Report' />
               <View style={styles.body}>
                 {i === 0 && (
                   <Text style={styles.infoLine}>
@@ -289,7 +267,13 @@ const SchoolHearingSummaryPdf = ({ data }: { data: SchoolHearingSummaryData }) =
                   <SegmentTable key={j} segment={segment} />
                 ))}
               </View>
-              {isLastPage && <ReportFooter page={i + 1} of={pages.length} />}
+              {isLastPage && (
+                <ReportFooter
+                  brand='NORTHERN VOICES SPEECH SERVICES'
+                  page={i + 1}
+                  of={pages.length}
+                />
+              )}
             </Page>
           )
         })
