@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
 import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
 
 interface CoachingCallSchoolSummaryData {
@@ -18,8 +18,6 @@ interface CoachingCallSchoolSummaryData {
     action_plan: string
   }
 }
-
-const BANNER_BG = '#5b7a8b'
 
 const styles = StyleSheet.create({
   page: {
