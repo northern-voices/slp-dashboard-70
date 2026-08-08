@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
 import { DEVELOPMENTAL_CHART } from '@/constants/developmentalSpeechChart'
+import { ReportHeader, ReportFooter } from './shared/reportSimpleChrome'
 
 Font.register({
   family: 'Gotu',
@@ -131,26 +132,6 @@ const styles = StyleSheet.create({
   footerPage: { flexDirection: 'row', alignItems: 'center' },
 })
 
-const ReportHeader = () => (
-  <View style={styles.headerRow} fixed>
-    <Image src='/icon.png' style={styles.logo} />
-    <View>
-      <Text style={styles.headerBrand}>NORTHERN VOICES</Text>
-      <Text style={styles.headerSub}>SPEECH SERVICES</Text>
-    </View>
-  </View>
-)
-
-const ReportFooter = () => (
-  <View style={styles.footer} fixed>
-    <Text>NORTHERN VOICES SPEECH SERVICES</Text>
-    <View style={styles.footerPage}>
-      <Image src='/icon.png' style={styles.footerLogo} />
-      <Text render={({ pageNumber, totalPages }) => `${pageNumber} of ${totalPages + 1}`} />
-    </View>
-  </View>
-)
-
 const NonCompliantSpeechReportPdf = ({ data }: { data: NonCompliantReportData }) => {
   const { context } = data
 
@@ -205,7 +186,7 @@ const NonCompliantSpeechReportPdf = ({ data }: { data: NonCompliantReportData })
           a guide, not a strict timeline.
         </Text>
 
-        <ReportFooter />
+        <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' offset={1} />
       </Page>
     </Document>
   )
