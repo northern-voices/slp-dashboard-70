@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { Document, Page, View, Text, StyleSheet, Font } from '@react-pdf/renderer'
 import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
 
 Font.register({
