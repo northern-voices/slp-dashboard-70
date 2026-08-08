@@ -86,17 +86,23 @@ export const ReportHeader = () => (
 export const ReportFooter = ({
   page,
   of,
+  offset = 0,
   brand,
 }: {
   page?: number
   of?: number
+  offset?: number
   brand: string
 }) => (
   <View style={chromeStyles.footer} fixed>
     <Text>{brand}</Text>
     <View style={chromeStyles.footerPage}>
       <Image src='/icon.png' style={chromeStyles.footerLogo} />
-      <Text>{page !== undefined && of !== undefined ? `${page} of ${of}` : '1 of 1'}</Text>
+      {page !== undefined && of !== undefined ? (
+        <Text>{`${page} of ${of}`}</Text>
+      ) : (
+        <Text render={({ pageNumber, totalPages }) => `${pageNumber} of ${totalPages + offset}`} />
+      )}
     </View>
   </View>
 )
