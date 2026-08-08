@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
 
 interface CaseloadStudent {
