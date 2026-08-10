@@ -1,35 +1,9 @@
-import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
-
-Font.register({
-  family: 'Gotu',
-  src: 'https://fonts.gstatic.com/s/gotu/v18/o-0FIpksx3QOpHoBjqp56hQ.ttf',
-})
-
-Font.register({
-  family: 'Nunito',
-  fonts: [
-    {
-      src: 'https://fonts.gstatic.com/s/nunito/v32/XRXI3I6Li01BKofiOc5wtlZ2di8HDLshdTQ3iqzdXWg.ttf',
-      fontWeight: 400,
-    },
-    {
-      src: 'https://fonts.gstatic.com/s/nunito/v32/XRXI3I6Li01BKofiOc5wtlZ2di8HDFwmdTQ3iqzdXWg.ttf',
-      fontWeight: 700,
-    },
-  ],
-})
+import { Document, Page, View, Text, StyleSheet, Font } from '@react-pdf/renderer'
+import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
 
 Font.register({
   family: 'Montserrat',
   fonts: [
-    {
-      src: 'https://fonts.gstatic.com/s/montserrat/v31/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aX9-obK4.ttf',
-      fontWeight: 400,
-    },
-    {
-      src: 'https://fonts.gstatic.com/s/montserrat/v31/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCuM73w5aX9-obK4.ttf',
-      fontWeight: 700,
-    },
     {
       src: 'https://fonts.gstatic.com/s/montserrat/v31/JTUFjIg1_i6t8kCHKm459Wx7xQYXK0vOoz6jq6R9WXh0o5C6MLk.ttf',
       fontWeight: 400,
@@ -59,8 +33,6 @@ interface SpeechProgressReportData {
   }
 }
 
-const BANNER_BG = '#5b7a8b'
-
 const styles = StyleSheet.create({
   page: {
     paddingTop: 0,
@@ -70,31 +42,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: 'Nunito',
     color: '#374151',
-  },
-  banner: {
-    backgroundColor: BANNER_BG,
-    paddingVertical: 16,
-    paddingHorizontal: 48,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  bannerTitle: { fontFamily: 'Gotu', fontSize: 28, color: '#ffffff', letterSpacing: 0.5 },
-  bannerBrand: { flexDirection: 'row', alignItems: 'center' },
-  bannerLogo: { width: 26, height: 26, borderRadius: 4, marginRight: 8 },
-  bannerBrandText: {
-    fontSize: 9,
-    fontFamily: 'Nunito',
-    fontWeight: 700,
-    letterSpacing: 1,
-    color: '#ffffff',
-  },
-  bannerBrandSub: {
-    fontSize: 6,
-    fontFamily: 'Montserrat',
-    letterSpacing: 2,
-    color: '#e5eaec',
-    marginTop: 2,
   },
   body: { paddingHorizontal: 48, paddingTop: 20 },
 
@@ -151,47 +98,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   summaryNotesText: { fontSize: 9, color: '#374151', lineHeight: 1.4 },
-
-  footer: {
-    position: 'absolute',
-    bottom: 32,
-    left: 48,
-    right: 48,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-    paddingTop: 8,
-    fontSize: 8,
-    color: '#6b7280',
-  },
-  footerLogo: { width: 12, height: 12, marginRight: 4 },
-  footerPage: { flexDirection: 'row', alignItems: 'center' },
 })
-
-const ReportBanner = () => (
-  <View style={styles.banner} fixed>
-    <Text style={styles.bannerTitle}>Student Progress Report</Text>
-    <View style={styles.bannerBrand}>
-      <Image src='/icon.png' style={styles.bannerLogo} />
-      <View>
-        <Text style={styles.bannerBrandText}>NORTHERN VOICES</Text>
-        <Text style={styles.bannerBrandSub}>SPEECH SERVICES</Text>
-      </View>
-    </View>
-  </View>
-)
-
-const ReportFooter = () => (
-  <View style={styles.footer} fixed>
-    <Text>NORTHERN VOICES SPEECH SERVICES</Text>
-    <View style={styles.footerPage}>
-      <Image src='/icon.png' style={styles.footerLogo} />
-      <Text render={({ pageNumber, totalPages }) => `${pageNumber} of ${totalPages}`} />
-    </View>
-  </View>
-)
 
 const SpeechProgressReportPdf = ({ data }: { data: SpeechProgressReportData }) => {
   const { context } = data
@@ -199,7 +106,7 @@ const SpeechProgressReportPdf = ({ data }: { data: SpeechProgressReportData }) =
   return (
     <Document>
       <Page size='LETTER' style={styles.page}>
-        <ReportBanner />
+        <ReportBanner title='Student Progress Report' titleFontSize={28} />
 
         <View style={styles.body}>
           <View style={styles.infoRow}>
@@ -263,8 +170,7 @@ const SpeechProgressReportPdf = ({ data }: { data: SpeechProgressReportData }) =
             </View>
           )}
         </View>
-
-        <ReportFooter />
+        <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
       </Page>
     </Document>
   )

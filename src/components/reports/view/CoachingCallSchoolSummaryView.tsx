@@ -1,3 +1,5 @@
+import { ReportBanner, ReportFooter } from './shared/ReportBannerChrome'
+
 interface CoachingCallSchoolSummaryData {
   context: {
     meeting_title: string
@@ -16,30 +18,6 @@ interface CoachingCallSchoolSummaryData {
   }
 }
 
-const ReportBanner = () => (
-  <div className='bg-[#5b7a8b] px-10 py-6 flex items-center justify-between'>
-    <h1 className="text-3xl text-white font-['Gotu']">Meeting Notes</h1>
-    <div className='flex items-center'>
-      <img src='/icon.png' alt='' className='w-7 h-7 rounded mr-2' />
-      <div className='leading-tight'>
-        <p className='font-bold text-[9px] tracking-wide text-white'>NORTHERN VOICES</p>
-        <p className="font-['Montserrat'] text-[6px] tracking-[0.2em] text-gray-200">
-          SPEECH SERVICES
-        </p>
-      </div>
-    </div>
-  </div>
-)
-
-const ReportFooter = () => (
-  <div className='flex items-center justify-between border-t border-gray-200 pt-3 text-xs text-gray-500 px-10 pb-6'>
-    <span>NORTHERN VOICES SPEECH SERVICES</span>
-    <span className='flex items-center gap-2'>
-      <img src='/icon.png' alt='' className='w-4 h-4' />1 of 1
-    </span>
-  </div>
-)
-
 const CoachingCallSchoolSummaryView = ({ data }: { data: CoachingCallSchoolSummaryData }) => {
   const { context } = data
   const attendeesText = (context.attendees ?? []).join(', ')
@@ -52,7 +30,7 @@ const CoachingCallSchoolSummaryView = ({ data }: { data: CoachingCallSchoolSumma
       />
 
       <section className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden print:shadow-none'>
-        <ReportBanner />
+        <ReportBanner title='Meeting Notes' />
 
         <div className='flex-1 px-10 pt-5'>
           <p className='mb-2'>
@@ -113,7 +91,7 @@ const CoachingCallSchoolSummaryView = ({ data }: { data: CoachingCallSchoolSumma
           )}
         </div>
 
-        <ReportFooter />
+        <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
       </section>
     </div>
   )

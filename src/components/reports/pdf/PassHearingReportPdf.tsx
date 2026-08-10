@@ -38,6 +38,8 @@ Font.register({
   src: 'https://fonts.gstatic.com/s/caveat/v18/WnznHAc5bAfYB2QRah7pcpNvOx-pjfJ9SIKih_a2wg.ttf',
 })
 
+import { ReportHeader, ReportFooter } from './shared/reportSimpleChrome'
+
 interface HearingReportData {
   context: {
     student_name: string
@@ -130,26 +132,6 @@ const styles = StyleSheet.create({
   footerPage: { flexDirection: 'row', alignItems: 'center' },
 })
 
-const ReportHeader = () => (
-  <View style={styles.headerRow} fixed>
-    <Image src='/icon.png' style={styles.logo} />
-    <View>
-      <Text style={styles.headerBrand}>NORTHERN VOICES</Text>
-      <Text style={styles.headerSub}>SPEECH SERVICES</Text>
-    </View>
-  </View>
-)
-
-const ReportFooter = () => (
-  <View style={styles.footer} fixed>
-    <Text>NORTHERN VOICE SPEECH SERVICES</Text>
-    <View style={styles.footerPage}>
-      <Image src='/icon.png' style={styles.footerLogo} />
-      <Text>1 of 1</Text>
-    </View>
-  </View>
-)
-
 const PassHearingReportPdf = ({ data }: { data: HearingReportData }) => {
   const { context } = data
 
@@ -206,7 +188,7 @@ const PassHearingReportPdf = ({ data }: { data: HearingReportData }) => {
         <Text style={styles.signatureLine}>lbrillinger@northern-voices.ca</Text>
         <Text style={styles.signatureLine}>www.northern-voices.ca</Text>
 
-        <ReportFooter />
+        <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
       </Page>
     </Document>
   )

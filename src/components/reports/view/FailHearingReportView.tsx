@@ -1,3 +1,5 @@
+import { ReportHeader, ReportFooter } from './shared/ReportSimpleChrome'
+
 const SIGNS_LIST = [
   'Trouble understanding or following instructions',
   'Unclear speech',
@@ -31,28 +33,6 @@ interface HearingReportData {
     referral_notes?: string
   }
 }
-
-const ReportHeader = () => (
-  <div className='flex items-center gap-3 mb-4'>
-    <img src='/icon.png' alt='' className='w-10 h-10' />
-    <div className='leading-tight'>
-      <p className='font-bold text-sm tracking-wide text-gray-900'>NORTHERN VOICES</p>
-      <p className="font-['Montserrat'] text-[10px] tracking-[0.2em] text-gray-500">
-        SPEECH SERVICES
-      </p>
-    </div>
-  </div>
-)
-
-const ReportFooter = ({ page, of }: { page: number; of: number }) => (
-  <div className='flex items-center justify-between border-t border-gray-200 pt-3 text-xs text-gray-500'>
-    <span>NORTHERN VOICE SPEECH SERVICES</span>
-    <span className='flex items-center gap-2'>
-      <img src='/icon.png' alt='' className='w-4 h-4' />
-      {page} of {of}
-    </span>
-  </div>
-)
 
 const FailHearingReportView = ({ data }: { data: HearingReportData }) => {
   const { context } = data
@@ -122,7 +102,7 @@ const FailHearingReportView = ({ data }: { data: HearingReportData }) => {
           <p className='text-xs text-gray-700'>www.northern-voices.ca</p>
         </div>
 
-        <ReportFooter page={1} of={2} />
+        <ReportFooter page={1} of={2} brand='NORTHERN VOICES SPEECH SERVICES' />
       </section>
 
       <section className='bg-white shadow-sm w-full aspect-[8.5/11] pt-6 px-10 pb-8 flex flex-col print:shadow-none print:pt-6 print:px-10 print:pb-8'>
@@ -207,7 +187,7 @@ const FailHearingReportView = ({ data }: { data: HearingReportData }) => {
           )}
         </div>
 
-        <ReportFooter page={2} of={2} />
+        <ReportFooter page={2} of={2} brand='NORTHERN VOICES SPEECH SERVICES' />
       </section>
     </div>
   )

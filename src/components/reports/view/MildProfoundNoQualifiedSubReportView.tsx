@@ -1,4 +1,5 @@
 import { DEVELOPMENTAL_CHART } from '@/constants/developmentalSpeechChart'
+import { ReportHeader, ReportFooter } from './shared/ReportSimpleChrome'
 
 interface ProcessedError {
   sound: string
@@ -30,28 +31,6 @@ const chunkErrorRows = (errors: ProcessedError[]): ProcessedError[][] => {
   }
   return chunks
 }
-
-const ReportHeader = () => (
-  <div className='flex items-center gap-3 mb-4'>
-    <img src='/icon.png' alt='' className='w-10 h-10' />
-    <div className='leading-tight'>
-      <p className='font-bold text-sm tracking-wide text-gray-900'>NORTHERN VOICES</p>
-      <p className="font-['Montserrat'] text-[10px] tracking-[0.2em] text-gray-500">
-        SPEECH SERVICES
-      </p>
-    </div>
-  </div>
-)
-
-const ReportFooter = ({ page, of }: { page: number; of: number }) => (
-  <div className='flex items-center justify-between border-t border-gray-200 pt-3 text-xs text-gray-500'>
-    <span>NORTHERN VOICES SPEECH SERVICES</span>
-    <span className='flex items-center gap-2'>
-      <img src='/icon.png' alt='' className='w-4 h-4' />
-      {page} of {of}
-    </span>
-  </div>
-)
 
 const ErrorsTable = ({ errors }: { errors: ProcessedError[] }) => (
   <table className='w-full border border-gray-300 text-sm mb-3 break-inside-avoid'>
@@ -139,7 +118,7 @@ const MildProfoundNoQualifiedSubReportView = ({
               )}
             </div>
 
-            <ReportFooter page={i + 1} of={totalPages} />
+            <ReportFooter page={i + 1} of={totalPages} brand='NORTHERN VOICES SPEECH SERVICES' />
           </section>
         )
       })}
@@ -187,7 +166,11 @@ const MildProfoundNoQualifiedSubReportView = ({
           </p>
         </div>
 
-        <ReportFooter page={errorChunks.length + 1} of={totalPages} />
+        <ReportFooter
+          page={errorChunks.length + 1}
+          of={totalPages}
+          brand='NORTHERN VOICES SPEECH SERVICES'
+        />
       </section>
 
       <section className='bg-white shadow-sm w-full overflow-hidden'>
