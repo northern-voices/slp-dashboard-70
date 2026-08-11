@@ -6,12 +6,54 @@ interface TableError {
   example: string
 }
 
+interface GoalSheetStrategies {
+  wordPhrase: string[]
+  sound: string[]
+  audDiscrim: string[]
+}
+
+interface QrVideo {
+  category: string
+  title: string
+  url: string
+  dataUri: string
+}
+
 interface GoalError {
   sound: string
   pattern: string
   example: string
   targetSound: string
   stimulability_option: string
+  strategies: GoalSheetStrategies
+  qrVideos: QrVideo[]
+}
+
+// Maps the student's recorded stimulability level to which strategy column
+// to show. Word and Phrase share a column - see the source document's own
+// "default to word unless phrase or aud. discrim is selected" note.
+const STIMULABILITY_STRATEGY_COLUMN: Record<string, keyof GoalSheetStrategies> = {
+  'non-stimulable': 'audDiscrim',
+  sound: 'sound',
+  word: 'wordPhrase',
+  phrase: 'wordPhrase',
+}
+
+const getStrategyItems = (error: GoalError): string[] => {
+  const column = STIMULABILITY_STRATEGY_COLUMN[error.stimulability_option] || 'wordPhrase'
+  return error.strategies?.[column] ?? []
+}
+
+const STRATEGY_COLUMN_MAX = 4
+
+// Wraps a strategy list into side-by-side sub-columns of at most
+// STRATEGY_COLUMN_MAX items each, instead of letting one long list run tall.
+const chunkStrategyItems = (items: string[]): string[][] => {
+  const chunks: string[][] = []
+  for (let i = 0; i < items.length; i += STRATEGY_COLUMN_MAX) {
+    chunks.push(items.slice(i, i + STRATEGY_COLUMN_MAX))
+  }
+  return chunks
 }
 
 interface SpeechGoalSheetData {
@@ -36,7 +78,22 @@ const Checkbox = ({ label }: { label: string }) => (
   </div>
 )
 
-const STRATEGY_ITEMS = ['Pointing to mouth', 'Clapping (syllables)', 'Straw (lateral lisp)']
+const QrVideoColumn = ({ qrVideos }: { qrVideos: QrVideo[] }) => {
+  if (!qrVideos || qrVideos.length === 0) return null
+
+  return (
+    <div className='flex items-start gap-2 shrink-0 ml-2'>
+      {qrVideos.map(video => (
+        <div key={video.category} className='flex flex-col items-center w-10'>
+          <img src={video.dataUri} alt={`QR code for ${video.title} training video`} className='w-10 h-10' />
+          <span className="font-['Montserrat'] text-[6px] text-gray-600 text-center mt-0.5">
+            {video.title}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 const HOW_DID_THEY_DO_ITEMS = [
   'Could not say the sound at all',
@@ -92,15 +149,24 @@ const GoalWorksheetSection = ({
     <p className='font-bold text-gray-900 mb-2'>STUDENT: {studentName}</p>
 
     <div className='flex border border-[#b7b7b7] bg-[#eff3f6] mb-3 p-2.5'>
-      <div className='w-[35%] pr-2.5 border-r border-gray-300'>
+      <div className='w-[25%] pr-2.5 border-r border-gray-300'>
         <p className='font-bold text-gray-900 text-[9px] mb-0.5'>SOUND:</p>
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
       </div>
-      <div className='w-[65%] pl-2.5'>
-        <p className='font-bold text-gray-900 text-[9px] mb-1'>STRATEGIES TO USE:</p>
-        {STRATEGY_ITEMS.map(item => (
-          <Checkbox key={item} label={item} />
-        ))}
+      <div className='w-[75%] pl-2.5 flex'>
+        <div className='flex-1'>
+          <p className='font-bold text-gray-900 text-[9px] mb-1'>STRATEGIES TO USE:</p>
+          <div className='flex'>
+            {chunkStrategyItems(getStrategyItems(error)).map((chunk, i) => (
+              <div key={i} className='flex-1 pr-1.5'>
+                {chunk.map(item => (
+                  <Checkbox key={item} label={item} />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <QrVideoColumn qrVideos={error.qrVideos} />
       </div>
     </div>
 
