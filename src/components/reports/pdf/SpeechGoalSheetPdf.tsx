@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, StyleSheet, Font } from '@react-pdf/renderer'
+import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
 import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
 
 Font.register({
@@ -18,12 +18,54 @@ interface TableError {
   example: string
 }
 
+interface GoalSheetStrategies {
+  wordPhrase: string[]
+  sound: string[]
+  audDiscrim: string[]
+}
+
+interface QrVideo {
+  category: string
+  title: string
+  url: string
+  dataUri: string
+}
+
 interface GoalError {
   sound: string
   pattern: string
   example: string
   targetSound: string
   stimulability_option: string
+  strategies: GoalSheetStrategies
+  qrVideos: QrVideo[]
+}
+
+// Maps the student's recorded stimulability level to which strategy column
+// to show. Word and Phrase share a column - see the source document's own
+// "default to word unless phrase or aud. discrim is selected" note.
+const STIMULABILITY_STRATEGY_COLUMN: Record<string, keyof GoalSheetStrategies> = {
+  'non-stimulable': 'audDiscrim',
+  sound: 'sound',
+  word: 'wordPhrase',
+  phrase: 'wordPhrase',
+}
+
+const getStrategyItems = (error: GoalError): string[] => {
+  const column = STIMULABILITY_STRATEGY_COLUMN[error.stimulability_option] || 'wordPhrase'
+  return error.strategies?.[column] ?? []
+}
+
+const STRATEGY_COLUMN_MAX = 4
+
+// Wraps a strategy list into side-by-side sub-columns of at most
+// STRATEGY_COLUMN_MAX items each, instead of letting one long list run tall.
+const chunkStrategyItems = (items: string[]): string[][] => {
+  const chunks: string[][] = []
+  for (let i = 0; i < items.length; i += STRATEGY_COLUMN_MAX) {
+    chunks.push(items.slice(i, i + STRATEGY_COLUMN_MAX))
+  }
+  return chunks
 }
 
 interface SpeechGoalSheetData {
@@ -117,12 +159,15 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   soundBox: {
-    width: '35%',
+    width: '25%',
     paddingRight: 10,
     borderRightWidth: 0.75,
     borderRightColor: '#d1d5db',
   },
-  strategyBox: { width: '65%', paddingLeft: 10 },
+  strategyBox: { width: '75%', paddingLeft: 10, flexDirection: 'row' },
+  strategyChecklistCol: { flex: 1, paddingRight: 8 },
+  strategyChecklistColsRow: { flexDirection: 'row' },
+  strategyChecklistSubCol: { flex: 1, paddingRight: 6 },
   soundLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
@@ -143,6 +188,17 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     color: '#111827',
     marginBottom: 3,
+  },
+  qrColumn: { flexDirection: 'row', alignItems: 'flex-start' },
+  qrItem: { alignItems: 'center' },
+  qrItemSpacer: { marginLeft: 8 },
+  qrImage: { width: 40, height: 40 },
+  qrCaption: {
+    fontSize: 6,
+    fontFamily: 'Montserrat',
+    textAlign: 'center',
+    color: '#4b5563',
+    marginTop: 2,
   },
   checkboxRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 2 },
   checkboxBox: {
@@ -257,7 +313,20 @@ const Checkbox = ({ label }: { label: string }) => (
   </View>
 )
 
-const STRATEGY_ITEMS = ['Pointing to mouth', 'Clapping (syllables)', 'Straw (lateral lisp)']
+const QrVideoColumn = ({ qrVideos }: { qrVideos: QrVideo[] }) => {
+  if (!qrVideos || qrVideos.length === 0) return null
+
+  return (
+    <View style={styles.qrColumn} wrap={false}>
+      {qrVideos.map((video, i) => (
+        <View key={video.category} style={i > 0 ? [styles.qrItem, styles.qrItemSpacer] : styles.qrItem}>
+          <Image style={styles.qrImage} src={video.dataUri} />
+          <Text style={styles.qrCaption}>{video.title}</Text>
+        </View>
+      ))}
+    </View>
+  )
+}
 
 const HOW_DID_THEY_DO_ITEMS = [
   'Could not say the sound at all',
@@ -299,10 +368,19 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
           <Text style={styles.soundValue}>{error.sound}</Text>
         </View>
         <View style={styles.strategyBox}>
-          <Text style={styles.strategyLabel}>STRATEGIES TO USE:</Text>
-          {STRATEGY_ITEMS.map(item => (
-            <Checkbox key={item} label={item} />
-          ))}
+          <View style={styles.strategyChecklistCol}>
+            <Text style={styles.strategyLabel}>STRATEGIES TO USE:</Text>
+            <View style={styles.strategyChecklistColsRow}>
+              {chunkStrategyItems(getStrategyItems(error)).map((chunk, i) => (
+                <View key={i} style={styles.strategyChecklistSubCol}>
+                  {chunk.map(item => (
+                    <Checkbox key={item} label={item} />
+                  ))}
+                </View>
+              ))}
+            </View>
+          </View>
+          <QrVideoColumn qrVideos={error.qrVideos} />
         </View>
       </View>
       {[0, 1, 2].map(i => (
