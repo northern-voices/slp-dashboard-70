@@ -1,81 +1,21 @@
-import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Label } from '@/components/ui/label'
-import {
-  MoreHorizontal,
-  Loader2,
-  FileCheck,
-  FileX,
-  Search,
-  X,
-  Info,
-  PauseCircle,
-  GraduationCap,
-  User,
-  FilePlus,
-} from 'lucide-react'
-import TransferStudentDialog from '../students/TransferStudentDialog'
-import { useQueryClient } from '@tanstack/react-query'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Search } from 'lucide-react'
+import { Input } from '@/components/ui/input'
 import {
   ResponsiveTable,
-  ResponsiveTableRow,
   TableHeader,
   TableHead,
   TableBody,
-  TableCell,
 } from '@/components/ui/responsive-table'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { RESULT_OPTIONS, PROGRAM_OPTIONS } from '@/constants/screeningOptions'
-import { GRADE_MAPPING } from '@/constants/app'
-import { supabase } from '@/lib/supabase'
 import { Student } from '@/types/database'
-import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
-import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
-import { SCREENING_RESULTS } from '@/constants/screeningResults'
-import type { Screening } from '@/types/database'
-import { useUpdateStudent } from '@/hooks/students'
-import { useToast } from '@/hooks/use-toast'
-import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
-import { useUpdateSpeechScreening } from '@/hooks/screenings'
-import { ProgramStatus, ServiceStatus } from '@/types/database'
-import { ErrorPatterns } from '@/types/screening-form'
-import { Input } from '@/components/ui/input'
 import CaseloadStats from './CaseloadStats'
 import CaseloadFilters from './CaseloadFilter'
-import CreateEADialog from './CreateEADialog'
-import ConsentFormModal from '../students/ConsentFormModal'
+import CaseloadTableRow from './CaseloadTableRow'
+import CaseloadPagination from './CaseloadPagination'
+import CaseloadDialogs from './CaseloadDialogs'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
-import DeleteEADialog from './DeleteEADialog'
-import { Textarea } from '@/components/ui/textarea'
-import { studentsApi } from '@/api/students'
+import { useCaseloadTableData } from './useCaseloadTableData'
+import { useCaseloadTableActions } from './useCaseloadTableActions'
 
 interface CaseloadTableProps {
   students: Student[]
@@ -83,30 +23,16 @@ interface CaseloadTableProps {
   schoolId?: string
 }
 
+const sortOptions: SortOption[] = [
+  { label: 'Student', value: 'name', defaultDirection: 'asc' },
+  { label: 'Grade', value: 'grade', defaultDirection: 'asc' },
+  { label: 'Program Status', value: 'program_status', defaultDirection: 'asc' },
+  { label: 'Result', value: 'result', defaultDirection: 'asc' },
+  { label: 'Consent', value: 'consent', defaultDirection: 'asc' },
+  { label: 'Speech EA', value: 'speech_ea', defaultDirection: 'asc' },
+]
+
 const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) => {
-  const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
-  const [sortField, setSortField] = useState<string | null>('program_status')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(50)
-  const [consentStudent, setConsentStudent] = useState<Student | null>(null)
-  const [pauseConfirmStudent, setPauseConfirmStudent] = useState<Student | null>(null)
-  const [pauseReason, setPauseReason] = useState('')
-
-  const [gradeFilter, setGradeFilter] = useState<string>('all')
-  const [resultFilter, setResultFilter] = useState<string>('all')
-  const [consentFilter, setConsentFilter] = useState<'all' | 'yes' | 'no'>('all')
-  const [eaFilter, setEaFilter] = useState<string>('all')
-  const [dateFilter, setDateFilter] = useState<string>('school_year')
-  const [createEAForStudent, setCreateEAForStudent] = useState<Student | null>(null)
-  const [programStatusFilter, setProgramStatusFilter] = useState<string>('all')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [eaToDelete, setEaToDelete] = useState<{ id: string; name: string } | null>(null)
-  const [isDeletingEA, setIsDeletingEA] = useState(false)
-  const [transferStudentTarget, setTransferStudentTarget] = useState<Student | null>(null)
-
-  const queryClient = useQueryClient()
-
   const navigate = useNavigate()
 
   const handleNavigate = (path: string) => {
@@ -117,405 +43,67 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     }
   }
 
-  useEffect(() => {
-    const fetchGrades = async () => {
-      if (!schoolId) return setGradesMap(new Map())
+  const {
+    gradesMap,
+    speechEAs,
+    refetchSchoolDetails,
+    sortField,
+    setSortField,
+    sortOrder,
+    setSortOrder,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    gradeFilter,
+    setGradeFilter,
+    resultFilter,
+    setResultFilter,
+    consentFilter,
+    setConsentFilter,
+    eaFilter,
+    setEaFilter,
+    dateFilter,
+    setDateFilter,
+    programStatusFilter,
+    setProgramStatusFilter,
+    searchTerm,
+    setSearchTerm,
+    hasActiveFilters,
+    clearAllFilters,
+    availableSchoolYears,
+    latestScreeningByStudent,
+    consentSet,
+    caseloadStats,
+    paginatedStudents,
+    totalStudents,
+    totalPages,
+    startIndex,
+    effectiveItemsPerPage,
+  } = useCaseloadTableData(students, schoolId)
 
-      try {
-        const grades = await schoolGradesApi.getSchoolGradesBySchool(schoolId)
-        const map = new Map<string, SchoolGrade>()
-
-        grades.forEach(grade => map.set(grade.id, grade))
-
-        setGradesMap(map)
-      } catch {
-        setGradesMap(new Map())
-      }
-    }
-
-    fetchGrades()
-  }, [schoolId])
-
-  const { currentSchool } = useOrganization()
-  const { data: schoolDetails, refetch: refetchSchoolDetails } = useSchoolDetails(
-    currentSchool ?? null
-  )
-
-  const { data: allScreeningsData } = useScreeningsBySchool(schoolId, 'all', 1, 10000)
-  const allSchoolScreenings = useMemo(
-    () => allScreeningsData?.screenings ?? [],
-    [allScreeningsData]
-  )
-
-  const apiDateFilter = dateFilter === 'school_year' ? 'school_year' : 'all'
-  const { data: screeningsData } = useScreeningsBySchool(schoolId, apiDateFilter, 1, 10000)
-  const schoolScreenings = useMemo(() => screeningsData?.screenings ?? [], [screeningsData])
-
-  const availableSchoolYears = useMemo(() => {
-    const years = new Set<string>()
-    allSchoolScreenings.forEach(s => {
-      const date = new Date(s.created_at)
-      const month = date.getMonth()
-      const year = date.getFullYear()
-      const schoolYear = month >= 8 ? `${year}-${year + 1}` : `${year - 1}-${year}`
-      years.add(schoolYear)
-    })
-    return Array.from(years).sort().reverse()
-  }, [allSchoolScreenings])
-
-  const latestScreeningByStudent = useMemo(() => {
-    const map = new Map<string, Screening>()
-
-    let screeningsToProcess = allSchoolScreenings.filter(s => s.source_table === 'speech')
-
-    if (dateFilter.startsWith('sy_')) {
-      const [startYear, endYear] = dateFilter.replace('sy_', '').split('-').map(Number)
-      const syStart = new Date(startYear, 8, 1)
-      const syEnd = new Date(endYear, 7, 31, 23, 59, 59)
-      screeningsToProcess = screeningsToProcess.filter(s => {
-        const d = new Date(s.created_at)
-        return d >= syStart && d <= syEnd
-      })
-    }
-
-    screeningsToProcess.forEach(screening => {
-      const existing = map.get(screening.student_id)
-      if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
-        map.set(screening.student_id, screening)
-      }
-    })
-
-    return map
-  }, [allSchoolScreenings, dateFilter])
-
-  const { mutate: updateStudent } = useUpdateStudent()
-  const { mutate: updateSpeechScreening } = useUpdateSpeechScreening()
-
-  const [updatingStudentId, setUpdatingStudentId] = useState<string | null>(null)
-
-  const { toast } = useToast()
-
-  const handleAssignEA = (student: Student, staffId: string) => {
-    const newEaId = staffId === 'none' ? null : staffId
-
-    updateStudent(
-      { id: student.id, studentData: { speech_ea_id: newEaId } },
-      {
-        onSuccess: () => toast({ title: 'Speech EA updated' }),
-        onError: () => {
-          toast({
-            title: 'Error',
-            description: 'Failed to update Speech EA.',
-            variant: 'destructive',
-          })
-        },
-      }
-    )
-  }
-
-  const handleConfirmDeleteEA = async () => {
-    if (!eaToDelete) return
-    setIsDeletingEA(true)
-
-    const { error } = await supabase.from('school_staff').delete().eq('id', eaToDelete.id)
-
-    setIsDeletingEA(false)
-
-    if (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to remove Speech EA.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    refetchSchoolDetails()
-    toast({ title: 'Speech EA removed' })
-    setEaToDelete(null)
-  }
-
-  const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {
-    complex_needs: 'Complex Needs',
-    unable_to_screen: 'Refusal / Non-Compliant',
-  }
-
-  const getResultBadge = (result?: string | null) => {
-    if (!result) return <span className='text-sm text-gray-400'>—</span>
-
-    const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
-    if (!config) return <span className='text-sm text-gray-400'>—</span>
-
-    const label = RESULT_BADGE_LABELS[result as keyof typeof SCREENING_RESULTS] ?? config.label
-
-    return (
-      <Badge
-        title={config.label}
-        className={`${config.color} font-medium text-[10px] whitespace-nowrap`}>
-        {label}
-      </Badge>
-    )
-  }
-
-  const speechEAs =
-    schoolDetails?.schoolTeam?.filter(member => member.roles.includes('speech_ea')) ?? []
-
-  const getSpeechEAName = (student: Student): string => {
-    return speechEAs.find(ea => ea.id === student.speech_ea_id)?.name ?? ''
-  }
-
-  const getStudentGrade = (student: Student): string => {
-    if (student.current_grade_id) {
-      const grade = gradesMap.get(student.current_grade_id)
-      if (grade) return grade.grade_level
-    }
-
-    return 'N/A'
-  }
-
-  const getProgramBadge = (student: Student) => {
-    switch (student.program_status || 'none') {
-      case 'qualified':
-        return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
-      case 'sub':
-        return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
-      case 'no_consent':
-        return (
-          <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
-        )
-      case 'graduated':
-        return (
-          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
-        )
-      default:
-        return (
-          <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>
-            Not In Program
-          </Badge>
-        )
-    }
-  }
-
-  const getServiceStatusTag = (student: Student) => {
-    switch (student.service_status) {
-      case 'paused':
-        return (
-          <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
-            Paused / Away
-          </Badge>
-        )
-      default:
-        return null
-    }
-  }
-
-  const isCurrentSchoolYear = (dateStr: string): boolean => {
-    const date = new Date(dateStr)
-    const syStartYear = date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1
-    const now = new Date()
-    const currentSyStartYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1
-
-    return syStartYear === currentSyStartYear
-  }
-
-  const getSchoolYearLabel = (dateStr: string): string => {
-    const date = new Date(dateStr)
-    const startYear = date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1
-
-    return `${startYear}-${String(startYear + 1).slice(2)}`
-  }
-
-  const handleResultChange = (student: Student, newResult: string) => {
-    const screening = latestScreeningByStudent.get(student.id)
-    if (!screening) return
-
-    setUpdatingStudentId(student.id)
-    updateSpeechScreening(
-      { id: screening.id, data: { result: newResult } },
-      {
-        onSuccess: () => {
-          setUpdatingStudentId(null)
-          toast({ title: 'Result updated' })
-        },
-        onError: error => {
-          setUpdatingStudentId(null)
-          toast({
-            title: 'Error updating result',
-            description: error.message,
-            variant: 'destructive',
-          })
-        },
-      }
-    )
-  }
-
-  const handleProgramChange = (student: Student, newProgram: ProgramStatus) => {
-    const screening = latestScreeningByStudent.get(student.id)
-
-    setUpdatingStudentId(student.id)
-
-    const doStudentUpdate = () => {
-      updateStudent(
-        {
-          id: student.id,
-          studentData: { program_status: newProgram, service_status: null },
-        },
-        {
-          onSuccess: () => {
-            setUpdatingStudentId(null)
-            toast({ title: 'Program updated' })
-          },
-          onError: () => {
-            setUpdatingStudentId(null)
-            toast({
-              title: 'Warning',
-              description: 'Failed to update the student',
-              variant: 'destructive',
-            })
-          },
-        }
-      )
-    }
-
-    if (!screening) {
-      doStudentUpdate()
-      return
-    }
-
-    const currentErrorPatterns = screening.error_patterns || ({} as ErrorPatterns)
-
-    const cleanErrorPatterns: Partial<ErrorPatterns> = {
-      articulation: currentErrorPatterns.articulation || ({} as ErrorPatterns['articulation']),
-      add_areas_of_concern:
-        currentErrorPatterns.add_areas_of_concern || ({} as ErrorPatterns['add_areas_of_concern']),
-      attendance: currentErrorPatterns.attendance || ({} as ErrorPatterns['attendance']),
-      additional_observations: currentErrorPatterns.additional_observations || '',
-      consent: {
-        ...(currentErrorPatterns.consent || {}),
-        no_consent: newProgram === 'no_consent',
-      },
-      screening_metadata: {
-        ...(currentErrorPatterns.screening_metadata || {}),
-        qualifies_for_speech_program: newProgram === 'qualified',
-        sub: newProgram === 'sub',
-        graduated: newProgram === 'graduated',
-      } as ErrorPatterns['screening_metadata'],
-    }
-
-    updateSpeechScreening(
-      {
-        id: screening.id,
-        data: { error_patterns: cleanErrorPatterns as ErrorPatterns },
-      },
-      {
-        onSuccess: () => {
-          updateStudent(
-            { id: student.id, studentData: { program_status: newProgram, service_status: null } },
-            {
-              onSuccess: () => {
-                setUpdatingStudentId(null)
-                toast({ title: 'Program updated' })
-              },
-              onError: () => {
-                setUpdatingStudentId(null)
-                toast({
-                  title: 'Warning',
-                  description: 'Failed to update the student',
-                  variant: 'destructive',
-                })
-              },
-            }
-          )
-        },
-        onError: error => {
-          setUpdatingStudentId(null)
-          toast({
-            title: 'Error updating program',
-            description: error.message,
-            variant: 'destructive',
-          })
-        },
-      }
-    )
-  }
-
-  const handleStatusChange = (student: Student, newStatus: ServiceStatus) => {
-    setUpdatingStudentId(student.id)
-
-    updateStudent(
-      {
-        id: student.id,
-        studentData: { service_status: newStatus === 'none' ? null : newStatus },
-      },
-      {
-        onSuccess: () => {
-          setUpdatingStudentId(null)
-          toast({ title: 'Status updated' })
-        },
-        onError: () => {
-          setUpdatingStudentId(null)
-          toast({
-            title: 'Error updating status',
-            description: 'Failed to update student status',
-            variant: 'destructive',
-          })
-        },
-      }
-    )
-  }
-
-  const hasActiveFilters =
-    gradeFilter !== 'all' ||
-    resultFilter !== 'all' ||
-    consentFilter !== 'all' ||
-    eaFilter !== 'all' ||
-    dateFilter !== 'school_year' ||
-    programStatusFilter !== 'all'
-
-  const clearAllFilters = () => {
-    setGradeFilter('all')
-    setResultFilter('all')
-    setConsentFilter('all')
-    setEaFilter('all')
-    setDateFilter('school_year')
-    setProgramStatusFilter('all')
-    setCurrentPage(1)
-  }
-
-  const studentIds = useMemo(() => students.map(student => student.id), [students])
-  const { data: consentStudentIds = [] } = useConsentFormPresence(studentIds)
-
-  // 0-indexed, August = 7, September = 8
-  const getCurrentSchoolYearStart = (): Date => {
-    const now = new Date()
-    const month = now.getMonth()
-    const year = now.getFullYear()
-
-    // Sep 1 of this year else Sep 1 of last year
-    return month >= 8 ? new Date(year, 8, 1) : new Date(year - 1, 8, 1)
-  }
-
-  const schoolYearStart = getCurrentSchoolYearStart()
-
-  const consentSet = useMemo(
-    () =>
-      new Set(
-        (consentStudentIds ?? [])
-          .filter(
-            r => r.consent_purpose === 'therapy' && new Date(r.consent_date) >= schoolYearStart
-          )
-          .map(r => r.student_id)
-      ),
-    [consentStudentIds, schoolYearStart]
-  )
-
-  const getConsentBadge = (student: Student) => {
-    if (consentSet.has(student.id)) {
-      return <FileCheck className='w-5 h-5 mx-auto text-green-600' />
-    }
-
-    return <FileX className='w-5 h-5 mx-auto text-red-400' />
-  }
+  const {
+    updatingStudentId,
+    consentStudent,
+    setConsentStudent,
+    pauseConfirmStudent,
+    setPauseConfirmStudent,
+    pauseReason,
+    setPauseReason,
+    createEAForStudent,
+    setCreateEAForStudent,
+    eaToDelete,
+    setEaToDelete,
+    isDeletingEA,
+    transferStudentTarget,
+    setTransferStudentTarget,
+    handleAssignEA,
+    handleEACreated,
+    handleConfirmDeleteEA,
+    handleResultChange,
+    handleProgramChange,
+    handleConfirmPause,
+  } = useCaseloadTableActions(latestScreeningByStudent, refetchSchoolDetails)
 
   if (isLoading) {
     return (
@@ -528,179 +116,8 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     )
   }
 
-  const filteredStudents = students.filter(student => {
-    const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
-    const matchesSearch = fullName.includes(searchTerm.toLowerCase())
-
-    const screening = latestScreeningByStudent.get(student.id)
-
-    const matchesCaseload = (() => {
-      const programStatus =
-        dateFilter === 'school_year' ? student.program_status : screening?.program_status
-
-      return (
-        programStatus === 'qualified' || programStatus === 'sub' || programStatus === 'graduated'
-      )
-    })()
-
-    // TODO: Code for getting caseload for only this school year
-    // const matchesCaseload =
-    //   dateFilter === 'school_year'
-    //     ? (student.program_status === 'qualified' || student.program_status === 'sub') &&
-    //       !!screening
-    //     : screening?.program_status === 'qualified' || screening?.program_status === 'sub'
-
-    const matchesGrade = gradeFilter === 'all' || getStudentGrade(student).includes(gradeFilter)
-
-    const matchesResult = resultFilter === 'all' || (screening?.result ?? 'none') === resultFilter
-
-    const hasConsent = consentSet.has(student.id)
-    const matchesConsent =
-      consentFilter === 'all' || (consentFilter === 'yes' ? hasConsent : !hasConsent)
-
-    const matchesEA =
-      eaFilter === 'all' ||
-      (eaFilter === 'none' ? !student.speech_ea_id : student.speech_ea_id === eaFilter)
-
-    return (
-      matchesSearch &&
-      matchesCaseload &&
-      matchesGrade &&
-      matchesResult &&
-      matchesConsent &&
-      matchesEA
-    )
-  })
-
-  const caseloadStats = {
-    qualified: filteredStudents.filter(s => s.program_status === 'qualified').length,
-    sub: filteredStudents.filter(s => s.program_status === 'sub').length,
-    paused: filteredStudents.filter(s => s.service_status === 'paused').length,
-    graduated: filteredStudents.filter(s => s.program_status === 'graduated').length,
-  }
-
-  const sortedStudents = [...filteredStudents].sort((a, b) => {
-    if (!sortField || !sortOrder) {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    }
-
-    let comparison = 0
-
-    if (sortField === 'name') {
-      const nameA = `${a.last_name} ${a.first_name}`.toLowerCase()
-      const nameB = `${b.last_name} ${b.first_name}`.toLowerCase()
-      comparison = nameA.localeCompare(nameB)
-    }
-
-    if (sortField === 'grade') {
-      const indexA = GRADE_MAPPING.findIndex(g => getStudentGrade(a).includes(g.value))
-      const indexB = GRADE_MAPPING.findIndex(g => getStudentGrade(b).includes(g.value))
-      if (indexA === -1 && indexB === -1) comparison = 0
-      else if (indexA === -1) comparison = 1
-      else if (indexB === -1) comparison = -1
-      else comparison = indexA - indexB
-    }
-
-    if (sortField === 'program_status') {
-      const programOrder = { qualified: 0, sub: 1, graduated: 2, none: 3 }
-
-      comparison =
-        (programOrder[a.program_status as keyof typeof programOrder] ?? 99) -
-        (programOrder[b.program_status as keyof typeof programOrder] ?? 99)
-
-      if (comparison === 0) {
-        const aIsPaused = a.service_status === 'paused'
-        const bIsPaused = b.service_status === 'paused'
-        if (aIsPaused !== bIsPaused) {
-          comparison = aIsPaused ? 1 : -1
-        }
-      }
-
-      if (comparison === 0) {
-        const indexA = GRADE_MAPPING.findIndex(g => getStudentGrade(a).includes(g.value))
-        const indexB = GRADE_MAPPING.findIndex(g => getStudentGrade(b).includes(g.value))
-        if (indexA === -1 && indexB === -1) comparison = 0
-        else if (indexA === -1) comparison = 1
-        else if (indexB === -1) comparison = -1
-        else comparison = indexA - indexB
-      }
-    }
-
-    if (sortField === 'result') {
-      const resultOrder = [
-        'no_errors',
-        'age_appropriate',
-        'monitor',
-        'mild',
-        'moderate',
-        'severe',
-        'profound',
-        'complex_needs',
-        'unable_to_screen',
-        'absent',
-        'non_registered_no_consent',
-      ]
-      const rA = latestScreeningByStudent.get(a.id)?.result ?? ''
-      const rB = latestScreeningByStudent.get(b.id)?.result ?? ''
-      const iA = resultOrder.indexOf(rA)
-      const iB = resultOrder.indexOf(rB)
-      comparison = (iA === -1 ? 99 : iA) - (iB === -1 ? 99 : iB)
-    }
-
-    if (sortField === 'consent') {
-      const cA = consentSet.has(a.id) ? 0 : 1
-      const cB = consentSet.has(b.id) ? 0 : 1
-      comparison = cA - cB
-    }
-
-    if (sortField === 'speech_ea') {
-      const eaA = getSpeechEAName(a)
-      const eaB = getSpeechEAName(b)
-      // Students with no EA assigned goes to bottom
-      if (eaA === '-' && eaB === '-') comparison = 0
-      else if (eaA === '-') return 1
-      else if (eaB === '-') return -1
-      else comparison = eaA.localeCompare(eaB)
-    }
-
-    return sortOrder === 'asc' ? comparison : -comparison
-  })
-
-  const inactiveStatuses = ['paused']
-
-  let programFilteredStudents = sortedStudents
-
-  if (programStatusFilter === 'paused') {
-    programFilteredStudents = sortedStudents.filter(student => student.service_status === 'paused')
-  } else if (programStatusFilter !== 'all') {
-    programFilteredStudents = sortedStudents.filter(
-      student =>
-        student.program_status === programStatusFilter &&
-        !inactiveStatuses.includes(student.service_status ?? '')
-    )
-  }
-
-  const totalStudents = programFilteredStudents.length
-  const effectiveItemsPerPage = itemsPerPage === 'all' ? totalStudents : itemsPerPage
-  const totalPages = Math.max(1, Math.ceil(totalStudents / effectiveItemsPerPage))
-  const startIndex = (currentPage - 1) * effectiveItemsPerPage
-  const paginatedStudents = programFilteredStudents.slice(
-    startIndex,
-    startIndex + effectiveItemsPerPage
-  )
-
-  const sortOptions: SortOption[] = [
-    { label: 'Student', value: 'name', defaultDirection: 'asc' },
-    { label: 'Grade', value: 'grade', defaultDirection: 'asc' },
-    { label: 'Program Status', value: 'program_status', defaultDirection: 'asc' },
-    { label: 'Result', value: 'result', defaultDirection: 'asc' },
-    { label: 'Consent', value: 'consent', defaultDirection: 'asc' },
-    { label: 'Speech EA', value: 'speech_ea', defaultDirection: 'asc' },
-  ]
-
   return (
     <div className='space-y-4'>
-      {/* Caseload Stats */}
       <CaseloadStats
         stats={caseloadStats}
         activeFilter={programStatusFilter}
@@ -754,215 +171,34 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
           <TableHeader>
             <tr>
               <TableHead className='w-1/5 min-w-[180px]'>Student</TableHead>
-
               <TableHead className='w-[55px]'>Grade</TableHead>
-
               <TableHead className='w-[190px]'>Result</TableHead>
-
               <TableHead className='w-[70px]'>Program</TableHead>
-
               <TableHead className='w-[100px] text-center'>Therapy Consent</TableHead>
-
               <TableHead className='w-[150px]'>Speech EA</TableHead>
-
               <TableHead className='w-[60px]' />
             </tr>
           </TableHeader>
 
           <TableBody>
             {paginatedStudents.map(student => (
-              <ResponsiveTableRow key={student.id}>
-                <TableCell className='font-medium'>
-                  <div className='flex flex-col gap-1 items-start'>
-                    <span>
-                      {student.first_name} {student.last_name}
-                    </span>
-                    {getServiceStatusTag(student)}
-                  </div>
-                </TableCell>
-
-                <TableCell>{getStudentGrade(student)}</TableCell>
-
-                {/* <TableCell>{getProgramBadge(student)}</TableCell> */}
-
-                <TableCell>
-                  {latestScreeningByStudent.get(student.id) ? (
-                    (() => {
-                      const screening = latestScreeningByStudent.get(student.id)
-                      return (
-                        <Select
-                          value={screening?.result ?? ''}
-                          onValueChange={value => handleResultChange(student, value)}
-                          disabled={updatingStudentId === student.id || !screening}>
-                          <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
-                            <SelectValue>
-                              <div className='flex items-center gap-1.5'>
-                                {updatingStudentId === student.id && (
-                                  <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
-                                )}
-                                {getResultBadge(screening?.result)}
-                                {screening && !isCurrentSchoolYear(screening.created_at) && (
-                                  <span className='text-[10px] text-gray-400 whitespace-nowrap'>
-                                    {getSchoolYearLabel(screening.created_at)}
-                                  </span>
-                                )}
-                              </div>
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {RESULT_OPTIONS.map(option => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )
-                    })()
-                  ) : (
-                    <div className='flex items-center gap-1.5'>
-                      <span className='text-sm text-gray-400 italic'>No Screening Recorded</span>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className='w-3.5 h-3.5 text-gray-400 cursor-help shrink-0' />
-                        </TooltipTrigger>
-                        <TooltipContent className='max-w-[220px] text-center'>
-                          No screening on record. This can happen if the student transferred from
-                          another school or if a previous screening was removed.
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  )}
-                </TableCell>
-
-                {/* Functionality to be able to change the program but leave it out for now */}
-                <TableCell>
-                  <Select
-                    value={student.program_status ?? 'none'}
-                    onValueChange={value => handleProgramChange(student, value as ProgramStatus)}
-                    disabled={updatingStudentId === student.id}>
-                    <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
-                      <SelectValue>
-                        <div className='flex items-center gap-2'>
-                          {updatingStudentId === student.id && (
-                            <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
-                          )}
-                          {getProgramBadge(student)}
-                        </div>
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PROGRAM_OPTIONS.filter(
-                        option => option.value !== 'none' && option.value !== 'no_consent'
-                      ).map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-
-                <TableCell className='text-center'>
-                  <button
-                    onClick={() => setConsentStudent(student)}
-                    className='cursor-pointer hover:opacity-70 transition-opacity'
-                    title='Add consent'>
-                    {getConsentBadge(student)}
-                  </button>
-                </TableCell>
-
-                <TableCell>
-                  <Select
-                    value={student.speech_ea_id ?? 'none'}
-                    onValueChange={value => {
-                      if (value === '__create_new__') {
-                        setCreateEAForStudent(student)
-                        return
-                      }
-                      handleAssignEA(student, value)
-                    }}>
-                    <SelectTrigger className='w-full h-8 p-0 truncate border-none hover:bg-transparent focus:ring-0'>
-                      <SelectValue placeholder='Assign EA'>
-                        {student.speech_ea_id ? (
-                          getSpeechEAName(student)
-                        ) : (
-                          <span className='text-sm text-gray-400 italic'>
-                            No Speech EA assigned
-                          </span>
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='none'>-</SelectItem>
-                      {speechEAs.map(ea => (
-                        <SelectItem key={ea.id} value={ea.id} className='pr-8'>
-                          <div className='flex items-center justify-between w-full gap-2'>
-                            <span className='truncate'>{ea.name}</span>
-                            <button
-                              onPointerDown={e => e.stopPropagation()}
-                              onPointerUp={e => e.stopPropagation()}
-                              onClick={e => {
-                                e.stopPropagation()
-                                e.preventDefault()
-                                setEaToDelete(ea)
-                              }}
-                              className='shrink-0 text-gray-400 hover:text-red-500 transition-colors'
-                              title={`Remove ${ea.name}`}>
-                              <X className='w-3.5 h-3.5' />
-                            </button>
-                          </div>
-                        </SelectItem>
-                      ))}
-                      <SelectSeparator />
-                      <SelectItem value='__create_new__' className='font-medium text-blue-600'>
-                        + Create new EA
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-
-                <TableCell className='text-center'>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant='ghost' size='sm' className='w-8 h-8 p-0'>
-                        <MoreHorizontal className='w-4 h-4' />
-                      </Button>
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuContent align='end'>
-                      <DropdownMenuItem onClick={() => handleNavigate(student.id)}>
-                        <User className='w-4 h-4 mr-2' />
-                        View Student
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem onClick={() => setConsentStudent(student)}>
-                        <FilePlus className='w-4 h-4 mr-2' />
-                        Add Consent
-                      </DropdownMenuItem>
-
-                      {student.service_status !== 'paused' && (
-                        <DropdownMenuItem onClick={() => setPauseConfirmStudent(student)}>
-                          <PauseCircle className='w-4 h-4 mr-2' />
-                          Pause / Away
-                        </DropdownMenuItem>
-                      )}
-
-                      {/* {student.service_status !== 'graduated' && (
-                        <DropdownMenuItem onClick={() => handleStatusChange(student, 'graduated')}>
-                          <GraduationCap className='w-4 h-4 mr-2' />
-                          Graduate
-                        </DropdownMenuItem>
-                      )} */}
-
-                      {/* <DropdownMenuItem onClick={() => setTransferStudentTarget(student)}>
-                        <ArrowRightLeft className='w-4 h-4 mr-2' />
-                        Transfer Student
-                      </DropdownMenuItem> */}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </ResponsiveTableRow>
+              <CaseloadTableRow
+                key={student.id}
+                student={student}
+                gradesMap={gradesMap}
+                speechEAs={speechEAs}
+                screening={latestScreeningByStudent.get(student.id)}
+                hasConsent={consentSet.has(student.id)}
+                updatingStudentId={updatingStudentId}
+                onResultChange={handleResultChange}
+                onProgramChange={handleProgramChange}
+                onAssignEA={handleAssignEA}
+                onViewStudent={handleNavigate}
+                setConsentStudent={setConsentStudent}
+                setCreateEAForStudent={setCreateEAForStudent}
+                setEaToDelete={setEaToDelete}
+                setPauseConfirmStudent={setPauseConfirmStudent}
+              />
             ))}
           </TableBody>
         </ResponsiveTable>
@@ -978,160 +214,38 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         )}
       </div>
 
-      {/* Pagination */}
       {totalStudents > 0 && (
-        <div className='flex items-center justify-between px-4 py-3 border-t border-gray-200'>
-          <div className='flex items-center gap-2'>
-            <Label className='text-sm text-gray-600'>Rows per page:</Label>
-            <Select
-              value={itemsPerPage.toString()}
-              onValueChange={value => {
-                setItemsPerPage(value === 'all' ? 'all' : Number(value))
-                setCurrentPage(1)
-              }}>
-              <SelectTrigger className='w-[80px] h-9'>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='10'>10</SelectItem>
-                <SelectItem value='25'>25</SelectItem>
-                <SelectItem value='50'>50</SelectItem>
-                <SelectItem value='all'>All</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className='flex items-center gap-2'>
-            <span className='text-sm text-gray-600'>
-              {startIndex + 1}–{Math.min(startIndex + effectiveItemsPerPage, totalStudents)} of{' '}
-              {totalStudents}
-            </span>
-            <div className='flex gap-1'>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className='p-0 h-9 w-9'>
-                &larr;
-              </Button>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className='p-0 h-9 w-9'>
-                &rarr;
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {consentStudent && (
-        <ConsentFormModal
-          isOpen={true}
-          onClose={() => setConsentStudent(null)}
-          student={consentStudent}
+        <CaseloadPagination
+          itemsPerPage={itemsPerPage}
+          setItemsPerPage={setItemsPerPage}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          effectiveItemsPerPage={effectiveItemsPerPage}
+          totalStudents={totalStudents}
         />
       )}
 
-      <CreateEADialog
-        open={!!createEAForStudent}
-        onOpenChange={open => {
-          if (!open) setCreateEAForStudent(null)
-        }}
+      <CaseloadDialogs
         schoolId={schoolId}
-        onCreated={newEaId => {
-          if (createEAForStudent) handleAssignEA(createEAForStudent, newEaId)
-          setCreateEAForStudent(null)
-        }}
+        consentStudent={consentStudent}
+        setConsentStudent={setConsentStudent}
+        createEAForStudent={createEAForStudent}
+        setCreateEAForStudent={setCreateEAForStudent}
+        onEACreated={handleEACreated}
+        eaToDelete={eaToDelete}
+        setEaToDelete={setEaToDelete}
+        isDeletingEA={isDeletingEA}
+        onConfirmDeleteEA={handleConfirmDeleteEA}
+        transferStudentTarget={transferStudentTarget}
+        setTransferStudentTarget={setTransferStudentTarget}
+        pauseConfirmStudent={pauseConfirmStudent}
+        setPauseConfirmStudent={setPauseConfirmStudent}
+        pauseReason={pauseReason}
+        setPauseReason={setPauseReason}
+        onConfirmPause={handleConfirmPause}
       />
-
-      <DeleteEADialog
-        open={!!eaToDelete}
-        eaName={eaToDelete?.name ?? ''}
-        isDeleting={isDeletingEA}
-        onConfirm={handleConfirmDeleteEA}
-        onCancel={() => setEaToDelete(null)}
-      />
-
-      {transferStudentTarget && (
-        <TransferStudentDialog
-          student={transferStudentTarget}
-          open={!!transferStudentTarget}
-          onOpenChange={open => {
-            if (!open) setTransferStudentTarget(null)
-          }}
-          onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ['students', 'by-school', schoolId] })
-            setTransferStudentTarget(null)
-          }}
-        />
-      )}
-
-      <AlertDialog
-        open={!!pauseConfirmStudent}
-        onOpenChange={open => {
-          if (!open) {
-            setPauseConfirmStudent(null)
-            setPauseReason('')
-          }
-        }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Pause / mark student away?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will pause services for {pauseConfirmStudent?.first_name}{' '}
-              {pauseConfirmStudent?.last_name}. You can reactivate them later from this table.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <div className='py-2'>
-            <Label htmlFor='pause-reason' className='text-sm font-medium text-gray-700'>
-              Reason (optional)
-            </Label>
-            <Textarea
-              id='pause-reason'
-              value={pauseReason}
-              onChange={e => setPauseReason(e.target.value)}
-              placeholder='Why is this student being paused/away?'
-              className='mt-2 min-h-[80px]'
-            />
-          </div>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPauseConfirmStudent(null)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                if (!pauseConfirmStudent) return
-                handleStatusChange(pauseConfirmStudent, 'paused')
-
-                if (pauseReason.trim()) {
-                  try {
-                    await studentsApi.createStudentNote(
-                      pauseConfirmStudent.id,
-                      `Paused / Away: ${pauseReason.trim()}`
-                    )
-                  } catch {
-                    toast({
-                      title: 'Error',
-                      description: 'Status updated, but the note failed to save.',
-                      variant: 'destructive',
-                    })
-                  }
-                }
-
-                setPauseConfirmStudent(null)
-                setPauseReason('')
-              }}>
-              Pause / Away
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }
