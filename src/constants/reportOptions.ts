@@ -19,7 +19,7 @@ export const SPEECH_REPORT_OPTIONS = [
 export const SPEECH_GOAL_SHEET_OPTIONS = [
   {
     value: 'initial-goal-sheet',
-    label: 'Initial Goal Sheet',
+    label: 'Goal Sheet',
     description: 'Individualized goal tracking sheet with specific objectives and progress metrics',
     icon: Target,
   },

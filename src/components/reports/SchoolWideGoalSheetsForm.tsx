@@ -91,7 +91,7 @@ const SchoolWideGoalSheetsForm = () => {
   const initialReports = [
     {
       value: 'initial-goal-sheets',
-      label: 'Initial Goal Sheets (School Wide)',
+      label: 'Goal Sheets (School Wide)',
       description:
         'Produce individualized goal tracking sheets for all students in selected classes',
       icon: Target,
