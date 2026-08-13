@@ -38,3 +38,109 @@ interface CaseloadDialogsProps {
   setPauseReason: Dispatch<SetStateAction<string>>
   onConfirmPause: () => void
 }
+
+const CaseloadDialogs = ({
+  schoolId,
+  consentStudent,
+  setConsentStudent,
+  createEAForStudent,
+  setCreateEAForStudent,
+  onEACreated,
+  eaToDelete,
+  setEaToDelete,
+  isDeletingEA,
+  onConfirmDeleteEA,
+  transferStudentTarget,
+  setTransferStudentTarget,
+  pauseConfirmStudent,
+  setPauseConfirmStudent,
+  pauseReason,
+  setPauseReason,
+  onConfirmPause,
+}: CaseloadDialogsProps) => {
+  const queryClient = useQueryClient()
+
+  return (
+    <>
+      {consentStudent && (
+        <ConsentFormModal
+          isOpen={true}
+          onClose={() => setConsentStudent(null)}
+          student={consentStudent}
+        />
+      )}
+
+      <CreateEADialog
+        open={!!createEAForStudent}
+        onOpenChange={open => {
+          if (!open) setCreateEAForStudent(null)
+        }}
+        schoolId={schoolId}
+        onCreated={onEACreated}
+      />
+
+      <DeleteEADialog
+        open={!!eaToDelete}
+        eaName={eaToDelete?.name ?? ''}
+        isDeleting={isDeletingEA}
+        onConfirm={onConfirmDeleteEA}
+        onCancel={() => setEaToDelete(null)}
+      />
+
+      {transferStudentTarget && (
+        <TransferStudentDialog
+          student={transferStudentTarget}
+          open={!!transferStudentTarget}
+          onOpenChange={open => {
+            if (!open) setTransferStudentTarget(null)
+          }}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['students', 'by-school', schoolId] })
+            setTransferStudentTarget(null)
+          }}
+        />
+      )}
+
+      <AlertDialog
+        open={!!pauseConfirmStudent}
+        onOpenChange={open => {
+          if (!open) {
+            setPauseConfirmStudent(null)
+            setPauseReason('')
+          }
+        }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Pause / mark student away?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will pause services for {pauseConfirmStudent?.first_name}{' '}
+              {pauseConfirmStudent?.last_name}. You can reactivate them later from this table.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className='py-2'>
+            <Label htmlFor='pause-reason' className='text-sm font-medium text-gray-700'>
+              Reason (optional)
+            </Label>
+            <Textarea
+              id='pause-reason'
+              value={pauseReason}
+              onChange={e => setPauseReason(e.target.value)}
+              placeholder='Why is this student being paused/away?'
+              className='mt-2 min-h-[80px]'
+            />
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPauseConfirmStudent(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={onConfirmPause}>Pause / Away</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  )
+}
+
+export default CaseloadDialogs
