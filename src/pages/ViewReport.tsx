@@ -303,52 +303,72 @@ const ViewReport = () => {
       </div>
     )
   }
-
   return (
-    <div className='min-h-screen bg-gray-50 flex items-center justify-center px-4'>
-      <div className='max-w-sm w-full bg-white rounded-lg shadow p-8 space-y-6'>
-        <div className='flex flex-col items-center text-center space-y-2'>
-          <Lock className='w-8 h-8 text-gray-400' />
-          <h1 className='text-lg font-medium text-gray-900'>Password Protected Report</h1>
-          <p className='text-sm text-gray-500'>
+    <div className='min-h-screen bg-[#f4f6f9] flex flex-col items-center justify-center px-4 py-10'>
+      <div className='w-full max-w-[420px]'>
+        <div className='text-center mb-6'>
+          <span className='text-xl font-bold tracking-tight text-gray-900'>
+            Northern Voices Speech Services
+          </span>
+        </div>
+
+        <div className='bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] px-9 py-10'>
+          <div className='flex justify-center mb-6'>
+            <div className='bg-[#EEF4FF] rounded-full p-3.5'>
+              <Lock className='w-6 h-6 text-[#005AE0]' />
+            </div>
+          </div>
+
+          <h1 className='text-[22px] font-bold text-gray-900 text-center mb-2'>
+            Password Protected Report
+          </h1>
+          <p className='text-[15px] text-gray-500 text-center leading-relaxed mb-8'>
             Enter the password provided to you to view this report.
+          </p>
+
+          <div className='space-y-2'>
+            <Label htmlFor='report-password'>Password</Label>
+            <div className='relative'>
+              <Input
+                id='report-password'
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleUnlock()}
+                autoFocus
+              />
+
+              <button
+                type='button'
+                onClick={() => setShowPassword(!showPassword)}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'>
+                {showPassword ? <EyeOff className='w-4 h-4' /> : <Eye className='w-4 h-4' />}
+              </button>
+            </div>
+          </div>
+
+          {errorMessage && (
+            <div className='flex items-start gap-2 text-sm text-red-600 mt-3'>
+              <AlertCircle className='w-4 h-4 mt-0.5 shrink-0' />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          <Button
+            onClick={handleUnlock}
+            disabled={!password || state === 'verifying'}
+            className='w-full mt-6 h-11 rounded-lg bg-[#005AE0] font-semibold text-white hover:bg-[#0047b3]'>
+            {state === 'verifying' ? 'Verifying...' : 'View Report'}
+          </Button>
+
+          <p className='text-[13px] text-gray-400 text-center leading-relaxed mt-8'>
+            If you weren't expecting this, you can safely ignore this email.
           </p>
         </div>
 
-        <div className='space-y-2'>
-          <Label htmlFor='report-password'>Password</Label>
-          <div className='relative'>
-            <Input
-              id='report-password'
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleUnlock()}
-              autoFocus
-            />
-
-            <button
-              type='button'
-              onClick={() => setShowPassword(!showPassword)}
-              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'>
-              {showPassword ? <EyeOff className='w-4 h-4' /> : <Eye className='w-4 h-4' />}
-            </button>
-          </div>
-        </div>
-
-        {errorMessage && (
-          <div className='flex items-start gap-2 text-sm text-red-600'>
-            <AlertCircle className='w-4 h-4 mt-0.5 shrink-0' />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        <Button
-          onClick={handleUnlock}
-          disabled={!password || state === 'verifying'}
-          className='w-full'>
-          {state === 'verifying' ? 'Verifying...' : 'View Report'}
-        </Button>
+        <p className='text-center text-xs text-gray-400 mt-6'>
+          &copy; {new Date().getFullYear()} Northern Voices. All rights reserved.
+        </p>
       </div>
     </div>
   )
