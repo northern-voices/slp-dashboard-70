@@ -159,9 +159,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = useCallback(async () => {
     try {
-      Object.keys(sessionStorage)
+      Object.keys(localStorage)
         .filter(k => k.startsWith('email_mfa_'))
-        .forEach(k => sessionStorage.removeItem(k))
+        .forEach(k => localStorage.removeItem(k))
 
       const { error } = await supabase.auth.signOut()
       if (error) {

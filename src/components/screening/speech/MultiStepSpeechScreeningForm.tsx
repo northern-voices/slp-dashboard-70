@@ -164,12 +164,12 @@ const MultiStepSpeechScreeningForm = ({
     )
     form.setValue('error_patterns', {
       articulation: {
-        soundErrors: articulation.soundErrors || [],
-        articulationNotes: articulation.articulationNotes || '',
+        soundErrors: articulation?.soundErrors || [],
+        articulationNotes: articulation?.articulationNotes || '',
       },
       add_areas_of_concern: areasOfConcern,
       attendance: { absent: false, absence_notes: '', priority_re_screen: false },
-      additional_observations: errorPatterns.additional_observations || '',
+      additional_observations: errorPatterns?.additional_observations || '',
       screening_metadata: {
         screening_date: new Date().toLocaleDateString('en-CA'),
         qualifies_for_speech_program: screeningMetadata?.qualifies_for_speech_program || false,

@@ -41,7 +41,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
             setMfaRedirect('totp-challenge')
           }
         } else {
-          const emailVerified = sessionStorage.getItem(`email_mfa_${user.id}`) === 'true'
+          const emailVerified = localStorage.getItem(`email_mfa_${user.id}`) === 'true'
           if (!emailVerified) setMfaRedirect('email-challenge')
         }
       })

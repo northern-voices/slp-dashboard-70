@@ -45,7 +45,7 @@ const EmailOtpChallenge = () => {
 
       const urlParams = new URLSearchParams(window.location.search)
       if (urlParams.get('magic') === '1' && user) {
-        sessionStorage.setItem(`email_mfa_${user.id}`, 'true')
+        localStorage.setItem(`email_mfa_${user.id}`, 'true')
         navigate(from, { replace: true })
         return
       }
@@ -72,7 +72,7 @@ const EmailOtpChallenge = () => {
       const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' })
       if (error) throw error
 
-      sessionStorage.setItem(`email_mfa_${userId}`, 'true')
+      localStorage.setItem(`email_mfa_${userId}`, 'true')
       navigate(from, { replace: true })
     } catch {
       toast({
