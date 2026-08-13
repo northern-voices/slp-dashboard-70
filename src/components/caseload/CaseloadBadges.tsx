@@ -5,7 +5,7 @@ import { ProgramStatus, ServiceStatus } from '@/types/database'
 
 const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {
   complex_needs: 'Complex Needs',
-  unable_to_screen: 'Refusal / Non-compliant',
+  unable_to_screen: 'Refusal / Non-Compliant',
 }
 
 export const ResultBadge = ({ result }: { result?: string | null }) => {
@@ -14,7 +14,7 @@ export const ResultBadge = ({ result }: { result?: string | null }) => {
   const config = SCREENING_RESULTS[result as keyof typeof SCREENING_RESULTS]
   if (!config) return <span className='text-sm text-gray-400'>-</span>
 
-  const label = RESULT_BADGE_LABELS[result as keyof typeof SCREENING_RESULTS]
+  const label = RESULT_BADGE_LABELS[result as keyof typeof SCREENING_RESULTS] ?? config.label
 
   return (
     <Badge
