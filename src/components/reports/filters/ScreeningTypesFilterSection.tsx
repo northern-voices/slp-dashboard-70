@@ -1,11 +1,10 @@
-
-import React from 'react';
-import { Stethoscope } from 'lucide-react';
-import FilterSection from './FilterSection';
+import React from 'react'
+import { Stethoscope } from 'lucide-react'
+import FilterSection from './FilterSection'
 
 interface ScreeningTypesFilterSectionProps {
-  selected: string[];
-  onChange: (selected: string[]) => void;
+  selected: string[]
+  onChange: (selected: string[]) => void
 }
 
 const ScreeningTypesFilterSection = ({ selected, onChange }: ScreeningTypesFilterSectionProps) => {
@@ -14,22 +13,22 @@ const ScreeningTypesFilterSection = ({ selected, onChange }: ScreeningTypesFilte
     'Hearing Screening',
     'Language Assessment',
     'Articulation Test',
-    'Fluency Evaluation'
-  ];
+    'Fluency Evaluation',
+  ]
 
   return (
     <FilterSection
-      title="Screening Types"
+      title='Screening Types'
       icon={Stethoscope}
       selectedCount={selected.length}
       options={screeningTypeOptions}
       selected={selected}
       onChange={onChange}
-      placeholder="Select screening types..."
-      searchPlaceholder="Search screening types..."
-      emptyMessage="No screening types found."
+      placeholder='Select screening types...'
+      searchPlaceholder='Search screening types...'
+      emptyMessage='No screening types found.'
     />
-  );
-};
+  )
+}
 
-export default ScreeningTypesFilterSection;
+export default ScreeningTypesFilterSection
