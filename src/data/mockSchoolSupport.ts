@@ -1,5 +1,4 @@
-
-import { SchoolSupportForm } from '@/types/student-enhancements';
+import { SchoolSupportForm } from '@/types/student-enhancements'
 
 export const mockSchoolSupportTickets: SchoolSupportForm[] = [
   {
@@ -9,7 +8,8 @@ export const mockSchoolSupportTickets: SchoolSupportForm[] = [
     start_date: '2024-06-01',
     end_date: '2024-06-15',
     support_types: ['school_visit_speech_screen', 'indirect_phone_video'],
-    notes: 'Initial speech screening required for 3rd grade student. Teacher reported articulation concerns. Follow-up phone consultation scheduled with classroom teacher.',
+    notes:
+      'Initial speech screening required for 3rd grade student. Teacher reported articulation concerns. Follow-up phone consultation scheduled with classroom teacher.',
     follow_up: true,
     follow_up_date: '2024-06-20',
     status: 'active',
@@ -27,7 +27,8 @@ export const mockSchoolSupportTickets: SchoolSupportForm[] = [
     start_date: '2024-05-15',
     end_date: '2024-05-30',
     support_types: ['school_visit_hearing_screen'],
-    notes: 'Hearing screening requested by nurse. Student failed initial hearing test. Comprehensive audiological assessment needed.',
+    notes:
+      'Hearing screening requested by nurse. Student failed initial hearing test. Comprehensive audiological assessment needed.',
     follow_up: false,
     status: 'completed',
     priority: 'urgent',
@@ -44,7 +45,8 @@ export const mockSchoolSupportTickets: SchoolSupportForm[] = [
     start_date: '2024-06-10',
     end_date: '2024-06-25',
     support_types: ['school_visit_follow_up_training', 'indirect_monthly_meeting'],
-    notes: 'Follow-up training for classroom staff on implementing speech goals. Monthly meeting with special education team to review progress.',
+    notes:
+      'Follow-up training for classroom staff on implementing speech goals. Monthly meeting with special education team to review progress.',
     follow_up: true,
     follow_up_date: '2024-07-10',
     status: 'pending',
@@ -62,7 +64,8 @@ export const mockSchoolSupportTickets: SchoolSupportForm[] = [
     start_date: '2024-05-20',
     end_date: '2024-06-05',
     support_types: ['school_visit_other', 'indirect_travel'],
-    notes: 'Consultation for assistive technology evaluation. Student requires communication device assessment. Travel to rural school location.',
+    notes:
+      'Consultation for assistive technology evaluation. Student requires communication device assessment. Travel to rural school location.',
     follow_up: false,
     status: 'completed',
     priority: 'high',
@@ -79,7 +82,8 @@ export const mockSchoolSupportTickets: SchoolSupportForm[] = [
     start_date: '2024-06-03',
     end_date: '2024-06-18',
     support_types: ['indirect_phone_video', 'indirect_monthly_meeting'],
-    notes: 'Remote consultation with parents and teachers. Monthly IEP team meeting to discuss language goals and progress monitoring strategies.',
+    notes:
+      'Remote consultation with parents and teachers. Monthly IEP team meeting to discuss language goals and progress monitoring strategies.',
     follow_up: true,
     follow_up_date: '2024-07-03',
     status: 'active',
@@ -97,7 +101,8 @@ export const mockSchoolSupportTickets: SchoolSupportForm[] = [
     start_date: '2024-06-08',
     end_date: '2024-06-22',
     support_types: ['school_visit_speech_screen', 'school_visit_hearing_screen'],
-    notes: 'Comprehensive evaluation requested by parents. Both speech and hearing concerns noted. Coordination with audiologist required.',
+    notes:
+      'Comprehensive evaluation requested by parents. Both speech and hearing concerns noted. Coordination with audiologist required.',
     follow_up: false,
     status: 'cancelled',
     priority: 'medium',
@@ -107,13 +112,13 @@ export const mockSchoolSupportTickets: SchoolSupportForm[] = [
     school_name: 'Maple Grove Middle School',
     slp_names: ['Dr. Mike Wilson'],
   },
-];
+]
 
 export const mockSLPs = [
   { id: 'slp-1', name: 'Dr. Sarah Johnson' },
   { id: 'slp-2', name: 'Dr. Mike Wilson' },
   { id: 'slp-3', name: 'Dr. Emily Davis' },
-];
+]
 
 export const mockSchools = [
   'Lincoln Elementary',
@@ -122,4 +127,4 @@ export const mockSchools = [
   'Countryside Elementary',
   'Oakwood Elementary',
   'Maple Grove Middle School',
-];
+]
