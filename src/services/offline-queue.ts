@@ -39,7 +39,7 @@ export const offlineQueue = {
     formData: Record<string, unknown>,
     apiPayload: PendingSpeechScreening['apiPayload'],
     studentId: string | undefined,
-    gradeInfo?: PendingSpeechScreening['gradeInfo'],
+    gradeInfo?: PendingSpeechScreening['gradeInfo']
   ): PendingSpeechScreening {
     const pending: PendingSpeechScreening = {
       id: crypto.randomUUID(),
