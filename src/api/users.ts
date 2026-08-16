@@ -36,7 +36,7 @@ export const usersApi = {
   getUsers: async (
     currentUserId?: string,
     userRole?: UserRole,
-    organizationId?: string,
+    organizationId?: string
   ): Promise<User[]> => {
     try {
       let query = supabase.from('users').select('*').eq('is_active', true) // Only get active users
