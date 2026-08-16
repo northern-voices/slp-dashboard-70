@@ -1,5 +1,5 @@
 // Base API configuration and utilities
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 export class ApiError extends Error {
   constructor(
@@ -7,22 +7,18 @@ export class ApiError extends Error {
     public status: number,
     public statusText: string
   ) {
-    super(message);
-    this.name = 'ApiError';
+    super(message)
+    this.name = 'ApiError'
   }
 }
 
 export const apiClient = {
   async get<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    const response = await fetch(`${API_BASE_URL}${endpoint}`)
     if (!response.ok) {
-      throw new ApiError(
-        `API Error: ${response.statusText}`,
-        response.status,
-        response.statusText
-      );
+      throw new ApiError(`API Error: ${response.statusText}`, response.status, response.statusText)
     }
-    return response.json();
+    return response.json()
   },
 
   async post<T>(endpoint: string, data: unknown): Promise<T> {
@@ -32,15 +28,11 @@ export const apiClient = {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-    });
+    })
     if (!response.ok) {
-      throw new ApiError(
-        `API Error: ${response.statusText}`,
-        response.status,
-        response.statusText
-      );
+      throw new ApiError(`API Error: ${response.statusText}`, response.status, response.statusText)
     }
-    return response.json();
+    return response.json()
   },
 
   async put<T>(endpoint: string, data: unknown): Promise<T> {
@@ -50,27 +42,19 @@ export const apiClient = {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-    });
+    })
     if (!response.ok) {
-      throw new ApiError(
-        `API Error: ${response.statusText}`,
-        response.status,
-        response.statusText
-      );
+      throw new ApiError(`API Error: ${response.statusText}`, response.status, response.statusText)
     }
-    return response.json();
+    return response.json()
   },
 
   async delete(endpoint: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
-    });
+    })
     if (!response.ok) {
-      throw new ApiError(
-        `API Error: ${response.statusText}`,
-        response.status,
-        response.statusText
-      );
+      throw new ApiError(`API Error: ${response.statusText}`, response.status, response.statusText)
     }
   },
-};
+}
