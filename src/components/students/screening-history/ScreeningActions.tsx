@@ -1,28 +1,24 @@
-
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Mail, Download } from 'lucide-react';
+import React from 'react'
+import { Button } from '@/components/ui/button'
+import { Mail, Download } from 'lucide-react'
 
 interface ScreeningActionsProps {
-  onSendEmail: () => void;
+  onSendEmail: () => void
 }
 
 const ScreeningActions = ({ onSendEmail }: ScreeningActionsProps) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
-      <Button 
-        onClick={onSendEmail}
-        className="flex-1"
-      >
-        <Mail className="w-4 h-4 mr-2" />
+    <div className='flex flex-col sm:flex-row gap-3 pt-4 border-t'>
+      <Button onClick={onSendEmail} className='flex-1'>
+        <Mail className='w-4 h-4 mr-2' />
         Send Report via Email
       </Button>
-      <Button variant="outline" className="flex-1">
-        <Download className="w-4 h-4 mr-2" />
+      <Button variant='outline' className='flex-1'>
+        <Download className='w-4 h-4 mr-2' />
         Download Report
       </Button>
     </div>
-  );
-};
+  )
+}
 
-export default ScreeningActions;
+export default ScreeningActions
