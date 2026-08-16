@@ -85,7 +85,11 @@ const QrVideoColumn = ({ qrVideos }: { qrVideos: QrVideo[] }) => {
     <div className='flex items-start gap-2 shrink-0 ml-2'>
       {qrVideos.map(video => (
         <div key={video.category} className='flex flex-col items-center w-10'>
-          <img src={video.dataUri} alt={`QR code for ${video.title} training video`} className='w-10 h-10' />
+          <img
+            src={video.dataUri}
+            alt={`QR code for ${video.title} training video`}
+            className='w-10 h-10'
+          />
           <span className="font-['Montserrat'] text-[6px] text-gray-600 text-center mt-0.5">
             {video.title}
           </span>
