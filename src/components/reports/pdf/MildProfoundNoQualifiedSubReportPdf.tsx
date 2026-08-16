@@ -219,8 +219,8 @@ const MildProfoundNoQualifiedSubReportPdf = ({
         </View>
 
         <Text style={styles.paragraph}>
-          Remember, every child is unique in their development. The above chart serves as a
-          general guide.
+          Remember, every child is unique in their development. The above chart serves as a general
+          guide.
         </Text>
 
         <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' offset={1} />
