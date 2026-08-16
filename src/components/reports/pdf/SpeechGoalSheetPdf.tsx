@@ -319,7 +319,9 @@ const QrVideoColumn = ({ qrVideos }: { qrVideos: QrVideo[] }) => {
   return (
     <View style={styles.qrColumn} wrap={false}>
       {qrVideos.map((video, i) => (
-        <View key={video.category} style={i > 0 ? [styles.qrItem, styles.qrItemSpacer] : styles.qrItem}>
+        <View
+          key={video.category}
+          style={i > 0 ? [styles.qrItem, styles.qrItemSpacer] : styles.qrItem}>
           <Image style={styles.qrImage} src={video.dataUri} />
           <Text style={styles.qrCaption}>{video.title}</Text>
         </View>
