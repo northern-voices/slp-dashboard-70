@@ -14,10 +14,7 @@ interface AppSidebarProps {
   className?: string
 }
 
-const AppSidebar = ({
-  userName = 'Dr. Sarah Johnson',
-  className,
-}: AppSidebarProps) => {
+const AppSidebar = ({ userName = 'Dr. Sarah Johnson', className }: AppSidebarProps) => {
   const { userProfile, currentSchool, isLoading } = useOrganization()
   const location = useLocation()
   const [resolvedRole, setResolvedRole] = useState<string | null>(null)
