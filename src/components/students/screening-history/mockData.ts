@@ -1,5 +1,4 @@
-
-import { Screening } from '@/types/database';
+import { Screening } from '@/types/database'
 
 export const mockScreenings: Screening[] = [
   {
@@ -58,4 +57,4 @@ export const mockScreenings: Screening[] = [
     created_at: '2023-03-22T10:00:00Z',
     updated_at: '2023-03-22T10:00:00Z',
   },
-];
+]

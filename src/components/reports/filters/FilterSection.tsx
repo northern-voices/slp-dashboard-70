@@ -1,20 +1,19 @@
-
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { LucideIcon } from 'lucide-react';
-import Multiselect from '@/components/ui/multiselect';
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { LucideIcon } from 'lucide-react'
+import Multiselect from '@/components/ui/multiselect'
 
 interface FilterSectionProps {
-  title: string;
-  icon: LucideIcon;
-  selectedCount: number;
-  options: string[];
-  selected: string[];
-  onChange: (selected: string[]) => void;
-  placeholder: string;
-  searchPlaceholder: string;
-  emptyMessage: string;
+  title: string
+  icon: LucideIcon
+  selectedCount: number
+  options: string[]
+  selected: string[]
+  onChange: (selected: string[]) => void
+  placeholder: string
+  searchPlaceholder: string
+  emptyMessage: string
 }
 
 const FilterSection = ({
@@ -26,18 +25,20 @@ const FilterSection = ({
   onChange,
   placeholder,
   searchPlaceholder,
-  emptyMessage
+  emptyMessage,
 }: FilterSectionProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base flex items-center space-x-2">
-          <Icon className="w-4 h-4" />
-          <span>{title} ({selectedCount} selected)</span>
+        <CardTitle className='text-base flex items-center space-x-2'>
+          <Icon className='w-4 h-4' />
+          <span>
+            {title} ({selectedCount} selected)
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className='space-y-3'>
           <Label>Select {title}</Label>
           <Multiselect
             options={options}
@@ -50,7 +51,7 @@ const FilterSection = ({
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default FilterSection;
+export default FilterSection

@@ -257,10 +257,10 @@ const MildProfoundQualifiedSubReportView = ({
 
           <p className='text-gray-700 leading-relaxed mb-3'>
             <span className='font-bold'>PROGRAM | </span>
-            The speech program is designed to provide opportunities for your child to practice
-            their speech sounds to help them strengthen their communication skills. Improvements in
-            speech may also support growth in literacy and academic learning, while also
-            encouraging confidence and positive social interactions.
+            The speech program is designed to provide opportunities for your child to practice their
+            speech sounds to help them strengthen their communication skills. Improvements in speech
+            may also support growth in literacy and academic learning, while also encouraging
+            confidence and positive social interactions.
           </p>
 
           <p className='text-gray-700 leading-relaxed mb-3'>

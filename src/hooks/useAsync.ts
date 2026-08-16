@@ -1,15 +1,14 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react'
 
 export interface UseAsyncState<T> {
-  data: T | null;
-  loading: boolean;
-  error: Error | null;
+  data: T | null
+  loading: boolean
+  error: Error | null
 }
 
 export interface UseAsyncReturn<T> extends UseAsyncState<T> {
-  execute: (...args: any[]) => Promise<T | null>;
-  reset: () => void;
+  execute: (...args: any[]) => Promise<T | null>
+  reset: () => void
 }
 
 /**
@@ -23,36 +22,36 @@ export function useAsync<T>(
     data: null,
     loading: false,
     error: null,
-  });
+  })
 
   const execute = useCallback(
     async (...args: any[]): Promise<T | null> => {
-      if (!asyncFunction) return null;
+      if (!asyncFunction) return null
 
-      setState(prev => ({ ...prev, loading: true, error: null }));
+      setState(prev => ({ ...prev, loading: true, error: null }))
 
       try {
-        const result = await asyncFunction(...args);
-        setState({ data: result, loading: false, error: null });
-        return result;
+        const result = await asyncFunction(...args)
+        setState({ data: result, loading: false, error: null })
+        return result
       } catch (error) {
-        const errorObj = error instanceof Error ? error : new Error(String(error));
-        setState({ data: null, loading: false, error: errorObj });
-        return null;
+        const errorObj = error instanceof Error ? error : new Error(String(error))
+        setState({ data: null, loading: false, error: errorObj })
+        return null
       }
     },
     [asyncFunction]
-  );
+  )
 
   const reset = useCallback(() => {
-    setState({ data: null, loading: false, error: null });
-  }, []);
+    setState({ data: null, loading: false, error: null })
+  }, [])
 
   useEffect(() => {
     if (immediate && asyncFunction) {
-      execute();
+      execute()
     }
-  }, [execute, immediate, asyncFunction]);
+  }, [execute, immediate, asyncFunction])
 
-  return { ...state, execute, reset };
+  return { ...state, execute, reset }
 }

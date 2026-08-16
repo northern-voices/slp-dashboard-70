@@ -1,11 +1,4 @@
-
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
   public: {
@@ -17,7 +10,7 @@ export type Database = {
           last_name: string
           date_of_birth: string
           grade: string | null
-          gender: "male" | "female" | "other" | "prefer_not_to_say" | null
+          gender: 'male' | 'female' | 'other' | 'prefer_not_to_say' | null
           student_id: string
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
@@ -32,7 +25,7 @@ export type Database = {
           last_name: string
           date_of_birth: string
           grade?: string | null
-          gender?: "male" | "female" | "other" | "prefer_not_to_say" | null
+          gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say' | null
           student_id: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -47,7 +40,7 @@ export type Database = {
           last_name?: string
           date_of_birth?: string
           grade?: string | null
-          gender?: "male" | "female" | "other" | "prefer_not_to_say" | null
+          gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say' | null
           student_id?: string
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -61,8 +54,8 @@ export type Database = {
         Row: {
           id: string
           student_id: string
-          type: "speech" | "hearing" | "progress"
-          status: "scheduled" | "in_progress" | "completed" | "cancelled"
+          type: 'speech' | 'hearing' | 'progress'
+          status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
           notes: string | null
           recommendations: string | null
           follow_up_required: boolean
@@ -73,8 +66,8 @@ export type Database = {
         Insert: {
           id?: string
           student_id: string
-          type: "speech" | "hearing" | "progress"
-          status?: "scheduled" | "in_progress" | "completed" | "cancelled"
+          type: 'speech' | 'hearing' | 'progress'
+          status?: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
           notes?: string | null
           recommendations?: string | null
           follow_up_required?: boolean
@@ -85,8 +78,8 @@ export type Database = {
         Update: {
           id?: string
           student_id?: string
-          type?: "speech" | "hearing" | "progress"
-          status?: "scheduled" | "in_progress" | "completed" | "cancelled"
+          type?: 'speech' | 'hearing' | 'progress'
+          status?: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
           notes?: string | null
           recommendations?: string | null
           follow_up_required?: boolean
@@ -104,7 +97,7 @@ export type Database = {
           recommendations: string | null
           follow_up_required: boolean
           follow_up_date: string | null
-          status: "draft" | "final" | "reviewed"
+          status: 'draft' | 'final' | 'reviewed'
           generated_at: string
         }
         Insert: {
@@ -115,7 +108,7 @@ export type Database = {
           recommendations?: string | null
           follow_up_required?: boolean
           follow_up_date?: string | null
-          status?: "draft" | "final" | "reviewed"
+          status?: 'draft' | 'final' | 'reviewed'
           generated_at?: string
         }
         Update: {
@@ -126,7 +119,7 @@ export type Database = {
           recommendations?: string | null
           follow_up_required?: boolean
           follow_up_date?: string | null
-          status?: "draft" | "final" | "reviewed"
+          status?: 'draft' | 'final' | 'reviewed'
           generated_at?: string
         }
       }

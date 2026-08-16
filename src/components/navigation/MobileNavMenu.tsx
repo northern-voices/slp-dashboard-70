@@ -44,7 +44,7 @@ const MobileNavMenu = ({
   const navigationGroups = getNavigationGroups(
     location,
     userRole,
-    userProfile as unknown as Record<string, unknown>,
+    userProfile as unknown as Record<string, unknown>
   )
   const initials = userName
     .split(' ')
@@ -113,12 +113,12 @@ const MobileNavMenu = ({
                           'flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px]',
                           item.isActive
                             ? 'bg-blue-50 text-blue-700 shadow-sm'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                         )}>
                         <item.icon
                           className={cn(
                             'w-5 h-5',
-                            item.isActive ? 'text-blue-600' : 'text-gray-400',
+                            item.isActive ? 'text-blue-600' : 'text-gray-400'
                           )}
                         />
                         <span>{item.title}</span>

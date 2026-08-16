@@ -33,7 +33,9 @@ const CreateMonthlyMeetingModal = ({ isOpen, onClose }: CreateMonthlyMeetingModa
         </DialogHeader>
 
         <div className='mt-6'>
-          <Card className='cursor-pointer hover:shadow-md transition-shadow' onClick={handleCreateMeeting}>
+          <Card
+            className='cursor-pointer hover:shadow-md transition-shadow'
+            onClick={handleCreateMeeting}>
             <CardHeader className='text-center'>
               <div className='mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center'>
                 <Calendar className='w-6 h-6 text-blue-600' />
@@ -42,9 +44,12 @@ const CreateMonthlyMeetingModal = ({ isOpen, onClose }: CreateMonthlyMeetingModa
             </CardHeader>
             <CardContent>
               <p className='text-center text-gray-600 mb-4'>
-                Schedule a new monthly meeting to track student progress, discuss goals, and plan interventions.
+                Schedule a new monthly meeting to track student progress, discuss goals, and plan
+                interventions.
               </p>
-              <Button className='w-full bg-blue-600 hover:bg-blue-700' onClick={handleCreateMeeting}>
+              <Button
+                className='w-full bg-blue-600 hover:bg-blue-700'
+                onClick={handleCreateMeeting}>
                 <Calendar className='w-4 h-4 mr-2' />
                 Create Monthly Meeting
               </Button>

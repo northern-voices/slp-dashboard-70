@@ -269,8 +269,8 @@ const MildProfoundQualifiedSubReportPdf = ({
         </View>
 
         <Text style={styles.paragraph}>
-          Remember, every child is unique in their development. The above chart serves as a
-          general guide.
+          Remember, every child is unique in their development. The above chart serves as a general
+          guide.
         </Text>
 
         <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' offset={1} />
@@ -290,10 +290,10 @@ const MildProfoundQualifiedSubReportPdf = ({
         </Text>
 
         <Text style={styles.paragraph}>
-          Many people know that speech sound disorders can affect a child's ability to be
-          understood by others, but what they might not realize are the long-term consequences that
-          can occur when they are left untreated. Communication difficulties can profoundly impact
-          social behaviour, self-esteem, relationships, literacy, learning, and overall academic
+          Many people know that speech sound disorders can affect a child's ability to be understood
+          by others, but what they might not realize are the long-term consequences that can occur
+          when they are left untreated. Communication difficulties can profoundly impact social
+          behaviour, self-esteem, relationships, literacy, learning, and overall academic
           performance. In fact, the ability to communicate effectively is the very foundation of a
           child's overall development and academic achievement, and early intervention is crucial!
           The earlier support can be provided, the better the outcome.
@@ -329,16 +329,16 @@ const MildProfoundQualifiedSubReportPdf = ({
         <Text style={styles.label}>DEAR PARENT(S) / GUARDIANS(S):</Text>
         <Text style={styles.paragraph}>
           Your child is eligible to receive speech services through the{' '}
-          <Text style={styles.bold}>Northern Voices Speech Services</Text> School Program at
-          school. If you agree to your child receiving these services, please sign below.
+          <Text style={styles.bold}>Northern Voices Speech Services</Text> School Program at school.
+          If you agree to your child receiving these services, please sign below.
         </Text>
 
         <Text style={styles.paragraph}>
           <Text style={styles.bold}>SPEECH SCREEN RESULTS | </Text>
-          The results of a recent speech screen administered at the school indicated that your
-          child demonstrated some difficulties with certain speech sounds and may benefit from
-          targeted practice with a trained adult. Please see the attached report for details
-          outlining specific speech errors identified.
+          The results of a recent speech screen administered at the school indicated that your child
+          demonstrated some difficulties with certain speech sounds and may benefit from targeted
+          practice with a trained adult. Please see the attached report for details outlining
+          specific speech errors identified.
         </Text>
 
         <Text style={styles.paragraph}>
@@ -352,15 +352,15 @@ const MildProfoundQualifiedSubReportPdf = ({
         <Text style={styles.paragraph}>
           Students involved in the Northern Voices Speech Program will participate in one-on-one
           speech practice sessions ran by a trained Educational Assistant (working under the
-          guidance of the contracted speech-language pathologist). Frequency of sessions will
-          depend on severity of speech difficulties. Your child's student plan would be developed
-          by the Speech Therapist, and tailored to your child's speech screen results.
+          guidance of the contracted speech-language pathologist). Frequency of sessions will depend
+          on severity of speech difficulties. Your child's student plan would be developed by the
+          Speech Therapist, and tailored to your child's speech screen results.
         </Text>
 
         <Text style={styles.paragraph}>
           You may request a copy of your child's speech practice plan or progress updates at any
-          time. Any personal information collected is kept confidential and will only be shared
-          with those directly involved in your child's educational program, in line with privacy
+          time. Any personal information collected is kept confidential and will only be shared with
+          those directly involved in your child's educational program, in line with privacy
           legislation and professional standards of practice. Participation in the program is
           voluntary, and you may withdraw your consent at any time by notifying the school.
         </Text>

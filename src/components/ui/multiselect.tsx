@@ -1,9 +1,8 @@
-
-import React, { useState } from 'react';
-import { Check, ChevronsUpDown, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import React, { useState } from 'react'
+import { Check, ChevronsUpDown, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Command,
   CommandEmpty,
@@ -11,101 +10,89 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+} from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 interface MultiselectProps {
-  options: string[];
-  selected: string[];
-  onChange: (selected: string[]) => void;
-  placeholder?: string;
-  className?: string;
-  maxHeight?: string;
-  searchPlaceholder?: string;
-  emptyMessage?: string;
-  showSelectAll?: boolean;
-  showClearAll?: boolean;
+  options: string[]
+  selected: string[]
+  onChange: (selected: string[]) => void
+  placeholder?: string
+  className?: string
+  maxHeight?: string
+  searchPlaceholder?: string
+  emptyMessage?: string
+  showSelectAll?: boolean
+  showClearAll?: boolean
 }
 
-const Multiselect = ({ 
-  options, 
-  selected, 
-  onChange, 
-  placeholder = "Select items...",
+const Multiselect = ({
+  options,
+  selected,
+  onChange,
+  placeholder = 'Select items...',
   className,
-  maxHeight = "max-h-[300px]",
-  searchPlaceholder = "Search...",
-  emptyMessage = "No items found.",
+  maxHeight = 'max-h-[300px]',
+  searchPlaceholder = 'Search...',
+  emptyMessage = 'No items found.',
   showSelectAll = true,
-  showClearAll = true
+  showClearAll = true,
 }: MultiselectProps) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
 
   const handleSelect = (value: string) => {
     const newSelected = selected.includes(value)
       ? selected.filter(item => item !== value)
-      : [...selected, value];
-    onChange(newSelected);
-  };
+      : [...selected, value]
+    onChange(newSelected)
+  }
 
   const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onChange([]);
-  };
+    e.stopPropagation()
+    onChange([])
+  }
 
   const handleSelectAll = () => {
-    onChange(options);
-  };
+    onChange(options)
+  }
 
   const handleClearAll = () => {
-    onChange([]);
-  };
+    onChange([])
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          role="combobox"
+          variant='outline'
+          role='combobox'
           aria-expanded={open}
-          className={cn(
-            "w-full justify-between text-left font-normal min-h-11 h-auto",
-            className
-          )}
-        >
-          <div className="flex flex-wrap gap-1 flex-1 min-w-0">
+          className={cn('w-full justify-between text-left font-normal min-h-11 h-auto', className)}>
+          <div className='flex flex-wrap gap-1 flex-1 min-w-0'>
             {selected.length === 0 ? (
-              <span className="text-gray-500">{placeholder}</span>
+              <span className='text-gray-500'>{placeholder}</span>
             ) : (
               <>
-                {selected.map((item) => (
-                  <Badge
-                    key={item}
-                    variant="secondary"
-                    className="text-xs px-2 py-1"
-                  >
+                {selected.map(item => (
+                  <Badge key={item} variant='secondary' className='text-xs px-2 py-1'>
                     {item}
                   </Badge>
                 ))}
               </>
             )}
           </div>
-          <div className="flex items-center gap-2 ml-2">
+          <div className='flex items-center gap-2 ml-2'>
             {selected.length > 0 && (
               <X
-                className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100 cursor-pointer"
+                className='h-4 w-4 shrink-0 opacity-50 hover:opacity-100 cursor-pointer'
                 onClick={handleClear}
               />
             )}
-            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+            <ChevronsUpDown className='h-4 w-4 shrink-0 opacity-50' />
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent className='w-full p-0' align='start'>
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList className={maxHeight}>
@@ -114,34 +101,24 @@ const Multiselect = ({
               {(showSelectAll || showClearAll) && (
                 <>
                   {showSelectAll && (
-                    <CommandItem
-                      onSelect={handleSelectAll}
-                      className="font-medium text-blue-600"
-                    >
+                    <CommandItem onSelect={handleSelectAll} className='font-medium text-blue-600'>
                       Select All ({options.length})
                     </CommandItem>
                   )}
                   {showClearAll && selected.length > 0 && (
-                    <CommandItem
-                      onSelect={handleClearAll}
-                      className="font-medium text-red-600"
-                    >
+                    <CommandItem onSelect={handleClearAll} className='font-medium text-red-600'>
                       Clear All
                     </CommandItem>
                   )}
-                  <div className="border-b border-gray-200 my-1" />
+                  <div className='border-b border-gray-200 my-1' />
                 </>
               )}
-              {options.map((option) => (
-                <CommandItem
-                  key={option}
-                  value={option}
-                  onSelect={() => handleSelect(option)}
-                >
+              {options.map(option => (
+                <CommandItem key={option} value={option} onSelect={() => handleSelect(option)}>
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
-                      selected.includes(option) ? "opacity-100" : "opacity-0"
+                      'mr-2 h-4 w-4',
+                      selected.includes(option) ? 'opacity-100' : 'opacity-0'
                     )}
                   />
                   {option}
@@ -152,7 +129,7 @@ const Multiselect = ({
         </Command>
       </PopoverContent>
     </Popover>
-  );
-};
+  )
+}
 
-export default Multiselect;
+export default Multiselect

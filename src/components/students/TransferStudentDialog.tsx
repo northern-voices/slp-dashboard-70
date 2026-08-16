@@ -127,7 +127,7 @@ const TransferStudentDialog = ({
         const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
           selectedSchoolId,
           selectedGradeLevel,
-          selectedAcademicYear,
+          selectedAcademicYear
         )
 
         if (!gradeAvailability.exists) {
@@ -175,7 +175,7 @@ const TransferStudentDialog = ({
           onSettled: () => {
             setIsTransferring(false)
           },
-        },
+        }
       )
     } catch (error) {
       console.error('Grade creation error:', error)

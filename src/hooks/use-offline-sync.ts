@@ -44,7 +44,7 @@ export function useOfflineSync() {
             const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
               school_id,
               grade_level,
-              academic_year,
+              academic_year
             )
 
             if (gradeAvailability.exists && gradeAvailability.grade?.id) {

@@ -146,9 +146,9 @@ const NonCompliantSpeechReportPdf = ({ data }: { data: NonCompliantReportData })
         <Text style={styles.paragraph}>
           A speech and language pathologist (SLP) recently visited your child's school to conduct
           class-wide speech screens. Unfortunately, your child did not feel comfortable completing
-          the screening, and so there are no results to share at this time. If you would like us
-          to try again, or if you have any concerns about your child's speech development, please
-          feel free to connect with the school to see if another screening attempt is possible.
+          the screening, and so there are no results to share at this time. If you would like us to
+          try again, or if you have any concerns about your child's speech development, please feel
+          free to connect with the school to see if another screening attempt is possible.
         </Text>
 
         <Text style={styles.label}>SPEECH SCREEN REPORT:</Text>
