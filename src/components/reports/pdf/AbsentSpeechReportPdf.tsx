@@ -163,11 +163,10 @@ const AbsentSpeechReportPdf = ({ data }: { data: AbsentReportData }) => {
 
         <Text style={styles.label}>NOTE FOR ABSENT STUDENTS:</Text>
         <Text style={styles.paragraph}>
-          Your child's speech was not assessed because they were absent on the day of the
-          screening. As a result, we do not have specific results to report. If you have concerns
-          or questions about your child's communication skills, we recommend addressing this with
-          the school (who can notify the speech and language pathologist), and/or speaking with
-          your family doctor.
+          Your child's speech was not assessed because they were absent on the day of the screening.
+          As a result, we do not have specific results to report. If you have concerns or questions
+          about your child's communication skills, we recommend addressing this with the school (who
+          can notify the speech and language pathologist), and/or speaking with your family doctor.
         </Text>
 
         <Text style={styles.label}>DEVELOPMENTAL SPEECH SOUND CHART:</Text>
