@@ -30,8 +30,8 @@ const AbsentSpeechReportView = ({ data }: { data: AbsentReportData }) => {
           <p className='font-semibold text-gray-900 mb-1'>DEAR PARENT(S)/GUARDIAN(S):</p>
           <p className='text-gray-700 leading-relaxed mb-2'>
             A speech and language pathologist (SLP) recently conducted speech screens at your
-            child's school. This report outlines your child's results and provides guidance on
-            steps you can take to further support your child's speech development.
+            child's school. This report outlines your child's results and provides guidance on steps
+            you can take to further support your child's speech development.
           </p>
 
           <p className='font-bold text-gray-900 mb-1.5'>SPEECH SCREEN REPORT:</p>
@@ -48,18 +48,17 @@ const AbsentSpeechReportView = ({ data }: { data: AbsentReportData }) => {
           <p className='font-bold text-gray-900 mb-1'>NOTE FOR ABSENT STUDENTS:</p>
           <p className='text-gray-700 leading-relaxed mb-4'>
             Your child's speech was not assessed because they were absent on the day of the
-            screening. As a result, we do not have specific results to report. If you have
-            concerns or questions about your child's communication skills, we recommend
-            addressing this with the school (who can notify the speech and language
-            pathologist), and/or speaking with your family doctor.
+            screening. As a result, we do not have specific results to report. If you have concerns
+            or questions about your child's communication skills, we recommend addressing this with
+            the school (who can notify the speech and language pathologist), and/or speaking with
+            your family doctor.
           </p>
 
           <p className='font-bold text-gray-900 mb-3'>DEVELOPMENTAL SPEECH SOUND CHART:</p>
           <p className='text-gray-700 leading-relaxed mb-4'>
-            This chart provides a general guideline for when children typically develop and
-            master specific speech sounds. It's important to start practicing these sounds
-            before the age of expected mastery to proactively address any potential speech
-            difficulties.
+            This chart provides a general guideline for when children typically develop and master
+            specific speech sounds. It's important to start practicing these sounds before the age
+            of expected mastery to proactively address any potential speech difficulties.
           </p>
 
           <table className='w-full border border-gray-300 text-sm mb-4 break-inside-avoid'>
@@ -88,9 +87,8 @@ const AbsentSpeechReportView = ({ data }: { data: AbsentReportData }) => {
           </table>
 
           <p className='text-gray-700 leading-relaxed'>
-            <span className='font-bold'>Please note:</span> Children are unique and develop
-            speech at their own pace. This chart is meant to serve as a guide, not a strict
-            timeline.
+            <span className='font-bold'>Please note:</span> Children are unique and develop speech
+            at their own pace. This chart is meant to serve as a guide, not a strict timeline.
           </p>
         </div>
 
