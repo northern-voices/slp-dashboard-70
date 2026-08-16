@@ -29,12 +29,11 @@ const NonCompliantSpeechReportView = ({ data }: { data: NonCompliantReportData }
 
           <p className='font-semibold text-gray-900 mb-1'>DEAR PARENT(S)/GUARDIAN(S):</p>
           <p className='text-gray-700 leading-relaxed mb-4'>
-            A speech and language pathologist (SLP) recently visited your child's school to
-            conduct class-wide speech screens. Unfortunately, your child did not feel comfortable
-            completing the screening, and so there are no results to share at this time. If you
-            would like us to try again, or if you have any concerns about your child's speech
-            development, please feel free to connect with the school to see if another screening
-            attempt is possible.
+            A speech and language pathologist (SLP) recently visited your child's school to conduct
+            class-wide speech screens. Unfortunately, your child did not feel comfortable completing
+            the screening, and so there are no results to share at this time. If you would like us
+            to try again, or if you have any concerns about your child's speech development, please
+            feel free to connect with the school to see if another screening attempt is possible.
           </p>
 
           <p className='font-bold text-gray-900 mb-1.5'>SPEECH SCREEN REPORT:</p>
@@ -46,10 +45,9 @@ const NonCompliantSpeechReportView = ({ data }: { data: NonCompliantReportData }
 
           <p className='font-bold text-gray-900 mb-3'>DEVELOPMENTAL SPEECH SOUND CHART:</p>
           <p className='text-gray-700 leading-relaxed mb-4'>
-            This chart provides a general guideline for when children typically develop and
-            master specific speech sounds. It's important to start practicing these sounds
-            before the age of expected mastery to proactively address any potential speech
-            difficulties.
+            This chart provides a general guideline for when children typically develop and master
+            specific speech sounds. It's important to start practicing these sounds before the age
+            of expected mastery to proactively address any potential speech difficulties.
           </p>
 
           <table className='w-full border border-gray-300 text-sm mb-4 break-inside-avoid'>
@@ -78,9 +76,8 @@ const NonCompliantSpeechReportView = ({ data }: { data: NonCompliantReportData }
           </table>
 
           <p className='text-gray-700 leading-relaxed'>
-            <span className='font-bold'>Please note:</span> Children are unique and develop
-            speech at their own pace. This chart is meant to serve as a guide, not a strict
-            timeline.
+            <span className='font-bold'>Please note:</span> Children are unique and develop speech
+            at their own pace. This chart is meant to serve as a guide, not a strict timeline.
           </p>
         </div>
 
