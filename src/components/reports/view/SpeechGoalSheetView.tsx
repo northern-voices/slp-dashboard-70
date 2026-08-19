@@ -153,11 +153,11 @@ const GoalWorksheetSection = ({
     <p className='font-bold text-gray-900 mb-2'>STUDENT: {studentName}</p>
 
     <div className='flex border border-[#b7b7b7] bg-[#eff3f6] mb-3 p-2.5'>
-      <div className='w-[18%] pr-1.5 border-r border-gray-300'>
+      <div className='w-[13%] pr-1 border-r border-gray-300'>
         <p className='font-bold text-gray-900 text-[9px] mb-0.5'>SOUND:</p>
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
       </div>
-      <div className='w-[82%] pl-1.5 flex'>
+      <div className='w-[87%] pl-1.5 flex'>
         <div className='flex-1'>
           <p className='font-bold text-gray-900 text-[9px] mb-1'>STRATEGIES:</p>
           <div className='flex'>
