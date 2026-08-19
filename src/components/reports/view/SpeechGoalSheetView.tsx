@@ -291,11 +291,11 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
           </div>
 
           {context.primary_table_errors?.length > 0 && (
-            <ErrorTable title='SOUND ERRORS' errors={context.primary_table_errors} />
+            <ErrorTable title='SOUND ERRORS (CYCLE 1)' errors={context.primary_table_errors} />
           )}
 
           {context.secondary_table_errors?.length > 0 && (
-            <ErrorTable title='SECONDARY SOUND ERRORS' errors={context.secondary_table_errors} />
+            <ErrorTable title='SOUND ERRORS (CYCLE 2)' errors={context.secondary_table_errors} />
           )}
 
           {context.vocabulary_support && (
