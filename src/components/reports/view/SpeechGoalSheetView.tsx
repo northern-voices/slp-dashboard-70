@@ -100,9 +100,9 @@ const QrVideoColumn = ({ qrVideos }: { qrVideos: QrVideo[] }) => {
 }
 
 const HOW_DID_THEY_DO_ITEMS = [
-  'Could not say the sound at all',
+  'Cannot say the sound at all',
   'Can say the sound (but not in words)',
-  'Can say the sound in most words (with adult cues)',
+  'Can say the sound in most words (with adult help)',
   'Can say the sound in most words (no adult help)',
 ]
 
