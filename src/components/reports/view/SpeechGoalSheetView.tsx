@@ -44,7 +44,7 @@ const getStrategyItems = (error: GoalError): string[] => {
   return error.strategies?.[column] ?? []
 }
 
-const STRATEGY_COLUMN_MAX = 4
+const STRATEGY_COLUMN_MAX = 3
 
 // Wraps a strategy list into side-by-side sub-columns of at most
 // STRATEGY_COLUMN_MAX items each, instead of letting one long list run tall.
@@ -153,16 +153,16 @@ const GoalWorksheetSection = ({
     <p className='font-bold text-gray-900 mb-2'>STUDENT: {studentName}</p>
 
     <div className='flex border border-[#b7b7b7] bg-[#eff3f6] mb-3 p-2.5'>
-      <div className='w-[25%] pr-2.5 border-r border-gray-300'>
+      <div className='w-[18%] pr-1.5 border-r border-gray-300'>
         <p className='font-bold text-gray-900 text-[9px] mb-0.5'>SOUND:</p>
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
       </div>
-      <div className='w-[75%] pl-2.5 flex'>
+      <div className='w-[82%] pl-1.5 flex'>
         <div className='flex-1'>
           <p className='font-bold text-gray-900 text-[9px] mb-1'>STRATEGIES:</p>
           <div className='flex'>
             {chunkStrategyItems(getStrategyItems(error)).map((chunk, i) => (
-              <div key={i} className='flex-1 pr-1.5'>
+              <div key={i} className='flex-1 pr-1'>
                 {chunk.map(item => (
                   <Checkbox key={item} label={item} />
                 ))}

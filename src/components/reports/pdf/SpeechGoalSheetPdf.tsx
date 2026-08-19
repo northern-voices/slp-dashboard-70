@@ -56,7 +56,7 @@ const getStrategyItems = (error: GoalError): string[] => {
   return error.strategies?.[column] ?? []
 }
 
-const STRATEGY_COLUMN_MAX = 4
+const STRATEGY_COLUMN_MAX = 3
 
 // Wraps a strategy list into side-by-side sub-columns of at most
 // STRATEGY_COLUMN_MAX items each, instead of letting one long list run tall.
@@ -159,15 +159,15 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   soundBox: {
-    width: '25%',
-    paddingRight: 10,
+    width: '18%',
+    paddingRight: 6,
     borderRightWidth: 0.75,
     borderRightColor: '#d1d5db',
   },
-  strategyBox: { width: '75%', paddingLeft: 10, flexDirection: 'row' },
-  strategyChecklistCol: { flex: 1, paddingRight: 8 },
+  strategyBox: { width: '82%', paddingLeft: 6, flexDirection: 'row' },
+  strategyChecklistCol: { flex: 1, paddingRight: 4 },
   strategyChecklistColsRow: { flexDirection: 'row' },
-  strategyChecklistSubCol: { flex: 1, paddingRight: 6 },
+  strategyChecklistSubCol: { flex: 1, paddingRight: 3 },
   soundLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
