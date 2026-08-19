@@ -204,7 +204,7 @@ const GoalWorksheetSection = ({
                 </>
               ) : (
                 <>
-                  Student will say the <span className='font-bold'>{error.sound}</span> at the{' '}
+                  Student will say <span className='font-bold'>{error.sound}</span> at the{' '}
                   <span className='font-bold'>{error.stimulability_option}</span> level with 90%
                   accuracy.
                 </>

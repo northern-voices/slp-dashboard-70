@@ -419,7 +419,7 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
                   </>
                 ) : (
                   <>
-                    Student will say the <Text style={styles.bold}>{error.sound}</Text> at the{' '}
+                    Student will say <Text style={styles.bold}>{error.sound}</Text> at the{' '}
                     <Text style={styles.bold}>{error.stimulability_option}</Text> level with 90%
                     accuracy.
                   </>
