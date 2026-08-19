@@ -82,7 +82,7 @@ const QrVideoColumn = ({ qrVideos }: { qrVideos: QrVideo[] }) => {
   if (!qrVideos || qrVideos.length === 0) return null
 
   return (
-    <div className='flex items-start gap-2 shrink-0 ml-2'>
+    <div className='flex items-start gap-2 shrink-0 ml-1'>
       {qrVideos.map(video => (
         <div key={video.category} className='flex flex-col items-center w-10'>
           <img
@@ -162,7 +162,7 @@ const GoalWorksheetSection = ({
           <p className='font-bold text-gray-900 text-[9px] mb-1'>STRATEGIES:</p>
           <div className='flex'>
             {chunkStrategyItems(getStrategyItems(error)).map((chunk, i) => (
-              <div key={i} className='flex-1 pr-1'>
+              <div key={i} className='pr-2.5'>
                 {chunk.map(item => (
                   <Checkbox key={item} label={item} />
                 ))}
