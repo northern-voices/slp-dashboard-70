@@ -159,7 +159,7 @@ const GoalWorksheetSection = ({
       </div>
       <div className='w-[75%] pl-2.5 flex'>
         <div className='flex-1'>
-          <p className='font-bold text-gray-900 text-[9px] mb-1'>STRATEGIES TO USE:</p>
+          <p className='font-bold text-gray-900 text-[9px] mb-1'>STRATEGIES:</p>
           <div className='flex'>
             {chunkStrategyItems(getStrategyItems(error)).map((chunk, i) => (
               <div key={i} className='flex-1 pr-1.5'>

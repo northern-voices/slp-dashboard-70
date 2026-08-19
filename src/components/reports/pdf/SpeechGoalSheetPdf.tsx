@@ -371,7 +371,7 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
         </View>
         <View style={styles.strategyBox}>
           <View style={styles.strategyChecklistCol}>
-            <Text style={styles.strategyLabel}>STRATEGIES TO USE:</Text>
+            <Text style={styles.strategyLabel}>STRATEGIES:</Text>
             <View style={styles.strategyChecklistColsRow}>
               {chunkStrategyItems(getStrategyItems(error)).map((chunk, i) => (
                 <View key={i} style={styles.strategyChecklistSubCol}>
