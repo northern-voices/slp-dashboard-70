@@ -411,9 +411,19 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
             <View style={styles.sessionRight}>
               <Text style={styles.sessionGoal}>
                 <Text style={styles.italicBold}>Goal: </Text>
-                Student will say the <Text style={styles.bold}>{error.sound}</Text> at the{' '}
-                <Text style={styles.bold}>{error.stimulability_option}</Text> level with 90%
-                accuracy.
+
+                {error.stimulability_option === 'non-stimulable' ? (
+                  <>
+                    Student will discriminate correct <Text style={styles.bold}>{error.sound}</Text>{' '}
+                    with 90% accuracy when listening to adult say contrast pairs.
+                  </>
+                ) : (
+                  <>
+                    Student will say the <Text style={styles.bold}>{error.sound}</Text> at the{' '}
+                    <Text style={styles.bold}>{error.stimulability_option}</Text> level with 90%
+                    accuracy.
+                  </>
+                )}
               </Text>
               <Text style={styles.dateLine}>Date: ______________________</Text>
 

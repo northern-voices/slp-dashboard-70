@@ -197,9 +197,18 @@ const GoalWorksheetSection = ({
           <div className='w-[62%] pl-2.5 text-[9px]'>
             <p className='mb-2 leading-snug'>
               <span className="font-['Montserrat'] italic font-bold">Goal: </span>
-              Student will say the <span className='font-bold'>{error.sound}</span> at the{' '}
-              <span className='font-bold'>{error.stimulability_option}</span> level with 90%
-              accuracy.
+              {error.stimulability_option === 'non-stimulable' ? (
+                <>
+                  Student will discriminate correct <span className='font-bold'>{error.sound}</span>{' '}
+                  with 90% accuracy when listening to adult say contrast pairs.
+                </>
+              ) : (
+                <>
+                  Student will say the <span className='font-bold'>{error.sound}</span> at the{' '}
+                  <span className='font-bold'>{error.stimulability_option}</span> level with 90%
+                  accuracy.
+                </>
+              )}
             </p>
             <p className='mb-3'>Date: ______________________</p>
 
