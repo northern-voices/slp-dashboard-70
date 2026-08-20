@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   qrColumn: { flexDirection: 'row', alignItems: 'flex-start' },
   qrItem: { alignItems: 'center' },
   qrItemSpacer: { marginLeft: 8 },
-  qrImage: { width: 40, height: 40 },
+  qrImage: { width: 50, height: 50 },
   qrCaption: {
     fontSize: 6,
     fontFamily: 'Montserrat',
