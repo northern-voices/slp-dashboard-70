@@ -44,7 +44,7 @@ const BulkReportView = ({ data }: { data: BulkReportData }) => {
     studentDocs.length === 0 ? 'summary' : 'student'
   )
   const [selectedGroup, setSelectedGroup] = useState(groupNames[0] ?? '')
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [selectedIndex, setSelectedIndex] = useState(-1)
 
   if (documents.length === 0) {
     return (
@@ -60,7 +60,7 @@ const BulkReportView = ({ data }: { data: BulkReportData }) => {
 
   const handleGroupChange = (group: string) => {
     setSelectedGroup(group)
-    setSelectedIndex(0)
+    setSelectedIndex(-1)
   }
 
   return (
