@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
 import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
+import { DotsVerticalIcon } from '@radix-ui/react-icons'
 
 Font.register({
   family: 'Montserrat',
@@ -164,8 +165,14 @@ const styles = StyleSheet.create({
     borderRightWidth: 0.75,
     borderRightColor: '#d1d5db',
   },
-  strategyBox: { width: '87%', paddingLeft: 6, flexDirection: 'row' },
-  strategyChecklistCol: { flexGrow: 0, flexShrink: 0, paddingRight: 16 },
+  strategyBox: { width: '87%', paddingLeft: 12, flexDirection: 'row' },
+  strategyChecklistCol: {
+    flexGrow: 0,
+    flexShrink: 0,
+    paddingRight: 16,
+    borderRightWidth: 0.75,
+    borderRightColor: '#d1d5db',
+  },
   strategyChecklistColsRow: { flexDirection: 'row' },
   strategyChecklistSubCol: { flexGrow: 0, flexShrink: 0, paddingRight: 10 },
   soundLabel: {
@@ -303,6 +310,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     color: '#374151',
   },
+  videosBox: { paddingLeft: 12 },
   footerNote: { fontFamily: 'Montserrat', fontStyle: 'italic', fontSize: 9, color: '#4b5563' },
 })
 
@@ -317,7 +325,7 @@ const QrVideoColumn = ({ qrVideos }: { qrVideos: QrVideo[] }) => {
   if (!qrVideos || qrVideos.length === 0) return null
 
   return (
-    <View wrap={false}>
+    <View style={styles.videosBox} wrap={false}>
       <Text style={styles.strategyLabel}>VIDEOS:</Text>
       <View style={styles.qrColumn}>
         {qrVideos.map((video, i) => (
