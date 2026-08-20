@@ -317,15 +317,18 @@ const QrVideoColumn = ({ qrVideos }: { qrVideos: QrVideo[] }) => {
   if (!qrVideos || qrVideos.length === 0) return null
 
   return (
-    <View style={styles.qrColumn} wrap={false}>
-      {qrVideos.map((video, i) => (
-        <View
-          key={video.category}
-          style={i > 0 ? [styles.qrItem, styles.qrItemSpacer] : styles.qrItem}>
-          <Image style={styles.qrImage} src={video.dataUri} />
-          <Text style={styles.qrCaption}>{video.title}</Text>
-        </View>
-      ))}
+    <View wrap={false}>
+      <Text style={styles.strategyLabel}>VIDEOS:</Text>
+      <View style={styles.qrColumn}>
+        {qrVideos.map((video, i) => (
+          <View
+            key={video.category}
+            style={i > 0 ? [styles.qrItem, styles.qrItemSpacer] : styles.qrItem}>
+            <Image style={styles.qrImage} src={video.dataUri} />
+            <Text style={styles.qrCaption}>{video.title}</Text>
+          </View>
+        ))}
+      </View>
     </View>
   )
 }

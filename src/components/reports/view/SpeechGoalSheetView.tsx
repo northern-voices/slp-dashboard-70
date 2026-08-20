@@ -82,19 +82,22 @@ const QrVideoColumn = ({ qrVideos }: { qrVideos: QrVideo[] }) => {
   if (!qrVideos || qrVideos.length === 0) return null
 
   return (
-    <div className='flex items-start gap-2 shrink-0 ml-1'>
-      {qrVideos.map(video => (
-        <div key={video.category} className='flex flex-col items-center w-[50px]'>
-          <img
-            src={video.dataUri}
-            alt={`QR code for ${video.title} training video`}
-            className='w-[50px] h-[50px]'
-          />
-          <span className="font-['Montserrat'] text-[6px] text-gray-600 text-center mt-0.5">
-            {video.title}
-          </span>
-        </div>
-      ))}
+    <div className='shrink-0 ml-1'>
+      <p className='font-bold text-gray-900 text-[9px] mb-1'>VIDEOS:</p>
+      <div className='flex items-start gap-2'>
+        {qrVideos.map(video => (
+          <div key={video.category} className='flex flex-col items-center w-[50px]'>
+            <img
+              src={video.dataUri}
+              alt={`QR code for ${video.title} training video`}
+              className='w-[50px] h-[50px]'
+            />
+            <span className="font-['Montserrat'] text-[6px] text-gray-600 text-center mt-0.5">
+              {video.title}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
