@@ -55,6 +55,7 @@ const BulkReportView = ({ data }: { data: BulkReportData }) => {
   }
 
   const studentsInGroup = groups.get(selectedGroup) ?? []
+  const showAllInGroup = view === 'student' && selectedIndex === -1
   const activeDoc = view === 'summary' ? summaryDocs[0] : studentsInGroup[selectedIndex]
 
   const handleGroupChange = (group: string) => {
@@ -100,6 +101,7 @@ const BulkReportView = ({ data }: { data: BulkReportData }) => {
                 value={selectedIndex}
                 onChange={e => setSelectedIndex(Number(e.target.value))}
                 className='border border-gray-300 rounded-md px-3 py-2 text-sm min-w-[200px]'>
+                <option value={-1}>All Students</option>
                 {studentsInGroup.map((doc, i) => (
                   <option key={i} value={i}>
                     {doc.context.student_name as string}
@@ -111,7 +113,15 @@ const BulkReportView = ({ data }: { data: BulkReportData }) => {
         )}
       </div>
 
-      {activeDoc && <BulkDocumentView data={activeDoc} />}
+      {showAllInGroup ? (
+        <div className='space-y-6'>
+          {studentsInGroup.map((doc, i) => (
+            <BulkDocumentView key={i} data={doc} />
+          ))}
+        </div>
+      ) : (
+        activeDoc && <BulkDocumentView data={activeDoc} />
+      )}
     </div>
   )
 }
