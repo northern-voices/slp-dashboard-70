@@ -161,7 +161,7 @@ const GoalWorksheetSection = ({
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
       </div>
       <div className='w-[87%] pl-1.5 flex'>
-        <div className='flex-1'>
+        <div className='pr-4'>
           <p className='font-bold text-gray-900 text-[9px] mb-1'>STRATEGIES:</p>
           <div className='flex'>
             {chunkStrategyItems(getStrategyItems(error)).map((chunk, i) => (

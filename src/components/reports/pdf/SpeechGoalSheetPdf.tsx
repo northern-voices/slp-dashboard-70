@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     borderRightColor: '#d1d5db',
   },
   strategyBox: { width: '87%', paddingLeft: 6, flexDirection: 'row' },
-  strategyChecklistCol: { flex: 1, paddingRight: 2 },
+  strategyChecklistCol: { flexGrow: 0, flexShrink: 0, paddingRight: 16 },
   strategyChecklistColsRow: { flexDirection: 'row' },
   strategyChecklistSubCol: { flexGrow: 0, flexShrink: 0, paddingRight: 10 },
   soundLabel: {
