@@ -26,9 +26,6 @@ const BulkReportView = ({ data }: { data: BulkReportData }) => {
     [documents]
   )
 
-  console.log(studentDocs, 'studentDocs')
-  console.log(summaryDocs, 'summaryDocs')
-
   const groups = useMemo(() => {
     const map = new Map<string, BulkDocument[]>()
 
@@ -40,8 +37,6 @@ const BulkReportView = ({ data }: { data: BulkReportData }) => {
 
     return map
   }, [studentDocs])
-
-  console.log(groups, 'groups')
 
   const groupNames = useMemo(() => Array.from(groups.keys()), [groups])
 
