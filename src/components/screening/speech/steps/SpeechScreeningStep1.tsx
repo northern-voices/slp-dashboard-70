@@ -17,6 +17,7 @@ import { Student } from '@/types/database'
 import { useSchoolGrades } from '@/hooks/use-school-grades'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { GRADE_MAPPING } from '@/constants/app'
+import { getCurrentAcademicYearStart } from '@/lib/academicYear'
 
 interface SpeechScreeningStep1Props {
   form: UseFormReturn<Record<string, unknown>>
@@ -142,13 +143,9 @@ const SpeechScreeningStep1 = ({
   const availableGradeIds = React.useMemo(() => {
     if (!selectedGrade) return []
 
-    const currentDate = new Date()
-    const currentYear = currentDate.getFullYear()
-    const currentMonth = currentDate.getMonth() // 0-indexed (Jan = 0)
-
     // Academic year starts in August/September
     // Jan-July = previous year's academic year
-    const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+    const academicYearStart = getCurrentAcademicYearStart()
 
     // Generate range of academic years
     const academicYears = []
