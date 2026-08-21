@@ -25,6 +25,7 @@ interface GoalError {
   example: string
   targetSound: string
   stimulability_option: string
+  session_levels?: string[]
   strategies: GoalSheetStrategies
   qrVideos: QrVideo[]
 }
@@ -44,7 +45,7 @@ const getStrategyItems = (error: GoalError): string[] => {
   return error.strategies?.[column] ?? []
 }
 
-const STRATEGY_COLUMN_MAX = 4
+const STRATEGY_COLUMN_MAX = 3
 
 // Wraps a strategy list into side-by-side sub-columns of at most
 // STRATEGY_COLUMN_MAX items each, instead of letting one long list run tall.
@@ -82,27 +83,30 @@ const QrVideoColumn = ({ qrVideos }: { qrVideos: QrVideo[] }) => {
   if (!qrVideos || qrVideos.length === 0) return null
 
   return (
-    <div className='flex items-start gap-2 shrink-0 ml-2'>
-      {qrVideos.map(video => (
-        <div key={video.category} className='flex flex-col items-center w-10'>
-          <img
-            src={video.dataUri}
-            alt={`QR code for ${video.title} training video`}
-            className='w-10 h-10'
-          />
-          <span className="font-['Montserrat'] text-[6px] text-gray-600 text-center mt-0.5">
-            {video.title}
-          </span>
-        </div>
-      ))}
+    <div className='shrink-0 pl-3'>
+      <p className='font-bold text-gray-900 text-[9px] mb-1'>VIDEOS:</p>
+      <div className='flex items-start gap-2'>
+        {qrVideos.map(video => (
+          <div key={video.category} className='flex flex-col items-center w-[50px]'>
+            <img
+              src={video.dataUri}
+              alt={`QR code for ${video.title} training video`}
+              className='w-[50px] h-[50px]'
+            />
+            <span className="font-['Montserrat'] text-[6px] text-gray-600 text-center mt-0.5">
+              {video.title}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
 
 const HOW_DID_THEY_DO_ITEMS = [
-  'Could not say the sound at all',
+  'Cannot say the sound at all',
   'Can say the sound (but not in words)',
-  'Can say the sound in most words (with adult cues)',
+  'Can say the sound in most words (with adult help)',
   'Can say the sound in most words (no adult help)',
 ]
 
@@ -153,16 +157,16 @@ const GoalWorksheetSection = ({
     <p className='font-bold text-gray-900 mb-2'>STUDENT: {studentName}</p>
 
     <div className='flex border border-[#b7b7b7] bg-[#eff3f6] mb-3 p-2.5'>
-      <div className='w-[25%] pr-2.5 border-r border-gray-300'>
+      <div className='w-[13%] pr-1 border-r border-gray-300'>
         <p className='font-bold text-gray-900 text-[9px] mb-0.5'>SOUND:</p>
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
       </div>
-      <div className='w-[75%] pl-2.5 flex'>
-        <div className='flex-1'>
-          <p className='font-bold text-gray-900 text-[9px] mb-1'>STRATEGIES TO USE:</p>
+      <div className='w-[87%] pl-3 flex'>
+        <div className='pr-4 border-r border-gray-300'>
+          <p className='font-bold text-gray-900 text-[9px] mb-1'>STRATEGIES:</p>
           <div className='flex'>
             {chunkStrategyItems(getStrategyItems(error)).map((chunk, i) => (
-              <div key={i} className='flex-1 pr-1.5'>
+              <div key={i} className='pr-2.5'>
                 {chunk.map(item => (
                   <Checkbox key={item} label={item} />
                 ))}
@@ -174,54 +178,69 @@ const GoalWorksheetSection = ({
       </div>
     </div>
 
-    {[0, 1, 2].map(i => (
-      <div key={i} className='border border-[#b7b7b7] mb-2.5'>
-        <div className={`py-1.5 px-2.5 ${i === 1 ? 'bg-[#e9e2d9]' : 'bg-[#5b7a8b]'}`}>
-          <p
-            className={`font-['Montserrat'] font-bold text-center text-[9px] tracking-wide ${
-              i === 1 ? 'text-[#4d4b4b]' : 'text-white'
-            }`}>
-            SESSION {i + 1}
-          </p>
-        </div>
-        <div className={`flex p-2.5 ${i === 1 ? 'bg-[#f9f7f4]' : 'bg-[#eff3f6]'}`}>
-          <div className='w-[38%] pr-2.5 border-r border-gray-300'>
-            <p className='font-bold text-gray-900 text-[9px] mb-0.5'>How did the student do?</p>
-            <p className="font-['Montserrat'] italic text-[8px] text-gray-500 mb-1">
-              Were they able to say the sound?
+    {[0, 1, 2].map(i => {
+      const sessionLevel = error.session_levels
+        ? error.session_levels[i]
+        : error.stimulability_option
+
+      return (
+        <div key={i} className='border border-[#b7b7b7] mb-2.5'>
+          <div className={`py-1.5 px-2.5 ${i === 1 ? 'bg-[#e9e2d9]' : 'bg-[#5b7a8b]'}`}>
+            <p
+              className={`font-['Montserrat'] font-bold text-center text-[9px] tracking-wide ${
+                i === 1 ? 'text-[#4d4b4b]' : 'text-white'
+              }`}>
+              SESSION {i + 1}
             </p>
-            {HOW_DID_THEY_DO_ITEMS.map(item => (
-              <Checkbox key={item} label={item} />
-            ))}
           </div>
-          <div className='w-[62%] pl-2.5 text-[9px]'>
-            <p className='mb-2 leading-snug'>
-              <span className="font-['Montserrat'] italic font-bold">Goal: </span>
-              Student will say the <span className='font-bold'>{error.sound}</span> at the{' '}
-              <span className='font-bold'>{error.stimulability_option}</span> level with 90%
-              accuracy.
-            </p>
-            <p className='mb-3'>Date: ______________________</p>
+          <div className={`flex p-2.5 ${i === 1 ? 'bg-[#f9f7f4]' : 'bg-[#eff3f6]'}`}>
+            <div className='w-[38%] pr-2.5 border-r border-gray-300'>
+              <p className='font-bold text-gray-900 text-[9px] mb-0.5'>How did the student do?</p>
+              <p className="font-['Montserrat'] italic text-[8px] text-gray-500 mb-1">
+                Were they able to say the sound?
+              </p>
+              {HOW_DID_THEY_DO_ITEMS.map(item => (
+                <Checkbox key={item} label={item} />
+              ))}
+            </div>
+            <div className='w-[62%] pl-2.5 text-[9px]'>
+              <p className='mb-2 leading-snug'>
+                <span className="font-['Montserrat'] italic font-bold">Goal: </span>
+                {sessionLevel === 'non-stimulable' ? (
+                  <>
+                    Student will discriminate correct{' '}
+                    <span className='font-bold'>{error.sound}</span> with 90% accuracy when
+                    listening to adult say contrast pairs.
+                  </>
+                ) : sessionLevel ? (
+                  <>
+                    Student will say <span className='font-bold'>{error.sound}</span> at the{' '}
+                    <span className='font-bold'>{sessionLevel}</span> level with 90% accuracy.
+                  </>
+                ) : null}
+              </p>
+              <p className='mb-3'>Date: ______________________</p>
 
-            <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>Activities / Games</p>
-            <div className='border-b border-gray-400 h-3.5 mb-1' />
+              <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>Activities / Games</p>
+              <div className='border-b border-gray-400 h-3.5 mb-1' />
 
-            <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>
-              Progress / Improvement{' '}
-              <span className="font-normal font-['Montserrat'] italic text-gray-500">
-                (Speech, confidence, social skills, language, vocabulary, etc.)
-              </span>
-            </p>
-            <div className='border-b border-gray-400 h-3.5 mb-1' />
+              <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>
+                Progress / Improvement{' '}
+                <span className="font-normal font-['Montserrat'] italic text-gray-500">
+                  (Speech, confidence, social skills, language, vocabulary, etc.)
+                </span>
+              </p>
+              <div className='border-b border-gray-400 h-3.5 mb-1' />
 
-            <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>
-              Additional comments, questions, or concerns
-            </p>
-            <div className='border-b border-gray-400 h-3.5 mb-1' />
+              <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>
+                Additional comments, questions, or concerns
+              </p>
+              <div className='border-b border-gray-400 h-3.5 mb-1' />
+            </div>
           </div>
         </div>
-      </div>
-    ))}
+      )
+    })}
 
     <div className='flex mt-1'>
       <div
@@ -282,11 +301,11 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
           </div>
 
           {context.primary_table_errors?.length > 0 && (
-            <ErrorTable title='SOUND ERRORS' errors={context.primary_table_errors} />
+            <ErrorTable title='SOUND ERRORS (CYCLE 1)' errors={context.primary_table_errors} />
           )}
 
           {context.secondary_table_errors?.length > 0 && (
-            <ErrorTable title='SECONDARY SOUND ERRORS' errors={context.secondary_table_errors} />
+            <ErrorTable title='SOUND ERRORS (CYCLE 2)' errors={context.secondary_table_errors} />
           )}
 
           {context.vocabulary_support && (
