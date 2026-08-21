@@ -25,6 +25,7 @@ interface GoalError {
   example: string
   targetSound: string
   stimulability_option: string
+  session_levels?: string[]
   strategies: GoalSheetStrategies
   qrVideos: QrVideo[]
 }
@@ -177,63 +178,69 @@ const GoalWorksheetSection = ({
       </div>
     </div>
 
-    {[0, 1, 2].map(i => (
-      <div key={i} className='border border-[#b7b7b7] mb-2.5'>
-        <div className={`py-1.5 px-2.5 ${i === 1 ? 'bg-[#e9e2d9]' : 'bg-[#5b7a8b]'}`}>
-          <p
-            className={`font-['Montserrat'] font-bold text-center text-[9px] tracking-wide ${
-              i === 1 ? 'text-[#4d4b4b]' : 'text-white'
-            }`}>
-            SESSION {i + 1}
-          </p>
-        </div>
-        <div className={`flex p-2.5 ${i === 1 ? 'bg-[#f9f7f4]' : 'bg-[#eff3f6]'}`}>
-          <div className='w-[38%] pr-2.5 border-r border-gray-300'>
-            <p className='font-bold text-gray-900 text-[9px] mb-0.5'>How did the student do?</p>
-            <p className="font-['Montserrat'] italic text-[8px] text-gray-500 mb-1">
-              Were they able to say the sound?
+    {[0, 1, 2].map(i => {
+      const sessionLevel = error.session_levels
+        ? error.session_levels[i]
+        : error.stimulability_option
+
+      return (
+        <div key={i} className='border border-[#b7b7b7] mb-2.5'>
+          <div className={`py-1.5 px-2.5 ${i === 1 ? 'bg-[#e9e2d9]' : 'bg-[#5b7a8b]'}`}>
+            <p
+              className={`font-['Montserrat'] font-bold text-center text-[9px] tracking-wide ${
+                i === 1 ? 'text-[#4d4b4b]' : 'text-white'
+              }`}>
+              SESSION {i + 1}
             </p>
-            {HOW_DID_THEY_DO_ITEMS.map(item => (
-              <Checkbox key={item} label={item} />
-            ))}
           </div>
-          <div className='w-[62%] pl-2.5 text-[9px]'>
-            <p className='mb-2 leading-snug'>
-              <span className="font-['Montserrat'] italic font-bold">Goal: </span>
-              {error.stimulability_option === 'non-stimulable' ? (
-                <>
-                  Student will discriminate correct <span className='font-bold'>{error.sound}</span>{' '}
-                  with 90% accuracy when listening to adult say contrast pairs.
-                </>
-              ) : (
-                <>
-                  Student will say <span className='font-bold'>{error.sound}</span> at the{' '}
-                  <span className='font-bold'>{error.stimulability_option}</span> level with 90%
-                  accuracy.
-                </>
-              )}
-            </p>
-            <p className='mb-3'>Date: ______________________</p>
+          <div className={`flex p-2.5 ${i === 1 ? 'bg-[#f9f7f4]' : 'bg-[#eff3f6]'}`}>
+            <div className='w-[38%] pr-2.5 border-r border-gray-300'>
+              <p className='font-bold text-gray-900 text-[9px] mb-0.5'>How did the student do?</p>
+              <p className="font-['Montserrat'] italic text-[8px] text-gray-500 mb-1">
+                Were they able to say the sound?
+              </p>
+              {HOW_DID_THEY_DO_ITEMS.map(item => (
+                <Checkbox key={item} label={item} />
+              ))}
+            </div>
+            <div className='w-[62%] pl-2.5 text-[9px]'>
+              <p className='mb-2 leading-snug'>
+                <span className="font-['Montserrat'] italic font-bold">Goal: </span>
+                {sessionLevel === 'non-stimulable' ? (
+                  <>
+                    Student will discriminate correct{' '}
+                    <span className='font-bold'>{error.sound}</span> with 90% accuracy when
+                    listening to adult say contrast pairs.
+                  </>
+                ) : sessionLevel ? (
+                  <>
+                    Student will say <span className='font-bold'>{error.sound}</span> at the{' '}
+                    <span className='font-bold'>{sessionLevel}</span> level with 90% accuracy.
+                  </>
+                ) : null}
+              </p>
+              <p className='mb-3'>Date: ______________________</p>
 
-            <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>Activities / Games</p>
-            <div className='border-b border-gray-400 h-3.5 mb-1' />
+              <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>Activities / Games</p>
+              <div className='border-b border-gray-400 h-3.5 mb-1' />
 
-            <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>
-              Progress / Improvement{' '}
-              <span className="font-normal font-['Montserrat'] italic text-gray-500">
-                (Speech, confidence, social skills, language, vocabulary, etc.)
-              </span>
-            </p>
-            <div className='border-b border-gray-400 h-3.5 mb-1' />
+              <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>
+                Progress / Improvement{' '}
+                <span className="font-normal font-['Montserrat'] italic text-gray-500">
+                  (Speech, confidence, social skills, language, vocabulary, etc.)
+                </span>
+              </p>
+              <div className='border-b border-gray-400 h-3.5 mb-1' />
 
-            <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>
-              Additional comments, questions, or concerns
-            </p>
-            <div className='border-b border-gray-400 h-3.5 mb-1' />
+              <p className='font-bold text-[8px] text-gray-900 mt-1 mb-1'>
+                Additional comments, questions, or concerns
+              </p>
+              <div className='border-b border-gray-400 h-3.5 mb-1' />
+            </div>
           </div>
         </div>
-      </div>
-    ))}
+      )
+    })}
 
     <div className='flex mt-1'>
       <div
