@@ -38,6 +38,7 @@ interface GoalError {
   example: string
   targetSound: string
   stimulability_option: string
+  session_levels?: string[]
   strategies: GoalSheetStrategies
   qrVideos: QrVideo[]
 }
@@ -396,65 +397,71 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
           <QrVideoColumn qrVideos={error.qrVideos} />
         </View>
       </View>
-      {[0, 1, 2].map(i => (
-        <View key={i} style={styles.sessionCard} wrap={false}>
-          <View
-            style={[
-              styles.sessionHeader,
-              i === 1 ? styles.sessionHeaderTan : styles.sessionHeaderDark,
-            ]}>
-            <Text style={i === 1 ? styles.sessionHeaderTextDark : styles.sessionHeaderTextLight}>
-              SESSION {i + 1}
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.sessionBody,
-              i === 1 ? styles.sessionBodyCream : styles.sessionBodyLight,
-            ]}>
-            <View style={styles.sessionLeft}>
-              <Text style={styles.sessionQuestion}>How did the student do?</Text>
-              <Text style={styles.sessionSubQuestion}>Were they able to say the sound?</Text>
-              {HOW_DID_THEY_DO_ITEMS.map(item => (
-                <Checkbox key={item} label={item} />
-              ))}
-            </View>
-            <View style={styles.sessionRight}>
-              <Text style={styles.sessionGoal}>
-                <Text style={styles.italicBold}>Goal: </Text>
+      {[0, 1, 2].map(i => {
+        const sessionLevel = error.session_levels
+          ? error.session_levels[i]
+          : error.stimulability_option
 
-                {error.stimulability_option === 'non-stimulable' ? (
-                  <>
-                    Student will discriminate correct <Text style={styles.bold}>{error.sound}</Text>{' '}
-                    with 90% accuracy when listening to adult say contrast pairs.
-                  </>
-                ) : (
-                  <>
-                    Student will say <Text style={styles.bold}>{error.sound}</Text> at the{' '}
-                    <Text style={styles.bold}>{error.stimulability_option}</Text> level with 90%
-                    accuracy.
-                  </>
-                )}
+        return (
+          <View key={i} style={styles.sessionCard} wrap={false}>
+            <View
+              style={[
+                styles.sessionHeader,
+                i === 1 ? styles.sessionHeaderTan : styles.sessionHeaderDark,
+              ]}>
+              <Text style={i === 1 ? styles.sessionHeaderTextDark : styles.sessionHeaderTextLight}>
+                SESSION {i + 1}
               </Text>
-              <Text style={styles.dateLine}>Date: ______________________</Text>
+            </View>
+            <View
+              style={[
+                styles.sessionBody,
+                i === 1 ? styles.sessionBodyCream : styles.sessionBodyLight,
+              ]}>
+              <View style={styles.sessionLeft}>
+                <Text style={styles.sessionQuestion}>How did the student do?</Text>
+                <Text style={styles.sessionSubQuestion}>Were they able to say the sound?</Text>
+                {HOW_DID_THEY_DO_ITEMS.map(item => (
+                  <Checkbox key={item} label={item} />
+                ))}
+              </View>
+              <View style={styles.sessionRight}>
+                <Text style={styles.sessionGoal}>
+                  <Text style={styles.italicBold}>Goal: </Text>
 
-              <Text style={styles.fieldLabel}>Activities / Games</Text>
-              <View style={styles.blankLine} />
-
-              <Text style={styles.fieldLabel}>
-                Progress / Improvement{' '}
-                <Text style={styles.fieldHint}>
-                  (Speech, confidence, social skills, language, vocabulary, etc.)
+                  {sessionLevel === 'non-stimulable' ? (
+                    <>
+                      Student will discriminate correct{' '}
+                      <Text style={styles.bold}>{error.sound}</Text> with 90% accuracy when
+                      listening to adult say contrast pairs.
+                    </>
+                  ) : sessionLevel ? (
+                    <>
+                      Student will say <Text style={styles.bold}>{error.sound}</Text> at the{' '}
+                      <Text style={styles.bold}>{sessionLevel}</Text> level with 90% accuracy.
+                    </>
+                  ) : null}
                 </Text>
-              </Text>
-              <View style={styles.blankLine} />
+                <Text style={styles.dateLine}>Date: ______________________</Text>
 
-              <Text style={styles.fieldLabel}>Additional comments, questions, or concerns</Text>
-              <View style={styles.blankLine} />
+                <Text style={styles.fieldLabel}>Activities / Games</Text>
+                <View style={styles.blankLine} />
+
+                <Text style={styles.fieldLabel}>
+                  Progress / Improvement{' '}
+                  <Text style={styles.fieldHint}>
+                    (Speech, confidence, social skills, language, vocabulary, etc.)
+                  </Text>
+                </Text>
+                <View style={styles.blankLine} />
+
+                <Text style={styles.fieldLabel}>Additional comments, questions, or concerns</Text>
+                <View style={styles.blankLine} />
+              </View>
             </View>
           </View>
-        </View>
-      ))}
+        )
+      })}
       <View style={styles.masteredRow} wrap={false}>
         <View style={[styles.masteredPill, styles.masteredPillLeft]}>
           <View style={styles.radioCircle} />
