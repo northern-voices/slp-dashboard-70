@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
 import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
+import { DotsVerticalIcon } from '@radix-ui/react-icons'
 
 Font.register({
   family: 'Montserrat',
@@ -37,6 +38,7 @@ interface GoalError {
   example: string
   targetSound: string
   stimulability_option: string
+  session_levels?: string[]
   strategies: GoalSheetStrategies
   qrVideos: QrVideo[]
 }
@@ -56,7 +58,7 @@ const getStrategyItems = (error: GoalError): string[] => {
   return error.strategies?.[column] ?? []
 }
 
-const STRATEGY_COLUMN_MAX = 4
+const STRATEGY_COLUMN_MAX = 3
 
 // Wraps a strategy list into side-by-side sub-columns of at most
 // STRATEGY_COLUMN_MAX items each, instead of letting one long list run tall.
@@ -159,15 +161,21 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   soundBox: {
-    width: '25%',
-    paddingRight: 10,
+    width: '13%',
+    paddingRight: 4,
     borderRightWidth: 0.75,
     borderRightColor: '#d1d5db',
   },
-  strategyBox: { width: '75%', paddingLeft: 10, flexDirection: 'row' },
-  strategyChecklistCol: { flex: 1, paddingRight: 8 },
+  strategyBox: { width: '87%', paddingLeft: 12, flexDirection: 'row' },
+  strategyChecklistCol: {
+    flexGrow: 0,
+    flexShrink: 0,
+    paddingRight: 16,
+    borderRightWidth: 0.75,
+    borderRightColor: '#d1d5db',
+  },
   strategyChecklistColsRow: { flexDirection: 'row' },
-  strategyChecklistSubCol: { flex: 1, paddingRight: 6 },
+  strategyChecklistSubCol: { flexGrow: 0, flexShrink: 0, paddingRight: 10 },
   soundLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
@@ -192,7 +200,7 @@ const styles = StyleSheet.create({
   qrColumn: { flexDirection: 'row', alignItems: 'flex-start' },
   qrItem: { alignItems: 'center' },
   qrItemSpacer: { marginLeft: 8 },
-  qrImage: { width: 40, height: 40 },
+  qrImage: { width: 50, height: 50 },
   qrCaption: {
     fontSize: 6,
     fontFamily: 'Montserrat',
@@ -303,6 +311,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     color: '#374151',
   },
+  videosBox: { paddingLeft: 12 },
   footerNote: { fontFamily: 'Montserrat', fontStyle: 'italic', fontSize: 9, color: '#4b5563' },
 })
 
@@ -317,23 +326,26 @@ const QrVideoColumn = ({ qrVideos }: { qrVideos: QrVideo[] }) => {
   if (!qrVideos || qrVideos.length === 0) return null
 
   return (
-    <View style={styles.qrColumn} wrap={false}>
-      {qrVideos.map((video, i) => (
-        <View
-          key={video.category}
-          style={i > 0 ? [styles.qrItem, styles.qrItemSpacer] : styles.qrItem}>
-          <Image style={styles.qrImage} src={video.dataUri} />
-          <Text style={styles.qrCaption}>{video.title}</Text>
-        </View>
-      ))}
+    <View style={styles.videosBox} wrap={false}>
+      <Text style={styles.strategyLabel}>VIDEOS:</Text>
+      <View style={styles.qrColumn}>
+        {qrVideos.map((video, i) => (
+          <View
+            key={video.category}
+            style={i > 0 ? [styles.qrItem, styles.qrItemSpacer] : styles.qrItem}>
+            <Image style={styles.qrImage} src={video.dataUri} />
+            <Text style={styles.qrCaption}>{video.title}</Text>
+          </View>
+        ))}
+      </View>
     </View>
   )
 }
 
 const HOW_DID_THEY_DO_ITEMS = [
-  'Could not say the sound at all',
+  'Cannot say the sound at all',
   'Can say the sound (but not in words)',
-  'Can say the sound in most words (with adult cues)',
+  'Can say the sound in most words (with adult help)',
   'Can say the sound in most words (no adult help)',
 ]
 
@@ -371,7 +383,7 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
         </View>
         <View style={styles.strategyBox}>
           <View style={styles.strategyChecklistCol}>
-            <Text style={styles.strategyLabel}>STRATEGIES TO USE:</Text>
+            <Text style={styles.strategyLabel}>STRATEGIES:</Text>
             <View style={styles.strategyChecklistColsRow}>
               {chunkStrategyItems(getStrategyItems(error)).map((chunk, i) => (
                 <View key={i} style={styles.strategyChecklistSubCol}>
@@ -385,55 +397,71 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
           <QrVideoColumn qrVideos={error.qrVideos} />
         </View>
       </View>
-      {[0, 1, 2].map(i => (
-        <View key={i} style={styles.sessionCard} wrap={false}>
-          <View
-            style={[
-              styles.sessionHeader,
-              i === 1 ? styles.sessionHeaderTan : styles.sessionHeaderDark,
-            ]}>
-            <Text style={i === 1 ? styles.sessionHeaderTextDark : styles.sessionHeaderTextLight}>
-              SESSION {i + 1}
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.sessionBody,
-              i === 1 ? styles.sessionBodyCream : styles.sessionBodyLight,
-            ]}>
-            <View style={styles.sessionLeft}>
-              <Text style={styles.sessionQuestion}>How did the student do?</Text>
-              <Text style={styles.sessionSubQuestion}>Were they able to say the sound?</Text>
-              {HOW_DID_THEY_DO_ITEMS.map(item => (
-                <Checkbox key={item} label={item} />
-              ))}
-            </View>
-            <View style={styles.sessionRight}>
-              <Text style={styles.sessionGoal}>
-                <Text style={styles.italicBold}>Goal: </Text>
-                Student will say the <Text style={styles.bold}>{error.sound}</Text> at the{' '}
-                <Text style={styles.bold}>{error.stimulability_option}</Text> level with 90%
-                accuracy.
+      {[0, 1, 2].map(i => {
+        const sessionLevel = error.session_levels
+          ? error.session_levels[i]
+          : error.stimulability_option
+
+        return (
+          <View key={i} style={styles.sessionCard} wrap={false}>
+            <View
+              style={[
+                styles.sessionHeader,
+                i === 1 ? styles.sessionHeaderTan : styles.sessionHeaderDark,
+              ]}>
+              <Text style={i === 1 ? styles.sessionHeaderTextDark : styles.sessionHeaderTextLight}>
+                SESSION {i + 1}
               </Text>
-              <Text style={styles.dateLine}>Date: ______________________</Text>
+            </View>
+            <View
+              style={[
+                styles.sessionBody,
+                i === 1 ? styles.sessionBodyCream : styles.sessionBodyLight,
+              ]}>
+              <View style={styles.sessionLeft}>
+                <Text style={styles.sessionQuestion}>How did the student do?</Text>
+                <Text style={styles.sessionSubQuestion}>Were they able to say the sound?</Text>
+                {HOW_DID_THEY_DO_ITEMS.map(item => (
+                  <Checkbox key={item} label={item} />
+                ))}
+              </View>
+              <View style={styles.sessionRight}>
+                <Text style={styles.sessionGoal}>
+                  <Text style={styles.italicBold}>Goal: </Text>
 
-              <Text style={styles.fieldLabel}>Activities / Games</Text>
-              <View style={styles.blankLine} />
-
-              <Text style={styles.fieldLabel}>
-                Progress / Improvement{' '}
-                <Text style={styles.fieldHint}>
-                  (Speech, confidence, social skills, language, vocabulary, etc.)
+                  {sessionLevel === 'non-stimulable' ? (
+                    <>
+                      Student will discriminate correct{' '}
+                      <Text style={styles.bold}>{error.sound}</Text> with 90% accuracy when
+                      listening to adult say contrast pairs.
+                    </>
+                  ) : sessionLevel ? (
+                    <>
+                      Student will say <Text style={styles.bold}>{error.sound}</Text> at the{' '}
+                      <Text style={styles.bold}>{sessionLevel}</Text> level with 90% accuracy.
+                    </>
+                  ) : null}
                 </Text>
-              </Text>
-              <View style={styles.blankLine} />
+                <Text style={styles.dateLine}>Date: ______________________</Text>
 
-              <Text style={styles.fieldLabel}>Additional comments, questions, or concerns</Text>
-              <View style={styles.blankLine} />
+                <Text style={styles.fieldLabel}>Activities / Games</Text>
+                <View style={styles.blankLine} />
+
+                <Text style={styles.fieldLabel}>
+                  Progress / Improvement{' '}
+                  <Text style={styles.fieldHint}>
+                    (Speech, confidence, social skills, language, vocabulary, etc.)
+                  </Text>
+                </Text>
+                <View style={styles.blankLine} />
+
+                <Text style={styles.fieldLabel}>Additional comments, questions, or concerns</Text>
+                <View style={styles.blankLine} />
+              </View>
             </View>
           </View>
-        </View>
-      ))}
+        )
+      })}
       <View style={styles.masteredRow} wrap={false}>
         <View style={[styles.masteredPill, styles.masteredPillLeft]}>
           <View style={styles.radioCircle} />
@@ -482,11 +510,11 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
           </View>
 
           {context.primary_table_errors?.length > 0 && (
-            <ErrorTable title='SOUND ERRORS' errors={context.primary_table_errors} />
+            <ErrorTable title='SOUND ERRORS (CYCLE 1)' errors={context.primary_table_errors} />
           )}
 
           {context.secondary_table_errors?.length > 0 && (
-            <ErrorTable title='SECONDARY SOUND ERRORS' errors={context.secondary_table_errors} />
+            <ErrorTable title='SOUND ERRORS (CYCLE 2)' errors={context.secondary_table_errors} />
           )}
 
           {context.vocabulary_support && (

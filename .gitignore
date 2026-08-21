@@ -25,6 +25,7 @@ dist-ssr
 *.sln
 *.sw?
 CLAUDE.md
+AGENTS.md
 
 # Supabase CLI
 supabase/.temp/
