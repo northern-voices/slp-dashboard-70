@@ -33,6 +33,7 @@ import MultiEmailInput from './shared/MultiEmailInput'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import ReportPasswordInput from './shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
+import { getAcademicYearOptions } from '@/lib/academicYear'
 
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
@@ -60,13 +61,8 @@ const HearingReportGenerationForm = () => {
 
   const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
-  const currentYear = new Date().getFullYear()
-  const currentMonth = new Date().getMonth()
-
-  const currentSchoolYear = currentMonth < 8 ? currentYear - 1 : currentYear
-  const currentAcademicYear = `${currentSchoolYear}-${currentSchoolYear + 1}`
-
-  const academicYears = [`${currentSchoolYear - 1}-${currentSchoolYear}`, currentAcademicYear]
+  const academicYears = getAcademicYearOptions()
+  const currentAcademicYear = academicYears[academicYears.length - 1]
 
   const form = useForm<ReportFormData>({
     resolver: zodResolver(reportSchema),
