@@ -32,6 +32,7 @@ import { upsertEmailHistory } from '@/api/emailHistory'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import ReportPasswordInput from './shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
+import { getAcademicYearOptions } from '@/lib/academicYear'
 
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
@@ -58,16 +59,8 @@ const SchoolWideGoalSheetsForm = () => {
 
   const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
-  const currentYear = new Date().getFullYear()
-  const currentMonth = new Date().getMonth() // 0-11, where 0 is January
-
-  // Determine current school year: if we're before September, we're in the previous school year
-  // If we're September or later, we're in the current school year
-  const currentSchoolYear = currentMonth < 8 ? currentYear - 1 : currentYear
-  const currentAcademicYear = `${currentSchoolYear}-${currentSchoolYear + 1}`
-
-  // Generate academic years with previous years first, then current year
-  const academicYears = [`${currentSchoolYear - 1}-${currentSchoolYear}`, currentAcademicYear]
+  const academicYears = getAcademicYearOptions()
+  const currentAcademicYear = academicYears[academicYears.length - 1]
 
   const form = useForm<ReportFormData>({
     resolver: zodResolver(reportSchema),
