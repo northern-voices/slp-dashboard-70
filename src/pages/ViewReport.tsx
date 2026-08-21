@@ -49,7 +49,9 @@ const POSTER_ONLY_TEMPLATES = new Set(['Complex Needs', 'Non Registered No Conse
 const generateSpeechScreeningPdf = async (reportData: unknown) => {
   const templateName = (reportData as { template?: { name?: string } })?.template?.name
   if (templateName && POSTER_ONLY_TEMPLATES.has(templateName)) {
-    const posterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
+    const posterBytes = await (
+      await fetch('/No-Consent_Non-Registered_Complex-Needs.pdf')
+    ).arrayBuffer()
     return new Blob([posterBytes], { type: 'application/pdf' })
   }
 
@@ -150,7 +152,9 @@ const generateBulkReportZip = async (
     let docBytes: ArrayBuffer
     if (templateName && POSTER_ONLY_TEMPLATES.has(templateName)) {
       if (!posterBytes) {
-        posterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
+        posterBytes = await (
+          await fetch('/No-Consent_Non-Registered_Complex-Needs.pdf')
+        ).arrayBuffer()
       }
       docBytes = posterBytes
     } else {
