@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontFamily: 'Gotu',
+    color: '#6b7280',
     marginBottom: 12,
     letterSpacing: 1,
     textAlign: 'center',
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito',
     fontWeight: 700,
     color: '#111827',
-    marginBotton: 3,
+    marginBottom: 3,
   },
   paragraph: { lineHeight: 1.2, marginBottom: 18, color: '#374151' },
   bold: { fontFamily: 'Nunito', fontWeight: 700 },
@@ -87,10 +88,7 @@ const NoConsentLetterPdf = ({ data }: { data: NoConsentLetterData }) => {
         <Text style={styles.paragraph}>
           If you change your mind and would like your child to participate in a speech screening in
           the future, please reach out to your school team. We would be happy to connect with you,
-          answer any questions, and discuss available screening opportunities. If you change your
-          mind and would like your child to participate in a speech screening in the future, please
-          reach out to your school team. We would be happy to connect with you, answer any
-          questions, and discuss available screening opportunities.
+          answer any questions, and discuss available screening opportunities.
         </Text>
         <Text style={styles.paragraph}>We hope you enjoy exploring the TeachSpeech app!</Text>
         <Text style={styles.bold}>Northern Voices Speech Services</Text>
