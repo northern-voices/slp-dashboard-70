@@ -1,0 +1,1 @@
+../../monthly-meetings/monthly-meetings.js
