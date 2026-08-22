@@ -42,3 +42,14 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 - TanStack Query
+
+## Deploying Supabase Edge Functions
+
+Edge function source lives under `supabase/`, organized by feature (e.g. `supabase/monthly-meetings/`, `supabase/_shared/`). Each deployable function has a
+matching entry at `supabase/functions/<name>/index.ts` — a symlink back to its real source file — which is what the Supabase CLI looks for when deploying.
+
+After making changes, deploy a single function from the repo root:
+
+```sh
+supabase functions deploy <function-name> --project-ref tvdnhcocgvuzeonejiut
+```
