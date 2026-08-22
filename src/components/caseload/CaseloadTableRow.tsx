@@ -1,5 +1,14 @@
 import { Dispatch, SetStateAction } from 'react'
-import { MoreHorizontal, Loader2, Info, PauseCircle, User, FilePlus, X } from 'lucide-react'
+import {
+  MoreHorizontal,
+  Loader2,
+  Info,
+  PauseCircle,
+  PlayCircle,
+  User,
+  FilePlus,
+  X,
+} from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +27,7 @@ import { ResponsiveTableRow, TableCell } from '@/components/ui/responsive-table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 import { RESULT_OPTIONS, PROGRAM_OPTIONS } from '@/constants/screeningOptions'
-import { Student, Screening, ProgramStatus } from '@/types/database'
+import { Student, Screening, ProgramStatus, ServiceStatus } from '@/types/database'
 import { SchoolGrade } from '@/api/schoolGrades'
 import { ResultBadge, ProgramBadge, ServiceStatusTag, ConsentBadge } from './CaseloadBadges'
 import {
@@ -38,6 +47,7 @@ interface CaseloadTableRowProps {
   updatingStudentId: string | null
   onResultChange: (student: Student, newResult: string) => void
   onProgramChange: (student: Student, newProgram: ProgramStatus) => void
+  onStatusChange: (student: Student, newStatus: ServiceStatus) => void
   onAssignEA: (student: Student, staffId: string) => void
   onViewStudent: (studentId: string) => void
   setConsentStudent: Dispatch<SetStateAction<Student | null>>
@@ -55,6 +65,7 @@ const CaseloadTableRow = ({
   updatingStudentId,
   onResultChange,
   onProgramChange,
+  onStatusChange,
   onAssignEA,
   onViewStudent,
   setConsentStudent,
@@ -219,7 +230,12 @@ const CaseloadTableRow = ({
               Add Consent
             </DropdownMenuItem>
 
-            {student.service_status !== 'paused' && (
+            {student.service_status === 'paused' ? (
+              <DropdownMenuItem onClick={() => onStatusChange(student, 'none')}>
+                <PlayCircle className='w-4 h-4 mr-2' />
+                Resume
+              </DropdownMenuItem>
+            ) : (
               <DropdownMenuItem onClick={() => setPauseConfirmStudent(student)}>
                 <PauseCircle className='w-4 h-4 mr-2' />
                 Pause / Away
