@@ -4,7 +4,8 @@ import NonCompliantSpeechReportView from './NonCompliantSpeechReportView'
 import AbsentSpeechReportView from './AbsentSpeechReportView'
 import MildProfoundNoQualifiedSubReportView from './MildProfoundNoQualifiedSubReportView'
 import MildProfoundQualifiedSubReportView from './MildProfoundQualifiedSubReportView'
-import PosterOnlySpeechReportView from './PosterOnlySpeechReportView'
+import NoConsentLetterView from './NoConsentLetterView'
+import ComplexNeedsLetterView from './ComplexNeedsLetterView'
 
 interface StudentSpeechReportData {
   metadata?: { file_name?: string }
@@ -37,9 +38,10 @@ const StudentSpeechReportView = ({ data }: { data: StudentSpeechReportData }) =>
       return <MildProfoundNoQualifiedSubReportView data={data as never} />
     case 'Mild Profound Qualified Sub':
       return <MildProfoundQualifiedSubReportView data={data as never} />
-    case 'Complex Needs':
     case 'Non Registered No Consent':
-      return <PosterOnlySpeechReportView />
+      return <NoConsentLetterView data={data as never} />
+    case 'Complex Needs':
+      return <ComplexNeedsLetterView data={data as never} />
     default:
       return <GenericSpeechScreeningReportView data={data as never} />
   }
