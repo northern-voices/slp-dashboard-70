@@ -54,8 +54,7 @@ After making changes, deploy a single function from the repo root:
 supabase functions deploy <function-name> --project-ref tvdnhcocgvuzeonejiut
 ```
 
-`supabase/config.toml` already points at the right project, so no linking step is needed. Omit `<function-name>` to deploy every function under
-`supabase/functions/` at once.
+`supabase/config.toml` already points at the right project, so no linking step is needed.
 
 To deploy every function under `supabase/functions/` at once, omit the function name:
 
