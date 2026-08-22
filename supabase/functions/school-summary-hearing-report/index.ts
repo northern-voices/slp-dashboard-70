@@ -1,0 +1,1 @@
+../../hearing-reports/school-summary-hearing-report.js
