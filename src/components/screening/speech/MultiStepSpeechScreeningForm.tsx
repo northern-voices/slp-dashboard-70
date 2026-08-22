@@ -707,6 +707,7 @@ const MultiStepSpeechScreeningForm = ({
             key={resetKey}
             form={form}
             selectedStudent={selectedStudent}
+            selectedGrade={selectedGrade}
             initialScreeningData={initialScreeningData}
           />
         )
