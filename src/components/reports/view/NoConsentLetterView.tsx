@@ -17,9 +17,7 @@ const NoConsentLetterView = ({ data }: { data: NoConsentLetterData }) => {
         href='https://fonts.googleapis.com/css2?family=Gotu&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;700&display=swap'
       />
 
-      <section
-        className='bg-white shadow-sm w-full aspect-[8.5/11] pt-6 px-10 pb-8 flex flex-col break-after-page print:shadow-none print:pt-6 print:px-10
-  print:pb-8'>
+      <section className='bg-white shadow-sm w-full aspect-[8.5/11] pt-6 px-10 pb-8 flex flex-col break-after-page print:shadow-none print:pt-6 print:px-10 print:pb-8'>
         <ReportHeader />
 
         <div className='flex-1'>
