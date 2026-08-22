@@ -134,9 +134,7 @@ const CaseloadTableRow = ({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {PROGRAM_OPTIONS.filter(
-              option => option.value !== 'none' && option.value !== 'no_consent'
-            ).map(option => (
+            {PROGRAM_OPTIONS.filter(option => option.value !== 'no_consent').map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
