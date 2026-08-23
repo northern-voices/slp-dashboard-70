@@ -30,13 +30,8 @@ import { RESULT_OPTIONS, PROGRAM_OPTIONS } from '@/constants/screeningOptions'
 import { Student, Screening, ProgramStatus, ServiceStatus } from '@/types/database'
 import { SchoolGrade } from '@/api/schoolGrades'
 import { ResultBadge, ProgramBadge, ServiceStatusTag, ConsentBadge } from './CaseloadBadges'
-import {
-  getStudentGrade,
-  getSpeechEAName,
-  isCurrentSchoolYear,
-  getSchoolYearLabel,
-  SpeechEA,
-} from './caseloadUtils'
+import { getStudentGrade, getSpeechEAName, SpeechEA } from './caseloadUtils'
+import { isCurrentAcademicYear, getAcademicYearShortLabel } from '@/lib/academicYear'
 
 interface CaseloadTableRowProps {
   student: Student
@@ -99,9 +94,9 @@ const CaseloadTableRow = ({
                 <div className='flex items-center gap-1.5'>
                   {isUpdating && <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />}
                   <ResultBadge result={screening.result} />
-                  {!isCurrentSchoolYear(screening.created_at) && (
+                  {!isCurrentAcademicYear(screening.created_at) && (
                     <span className='text-[10px] text-gray-400 whitespace-nowrap'>
-                      {getSchoolYearLabel(screening.created_at)}
+                      {getAcademicYearShortLabel(screening.created_at)}
                     </span>
                   )}
                 </div>
