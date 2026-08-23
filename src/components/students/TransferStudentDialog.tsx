@@ -26,6 +26,7 @@ import { schoolGradesApi } from '@/api/schoolGrades'
 import { useAuth } from '@/contexts/AuthContext'
 import { GRADE_MAPPING } from '@/constants/app'
 import type { Student } from '@/types/database'
+import { getCurrentAcademicYear, getCurrentAcademicYearStart } from '@/lib/academicYear'
 
 interface TransferStudentDialogProps {
   student: Student
@@ -59,19 +60,12 @@ const TransferStudentDialog = ({
 
   // Generate academic year options
   const academicYearOptions = useMemo(() => {
-    const currentDate = new Date()
-    const currentYear = currentDate.getFullYear()
-    const currentMonth = currentDate.getMonth()
-
     // Academic year starts in August/September
-    const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+    const start = getCurrentAcademicYearStart()
 
-    const years: string[] = []
-    // Previous year, current year, and next few years
-    years.push(`${academicYearStart - 1}-${academicYearStart}`)
-    years.push(`${academicYearStart}-${academicYearStart + 1}`)
+    const years: string[] = [`${start - 1}-${start}`, `${start}-${start + 1}`]
     for (let i = 1; i <= 2; i++) {
-      years.push(`${academicYearStart + i}-${academicYearStart + i + 1}`)
+      years.push(`${start + i}-${start + i + 1}`)
     }
 
     return years
@@ -80,11 +74,7 @@ const TransferStudentDialog = ({
   // Set default academic year
   useEffect(() => {
     if (open && !selectedAcademicYear) {
-      const currentDate = new Date()
-      const currentYear = currentDate.getFullYear()
-      const currentMonth = currentDate.getMonth()
-      const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-      setSelectedAcademicYear(`${academicYearStart}-${academicYearStart + 1}`)
+      setSelectedAcademicYear(getCurrentAcademicYear())
     }
   }, [open, selectedAcademicYear])
 
