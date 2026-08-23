@@ -18,6 +18,7 @@ import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudentTransferHistory } from '@/hooks/students'
 import TransferHistorySection from './TransferHistorySection'
+import { getCurrentAcademicYear, getAcademicYearRange } from '@/lib/academicYear'
 
 interface StudentInfoHeaderProps {
   student?: Student | null
@@ -72,12 +73,7 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
   }
 
   const hasConsentThisYear = (() => {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = now.getMonth()
-    const academicYearStart = month < 7 ? year - 1 : year
-    const start = new Date(`${academicYearStart}-08-01`)
-    const end = new Date(`${academicYearStart + 1}-07-31`)
+    const { start, end } = getAcademicYearRange(getCurrentAcademicYear())
 
     return consentForms.some(form => {
       const date = new Date(form.consent_date)
