@@ -70,6 +70,7 @@ const HearingScreenings = () => {
 
         <HearingScreeningStats
           screenings={screenings}
+          dateRangeFilter={dateRangeFilter}
           onFilterClick={(filterValue, deduplicate) => {
             setResultFilter(filterValue)
             setDeduplicateFilter(deduplicate)
