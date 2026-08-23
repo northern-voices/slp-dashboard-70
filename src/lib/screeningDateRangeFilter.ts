@@ -1,4 +1,4 @@
-import { getCurrentAcademicYearStartDate } from './academicYear'
+import { getCurrentAcademicYearStartDate, getAcademicYearRange } from './academicYear'
 
 export const matchesDateRangeFilter = (date: Date, dateRangeFilter: string): boolean => {
   if (dateRangeFilter === 'all') return true
@@ -27,6 +27,11 @@ export const matchesDateRangeFilter = (date: Date, dateRangeFilter: string): boo
 
   if (dateRangeFilter === 'school_year') {
     return date >= getCurrentAcademicYearStartDate()
+  }
+
+  if (dateRangeFilter.startsWith('sy_')) {
+    const { start, end } = getAcademicYearRange(dateRangeFilter.replace('sy_', ''))
+    return date >= start && date <= end
   }
 
   return true
