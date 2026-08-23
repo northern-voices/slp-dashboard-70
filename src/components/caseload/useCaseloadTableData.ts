@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Student, Screening } from '@/types/database'
+import { Student, Screening, ProgramStatus, ServiceStatus } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -93,6 +93,23 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     return map
   }, [allSchoolScreenings, dateFilter])
 
+  const effectiveStatusByStudent = useMemo(() => {
+    const map = new Map<string, { programStatus?: ProgramStatus; serviceStatus?: ServiceStatus }>()
+
+    students.forEach(student => {
+      const screening = latestScreeningByStudent.get(student.id)
+
+      map.set(student.id, {
+        programStatus:
+          dateFilter === 'school_year' ? student.program_status : screening?.program_status,
+        serviceStatus:
+          dateFilter === 'school_year' ? student.service_status : screening?.service_status,
+      })
+    })
+
+    return map
+  }, [students, latestScreeningByStudent, dateFilter])
+
   const speechEAs =
     schoolDetails?.schoolTeam?.filter(member => member.roles.includes('speech_ea')) ?? []
 
@@ -138,9 +155,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     const screening = latestScreeningByStudent.get(student.id)
 
     const matchesCaseload = (() => {
-      const programStatus =
-        dateFilter === 'school_year' ? student.program_status : screening?.program_status
-
+      const { programStatus } = effectiveStatusByStudent.get(student.id) ?? {}
       return (
         programStatus === 'qualified' || programStatus === 'sub' || programStatus === 'graduated'
       )
@@ -170,10 +185,17 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
   })
 
   const caseloadStats = {
-    qualified: filteredStudents.filter(s => s.program_status === 'qualified').length,
-    sub: filteredStudents.filter(s => s.program_status === 'sub').length,
-    paused: filteredStudents.filter(s => s.service_status === 'paused').length,
-    graduated: filteredStudents.filter(s => s.program_status === 'graduated').length,
+    qualified: filteredStudents.filter(
+      s => effectiveStatusByStudent.get(s.id)?.programStatus === 'qualified'
+    ).length,
+    sub: filteredStudents.filter(s => effectiveStatusByStudent.get(s.id)?.programStatus === 'sub')
+      .length,
+    paused: filteredStudents.filter(
+      s => effectiveStatusByStudent.get(s.id)?.serviceStatus === 'paused'
+    ).length,
+    graduated: filteredStudents.filter(
+      s => effectiveStatusByStudent.get(s.id)?.programStatus === 'graduated'
+    ).length,
   }
 
   const sortedStudents = [...filteredStudents].sort((a, b) => {
