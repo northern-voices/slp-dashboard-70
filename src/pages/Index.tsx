@@ -17,7 +17,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
 import EditPrimarySLPModal from '@/components/dashboard/EditPrimarySLPModal'
-import { getSchoolYear, getRecentSchoolYears } from '@/utils/dateUtils'
+import { getCurrentAcademicYear, getRecentAcademicYears } from '@/lib/academicYear'
 // import DashboardStats from '@/components/DashboardStats'
 // import QuickActions from '@/components/QuickActions'
 // import RecentActivity from '@/components/RecentActivity'
@@ -37,9 +37,9 @@ const DashboardContent = () => {
   const [isAddActivityModalOpen, setIsAddActivityModalOpen] = useState(false)
   const [isEditSLPModalOpen, setIsEditSLPModalOpen] = useState(false)
   const [isSavingSLP, setIsSavingSLP] = useState(false)
-  const [selectedYear, setSelectedYear] = useState(() => getSchoolYear())
+  const [selectedYear, setSelectedYear] = useState(() => getCurrentAcademicYear())
 
-  const availableYears = getRecentSchoolYears(2)
+  const availableYears = getRecentAcademicYears(2)
 
   const {
     userProfile,
