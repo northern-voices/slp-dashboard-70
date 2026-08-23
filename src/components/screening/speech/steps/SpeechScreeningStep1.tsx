@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -17,7 +17,7 @@ import { Student } from '@/types/database'
 import { useSchoolGrades } from '@/hooks/use-school-grades'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { GRADE_MAPPING } from '@/constants/app'
-import { getCurrentAcademicYearStart } from '@/lib/academicYear'
+import { getCurrentAcademicYear, getCurrentAcademicYearStart } from '@/lib/academicYear'
 
 interface SpeechScreeningStep1Props {
   form: UseFormReturn<Record<string, unknown>>
@@ -48,13 +48,7 @@ const SpeechScreeningStep1 = ({
 }: SpeechScreeningStep1Props) => {
   const { data: schoolGrades } = useSchoolGrades()
 
-  const currentAcademicYear = useMemo(() => {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = now.getMonth()
-    const start = month < 7 ? year - 1 : year
-    return `${start}-${start + 1}`
-  }, [])
+  const currentAcademicYear = getCurrentAcademicYear()
 
   const [localAbsentValue, setLocalAbsentValue] = useState<boolean>(
     () => (form.getValues('absent.isAbsent') as boolean) || false
