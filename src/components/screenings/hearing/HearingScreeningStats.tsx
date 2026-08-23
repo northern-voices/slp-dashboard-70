@@ -1,19 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileText, CheckCircle, XCircle, UserX } from 'lucide-react'
 import { Screening } from '@/types/database'
+import { matchesDateRangeFilter } from '@/lib/screeningDateRangeFilter'
 
 interface HearingScreeningStatsProps {
   screenings: Screening[]
+  dateRangeFilter?: string
   onFilterClick?: (filterValue: string, deduplicate: boolean) => void
   onClearAllFilters?: () => void
 }
 
 const HearingScreeningStats = ({
   screenings = [],
+  dateRangeFilter = 'school_year',
   onFilterClick,
   onClearAllFilters,
 }: HearingScreeningStatsProps) => {
-  const hearingScreenings = screenings.filter(s => s.source_table === 'hearing')
+  const hearingScreenings = screenings
+    .filter(s => s.source_table === 'hearing')
+    .filter(s => matchesDateRangeFilter(new Date(s.created_at), dateRangeFilter))
 
   const latestByStudent = new Map<string, Screening>()
 
