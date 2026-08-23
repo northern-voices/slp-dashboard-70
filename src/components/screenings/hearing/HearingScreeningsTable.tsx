@@ -23,6 +23,7 @@ import HearingScreeningDeleteDialog from './HearingScreeningDeleteDialog'
 import HearingScreeningTableRow from '@/components/screenings/hearing/HearingScreeningTableRow'
 import ConsentFormModal from '@/components/students/ConsentFormModal'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
+import { getCurrentAcademicYearStartDate } from '@/lib/academicYear'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -175,17 +176,15 @@ const HearingScreeningsTable = ({
           screeningDate.getFullYear() === now.getFullYear()
         )
       }
+
       if (dateRangeFilter === 'quarter') {
         const quarterAgo = new Date(now)
         quarterAgo.setMonth(now.getMonth() - 3)
         return screeningDate >= quarterAgo
       }
+
       if (dateRangeFilter === 'school_year') {
-        const currentMonth = now.getMonth()
-        const currentYear = now.getFullYear()
-        const schoolYearStart =
-          currentMonth >= 8 ? new Date(currentYear, 8, 1) : new Date(currentYear - 1, 8, 1)
-        return screeningDate >= schoolYearStart
+        return screeningDate >= getCurrentAcademicYearStartDate()
       }
       return true
     })()
