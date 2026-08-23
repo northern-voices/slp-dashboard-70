@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
@@ -9,6 +9,7 @@ import HearingScreeningsTable from '@/components/screenings/hearing/HearingScree
 import { useHearingScreenings } from '@/hooks/screenings/use-hearing-screenings'
 import { Screening } from '@/types/database'
 import HearingScreeningsSkeleton from '@/components/skeletons/HearingScreeningsSkeleton'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 const HearingScreenings = () => {
   const { currentSchool } = useOrganization()
@@ -24,6 +25,15 @@ const HearingScreenings = () => {
   const [deduplicateFilter, setDeduplicateFilter] = useState(false)
 
   const { data: screenings = [], isLoading } = useHearingScreenings(currentSchool?.id)
+
+  const availableSchoolYears = useMemo(() => {
+    const years = new Set<string>()
+    screenings.forEach(screening => {
+      years.add(getCurrentAcademicYear(new Date(screening.created_at)))
+    })
+
+    return Array.from(years).sort().reverse()
+  }, [screenings])
 
   const handleCreateScreening = () => {
     if (currentSchool?.id) {
@@ -95,6 +105,7 @@ const HearingScreenings = () => {
           setNonCompliantFilter={setNonCompliantFilter}
           complexNeedsFilter={complexNeedsFilter}
           setComplexNeedsFilter={setComplexNeedsFilter}
+          availableSchoolYears={availableSchoolYears}
         />
 
         <HearingScreeningsTable
