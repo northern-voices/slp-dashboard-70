@@ -51,6 +51,7 @@ import {
   getCurrentAcademicYearStartDate,
   getAcademicYearRange,
 } from '@/lib/academicYear'
+import { matchesDateRangeFilter } from '@/lib/screeningDateRangeFilter'
 
 interface StudentTableProps {
   selectedSchool?: School | null
@@ -109,6 +110,23 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     isLoading,
     isPlaceholderData,
   } = useStudentsBySchool(activeSchool?.id)
+
+  const availableSchoolYears = useMemo(() => {
+    const years = new Set<string>()
+
+    students.forEach(student => {
+      const allScreenings = [
+        ...(student.speech_screenings ?? []),
+        ...(student.hearing_screenings ?? []),
+      ]
+
+      allScreenings.forEach(screening => {
+        years.add(getCurrentAcademicYear(new Date(screening.created_at)))
+      })
+    })
+
+    return Array.from(years).sort().reverse()
+  }, [students])
 
   const studentIds = students.map(student => student.id)
   const { data: studentIdsWithConsent = [] } = useConsentFormPresence(studentIds)
@@ -267,39 +285,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     if (!dateString) return false
 
     const date = new Date(dateString)
-    const now = new Date()
 
-    switch (range) {
-      case 'today':
-        return date.toDateString() === now.toDateString()
+    if (range === 'last_school_year') {
+      const start = getCurrentAcademicYearStart()
+      const { start: lastStart, end: lastEnd } = getAcademicYearRange(`${start - 1}-${start}`)
 
-      case 'week': {
-        const weekAgo = new Date(now)
-        weekAgo.setDate(now.getDate() - 7)
-        return date >= weekAgo
-      }
-
-      case 'month': {
-        const monthAgo = new Date(now)
-        monthAgo.setMonth(now.getMonth() - 1)
-        return date >= monthAgo
-      }
-
-      case 'school_year': {
-        return date >= getCurrentAcademicYearStartDate()
-      }
-
-      case 'last_school_year': {
-        const start = getCurrentAcademicYearStart()
-
-        const { start: lastStart, end: lastEnd } = getAcademicYearRange(`${start - 1}-${start}`)
-
-        return date >= lastStart && date <= lastEnd
-      }
-
-      default:
-        return true
+      return date >= lastStart && date <= lastEnd
     }
+
+    return matchesDateRangeFilter(date, range)
   }
 
   const filteredStudents = students
@@ -595,6 +589,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         setDateRangeFilter={setDateRangeFilter}
         programFilter={programFilter}
         setProgramFilter={setProgramFilter}
+        availableSchoolYears={availableSchoolYears}
       />
 
       {/* Sort Controls */}

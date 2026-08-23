@@ -24,6 +24,7 @@ interface StudentTableFiltersProps {
   setDateRangeFilter: (value: string) => void
   programFilter: string
   setProgramFilter: (value: string) => void
+  availableSchoolYears: string[]
 }
 
 const StudentTableFilters = ({
@@ -35,6 +36,7 @@ const StudentTableFilters = ({
   setDateRangeFilter,
   programFilter,
   setProgramFilter,
+  availableSchoolYears,
 }: StudentTableFiltersProps) => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
@@ -163,6 +165,11 @@ const StudentTableFilters = ({
                       <SelectItem value='month'>This Month</SelectItem>
                       <SelectItem value='school_year'>This School Year</SelectItem>
                       <SelectItem value='last_school_year'>Last School Year</SelectItem>
+                      {availableSchoolYears.map(year => (
+                        <SelectItem key={year} value={`sy_${year}`}>
+                          {year}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
