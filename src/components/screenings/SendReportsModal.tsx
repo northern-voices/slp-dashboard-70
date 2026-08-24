@@ -141,17 +141,17 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     setIsSuccessModalOpen(false)
     setModalType('success')
     setModalMessage('')
-    setRecipientEmails([])
     setSelectedReports([])
     setComparisonScreeningId('')
-    setPassword('')
+    setRecipientEmails(user?.email ? [user.email] : [])
+    setPassword(defaultReportPassword)
   }
 
   const handleModalClose = () => {
-    setRecipientEmails([])
     setSelectedReports([])
     setComparisonScreeningId('')
-    setPassword('')
+    setRecipientEmails(user?.email ? [user.email] : [])
+    setPassword(defaultReportPassword)
     onClose()
   }
 
