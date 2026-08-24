@@ -27,6 +27,7 @@ import MonthlyMeetingTableRow from '@/components/monthly-meetings/MonthlyMeeting
 import MonthlyMeetingDeleteDialog from '@/components/monthly-meetings/MonthlyMeetingDeleteDialog'
 import MonthlyMeetingsSendReportDialog from '@/components/monthly-meetings/MonthlyMeetingsSendReportDialog'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
+import { matchesDateRangeFilter } from '@/lib/screeningDateRangeFilter'
 
 interface MonthlyMeetingsTableProps {
   searchTerm: string
@@ -67,10 +68,7 @@ const MonthlyMeetingsTable = ({
     data: meetings = [],
     isLoading,
     error,
-  } = useMonthlyMeetingsBySchool(
-    currentSchool?.id,
-    dateRangeFilter === 'school_year' || dateRangeFilter === 'all' ? dateRangeFilter : 'all'
-  )
+  } = useMonthlyMeetingsBySchool(currentSchool?.id, 'all')
 
   const filteredMeetings = meetings.filter(meeting => {
     const matchesSearch =
@@ -87,25 +85,8 @@ const MonthlyMeetingsTable = ({
 
     const matchesType = meeting.meeting_type === meetingTypeFilter
 
-    let matchesDateRange = true
-    if (dateRangeFilter !== 'all' && dateRangeFilter !== 'school_year') {
-      const meetingDate = new Date(meeting.meeting_date)
-      const now = new Date()
-      switch (dateRangeFilter) {
-        case 'today':
-          matchesDateRange = meetingDate.toLocaleDateString() === now.toLocaleDateString()
-          break
-        case 'week':
-          matchesDateRange = meetingDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-          break
-        case 'month':
-          matchesDateRange = meetingDate >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-          break
-        case 'quarter':
-          matchesDateRange = meetingDate >= new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-          break
-      }
-    }
+    const meetingDate = new Date(meeting.meeting_date)
+    const matchesDateRange = matchesDateRangeFilter(meetingDate, dateRangeFilter)
 
     return matchesSearch && matchesFacilitator && matchesDateRange && matchesType
   })
