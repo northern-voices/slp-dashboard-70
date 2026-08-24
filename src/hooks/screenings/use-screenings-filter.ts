@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react'
-
 import { parseDateSafely } from '@/utils/dateUtils'
 import type { Screening, Student } from '@/types/database'
 import type { SchoolGrade } from '@/api/schoolGrades'
+import { getCurrentAcademicYearStartDate, getAcademicYearRange } from '@/lib/academicYear'
 
 interface UseScreeningsFilterParams {
   screenings: Screening[]
@@ -106,18 +106,14 @@ export const useScreeningsFilter = ({
             break
           }
           case 'school_year': {
-            const currentYear = now.getFullYear()
-            const currentMonth = now.getMonth()
-            const schoolYearStart =
-              currentMonth >= 8 ? new Date(currentYear, 8, 1) : new Date(currentYear - 1, 8, 1)
-            matchesDateRange = screeningDate >= schoolYearStart
+            matchesDateRange = screeningDate >= getCurrentAcademicYearStartDate()
             break
           }
           default: {
             if (dateRangeFilter.startsWith('sy_')) {
-              const [startYear, endYear] = dateRangeFilter.replace('sy_', '').split('-').map(Number)
-              const syStart = new Date(startYear, 8, 1)
-              const syEnd = new Date(endYear, 7, 31, 23, 59, 59)
+              const { start: syStart, end: syEnd } = getAcademicYearRange(
+                dateRangeFilter.replace('sy_', '')
+              )
               matchesDateRange = screeningDate >= syStart && screeningDate <= syEnd
             }
             break

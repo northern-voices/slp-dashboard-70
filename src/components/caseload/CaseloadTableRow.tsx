@@ -1,5 +1,14 @@
 import { Dispatch, SetStateAction } from 'react'
-import { MoreHorizontal, Loader2, Info, PauseCircle, User, FilePlus, X } from 'lucide-react'
+import {
+  MoreHorizontal,
+  Loader2,
+  Info,
+  PauseCircle,
+  PlayCircle,
+  User,
+  FilePlus,
+  X,
+} from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,16 +27,11 @@ import { ResponsiveTableRow, TableCell } from '@/components/ui/responsive-table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 import { RESULT_OPTIONS, PROGRAM_OPTIONS } from '@/constants/screeningOptions'
-import { Student, Screening, ProgramStatus } from '@/types/database'
+import { Student, Screening, ProgramStatus, ServiceStatus } from '@/types/database'
 import { SchoolGrade } from '@/api/schoolGrades'
 import { ResultBadge, ProgramBadge, ServiceStatusTag, ConsentBadge } from './CaseloadBadges'
-import {
-  getStudentGrade,
-  getSpeechEAName,
-  isCurrentSchoolYear,
-  getSchoolYearLabel,
-  SpeechEA,
-} from './caseloadUtils'
+import { getStudentGrade, getSpeechEAName, SpeechEA } from './caseloadUtils'
+import { isCurrentAcademicYear, getAcademicYearShortLabel } from '@/lib/academicYear'
 
 interface CaseloadTableRowProps {
   student: Student
@@ -38,6 +42,7 @@ interface CaseloadTableRowProps {
   updatingStudentId: string | null
   onResultChange: (student: Student, newResult: string) => void
   onProgramChange: (student: Student, newProgram: ProgramStatus) => void
+  onStatusChange: (student: Student, newStatus: ServiceStatus) => void
   onAssignEA: (student: Student, staffId: string) => void
   onViewStudent: (studentId: string) => void
   setConsentStudent: Dispatch<SetStateAction<Student | null>>
@@ -55,6 +60,7 @@ const CaseloadTableRow = ({
   updatingStudentId,
   onResultChange,
   onProgramChange,
+  onStatusChange,
   onAssignEA,
   onViewStudent,
   setConsentStudent,
@@ -88,9 +94,9 @@ const CaseloadTableRow = ({
                 <div className='flex items-center gap-1.5'>
                   {isUpdating && <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />}
                   <ResultBadge result={screening.result} />
-                  {!isCurrentSchoolYear(screening.created_at) && (
+                  {!isCurrentAcademicYear(screening.created_at) && (
                     <span className='text-[10px] text-gray-400 whitespace-nowrap'>
-                      {getSchoolYearLabel(screening.created_at)}
+                      {getAcademicYearShortLabel(screening.created_at)}
                     </span>
                   )}
                 </div>
@@ -134,9 +140,7 @@ const CaseloadTableRow = ({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {PROGRAM_OPTIONS.filter(
-              option => option.value !== 'none' && option.value !== 'no_consent'
-            ).map(option => (
+            {PROGRAM_OPTIONS.filter(option => option.value !== 'no_consent').map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -221,7 +225,12 @@ const CaseloadTableRow = ({
               Add Consent
             </DropdownMenuItem>
 
-            {student.service_status !== 'paused' && (
+            {student.service_status === 'paused' ? (
+              <DropdownMenuItem onClick={() => onStatusChange(student, 'none')}>
+                <PlayCircle className='w-4 h-4 mr-2' />
+                Resume
+              </DropdownMenuItem>
+            ) : (
               <DropdownMenuItem onClick={() => setPauseConfirmStudent(student)}>
                 <PauseCircle className='w-4 h-4 mr-2' />
                 Pause / Away

@@ -255,6 +255,7 @@ export const useCaseloadTableActions = (
     handleConfirmDeleteEA,
     handleResultChange,
     handleProgramChange,
+    handleStatusChange,
     handleConfirmPause,
   }
 }

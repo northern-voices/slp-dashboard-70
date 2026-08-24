@@ -5,6 +5,7 @@ import SpeechScreenResultCard from '../SpeechScreenResultCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -21,12 +22,14 @@ import { SpeechScreeningFormValues } from '@/types/screening-form'
 interface SpeechScreeningStep2Props {
   form: UseFormReturn<SpeechScreeningFormValues>
   selectedStudent: Student | null
+  selectedGrade: string
   initialScreeningData?: Screening | null
 }
 
 const SpeechScreeningStep2 = ({
   form,
   selectedStudent,
+  selectedGrade,
   initialScreeningData,
 }: SpeechScreeningStep2Props) => {
   const [clinicalNotesOpen, setClinicalNotesOpen] = useState(false)
@@ -46,13 +49,21 @@ const SpeechScreeningStep2 = ({
         </CardHeader>
         <CardContent className='space-y-4'>
           {selectedStudent && (
-            <div className='mb-4 py-3 px-5 bg-blue-50 rounded-lg border border-blue-200'>
+            <div className='mb-4 py-3 px-5 bg-blue-50 rounded-lg border border-blue-200 space-y-2'>
               <div className='flex items-center gap-2'>
                 <span className='text-sm font-medium text-blue-900'>Student Name:</span>
                 <span className='text-sm font-semibold text-blue-800'>
                   {selectedStudent.first_name} {selectedStudent.last_name}
                 </span>
               </div>
+              {selectedGrade && (
+                <div className='flex items-center gap-2'>
+                  <span className='text-sm font-medium text-blue-900'>Grade:</span>
+                  <Badge className='bg-blue-100 text-blue-800 text-xs font-semibold'>
+                    {selectedGrade}
+                  </Badge>
+                </div>
+              )}
             </div>
           )}
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>

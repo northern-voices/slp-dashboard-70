@@ -16,6 +16,7 @@ import SubmissionConfirmationModal from '../SubmissionConfirmationModal'
 import { useOnlineStatus } from '@/hooks/use-online-status'
 import { ErrorPatterns, SpeechScreeningFormValues } from '@/types/screening-form'
 import { offlineQueue } from '@/services/offline-queue'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 interface MultiStepSpeechScreeningFormProps {
   onSubmit?: (data: unknown) => void
@@ -59,13 +60,7 @@ const MultiStepSpeechScreeningForm = ({
     mode: 'onSubmit',
     reValidateMode: 'onSubmit',
     defaultValues: {
-      academic_year: (() => {
-        const currentDate = new Date()
-        const currentYear = currentDate.getFullYear()
-        const currentMonth = currentDate.getMonth()
-        const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-        return `${academicYearStart}-${academicYearStart + 1}`
-      })(),
+      academic_year: getCurrentAcademicYear(),
       absent: {
         isAbsent: false,
         notes: '',
@@ -327,15 +322,7 @@ const MultiStepSpeechScreeningForm = ({
       // Only do grade validation if online
       if (isOnline && selectedStudent && selectedGrade && currentSchool) {
         try {
-          const academicYear =
-            (formData.academic_year as string) ||
-            (() => {
-              const currentDate = new Date()
-              const currentYear = currentDate.getFullYear()
-              const currentMonth = currentDate.getMonth()
-              const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-              return `${academicYearStart}-${academicYearStart + 1}`
-            })()
+          const academicYear = (formData.academic_year as string) || getCurrentAcademicYear()
 
           const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
             currentSchool.id,
@@ -427,15 +414,7 @@ const MultiStepSpeechScreeningForm = ({
             no_consent_notes: (noConsent.notes as string) || '',
           },
           screening_metadata: {
-            academic_year:
-              (formData.academic_year as string) ||
-              (() => {
-                const currentDate = new Date()
-                const currentYear = currentDate.getFullYear()
-                const currentMonth = currentDate.getMonth()
-                const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-                return `${academicYearStart}-${academicYearStart + 1}`
-              })(),
+            academic_year: (formData.academic_year as string) || getCurrentAcademicYear(),
             screening_type: (formData.screening_type as string) || 'initial',
             screening_date:
               (formData.screening_date as string) || new Date().toISOString().split('T')[0],
@@ -483,15 +462,7 @@ const MultiStepSpeechScreeningForm = ({
           return
         }
 
-        const academicYear =
-          (formData.academic_year as string) ||
-          (() => {
-            const currentDate = new Date()
-            const currentYear = currentDate.getFullYear()
-            const currentMonth = currentDate.getMonth()
-            const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-            return `${academicYearStart}-${academicYearStart + 1}`
-          })()
+        const academicYear = (formData.academic_year as string) || getCurrentAcademicYear()
 
         offlineQueue.add(
           formData,
@@ -580,15 +551,7 @@ const MultiStepSpeechScreeningForm = ({
             return
           }
 
-          const academicYear =
-            (formData.academic_year as string) ||
-            (() => {
-              const currentDate = new Date()
-              const currentYear = currentDate.getFullYear()
-              const currentMonth = currentDate.getMonth()
-              const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-              return `${academicYearStart}-${academicYearStart + 1}`
-            })()
+          const academicYear = (formData.academic_year as string) || getCurrentAcademicYear()
 
           offlineQueue.add(
             formData,
@@ -707,6 +670,7 @@ const MultiStepSpeechScreeningForm = ({
             key={resetKey}
             form={form}
             selectedStudent={selectedStudent}
+            selectedGrade={selectedGrade}
             initialScreeningData={initialScreeningData}
           />
         )

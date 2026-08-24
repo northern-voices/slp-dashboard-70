@@ -1,0 +1,1 @@
+../../hearing-reports/generate-hearing-report.js

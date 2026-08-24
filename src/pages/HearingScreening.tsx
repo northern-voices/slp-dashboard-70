@@ -12,6 +12,7 @@ import { useCreateHearingScreening } from '@/hooks/screenings/use-screening-hear
 import { useAuth } from '@/contexts/AuthContext'
 import { schoolGradesApi } from '@/api/schoolGrades'
 import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 const HearingScreeningContent = () => {
   const { studentId } = useParams<{
@@ -69,8 +70,7 @@ const HearingScreeningContent = () => {
 
     if (screeningData.selected_grade && currentSchool) {
       try {
-        const currentYear = new Date().getFullYear()
-        const academicYear = `${currentYear}-${currentYear + 1}`
+        const academicYear = getCurrentAcademicYear()
 
         const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
           currentSchool.id,

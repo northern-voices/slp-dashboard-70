@@ -16,6 +16,7 @@ import ScreeningDetailsModal from '@/components/students/screening-history/Scree
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
+import { getCurrentAcademicYearStart } from '@/lib/academicYear'
 
 const SpeechScreeningContent = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
@@ -52,16 +53,7 @@ const SpeechScreeningContent = () => {
   const latestScreening = studentScreenings[0] ?? null
 
   const isWithin13Months = latestScreening
-    ? (() => {
-        const now = new Date()
-        const month = now.getMonth()
-        const year = now.getFullYear()
-        const academicYearStart = month < 7 ? year - 1 : year
-
-        const threshold = new Date(academicYearStart, 6, 1)
-
-        return new Date(latestScreening.created_at) >= threshold
-      })()
+    ? new Date(latestScreening.created_at) >= new Date(getCurrentAcademicYearStart(), 6, 1)
     : false
 
   const handleCancel = () => {

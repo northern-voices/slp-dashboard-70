@@ -43,6 +43,7 @@ import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import { Screening } from '@/types/database'
 import { ErrorPatterns } from '@/types/screening-form'
 import { ProgramStatus, ServiceStatus } from '@/types/database'
+import { getCurrentAcademicYearStartDate } from '@/lib/academicYear'
 
 interface ScreeningsListProps {
   studentId?: string
@@ -370,18 +371,7 @@ const ScreeningsList = ({
           break
         }
         case 'school_year': {
-          const currentDate = new Date()
-          const currentYear = currentDate.getFullYear()
-          const currentMonth = currentDate.getMonth()
-
-          let schoolYearStart: Date
-          if (currentMonth >= 8) {
-            schoolYearStart = new Date(currentYear, 8, 1)
-          } else {
-            schoolYearStart = new Date(currentYear - 1, 8, 1)
-          }
-
-          matchesDateRange = screeningDate >= schoolYearStart
+          matchesDateRange = screeningDate >= getCurrentAcademicYearStartDate()
           break
         }
       }
@@ -543,18 +533,7 @@ const ScreeningsList = ({
           break
         }
         case 'school_year': {
-          const currentDate = new Date()
-          const currentYear = currentDate.getFullYear()
-          const currentMonth = currentDate.getMonth()
-
-          let schoolYearStart: Date
-          if (currentMonth >= 8) {
-            schoolYearStart = new Date(currentYear, 8, 1)
-          } else {
-            schoolYearStart = new Date(currentYear - 1, 8, 1)
-          }
-
-          matchesDateRange = screeningDate >= schoolYearStart
+          matchesDateRange = screeningDate >= getCurrentAcademicYearStartDate()
           break
         }
       }

@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { ErrorPatterns } from '@/types/screening-form'
 import { Screening, UserRole, ProgramStatus, ServiceStatus } from '@/types/database'
+import { getCurrentAcademicYearStartDate } from '@/lib/academicYear'
 
 type SpeechScreeningResult = string
 
@@ -686,18 +687,7 @@ export const speechScreeningsApi = {
     pageSize: number = 50
   ): Promise<{ data: Screening[]; totalCount: number }> => {
     try {
-      // Calculate school year start date (September 1st)
-      const currentDate = new Date()
-      const currentYear = currentDate.getFullYear()
-      const currentMonth = currentDate.getMonth() // 0-indexed (September = 8)
-
-      let schoolYearStart: Date
-      if (currentMonth >= 8) {
-        // September or later
-        schoolYearStart = new Date(currentYear, 8, 1) // September 1st of current year
-      } else {
-        schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
-      }
+      const schoolYearStart = getCurrentAcademicYearStartDate()
 
       // Build base query for specific school
       let query = supabase
