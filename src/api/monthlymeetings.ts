@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { UserRole } from '@/types/database'
+import { getCurrentAcademicYearStartDate } from '@/lib/academicYear'
 
 const MONTHLY_MEETING_SELECT = `
   *,
@@ -403,18 +404,7 @@ export const monthlyMeetingsApi = {
     dateFilter?: 'all' | 'school_year'
   ): Promise<MonthlyMeeting[]> => {
     try {
-      // Calculate school year start date (September 1st)
-      const currentDate = new Date()
-      const currentYear = currentDate.getFullYear()
-      const currentMonth = currentDate.getMonth() // 0-indexed (September = 8)
-
-      let schoolYearStart: Date
-      if (currentMonth >= 8) {
-        // September or later
-        schoolYearStart = new Date(currentYear, 8, 1) // September 1st of current year
-      } else {
-        schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
-      }
+      const schoolYearStart = getCurrentAcademicYearStartDate()
 
       // Build base query with student updates
       let query = supabase.from('monthly_meetings').select(MONTHLY_MEETING_SELECT)

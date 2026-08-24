@@ -29,6 +29,7 @@ interface HearingScreeningsFiltersProps {
   setNonCompliantFilter: (value: string) => void
   complexNeedsFilter: string
   setComplexNeedsFilter: (value: string) => void
+  availableSchoolYears: string[]
 }
 
 const HearingScreeningsFilters = ({
@@ -46,6 +47,7 @@ const HearingScreeningsFilters = ({
   setNonCompliantFilter,
   complexNeedsFilter,
   setComplexNeedsFilter,
+  availableSchoolYears,
 }: HearingScreeningsFiltersProps) => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
@@ -152,7 +154,12 @@ const HearingScreeningsFilters = ({
                       <SelectItem value='week'>This Week</SelectItem>
                       <SelectItem value='month'>This Month</SelectItem>
                       <SelectItem value='quarter'>This Quarter</SelectItem>
-                      <SelectItem value='school_year'>School Year</SelectItem>
+                      <SelectItem value='school_year'>This School Year</SelectItem>
+                      {availableSchoolYears.map(year => (
+                        <SelectItem key={year} value={`sy_${year}`}>
+                          {year}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

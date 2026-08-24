@@ -48,9 +48,29 @@ const POSTER_ONLY_TEMPLATES = new Set(['Complex Needs', 'Non Registered No Conse
 
 const generateSpeechScreeningPdf = async (reportData: unknown) => {
   const templateName = (reportData as { template?: { name?: string } })?.template?.name
+
   if (templateName && POSTER_ONLY_TEMPLATES.has(templateName)) {
-    const posterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
-    return new Blob([posterBytes], { type: 'application/pdf' })
+    const [{ pdf }, { default: LetterPdf }, { PDFDocument }] = await Promise.all([
+      import('@react-pdf/renderer'),
+      templateName === 'Complex Needs'
+        ? import('@/components/reports/pdf/ComplexNeedsLetterPdf')
+        : import('@/components/reports/pdf/NoConsentLetterPdf'),
+      import('pdf-lib'),
+    ])
+
+    const letterBlob = await pdf(<LetterPdf data={reportData as never} />).toBlob()
+    const letterBytes = await letterBlob.arrayBuffer()
+    const posterBytes = await (
+      await fetch('/No-Consent_Non-Registered_Complex-Needs.pdf')
+    ).arrayBuffer()
+
+    const mainDoc = await PDFDocument.load(letterBytes)
+    const posterDoc = await PDFDocument.load(posterBytes)
+    const [posterPage] = await mainDoc.copyPages(posterDoc, [0])
+    mainDoc.addPage(posterPage)
+
+    const mergedBytes = await mainDoc.save()
+    return new Blob([mergedBytes as BlobPart], { type: 'application/pdf' })
   }
 
   const [{ pdf }, { default: StudentSpeechReportPdf }, { PDFDocument }] = await Promise.all([
@@ -128,9 +148,19 @@ const generateBulkReportZip = async (
   reportData: unknown,
   onProgress?: (current: number, total: number) => void
 ) => {
-  const [{ pdf }, { default: BulkDocumentPdf }, { default: JSZip }] = await Promise.all([
+  const [
+    { pdf },
+    { default: BulkDocumentPdf },
+    { default: NoConsentLetterPdf },
+    { default: ComplexNeedsLetterPdf },
+    { PDFDocument },
+    { default: JSZip },
+  ] = await Promise.all([
     import('@react-pdf/renderer'),
     import('@/components/reports/pdf/BulkDocumentPdf'),
+    import('@/components/reports/pdf/NoConsentLetterPdf'),
+    import('@/components/reports/pdf/ComplexNeedsLetterPdf'),
+    import('pdf-lib'),
     import('jszip'),
   ])
 
@@ -147,12 +177,24 @@ const generateBulkReportZip = async (
     }
     const templateName = doc.template?.name
 
-    let docBytes: ArrayBuffer
+    let docBytes: ArrayBuffer | Uint8Array
     if (templateName && POSTER_ONLY_TEMPLATES.has(templateName)) {
       if (!posterBytes) {
-        posterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
+        posterBytes = await (
+          await fetch('/No-Consent_Non-Registered_Complex-Needs.pdf')
+        ).arrayBuffer()
       }
-      docBytes = posterBytes
+
+      const LetterPdf =
+        templateName === 'Complex Needs' ? ComplexNeedsLetterPdf : NoConsentLetterPdf
+      const letterBlob = await pdf(<LetterPdf data={documents[i] as never} />).toBlob()
+      const letterBytes = await letterBlob.arrayBuffer()
+
+      const mainDoc = await PDFDocument.load(letterBytes)
+      const posterDoc = await PDFDocument.load(posterBytes)
+      const [posterPage] = await mainDoc.copyPages(posterDoc, [0])
+      mainDoc.addPage(posterPage)
+      docBytes = await mainDoc.save()
     } else {
       const docBlob = await pdf(<BulkDocumentPdf data={documents[i] as never} />).toBlob()
       docBytes = await docBlob.arrayBuffer()

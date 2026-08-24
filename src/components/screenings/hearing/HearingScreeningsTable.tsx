@@ -23,6 +23,7 @@ import HearingScreeningDeleteDialog from './HearingScreeningDeleteDialog'
 import HearingScreeningTableRow from '@/components/screenings/hearing/HearingScreeningTableRow'
 import ConsentFormModal from '@/components/students/ConsentFormModal'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
+import { matchesDateRangeFilter } from '@/lib/screeningDateRangeFilter'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -153,42 +154,7 @@ const HearingScreeningsTable = ({
 
     const matchesGrade = gradeFilter === 'all' || screening.grade === gradeFilter
 
-    const matchesDateRange = (() => {
-      if (dateRangeFilter === 'all') return true
-
-      const screeningDate = new Date(screening.created_at)
-      const now = new Date()
-
-      if (dateRangeFilter === 'today') {
-        return screeningDate.toDateString() === now.toDateString()
-      }
-
-      if (dateRangeFilter === 'week') {
-        const weekAgo = new Date(now)
-        weekAgo.setDate(now.getDate() - 7)
-        return screeningDate >= weekAgo
-      }
-
-      if (dateRangeFilter === 'month') {
-        return (
-          screeningDate.getMonth() === now.getMonth() &&
-          screeningDate.getFullYear() === now.getFullYear()
-        )
-      }
-      if (dateRangeFilter === 'quarter') {
-        const quarterAgo = new Date(now)
-        quarterAgo.setMonth(now.getMonth() - 3)
-        return screeningDate >= quarterAgo
-      }
-      if (dateRangeFilter === 'school_year') {
-        const currentMonth = now.getMonth()
-        const currentYear = now.getFullYear()
-        const schoolYearStart =
-          currentMonth >= 8 ? new Date(currentYear, 8, 1) : new Date(currentYear - 1, 8, 1)
-        return screeningDate >= schoolYearStart
-      }
-      return true
-    })()
+    const matchesDateRange = matchesDateRangeFilter(new Date(screening.created_at), dateRangeFilter)
 
     // Result filter
     let matchesResult = true

@@ -9,6 +9,7 @@ import ScreeningsFilters from '@/components/screenings/ScreeningsFilters'
 import ScreeningsTable from '@/components/screenings/ScreeningsTable'
 import { Screening } from '@/types/database'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 const ScreeningsContent = () => {
   const { currentSchool } = useOrganization()
@@ -17,21 +18,17 @@ const ScreeningsContent = () => {
   const { data: schoolScreeningsData } = useScreeningsBySchool(currentSchool?.id, 'all')
   const schoolScreenings = schoolScreeningsData?.screenings ?? []
 
-  const screeningsForYears = currentSchool
-    ? (schoolScreeningsData?.screenings ?? [])
-    : (allScreeningsData ?? [])
-
   const availableSchoolYears = useMemo(() => {
+    const screeningsForYears = currentSchool
+      ? (schoolScreeningsData?.screenings ?? [])
+      : (allScreeningsData ?? [])
+
     const years = new Set<string>()
     screeningsForYears.forEach(s => {
-      const date = new Date(s.created_at)
-      const month = date.getMonth()
-      const year = date.getFullYear()
-      const schoolYear = month >= 8 ? `${year}-${year + 1}` : `${year - 1}-${year}`
-      years.add(schoolYear)
+      years.add(getCurrentAcademicYear(new Date(s.created_at)))
     })
     return Array.from(years).sort().reverse() // newest first
-  }, [screeningsForYears])
+  }, [currentSchool, schoolScreeningsData, allScreeningsData])
 
   const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
   const [searchTerm, setSearchTerm] = useState('')

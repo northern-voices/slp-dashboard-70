@@ -102,6 +102,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     handleConfirmDeleteEA,
     handleResultChange,
     handleProgramChange,
+    handleStatusChange,
     handleConfirmPause,
   } = useCaseloadTableActions(latestScreeningByStudent, refetchSchoolDetails)
 
@@ -192,6 +193,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                 updatingStudentId={updatingStudentId}
                 onResultChange={handleResultChange}
                 onProgramChange={handleProgramChange}
+                onStatusChange={handleStatusChange}
                 onAssignEA={handleAssignEA}
                 onViewStudent={handleNavigate}
                 setConsentStudent={setConsentStudent}

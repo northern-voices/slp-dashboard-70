@@ -29,6 +29,7 @@ import { SelectSeparator } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
 import { type StudentData } from '@/api/monthlymeetings'
+import { getCurrentAcademicYearStartDate } from '@/lib/academicYear'
 
 interface MonthlyMeetingsStudentTableProps {
   students: Student[]
@@ -117,16 +118,7 @@ const MonthlyMeetingsStudentTable = ({
   }
 
   // 0-indexed, August = 7, September = 8
-  const getCurrentSchoolYearStart = (): Date => {
-    const now = new Date()
-    const month = now.getMonth()
-    const year = now.getFullYear()
-
-    // Sep 1 of this year else Sep 1 of last year
-    return month >= 8 ? new Date(year, 8, 1) : new Date(year - 1, 8, 1)
-  }
-
-  const schoolYearStart = getCurrentSchoolYearStart()
+  const schoolYearStart = getCurrentAcademicYearStartDate()
 
   const consentSet = useMemo(
     () =>

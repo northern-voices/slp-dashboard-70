@@ -45,6 +45,13 @@ import StudentsSkeleton from '@/components/skeletons/StudentsSkeleton'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
+import {
+  getCurrentAcademicYear,
+  getCurrentAcademicYearStart,
+  getCurrentAcademicYearStartDate,
+  getAcademicYearRange,
+} from '@/lib/academicYear'
+import { matchesDateRangeFilter } from '@/lib/screeningDateRangeFilter'
 
 interface StudentTableProps {
   selectedSchool?: School | null
@@ -104,20 +111,28 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     isPlaceholderData,
   } = useStudentsBySchool(activeSchool?.id)
 
+  const availableSchoolYears = useMemo(() => {
+    const years = new Set<string>()
+
+    students.forEach(student => {
+      const allScreenings = [
+        ...(student.speech_screenings ?? []),
+        ...(student.hearing_screenings ?? []),
+      ]
+
+      allScreenings.forEach(screening => {
+        years.add(getCurrentAcademicYear(new Date(screening.created_at)))
+      })
+    })
+
+    return Array.from(years).sort().reverse()
+  }, [students])
+
   const studentIds = students.map(student => student.id)
   const { data: studentIdsWithConsent = [] } = useConsentFormPresence(studentIds)
 
   // 0-indexed, August = 7, September = 8
-  const getCurrentSchoolYearStart = (): Date => {
-    const now = new Date()
-    const month = now.getMonth()
-    const year = now.getFullYear()
-
-    // Sep 1 of this year else Sep 1 of last year
-    return month >= 8 ? new Date(year, 8, 1) : new Date(year - 1, 8, 1)
-  }
-
-  const schoolYearStart = getCurrentSchoolYearStart()
+  const schoolYearStart = getCurrentAcademicYearStartDate()
 
   const consentSet = useMemo(
     () =>
@@ -270,58 +285,15 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     if (!dateString) return false
 
     const date = new Date(dateString)
-    const now = new Date()
 
-    switch (range) {
-      case 'today':
-        return date.toDateString() === now.toDateString()
+    if (range === 'last_school_year') {
+      const start = getCurrentAcademicYearStart()
+      const { start: lastStart, end: lastEnd } = getAcademicYearRange(`${start - 1}-${start}`)
 
-      case 'week': {
-        const weekAgo = new Date(now)
-        weekAgo.setDate(now.getDate() - 7)
-        return date >= weekAgo
-      }
-
-      case 'month': {
-        const monthAgo = new Date(now)
-        monthAgo.setMonth(now.getMonth() - 1)
-        return date >= monthAgo
-      }
-
-      case 'school_year': {
-        const currentYear = now.getFullYear()
-        const currentMonth = now.getMonth() // 0-indexed (September = 8)
-        let schoolYearStart: Date
-        if (currentMonth >= 8) {
-          // September or later
-          schoolYearStart = new Date(currentYear, 8, 1) // September 1st of current year
-        } else {
-          schoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of previous year
-        }
-        return date >= schoolYearStart
-      }
-
-      case 'last_school_year': {
-        const currentYear = now.getFullYear()
-        const currentMonth = now.getMonth() // 0-indexed (September = 8)
-        let lastSchoolYearStart: Date
-        let lastSchoolYearEnd: Date
-
-        if (currentMonth >= 8) {
-          // Currently in new school year (September or later)
-          lastSchoolYearStart = new Date(currentYear - 1, 8, 1) // September 1st of last year
-          lastSchoolYearEnd = new Date(currentYear, 7, 31) // August 31st of current year
-        } else {
-          // Currently in school year that started last calendar year
-          lastSchoolYearStart = new Date(currentYear - 2, 8, 1) // September 1st of two years ago
-          lastSchoolYearEnd = new Date(currentYear - 1, 7, 31) // August 31st of last year
-        }
-        return date >= lastSchoolYearStart && date <= lastSchoolYearEnd
-      }
-
-      default:
-        return true
+      return date >= lastStart && date <= lastEnd
     }
+
+    return matchesDateRangeFilter(date, range)
   }
 
   const filteredStudents = students
@@ -486,11 +458,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     let resolvedGradeId: string | undefined = undefined
 
     if (data.grade_level) {
-      const currentDate = new Date()
-      const currentYear = currentDate.getFullYear()
-      const currentMonth = currentDate.getMonth()
-      const academicYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-      const academicYear = `${academicYearStart}-${academicYearStart + 1}`
+      const academicYear = getCurrentAcademicYear()
 
       try {
         const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
@@ -621,6 +589,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         setDateRangeFilter={setDateRangeFilter}
         programFilter={programFilter}
         setProgramFilter={setProgramFilter}
+        availableSchoolYears={availableSchoolYears}
       />
 
       {/* Sort Controls */}

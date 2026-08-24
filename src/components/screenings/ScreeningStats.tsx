@@ -3,6 +3,7 @@ import { Calendar, CheckCircle, Clock, FileText, PauseCircle } from 'lucide-reac
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import ScreeningStatsSkeleton from '@/components/skeletons/ScreeningStatsSkeleton'
+import { matchesDateRangeFilter } from '@/lib/screeningDateRangeFilter'
 
 interface ScreeningStatsProps {
   onFilterClick?: (filterValues: string[], deduplicate: boolean) => void
@@ -33,7 +34,7 @@ const ScreeningStats = ({
     error: errorSchool,
   } = useScreeningsBySchool(
     currentSchool?.id,
-    dateRangeFilter === 'school_year' ? 'school_year' : 'all',
+    'all',
     1,
     10000 // fetch all records
   )
@@ -41,7 +42,9 @@ const ScreeningStats = ({
   // TODO: Temporarily hide transferred from count for now
   const schoolScreenings = (
     currentSchool ? (schoolScreeningsData?.screenings ?? []) : (allScreeningsData ?? [])
-  ).filter(screening => screening.service_status !== 'transferred')
+  )
+    .filter(screening => screening.service_status !== 'transferred')
+    .filter(screening => matchesDateRangeFilter(new Date(screening.created_at), dateRangeFilter))
 
   const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
   const isFetching = currentSchool ? isFetchingSchool : isFetchingAll

@@ -21,6 +21,7 @@ interface MonthlyMeetingsFiltersProps {
   setDateRangeFilter: (value: string) => void
   facilitatorFilter: string
   setFacilitatorFilter: (value: string) => void
+  availableSchoolYears: string[]
 }
 
 const MonthlyMeetingsFilters = ({
@@ -30,17 +31,19 @@ const MonthlyMeetingsFilters = ({
   setDateRangeFilter,
   facilitatorFilter,
   setFacilitatorFilter,
+  availableSchoolYears,
 }: MonthlyMeetingsFiltersProps) => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
 
   // Check if any filters are active
-  const hasActiveFilters = searchTerm || dateRangeFilter !== 'all' || facilitatorFilter !== 'all'
+  const hasActiveFilters =
+    searchTerm || dateRangeFilter !== 'school_year' || facilitatorFilter !== 'all'
 
   // Clear all filters
   const clearAllFilters = () => {
     setSearchTerm('')
-    setDateRangeFilter('all')
+    setDateRangeFilter('school_year')
     setFacilitatorFilter('all')
   }
 
@@ -48,7 +51,7 @@ const MonthlyMeetingsFilters = ({
   const getActiveFilterCount = () => {
     let count = 0
     if (searchTerm) count++
-    if (dateRangeFilter !== 'all') count++
+    if (dateRangeFilter !== 'school_year') count++
     if (facilitatorFilter !== 'all') count++
     return count
   }
@@ -121,6 +124,11 @@ const MonthlyMeetingsFilters = ({
                       <SelectItem value='month'>This Month</SelectItem>
                       <SelectItem value='quarter'>This Quarter</SelectItem>
                       <SelectItem value='school_year'>This School Year</SelectItem>
+                      {availableSchoolYears.map(year => (
+                        <SelectItem key={year} value={`sy_${year}`}>
+                          {year}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

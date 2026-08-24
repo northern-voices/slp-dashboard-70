@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Student, Screening } from '@/types/database'
+import { Student, Screening, ProgramStatus, ServiceStatus } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { GRADE_MAPPING } from '@/constants/app'
+import { getStudentGrade, getSpeechEAName, RESULT_SORT_ORDER } from './caseloadUtils'
 import {
-  getStudentGrade,
-  getSpeechEAName,
-  getCurrentSchoolYearStart,
-  RESULT_SORT_ORDER,
-} from './caseloadUtils'
+  getCurrentAcademicYear,
+  getCurrentAcademicYearStartDate,
+  getAcademicYearRange,
+} from '@/lib/academicYear'
 
 export const useCaseloadTableData = (students: Student[], schoolId?: string) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
@@ -65,11 +65,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
   const availableSchoolYears = useMemo(() => {
     const years = new Set<string>()
     allSchoolScreenings.forEach(s => {
-      const date = new Date(s.created_at)
-      const month = date.getMonth()
-      const year = date.getFullYear()
-      const schoolYear = month >= 8 ? `${year}-${year + 1}` : `${year - 1}-${year}`
-      years.add(schoolYear)
+      years.add(getCurrentAcademicYear(new Date(s.created_at)))
     })
     return Array.from(years).sort().reverse()
   }, [allSchoolScreenings])
@@ -80,9 +76,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     let screeningsToProcess = allSchoolScreenings.filter(s => s.source_table === 'speech')
 
     if (dateFilter.startsWith('sy_')) {
-      const [startYear, endYear] = dateFilter.replace('sy_', '').split('-').map(Number)
-      const syStart = new Date(startYear, 8, 1)
-      const syEnd = new Date(endYear, 7, 31, 23, 59, 59)
+      const { start: syStart, end: syEnd } = getAcademicYearRange(dateFilter.replace('sy_', ''))
       screeningsToProcess = screeningsToProcess.filter(s => {
         const d = new Date(s.created_at)
         return d >= syStart && d <= syEnd
@@ -98,6 +92,23 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
 
     return map
   }, [allSchoolScreenings, dateFilter])
+
+  const effectiveStatusByStudent = useMemo(() => {
+    const map = new Map<string, { programStatus?: ProgramStatus; serviceStatus?: ServiceStatus }>()
+
+    students.forEach(student => {
+      const screening = latestScreeningByStudent.get(student.id)
+
+      map.set(student.id, {
+        programStatus:
+          dateFilter === 'school_year' ? student.program_status : screening?.program_status,
+        serviceStatus:
+          dateFilter === 'school_year' ? student.service_status : screening?.service_status,
+      })
+    })
+
+    return map
+  }, [students, latestScreeningByStudent, dateFilter])
 
   const speechEAs =
     schoolDetails?.schoolTeam?.filter(member => member.roles.includes('speech_ea')) ?? []
@@ -123,7 +134,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
   const studentIds = useMemo(() => students.map(student => student.id), [students])
   const { data: consentStudentIds = [] } = useConsentFormPresence(studentIds)
 
-  const schoolYearStart = getCurrentSchoolYearStart()
+  const schoolYearStart = getCurrentAcademicYearStartDate()
 
   const consentSet = useMemo(
     () =>
@@ -144,9 +155,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     const screening = latestScreeningByStudent.get(student.id)
 
     const matchesCaseload = (() => {
-      const programStatus =
-        dateFilter === 'school_year' ? student.program_status : screening?.program_status
-
+      const { programStatus } = effectiveStatusByStudent.get(student.id) ?? {}
       return (
         programStatus === 'qualified' || programStatus === 'sub' || programStatus === 'graduated'
       )
@@ -176,10 +185,17 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
   })
 
   const caseloadStats = {
-    qualified: filteredStudents.filter(s => s.program_status === 'qualified').length,
-    sub: filteredStudents.filter(s => s.program_status === 'sub').length,
-    paused: filteredStudents.filter(s => s.service_status === 'paused').length,
-    graduated: filteredStudents.filter(s => s.program_status === 'graduated').length,
+    qualified: filteredStudents.filter(
+      s => effectiveStatusByStudent.get(s.id)?.programStatus === 'qualified'
+    ).length,
+    sub: filteredStudents.filter(s => effectiveStatusByStudent.get(s.id)?.programStatus === 'sub')
+      .length,
+    paused: filteredStudents.filter(
+      s => effectiveStatusByStudent.get(s.id)?.serviceStatus === 'paused'
+    ).length,
+    graduated: filteredStudents.filter(
+      s => effectiveStatusByStudent.get(s.id)?.programStatus === 'graduated'
+    ).length,
   }
 
   const sortedStudents = [...filteredStudents].sort((a, b) => {

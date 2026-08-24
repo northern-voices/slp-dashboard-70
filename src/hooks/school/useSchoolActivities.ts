@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { School } from '@/types/database'
-import { getSchoolYearRange } from '@/utils/dateUtils'
+import { getAcademicYearRangeStrings } from '@/lib/academicYear'
 
 interface SchoolActivity {
   id: string
@@ -19,7 +19,7 @@ interface SchoolActivity {
 }
 
 export const useSchoolActivities = (currentSchool: School | null, schoolYear: string) => {
-  const { start, end } = getSchoolYearRange(schoolYear)
+  const { start, end } = getAcademicYearRangeStrings(schoolYear)
 
   return useQuery({
     queryKey: ['school-activities', currentSchool?.id, schoolYear],
