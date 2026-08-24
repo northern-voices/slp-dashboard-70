@@ -22,8 +22,10 @@ const ReportPasswordInput = ({ password, onChange }: ReportPasswordInputProps) =
         <Input
           value={password}
           onChange={e => onChange(e.target.value)}
-          type={showPassword ? 'text' : 'password'}
+          type='text'
+          className={showPassword ? '' : '[-webkit-text-security:disc]'}
           placeholder='Password the recipient will need to view this report'
+          autoComplete='off'
         />
 
         <button
