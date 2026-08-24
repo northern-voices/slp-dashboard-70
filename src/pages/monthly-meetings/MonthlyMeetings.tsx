@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import MonthlyMeetingsFilters from '@/components/monthly-meetings/MonthlyMeetingsFilters'
 import MonthlyMeetingsTable from '@/components/monthly-meetings/MonthlyMeetingsTable'
 import AttendanceSheetsSection from '@/components/caseload/AttendanceSheetsSection'
+import { useMonthlyMeetingsBySchool } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 const buttonLabels: Record<string, string> = {
   progress_checkin: 'Create Monthly Meeting',
@@ -16,7 +18,7 @@ const buttonLabels: Record<string, string> = {
 
 const MonthlyMeetingsContent = () => {
   const [searchTerm, setSearchTerm] = useState('')
-  const [dateRangeFilter, setDateRangeFilter] = useState('all')
+  const [dateRangeFilter, setDateRangeFilter] = useState('school_year')
   const [facilitatorFilter, setFacilitatorFilter] = useState('all')
 
   const navigate = useNavigate()
@@ -24,6 +26,17 @@ const MonthlyMeetingsContent = () => {
   const [activeTab, setActiveTab] = useState(location.state?.activeTab ?? 'progress_checkin')
 
   const { currentSchool } = useOrganization()
+
+  const { data: meetings = [] } = useMonthlyMeetingsBySchool(currentSchool?.id, 'all')
+
+  const availableSchoolYears = useMemo(() => {
+    const years = new Set<string>()
+    meetings.forEach(meeting => {
+      years.add(getCurrentAcademicYear(new Date(meeting.meeting_date)))
+    })
+
+    return Array.from(years).sort().reverse()
+  }, [meetings])
 
   const handleCreateMeeting = () => {
     const path = currentSchool?.id
@@ -79,6 +92,7 @@ const MonthlyMeetingsContent = () => {
               setDateRangeFilter={setDateRangeFilter}
               facilitatorFilter={facilitatorFilter}
               setFacilitatorFilter={setFacilitatorFilter}
+              availableSchoolYears={availableSchoolYears}
             />
             <MonthlyMeetingsTable
               searchTerm={searchTerm}
