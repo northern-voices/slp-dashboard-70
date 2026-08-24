@@ -173,7 +173,6 @@ const BulkSendReportsModal = ({
   const handleResultClose = () => {
     setShowResult(false)
     onSend('email')
-    setPassword('')
     handleClose()
   }
 

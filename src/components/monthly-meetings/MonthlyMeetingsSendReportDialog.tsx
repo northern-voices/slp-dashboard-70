@@ -51,7 +51,7 @@ const MonthlyMeetingsSendReportDialog = ({
   const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleClose = () => {
-    setRecipientEmails(user?.email ? [user.email] : [])
+    setEmails(user?.email ? [user.email] : [])
     setPassword(defaultReportPassword)
     onClose()
   }
