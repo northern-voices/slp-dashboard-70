@@ -163,10 +163,10 @@ const BulkSendReportsModal = ({
   }
 
   const handleClose = () => {
-    setRecipientEmails([])
     setSelectedReports([])
     setShowResult(false)
-    setPassword('')
+    setRecipientEmails(user?.email ? [user.email] : [])
+    setPassword(defaultReportPassword)
     onClose()
   }
 
