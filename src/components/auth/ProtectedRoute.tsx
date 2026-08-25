@@ -33,6 +33,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         const {
           data: { user },
         } = await supabase.auth.getUser()
+
+        if (user?.app_metadata?.mfa_exempt === true) {
+          return
+        }
+
         const preference = user?.user_metadata?.preferred_mfa ?? 'email'
         const hasFactors = (factors?.totp?.length ?? 0) > 0
 
