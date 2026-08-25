@@ -44,6 +44,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
   const [comparisonScreeningId, setComparisonScreeningId] = useState('')
+  const [goalSheetLevel, setGoalSheetLevel] = useState('')
   const [password, setPassword] = useState('')
 
   const { user } = useAuth()
@@ -95,6 +96,10 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
       return
     }
 
+    if (selectedReports.includes('initial-goal-sheet') && !goalSheetLevel) {
+      return
+    }
+
     setIsEmailLoading(true)
 
     try {
@@ -105,7 +110,12 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
           if (reportType === 'initial-speech-report') {
             await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmails, password)
           } else if (reportType === 'initial-goal-sheet') {
-            await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmails, password)
+            await edgeFunctionsApi.studentGoalSheet(
+              screening.id,
+              Number(goalSheetLevel) as 1 | 2,
+              recipientEmails,
+              password
+            )
           } else if (reportType === 'progress-speech-report') {
             await edgeFunctionsApi.studentProgressReport(
               screening.id,
@@ -141,17 +151,19 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
     setIsSuccessModalOpen(false)
     setModalType('success')
     setModalMessage('')
-    setRecipientEmails([])
     setSelectedReports([])
     setComparisonScreeningId('')
-    setPassword('')
+    setRecipientEmails(user?.email ? [user.email] : [])
+    setPassword(defaultReportPassword)
+    setGoalSheetLevel('')
   }
 
   const handleModalClose = () => {
-    setRecipientEmails([])
     setSelectedReports([])
     setComparisonScreeningId('')
-    setPassword('')
+    setRecipientEmails(user?.email ? [user.email] : [])
+    setPassword(defaultReportPassword)
+    setGoalSheetLevel('')
     onClose()
   }
 
@@ -322,6 +334,25 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
               )}
             </div>
 
+            {/* Level selector for goal sheets */}
+            {selectedReports.includes('initial-goal-sheet') && (
+              <div>
+                <Label className='text-sm font-medium'>Goal Sheet Level</Label>
+                <Select value={goalSheetLevel} onValueChange={setGoalSheetLevel}>
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='Select a level' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='1'>Level 1 - Early-developing sounds</SelectItem>
+                    <SelectItem value='2'>Level 2 - Later-developing sounds</SelectItem>
+                    <SelectItem value='custom' disabled>
+                      Create Your Own (coming soon)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {/* Email Input */}
             <MultiEmailInput
               recipientEmails={recipientEmails}
@@ -343,6 +374,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                   !screening ||
                   (screening.source_table !== 'hearing' && selectedReports.length === 0) ||
                   (selectedReports.includes('progress-speech-report') && !comparisonScreeningId) ||
+                  (selectedReports.includes('initial-goal-sheet') && !goalSheetLevel) ||
                   !password.trim() ||
                   isEmailLoading
                 }>

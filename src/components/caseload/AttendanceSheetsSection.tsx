@@ -153,6 +153,11 @@ const AttendanceSheetsSection = ({ schoolId }: AttendanceSheetsSectionProps) => 
                       {sheet.uploaded_by &&
                         ` · ${sheet.uploaded_by.first_name} ${sheet.uploaded_by.last_name}`}
                     </span>
+                    {sheet.additional_notes && (
+                      <span className='text-xs text-muted-foreground italic mt-1'>
+                        {sheet.additional_notes}
+                      </span>
+                    )}
                   </div>
                   <div className='flex gap-2'>
                     {editingId === sheet.id ? (

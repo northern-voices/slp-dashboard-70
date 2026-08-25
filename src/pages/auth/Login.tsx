@@ -93,6 +93,11 @@ const Login = () => {
         data: { user: freshUser },
       } = await supabase.auth.getUser()
 
+      if (freshUser?.app_metadata?.mfa_exempt === true) {
+        navigate(from, { replace: true })
+        return
+      }
+
       const preference = freshUser?.user_metadata?.preferred_mfa ?? 'email'
       const hasFactors = (factorsData?.totp?.length ?? 0) > 0
 

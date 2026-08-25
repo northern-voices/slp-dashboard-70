@@ -3,6 +3,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { AwsClient } from 'npm:aws4fetch@1'
 import QRCode from 'npm:qrcode@1.5.4'
 import { isWithinAcademicYear } from '../_shared/academicYear.ts'
+import { classifySoundErrors } from '../_shared/goalSheetLevels.ts'
 
 interface StudentInfo {
   first_name: string
@@ -371,16 +372,13 @@ Deno.serve(async (req: Request) => {
           vocabulary_support: screening.vocabulary_support || false,
         }
 
-        // Process error patterns with grade-based filtering and separation
-        const { primaryErrors, secondaryErrors } = await processErrorPatterns(
-          screening.error_patterns || {},
-          studentInfo.grade,
-        )
+        // School-wide goal sheets always default to Level 1
+        const levelErrors = await processErrorPatterns(screening.error_patterns || {}, 1)
 
         const documentObject = createIndividualGoalSheetObject(
           studentInfo,
-          primaryErrors,
-          secondaryErrors,
+          levelErrors,
+          1,
           'Qualified',
         )
         documentObjects.push(documentObject)
@@ -405,16 +403,13 @@ Deno.serve(async (req: Request) => {
           vocabulary_support: screening.vocabulary_support || false,
         }
 
-        // Process error patterns with grade-based filtering and separation
-        const { primaryErrors, secondaryErrors } = await processErrorPatterns(
-          screening.error_patterns || {},
-          studentInfo.grade,
-        )
+        // School-wide goal sheets always default to Level 1
+        const levelErrors = await processErrorPatterns(screening.error_patterns || {}, 1)
 
         const documentObject = createIndividualGoalSheetObject(
           studentInfo,
-          primaryErrors,
-          secondaryErrors,
+          levelErrors,
+          1,
           'Sub',
         )
         documentObjects.push(documentObject)
@@ -626,23 +621,14 @@ function getLatestScreeningsPerStudent(screenings: any[]): any[] {
   return Object.values(latestScreenings)
 }
 
-// Helper function to determine if grade is early childhood
-function isEarlyChildhoodGrade(grade: string): boolean {
-  if (!grade) return false
-
-  // Define early childhood grades based on your grade mapping
-  const earlyChildhoodGrades = ['Nursery', 'Pre-K', 'K4', 'K5', 'Kindergarten', 'Headstart']
-
-  return earlyChildhoodGrades.includes(grade)
-}
-
-// Helper function to process error patterns from JSONB with grade-based filtering and separation
+// Processes error patterns from JSONB, restricted to sounds classified as the
+// requested Level (see _shared/goalSheetLevels.ts for the classification rules).
 async function processErrorPatterns(
   errorPatterns: any,
-  grade: string,
-): Promise<{ primaryErrors: ProcessedError[]; secondaryErrors: ProcessedError[] }> {
+  level: 1 | 2,
+): Promise<ProcessedError[]> {
   if (!errorPatterns || typeof errorPatterns !== 'object') {
-    return { primaryErrors: [], secondaryErrors: [] }
+    return []
   }
 
   // Parse the JSONB if it's a string
@@ -652,7 +638,7 @@ async function processErrorPatterns(
       patterns = JSON.parse(errorPatterns)
     } catch (e) {
       console.error('Failed to parse error_patterns JSON:', e)
-      return { primaryErrors: [], secondaryErrors: [] }
+      return []
     }
   }
 
@@ -662,48 +648,17 @@ async function processErrorPatterns(
   const soundErrors = patterns?.articulation?.soundErrors || []
   if (!Array.isArray(soundErrors)) {
     console.warn('soundErrors is not an array:', soundErrors)
-    return { primaryErrors: [], secondaryErrors: [] }
+    return []
   }
 
   console.log('Processing sound errors for goal sheet:', soundErrors)
 
-  // Define grade-specific sound lists
-  const primarySounds = [
-    '2 syllables',
-    '3 syllables',
-    'P',
-    'B',
-    'M',
-    'Final P',
-    'Final T',
-    'Final K',
-    'St-',
-    'Sp-',
-    'Sn-',
-    'Sm-',
-    'Sk-',
-    'Final -ps',
-    'Final -ts',
-    'Final -ks',
-    'K',
-    'G',
-    'T',
-    'D',
-    'S',
-  ]
-
-  const secondarySounds = ['L', 'R', 'Z', 'Ch', 'J', 'Sh', 'F', 'V', '-ar', '-er', '-or', 'th']
-
-  // Determine which sounds to include based on grade
-  const isEarlyGrade = isEarlyChildhoodGrade(grade)
-  let allowedPrimarySounds = primarySounds
-  let allowedSecondarySounds = isEarlyGrade ? [] : secondarySounds
-
-  if (isEarlyGrade) {
-    console.log(`Early childhood grade (${grade}): using primary sounds only`)
-  } else {
-    console.log(`Elementary grade (${grade}): using primary + secondary sounds`)
-  }
+  const soundLevels = classifySoundErrors(
+    soundErrors.map((e: any) => ({
+      sound: e?.sound || 'Unknown',
+      errorPatterns: (e?.errorPatterns || []).filter((p: string) => p !== 'Stimulability'),
+    })),
+  )
 
   // Get the comprehensive error patterns lookup
   const errorPatternsLookup = getErrorPatternsLookup()
@@ -726,12 +681,8 @@ async function processErrorPatterns(
       continue
     }
 
-    // Check if this sound is in primary or secondary category
-    const isPrimarySound = allowedPrimarySounds.includes(sound)
-    const isSecondarySound = allowedSecondarySounds.includes(sound)
-
-    if (!isPrimarySound && !isSecondarySound) {
-      console.log(`Filtering out sound "${sound}" for grade ${grade}`)
+    if (soundLevels.get(sound) !== level) {
+      console.log(`Skipping sound "${sound}" - not Level ${level}`)
       continue
     }
 
@@ -747,88 +698,13 @@ async function processErrorPatterns(
     )
   }
 
-  // Separate processed errors into primary and secondary
-  const primaryErrors: ProcessedError[] = []
-  const secondaryErrors: ProcessedError[] = []
-
-  for (const error of allProcessedErrors) {
-    if (primarySounds.includes(error.sound)) {
-      primaryErrors.push(error)
-    } else if (secondarySounds.includes(error.sound)) {
-      secondaryErrors.push(error)
-    }
-  }
-
-  // FALLBACK LOGIC: If early grade student has no primary errors, include secondary errors
-  if (isEarlyGrade && primaryErrors.length === 0) {
-    console.log(
-      `No primary errors found for early grade ${grade}, including secondary errors as fallback`,
-    )
-
-    // Re-process sound errors, this time allowing secondary sounds
-    for (const soundError of soundErrors) {
-      if (!soundError || typeof soundError !== 'object') {
-        continue
-      }
-
-      const sound = soundError.sound || 'Unknown'
-      const errorPatterns = (soundError.errorPatterns || []).filter(
-        (p: string) => p !== 'Stimulability',
-      )
-      const otherNotes = soundError.otherNotes?.toLowerCase() || ''
-      const stoppingSounds = soundError.stoppingSounds || []
-
-      // Skip sounds with no error patterns
-      if (!Array.isArray(errorPatterns) || errorPatterns.length === 0) {
-        continue
-      }
-
-      // Only process secondary sounds that weren't already processed
-      const isSecondarySound = secondarySounds.includes(sound)
-      const alreadyProcessed = allProcessedErrors.find(e => e.sound === sound)
-
-      if (isSecondarySound && !alreadyProcessed) {
-        console.log(`Adding secondary sound "${sound}" as fallback for early grade ${grade}`)
-
-        // Process this secondary sound error using same logic
-        await processIndividualSoundError(
-          soundError,
-          sound,
-          errorPatterns,
-          otherNotes,
-          stoppingSounds,
-          errorPatternsLookup,
-          allProcessedErrors,
-        )
-      }
-    }
-
-    // Re-separate errors after fallback processing
-    primaryErrors.length = 0 // Clear existing
-    secondaryErrors.length = 0 // Clear existing
-
-    for (const error of allProcessedErrors) {
-      if (primarySounds.includes(error.sound)) {
-        primaryErrors.push(error)
-      } else if (secondarySounds.includes(error.sound)) {
-        secondaryErrors.push(error)
-      }
-    }
-  }
-
   console.log(
-    `Final result: ${primaryErrors.length} primary (${primaryErrors
-      .map(e => e.sound)
-      .join(', ')}) and ${secondaryErrors.length} secondary (${secondaryErrors
+    `Final result: ${allProcessedErrors.length} Level ${level} errors (${allProcessedErrors
       .map(e => e.sound)
       .join(', ')})`,
   )
 
-  // Sort and assign week numbers separately for each category
-  const sortedPrimaryErrors = sortPhonologicalProcesses(primaryErrors, true)
-  const sortedSecondaryErrors = sortPhonologicalProcesses(secondaryErrors, false)
-
-  return { primaryErrors: sortedPrimaryErrors, secondaryErrors: sortedSecondaryErrors }
+  return sortPhonologicalProcesses(allProcessedErrors, level === 1)
 }
 
 async function processIndividualSoundError(
@@ -1245,41 +1121,15 @@ function sortPhonologicalProcesses(errors: ProcessedError[], isPrimary: boolean)
 }
 
 // Helper function to create individual goal sheet document object with dynamic template selection
+// One document = one level's worth of sounds now (Level 1 and Level 2 are generated
+// and sent separately, never combined onto the same goal sheet).
 function createIndividualGoalSheetObject(
   studentInfo: StudentInfo,
-  primaryErrors: ProcessedError[],
-  secondaryErrors: ProcessedError[],
+  errors: ProcessedError[],
+  level: 1 | 2,
   directory: string,
 ) {
-  const hasPrimaryErrors = primaryErrors && primaryErrors.length > 0
-  const hasSecondaryErrors = secondaryErrors && secondaryErrors.length > 0
-
-  // Determine template and error arrangement
-  let templateName: string
-  let contextPrimaryErrors: ProcessedError[]
-  let contextSecondaryErrors: ProcessedError[]
-
-  if (hasPrimaryErrors && hasSecondaryErrors) {
-    // Both primary and secondary errors - use Primary Secondary template
-    templateName = 'Goal Sheet Primary Secondary'
-    contextPrimaryErrors = primaryErrors
-    contextSecondaryErrors = secondaryErrors
-  } else if (hasPrimaryErrors && !hasSecondaryErrors) {
-    // Only primary errors - use Primary Only template
-    templateName = 'Goal Sheet Primary Only v2'
-    contextPrimaryErrors = primaryErrors
-    contextSecondaryErrors = []
-  } else if (!hasPrimaryErrors && hasSecondaryErrors) {
-    // Only secondary errors - use Primary Only template but treat secondary as primary
-    templateName = 'Goal Sheet Primary Only v2'
-    contextPrimaryErrors = secondaryErrors // Move secondary to primary slot
-    contextSecondaryErrors = []
-  } else {
-    // No errors - shouldn't happen but fallback to Primary Only
-    templateName = 'Goal Sheet Primary Only v2'
-    contextPrimaryErrors = []
-    contextSecondaryErrors = []
-  }
+  const contextErrors = errors || []
 
   return {
     metadata: {
@@ -1287,7 +1137,7 @@ function createIndividualGoalSheetObject(
       directory: directory,
     },
     template: {
-      name: templateName,
+      name: 'Goal Sheet Primary Only v2',
       version: 1,
     },
     context: {
@@ -1296,16 +1146,14 @@ function createIndividualGoalSheetObject(
       school: studentInfo.school,
       grade: studentInfo.grade,
       vocabulary_support: studentInfo.vocabulary_support,
-      primary_errors: contextPrimaryErrors,
-      secondary_errors: contextSecondaryErrors,
-      primary_table_errors: contextPrimaryErrors.filter(e => {
+      level,
+      primary_errors: contextErrors,
+      secondary_errors: [],
+      primary_table_errors: contextErrors.filter(e => {
         const p = e.pattern?.toLowerCase().trim()
         return p !== 'stimulability' && p !== 'error detected'
       }),
-      secondary_table_errors: contextSecondaryErrors.filter(e => {
-        const p = e.pattern?.toLowerCase().trim()
-        return p !== 'stimulability' && p !== 'error detected'
-      }),
+      secondary_table_errors: [],
     },
   }
 }

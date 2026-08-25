@@ -30,10 +30,13 @@ import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 
+type GoalSheetLevel = 1 | 2 | 'custom'
+
 const SpeechGoalSheets = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [selectedReports, setSelectedReports] = useState<string[]>([])
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
+  const [selectedLevel, setSelectedLevel] = useState<GoalSheetLevel | null>(null)
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
   const [isEmailLoading, setIsEmailLoading] = useState(false)
   const [selectedScreeningForDetails, setSelectedScreeningForDetails] = useState<Screening | null>(
@@ -67,13 +70,24 @@ const SpeechGoalSheets = () => {
   }
 
   const handleSendEmail = async () => {
-    if (!selectedScreening || selectedReports.length === 0 || recipientEmails.length === 0) return
+    if (
+      !selectedScreening ||
+      typeof selectedLevel !== 'number' ||
+      selectedReports.length === 0 ||
+      recipientEmails.length === 0
+    )
+      return
 
     setIsEmailLoading(true)
     try {
       for (const reportType of selectedReports) {
         if (reportType === 'initial-goal-sheet') {
-          await edgeFunctionsApi.studentGoalSheet(selectedScreening.id, recipientEmails, password)
+          await edgeFunctionsApi.studentGoalSheet(
+            selectedScreening.id,
+            selectedLevel,
+            recipientEmails,
+            password
+          )
         } else if (reportType === 'progress-goal-sheet') {
           console.warn('progress-goal-sheet not yet mapped')
         }
@@ -97,6 +111,7 @@ const SpeechGoalSheets = () => {
   const handleStudentSelect = (student: Student | null) => {
     setSelectedStudent(student)
     setSelectedScreening(null)
+    setSelectedLevel(null)
   }
 
   const handleGoBackToReports = () => {
@@ -108,9 +123,10 @@ const SpeechGoalSheets = () => {
     setIsSuccessModalOpen(false)
     setSelectedStudent(null)
     setSelectedScreening(null)
+    setSelectedLevel(null)
     setSelectedReports([])
-    setRecipientEmails([])
-    setPassword('')
+    setRecipientEmails(user?.email ? [user.email] : [])
+    setPassword(defaultReportPassword)
   }
 
   return (
@@ -164,6 +180,47 @@ const SpeechGoalSheets = () => {
             />
           </div>
         )}
+
+        {/* Level Selector */}
+        {selectedStudent && selectedScreening && (
+          <div className='space-y-2'>
+            <h3 className='text-xl font-medium text-gray-700'>Select Level</h3>
+            <RadioGroup
+              value={selectedLevel === null ? '' : String(selectedLevel)}
+              onValueChange={value =>
+                setSelectedLevel(value === 'custom' ? 'custom' : (Number(value) as 1 | 2))
+              }
+              className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
+              <label
+                htmlFor='level-1'
+                className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 has-[[data-state=checked]]:border-blue-500 has-[[data-state=checked]]:bg-blue-50'>
+                <RadioGroupItem value='1' id='level-1' />
+                <div>
+                  <p className='font-medium text-gray-900'>Level 1</p>
+                  <p className='text-xs text-gray-500'>Early-developing sounds</p>
+                </div>
+              </label>
+
+              <label
+                htmlFor='level-2'
+                className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 has-[[data-state=checked]]:border-blue-500 has-[[data-state=checked]]:bg-blue-50'>
+                <RadioGroupItem value='2' id='level-2' />
+                <div>
+                  <p className='font-medium text-gray-900'>Level 2</p>
+                  <p className='text-xs text-gray-500'>Later-developing sounds</p>
+                </div>
+              </label>
+
+              <div className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg opacity-50 cursor-not-allowed'>
+                <RadioGroupItem value='custom' id='level-custom' disabled />
+                <div>
+                  <p className='font-medium text-gray-900'>Create Your Own</p>
+                  <p className='text-xs text-gray-500'>Coming soon</p>
+                </div>
+              </div>
+            </RadioGroup>
+          </div>
+        )}
       </div>
 
       {/* Email Section */}
@@ -190,6 +247,7 @@ const SpeechGoalSheets = () => {
               className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
               disabled={
                 !selectedScreening ||
+                typeof selectedLevel !== 'number' ||
                 selectedReports.length === 0 ||
                 recipientEmails.length === 0 ||
                 !password.trim() ||
@@ -234,7 +292,6 @@ const SpeechScreeningsTable = ({
 }) => {
   const { data: screeningsData, isLoading, error } = useSpeechScreeningsByStudent(studentId)
 
-  // Get speech screenings for the student
   const studentScreenings = screeningsData || []
 
   if (isLoading) {
@@ -291,7 +348,6 @@ const SpeechScreeningsTable = ({
 
   return (
     <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
-      {/* Table Header */}
       <div className='px-6 py-3 border-b border-gray-200 bg-gray-50'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-3'>

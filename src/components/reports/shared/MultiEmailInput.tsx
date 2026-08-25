@@ -75,7 +75,8 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
 
           <div ref={inputWrapperRef} className='relative flex-1 min-w-[120px]'>
             <input
-              type='email'
+              type='text'
+              inputMode='email'
               id='recipient'
               autoComplete='off'
               value={emailInput}

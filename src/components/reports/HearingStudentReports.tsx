@@ -112,8 +112,8 @@ const HearingStudentReports = () => {
     setSelectedStudent(null)
     setSelectedScreening(null)
     setSelectedReports([])
-    setRecipientEmails([])
-    setPassword('')
+    setRecipientEmails(user?.email ? [user.email] : [])
+    setPassword(defaultReportPassword)
   }
 
   return (

@@ -81,6 +81,7 @@ interface SpeechGoalSheetData {
     secondary_errors: GoalError[]
     primary_table_errors: TableError[]
     secondary_table_errors: TableError[]
+    level?: 1 | 2
   }
 }
 
@@ -503,7 +504,12 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
           </View>
 
           {context.primary_table_errors?.length > 0 && (
-            <ErrorTable title='SOUND ERRORS (CYCLE 1)' errors={context.primary_table_errors} />
+            <ErrorTable
+              title={
+                context.level ? `SOUND ERRORS (LEVEL ${context.level})` : 'SOUND ERRORS (CYCLE 1)'
+              }
+              errors={context.primary_table_errors}
+            />
           )}
 
           {context.secondary_table_errors?.length > 0 && (

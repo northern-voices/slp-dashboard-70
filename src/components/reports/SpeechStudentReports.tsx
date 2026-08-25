@@ -143,12 +143,12 @@ const SpeechStudentReports = () => {
     setSelectedStudent(null)
     setSelectedScreening(null)
     setSelectedReport(null)
-    setRecipientEmails([])
+    setRecipientEmails(user?.email ? [user.email] : [])
     setCustomMessage('')
     setEmailStatus('idle')
     setEmailMessage('')
     setComparisonScreenings([])
-    setPassword('')
+    setPassword(defaultReportPassword)
   }
 
   const handleCloseModal = () => {
