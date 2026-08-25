@@ -172,9 +172,7 @@ const SpeechGoalSheets = () => {
                 No speech screenings found for this student.
               </div>
             ) : (
-              <div
-                className='flex items-center justify-between p-3 border border-gray-200 rounded-lg
-  bg-gray-50'>
+              <div className='flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50'>
                 <span className='text-sm text-gray-700'>
                   Using most recent screening:{' '}
                   <span className='font-medium text-gray-900'>
@@ -206,8 +204,7 @@ const SpeechGoalSheets = () => {
               className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
               <label
                 htmlFor='level-1'
-                className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer
-  hover:bg-gray-50 has-[[data-state=checked]]:border-blue-500 has-[[data-state=checked]]:bg-blue-50'>
+                className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 has-[[data-state=checked]]:border-blue-500 has-[[data-state=checked]]:bg-blue-50'>
                 <RadioGroupItem value='1' id='level-1' />
                 <div>
                   <p className='font-medium text-gray-900'>Level 1</p>
@@ -217,8 +214,7 @@ const SpeechGoalSheets = () => {
 
               <label
                 htmlFor='level-2'
-                className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer
-  hover:bg-gray-50 has-[[data-state=checked]]:border-blue-500 has-[[data-state=checked]]:bg-blue-50'>
+                className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 has-[[data-state=checked]]:border-blue-500 has-[[data-state=checked]]:bg-blue-50'>
                 <RadioGroupItem value='2' id='level-2' />
                 <div>
                   <p className='font-medium text-gray-900'>Level 2</p>
@@ -226,9 +222,7 @@ const SpeechGoalSheets = () => {
                 </div>
               </label>
 
-              <div
-                className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg opacity-50
-  cursor-not-allowed'>
+              <div className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg opacity-50 cursor-not-allowed'>
                 <RadioGroupItem value='custom' id='level-custom' disabled />
                 <div>
                   <p className='font-medium text-gray-900'>Create Your Own</p>
