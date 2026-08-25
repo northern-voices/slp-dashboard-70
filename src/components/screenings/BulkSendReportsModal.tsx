@@ -6,6 +6,13 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Mail, Send, Loader2, CheckCircle, XCircle, BookOpen } from 'lucide-react'
@@ -13,7 +20,7 @@ import { Screening } from '@/types/database'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { upsertEmailHistory } from '@/api/emailHistory'
 import { useAuth } from '@/contexts/AuthContext'
-import { SPEECH_REPORT_OPTIONS } from '@/constants/reportOptions'
+import { SPEECH_REPORT_OPTIONS, SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/reportOptions'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
@@ -41,6 +48,7 @@ const BulkSendReportsModal = ({
   const [resultType, setResultType] = useState<'success' | 'error'>('success')
   const [resultMessage, setResultMessage] = useState('')
   const [password, setPassword] = useState('')
+  const [goalSheetLevel, setGoalSheetLevel] = useState('')
   const defaultReportPassword = useDefaultReportPassword()
 
   const { user } = useAuth()
@@ -82,6 +90,7 @@ const BulkSendReportsModal = ({
   const handleSendReports = async () => {
     if (recipientEmails.length === 0 || (!isHearingOnly && selectedReports.length === 0)) return
     if (progressReportSelected && invalidProgressStudents.length > 0) return
+    if (selectedReports.includes('initial-goal-sheet') && !goalSheetLevel) return
 
     const otherReportTypes = selectedReports.filter(report => report !== 'progress-speech-report')
     const progressPairs = progressReportSelected
@@ -116,7 +125,12 @@ const BulkSendReportsModal = ({
             if (reportType === 'initial-speech-report') {
               await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmails, password)
             } else if (reportType === 'initial-goal-sheet') {
-              await edgeFunctionsApi.studentGoalSheet(screening.id, recipientEmails, password)
+              await edgeFunctionsApi.studentGoalSheet(
+                screening.id,
+                Number(goalSheetLevel) as 1 | 2,
+                recipientEmails,
+                password
+              )
             }
           }
         }
@@ -167,6 +181,7 @@ const BulkSendReportsModal = ({
     setShowResult(false)
     setRecipientEmails(user?.email ? [user.email] : [])
     setPassword(defaultReportPassword)
+    setGoalSheetLevel('')
     onClose()
   }
 
@@ -231,7 +246,7 @@ const BulkSendReportsModal = ({
             <div className='space-y-3'>
               <Label className='text-sm font-medium'>Select Type of Report</Label>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                {SPEECH_REPORT_OPTIONS.map(report => {
+                {[...SPEECH_REPORT_OPTIONS, ...SPEECH_GOAL_SHEET_OPTIONS].map(report => {
                   const Icon = report.icon
                   const isSelected = selectedReports.includes(report.value)
                   return (
@@ -285,6 +300,24 @@ const BulkSendReportsModal = ({
                   )
                 })}
               </div>
+            </div>
+          )}
+
+          {selectedReports.includes('initial-goal-sheet') && (
+            <div className='space-y-3'>
+              <Label className='text-sm font-medium'>Goal Sheet Level</Label>
+              <Select value={goalSheetLevel} onValueChange={setGoalSheetLevel}>
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder='Select a level' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='1'>Level 1 - Early-developing sounds</SelectItem>
+                  <SelectItem value='2'>Level 2 - Later-developing sounds</SelectItem>
+                  <SelectItem value='custom' disabled>
+                    Create Your Own (coming soon)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
 
@@ -350,6 +383,7 @@ const BulkSendReportsModal = ({
                 recipientEmails.length === 0 ||
                 (!isHearingOnly && selectedReports.length === 0) ||
                 (progressReportSelected && invalidProgressStudents.length > 0) ||
+                (selectedReports.includes('initial-goal-sheet') && !goalSheetLevel) ||
                 !password.trim() ||
                 isLoading
               }>
