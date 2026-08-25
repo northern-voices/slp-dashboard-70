@@ -71,13 +71,19 @@ export const edgeFunctionsApi = {
     }
   },
 
-  async studentGoalSheet(speechScreeningId: string, overrideEmails: string[], password: string) {
+  async studentGoalSheet(
+    speechScreeningId: string,
+    level: 1 | 2,
+    overrideEmails: string[],
+    password: string
+  ) {
     try {
       const generated_by = await this._getGeneratedBy()
 
       const { data, error } = await supabase.functions.invoke('student-goal-sheet', {
         body: {
           speech_screening_id: speechScreeningId,
+          level,
           override_emails: overrideEmails,
           generated_by,
           password,
