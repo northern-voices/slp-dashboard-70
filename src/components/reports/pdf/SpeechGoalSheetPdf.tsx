@@ -426,7 +426,7 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
 
                 {error.stimulability_option === 'non-stimulable' ? (
                   <>
-                    Student will discriminate correct <Text style={styles.bold}>{error.sound}</Text>{' '}
+                    Student will identify correct <Text style={styles.bold}>{error.sound}</Text>{' '}
                     with 90% accuracy when listening to adult say contrast pairs.
                   </>
                 ) : (
