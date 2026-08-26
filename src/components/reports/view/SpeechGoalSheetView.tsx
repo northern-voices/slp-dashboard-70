@@ -203,7 +203,7 @@ const GoalWorksheetSection = ({
               <span className="font-['Montserrat'] italic font-bold">Goal: </span>
               {error.stimulability_option === 'non-stimulable' ? (
                 <>
-                  Student will discriminate correct <span className='font-bold'>{error.sound}</span>{' '}
+                  Student will identify correct <span className='font-bold'>{error.sound}</span>{' '}
                   with 90% accuracy when listening to adult say contrast pairs.
                 </>
               ) : (
@@ -319,8 +319,7 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
       {worksheetErrors.map((error, i) => (
         <section
           key={i}
-          className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden
-  break-after-page print:shadow-none'>
+          className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
           <ReportBanner title='Goal Sheets' />
           <div className='px-10 pt-4 flex flex-col flex-1'>
             <GoalWorksheetSection studentName={context.student_name} error={error} />
