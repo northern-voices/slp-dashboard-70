@@ -3186,7 +3186,7 @@ function getGoalSheetContent(): Record<
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
-      'Omits S and Backing: "K" for T': {
+      'Omits S and Backing': {
         qrCategories: ['Final S Blends', 'T/D'],
         strategies: {
           wordPhrase: [
@@ -4961,7 +4961,7 @@ function getErrorPatternsLookup() {
         pattern: 'Nasalization (~ air through nose)',
         example: "'boo(ts~)' for boots",
       },
-      'Omits S and Backing: "K" for T': {
+      'Omits S and Backing': {
         pattern: "Omits S and Backing: 'K' for T",
         example: "'book-' for boots",
       },
