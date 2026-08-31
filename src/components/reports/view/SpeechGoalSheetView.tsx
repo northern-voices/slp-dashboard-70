@@ -1,3 +1,4 @@
+import { Ear } from 'lucide-react'
 import { ReportBanner, ReportFooter } from './shared/ReportBannerChrome'
 
 interface TableError {
@@ -197,9 +198,13 @@ const GoalWorksheetSection = ({
         <p className='font-bold text-gray-900 text-[9px] mb-0.5'>TARGET:</p>
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
         <p className='font-bold text-gray-900 text-[9px] mb-0.5'>STIMULABILITY:</p>
-        <p className='font-bold text-gray-900 text-base mb-1'>
-          {getStimulabilityLabel(error.stimulability_option)}
-        </p>
+        {error.stimulability_option === 'non-stimulable' ? (
+          <Ear className='w-[18px] h-[18px] text-gray-900 mb-1' strokeWidth={2} />
+        ) : (
+          <p className='font-bold text-gray-900 text-base mb-1'>
+            {getStimulabilityLabel(error.stimulability_option)}
+          </p>
+        )}
       </div>
       <div className='w-[87%] pl-3 flex'>
         <div className='pr-4 border-r border-gray-300'>
