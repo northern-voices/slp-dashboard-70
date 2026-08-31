@@ -57,6 +57,16 @@ const getStrategyItems = (error: GoalError): string[] => {
   return error.strategies?.[column] ?? []
 }
 
+const STIMULABILITY_DISPLAY_LABEL: Record<string, string> = {
+  'non-stimulable': 'Non-Stimulable',
+  sound: 'Sound',
+  word: 'Word',
+  phrase: 'Phrase',
+}
+
+const getStimulabilityLabel = (option: string): string =>
+  STIMULABILITY_DISPLAY_LABEL[option] || option
+
 const STRATEGY_COLUMN_MAX = 3
 
 // Wraps a strategy list into side-by-side sub-columns of at most
@@ -195,6 +205,12 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     color: '#111827',
     marginBottom: 3,
+  },
+  stimulabilityCaption: {
+    fontSize: 7,
+    fontFamily: 'Montserrat',
+    fontStyle: 'italic',
+    color: '#6b7280',
   },
   strategyLabel: {
     fontSize: 9,
@@ -409,6 +425,9 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
         <View style={styles.soundBox}>
           <Text style={styles.soundLabel}>TARGET:</Text>
           <Text style={styles.soundValue}>{error.sound}</Text>
+          <Text style={styles.stimulabilityCaption}>
+            Stimulability: {getStimulabilityLabel(error.stimulability_option)}
+          </Text>
         </View>
         <View style={styles.strategyBox}>
           <View style={styles.strategyChecklistCol}>
