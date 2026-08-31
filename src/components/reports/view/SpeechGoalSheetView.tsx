@@ -69,6 +69,8 @@ interface SpeechGoalSheetData {
     primary_table_errors: TableError[]
     secondary_table_errors: TableError[]
     level?: 1 | 2
+    level_1_table_errors?: TableError[]
+    level_2_table_errors?: TableError[]
   }
 }
 
@@ -294,22 +296,42 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
             </p>
           </div>
 
-          {context.primary_table_errors?.length > 0 && (
-            <ErrorTable
-              title={
-                context.level ? `SOUND ERRORS (LEVEL ${context.level})` : 'SOUND ERRORS (CYCLE 1)'
-              }
-              errors={context.primary_table_errors}
-            />
-          )}
-          {context.secondary_table_errors?.length > 0 && (
-            <ErrorTable title='SOUND ERRORS (CYCLE 2)' errors={context.secondary_table_errors} />
-          )}
-
-          {context.vocabulary_support && (
-            <p className="font-['Montserrat'] italic text-gray-600">
-              Vocabulary support recommended
-            </p>
+          {context.level_1_table_errors || context.level_2_table_errors ? (
+            <>
+              {(context.level_1_table_errors?.length ?? 0) > 0 && (
+                <ErrorTable
+                  title={
+                    context.level === 2 ? 'SOUNDS COMPLETED IN LEVEL 1' : 'SOUND ERRORS (LEVEL 1)'
+                  }
+                  errors={context.level_1_table_errors!}
+                />
+              )}
+              {(context.level_2_table_errors?.length ?? 0) > 0 && (
+                <ErrorTable
+                  title={context.level === 1 ? 'UPON MASTERY OF LEVEL 1' : 'SOUND ERRORS (LEVEL 2)'}
+                  errors={context.level_2_table_errors!}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              {context.primary_table_errors?.length > 0 && (
+                <ErrorTable
+                  title={
+                    context.level
+                      ? `SOUND ERRORS (LEVEL ${context.level})`
+                      : 'SOUND ERRORS (CYCLE 1)'
+                  }
+                  errors={context.primary_table_errors}
+                />
+              )}
+              {context.secondary_table_errors?.length > 0 && (
+                <ErrorTable
+                  title='SOUND ERRORS (CYCLE 2)'
+                  errors={context.secondary_table_errors}
+                />
+              )}
+            </>
           )}
         </div>
 
