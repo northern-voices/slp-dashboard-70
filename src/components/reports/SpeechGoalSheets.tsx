@@ -30,7 +30,7 @@ import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 
-type GoalSheetLevel = 1 | 2 | 'custom'
+type GoalSheetLevel = 1 | 2 | 'both' | 'custom'
 
 const SpeechGoalSheets = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
@@ -72,7 +72,8 @@ const SpeechGoalSheets = () => {
   const handleSendEmail = async () => {
     if (
       !selectedScreening ||
-      typeof selectedLevel !== 'number' ||
+      selectedLevel === null ||
+      selectedLevel === 'custom' ||
       selectedReports.length === 0 ||
       recipientEmails.length === 0
     )
@@ -188,9 +189,11 @@ const SpeechGoalSheets = () => {
             <RadioGroup
               value={selectedLevel === null ? '' : String(selectedLevel)}
               onValueChange={value =>
-                setSelectedLevel(value === 'custom' ? 'custom' : (Number(value) as 1 | 2))
+                setSelectedLevel(
+                  value === 'custom' || value === 'both' ? value : (Number(value) as 1 | 2)
+                )
               }
-              className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
+              className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4'>
               <label
                 htmlFor='level-1'
                 className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 has-[[data-state=checked]]:border-blue-500 has-[[data-state=checked]]:bg-blue-50'>
@@ -208,6 +211,16 @@ const SpeechGoalSheets = () => {
                 <div>
                   <p className='font-medium text-gray-900'>Level 2</p>
                   <p className='text-xs text-gray-500'>Later-developing sounds</p>
+                </div>
+              </label>
+
+              <label
+                htmlFor='level-both'
+                className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 has-[[data-state=checked]]:border-blue-500 has-[[data-state=checked]]:bg-blue-50'>
+                <RadioGroupItem value='both' id='level-both' />
+                <div>
+                  <p className='font-medium text-gray-900'>Both Levels</p>
+                  <p className='text-xs text-gray-500'>Send Level 1 & 2 together</p>
                 </div>
               </label>
 
@@ -247,7 +260,8 @@ const SpeechGoalSheets = () => {
               className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
               disabled={
                 !selectedScreening ||
-                typeof selectedLevel !== 'number' ||
+                selectedLevel === null ||
+                selectedLevel === 'custom' ||
                 selectedReports.length === 0 ||
                 recipientEmails.length === 0 ||
                 !password.trim() ||
