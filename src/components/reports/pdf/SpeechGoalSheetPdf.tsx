@@ -206,12 +206,6 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 3,
   },
-  stimulabilityCaption: {
-    fontSize: 7,
-    fontFamily: 'Montserrat',
-    fontStyle: 'italic',
-    color: '#6b7280',
-  },
   strategyLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
@@ -425,9 +419,8 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
         <View style={styles.soundBox}>
           <Text style={styles.soundLabel}>TARGET:</Text>
           <Text style={styles.soundValue}>{error.sound}</Text>
-          <Text style={styles.stimulabilityCaption}>
-            Stimulability: {getStimulabilityLabel(error.stimulability_option)}
-          </Text>
+          <Text style={styles.soundLabel}>STIMULABILITY:</Text>
+          <Text style={styles.soundValue}>{getStimulabilityLabel(error.stimulability_option)}</Text>
         </View>
         <View style={styles.strategyBox}>
           <View style={styles.strategyChecklistCol}>
