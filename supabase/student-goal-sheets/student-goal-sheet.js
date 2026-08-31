@@ -196,8 +196,13 @@ Deno.serve(async req => {
       vocabulary_support: screening.vocabulary_support || false,
     }
 
-    // 2. Process error patterns from JSONB field, restricted to the requested level
+    // 2. Process error patterns from JSONB field, restricted to the requested level.
+    //    Also process the other level so the summary page can show both tables
+    //    (current sounds + what's completed/upcoming), even though only the
+    //    requested level gets individual worksheet pages below.
     const levelErrors = await processErrorPatterns(screening.error_patterns || {}, level)
+    const otherLevel = level === 1 ? 2 : 1
+    const otherLevelErrors = await processErrorPatterns(screening.error_patterns || {}, otherLevel)
     console.log(`Processed ${levelErrors.length} Level ${level} errors for goal sheet`)
 
     // 4. Determine recipient emails: use override_emails if provided, else fall back to staging table email
@@ -225,7 +230,7 @@ Deno.serve(async req => {
     }
     studentInfo.email = recipientEmails[0]
     // 5. Create document object (this becomes the report_data behind the password gate)
-    const documentObject = createDocumentObject(studentInfo, levelErrors, level)
+    const documentObject = createDocumentObject(studentInfo, levelErrors, level, otherLevelErrors)
 
     // 6. Create a password-protected report token instead of emailing the PDF directly
     //    (the doc-gen Lambda never returns PDF bytes and always attaches a real PDF
@@ -803,10 +808,21 @@ function sortPhonologicalProcesses(errors, isPrimary) {
   return sortedSounds
 }
 
-// One document = one level's worth of sounds now (Level 1 and Level 2 are generated
-// and sent separately, never combined onto the same goal sheet).
-function createDocumentObject(studentInfo, errors, level) {
+// One level's sounds get full worksheet pages (Level 1 and Level 2 are
+// generated and sent separately, never combined onto the same goal sheet's
+// worksheet pages). The summary table at the top, however, always shows both
+// levels side by side - level_1_table_errors/level_2_table_errors - so the
+// SLP can see what's being worked on now alongside what's done/upcoming.
+function toTableErrors(errors) {
+  return (errors || []).filter(e => {
+    const p = e.pattern?.toLowerCase().trim()
+    return p !== 'stimulability' && p !== 'error detected'
+  })
+}
+
+function createDocumentObject(studentInfo, errors, level, otherLevelErrors) {
   const contextErrors = errors || []
+  const otherErrors = otherLevelErrors || []
 
   return {
     metadata: {
@@ -825,11 +841,10 @@ function createDocumentObject(studentInfo, errors, level) {
       level,
       primary_errors: contextErrors,
       secondary_errors: [],
-      primary_table_errors: contextErrors.filter(e => {
-        const p = e.pattern?.toLowerCase().trim()
-        return p !== 'stimulability' && p !== 'error detected'
-      }),
+      primary_table_errors: toTableErrors(contextErrors),
       secondary_table_errors: [],
+      level_1_table_errors: toTableErrors(level === 1 ? contextErrors : otherErrors),
+      level_2_table_errors: toTableErrors(level === 2 ? contextErrors : otherErrors),
     },
   }
 }
