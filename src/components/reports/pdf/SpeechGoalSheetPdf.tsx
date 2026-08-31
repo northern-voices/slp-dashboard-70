@@ -407,7 +407,7 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
 
       <View style={styles.soundStrategyRow} wrap={false}>
         <View style={styles.soundBox}>
-          <Text style={styles.soundLabel}>SOUND:</Text>
+          <Text style={styles.soundLabel}>TARGET:</Text>
           <Text style={styles.soundValue}>{error.sound}</Text>
         </View>
         <View style={styles.strategyBox}>
