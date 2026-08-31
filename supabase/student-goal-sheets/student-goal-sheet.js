@@ -63,13 +63,34 @@ async function createReportToken({
 
 // Send a link-only notification email via AWS SES (bypasses the doc-gen Lambda,
 // which always attaches a real generated PDF whenever it emails - no way to suppress that)
-async function sendReportLinkEmail({ recipients, subject, reportLabel, viewUrl }) {
+async function sendReportLinkEmail({ recipients, subject, reportLabel, links }) {
   const accessKeyId = Deno.env.get('AWS_SES_ACCESS_KEY_ID')
   const secretAccessKey = Deno.env.get('AWS_SES_SECRET_ACCESS_KEY')
   const region = Deno.env.get('AWS_SES_REGION')
   const senderEmail = Deno.env.get('REPORT_SENDER_EMAIL')
 
   const aws = new AwsClient({ accessKeyId, secretAccessKey, region, service: 'ses' })
+
+  // One button per link. When there's more than one (e.g. Level 1 + Level 2
+  // sent together), each button gets a small label above it so the recipient
+  // knows which is which.
+  const buttonsHtml = links
+    .map(
+      (link, i) => `
+                  <div style="text-align: center; margin-bottom: ${
+                    i < links.length - 1 ? '16px' : '32px'
+                  };">
+                    ${
+                      links.length > 1
+                        ? `<p style="margin: 0 0 8px; font-size: 13px; font-weight: 600; color: #374151;">${link.label}</p>`
+                        : ''
+                    }
+                    <a href="${link.url}" style="display: inline-block; background-color: #005AE0; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none; padding: 12px 32px; border-radius: 8px;">
+                      View Report
+                    </a>
+                  </div>`,
+    )
+    .join('')
 
   const body = `
     <html>
@@ -96,13 +117,9 @@ async function sendReportLinkEmail({ recipients, subject, reportLabel, viewUrl }
                     Your Report is Ready
                   </h1>
                   <p style="margin: 0 0 32px; font-size: 15px; color: #6B7280; text-align: center; line-height: 1.5;">
-                    A secure copy of ${reportLabel} is ready to view. You'll need the password provided to you separately to open it.
+                    Below you'll find a secure link to ${reportLabel}. You'll need the password provided to you separately to open it.
                   </p>
-                  <div style="text-align: center; margin-bottom: 32px;">
-                    <a href="${viewUrl}" style="display: inline-block; background-color: #005AE0; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none; padding: 12px 32px; border-radius: 8px;">
-                      View Report
-                    </a>
-                  </div>
+                  ${buttonsHtml}
                   <p style="margin: 0; font-size: 13px; color: #9CA3AF; text-align: center; line-height: 1.6;">
                     Warmest regards,<br />Lisa Brillinger &amp; the NVSS team
                   </p>
@@ -154,8 +171,8 @@ Deno.serve(async req => {
     if (!speech_screening_id) {
       throw new Error('speech_screening_id is required')
     }
-    if (level !== 1 && level !== 2) {
-      throw new Error('level is required and must be 1 or 2')
+    if (level !== 1 && level !== 2 && level !== 'both') {
+      throw new Error("level is required and must be 1, 2, or 'both'")
     }
     if (!password) {
       throw new Error('password is required')
@@ -196,14 +213,18 @@ Deno.serve(async req => {
       vocabulary_support: screening.vocabulary_support || false,
     }
 
-    // 2. Process error patterns from JSONB field, restricted to the requested level.
-    //    Also process the other level so the summary page can show both tables
-    //    (current sounds + what's completed/upcoming), even though only the
-    //    requested level gets individual worksheet pages below.
-    const levelErrors = await processErrorPatterns(screening.error_patterns || {}, level)
-    const otherLevel = level === 1 ? 2 : 1
-    const otherLevelErrors = await processErrorPatterns(screening.error_patterns || {}, otherLevel)
-    console.log(`Processed ${levelErrors.length} Level ${level} errors for goal sheet`)
+    // 2. Process error patterns for both levels up front. Each level's document
+    //    shows both tables (current sounds + what's completed/upcoming), and
+    //    "both" mode needs both documents anyway, so there's no per-level
+    //    savings to computing only one at a time.
+    const errorsByLevel = {
+      1: await processErrorPatterns(screening.error_patterns || {}, 1),
+      2: await processErrorPatterns(screening.error_patterns || {}, 2),
+    }
+    const levelsToSend = level === 'both' ? [1, 2] : [level]
+    console.log(
+      `Processed ${errorsByLevel[1].length} Level 1 and ${errorsByLevel[2].length} Level 2 errors for goal sheet`,
+    )
 
     // 4. Determine recipient emails: use override_emails if provided, else fall back to staging table email
     let recipientEmails = Array.isArray(override_emails) ? override_emails.filter(Boolean) : []
@@ -229,79 +250,110 @@ Deno.serve(async req => {
       }
     }
     studentInfo.email = recipientEmails[0]
-    // 5. Create document object (this becomes the report_data behind the password gate)
-    const documentObject = createDocumentObject(studentInfo, levelErrors, level, otherLevelErrors)
 
-    // 6. Create a password-protected report token instead of emailing the PDF directly
-    //    (the doc-gen Lambda never returns PDF bytes and always attaches a real PDF
-    //    whenever it emails, so it can't be used for a link-only notification)
-    const token = await createReportToken({
-      supabaseUrl,
-      supabaseKey,
-      password,
-      reportType: 'goal_sheet',
-      reportData: documentObject,
-      studentId: screening.student_id,
-      schoolId: screening.students.school_id,
-      createdBy: generated_by,
-    })
+    // 5. Create a document object + password-protected report token per requested
+    //    level (this becomes the report_data behind each token's password gate).
+    //    "both" mode creates two tokens sharing the same password, delivered as
+    //    two links in a single email below.
+    const tokens = []
+    for (const lvl of levelsToSend) {
+      const documentObject = createDocumentObject(
+        studentInfo,
+        errorsByLevel[lvl],
+        lvl,
+        errorsByLevel[lvl === 1 ? 2 : 1],
+      )
+      // 6. Create a password-protected report token instead of emailing the PDF
+      //    directly (the doc-gen Lambda never returns PDF bytes and always
+      //    attaches a real PDF whenever it emails, so it can't be used for a
+      //    link-only notification)
+      const token = await createReportToken({
+        supabaseUrl,
+        supabaseKey,
+        password,
+        reportType: 'goal_sheet',
+        reportData: documentObject,
+        studentId: screening.student_id,
+        schoolId: screening.students.school_id,
+        createdBy: generated_by,
+      })
+      tokens.push({ level: lvl, token })
+    }
 
-    const viewUrl = `${Deno.env.get('APP_BASE_URL')}/view-report/${token}`
+    const links = tokens.map(({ level: lvl, token }) => ({
+      label: levelsToSend.length > 1 ? `Level ${lvl} Goal Sheet` : 'View Report',
+      url: `${Deno.env.get('APP_BASE_URL')}/view-report/${token}`,
+    }))
 
-    console.log(`Sending secure report link to ${recipientEmails.join(', ')}...`)
+    console.log(`Sending secure report link(s) to ${recipientEmails.join(', ')}...`)
 
     await sendReportLinkEmail({
       recipients: recipientEmails,
-      subject: `NVSS Student Goal Sheet`,
-      reportLabel: `${studentInfo.first_name} ${studentInfo.last_name}'s goal sheet`,
-      viewUrl,
+      subject: levelsToSend.length > 1 ? `NVSS Student Goal Sheets` : `NVSS Student Goal Sheet`,
+      reportLabel:
+        levelsToSend.length > 1
+          ? `${studentInfo.first_name} ${studentInfo.last_name}'s goal sheets`
+          : `${studentInfo.first_name} ${studentInfo.last_name}'s goal sheet`,
+      links,
     })
 
-    console.log(`Secure report link sent successfully`)
-    // 8. Log the generation in reports table
+    console.log(`Secure report link(s) sent successfully`)
+    // 8. Log the generation in reports table (one row per level sent)
     const reportInsertUrl = `${supabaseUrl}/rest/v1/reports`
-    await fetch(reportInsertUrl, {
-      method: 'POST',
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        student_id: screening.student_id,
-        school_id: screening.students.school_id,
-        speech_screening_id: speech_screening_id,
-        report_type: 'speech_goals_report',
-        file_key: `goal_sheet_${speech_screening_id}`,
-        generated_by: generated_by || null,
-        metadata: {
-          sent_to: recipientEmails,
-          level,
-          errors_count: levelErrors.length,
-          vocabulary_support: studentInfo.vocabulary_support,
-          grade_level: studentInfo.grade,
-          delivery_method: 'password_protected_link',
-          report_token: token,
-        },
-      }),
-    })
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: `Goal sheet generated and a secure link sent to ${recipientEmails.join(', ')}`,
-        student_name: `${studentInfo.first_name} ${studentInfo.last_name}`,
-        level,
-        errors_count: levelErrors.length,
-        grade_level: studentInfo.grade,
-      }),
-      {
+    for (const { level: lvl, token } of tokens) {
+      await fetch(reportInsertUrl, {
+        method: 'POST',
         headers: {
-          ...corsHeaders,
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
           'Content-Type': 'application/json',
         },
-        status: 200,
+        body: JSON.stringify({
+          student_id: screening.student_id,
+          school_id: screening.students.school_id,
+          speech_screening_id: speech_screening_id,
+          report_type: 'speech_goals_report',
+          file_key:
+            levelsToSend.length > 1
+              ? `goal_sheet_${speech_screening_id}_level${lvl}`
+              : `goal_sheet_${speech_screening_id}`,
+          generated_by: generated_by || null,
+          metadata: {
+            sent_to: recipientEmails,
+            level: lvl,
+            errors_count: errorsByLevel[lvl].length,
+            vocabulary_support: studentInfo.vocabulary_support,
+            grade_level: studentInfo.grade,
+            delivery_method: 'password_protected_link',
+            report_token: token,
+          },
+        }),
+      })
+    }
+
+    const responseBody = {
+      success: true,
+      message: `Goal sheet${levelsToSend.length > 1 ? 's' : ''} generated and a secure link${
+        levelsToSend.length > 1 ? 's' : ''
+      } sent to ${recipientEmails.join(', ')}`,
+      student_name: `${studentInfo.first_name} ${studentInfo.last_name}`,
+      grade_level: studentInfo.grade,
+    }
+    if (levelsToSend.length > 1) {
+      responseBody.levels = levelsToSend
+      responseBody.errors_count = levelsToSend.reduce((sum, lvl) => sum + errorsByLevel[lvl].length, 0)
+    } else {
+      responseBody.level = levelsToSend[0]
+      responseBody.errors_count = errorsByLevel[levelsToSend[0]].length
+    }
+
+    return new Response(JSON.stringify(responseBody), {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
       },
-    )
+      status: 200,
+    })
   } catch (error) {
     console.error('Error generating goal sheet:', error)
     return new Response(
