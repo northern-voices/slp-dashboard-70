@@ -374,8 +374,16 @@ Deno.serve(async (req: Request) => {
 
         // School-wide goal sheets always default to Level 1, but Level 2 is
         // also processed so the summary table can show both levels side by side.
-        const levelErrors = await processErrorPatterns(screening.error_patterns || {}, 1)
-        const otherLevelErrors = await processErrorPatterns(screening.error_patterns || {}, 2)
+        const levelErrors = await processErrorPatterns(
+          screening.error_patterns || {},
+          1,
+          studentInfo.grade,
+        )
+        const otherLevelErrors = await processErrorPatterns(
+          screening.error_patterns || {},
+          2,
+          studentInfo.grade,
+        )
 
         const documentObject = createIndividualGoalSheetObject(
           studentInfo,
@@ -408,8 +416,16 @@ Deno.serve(async (req: Request) => {
 
         // School-wide goal sheets always default to Level 1, but Level 2 is
         // also processed so the summary table can show both levels side by side.
-        const levelErrors = await processErrorPatterns(screening.error_patterns || {}, 1)
-        const otherLevelErrors = await processErrorPatterns(screening.error_patterns || {}, 2)
+        const levelErrors = await processErrorPatterns(
+          screening.error_patterns || {},
+          1,
+          studentInfo.grade,
+        )
+        const otherLevelErrors = await processErrorPatterns(
+          screening.error_patterns || {},
+          2,
+          studentInfo.grade,
+        )
 
         const documentObject = createIndividualGoalSheetObject(
           studentInfo,
@@ -628,10 +644,12 @@ function getLatestScreeningsPerStudent(screenings: any[]): any[] {
 }
 
 // Processes error patterns from JSONB, restricted to sounds classified as the
-// requested Level (see _shared/goalSheetLevels.ts for the classification rules).
+// requested Level (see _shared/goalSheetLevels.ts for the classification rules,
+// including the grade-1+ override that grade needs to be passed through for).
 async function processErrorPatterns(
   errorPatterns: any,
   level: 1 | 2,
+  grade?: string,
 ): Promise<ProcessedError[]> {
   if (!errorPatterns || typeof errorPatterns !== 'object') {
     return []
@@ -664,6 +682,7 @@ async function processErrorPatterns(
       sound: e?.sound || 'Unknown',
       errorPatterns: (e?.errorPatterns || []).filter((p: string) => p !== 'Stimulability'),
     })),
+    grade,
   )
 
   // Get the comprehensive error patterns lookup
