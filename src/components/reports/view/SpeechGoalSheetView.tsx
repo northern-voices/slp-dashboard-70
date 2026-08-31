@@ -112,41 +112,65 @@ const HOW_DID_THEY_DO_ITEMS = [
   'Can say the sound in most words (no adult help)',
 ]
 
-const ErrorTable = ({ title, errors }: { title: string; errors: TableError[] }) => (
-  <>
-    <h2 className="text-xl text-gray-600 text-center font-['Gotu'] mt-2 mb-3">{title}</h2>
-    <table className='w-full border border-black text-sm mb-3'>
-      <thead>
-        <tr className='bg-[#f2f2f2]'>
-          <th className="font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold">
-            ERROR SOUND
-          </th>
-          <th className="font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold">
-            ERROR PATTERN EXHIBITED
-          </th>
-          <th className="font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold">
-            EXAMPLE
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {errors.map((error, i) => (
-          <tr key={i}>
-            <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
-              {error.sound}
-            </td>
-            <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
-              {error.pattern}
-            </td>
-            <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
-              {error.example}
-            </td>
+const ErrorTable = ({
+  title,
+  errors,
+  variant,
+}: {
+  title: string
+  errors: TableError[]
+  variant?: 'level1' | 'level2'
+}) => {
+  const titleColorClass =
+    variant === 'level1'
+      ? 'text-[#5b7a8b]'
+      : variant === 'level2'
+        ? 'text-[#8a6d4f]'
+        : 'text-gray-600'
+  const headerRowClass =
+    variant === 'level1' ? 'bg-[#5b7a8b]' : variant === 'level2' ? 'bg-[#e9e2d9]' : 'bg-[#f2f2f2]'
+  const headerTextClass =
+    variant === 'level1' ? 'text-white' : variant === 'level2' ? 'text-[#4d4b4b]' : ''
+
+  return (
+    <>
+      <h2 className={`text-xl ${titleColorClass} text-center font-['Gotu'] mt-2 mb-3`}>{title}</h2>
+      <table className='w-full border border-black text-sm mb-3'>
+        <thead>
+          <tr className={headerRowClass}>
+            <th
+              className={`font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold ${headerTextClass}`}>
+              ERROR SOUND
+            </th>
+            <th
+              className={`font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold ${headerTextClass}`}>
+              ERROR PATTERN EXHIBITED
+            </th>
+            <th
+              className={`font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold ${headerTextClass}`}>
+              EXAMPLE
+            </th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </>
-)
+        </thead>
+        <tbody>
+          {errors.map((error, i) => (
+            <tr key={i}>
+              <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
+                {error.sound}
+              </td>
+              <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
+                {error.pattern}
+              </td>
+              <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
+                {error.example}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  )
+}
 
 const GoalWorksheetSection = ({
   studentName,
@@ -304,12 +328,14 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
                     context.level === 2 ? 'SOUNDS COMPLETED IN LEVEL 1' : 'SOUND ERRORS (LEVEL 1)'
                   }
                   errors={context.level_1_table_errors!}
+                  variant='level1'
                 />
               )}
               {(context.level_2_table_errors?.length ?? 0) > 0 && (
                 <ErrorTable
                   title={context.level === 1 ? 'UPON MASTERY OF LEVEL 1' : 'SOUND ERRORS (LEVEL 2)'}
                   errors={context.level_2_table_errors!}
+                  variant='level2'
                 />
               )}
             </>
