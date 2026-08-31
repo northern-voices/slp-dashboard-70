@@ -82,6 +82,8 @@ interface SpeechGoalSheetData {
     primary_table_errors: TableError[]
     secondary_table_errors: TableError[]
     level?: 1 | 2
+    level_1_table_errors?: TableError[]
+    level_2_table_errors?: TableError[]
   }
 }
 
@@ -503,21 +505,44 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
             </Text>
           </View>
 
-          {context.primary_table_errors?.length > 0 && (
-            <ErrorTable
-              title={
-                context.level ? `SOUND ERRORS (LEVEL ${context.level})` : 'SOUND ERRORS (CYCLE 1)'
-              }
-              errors={context.primary_table_errors}
-            />
-          )}
+          {context.level_1_table_errors || context.level_2_table_errors ? (
+            <>
+              {(context.level_1_table_errors?.length ?? 0) > 0 && (
+                <ErrorTable
+                  title={
+                    context.level === 2 ? 'SOUNDS COMPLETED IN LEVEL 1' : 'SOUND ERRORS (LEVEL 1)'
+                  }
+                  errors={context.level_1_table_errors!}
+                />
+              )}
 
-          {context.secondary_table_errors?.length > 0 && (
-            <ErrorTable title='SOUND ERRORS (CYCLE 2)' errors={context.secondary_table_errors} />
-          )}
+              {(context.level_2_table_errors?.length ?? 0) > 0 && (
+                <ErrorTable
+                  title={context.level === 1 ? 'UPON MASTERY OF LEVEL 1' : 'SOUND ERRORS (LEVEL 2)'}
+                  errors={context.level_2_table_errors!}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              {context.primary_table_errors?.length > 0 && (
+                <ErrorTable
+                  title={
+                    context.level
+                      ? `SOUND ERRORS (LEVEL ${context.level})`
+                      : 'SOUND ERRORS (CYCLE 1)'
+                  }
+                  errors={context.primary_table_errors}
+                />
+              )}
 
-          {context.vocabulary_support && (
-            <Text style={styles.vocabNote}>Vocabulary support recommended</Text>
+              {context.secondary_table_errors?.length > 0 && (
+                <ErrorTable
+                  title='SOUND ERRORS (CYCLE 2)'
+                  errors={context.secondary_table_errors}
+                />
+              )}
+            </>
           )}
         </View>
 
