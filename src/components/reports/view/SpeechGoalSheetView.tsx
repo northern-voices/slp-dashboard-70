@@ -44,6 +44,16 @@ const getStrategyItems = (error: GoalError): string[] => {
   return error.strategies?.[column] ?? []
 }
 
+const STIMULABILITY_DISPLAY_LABEL: Record<string, string> = {
+  'non-stimulable': 'Non-Stimulable',
+  sound: 'Sound',
+  word: 'Word',
+  phrase: 'Phrase',
+}
+
+const getStimulabilityLabel = (option: string): string =>
+  STIMULABILITY_DISPLAY_LABEL[option] || option
+
 const STRATEGY_COLUMN_MAX = 3
 
 // Wraps a strategy list into side-by-side sub-columns of at most
@@ -186,6 +196,9 @@ const GoalWorksheetSection = ({
       <div className='w-[13%] pr-1 border-r border-gray-300'>
         <p className='font-bold text-gray-900 text-[9px] mb-0.5'>TARGET:</p>
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
+        <p className="font-['Montserrat'] italic text-[7px] text-gray-500">
+          Stimulability: {getStimulabilityLabel(error.stimulability_option)}
+        </p>
       </div>
       <div className='w-[87%] pl-3 flex'>
         <div className='pr-4 border-r border-gray-300'>
