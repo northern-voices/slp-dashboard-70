@@ -218,13 +218,22 @@ Deno.serve(async req => {
     //    "both" mode needs both documents anyway, so there's no per-level
     //    savings to computing only one at a time.
     const errorsByLevel = {
-      1: await processErrorPatterns(screening.error_patterns || {}, 1),
-      2: await processErrorPatterns(screening.error_patterns || {}, 2),
+      1: await processErrorPatterns(screening.error_patterns || {}, 1, studentInfo.grade),
+      2: await processErrorPatterns(screening.error_patterns || {}, 2, studentInfo.grade),
     }
-    const levelsToSend = level === 'both' ? [1, 2] : [level]
     console.log(
       `Processed ${errorsByLevel[1].length} Level 1 and ${errorsByLevel[2].length} Level 2 errors for goal sheet`,
     )
+
+    // "Both" mode skips a level that comes back with nothing - this happens for
+    // a grade-1+ student whose only errors are later-developing sounds, which
+    // classifySoundErrors relabels entirely as Level 1 (see goalSheetLevels.ts),
+    // leaving Level 2 empty. Sending a blank second link would look broken.
+    const levelsToSend =
+      level === 'both' ? [1, 2].filter(lvl => errorsByLevel[lvl].length > 0) : [level]
+    if (levelsToSend.length === 0) {
+      throw new Error('No sound errors found for this speech screening')
+    }
 
     // 4. Determine recipient emails: use override_emails if provided, else fall back to staging table email
     let recipientEmails = Array.isArray(override_emails) ? override_emails.filter(Boolean) : []
@@ -373,8 +382,9 @@ Deno.serve(async req => {
 })
 
 // Processes error patterns from JSONB, restricted to sounds classified as the
-// requested Level (see _shared/goalSheetLevels.ts for the classification rules).
-async function processErrorPatterns(errorPatterns, level) {
+// requested Level (see _shared/goalSheetLevels.ts for the classification rules,
+// including the grade-1+ override that grade needs to be passed through for).
+async function processErrorPatterns(errorPatterns, level, grade) {
   if (!errorPatterns || typeof errorPatterns !== 'object') {
     return []
   }
@@ -406,6 +416,7 @@ async function processErrorPatterns(errorPatterns, level) {
       sound: e?.sound || 'Unknown',
       errorPatterns: (e?.errorPatterns || []).filter(p => p !== 'Stimulability'),
     })),
+    grade,
   )
 
   // Get the comprehensive error patterns lookup
