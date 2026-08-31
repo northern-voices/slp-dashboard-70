@@ -73,7 +73,7 @@ export const edgeFunctionsApi = {
 
   async studentGoalSheet(
     speechScreeningId: string,
-    level: 1 | 2,
+    level: 1 | 2 | 'both',
     overrideEmails: string[],
     password: string
   ) {
