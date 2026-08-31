@@ -114,6 +114,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     letterSpacing: 0.5,
   },
+  sectionTitleLevel1: { color: '#5b7a8b' },
+  sectionTitleLevel2: { color: '#8a6d4f' },
 
   table: { marginBottom: 10 },
   tableRow: { flexDirection: 'row' },
@@ -128,6 +130,8 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     textAlign: 'center',
   },
+  tableHeaderCellLevel1: { backgroundColor: '#5b7a8b', color: '#ffffff' },
+  tableHeaderCellLevel2: { backgroundColor: '#e9e2d9', color: '#4d4b4b' },
   tableCell: {
     flex: 1,
     borderWidth: 0.75,
@@ -351,25 +355,48 @@ const HOW_DID_THEY_DO_ITEMS = [
   'Can say the sound in most words (no adult help)',
 ]
 
-const ErrorTable = ({ title, errors }: { title: string; errors: TableError[] }) => (
-  <>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    <View style={styles.table}>
-      <View style={styles.tableRow} wrap={false}>
-        <Text style={styles.tableHeaderCell}>ERROR SOUND</Text>
-        <Text style={styles.tableHeaderCell}>ERROR PATTERN EXHIBITED</Text>
-        <Text style={styles.tableHeaderCell}>EXAMPLE</Text>
-      </View>
-      {errors.map((error, i) => (
-        <View style={styles.tableRow} key={i} wrap={false}>
-          <Text style={styles.tableCell}>{error.sound}</Text>
-          <Text style={styles.tableCell}>{error.pattern}</Text>
-          <Text style={styles.tableCell}>{error.example}</Text>
+const ErrorTable = ({
+  title,
+  errors,
+  variant,
+}: {
+  title: string
+  errors: TableError[]
+  variant?: 'level1' | 'level2'
+}) => {
+  const titleStyle =
+    variant === 'level1'
+      ? [styles.sectionTitle, styles.sectionTitleLevel1]
+      : variant === 'level2'
+        ? [styles.sectionTitle, styles.sectionTitleLevel2]
+        : styles.sectionTitle
+  const headerCellStyle =
+    variant === 'level1'
+      ? [styles.tableHeaderCell, styles.tableHeaderCellLevel1]
+      : variant === 'level2'
+        ? [styles.tableHeaderCell, styles.tableHeaderCellLevel2]
+        : styles.tableHeaderCell
+
+  return (
+    <>
+      <Text style={titleStyle}>{title}</Text>
+      <View style={styles.table}>
+        <View style={styles.tableRow} wrap={false}>
+          <Text style={headerCellStyle}>ERROR SOUND</Text>
+          <Text style={headerCellStyle}>ERROR PATTERN EXHIBITED</Text>
+          <Text style={headerCellStyle}>EXAMPLE</Text>
         </View>
-      ))}
-    </View>
-  </>
-)
+        {errors.map((error, i) => (
+          <View style={styles.tableRow} key={i} wrap={false}>
+            <Text style={styles.tableCell}>{error.sound}</Text>
+            <Text style={styles.tableCell}>{error.pattern}</Text>
+            <Text style={styles.tableCell}>{error.example}</Text>
+          </View>
+        ))}
+      </View>
+    </>
+  )
+}
 
 const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error: GoalError }) => (
   <Page size='LETTER' style={styles.page}>
@@ -513,6 +540,7 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
                     context.level === 2 ? 'SOUNDS COMPLETED IN LEVEL 1' : 'SOUND ERRORS (LEVEL 1)'
                   }
                   errors={context.level_1_table_errors!}
+                  variant='level1'
                 />
               )}
 
@@ -520,6 +548,7 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
                 <ErrorTable
                   title={context.level === 1 ? 'UPON MASTERY OF LEVEL 1' : 'SOUND ERRORS (LEVEL 2)'}
                   errors={context.level_2_table_errors!}
+                  variant='level2'
                 />
               )}
             </>
