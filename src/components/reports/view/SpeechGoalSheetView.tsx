@@ -1,3 +1,4 @@
+import { Ear } from 'lucide-react'
 import { ReportBanner, ReportFooter } from './shared/ReportBannerChrome'
 
 interface TableError {
@@ -44,6 +45,16 @@ const getStrategyItems = (error: GoalError): string[] => {
   return error.strategies?.[column] ?? []
 }
 
+const STIMULABILITY_DISPLAY_LABEL: Record<string, string> = {
+  'non-stimulable': 'Non-Stimulable',
+  sound: 'Sound',
+  word: 'Word',
+  phrase: 'Phrase',
+}
+
+const getStimulabilityLabel = (option: string): string =>
+  STIMULABILITY_DISPLAY_LABEL[option] || option
+
 const STRATEGY_COLUMN_MAX = 3
 
 // Wraps a strategy list into side-by-side sub-columns of at most
@@ -69,6 +80,8 @@ interface SpeechGoalSheetData {
     primary_table_errors: TableError[]
     secondary_table_errors: TableError[]
     level?: 1 | 2
+    level_1_table_errors?: TableError[]
+    level_2_table_errors?: TableError[]
   }
 }
 
@@ -110,41 +123,65 @@ const HOW_DID_THEY_DO_ITEMS = [
   'Can say the sound in most words (no adult help)',
 ]
 
-const ErrorTable = ({ title, errors }: { title: string; errors: TableError[] }) => (
-  <>
-    <h2 className="text-xl text-gray-600 text-center font-['Gotu'] mt-2 mb-3">{title}</h2>
-    <table className='w-full border border-black text-sm mb-3'>
-      <thead>
-        <tr className='bg-[#f2f2f2]'>
-          <th className="font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold">
-            ERROR SOUND
-          </th>
-          <th className="font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold">
-            ERROR PATTERN EXHIBITED
-          </th>
-          <th className="font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold">
-            EXAMPLE
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {errors.map((error, i) => (
-          <tr key={i}>
-            <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
-              {error.sound}
-            </td>
-            <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
-              {error.pattern}
-            </td>
-            <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
-              {error.example}
-            </td>
+const ErrorTable = ({
+  title,
+  errors,
+  variant,
+}: {
+  title: string
+  errors: TableError[]
+  variant?: 'level1' | 'level2'
+}) => {
+  const titleColorClass =
+    variant === 'level1'
+      ? 'text-[#5b7a8b]'
+      : variant === 'level2'
+        ? 'text-[#8a6d4f]'
+        : 'text-gray-600'
+  const headerRowClass =
+    variant === 'level1' ? 'bg-[#5b7a8b]' : variant === 'level2' ? 'bg-[#e9e2d9]' : 'bg-[#f2f2f2]'
+  const headerTextClass =
+    variant === 'level1' ? 'text-white' : variant === 'level2' ? 'text-[#4d4b4b]' : ''
+
+  return (
+    <>
+      <h2 className={`text-xl ${titleColorClass} text-center font-['Gotu'] mt-2 mb-3`}>{title}</h2>
+      <table className='w-full border border-black text-sm mb-3'>
+        <thead>
+          <tr className={headerRowClass}>
+            <th
+              className={`font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold ${headerTextClass}`}>
+              ERROR SOUND
+            </th>
+            <th
+              className={`font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold ${headerTextClass}`}>
+              ERROR PATTERN EXHIBITED
+            </th>
+            <th
+              className={`font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold ${headerTextClass}`}>
+              EXAMPLE
+            </th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </>
-)
+        </thead>
+        <tbody>
+          {errors.map((error, i) => (
+            <tr key={i}>
+              <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
+                {error.sound}
+              </td>
+              <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
+                {error.pattern}
+              </td>
+              <td className='border border-black py-2 px-3 text-center text-[#4d4b4b]'>
+                {error.example}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  )
+}
 
 const GoalWorksheetSection = ({
   studentName,
@@ -158,8 +195,16 @@ const GoalWorksheetSection = ({
 
     <div className='flex border border-[#b7b7b7] bg-[#eff3f6] mb-3 p-2.5'>
       <div className='w-[13%] pr-1 border-r border-gray-300'>
-        <p className='font-bold text-gray-900 text-[9px] mb-0.5'>SOUND:</p>
+        <p className='font-bold text-gray-900 text-[9px] mb-0.5'>TARGET:</p>
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
+        <p className='font-bold text-gray-900 text-[9px] mb-0.5'>STIMULABILITY:</p>
+        {error.stimulability_option === 'non-stimulable' ? (
+          <Ear className='w-[18px] h-[18px] text-gray-900 mb-1' strokeWidth={2} />
+        ) : (
+          <p className='font-bold text-gray-900 text-base mb-1'>
+            {getStimulabilityLabel(error.stimulability_option)}
+          </p>
+        )}
       </div>
       <div className='w-[87%] pl-3 flex'>
         <div className='pr-4 border-r border-gray-300'>
@@ -203,7 +248,7 @@ const GoalWorksheetSection = ({
               <span className="font-['Montserrat'] italic font-bold">Goal: </span>
               {error.stimulability_option === 'non-stimulable' ? (
                 <>
-                  Student will discriminate correct <span className='font-bold'>{error.sound}</span>{' '}
+                  Student will identify correct <span className='font-bold'>{error.sound}</span>{' '}
                   with 90% accuracy when listening to adult say contrast pairs.
                 </>
               ) : (
@@ -294,22 +339,44 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
             </p>
           </div>
 
-          {context.primary_table_errors?.length > 0 && (
-            <ErrorTable
-              title={
-                context.level ? `SOUND ERRORS (LEVEL ${context.level})` : 'SOUND ERRORS (CYCLE 1)'
-              }
-              errors={context.primary_table_errors}
-            />
-          )}
-          {context.secondary_table_errors?.length > 0 && (
-            <ErrorTable title='SOUND ERRORS (CYCLE 2)' errors={context.secondary_table_errors} />
-          )}
-
-          {context.vocabulary_support && (
-            <p className="font-['Montserrat'] italic text-gray-600">
-              Vocabulary support recommended
-            </p>
+          {context.level_1_table_errors || context.level_2_table_errors ? (
+            <>
+              {(context.level_1_table_errors?.length ?? 0) > 0 && (
+                <ErrorTable
+                  title={
+                    context.level === 2 ? 'SOUNDS COMPLETED IN LEVEL 1' : 'SOUND ERRORS (LEVEL 1)'
+                  }
+                  errors={context.level_1_table_errors!}
+                  variant='level1'
+                />
+              )}
+              {(context.level_2_table_errors?.length ?? 0) > 0 && (
+                <ErrorTable
+                  title={context.level === 1 ? 'UPON MASTERY OF LEVEL 1' : 'SOUND ERRORS (LEVEL 2)'}
+                  errors={context.level_2_table_errors!}
+                  variant='level2'
+                />
+              )}
+            </>
+          ) : (
+            <>
+              {context.primary_table_errors?.length > 0 && (
+                <ErrorTable
+                  title={
+                    context.level
+                      ? `SOUND ERRORS (LEVEL ${context.level})`
+                      : 'SOUND ERRORS (CYCLE 1)'
+                  }
+                  errors={context.primary_table_errors}
+                />
+              )}
+              {context.secondary_table_errors?.length > 0 && (
+                <ErrorTable
+                  title='SOUND ERRORS (CYCLE 2)'
+                  errors={context.secondary_table_errors}
+                />
+              )}
+            </>
           )}
         </div>
 
@@ -319,8 +386,7 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
       {worksheetErrors.map((error, i) => (
         <section
           key={i}
-          className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden
-  break-after-page print:shadow-none'>
+          className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
           <ReportBanner title='Goal Sheets' />
           <div className='px-10 pt-4 flex flex-col flex-1'>
             <GoalWorksheetSection studentName={context.student_name} error={error} />

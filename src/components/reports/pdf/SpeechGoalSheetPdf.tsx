@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer'
+import { Document, Page, View, Text, Image, Svg, Path, StyleSheet, Font } from '@react-pdf/renderer'
 import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 
@@ -57,6 +57,16 @@ const getStrategyItems = (error: GoalError): string[] => {
   return error.strategies?.[column] ?? []
 }
 
+const STIMULABILITY_DISPLAY_LABEL: Record<string, string> = {
+  'non-stimulable': 'Non-Stimulable',
+  sound: 'Sound',
+  word: 'Word',
+  phrase: 'Phrase',
+}
+
+const getStimulabilityLabel = (option: string): string =>
+  STIMULABILITY_DISPLAY_LABEL[option] || option
+
 const STRATEGY_COLUMN_MAX = 3
 
 // Wraps a strategy list into side-by-side sub-columns of at most
@@ -82,6 +92,8 @@ interface SpeechGoalSheetData {
     primary_table_errors: TableError[]
     secondary_table_errors: TableError[]
     level?: 1 | 2
+    level_1_table_errors?: TableError[]
+    level_2_table_errors?: TableError[]
   }
 }
 
@@ -112,6 +124,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     letterSpacing: 0.5,
   },
+  sectionTitleLevel1: { color: '#5b7a8b' },
+  sectionTitleLevel2: { color: '#8a6d4f' },
 
   table: { marginBottom: 10 },
   tableRow: { flexDirection: 'row' },
@@ -126,6 +140,8 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     textAlign: 'center',
   },
+  tableHeaderCellLevel1: { backgroundColor: '#5b7a8b', color: '#ffffff' },
+  tableHeaderCellLevel2: { backgroundColor: '#e9e2d9', color: '#4d4b4b' },
   tableCell: {
     flex: 1,
     borderWidth: 0.75,
@@ -190,6 +206,7 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 3,
   },
+  stimulabilityIcon: { width: 18, height: 18, marginBottom: 3 },
   strategyLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
@@ -349,25 +366,48 @@ const HOW_DID_THEY_DO_ITEMS = [
   'Can say the sound in most words (no adult help)',
 ]
 
-const ErrorTable = ({ title, errors }: { title: string; errors: TableError[] }) => (
-  <>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    <View style={styles.table}>
-      <View style={styles.tableRow} wrap={false}>
-        <Text style={styles.tableHeaderCell}>ERROR SOUND</Text>
-        <Text style={styles.tableHeaderCell}>ERROR PATTERN EXHIBITED</Text>
-        <Text style={styles.tableHeaderCell}>EXAMPLE</Text>
-      </View>
-      {errors.map((error, i) => (
-        <View style={styles.tableRow} key={i} wrap={false}>
-          <Text style={styles.tableCell}>{error.sound}</Text>
-          <Text style={styles.tableCell}>{error.pattern}</Text>
-          <Text style={styles.tableCell}>{error.example}</Text>
+const ErrorTable = ({
+  title,
+  errors,
+  variant,
+}: {
+  title: string
+  errors: TableError[]
+  variant?: 'level1' | 'level2'
+}) => {
+  const titleStyle =
+    variant === 'level1'
+      ? [styles.sectionTitle, styles.sectionTitleLevel1]
+      : variant === 'level2'
+        ? [styles.sectionTitle, styles.sectionTitleLevel2]
+        : styles.sectionTitle
+  const headerCellStyle =
+    variant === 'level1'
+      ? [styles.tableHeaderCell, styles.tableHeaderCellLevel1]
+      : variant === 'level2'
+        ? [styles.tableHeaderCell, styles.tableHeaderCellLevel2]
+        : styles.tableHeaderCell
+
+  return (
+    <>
+      <Text style={titleStyle}>{title}</Text>
+      <View style={styles.table}>
+        <View style={styles.tableRow} wrap={false}>
+          <Text style={headerCellStyle}>ERROR SOUND</Text>
+          <Text style={headerCellStyle}>ERROR PATTERN EXHIBITED</Text>
+          <Text style={headerCellStyle}>EXAMPLE</Text>
         </View>
-      ))}
-    </View>
-  </>
-)
+        {errors.map((error, i) => (
+          <View style={styles.tableRow} key={i} wrap={false}>
+            <Text style={styles.tableCell}>{error.sound}</Text>
+            <Text style={styles.tableCell}>{error.pattern}</Text>
+            <Text style={styles.tableCell}>{error.example}</Text>
+          </View>
+        ))}
+      </View>
+    </>
+  )
+}
 
 const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error: GoalError }) => (
   <Page size='LETTER' style={styles.page}>
@@ -378,8 +418,31 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
 
       <View style={styles.soundStrategyRow} wrap={false}>
         <View style={styles.soundBox}>
-          <Text style={styles.soundLabel}>SOUND:</Text>
+          <Text style={styles.soundLabel}>TARGET:</Text>
           <Text style={styles.soundValue}>{error.sound}</Text>
+          <Text style={styles.soundLabel}>STIMULABILITY:</Text>
+          {error.stimulability_option === 'non-stimulable' ? (
+            <Svg viewBox='0 0 24 24' style={styles.stimulabilityIcon}>
+              <Path
+                d='M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0'
+                stroke='#111827'
+                strokeWidth={2}
+                fill='none'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+              />
+              <Path
+                d='M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4'
+                stroke='#111827'
+                strokeWidth={2}
+                fill='none'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+              />
+            </Svg>
+          ) : (
+            <Text style={styles.soundValue}>{getStimulabilityLabel(error.stimulability_option)}</Text>
+          )}
         </View>
         <View style={styles.strategyBox}>
           <View style={styles.strategyChecklistCol}>
@@ -426,7 +489,7 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
 
                 {error.stimulability_option === 'non-stimulable' ? (
                   <>
-                    Student will discriminate correct <Text style={styles.bold}>{error.sound}</Text>{' '}
+                    Student will identify correct <Text style={styles.bold}>{error.sound}</Text>{' '}
                     with 90% accuracy when listening to adult say contrast pairs.
                   </>
                 ) : (
@@ -503,21 +566,46 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
             </Text>
           </View>
 
-          {context.primary_table_errors?.length > 0 && (
-            <ErrorTable
-              title={
-                context.level ? `SOUND ERRORS (LEVEL ${context.level})` : 'SOUND ERRORS (CYCLE 1)'
-              }
-              errors={context.primary_table_errors}
-            />
-          )}
+          {context.level_1_table_errors || context.level_2_table_errors ? (
+            <>
+              {(context.level_1_table_errors?.length ?? 0) > 0 && (
+                <ErrorTable
+                  title={
+                    context.level === 2 ? 'SOUNDS COMPLETED IN LEVEL 1' : 'SOUND ERRORS (LEVEL 1)'
+                  }
+                  errors={context.level_1_table_errors!}
+                  variant='level1'
+                />
+              )}
 
-          {context.secondary_table_errors?.length > 0 && (
-            <ErrorTable title='SOUND ERRORS (CYCLE 2)' errors={context.secondary_table_errors} />
-          )}
+              {(context.level_2_table_errors?.length ?? 0) > 0 && (
+                <ErrorTable
+                  title={context.level === 1 ? 'UPON MASTERY OF LEVEL 1' : 'SOUND ERRORS (LEVEL 2)'}
+                  errors={context.level_2_table_errors!}
+                  variant='level2'
+                />
+              )}
+            </>
+          ) : (
+            <>
+              {context.primary_table_errors?.length > 0 && (
+                <ErrorTable
+                  title={
+                    context.level
+                      ? `SOUND ERRORS (LEVEL ${context.level})`
+                      : 'SOUND ERRORS (CYCLE 1)'
+                  }
+                  errors={context.primary_table_errors}
+                />
+              )}
 
-          {context.vocabulary_support && (
-            <Text style={styles.vocabNote}>Vocabulary support recommended</Text>
+              {context.secondary_table_errors?.length > 0 && (
+                <ErrorTable
+                  title='SOUND ERRORS (CYCLE 2)'
+                  errors={context.secondary_table_errors}
+                />
+              )}
+            </>
           )}
         </View>
 

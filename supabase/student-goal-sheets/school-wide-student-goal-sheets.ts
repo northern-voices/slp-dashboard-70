@@ -372,14 +372,25 @@ Deno.serve(async (req: Request) => {
           vocabulary_support: screening.vocabulary_support || false,
         }
 
-        // School-wide goal sheets always default to Level 1
-        const levelErrors = await processErrorPatterns(screening.error_patterns || {}, 1)
+        // School-wide goal sheets always default to Level 1, but Level 2 is
+        // also processed so the summary table can show both levels side by side.
+        const levelErrors = await processErrorPatterns(
+          screening.error_patterns || {},
+          1,
+          studentInfo.grade,
+        )
+        const otherLevelErrors = await processErrorPatterns(
+          screening.error_patterns || {},
+          2,
+          studentInfo.grade,
+        )
 
         const documentObject = createIndividualGoalSheetObject(
           studentInfo,
           levelErrors,
           1,
           'Qualified',
+          otherLevelErrors,
         )
         documentObjects.push(documentObject)
       } catch (error) {
@@ -403,14 +414,25 @@ Deno.serve(async (req: Request) => {
           vocabulary_support: screening.vocabulary_support || false,
         }
 
-        // School-wide goal sheets always default to Level 1
-        const levelErrors = await processErrorPatterns(screening.error_patterns || {}, 1)
+        // School-wide goal sheets always default to Level 1, but Level 2 is
+        // also processed so the summary table can show both levels side by side.
+        const levelErrors = await processErrorPatterns(
+          screening.error_patterns || {},
+          1,
+          studentInfo.grade,
+        )
+        const otherLevelErrors = await processErrorPatterns(
+          screening.error_patterns || {},
+          2,
+          studentInfo.grade,
+        )
 
         const documentObject = createIndividualGoalSheetObject(
           studentInfo,
           levelErrors,
           1,
           'Sub',
+          otherLevelErrors,
         )
         documentObjects.push(documentObject)
       } catch (error) {
@@ -622,10 +644,12 @@ function getLatestScreeningsPerStudent(screenings: any[]): any[] {
 }
 
 // Processes error patterns from JSONB, restricted to sounds classified as the
-// requested Level (see _shared/goalSheetLevels.ts for the classification rules).
+// requested Level (see _shared/goalSheetLevels.ts for the classification rules,
+// including the grade-1+ override that grade needs to be passed through for).
 async function processErrorPatterns(
   errorPatterns: any,
   level: 1 | 2,
+  grade?: string,
 ): Promise<ProcessedError[]> {
   if (!errorPatterns || typeof errorPatterns !== 'object') {
     return []
@@ -658,6 +682,7 @@ async function processErrorPatterns(
       sound: e?.sound || 'Unknown',
       errorPatterns: (e?.errorPatterns || []).filter((p: string) => p !== 'Stimulability'),
     })),
+    grade,
   )
 
   // Get the comprehensive error patterns lookup
@@ -1120,16 +1145,27 @@ function sortPhonologicalProcesses(errors: ProcessedError[], isPrimary: boolean)
   return sortedSounds
 }
 
-// Helper function to create individual goal sheet document object with dynamic template selection
-// One document = one level's worth of sounds now (Level 1 and Level 2 are generated
-// and sent separately, never combined onto the same goal sheet).
+function toTableErrors(errors: ProcessedError[]) {
+  return (errors || []).filter(e => {
+    const p = e.pattern?.toLowerCase().trim()
+    return p !== 'stimulability' && p !== 'error detected'
+  })
+}
+
+// Helper function to create individual goal sheet document object with dynamic template selection.
+// One level's sounds get full worksheet pages (Level 1 and Level 2 are generated
+// and sent separately, never combined onto the same goal sheet's worksheet pages).
+// The summary table at the top, however, always shows both levels side by side -
+// level_1_table_errors/level_2_table_errors.
 function createIndividualGoalSheetObject(
   studentInfo: StudentInfo,
   errors: ProcessedError[],
   level: 1 | 2,
   directory: string,
+  otherLevelErrors?: ProcessedError[],
 ) {
   const contextErrors = errors || []
+  const otherErrors = otherLevelErrors || []
 
   return {
     metadata: {
@@ -1149,11 +1185,10 @@ function createIndividualGoalSheetObject(
       level,
       primary_errors: contextErrors,
       secondary_errors: [],
-      primary_table_errors: contextErrors.filter(e => {
-        const p = e.pattern?.toLowerCase().trim()
-        return p !== 'stimulability' && p !== 'error detected'
-      }),
+      primary_table_errors: toTableErrors(contextErrors),
       secondary_table_errors: [],
+      level_1_table_errors: toTableErrors(level === 1 ? contextErrors : otherErrors),
+      level_2_table_errors: toTableErrors(level === 2 ? contextErrors : otherErrors),
     },
   }
 }
@@ -3186,7 +3221,7 @@ function getGoalSheetContent(): Record<
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
-      'Omits S and Backing: "K" for T': {
+      'Omits S and Backing': {
         qrCategories: ['Final S Blends', 'T/D'],
         strategies: {
           wordPhrase: [
@@ -4961,7 +4996,7 @@ function getErrorPatternsLookup() {
         pattern: 'Nasalization (~ air through nose)',
         example: "'boo(ts~)' for boots",
       },
-      'Omits S and Backing: "K" for T': {
+      'Omits S and Backing': {
         pattern: "Omits S and Backing: 'K' for T",
         example: "'book-' for boots",
       },

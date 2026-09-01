@@ -14,8 +14,10 @@ interface BulkReportData {
   record_id?: string | null
 }
 
-const BulkReportView = ({ data }: { data: BulkReportData }) => {
+const BulkReportView = ({ data, reportType }: { data: BulkReportData; reportType?: string }) => {
   const documents = useMemo(() => data.documents ?? [], [data.documents])
+
+  const groupLabel = reportType === 'school_wide_goal_sheets' ? 'Group' : 'Grade'
 
   const studentDocs = useMemo(
     () => documents.filter(doc => !!doc.context?.student_name),
@@ -39,11 +41,15 @@ const BulkReportView = ({ data }: { data: BulkReportData }) => {
   }, [studentDocs])
 
   const groupNames = useMemo(() => Array.from(groups.keys()), [groups])
+  const groupOptions = useMemo(
+    () => (groupNames.length > 1 ? ['All', ...groupNames] : groupNames),
+    [groupNames]
+  )
 
   const [view, setView] = useState<'student' | 'summary'>(
     studentDocs.length === 0 ? 'summary' : 'student'
   )
-  const [selectedGroup, setSelectedGroup] = useState(groupNames[0] ?? '')
+  const [selectedGroup, setSelectedGroup] = useState(groupOptions[0] ?? '')
   const [selectedIndex, setSelectedIndex] = useState(-1)
 
   if (documents.length === 0) {
@@ -54,7 +60,7 @@ const BulkReportView = ({ data }: { data: BulkReportData }) => {
     )
   }
 
-  const studentsInGroup = groups.get(selectedGroup) ?? []
+  const studentsInGroup = selectedGroup === 'All' ? studentDocs : (groups.get(selectedGroup) ?? [])
   const showAllInGroup = view === 'student' && selectedIndex === -1
   const activeDoc = view === 'summary' ? summaryDocs[0] : studentsInGroup[selectedIndex]
 
@@ -82,14 +88,16 @@ const BulkReportView = ({ data }: { data: BulkReportData }) => {
         {view === 'student' && (
           <>
             <div className='flex flex-col gap-1'>
-              <label className='text-xs font-medium text-gray-600'>Group</label>
+              <label className='text-xs font-medium text-gray-600'>{groupLabel}</label>
               <select
                 value={selectedGroup}
                 onChange={e => handleGroupChange(e.target.value)}
                 className='border border-gray-300 rounded-md px-3 py-2 text-sm'>
-                {groupNames.map(name => (
+                {groupOptions.map(name => (
                   <option key={name} value={name}>
-                    {name}
+                    {name === 'All'
+                      ? `All (${studentDocs.length})`
+                      : `${name} (${groups.get(name)?.length ?? 0})`}
                   </option>
                 ))}
               </select>
