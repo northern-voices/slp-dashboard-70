@@ -41,11 +41,15 @@ const BulkReportView = ({ data, reportType }: { data: BulkReportData; reportType
   }, [studentDocs])
 
   const groupNames = useMemo(() => Array.from(groups.keys()), [groups])
+  const groupOptions = useMemo(
+    () => (groupNames.length > 1 ? ['All', ...groupNames] : groupNames),
+    [groupNames]
+  )
 
   const [view, setView] = useState<'student' | 'summary'>(
     studentDocs.length === 0 ? 'summary' : 'student'
   )
-  const [selectedGroup, setSelectedGroup] = useState(groupNames[0] ?? '')
+  const [selectedGroup, setSelectedGroup] = useState(groupOptions[0] ?? '')
   const [selectedIndex, setSelectedIndex] = useState(-1)
 
   if (documents.length === 0) {
@@ -56,7 +60,7 @@ const BulkReportView = ({ data, reportType }: { data: BulkReportData; reportType
     )
   }
 
-  const studentsInGroup = groups.get(selectedGroup) ?? []
+  const studentsInGroup = selectedGroup === 'All' ? studentDocs : (groups.get(selectedGroup) ?? [])
   const showAllInGroup = view === 'student' && selectedIndex === -1
   const activeDoc = view === 'summary' ? summaryDocs[0] : studentsInGroup[selectedIndex]
 
@@ -89,9 +93,11 @@ const BulkReportView = ({ data, reportType }: { data: BulkReportData; reportType
                 value={selectedGroup}
                 onChange={e => handleGroupChange(e.target.value)}
                 className='border border-gray-300 rounded-md px-3 py-2 text-sm'>
-                {groupNames.map(name => (
+                {groupOptions.map(name => (
                   <option key={name} value={name}>
-                    {name}
+                    {name === 'All'
+                      ? `All (${studentDocs.length})`
+                      : `${name} (${groups.get(name)?.length ?? 0})`}
                   </option>
                 ))}
               </select>
