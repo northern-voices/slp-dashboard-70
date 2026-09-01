@@ -34,7 +34,9 @@ type GoalSheetLevel = 1 | 2 | 'both' | 'custom'
 
 const SpeechGoalSheets = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [selectedReports, setSelectedReports] = useState<string[]>([])
+  const [selectedReports, setSelectedReports] = useState<string[]>([
+    SPEECH_GOAL_SHEET_OPTIONS[0].value,
+  ])
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
   const [selectedLevel, setSelectedLevel] = useState<GoalSheetLevel | null>(null)
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
@@ -125,7 +127,7 @@ const SpeechGoalSheets = () => {
     setSelectedStudent(null)
     setSelectedScreening(null)
     setSelectedLevel(null)
-    setSelectedReports([])
+    setSelectedReports([SPEECH_GOAL_SHEET_OPTIONS[0].value])
     setRecipientEmails(user?.email ? [user.email] : [])
     setPassword(defaultReportPassword)
   }
