@@ -309,6 +309,11 @@ export const useBulkDeleteScreenings = () => {
         queryKey: ['hearing-screenings', user?.id, userProfile?.role, currentOrganization?.id],
       })
 
+      queryClient.invalidateQueries({ queryKey: ['screenings'] })
+      queryClient.invalidateQueries({ queryKey: ['speech-screenings'] })
+      queryClient.invalidateQueries({ queryKey: ['hearing-screenings'] })
+      queryClient.invalidateQueries({ queryKey: ['recent-screenings'] })
+
       // Force refetch of the main screenings query to ensure immediate update
       queryClient.refetchQueries({
         queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
