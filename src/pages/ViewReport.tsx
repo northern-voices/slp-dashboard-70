@@ -22,7 +22,7 @@ type PdfGenerator = (
   onProgress?: (current: number, total: number) => void
 ) => Promise<Blob>
 
-const REPORT_VIEWS: Record<string, ComponentType<{ data: never }>> = {
+const REPORT_VIEWS: Record<string, ComponentType<{ data: never; reportType?: string }>> = {
   speech_screening_report: StudentSpeechReportView,
   goal_sheet: SpeechGoalSheetView,
   progress_report: SpeechProgressReportView,
@@ -336,7 +336,7 @@ const ViewReport = () => {
 
           <div ref={printRef} className={ReportView ? '' : 'bg-white rounded-lg shadow p-8'}>
             {ReportView ? (
-              <ReportView data={reportData as never} />
+              <ReportView data={reportData as never} reportType={reportType} />
             ) : (
               <GenericReportView reportType={reportType} data={reportData} />
             )}
