@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 interface RoleGuardProps {
   children: React.ReactNode
@@ -7,9 +7,9 @@ interface RoleGuardProps {
 }
 
 const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
-  const { user } = useAuth()
+  const { userProfile } = useOrganization()
 
-  if (!allowedRoles.includes(user?.role ?? '')) {
+  if (!allowedRoles.includes(userProfile?.role ?? '')) {
     return <Navigate to='/' replace />
   }
 
