@@ -2,14 +2,16 @@
 
 ## Files
 
-- `send-student-report.ts` — Generates and emails a speech screening report PDF for an individual student
+- `send-student-report.ts` — Generates and emails a speech screening report for an individual student
 - `school-wide-send-student-report.ts` — Generates and emails speech screening reports for all students at a school, organized by grade
 
 ---
 
 ## Overview
 
-These functions generate student speech screening reports based on the result and severity of each screening. The template used depends on the screening result (e.g., no errors, age-appropriate, qualified for services, absent). The school-wide version batches all students into a single ZIP file organized by grade.
+These functions generate student speech screening reports based on the result and severity of each screening. The template used depends on the screening result (e.g., no errors, age-appropriate, qualified for services, absent).
+
+Delivery is a password-protected view link (not a raw PDF attachment): the function builds a document object, stores it as `report_data` on a `report_tokens` row behind a password hash, and emails a link to `/view-report/<token>` via AWS SES. The document is only rendered when someone opens the link and supplies the password. The school-wide version stores all students' documents together as one `report_tokens` row (an array of documents, each tagged with a `metadata.directory` of the student's grade); the frontend's `BulkReportView` groups by that field and offers an optional "Download Reports (ZIP)" button — the ZIP itself is generated client-side on demand, not part of what the backend sends.
 
 ---
 
@@ -20,16 +22,17 @@ These functions generate student speech screening reports based on the result an
 | Parameter | Required | Description |
 |---|---|---|
 | `speech_screening_id` | Yes | ID of the speech screening |
-| `override_email` | No | Send to this email instead of looking up from staging table |
+| `password` | Yes | Password protecting the generated report token |
+| `override_emails` | No | Array of recipient emails; falls back to the `speech_screenings_staging` table (matched by student name) if omitted/empty |
 | `generated_by` | No | UUID of the user triggering the report (stored in `reports.generated_by`) |
 
 ### How It Works
 
 1. Fetches the speech screening with student, school, and grade data
-2. Resolves the recipient email (`override_email` → staging table lookup by student name → error)
+2. Resolves the recipient emails (`override_emails` → staging table lookup by student name → error)
 3. Processes error patterns from the screening's `error_patterns` JSONB field
 4. Selects a template based on the screening result (see Template Selection below)
-5. Sends the report PDF to the document generation service
+5. Creates a password-protected `report_tokens` row and emails a secure view link
 6. Logs the report to the `reports` table
 
 ### Template Selection
@@ -51,7 +54,7 @@ These functions generate student speech screening reports based on the result an
 | `report_type` | `speech_screening_report` |
 | `file_key` | `student_report_{speech_screening_id}` |
 | `generated_by` | UUID from request, or `null` |
-| `metadata` | `sent_to`, `errors_count`, `template_used`, `school_code` |
+| `metadata` | `sent_to`, `errors_count`, `template_used`, `school_code`, `delivery_method: "password_protected_link"`, `report_token` |
 
 ---
 
@@ -63,7 +66,8 @@ These functions generate student speech screening reports based on the result an
 |---|---|---|
 | `school_id` | Yes | ID of the school |
 | `academic_year` | Yes | Format: `"2024-2025"` |
-| `override_email` | Yes | Email to receive all reports |
+| `override_emails` | Yes | Array of emails to receive the secure link (no staging-table fallback) |
+| `password` | Yes | Password protecting the generated report token |
 | `report_id` | No | ID in `school_reports_history` to update with status |
 | `generated_by` | No | UUID of the user triggering the report (stored in `reports.generated_by`) |
 
@@ -73,8 +77,8 @@ These functions generate student speech screening reports based on the result an
 2. Fetches screenings in batches of 50 students (100ms delay between batches to avoid rate limits)
 3. Filters to the academic year window (Sept 1 – June 30) and deduplicates to the latest screening per student
 4. Processes error patterns and selects a template for each student
-5. Sorts all documents by grade using the `GRADE_MAPPING` order
-6. Sends all documents as a single ZIP file (organized into grade subdirectories) to the document generation service
+5. Sorts all documents by grade using the `GRADE_MAPPING` order, and tags each document's `metadata.directory` with its grade
+6. Creates a single password-protected `report_tokens` row containing every student's document, and emails one secure view link
 7. Updates `school_reports_history` if a `report_id` is provided
 8. Logs a single bulk record to the `reports` table
 
@@ -82,11 +86,10 @@ These functions generate student speech screening reports based on the result an
 
 Same logic as the individual report.
 
-### PDF Organization
+### Document Organization
 
-- Each student's file: `{first_name}_{last_name}`
-- Organized into subdirectories by grade (slashes converted to hyphens)
-- All documents delivered as a single ZIP
+- Each document is tagged with `metadata.directory` set to the student's grade (slashes converted to hyphens)
+- The frontend's `BulkReportView` uses that field to group/filter by grade, and offers an optional ZIP download of every document — generated client-side, not sent by this function
 
 ### Reports Table Entry
 
@@ -95,7 +98,7 @@ Same logic as the individual report.
 | `report_type` | `school_wide_speech_screening_reports` |
 | `file_key` | `school_reports_{school_id}_{academic_year}` |
 | `generated_by` | UUID from request, or `null` |
-| `metadata` | `sent_to`, `students_count`, `academic_year`, `school_name`, `school_code` |
+| `metadata` | `sent_to`, `students_count`, `academic_year`, `school_name`, `school_code`, `delivery_method: "password_protected_link"`, `report_token` |
 
 > A single bulk record is logged — not one per student.
 
@@ -124,7 +127,7 @@ Error patterns are read from the `error_patterns` JSONB field on each screening.
 - **Vowelization** — vocalic R replaced by a vowel
 - **Atypical Substitution** — unusual substitution noted under "Other"
 
-Multiple error patterns for the same sound are combined when a matching key exists in the lookup. If no combined key is found, each pattern is processed individually.
+Multiple error patterns for the same sound are combined when a matching key exists in the lookup (e.g., "Omits S and Backing"). If no combined key is found, each pattern is processed individually.
 
 ---
 
@@ -149,8 +152,8 @@ Each error is assigned a sequential week number based on its position in the sel
 | | Individual | School-Wide |
 |---|---|---|
 | **Scope** | 1 student | All students at a school |
-| **Email** | `override_email` or staging table | `override_email` required |
-| **Output** | Single PDF | ZIP file organized by grade |
+| **Email** | `override_emails` or staging table | `override_emails` required |
+| **Output** | One secure view link, one document | One secure view link to a multi-document viewer, grouped by grade, with an optional client-generated ZIP download |
 | **Batch processing** | No | Yes (50 students/batch with delays) |
 | **Timeout** | Default | 10-minute extended timeout |
 | **Logging table** | `reports` | `reports` + optionally `school_reports_history` |
