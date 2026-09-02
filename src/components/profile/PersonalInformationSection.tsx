@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Form,
@@ -27,7 +27,7 @@ interface PersonalInfoFormData {
 
 const PersonalInformationSection = () => {
   const { toast } = useToast()
-  const { userProfile } = useOrganization()
+  const { userProfile, refreshData } = useOrganization()
   const [isEditing, setIsEditing] = useState(false)
 
   console.log(userProfile, 'userProfile')
@@ -55,12 +55,31 @@ const PersonalInformationSection = () => {
     }
   }, [userProfile, form])
 
-  const onSubmit = (data: PersonalInfoFormData) => {
-    console.log('Updating personal information:', data)
+  const onSubmit = async (data: PersonalInfoFormData) => {
+    if (!userProfile) return
+
+    const { error } = await supabase
+      .from('users')
+      .update({ first_name: data.firstName, last_name: data.lastName })
+      .eq('id', userProfile.user_id)
+
+    if (error) {
+      toast({
+        title: 'Update failed',
+        description: error.message,
+        variant: 'destructive',
+      })
+
+      return
+    }
+
+    await refreshData()
+
     toast({
       title: 'Profile Updated',
-      description: 'Your personal information has been updated successfully.',
+      description: 'Your personal information has been updated successfully',
     })
+
     setIsEditing(false)
   }
 
