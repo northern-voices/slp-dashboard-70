@@ -677,10 +677,11 @@ async function processErrorPatterns(
 
   console.log('Processing sound errors for goal sheet:', soundErrors)
 
-  const soundLevels = classifySoundErrors(
+  const { levels: soundLevels, escalatedBaseSounds, forcedWordSounds } = classifySoundErrors(
     soundErrors.map((e: any) => ({
       sound: e?.sound || 'Unknown',
       errorPatterns: (e?.errorPatterns || []).filter((p: string) => p !== 'Stimulability'),
+      stimulabilityOptions: e?.stimulabilityOptions || [],
     })),
     grade,
   )
@@ -711,9 +712,15 @@ async function processErrorPatterns(
       continue
     }
 
+    // A blend that successfully deferred to this level via a reclassification
+    // rule always displays at Word, regardless of its own recorded value.
+    const soundErrorForProcessing = forcedWordSounds.has(sound)
+      ? { ...soundError, stimulabilityOptions: ['Word'] }
+      : soundError
+
     // Process the error (existing processing logic)
     await processIndividualSoundError(
-      soundError,
+      soundErrorForProcessing,
       sound,
       errorPatterns,
       otherNotes,
@@ -721,6 +728,25 @@ async function processErrorPatterns(
       errorPatternsLookup,
       allProcessedErrors,
     )
+  }
+
+  // A base sound (T, K, S, ...) held back from deferring its blends because it
+  // hasn't reached Word yet gets its own entry on the Level 2 document instead,
+  // always at Word - reusing its own trigger pattern's existing content (e.g.
+  // T's Backing strategies), since it's the same sound/pattern combo already
+  // used for its Level 1 entry.
+  if (level === 2) {
+    for (const base of escalatedBaseSounds) {
+      await processIndividualSoundError(
+        { stimulabilityOptions: ['Word'] },
+        base.sound,
+        base.errorPatterns,
+        '',
+        [],
+        errorPatternsLookup,
+        allProcessedErrors,
+      )
+    }
   }
 
   console.log(
