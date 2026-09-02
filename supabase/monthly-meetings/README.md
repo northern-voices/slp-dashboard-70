@@ -8,7 +8,9 @@
 
 ## Overview
 
-This function generates a PDF meeting document from a `monthly_meetings` record, including facilitator info, student updates, action plans, and additional notes. It is delivered via email to a provided address.
+This function generates a meeting document from a `monthly_meetings` record, including facilitator info, student updates, action plans, and additional notes.
+
+Delivery is a password-protected view link (not a raw PDF attachment): the function builds a document object, stores it as `report_data` on a `report_tokens` row behind a password hash, and emails a link to `/view-report/<token>` via AWS SES. The document is only rendered when someone opens the link and supplies the password.
 
 ---
 
@@ -17,7 +19,8 @@ This function generates a PDF meeting document from a `monthly_meetings` record,
 | Parameter | Required | Description |
 |---|---|---|
 | `monthly_meeting_id` | Yes | ID of the monthly meeting record |
-| `override_email` | Yes | Email to send the document to |
+| `password` | Yes | Password protecting the generated report token |
+| `override_emails` | Yes | Array of emails to send the document to |
 | `generated_by` | No | UUID of the user triggering the report (stored in `reports.generated_by`) |
 
 ---
@@ -31,7 +34,7 @@ This function generates a PDF meeting document from a `monthly_meetings` record,
 5. Formats the meeting date (e.g., "March 4, 2026")
 6. Maps each student update to: name, sessions attended, meeting notes, and whether they are in the sub program
 7. Picks a template based on `meeting_type` and builds the document context
-8. Sends the PDF to the document generation service
+8. Creates a password-protected `report_tokens` row and emails a secure view link
 9. Logs the report to the `reports` table
 
 ---
@@ -65,4 +68,4 @@ This function generates a PDF meeting document from a `monthly_meetings` record,
 | `report_type` | `monthly_meeting` |
 | `file_key` | `monthly_meeting_{monthly_meeting_id}` |
 | `generated_by` | UUID from request, or `null` |
-| `metadata` | `sent_to`, `meeting_title`, `meeting_date`, `student_count` |
+| `metadata` | `sent_to`, `meeting_title`, `meeting_date`, `student_count`, `delivery_method: "password_protected_link"`, `report_token` |
