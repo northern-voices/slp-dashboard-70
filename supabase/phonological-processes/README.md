@@ -10,7 +10,7 @@
 
 This is a pure data module that exports a single function `getErrorPatternsLookup()`. It returns a comprehensive nested object mapping sounds to their possible error patterns and pronunciation examples. It contains no logic, makes no API calls, and produces no output on its own.
 
-It is referenced by the goal sheet, progress report, and student report functions to translate raw error pattern data from the database into human-readable descriptions.
+> **Currently unused.** No other function in `supabase/` imports this module, and it has no matching entry under `supabase/functions/` (so it isn't deployed). The goal sheet, progress report, and student report functions each maintain their own internal copy of `getErrorPatternsLookup()` instead of importing this one — a pre-existing duplication pattern in this codebase, not something introduced recently. Kept around as a reference/legacy copy; changes here won't affect any live function.
 
 ---
 
