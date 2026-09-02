@@ -2,8 +2,8 @@
 
 ## Files
 
-- `generate-hearing-report.js` — Generates and emails a hearing report PDF for an individual student
-- `school-wide-student-hearing-reports.js` — Generates hearing reports for all students at a school plus a summary, sent as one batch
+- `generate-hearing-report.js` — Generates and emails a hearing report for an individual student
+- `school-wide-student-hearing-reports.js` — Generates hearing reports for all students at a school plus a summary, sent as one secure link
 - `school-summary-hearing-report.js` — Generates a summary-only hearing report for a school
 
 ---
@@ -11,6 +11,8 @@
 ## Overview
 
 Hearing reports are generated from `hearing_screenings` records. The template used depends on each student's tympanometry results (Type A/AS/AD = pass) and any special clinical notes (Absent, Non-compliant, Complex Needs).
+
+Delivery is a password-protected view link (not a raw PDF attachment): each function builds a document object, stores it as `report_data` on a `report_tokens` row behind a password hash, and emails a link to `/view-report/<token>` via AWS SES. The document is only rendered when someone opens the link and supplies the password. The school-wide version stores every student's document plus the summary together as one `report_tokens` row (an array of documents), delivered as a single link to a multi-document viewer.
 
 ---
 
@@ -21,7 +23,8 @@ Hearing reports are generated from `hearing_screenings` records. The template us
 | Parameter | Required | Description |
 |---|---|---|
 | `hearing_screening_id` | Yes | ID of the hearing screening record |
-| `override_email` | Yes | Email to send the report to (no database fallback) |
+| `password` | Yes | Password protecting the generated report token |
+| `override_emails` | Yes | Array of recipient emails (no database fallback) |
 | `generated_by` | No | UUID of the user triggering the report (stored in `reports.generated_by`) |
 
 ### How It Works
@@ -29,7 +32,7 @@ Hearing reports are generated from `hearing_screenings` records. The template us
 1. Fetches the hearing screening with student, school, and grade data
 2. Extracts measurement values and results for both ears
 3. Selects a template based on clinical notes and ear results (see Template Selection below)
-4. Sends the report PDF to the document generation service
+4. Creates a password-protected `report_tokens` row and emails a secure view link
 5. Logs the report to the `reports` table
 
 ### Template Selection
@@ -55,7 +58,7 @@ Fail templates include full measurement data (volumes, compliance, pressure) in 
 | `report_type` | `hearing_screening_report` |
 | `file_key` | `hearing_report_{hearing_screening_id}` |
 | `generated_by` | UUID from request, or `null` |
-| `metadata` | `sent_to`, `template_used`, `school_code`, `right_ear_result`, `left_ear_result` |
+| `metadata` | `sent_to`, `template_used`, `school_code`, `right_ear_result`, `left_ear_result`, `delivery_method: "password_protected_link"`, `report_token` |
 
 ---
 
@@ -67,7 +70,8 @@ Fail templates include full measurement data (volumes, compliance, pressure) in 
 |---|---|---|
 | `school_id` | Yes | ID of the school |
 | `academic_year` | Yes | Format: `"2024-2025"` |
-| `override_email` | No | Overrides the school's `principal_email` |
+| `password` | Yes | Password protecting the generated report token |
+| `override_emails` | No | Array of emails; falls back to the school's `principal_email` if omitted/empty |
 | `generated_by` | No | UUID of the user triggering the report (stored in `reports.generated_by`) |
 
 ### How It Works
@@ -76,9 +80,9 @@ Fail templates include full measurement data (volumes, compliance, pressure) in 
 2. Deduplicates to the latest screening per student
 3. Sorts students by grade using the `HEARING_GRADE_MAPPING` order (Headstart → Grade 12 → Staff last)
 4. Selects a template for each student (see Template Selection below)
-5. Organizes PDFs into grade-level directories
+5. Tags each document with a grade-level directory
 6. Appends a school summary document listing all referred students
-7. Sends all documents (student reports + summary) in one batch email
+7. Creates a single password-protected `report_tokens` row containing every student's document plus the summary, and emails one secure view link
 8. Logs a single bulk record to the `reports` table
 
 ### Template Selection
@@ -97,11 +101,11 @@ Same conditions as the individual report with one difference — passing criteri
 
 > Type AS and Type AD also count as passing here (broader than the individual report).
 
-### PDF Organization
+### Document Organization
 
-- Each student's file: `{first_name}_{last_name}`
-- Organized into subdirectories by grade (slashes converted to hyphens)
+- Each document is tagged with `metadata.directory` set to the student's grade (slashes converted to hyphens)
 - Summary document appended at the end
+- The frontend's `BulkReportView` uses `metadata.directory` to group/filter documents when the link is opened
 
 ### Reports Table Entry
 
@@ -111,7 +115,7 @@ Same conditions as the individual report with one difference — passing criteri
 | `is_bulk` | `true` |
 | `file_key` | `hearing_reports_bulk_{school_id}_{academic_year}` |
 | `generated_by` | UUID from request, or `null` |
-| `metadata` | `sent_to`, `academic_year`, `student_count`, `referred_count`, `school_name`, `school_code`, `includes_summary_report` |
+| `metadata` | `sent_to`, `academic_year`, `student_count`, `referred_count`, `school_name`, `school_code`, `includes_summary_report`, `delivery_method: "password_protected_link"`, `report_token` |
 
 > A single bulk record is logged — not one per student.
 
@@ -125,7 +129,8 @@ Same conditions as the individual report with one difference — passing criteri
 |---|---|---|
 | `school_id` | Yes | ID of the school |
 | `academic_year` | Yes | Format: `"2024-2025"` |
-| `override_email` | Yes | Email to send the summary to (no fallback) |
+| `password` | Yes | Password protecting the generated report token |
+| `override_emails` | Yes | Array of emails to receive the summary (no fallback) |
 | `report_id` | No | ID in `school_reports_history` to update with status |
 | `generated_by` | No | UUID of the user triggering the report (stored in `reports.generated_by`) |
 
@@ -135,8 +140,8 @@ Same conditions as the individual report with one difference — passing criteri
 2. Fetches hearing screenings in batches of 50 students (with 100ms delays between batches to avoid overloading the database)
 3. Filters to the academic year window and deduplicates to one screening per student
 4. Identifies referred students (either ear fails, student not absent)
-5. Generates a summary-only PDF (no individual student reports)
-6. Sends it to the provided email
+5. Builds a summary-only document (no individual student reports)
+6. Creates a password-protected `report_tokens` row and emails a secure view link
 7. If a `report_id` is provided, updates the existing record in `school_reports_history` with status `"sent"` or `"failed"`
 
 ### Referral Logic
@@ -153,7 +158,7 @@ A student is referred if:
 | `is_bulk` | `true` |
 | `file_key` | `hearing_summary_{school_id}_{academic_year}` |
 | `generated_by` | UUID from request, or `null` |
-| `metadata` | `sent_to`, `academic_year` |
+| `metadata` | `sent_to`, `academic_year`, `delivery_method: "password_protected_link"`, `report_token` |
 
 If a `report_id` is provided, `school_reports_history` is also updated:
 
@@ -172,9 +177,9 @@ If a `report_id` is provided, `school_reports_history` is also updated:
 | | Individual | School-Wide | Summary Only |
 |---|---|---|---|
 | **Scope** | 1 student | All students + summary | Summary only |
-| **Email** | `override_email` required | `override_email` or `principal_email` | `override_email` required |
+| **Email** | `override_emails` required | `override_emails` or `principal_email` | `override_emails` required |
 | **Passing criteria** | Type A only | Type A, AS, AD | Type A, AS, AD |
-| **Output** | Student report | Student reports + summary | Summary only |
+| **Output** | One secure view link, one document | One secure view link to a multi-document viewer (grouped by grade) | One secure view link, summary only |
 | **Batch processing** | No | No | Yes (50 students/batch) |
-| **Logging table** | `reports` | `reports` | `school_reports_history` |
-| **Log type** | Single insert | Single bulk insert | Update existing record |
+| **Logging table** | `reports` | `reports` | `reports` + optionally `school_reports_history` |
+| **Log type** | Single insert | Single bulk insert | Single insert + optional history update |
