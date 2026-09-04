@@ -302,6 +302,12 @@ const GoalWorksheetSection = ({
   </div>
 )
 
+const getBannerProps = (level: 1 | 2 | undefined, title: string) => ({
+  title: level ? `${title} (Level ${level})` : title,
+  backgroundColor: level === 2 ? '#e9e2d9' : undefined,
+  textColor: level === 2 ? '#4d4b4b' : undefined,
+})
+
 const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
   const { context } = data
   const bannerTitle =
@@ -388,7 +394,7 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
         <section
           key={i}
           className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-          <ReportBanner title='Goal Sheets' />
+          <ReportBanner {...getBannerProps(context.level, 'Goal Sheets')} />
           <div className='px-10 pt-4 flex flex-col flex-1'>
             <GoalWorksheetSection studentName={context.student_name} error={error} />
           </div>

@@ -100,6 +100,12 @@ interface SpeechGoalSheetData {
 const BANNER_BG = '#5b7a8b'
 const TAN_BG = '#e9e2d9'
 
+const getBannerProps = (level: 1 | 2 | undefined, title: string) => ({
+  title: level ? `${title} (Level ${level})` : title,
+  backgroundColor: level === 2 ? TAN_BG : undefined,
+  textColor: level === 2 ? '#4d4b4b' : undefined,
+})
+
 const styles = StyleSheet.create({
   page: {
     paddingTop: 0,
@@ -409,9 +415,17 @@ const ErrorTable = ({
   )
 }
 
-const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error: GoalError }) => (
+const GoalWorksheetPage = ({
+  studentName,
+  error,
+  level,
+}: {
+  studentName: string
+  error: GoalError
+  level?: 1 | 2
+}) => (
   <Page size='LETTER' style={styles.page}>
-    <ReportBanner title='Goal Sheets' />
+    <ReportBanner {...getBannerProps(level, 'Goal Sheets')} />
 
     <View style={styles.body}>
       <Text style={styles.studentLine}>STUDENT: {studentName}</Text>
@@ -545,6 +559,9 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
       : context.level === 2
         ? 'Goal Sheet (Level 2)'
         : 'Goal Sheet'
+
+  const worksheetBannerProps = getBannerProps(context.level, 'Goal Sheets')
+
   const worksheetErrors = [...(context.primary_errors ?? []), ...(context.secondary_errors ?? [])]
 
   return (
@@ -616,7 +633,12 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
       </Page>
 
       {worksheetErrors.map((error, i) => (
-        <GoalWorksheetPage key={i} studentName={context.student_name} error={error} />
+        <GoalWorksheetPage
+          key={i}
+          studentName={context.student_name}
+          error={error}
+          level={context.level}
+        />
       ))}
     </Document>
   )
