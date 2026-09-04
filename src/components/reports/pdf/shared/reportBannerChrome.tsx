@@ -83,17 +83,23 @@ const chromeStyles = StyleSheet.create({
 export const ReportBanner = ({
   title,
   titleFontSize = 30,
+  backgroundColor = BANNER_BG,
+  textColor = '#ffffff',
 }: {
   title: string
   titleFontSize?: number
+  backgroundColor?: string
+  textColor?: string
 }) => (
-  <View style={chromeStyles.banner}>
-    <Text style={[chromeStyles.bannerTitle, { fontSize: titleFontSize }]}>{title}</Text>
+  <View style={[chromeStyles.banner, { backgroundColor }]}>
+    <Text style={[chromeStyles.bannerTitle, { fontSize: titleFontSize, color: textColor }]}>
+      {title}
+    </Text>
     <View style={chromeStyles.bannerBrand}>
       <Image src='/icon.png' style={chromeStyles.bannerLogo} />
       <View>
-        <Text style={chromeStyles.bannerBrandText}>NORTHERN VOICES</Text>
-        <Text style={chromeStyles.bannerBrandSub}>SPEECH SERVICES</Text>
+        <Text style={[chromeStyles.bannerBrandText, { color: textColor }]}>NORTHERN VOICES</Text>
+        <Text style={[chromeStyles.bannerBrandSub, { color: textColor }]}>SPEECH SERVICES</Text>
       </View>
     </View>
   </View>
