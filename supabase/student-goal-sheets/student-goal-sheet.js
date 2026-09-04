@@ -991,6 +991,28 @@ const QR_VIDEO_CATALOG = {
     title: 'Final ER/AR/OR',
     url: 'https://vimeo.com/1020611126/1a341619fd',
   },
+  // "Animated Articulation" videos added in the 2026-09 goal sheet revision.
+  // No 'Animated OR' entry yet - no video has been made for it (see Notion).
+  'Animated P': { title: 'Animated P', url: 'https://vimeo.com/1146679616/c0265c82bf' },
+  'Animated B': { title: 'Animated B', url: 'https://vimeo.com/1146679164/72794f685b' },
+  'Animated M': { title: 'Animated M', url: 'https://vimeo.com/1146679276/b453896db8' },
+  'Animated N': { title: 'Animated N', url: 'https://vimeo.com/1146678666/715e3d3afa' },
+  'Animated K': { title: 'Animated K', url: 'https://vimeo.com/1146679331/389369778f' },
+  'Animated G': { title: 'Animated G', url: 'https://vimeo.com/1146679223/2e730c0df0' },
+  'Animated T': { title: 'Animated T', url: 'https://vimeo.com/1146679640/fad4c2cae7' },
+  'Animated D': { title: 'Animated D', url: 'https://vimeo.com/1146678929/445e4eecb2' },
+  'Animated S': { title: 'Animated S', url: 'https://vimeo.com/1146679586/bb32bdd614' },
+  'Animated Z': { title: 'Animated Z', url: 'https://vimeo.com/1146678845/2b3f0e0446' },
+  'Animated Sh': { title: 'Animated Sh', url: 'https://vimeo.com/1146679561/abb8ea225a' },
+  'Animated Ch': { title: 'Animated Ch', url: 'https://vimeo.com/1146679123/e628fec42b' },
+  'Animated J': { title: 'Animated J', url: 'https://vimeo.com/1146679472/c37f4c1b2f' },
+  'Animated F': { title: 'Animated F', url: 'https://vimeo.com/1146679779/4b88e28860' },
+  'Animated V': { title: 'Animated V', url: 'https://vimeo.com/1146679697/74fd95377a' },
+  'Animated L': { title: 'Animated L', url: 'https://vimeo.com/1146679206/ab5bbb2b6e' },
+  'Animated R': { title: 'Animated R', url: 'https://vimeo.com/1146679515/cf037d6588' },
+  'Animated TH': { title: 'Animated TH', url: 'https://vimeo.com/1146679384/39cc94107a' },
+  'Animated AR': { title: 'Animated AR', url: 'https://vimeo.com/1146678866/31df6db9f2' },
+  'Animated ER': { title: 'Animated ER', url: 'https://vimeo.com/1146678889/6e73e09290' },
 }
 
 // Generate a QR code PNG (as a data URI) for a video URL.
@@ -1071,7 +1093,7 @@ function getGoalSheetContent() {
     },
     P: {
       Other: {
-        qrCategories: ['P/B'],
+        qrCategories: ['P/B', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Puff of Air (On Hand)',
@@ -1091,7 +1113,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['P/B'],
+        qrCategories: ['P/B', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Air Puff (on Hand)',
@@ -1114,7 +1136,7 @@ function getGoalSheetContent() {
       Omission: {
         // Two distinct videos on purpose - general initial-consonant-deletion
         // technique plus P/B-specific placement work.
-        qrCategories: ['Initial Consonant Deletion', 'P/B'],
+        qrCategories: ['Initial Consonant Deletion', 'P/B', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Two Tokens',
@@ -1130,7 +1152,7 @@ function getGoalSheetContent() {
     },
     B: {
       Other: {
-        qrCategories: ['P/B'],
+        qrCategories: ['P/B', 'Animated B'],
         strategies: {
           wordPhrase: [
             'Air Puff (on Hand)',
@@ -1144,7 +1166,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['P/B'],
+        qrCategories: ['P/B', 'Animated B'],
         strategies: {
           wordPhrase: [
             'Puff of Air (On Hand)',
@@ -1164,7 +1186,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'P/B'],
+        qrCategories: ['Initial Consonant Deletion', 'P/B', 'Animated B'],
         strategies: {
           wordPhrase: [
             'Two Tokens',
@@ -1180,7 +1202,7 @@ function getGoalSheetContent() {
     },
     M: {
       Other: {
-        qrCategories: ['M'],
+        qrCategories: ['M', 'Animated M'],
         strategies: {
           wordPhrase: [
             'Mirror',
@@ -1202,7 +1224,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['M', 'Initial Consonant Deletion'],
+        qrCategories: ['M', 'Initial Consonant Deletion', 'Animated M'],
         strategies: {
           wordPhrase: ['Two Tokens', 'Air Puff (on Hand)', 'Mirror', 'Adult Model', 'Emphasize & Exaggerate', 'Animated Articulation'],
           sound: [
@@ -1221,7 +1243,7 @@ function getGoalSheetContent() {
       // "Any" in the source document - the only variant shown is final
       // consonant deletion, which corresponds to the app's Omission pattern.
       Omission: {
-        qrCategories: ['Final Consonant Deletion'],
+        qrCategories: ['Final Consonant Deletion', 'Animated P'],
         strategies: {
           wordPhrase: ['Drag & Dot', 'Two Tokens', 'Air Puff (on Hand)', 'Mirror', 'Adult Model', 'Emphasize and Exaggerate'],
           sound: ['Air Puff (on Hand)', 'Mirror', 'Adult Model', 'Emphasize and Exaggerate'],
@@ -1229,7 +1251,25 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['P/B'],
+        qrCategories: ['P/B', 'Animated P'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation',
+            'Contact SLP for student specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation',
+            'Contact SLP for student specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      Nasalization: {
+        qrCategories: ['P/B', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1249,7 +1289,7 @@ function getGoalSheetContent() {
     },
     'Final T': {
       Omission: {
-        qrCategories: ['Final Consonant Deletion'],
+        qrCategories: ['Final Consonant Deletion', 'Animated T'],
         strategies: {
           wordPhrase: ['Adult Model', 'Drag & Dot', 'Two Tokens', 'Emphasize and Exaggerate', 'Animated Articulation'],
           sound: [
@@ -1262,7 +1302,7 @@ function getGoalSheetContent() {
         },
       },
       Backing: {
-        qrCategories: ['T/D'],
+        qrCategories: ['T/D', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (Final K & T)',
@@ -1280,7 +1320,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['T/D'],
+        qrCategories: ['T/D', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1298,7 +1338,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['T/D'],
+        qrCategories: ['T/D', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1318,7 +1358,7 @@ function getGoalSheetContent() {
     },
     'Final K': {
       Omission: {
-        qrCategories: ['Final Consonant Deletion'],
+        qrCategories: ['Final Consonant Deletion', 'Animated K'],
         strategies: {
           wordPhrase: ['Drag & Dot', 'Two Tokens', 'Adult Model', 'Emphasize and Exaggerate', 'Animated Articulation'],
           sound: ['Adult Model', 'Emphasize & Exaggerate', 'Animated Articulation'],
@@ -1326,7 +1366,7 @@ function getGoalSheetContent() {
         },
       },
       Fronting: {
-        qrCategories: ['K/G'],
+        qrCategories: ['K/G', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (Final K & Final T)',
@@ -1346,17 +1386,35 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['K/G'],
+        qrCategories: ['K/G', 'Animated K'],
         strategies: {
           wordPhrase: ['Animated Articulation', 'Emphasize & Exaggerate', 'Adult Model', 'Connect with SLP for specific strategies'],
           sound: ['Animated Articulation', 'Emphasize & Exaggerate', 'Adult Model', 'Connect with SLP for specific strategies'],
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
+      Nasalization: {
+        qrCategories: ['K/G', 'Animated K'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation',
+            'Connect with SLP for specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation',
+            'Connect with SLP for specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
     },
     K: {
       Fronting: {
-        qrCategories: ['K/G'],
+        qrCategories: ['K/G', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (K & T)',
@@ -1379,7 +1437,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion'],
+        qrCategories: ['Initial Consonant Deletion', 'K/G', 'Animated K'],
         strategies: {
           wordPhrase: [
             "Two Tokens (“c” + “at”)",
@@ -1397,7 +1455,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['K/G'],
+        qrCategories: ['K/G', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1415,7 +1473,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['K/G'],
+        qrCategories: ['K/G', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1435,7 +1493,7 @@ function getGoalSheetContent() {
     },
     G: {
       Fronting: {
-        qrCategories: ['K/G'],
+        qrCategories: ['K/G', 'Animated G'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (G & D)',
@@ -1458,7 +1516,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion'],
+        qrCategories: ['Initial Consonant Deletion', 'K/G', 'Animated G'],
         strategies: {
           wordPhrase: [
             "Two Tokens (“g” + “as”)",
@@ -1474,7 +1532,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['K/G'],
+        qrCategories: ['K/G', 'Animated G'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1491,7 +1549,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['K/G'],
+        qrCategories: ['K/G', 'Animated G'],
         strategies: {
           wordPhrase: ['Adult Model', 'Emphasize & Exaggerate', 'Animated Articulation: G', 'Connect with SLP for strategies'],
           sound: ['Adult Model', 'Emphasize & Exaggerate', 'Animated Articulation: G', 'Connect with SLP for strategies'],
@@ -1501,7 +1559,7 @@ function getGoalSheetContent() {
     },
     T: {
       Backing: {
-        qrCategories: ['T/D'],
+        qrCategories: ['T/D', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (T & K)',
@@ -1519,7 +1577,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion'],
+        qrCategories: ['Initial Consonant Deletion', 'T/D', 'Animated T'],
         strategies: {
           wordPhrase: [
             "Two Tokens (“t” + “ap”)",
@@ -1532,7 +1590,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['T/D'],
+        qrCategories: ['T/D', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1550,7 +1608,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['T/D'],
+        qrCategories: ['T/D', 'Animated T'],
         strategies: {
           wordPhrase: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
           sound: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
@@ -1560,7 +1618,7 @@ function getGoalSheetContent() {
     },
     D: {
       Backing: {
-        qrCategories: ['T/D'],
+        qrCategories: ['T/D', 'Animated D'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (D & G)',
@@ -1579,7 +1637,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion'],
+        qrCategories: ['Initial Consonant Deletion', 'T/D', 'Animated D'],
         strategies: {
           wordPhrase: [
             "Two Tokens (“d” + “og”)",
@@ -1592,7 +1650,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['T/D'],
+        qrCategories: ['T/D', 'Animated D'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1609,7 +1667,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['T/D'],
+        qrCategories: ['T/D', 'Animated D'],
         strategies: {
           wordPhrase: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
           sound: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
@@ -1619,7 +1677,7 @@ function getGoalSheetContent() {
     },
     S: {
       'Stopping T': {
-        qrCategories: ['S/Z'],
+        qrCategories: ['S/Z', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (S & T)',
@@ -1637,7 +1695,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp': {
-        qrCategories: ['Frontal Lisp'],
+        qrCategories: ['Frontal Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Mirror',
@@ -1662,7 +1720,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp'],
+        qrCategories: ['Lateral Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -1682,7 +1740,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion'],
+        qrCategories: ['Initial Consonant Deletion', 'S/Z', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Two Tokens (Sun = s + un)',
@@ -1695,7 +1753,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['S/Z'],
+        qrCategories: ['S/Z', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1713,7 +1771,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['S/Z'],
+        qrCategories: ['S/Z', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1721,6 +1779,24 @@ function getGoalSheetContent() {
             'Connect with SLP for specific strategies',
           ],
           sound: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      Stopping: {
+        qrCategories: ['S/Z', 'Animated S'],
+        strategies: {
+          wordPhrase: [
+            'Animated Articulation: S',
+            'Stretchy T (t-t-t)',
+            'Visual Phonics',
+            'Emphasize and Exaggerate S',
+          ],
+          sound: [
+            'Animated Articulation: S',
+            'Stretchy T (t-t-t)',
+            'Visual Phonics',
+            'Emphasize and Exaggerate S',
+          ],
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
@@ -1732,7 +1808,7 @@ function getGoalSheetContent() {
     // other untranscribed combo.
     'St-': {
       'Omits S': {
-        qrCategories: ['Initial S Blends', 'S/Z'],
+        qrCategories: ['Initial S Blends', 'S/Z', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Arm Slide',
@@ -1753,7 +1829,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits T': {
-        qrCategories: ['Initial S Blends', 'T/D'],
+        qrCategories: ['Initial S Blends', 'T/D', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Arm Slide (emphasizing tapping the hand while saying T)',
@@ -1766,7 +1842,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits ST': {
-        qrCategories: ['Initial S Blends'],
+        qrCategories: ['Initial S Blends', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Arm Slide',
@@ -1785,7 +1861,7 @@ function getGoalSheetContent() {
         },
       },
       Backing: {
-        qrCategories: ['T/D'],
+        qrCategories: ['T/D', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (ST & SK)',
@@ -1800,7 +1876,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits S and Backing': {
-        qrCategories: ['Initial S Blends', 'T/D'],
+        qrCategories: ['Initial S Blends', 'T/D', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (ST & SK)',
@@ -1814,7 +1890,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp': {
-        qrCategories: ['Frontal Lisp'],
+        qrCategories: ['Frontal Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -1836,7 +1912,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp'],
+        qrCategories: ['Lateral Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -1860,7 +1936,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits T and Frontal Lisp': {
-        qrCategories: ['Frontal Lisp', 'Initial S Blends'],
+        qrCategories: ['Frontal Lisp', 'Initial S Blends', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -1882,7 +1958,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits T and Lateral Lisp': {
-        qrCategories: ['Lateral Lisp', 'Initial S Blends'],
+        qrCategories: ['Lateral Lisp', 'Initial S Blends', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -1906,7 +1982,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp and Backing': {
-        qrCategories: ['Frontal Lisp', 'T/D'],
+        qrCategories: ['Frontal Lisp', 'T/D', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -1927,7 +2003,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp and Backing': {
-        qrCategories: ['Lateral Lisp', 'T/D'],
+        qrCategories: ['Lateral Lisp', 'T/D', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -1953,7 +2029,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['S/Z', 'T/D'],
+        qrCategories: ['S/Z', 'T/D', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1971,7 +2047,43 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['S/Z', 'Initial S Blends'],
+        qrCategories: ['S/Z', 'Initial S Blends', 'Animated S', 'Animated T'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & T',
+            'Connect with SLP for specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & T',
+            'Connect with SLP for specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      'Omits S and Nasalization': {
+        qrCategories: ['Initial S Blends', 'S/Z', 'Animated S', 'Animated T'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & T',
+            'Connect with SLP for specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & T',
+            'Connect with SLP for specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      'Omits T and Nasalization': {
+        qrCategories: ['Initial S Blends', 'S/Z', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -1991,7 +2103,7 @@ function getGoalSheetContent() {
     },
     'Sp-': {
       'Omits S': {
-        qrCategories: ['Initial S Blends'],
+        qrCategories: ['Initial S Blends', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Arm Slide',
@@ -2011,7 +2123,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits P': {
-        qrCategories: ['Initial S Blends'],
+        qrCategories: ['Initial S Blends', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Air Puff (on hand)',
@@ -2029,7 +2141,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits SP': {
-        qrCategories: ['Initial S Blends'],
+        qrCategories: ['Initial S Blends', 'Animated S', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Arm Slide',
@@ -2049,7 +2161,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp': {
-        qrCategories: ['Frontal Lisp'],
+        qrCategories: ['Frontal Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -2069,7 +2181,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp'],
+        qrCategories: ['Lateral Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -2093,7 +2205,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits P and Frontal Lisp': {
-        qrCategories: ['Frontal Lisp', 'Initial S Blends'],
+        qrCategories: ['Frontal Lisp', 'Initial S Blends', 'Animated S', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -2113,12 +2225,11 @@ function getGoalSheetContent() {
           audDiscrim: [
             'Adult Model',
             'Emphasizing and Exaggerating',
-            'Compare air flowing through sides of mouth vs down the center',
           ],
         },
       },
       'Omits P and Lateral Lisp': {
-        qrCategories: ['Lateral Lisp', 'Initial S Blends'],
+        qrCategories: ['Lateral Lisp', 'Initial S Blends', 'Animated S', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -2142,7 +2253,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['S/Z', 'Initial S Blends'],
+        qrCategories: ['S/Z', 'Initial S Blends', 'Animated S', 'Animated P'],
         strategies: {
           wordPhrase: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
           sound: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
@@ -2150,17 +2261,53 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['S/Z', 'Initial S Blends'],
+        qrCategories: ['S/Z', 'Initial S Blends', 'Animated S', 'Animated P'],
         strategies: {
           wordPhrase: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
           sound: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
+      'Omits S and Nasalization': {
+        qrCategories: ['Initial S Blends', 'S/Z', 'Animated S', 'Animated P'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & P',
+            'Connect with SLP for specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & P',
+            'Connect with SLP for specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      'Omits P and Nasalization': {
+        qrCategories: ['Initial S Blends', 'S/Z', 'Animated S', 'Animated P'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & P',
+            'Connect with SLP for specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & P',
+            'Connect with SLP for specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
     },
     'Sm-': {
       'Omits S': {
-        qrCategories: ['Initial S Blends'],
+        qrCategories: ['Initial S Blends', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Arm Slide',
@@ -2182,7 +2329,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits M': {
-        qrCategories: ['Initial S Blends'],
+        qrCategories: ['Initial S Blends', 'Animated M'],
         strategies: {
           wordPhrase: ['Arm Slide', 'Drag and Dot', 'Adult Model - emphasizing the M'],
           sound: ['Arm Slide', 'Drag and Dot', 'Adult Model - emphasizing the M'],
@@ -2190,7 +2337,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits SM': {
-        qrCategories: ['Initial S Blends'],
+        qrCategories: ['Initial S Blends', 'Animated S', 'Animated M'],
         strategies: {
           wordPhrase: [
             'Arm Slide',
@@ -2208,7 +2355,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp': {
-        qrCategories: ['Frontal Lisp'],
+        qrCategories: ['Frontal Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -2228,7 +2375,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp'],
+        qrCategories: ['Lateral Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -2253,7 +2400,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits M and Frontal Lisp': {
-        qrCategories: ['Frontal Lisp', 'Initial S Blends'],
+        qrCategories: ['Frontal Lisp', 'Initial S Blends', 'Animated S', 'Animated M'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -2275,7 +2422,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits M and Lateral Lisp': {
-        qrCategories: ['Lateral Lisp', 'Initial S Blends'],
+        qrCategories: ['Lateral Lisp', 'Initial S Blends', 'Animated S', 'Animated M'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -2295,7 +2442,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['S/Z', 'Initial S Blends'],
+        qrCategories: ['S/Z', 'Initial S Blends', 'Animated S', 'Animated M'],
         strategies: {
           wordPhrase: ['Adult Model', 'Emphasize & Exaggerate', 'Animated Articulation'],
           sound: ['Adult Model', 'Emphasize & Exaggerate', 'Animated Articulation'],
@@ -2303,7 +2450,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['S/Z', 'Initial S Blends'],
+        qrCategories: ['S/Z', 'Initial S Blends', 'Animated S', 'Animated M'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -2319,10 +2466,46 @@ function getGoalSheetContent() {
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
+      'Omits S and Nasalization': {
+        qrCategories: ['Initial S Blends', 'S/Z', 'Animated S', 'Animated M'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & M',
+            'Connect with SLP for specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & M',
+            'Connect with SLP for specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      'Omits M and Nasalization': {
+        qrCategories: ['Initial S Blends', 'S/Z', 'Animated S', 'Animated M'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & M',
+            'Connect with SLP for specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & M',
+            'Connect with SLP for specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
     },
     'Sn-': {
       'Omits S': {
-        qrCategories: ['Initial S Blends'],
+        qrCategories: ['Initial S Blends', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Arm Slide',
@@ -2343,7 +2526,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits N': {
-        qrCategories: ['Initial S Blends'],
+        qrCategories: ['Initial S Blends', 'Animated N'],
         strategies: {
           wordPhrase: [
             'Arm Slide',
@@ -2363,7 +2546,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits SN': {
-        qrCategories: ['Initial S Blends'],
+        qrCategories: ['Initial S Blends', 'Animated S', 'Animated N'],
         strategies: {
           wordPhrase: [
             'Arm Slide',
@@ -2381,7 +2564,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp': {
-        qrCategories: ['Frontal Lisp'],
+        qrCategories: ['Frontal Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -2403,7 +2586,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp'],
+        qrCategories: ['Lateral Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -2427,7 +2610,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits N and Frontal Lisp': {
-        qrCategories: ['Frontal Lisp', 'Initial S Blends'],
+        qrCategories: ['Frontal Lisp', 'Initial S Blends', 'Animated S', 'Animated N'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -2449,7 +2632,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits N and Lateral Lisp': {
-        qrCategories: ['Lateral Lisp', 'Initial S Blends'],
+        qrCategories: ['Lateral Lisp', 'Initial S Blends', 'Animated S', 'Animated N'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -2473,7 +2656,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['S/Z', 'Initial S Blends'],
+        qrCategories: ['S/Z', 'Initial S Blends', 'Animated S', 'Animated N'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -2491,7 +2674,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['S/Z', 'Initial S Blends'],
+        qrCategories: ['S/Z', 'Initial S Blends', 'Animated S', 'Animated N'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -2507,10 +2690,46 @@ function getGoalSheetContent() {
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
+      'Omits S and Nasalization': {
+        qrCategories: ['Initial S Blends', 'S/Z', 'Animated S', 'Animated N'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & N',
+            'Connect with SLP for specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & N',
+            'Connect with SLP for specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      'Omits N and Nasalization': {
+        qrCategories: ['Initial S Blends', 'S/Z', 'Animated S', 'Animated N'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & N',
+            'Connect with SLP for specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & N',
+            'Connect with SLP for specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
     },
     'Sk-': {
       'Omits S': {
-        qrCategories: ['Initial S Blends', 'S/Z'],
+        qrCategories: ['Initial S Blends', 'S/Z', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Arm Slide',
@@ -2525,7 +2744,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits K': {
-        qrCategories: ['Initial S Blends', 'K/G'],
+        qrCategories: ['Initial S Blends', 'K/G', 'Animated K'],
         strategies: {
           wordPhrase: ['Arm Slide', 'Drag & Dot', 'Adult Model', 'Emphasize K', 'Animated Articulation: K'],
           sound: ['Arm Slide', 'Drag & Dot', 'Adult Model', 'Emphasize K', 'Animated Articulation: K'],
@@ -2533,7 +2752,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits SK': {
-        qrCategories: ['Initial S Blends'],
+        qrCategories: ['Initial S Blends', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Arm Slide',
@@ -2554,7 +2773,7 @@ function getGoalSheetContent() {
         },
       },
       Fronting: {
-        qrCategories: ['K/G'],
+        qrCategories: ['K/G', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (K & T)',
@@ -2573,7 +2792,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits S and Fronting': {
-        qrCategories: ['Initial S Blends', 'K/G'],
+        qrCategories: ['Initial S Blends', 'K/G', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Wide Open Mouth',
@@ -2594,7 +2813,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp': {
-        qrCategories: ['Frontal Lisp'],
+        qrCategories: ['Frontal Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -2614,7 +2833,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp'],
+        qrCategories: ['Lateral Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -2634,7 +2853,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits K and Frontal Lisp': {
-        qrCategories: ['Frontal Lisp', 'Initial S Blends'],
+        qrCategories: ['Frontal Lisp', 'Initial S Blends', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -2658,7 +2877,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits K and Lateral Lisp': {
-        qrCategories: ['Lateral Lisp', 'Initial S Blends'],
+        qrCategories: ['Lateral Lisp', 'Initial S Blends', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -2679,7 +2898,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp and Fronting': {
-        qrCategories: ['Frontal Lisp', 'K/G'],
+        qrCategories: ['Frontal Lisp', 'K/G', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -2705,7 +2924,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp and Fronting': {
-        qrCategories: ['Lateral Lisp', 'K/G'],
+        qrCategories: ['Lateral Lisp', 'K/G', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -2733,7 +2952,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['S/Z', 'K/G'],
+        qrCategories: ['S/Z', 'K/G', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -2751,7 +2970,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['S/Z', 'Initial S Blends'],
+        qrCategories: ['S/Z', 'Initial S Blends', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -2770,7 +2989,7 @@ function getGoalSheetContent() {
     },
     'Final -ts': {
       'Omits S': {
-        qrCategories: ['Final S Blends', 'S/Z'],
+        qrCategories: ['Final S Blends', 'S/Z', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Finger S-Drag',
@@ -2786,7 +3005,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits T': {
-        qrCategories: ['Final S Blends', 'T/D'],
+        qrCategories: ['Final S Blends', 'T/D', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Emphasize and exaggerate (T)',
@@ -2802,7 +3021,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits TS': {
-        qrCategories: ['Final S Blends'],
+        qrCategories: ['Final S Blends', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Dot & Drag',
@@ -2822,7 +3041,7 @@ function getGoalSheetContent() {
         },
       },
       Backing: {
-        qrCategories: ['T/D'],
+        qrCategories: ['T/D', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Instructions: tip of tongue behind upper teeth for T',
@@ -2838,7 +3057,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits S and Backing': {
-        qrCategories: ['Final S Blends', 'T/D'],
+        qrCategories: ['Final S Blends', 'T/D', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Animated Articulation: S and compare T/K',
@@ -2856,7 +3075,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp': {
-        qrCategories: ['Frontal Lisp'],
+        qrCategories: ['Frontal Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -2877,7 +3096,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp'],
+        qrCategories: ['Lateral Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -2902,7 +3121,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits T and Frontal Lisp': {
-        qrCategories: ['Frontal Lisp', 'Final S Blends'],
+        qrCategories: ['Frontal Lisp', 'Final S Blends', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Mirror (Snake in the Cage)',
@@ -2922,7 +3141,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits T and Lateral Lisp': {
-        qrCategories: ['Lateral Lisp', 'Final S Blends'],
+        qrCategories: ['Lateral Lisp', 'Final S Blends', 'Animated S', 'Animated T'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -2948,10 +3167,44 @@ function getGoalSheetContent() {
           ],
         },
       },
+      Nasalization: {
+        qrCategories: ['Final S Blends', 'S/Z', 'Animated S', 'Animated T'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & T',
+            'Connect with SLP for specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & T',
+            'Connect with SLP for specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      Other: {
+        qrCategories: ['S/Z', 'Final S Blends', 'Animated S', 'Animated T'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Connect with SLP for strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Connect with SLP for strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
     },
     'Final -ps': {
       'Omits S': {
-        qrCategories: ['Final S Blends'],
+        qrCategories: ['Final S Blends', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Finger S-Drag',
@@ -2975,7 +3228,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits P': {
-        qrCategories: ['Final S Blends'],
+        qrCategories: ['Final S Blends', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Emphasize and exaggerate (P)',
@@ -2991,7 +3244,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits PS': {
-        qrCategories: ['Final S Blends'],
+        qrCategories: ['Final S Blends', 'Animated S', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Finger S-Drag',
@@ -3015,7 +3268,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp': {
-        qrCategories: ['Frontal Lisp'],
+        qrCategories: ['Frontal Lisp', 'Animated S'],
         strategies: {
           wordPhrase: ['Mirror (Snake in the Cage)', 'Adult Model', 'Emphasize & Exaggerate', 'Animated Articulation: S'],
           sound: ['Stretchy T (t-t-t-tsss)', 'Adult Model', 'Emphasize & Exaggerate', 'Animated Articulation: S'],
@@ -3023,7 +3276,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp'],
+        qrCategories: ['Lateral Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -3041,7 +3294,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits P and Frontal Lisp': {
-        qrCategories: ['Frontal Lisp', 'Final S Blends'],
+        qrCategories: ['Frontal Lisp', 'Final S Blends', 'Animated S', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Mirror',
@@ -3064,7 +3317,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits P and Lateral Lisp': {
-        qrCategories: ['Lateral Lisp', 'Final S Blends'],
+        qrCategories: ['Lateral Lisp', 'Final S Blends', 'Animated S', 'Animated P'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -3088,20 +3341,15 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['S/Z', 'P/B'],
+        qrCategories: ['S/Z', 'P/B', 'Animated S', 'Animated P'],
         strategies: {
           wordPhrase: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for specific strategies'],
-          sound: [
-            'Adult Model',
-            'Emphasize & Exaggerate',
-            'Animated Articulation',
-            'Connect with SLP for strategies',
-          ],
+          sound: ['Adult Model', 'Emphasize & Exaggerate', 'Animated Articulation', 'Connect with SLP for strategies'],
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
       Other: {
-        qrCategories: ['S/Z', 'Final S Blends'],
+        qrCategories: ['S/Z', 'Final S Blends', 'Animated S', 'Animated P'],
         strategies: {
           wordPhrase: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
           sound: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
@@ -3111,7 +3359,7 @@ function getGoalSheetContent() {
     },
     'Final -ks': {
       'Omits S': {
-        qrCategories: ['Final S Blends', 'S/Z'],
+        qrCategories: ['Final S Blends', 'S/Z', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Finger S-Drag',
@@ -3135,7 +3383,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits K': {
-        qrCategories: ['Final S Blends', 'K/G'],
+        qrCategories: ['Final S Blends', 'K/G', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Emphasize and exaggerate (K)',
@@ -3151,7 +3399,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits KS': {
-        qrCategories: ['Final S Blends'],
+        qrCategories: ['Final S Blends', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Finger S-Drag',
@@ -3177,7 +3425,7 @@ function getGoalSheetContent() {
         },
       },
       Fronting: {
-        qrCategories: ['K/G'],
+        qrCategories: ['K/G', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Animated Articulation: compare K/T',
@@ -3193,7 +3441,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits S and Fronting': {
-        qrCategories: ['Final S Blends', 'K/G'],
+        qrCategories: ['Final S Blends', 'K/G', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Animated Articulation: S & compare K/T',
@@ -3211,7 +3459,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp': {
-        qrCategories: ['Frontal Lisp'],
+        qrCategories: ['Frontal Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Mirror',
@@ -3233,7 +3481,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp'],
+        qrCategories: ['Lateral Lisp', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -3253,7 +3501,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits K and Frontal Lisp': {
-        qrCategories: ['Frontal Lisp', 'Final S Blends'],
+        qrCategories: ['Frontal Lisp', 'Final S Blends', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Mirror',
@@ -3273,7 +3521,7 @@ function getGoalSheetContent() {
         },
       },
       'Omits K and Lateral Lisp': {
-        qrCategories: ['Lateral Lisp', 'Final S Blends'],
+        qrCategories: ['Lateral Lisp', 'Final S Blends', 'Animated S', 'Animated K'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -3294,6 +3542,40 @@ function getGoalSheetContent() {
           ],
         },
       },
+      Nasalization: {
+        qrCategories: ['Final S Blends', 'S/Z', 'Animated S', 'Animated K'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & K',
+            'Connect with SLP for specific strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: S & K',
+            'Connect with SLP for specific strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      Other: {
+        qrCategories: ['S/Z', 'Final S Blends', 'Animated S', 'Animated K'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Connect with SLP for strategies',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Connect with SLP for strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
     },
     // Phase 3: secondary sounds. For sounds whose "Stopping" row in the
     // source document isn't broken out per substituted consonant (Z, Ch, Sh,
@@ -3305,7 +3587,7 @@ function getGoalSheetContent() {
     // F only, per the source) a generic entry.
     L: {
       'Gliding w': {
-        qrCategories: ['L'],
+        qrCategories: ['L', 'Animated L'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (L & W)',
@@ -3323,7 +3605,7 @@ function getGoalSheetContent() {
         },
       },
       'Gliding y': {
-        qrCategories: ['L'],
+        qrCategories: ['L', 'Animated L'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (L & Y)',
@@ -3340,7 +3622,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['L'],
+        qrCategories: ['L', 'Animated L'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -3357,10 +3639,30 @@ function getGoalSheetContent() {
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
+      Omission: {
+        qrCategories: ['L', 'Animated L'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: L',
+            'Mirror',
+            'Visual Phonics',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: L',
+            'Mirror',
+            'Visual Phonics',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
     },
     R: {
       'Gliding w': {
-        qrCategories: ['R'],
+        qrCategories: ['R', 'Animated R'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (R & W)',
@@ -3380,7 +3682,7 @@ function getGoalSheetContent() {
         },
       },
       'Gliding y': {
-        qrCategories: ['R'],
+        qrCategories: ['R', 'Animated R'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (R & Y)',
@@ -3400,7 +3702,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['R'],
+        qrCategories: ['R', 'Animated R'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -3417,10 +3719,30 @@ function getGoalSheetContent() {
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
+      Omission: {
+        qrCategories: ['R', 'Animated R'],
+        strategies: {
+          wordPhrase: [
+            'Mirror (avoid rounding lips)',
+            'Big smile (showing teeth)',
+            'Bear Growl (“grrr…”)',
+            'Your ______',
+            'Animated Articulation: R',
+          ],
+          sound: [
+            'Mirror (avoid rounding lips)',
+            'Big smile (showing teeth)',
+            'Bear Growl (“grrr…”)',
+            'Your ______',
+            'Animated Articulation: R',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
     },
     Z: {
       Stopping: {
-        qrCategories: ['S/Z'],
+        qrCategories: ['S/Z', 'Animated Z'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (Z & D)',
@@ -3438,7 +3760,7 @@ function getGoalSheetContent() {
         },
       },
       'Sibilant S': {
-        qrCategories: ['S/Z'],
+        qrCategories: ['S/Z', 'Animated Z'],
         strategies: {
           wordPhrase: [
             'Verbal Cue: "Turn the Voicebox On"',
@@ -3456,7 +3778,7 @@ function getGoalSheetContent() {
         },
       },
       'Frontal Lisp': {
-        qrCategories: ['Frontal Lisp'],
+        qrCategories: ['Frontal Lisp', 'Animated Z'],
         strategies: {
           wordPhrase: [
             'Mirror',
@@ -3474,7 +3796,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp'],
+        qrCategories: ['Lateral Lisp', 'Animated Z'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -3496,7 +3818,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'S/Z'],
+        qrCategories: ['Initial Consonant Deletion', 'S/Z', 'Animated Z'],
         strategies: {
           wordPhrase: [
             'Two Tokens (Zap = z + ap)',
@@ -3516,7 +3838,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['S/Z'],
+        qrCategories: ['S/Z', 'Animated Z'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -3534,7 +3856,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['S/Z'],
+        qrCategories: ['S/Z', 'Animated Z'],
         strategies: {
           wordPhrase: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for specific strategies'],
           sound: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
@@ -3544,7 +3866,7 @@ function getGoalSheetContent() {
     },
     Ch: {
       Stopping: {
-        qrCategories: ['CH/J'],
+        qrCategories: ['CH/J', 'Animated Ch'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (Ch & T)',
@@ -3561,7 +3883,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp', 'CH/J'],
+        qrCategories: ['Lateral Lisp', 'CH/J', 'Animated Ch'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -3583,7 +3905,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'CH/J'],
+        qrCategories: ['Initial Consonant Deletion', 'CH/J', 'Animated Ch'],
         strategies: {
           wordPhrase: [
             'Two Tokens (chop = ch + op)',
@@ -3600,7 +3922,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['CH/J'],
+        qrCategories: ['CH/J', 'Animated Ch'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -3618,7 +3940,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['CH/J'],
+        qrCategories: ['CH/J', 'Animated Ch'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -3638,7 +3960,7 @@ function getGoalSheetContent() {
     },
     Sh: {
       Stopping: {
-        qrCategories: ['SH/ZH'],
+        qrCategories: ['SH/ZH', 'Animated Sh'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (Sh & T)',
@@ -3657,7 +3979,7 @@ function getGoalSheetContent() {
         },
       },
       'Sibilant S': {
-        qrCategories: ['SH/ZH'],
+        qrCategories: ['SH/ZH', 'Animated Sh'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (Sh & S)',
@@ -3678,7 +4000,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp', 'SH/ZH'],
+        qrCategories: ['Lateral Lisp', 'SH/ZH', 'Animated Sh'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -3702,7 +4024,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'SH/ZH'],
+        qrCategories: ['Initial Consonant Deletion', 'SH/ZH', 'Animated Sh'],
         strategies: {
           wordPhrase: [
             'Two Tokens (ship = sh + ip)',
@@ -3720,7 +4042,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['SH/ZH'],
+        qrCategories: ['SH/ZH', 'Animated Sh'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -3738,7 +4060,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['SH/ZH'],
+        qrCategories: ['SH/ZH', 'Animated Sh'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -3758,7 +4080,7 @@ function getGoalSheetContent() {
     },
     J: {
       Stopping: {
-        qrCategories: ['CH/J'],
+        qrCategories: ['CH/J', 'Animated J'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (J & D)',
@@ -3778,7 +4100,7 @@ function getGoalSheetContent() {
         },
       },
       'Lateral Lisp': {
-        qrCategories: ['Lateral Lisp', 'CH/J'],
+        qrCategories: ['Lateral Lisp', 'CH/J', 'Animated J'],
         strategies: {
           wordPhrase: [
             'Straw Microphone',
@@ -3802,7 +4124,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'CH/J'],
+        qrCategories: ['Initial Consonant Deletion', 'CH/J', 'Animated J'],
         strategies: {
           wordPhrase: [
             'Two Tokens (jog = j + og)',
@@ -3821,7 +4143,7 @@ function getGoalSheetContent() {
         },
       },
       Nasalization: {
-        qrCategories: ['CH/J'],
+        qrCategories: ['CH/J', 'Animated J'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -3839,7 +4161,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['CH/J'],
+        qrCategories: ['CH/J', 'Animated J'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -3859,7 +4181,7 @@ function getGoalSheetContent() {
     },
     F: {
       'Stopping P': {
-        qrCategories: ['F/V'],
+        qrCategories: ['F/V', 'Animated F'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (F & P)',
@@ -3869,7 +4191,6 @@ function getGoalSheetContent() {
             'Animated Articulation: compare F and P',
           ],
           sound: [
-            'Minimal Pairs (F & P)',
             'Mirror',
             'Bunny Face',
             'Visual Phonics',
@@ -3879,7 +4200,7 @@ function getGoalSheetContent() {
         },
       },
       Stopping: {
-        qrCategories: ['F/V'],
+        qrCategories: ['F/V', 'Animated F'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -3903,7 +4224,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'F/V'],
+        qrCategories: ['Initial Consonant Deletion', 'F/V', 'Animated F'],
         strategies: {
           wordPhrase: [
             'Two Tokens (fun = f + un)',
@@ -3911,6 +4232,8 @@ function getGoalSheetContent() {
             'Visual Phonics: F',
             'Mirror',
             'Bunny Face',
+            'Visual Phonics',
+            'Animated Articulation: F',
           ],
           sound: [
             'Adult Model',
@@ -3924,7 +4247,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['F/V'],
+        qrCategories: ['F/V', 'Animated F'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -3950,7 +4273,7 @@ function getGoalSheetContent() {
     },
     V: {
       Stopping: {
-        qrCategories: ['F/V'],
+        qrCategories: ['F/V', 'Animated V'],
         strategies: {
           wordPhrase: [
             'Minimal Pairs (V & B)',
@@ -3960,7 +4283,6 @@ function getGoalSheetContent() {
             'Animated Articulation: compare V and B',
           ],
           sound: [
-            'Minimal Pairs (V & B)',
             'Mirror',
             'Bunny Face',
             'Visual Phonics',
@@ -3970,7 +4292,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'F/V'],
+        qrCategories: ['Initial Consonant Deletion', 'F/V', 'Animated V'],
         strategies: {
           wordPhrase: [
             'Two Tokens (van = v + an)',
@@ -3981,7 +4303,6 @@ function getGoalSheetContent() {
             'Animated Articulation: V',
           ],
           sound: [
-            'Two Tokens (van = v + an)',
             'Emphasize and Exaggerate V',
             'Visual Phonics: V',
             'Mirror',
@@ -3992,7 +4313,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['F/V'],
+        qrCategories: ['F/V', 'Animated V'],
         strategies: {
           wordPhrase: [
             'Adult Model',
@@ -4012,7 +4333,24 @@ function getGoalSheetContent() {
     },
     '-er': {
       Vowelization: {
-        qrCategories: ['Final ER/AR/OR'],
+        qrCategories: ['Final ER/AR/OR', 'Animated ER'],
+        strategies: {
+          wordPhrase: [
+            'Animated Articulation: ER',
+            'Visual Phonics: ER',
+            '"Eee" + slide tongue backwards = "ear"',
+            'Bear growl "Grrr"',
+          ],
+          sound: [
+            'Start with initial R & shorten it (Rrrrrrr... er)',
+            '"Eee" + slide tongue backwards = "ear"',
+            'Bear growl "Grrr"',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      Other: {
+        qrCategories: ['Final ER/AR/OR', 'Animated ER'],
         strategies: {
           wordPhrase: [
             'Animated Articulation: ER',
@@ -4031,7 +4369,7 @@ function getGoalSheetContent() {
     },
     '-ar': {
       Vowelization: {
-        qrCategories: ['Final ER/AR/OR'],
+        qrCategories: ['Final ER/AR/OR', 'Animated AR'],
         strategies: {
           wordPhrase: [
             'Mirror (avoid rounding lips)',
@@ -4049,7 +4387,7 @@ function getGoalSheetContent() {
         },
       },
       'Vowelization w': {
-        qrCategories: ['Final ER/AR/OR'],
+        qrCategories: ['Final ER/AR/OR', 'Animated AR'],
         strategies: {
           wordPhrase: [
             'Mirror (avoid rounding lips)',
@@ -4067,7 +4405,25 @@ function getGoalSheetContent() {
         },
       },
       'Vowelization y': {
-        qrCategories: ['Final ER/AR/OR'],
+        qrCategories: ['Final ER/AR/OR', 'Animated AR'],
+        strategies: {
+          wordPhrase: [
+            'Mirror (avoid rounding lips)',
+            'Pirate Sounds',
+            'Animated Articulation: AR',
+            'Practice the word car (the initial K sound will keep the tongue back)',
+          ],
+          sound: [
+            'Mirror (avoid rounding lips)',
+            'Pirate Sounds',
+            'Animated Articulation: AR',
+            'Practice the word car (the initial K sound will keep the tongue back)',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      Other: {
+        qrCategories: ['Final ER/AR/OR', 'Animated AR'],
         strategies: {
           wordPhrase: [
             'Mirror (avoid rounding lips)',
@@ -4146,10 +4502,30 @@ function getGoalSheetContent() {
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
+      Other: {
+        qrCategories: ['Final ER/AR/OR'],
+        strategies: {
+          wordPhrase: [
+            'Roar (initial R can sometimes help anchor the tongue)',
+            'Open mouth wider (this prevents full rounding of the R and drops the tongue)',
+            'Practice the word core (the initial K sound will keep the tongue back)',
+            'Animated Articulation: OR',
+            'Emphasize and Exaggerate',
+          ],
+          sound: [
+            'Roar (initial R can sometimes help anchor the tongue)',
+            'Open mouth wider (this prevents full rounding of the R and drops the tongue)',
+            'Slow Slide: O > R "oooo...rrrrr"',
+            'Animated Articulation: OR',
+            'Emphasize and Exaggerate',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
     },
     th: {
       'Stopping T': {
-        qrCategories: ['TH'],
+        qrCategories: ['TH', 'Animated TH'],
         strategies: {
           wordPhrase: [
             'Mirror (can see tongue between teeth)',
@@ -4169,7 +4545,7 @@ function getGoalSheetContent() {
         },
       },
       'Sibilant Substitution (F)': {
-        qrCategories: ['TH'],
+        qrCategories: ['TH', 'Animated TH'],
         strategies: {
           wordPhrase: [
             'Hold the F sound and stick tongue out halfway through "ffff-thhh"',
@@ -4190,7 +4566,7 @@ function getGoalSheetContent() {
         },
       },
       'Sibilant Substitution (S)': {
-        qrCategories: ['TH'],
+        qrCategories: ['TH', 'Animated TH'],
         strategies: {
           wordPhrase: [
             'Mirror (can see tongue between teeth)',
@@ -4211,7 +4587,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'TH'],
+        qrCategories: ['Initial Consonant Deletion', 'TH', 'Animated TH'],
         strategies: {
           wordPhrase: [
             'Two Tokens (thumb = th + umb)',
@@ -4230,7 +4606,7 @@ function getGoalSheetContent() {
         },
       },
       Other: {
-        qrCategories: ['TH'],
+        qrCategories: ['TH', 'Animated TH'],
         strategies: {
           wordPhrase: [
             'Mirror (can see tongue between teeth)',
@@ -4245,6 +4621,46 @@ function getGoalSheetContent() {
             'Animated Articulation: TH',
             'Emphasize & Exaggerate',
             'Connect with SLP for strategies',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      Stopping: {
+        qrCategories: ['TH', 'Animated TH'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: TH',
+            'Lightly Bite Tongue and Blow',
+            'Mirror',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: TH',
+            'Lightly Bite Tongue and Blow',
+            'Mirror',
+          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
+        },
+      },
+      'Sibilant error (s, f)': {
+        qrCategories: ['TH', 'Animated TH'],
+        strategies: {
+          wordPhrase: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: TH',
+            'Lightly Bite Tongue and Blow',
+            'Mirror',
+          ],
+          sound: [
+            'Adult Model',
+            'Emphasize & Exaggerate',
+            'Animated Articulation: TH',
+            'Lightly Bite Tongue and Blow',
+            'Mirror',
           ],
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
