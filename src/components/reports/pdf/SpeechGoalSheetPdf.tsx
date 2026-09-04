@@ -183,12 +183,12 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   soundBox: {
-    width: '13%',
+    width: 82,
     paddingRight: 4,
     borderRightWidth: 0.75,
     borderRightColor: '#d1d5db',
   },
-  strategyBox: { width: '87%', paddingLeft: 12, flexDirection: 'row' },
+  strategyBox: { flex: 1, paddingLeft: 12, flexDirection: 'row' },
   strategyChecklistCol: {
     flexGrow: 0,
     flexShrink: 0,
@@ -197,7 +197,8 @@ const styles = StyleSheet.create({
     borderRightColor: '#d1d5db',
   },
   strategyChecklistColsRow: { flexDirection: 'row' },
-  strategyChecklistSubCol: { flexGrow: 0, flexShrink: 0, paddingRight: 10 },
+  strategyChecklistSubCol: { width: 130, flexShrink: 0, paddingRight: 10 },
+
   soundLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
