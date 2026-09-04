@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   soundValue: {
-    fontSize: 15,
+    fontSize: 12,
     fontFamily: 'Nunito',
     fontWeight: 700,
     color: '#111827',
@@ -223,15 +223,16 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   qrColumn: { flexDirection: 'row', alignItems: 'flex-start' },
-  qrItem: { alignItems: 'center' },
-  qrItemSpacer: { marginLeft: 8 },
-  qrImage: { width: 50, height: 50 },
+  qrItem: { alignItems: 'center', width: 48 },
+  qrItemSpacer: { marginLeft: 6 },
+  qrImage: { width: 32, height: 32 },
   qrCaption: {
     fontSize: 6,
     fontFamily: 'Montserrat',
     textAlign: 'center',
     color: '#4b5563',
     marginTop: 2,
+    width: 48,
   },
   checkboxRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 2 },
   checkboxBox: {
