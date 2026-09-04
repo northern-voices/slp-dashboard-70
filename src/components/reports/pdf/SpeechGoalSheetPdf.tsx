@@ -539,12 +539,22 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
 
 const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
   const { context } = data
+  const bannerTitle =
+    context.level === 1
+      ? 'Goal Sheet (Level 1)'
+      : context.level === 2
+        ? 'Goal Sheet (Level 2)'
+        : 'Goal Sheet'
   const worksheetErrors = [...(context.primary_errors ?? []), ...(context.secondary_errors ?? [])]
 
   return (
     <Document>
       <Page size='LETTER' style={styles.page}>
-        <ReportBanner title='Goal Sheet' />
+        <ReportBanner
+          title={bannerTitle}
+          backgroundColor={context.level === 2 ? '#e9e2d9' : undefined}
+          textColor={context.level === 2 ? '#4d4b4b' : undefined}
+        />
 
         <View style={styles.body}>
           <View style={styles.infoRow}>
