@@ -394,7 +394,7 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
         <section
           key={i}
           className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-          <ReportBanner {...getBannerProps(context.level, 'Goal Sheets')} />
+          <ReportBanner {...getBannerProps(context.level, 'Goal Sheet')} />
           <div className='px-10 pt-4 flex flex-col flex-1'>
             <GoalWorksheetSection studentName={context.student_name} error={error} />
           </div>

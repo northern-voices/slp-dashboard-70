@@ -425,7 +425,7 @@ const GoalWorksheetPage = ({
   level?: 1 | 2
 }) => (
   <Page size='LETTER' style={styles.page}>
-    <ReportBanner {...getBannerProps(level, 'Goal Sheets')} />
+    <ReportBanner {...getBannerProps(level, 'Goal Sheet')} />
 
     <View style={styles.body}>
       <Text style={styles.studentLine}>STUDENT: {studentName}</Text>
@@ -559,8 +559,6 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
       : context.level === 2
         ? 'Goal Sheet (Level 2)'
         : 'Goal Sheet'
-
-  const worksheetBannerProps = getBannerProps(context.level, 'Goal Sheets')
 
   const worksheetErrors = [...(context.primary_errors ?? []), ...(context.secondary_errors ?? [])]
 
