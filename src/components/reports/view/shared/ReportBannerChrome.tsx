@@ -1,17 +1,25 @@
 export const ReportBanner = ({
   title,
   titleClassName = 'text-3xl',
+  backgroundColor = '#5b7a8b',
+  textColor = '#ffffff',
 }: {
   title: string
   titleClassName?: string
+  backgroundColor?: string
+  textColor?: string
 }) => (
-  <div className='bg-[#5b7a8b] px-10 py-6 flex items-center justify-between'>
-    <h1 className={`text-white font-['Gotu'] ${titleClassName}`}>{title}</h1>
+  <div className='px-10 py-6 flex items-center justify-between' style={{ backgroundColor }}>
+    <h1 className={`font-['Gotu'] ${titleClassName}`} style={{ color: textColor }}>
+      {title}
+    </h1>
     <div className='flex items-center'>
       <img src='/icon.png' alt='' className='w-7 h-7 rounded mr-2' />
       <div className='leading-tight'>
-        <p className='font-bold text-[9px] tracking-wide text-white'>NORTHERN VOICES</p>
-        <p className="font-['Montserrat'] text-[6px] tracking-[0.2em] text-gray-200">
+        <p className='font-bold text-[9px] tracking-wide' style={{ color: textColor }}>
+          NORTHERN VOICES
+        </p>
+        <p className="font-['Montserrat'] text-[6px] tracking-[0.2em]" style={{ color: textColor }}>
           SPEECH SERVICES
         </p>
       </div>
