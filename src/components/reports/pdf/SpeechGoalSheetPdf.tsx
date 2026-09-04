@@ -58,7 +58,7 @@ const getStrategyItems = (error: GoalError): string[] => {
 }
 
 const STIMULABILITY_DISPLAY_LABEL: Record<string, string> = {
-  'non-stimulable': 'Non-Stimulable',
+  'non-stimulable': 'Aud. Discrim.',
   sound: 'Sound',
   word: 'Word',
   phrase: 'Phrase',
@@ -213,6 +213,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   stimulabilityIcon: { width: 18, height: 18, marginBottom: 3 },
+  audDiscrimLabel: { fontSize: 10 },
   strategyLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
@@ -436,24 +437,29 @@ const GoalWorksheetPage = ({
           <Text style={styles.soundValue}>{error.sound}</Text>
           <Text style={styles.soundLabel}>STIMULABILITY:</Text>
           {error.stimulability_option === 'non-stimulable' ? (
-            <Svg viewBox='0 0 24 24' style={styles.stimulabilityIcon}>
-              <Path
-                d='M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0'
-                stroke='#111827'
-                strokeWidth={2}
-                fill='none'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-              />
-              <Path
-                d='M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4'
-                stroke='#111827'
-                strokeWidth={2}
-                fill='none'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-              />
-            </Svg>
+            <>
+              <Text style={[styles.soundValue, styles.audDiscrimLabel]}>
+                {getStimulabilityLabel(error.stimulability_option)}
+              </Text>
+              <Svg viewBox='0 0 24 24' style={styles.stimulabilityIcon}>
+                <Path
+                  d='M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0'
+                  stroke='#111827'
+                  strokeWidth={2}
+                  fill='none'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                />
+                <Path
+                  d='M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4'
+                  stroke='#111827'
+                  strokeWidth={2}
+                  fill='none'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                />
+              </Svg>
+            </>
           ) : (
             <Text style={styles.soundValue}>
               {getStimulabilityLabel(error.stimulability_option)}

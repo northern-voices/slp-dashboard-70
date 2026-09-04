@@ -46,7 +46,7 @@ const getStrategyItems = (error: GoalError): string[] => {
 }
 
 const STIMULABILITY_DISPLAY_LABEL: Record<string, string> = {
-  'non-stimulable': 'Non-Stimulable',
+  'non-stimulable': 'Aud. Discrim.',
   sound: 'Sound',
   word: 'Word',
   phrase: 'Phrase',
@@ -199,7 +199,12 @@ const GoalWorksheetSection = ({
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
         <p className='font-bold text-gray-900 text-[9px] mb-0.5'>STIMULABILITY:</p>
         {error.stimulability_option === 'non-stimulable' ? (
-          <Ear className='w-[18px] h-[18px] text-gray-900 mb-1' strokeWidth={2} />
+          <div className='flex flex-col items-start mb-1'>
+            <p className='font-bold text-gray-900 text-sm'>
+              {getStimulabilityLabel(error.stimulability_option)}
+            </p>
+            <Ear className='w-[18px] h-[18px] text-gray-900 mt-1' strokeWidth={2} />
+          </div>
         ) : (
           <p className='font-bold text-gray-900 text-base mb-1'>
             {getStimulabilityLabel(error.stimulability_option)}
