@@ -195,9 +195,9 @@ const GoalWorksheetSection = ({
 
     <div className='flex border border-[#b7b7b7] bg-[#eff3f6] mb-3 p-2.5'>
       <div className='w-[13%] pr-1 border-r border-gray-300'>
-        <p className='font-bold text-gray-900 text-[9px] mb-0.5'>TARGET:</p>
+        <p className='font-normal text-gray-900 text-[9px] mb-0.5'>TARGET:</p>
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
-        <p className='font-bold text-gray-900 text-[9px] mb-0.5'>STIMULABILITY:</p>
+        <p className='font-normal text-gray-900 text-[9px] mb-0.5'>STIMULABILITY:</p>
         {error.stimulability_option === 'non-stimulable' ? (
           <div className='flex flex-col items-start mb-1'>
             <p className='font-bold text-gray-900 text-xs'>

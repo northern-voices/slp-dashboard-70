@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   soundLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
-    fontWeight: 700,
+    fontWeight: 400,
     color: '#111827',
     marginBottom: 2,
   },
