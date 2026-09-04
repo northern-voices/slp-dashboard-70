@@ -304,6 +304,12 @@ const GoalWorksheetSection = ({
 
 const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
   const { context } = data
+  const bannerTitle =
+    context.level === 1
+      ? 'Goal Sheet (Level 1)'
+      : context.level === 2
+        ? 'Goal Sheet (Level 2)'
+        : 'Goal Sheet'
   const worksheetErrors = [...(context.primary_errors ?? []), ...(context.secondary_errors ?? [])]
   const totalPages = 1 + worksheetErrors.length
 
@@ -315,7 +321,11 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
       />
 
       <section className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-        <ReportBanner title='Goal Sheet' />
+        <ReportBanner
+          title={bannerTitle}
+          backgroundColor={context.level === 2 ? '#e9e2d9' : undefined}
+          textColor={context.level === 2 ? '#4d4b4b' : undefined}
+        />
 
         <div className='flex-1 px-10 pt-5'>
           <div className='flex justify-between mb-2'>
