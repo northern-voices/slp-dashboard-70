@@ -1437,7 +1437,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'Animated K'],
+        qrCategories: ['Initial Consonant Deletion', 'K/G', 'Animated K'],
         strategies: {
           wordPhrase: [
             "Two Tokens (“c” + “at”)",
@@ -1516,7 +1516,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'Animated G'],
+        qrCategories: ['Initial Consonant Deletion', 'K/G', 'Animated G'],
         strategies: {
           wordPhrase: [
             "Two Tokens (“g” + “as”)",
@@ -1577,7 +1577,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'Animated T'],
+        qrCategories: ['Initial Consonant Deletion', 'T/D', 'Animated T'],
         strategies: {
           wordPhrase: [
             "Two Tokens (“t” + “ap”)",
@@ -1637,7 +1637,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'Animated D'],
+        qrCategories: ['Initial Consonant Deletion', 'T/D', 'Animated D'],
         strategies: {
           wordPhrase: [
             "Two Tokens (“d” + “og”)",
@@ -1740,7 +1740,7 @@ function getGoalSheetContent() {
         },
       },
       Omission: {
-        qrCategories: ['Initial Consonant Deletion', 'Animated S'],
+        qrCategories: ['Initial Consonant Deletion', 'S/Z', 'Animated S'],
         strategies: {
           wordPhrase: [
             'Two Tokens (Sun = s + un)',
@@ -2225,7 +2225,6 @@ function getGoalSheetContent() {
           audDiscrim: [
             'Adult Model',
             'Emphasizing and Exaggerating',
-            'Compare air flowing through sides of mouth vs down the center',
           ],
         },
       },
@@ -4192,7 +4191,6 @@ function getGoalSheetContent() {
             'Animated Articulation: compare F and P',
           ],
           sound: [
-            'Minimal Pairs (F & P)',
             'Mirror',
             'Bunny Face',
             'Visual Phonics',
@@ -4234,6 +4232,8 @@ function getGoalSheetContent() {
             'Visual Phonics: F',
             'Mirror',
             'Bunny Face',
+            'Visual Phonics',
+            'Animated Articulation: F',
           ],
           sound: [
             'Adult Model',
@@ -4283,7 +4283,6 @@ function getGoalSheetContent() {
             'Animated Articulation: compare V and B',
           ],
           sound: [
-            'Minimal Pairs (V & B)',
             'Mirror',
             'Bunny Face',
             'Visual Phonics',
@@ -4304,7 +4303,6 @@ function getGoalSheetContent() {
             'Animated Articulation: V',
           ],
           sound: [
-            'Two Tokens (van = v + an)',
             'Emphasize and Exaggerate V',
             'Visual Phonics: V',
             'Mirror',
