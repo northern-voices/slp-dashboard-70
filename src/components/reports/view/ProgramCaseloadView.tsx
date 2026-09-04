@@ -19,12 +19,14 @@ interface ProgramCaseloadData {
 
 interface TableBlock {
   heading: string
+  variant: 'qualified' | 'sub'
   columns: string[]
   rows: string[][]
 }
 
 interface PageSegment {
   heading: string
+  variant: 'qualified' | 'sub'
   columns: string[]
   rows: string[][]
 }
@@ -54,6 +56,7 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
       const rowsForThisSegment = rows.slice(0, availableForRows)
       currentPage.push({
         heading: isFirstSegment ? block.heading : `${block.heading} (cont.)`,
+        variant: block.variant,
         columns: block.columns,
         rows: rowsForThisSegment,
       })
@@ -73,37 +76,45 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
   return pages
 }
 
-const SegmentTable = ({ segment }: { segment: PageSegment }) => (
-  <>
-    {segment.heading && (
-      <p className="text-lg font-['Gotu'] text-gray-800 mb-2">{segment.heading}</p>
-    )}
-    <table className='w-full border border-black text-[10px] mb-4'>
-      <thead>
-        <tr className='bg-[#f2f2f2]'>
-          {segment.columns.map(col => (
-            <th
-              key={col}
-              className="font-['Montserrat'] border border-black py-1.5 px-2 text-center text-[8px] font-bold">
-              {col}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {segment.rows.map((row, i) => (
-          <tr key={i}>
-            {row.map((cell, j) => (
-              <td key={j} className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
-                {cell}
-              </td>
+const SegmentTable = ({ segment }: { segment: PageSegment }) => {
+  const headingColorClass = segment.variant === 'qualified' ? 'text-[#5b7a8b]' : 'text-[#8a6d4f]'
+  const headerRowClass = segment.variant === 'qualified' ? 'bg-[#5b7a8b]' : 'bg-[#e9e2d9]'
+  const headerTextClass = segment.variant === 'qualified' ? 'text-white' : 'text-[#4d4b4b]'
+
+  return (
+    <>
+      {segment.heading && (
+        <h2 className={`text-lg font-['Gotu'] text-center mb-2 ${headingColorClass}`}>
+          {segment.heading}
+        </h2>
+      )}
+      <table className='w-full border border-black text-[10px] mb-4'>
+        <thead>
+          <tr className={headerRowClass}>
+            {segment.columns.map(col => (
+              <th
+                key={col}
+                className={`font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold ${headerTextClass}`}>
+                {col}
+              </th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </>
-)
+        </thead>
+        <tbody>
+          {segment.rows.map((row, i) => (
+            <tr key={i}>
+              {row.map((cell, j) => (
+                <td key={j} className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  )
+}
 
 const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
   const { context } = data
@@ -112,13 +123,16 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
   if (context.qualified && context.qualified_students?.length > 0) {
     blocks.push({
       heading: 'Qualified - Primary Caseload',
+      variant: 'qualified',
       columns: ['STUDENT NAME', 'ACADEMIC YEAR', 'RESULT'],
       rows: context.qualified_students.map(s => [s.name, context.academic_year, s.result]),
     })
   }
+
   if (context.sub && context.sub_students?.length > 0) {
     blocks.push({
       heading: 'Subs',
+      variant: 'sub',
       columns: ['STUDENT NAME', 'ACADEMIC YEAR', 'RESULT'],
       rows: context.sub_students.map(s => [s.name, context.academic_year, s.result]),
     })
