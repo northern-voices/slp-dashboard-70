@@ -20,12 +20,14 @@ interface ProgramCaseloadData {
 
 interface TableBlock {
   heading: string
+  variant: 'qualified' | 'sub'
   columns: string[]
   rows: string[][]
 }
 
 interface PageSegment {
   heading: string
+  variant: 'qualified' | 'sub'
   columns: string[]
   rows: string[][]
 }
@@ -56,6 +58,7 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
       const rowsForThisSegment = rows.slice(0, availableForRows)
       currentPage.push({
         heading: isFirstSegment ? block.heading : `${block.heading} (cont.)`,
+        variant: block.variant,
         columns: block.columns,
         rows: rowsForThisSegment,
       })
@@ -101,20 +104,24 @@ const styles = StyleSheet.create({
   infoLabel: { fontFamily: 'Nunito', fontWeight: 700, color: '#111827' },
 
   sectionText: { fontSize: 10, color: '#374151', marginTop: 16 },
-  blockHeading: { fontFamily: 'Gotu', fontSize: 15, color: '#1f2937', marginBottom: 8 },
+  blockHeading: { fontFamily: 'Gotu', fontSize: 15, textAlign: 'center', marginBottom: 8 },
+  blockHeadingQualified: { color: '#5b7a8b' },
+  blockHeadingSub: { color: '#8a6d4f' },
 
   table: { marginBottom: 14 },
   tableRow: { flexDirection: 'row' },
   tableHeaderCell: {
     borderWidth: 0.75,
     borderColor: '#000000',
-    backgroundColor: '#f2f2f2',
-    padding: 5,
+    padding: 6,
     fontSize: 8,
     fontFamily: 'Montserrat',
     fontWeight: 700,
     textAlign: 'center',
   },
+  tableHeaderCellQualified: { backgroundColor: '#5b7a8b', color: '#ffffff' },
+  tableHeaderCellSub: { backgroundColor: '#e9e2d9', color: '#4d4b4b' },
+
   tableCell: {
     borderWidth: 0.75,
     borderColor: '#000000',
@@ -125,29 +132,40 @@ const styles = StyleSheet.create({
   },
 })
 
-const SegmentTable = ({ segment }: { segment: PageSegment }) => (
-  <>
-    {segment.heading && <Text style={styles.blockHeading}>{segment.heading}</Text>}
-    <View style={styles.table}>
-      <View style={styles.tableRow} wrap={false}>
-        {segment.columns.map(col => (
-          <Text key={col} style={[styles.tableHeaderCell, { flex: 1 }]}>
-            {col}
-          </Text>
-        ))}
-      </View>
-      {segment.rows.map((row, i) => (
-        <View style={styles.tableRow} key={i} wrap={false}>
-          {row.map((cell, j) => (
-            <Text key={j} style={[styles.tableCell, { flex: 1 }]}>
-              {cell}
+const SegmentTable = ({ segment }: { segment: PageSegment }) => {
+  const headingStyle = [
+    styles.blockHeading,
+    segment.variant === 'qualified' ? styles.blockHeadingQualified : styles.blockHeadingSub,
+  ]
+  const headerCellStyle = [
+    styles.tableHeaderCell,
+    segment.variant === 'qualified' ? styles.tableHeaderCellQualified : styles.tableHeaderCellSub,
+  ]
+
+  return (
+    <>
+      {segment.heading && <Text style={headingStyle}>{segment.heading}</Text>}
+      <View style={styles.table}>
+        <View style={styles.tableRow} wrap={false}>
+          {segment.columns.map(col => (
+            <Text key={col} style={[...headerCellStyle, { flex: 1 }]}>
+              {col}
             </Text>
           ))}
         </View>
-      ))}
-    </View>
-  </>
-)
+        {segment.rows.map((row, i) => (
+          <View style={styles.tableRow} key={i} wrap={false}>
+            {row.map((cell, j) => (
+              <Text key={j} style={[styles.tableCell, { flex: 1 }]}>
+                {cell}
+              </Text>
+            ))}
+          </View>
+        ))}
+      </View>
+    </>
+  )
+}
 
 const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
   const { context } = data
@@ -156,13 +174,16 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
   if (context.qualified && context.qualified_students?.length > 0) {
     blocks.push({
       heading: 'Qualified - Primary Caseload',
+      variant: 'qualified',
       columns: ['STUDENT NAME', 'ACADEMIC YEAR', 'RESULT'],
       rows: context.qualified_students.map(s => [s.name, context.academic_year, s.result]),
     })
   }
+
   if (context.sub && context.sub_students?.length > 0) {
     blocks.push({
       heading: 'Subs',
+      variant: 'sub',
       columns: ['STUDENT NAME', 'ACADEMIC YEAR', 'RESULT'],
       rows: context.sub_students.map(s => [s.name, context.academic_year, s.result]),
     })
