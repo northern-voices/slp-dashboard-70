@@ -441,7 +441,9 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
               />
             </Svg>
           ) : (
-            <Text style={styles.soundValue}>{getStimulabilityLabel(error.stimulability_option)}</Text>
+            <Text style={styles.soundValue}>
+              {getStimulabilityLabel(error.stimulability_option)}
+            </Text>
           )}
         </View>
         <View style={styles.strategyBox}>
@@ -570,9 +572,7 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
             <>
               {(context.level_1_table_errors?.length ?? 0) > 0 && (
                 <ErrorTable
-                  title={
-                    context.level === 2 ? 'SOUNDS COMPLETED IN LEVEL 1' : 'SOUND ERRORS (LEVEL 1)'
-                  }
+                  title='PRIMARY SOUND ERRORS'
                   errors={context.level_1_table_errors!}
                   variant='level1'
                 />
@@ -580,7 +580,7 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
 
               {(context.level_2_table_errors?.length ?? 0) > 0 && (
                 <ErrorTable
-                  title={context.level === 1 ? 'UPON MASTERY OF LEVEL 1' : 'SOUND ERRORS (LEVEL 2)'}
+                  title='SECONDARY SOUND ERRORS'
                   errors={context.level_2_table_errors!}
                   variant='level2'
                 />
@@ -589,19 +589,12 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
           ) : (
             <>
               {context.primary_table_errors?.length > 0 && (
-                <ErrorTable
-                  title={
-                    context.level
-                      ? `SOUND ERRORS (LEVEL ${context.level})`
-                      : 'SOUND ERRORS (CYCLE 1)'
-                  }
-                  errors={context.primary_table_errors}
-                />
+                <ErrorTable title='PRIMARY SOUND ERRORS' errors={context.primary_table_errors} />
               )}
 
               {context.secondary_table_errors?.length > 0 && (
                 <ErrorTable
-                  title='SOUND ERRORS (CYCLE 2)'
+                  title='SECONDARY SOUND ERRORS'
                   errors={context.secondary_table_errors}
                 />
               )}
