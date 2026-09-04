@@ -14,9 +14,8 @@ import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
 import { Badge } from '@/components/ui/badge'
-import { format } from 'date-fns'
+import { format, subMonths } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
-import { getCurrentAcademicYearStart } from '@/lib/academicYear'
 
 const SpeechScreeningContent = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
@@ -52,8 +51,8 @@ const SpeechScreeningContent = () => {
   )
   const latestScreening = studentScreenings[0] ?? null
 
-  const isWithin13Months = latestScreening
-    ? new Date(latestScreening.created_at) >= new Date(getCurrentAcademicYearStart(), 6, 1)
+  const isWithin18Months = latestScreening
+    ? new Date(latestScreening.created_at) >= subMonths(new Date(), 18)
     : false
 
   const handleCancel = () => {
@@ -122,18 +121,18 @@ const SpeechScreeningContent = () => {
 
           {latestScreening && (
             <div className='ml-3 shrink-0'>
-              {isWithin13Months ? (
+              {isWithin18Months ? (
                 <div className='flex items-center gap-1.5 px-2 py-1 bg-green-50 border border-green-200 rounded-full'>
                   <RefreshCw className='w-3 h-3 text-green-600' />
                   <p className='text-xs font-medium text-green-700'>
-                    Within 13 months — rescreening
+                    Within 18 months — rescreening
                   </p>
                 </div>
               ) : (
                 <div className='flex items-center gap-1.5 px-2 py-1 bg-blue-50 border border-blue-200 rounded-full'>
                   <Info className='w-3 h-3 text-blue-600' />
                   <p className='text-xs font-medium text-blue-700'>
-                    Over 13 months — new screening
+                    Over 18 months — new screening
                   </p>
                 </div>
               )}
@@ -195,7 +194,7 @@ const SpeechScreeningContent = () => {
             existingStudent={student}
             onStudentSelect={setSelectedStudent}
             afterStudentContent={renderLatestScreening()}
-            initialScreeningData={isWithin13Months ? latestScreening : null}
+            initialScreeningData={isWithin18Months ? latestScreening : null}
           />
         </div>
       </div>
