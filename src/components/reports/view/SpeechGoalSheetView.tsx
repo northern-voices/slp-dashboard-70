@@ -200,7 +200,7 @@ const GoalWorksheetSection = ({
         <p className='font-bold text-gray-900 text-[9px] mb-0.5'>STIMULABILITY:</p>
         {error.stimulability_option === 'non-stimulable' ? (
           <div className='flex flex-col items-start mb-1'>
-            <p className='font-bold text-gray-900 text-sm'>
+            <p className='font-bold text-gray-900 text-xs'>
               {getStimulabilityLabel(error.stimulability_option)}
             </p>
             <Ear className='w-[18px] h-[18px] text-gray-900 mt-1' strokeWidth={2} />

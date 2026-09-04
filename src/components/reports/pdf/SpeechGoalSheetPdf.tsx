@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   stimulabilityIcon: { width: 18, height: 18, marginBottom: 3 },
-  audDiscrimLabel: { fontSize: 10 },
+  audDiscrimLabel: { fontSize: 8 },
   strategyLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
