@@ -58,7 +58,7 @@ const getStrategyItems = (error: GoalError): string[] => {
 }
 
 const STIMULABILITY_DISPLAY_LABEL: Record<string, string> = {
-  'non-stimulable': 'Non-Stimulable',
+  'non-stimulable': 'Aud. Discrim.',
   sound: 'Sound',
   word: 'Word',
   phrase: 'Phrase',
@@ -99,6 +99,12 @@ interface SpeechGoalSheetData {
 
 const BANNER_BG = '#5b7a8b'
 const TAN_BG = '#e9e2d9'
+
+const getBannerProps = (level: 1 | 2 | undefined, title: string) => ({
+  title: level ? `${title} (Level ${level})` : title,
+  backgroundColor: level === 2 ? TAN_BG : undefined,
+  textColor: level === 2 ? '#4d4b4b' : undefined,
+})
 
 const styles = StyleSheet.create({
   page: {
@@ -177,12 +183,12 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   soundBox: {
-    width: '13%',
+    width: 82,
     paddingRight: 4,
     borderRightWidth: 0.75,
     borderRightColor: '#d1d5db',
   },
-  strategyBox: { width: '87%', paddingLeft: 12, flexDirection: 'row' },
+  strategyBox: { flex: 1, paddingLeft: 12, flexDirection: 'row' },
   strategyChecklistCol: {
     flexGrow: 0,
     flexShrink: 0,
@@ -191,22 +197,24 @@ const styles = StyleSheet.create({
     borderRightColor: '#d1d5db',
   },
   strategyChecklistColsRow: { flexDirection: 'row' },
-  strategyChecklistSubCol: { flexGrow: 0, flexShrink: 0, paddingRight: 10 },
+  strategyChecklistSubCol: { width: 130, flexShrink: 0, paddingRight: 10 },
+
   soundLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
-    fontWeight: 700,
+    fontWeight: 400,
     color: '#111827',
     marginBottom: 2,
   },
   soundValue: {
-    fontSize: 15,
+    fontSize: 12,
     fontFamily: 'Nunito',
     fontWeight: 700,
     color: '#111827',
     marginBottom: 3,
   },
   stimulabilityIcon: { width: 18, height: 18, marginBottom: 3 },
+  audDiscrimLabel: { fontSize: 8 },
   strategyLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
@@ -215,15 +223,16 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   qrColumn: { flexDirection: 'row', alignItems: 'flex-start' },
-  qrItem: { alignItems: 'center' },
-  qrItemSpacer: { marginLeft: 8 },
-  qrImage: { width: 50, height: 50 },
+  qrItem: { alignItems: 'center', width: 48 },
+  qrItemSpacer: { marginLeft: 6 },
+  qrImage: { width: 32, height: 32 },
   qrCaption: {
     fontSize: 6,
     fontFamily: 'Montserrat',
     textAlign: 'center',
     color: '#4b5563',
     marginTop: 2,
+    width: 48,
   },
   checkboxRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 2 },
   checkboxBox: {
@@ -409,9 +418,17 @@ const ErrorTable = ({
   )
 }
 
-const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error: GoalError }) => (
+const GoalWorksheetPage = ({
+  studentName,
+  error,
+  level,
+}: {
+  studentName: string
+  error: GoalError
+  level?: 1 | 2
+}) => (
   <Page size='LETTER' style={styles.page}>
-    <ReportBanner title='Goal Sheets' />
+    <ReportBanner {...getBannerProps(level, 'Goal Sheet')} />
 
     <View style={styles.body}>
       <Text style={styles.studentLine}>STUDENT: {studentName}</Text>
@@ -422,26 +439,33 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
           <Text style={styles.soundValue}>{error.sound}</Text>
           <Text style={styles.soundLabel}>STIMULABILITY:</Text>
           {error.stimulability_option === 'non-stimulable' ? (
-            <Svg viewBox='0 0 24 24' style={styles.stimulabilityIcon}>
-              <Path
-                d='M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0'
-                stroke='#111827'
-                strokeWidth={2}
-                fill='none'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-              />
-              <Path
-                d='M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4'
-                stroke='#111827'
-                strokeWidth={2}
-                fill='none'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-              />
-            </Svg>
+            <>
+              <Text style={[styles.soundValue, styles.audDiscrimLabel]}>
+                {getStimulabilityLabel(error.stimulability_option)}
+              </Text>
+              <Svg viewBox='0 0 24 24' style={styles.stimulabilityIcon}>
+                <Path
+                  d='M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0'
+                  stroke='#111827'
+                  strokeWidth={2}
+                  fill='none'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                />
+                <Path
+                  d='M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4'
+                  stroke='#111827'
+                  strokeWidth={2}
+                  fill='none'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                />
+              </Svg>
+            </>
           ) : (
-            <Text style={styles.soundValue}>{getStimulabilityLabel(error.stimulability_option)}</Text>
+            <Text style={styles.soundValue}>
+              {getStimulabilityLabel(error.stimulability_option)}
+            </Text>
           )}
         </View>
         <View style={styles.strategyBox}>
@@ -537,12 +561,23 @@ const GoalWorksheetPage = ({ studentName, error }: { studentName: string; error:
 
 const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
   const { context } = data
+  const bannerTitle =
+    context.level === 1
+      ? 'Goal Sheet (Level 1)'
+      : context.level === 2
+        ? 'Goal Sheet (Level 2)'
+        : 'Goal Sheet'
+
   const worksheetErrors = [...(context.primary_errors ?? []), ...(context.secondary_errors ?? [])]
 
   return (
     <Document>
       <Page size='LETTER' style={styles.page}>
-        <ReportBanner title='Goal Sheet' />
+        <ReportBanner
+          title={bannerTitle}
+          backgroundColor={context.level === 2 ? '#e9e2d9' : undefined}
+          textColor={context.level === 2 ? '#4d4b4b' : undefined}
+        />
 
         <View style={styles.body}>
           <View style={styles.infoRow}>
@@ -570,9 +605,7 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
             <>
               {(context.level_1_table_errors?.length ?? 0) > 0 && (
                 <ErrorTable
-                  title={
-                    context.level === 2 ? 'SOUNDS COMPLETED IN LEVEL 1' : 'SOUND ERRORS (LEVEL 1)'
-                  }
+                  title='PRIMARY SOUND ERRORS'
                   errors={context.level_1_table_errors!}
                   variant='level1'
                 />
@@ -580,7 +613,7 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
 
               {(context.level_2_table_errors?.length ?? 0) > 0 && (
                 <ErrorTable
-                  title={context.level === 1 ? 'UPON MASTERY OF LEVEL 1' : 'SOUND ERRORS (LEVEL 2)'}
+                  title='SECONDARY SOUND ERRORS'
                   errors={context.level_2_table_errors!}
                   variant='level2'
                 />
@@ -589,19 +622,12 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
           ) : (
             <>
               {context.primary_table_errors?.length > 0 && (
-                <ErrorTable
-                  title={
-                    context.level
-                      ? `SOUND ERRORS (LEVEL ${context.level})`
-                      : 'SOUND ERRORS (CYCLE 1)'
-                  }
-                  errors={context.primary_table_errors}
-                />
+                <ErrorTable title='PRIMARY SOUND ERRORS' errors={context.primary_table_errors} />
               )}
 
               {context.secondary_table_errors?.length > 0 && (
                 <ErrorTable
-                  title='SOUND ERRORS (CYCLE 2)'
+                  title='SECONDARY SOUND ERRORS'
                   errors={context.secondary_table_errors}
                 />
               )}
@@ -613,7 +639,12 @@ const SpeechGoalSheetPdf = ({ data }: { data: SpeechGoalSheetData }) => {
       </Page>
 
       {worksheetErrors.map((error, i) => (
-        <GoalWorksheetPage key={i} studentName={context.student_name} error={error} />
+        <GoalWorksheetPage
+          key={i}
+          studentName={context.student_name}
+          error={error}
+          level={context.level}
+        />
       ))}
     </Document>
   )

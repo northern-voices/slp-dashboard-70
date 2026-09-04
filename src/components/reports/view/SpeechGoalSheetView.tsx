@@ -46,7 +46,7 @@ const getStrategyItems = (error: GoalError): string[] => {
 }
 
 const STIMULABILITY_DISPLAY_LABEL: Record<string, string> = {
-  'non-stimulable': 'Non-Stimulable',
+  'non-stimulable': 'Aud. Discrim.',
   sound: 'Sound',
   word: 'Word',
   phrase: 'Phrase',
@@ -195,11 +195,16 @@ const GoalWorksheetSection = ({
 
     <div className='flex border border-[#b7b7b7] bg-[#eff3f6] mb-3 p-2.5'>
       <div className='w-[13%] pr-1 border-r border-gray-300'>
-        <p className='font-bold text-gray-900 text-[9px] mb-0.5'>TARGET:</p>
+        <p className='font-normal text-gray-900 text-[9px] mb-0.5'>TARGET:</p>
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
-        <p className='font-bold text-gray-900 text-[9px] mb-0.5'>STIMULABILITY:</p>
+        <p className='font-normal text-gray-900 text-[9px] mb-0.5'>STIMULABILITY:</p>
         {error.stimulability_option === 'non-stimulable' ? (
-          <Ear className='w-[18px] h-[18px] text-gray-900 mb-1' strokeWidth={2} />
+          <div className='flex flex-col items-start mb-1'>
+            <p className='font-bold text-gray-900 text-xs'>
+              {getStimulabilityLabel(error.stimulability_option)}
+            </p>
+            <Ear className='w-[18px] h-[18px] text-gray-900 mt-1' strokeWidth={2} />
+          </div>
         ) : (
           <p className='font-bold text-gray-900 text-base mb-1'>
             {getStimulabilityLabel(error.stimulability_option)}
@@ -302,8 +307,20 @@ const GoalWorksheetSection = ({
   </div>
 )
 
+const getBannerProps = (level: 1 | 2 | undefined, title: string) => ({
+  title: level ? `${title} (Level ${level})` : title,
+  backgroundColor: level === 2 ? '#e9e2d9' : undefined,
+  textColor: level === 2 ? '#4d4b4b' : undefined,
+})
+
 const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
   const { context } = data
+  const bannerTitle =
+    context.level === 1
+      ? 'Goal Sheet (Level 1)'
+      : context.level === 2
+        ? 'Goal Sheet (Level 2)'
+        : 'Goal Sheet'
   const worksheetErrors = [...(context.primary_errors ?? []), ...(context.secondary_errors ?? [])]
   const totalPages = 1 + worksheetErrors.length
 
@@ -315,7 +332,11 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
       />
 
       <section className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-        <ReportBanner title='Goal Sheet' />
+        <ReportBanner
+          title={bannerTitle}
+          backgroundColor={context.level === 2 ? '#e9e2d9' : undefined}
+          textColor={context.level === 2 ? '#4d4b4b' : undefined}
+        />
 
         <div className='flex-1 px-10 pt-5'>
           <div className='flex justify-between mb-2'>
@@ -343,16 +364,14 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
             <>
               {(context.level_1_table_errors?.length ?? 0) > 0 && (
                 <ErrorTable
-                  title={
-                    context.level === 2 ? 'SOUNDS COMPLETED IN LEVEL 1' : 'SOUND ERRORS (LEVEL 1)'
-                  }
+                  title='PRIMARY SOUND ERRORS'
                   errors={context.level_1_table_errors!}
                   variant='level1'
                 />
               )}
               {(context.level_2_table_errors?.length ?? 0) > 0 && (
                 <ErrorTable
-                  title={context.level === 1 ? 'UPON MASTERY OF LEVEL 1' : 'SOUND ERRORS (LEVEL 2)'}
+                  title='SECONDARY SOUND ERRORS'
                   errors={context.level_2_table_errors!}
                   variant='level2'
                 />
@@ -361,18 +380,11 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
           ) : (
             <>
               {context.primary_table_errors?.length > 0 && (
-                <ErrorTable
-                  title={
-                    context.level
-                      ? `SOUND ERRORS (LEVEL ${context.level})`
-                      : 'SOUND ERRORS (CYCLE 1)'
-                  }
-                  errors={context.primary_table_errors}
-                />
+                <ErrorTable title='PRIMARY SOUND ERRORS' errors={context.primary_table_errors} />
               )}
               {context.secondary_table_errors?.length > 0 && (
                 <ErrorTable
-                  title='SOUND ERRORS (CYCLE 2)'
+                  title='SECONDARY SOUND ERRORS'
                   errors={context.secondary_table_errors}
                 />
               )}
@@ -387,7 +399,7 @@ const SpeechGoalSheetView = ({ data }: { data: SpeechGoalSheetData }) => {
         <section
           key={i}
           className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-          <ReportBanner title='Goal Sheets' />
+          <ReportBanner {...getBannerProps(context.level, 'Goal Sheet')} />
           <div className='px-10 pt-4 flex flex-col flex-1'>
             <GoalWorksheetSection studentName={context.student_name} error={error} />
           </div>
