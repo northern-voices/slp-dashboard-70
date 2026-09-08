@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { ServiceStatus } from '@/types/database'
 
 export const edgeFunctionsApi = {
   /**
@@ -351,6 +352,7 @@ export const edgeFunctionsApi = {
       result: string
       consent: string
       speech_ea: string
+      service_status?: ServiceStatus
     }[],
     subStudents: {
       name: string
@@ -358,6 +360,7 @@ export const edgeFunctionsApi = {
       result: string
       consent: string
       speech_ea: string
+      service_status?: ServiceStatus
     }[],
     overrideEmails: string[],
     password: string
