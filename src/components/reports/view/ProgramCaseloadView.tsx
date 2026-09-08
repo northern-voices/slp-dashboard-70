@@ -128,7 +128,13 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
       heading: 'Qualified - Primary Caseload',
       variant: 'qualified',
       columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
-      rows: context.qualified_students.map(s => [s.name, context.academic_year, s.result]),
+      rows: context.qualified_students.map(s => [
+        s.name,
+        s.grade,
+        s.result,
+        s.consent,
+        s.speech_ea,
+      ]),
     })
   }
 
@@ -137,7 +143,7 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
       heading: 'Subs',
       variant: 'sub',
       columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
-      rows: context.sub_students.map(s => [s.name, context.academic_year, s.result]),
+      rows: context.sub_students.map(s => [s.name, s.grade, s.result, s.consent, s.speech_ea]),
     })
   }
 
