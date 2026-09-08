@@ -75,28 +75,30 @@ const EmailCaseloadReportModal = ({
           <DialogTitle>Email Caseload Report</DialogTitle>
         </DialogHeader>
 
-        <p className='text-sm text-gray-600'>
-          Sends the currently filtered caseload ({qualifiedStudents.length} qualified,{' '}
-          {subStudents.length} sub) as a password-protected report link.
-        </p>
+        <div className='space-y-4'>
+          <p className='text-sm text-gray-600'>
+            Sends the currently filtered caseload ({qualifiedStudents.length} qualified,{' '}
+            {subStudents.length} sub) as a password-protected report link.
+          </p>
 
-        <MultiEmailInput
-          recipientEmails={recipientEmails}
-          onChange={setRecipientEmails}
-          emailHistory={[]}
-        />
+          <MultiEmailInput
+            recipientEmails={recipientEmails}
+            onChange={setRecipientEmails}
+            emailHistory={[]}
+          />
 
-        <ReportPasswordInput password={password} onChange={setPassword} />
+          <ReportPasswordInput password={password} onChange={setPassword} />
 
-        <div className='flex justify-end gap-3 pt-2'>
-          <Button variant='outline' onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSend}
-            disabled={isSending || recipientEmails.length === 0 || !password}>
-            {isSending ? 'Sending...' : 'Send Report'}
-          </Button>
+          <div className='flex justify-end gap-3 pt-2'>
+            <Button variant='outline' onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSend}
+              disabled={isSending || recipientEmails.length === 0 || !password}>
+              {isSending ? 'Sending...' : 'Send Report'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
