@@ -23,6 +23,7 @@ interface EmailCaseloadReportModalProps {
   academicYear: string
   qualifiedStudents: CaseloadRow[]
   subStudents: CaseloadRow[]
+  graduatedStudents: CaseloadRow[]
 }
 
 const EmailCaseloadReportModal = ({
@@ -32,6 +33,7 @@ const EmailCaseloadReportModal = ({
   academicYear,
   qualifiedStudents,
   subStudents,
+  graduatedStudents,
 }: EmailCaseloadReportModalProps) => {
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
   const [password, setPassword] = useState('')
@@ -49,6 +51,7 @@ const EmailCaseloadReportModal = ({
         academicYear,
         qualifiedStudents,
         subStudents,
+        graduatedStudents,
         recipientEmails,
         password
       )
@@ -80,7 +83,8 @@ const EmailCaseloadReportModal = ({
         <div className='space-y-4'>
           <p className='text-sm text-gray-600'>
             Sends the currently filtered caseload ({qualifiedStudents.length} qualified,{' '}
-            {subStudents.length} sub) as a password-protected report link.
+            {subStudents.length} sub, {graduatedStudents.length} graduated) as a password-protected
+            report link.
           </p>
 
           <MultiEmailInput

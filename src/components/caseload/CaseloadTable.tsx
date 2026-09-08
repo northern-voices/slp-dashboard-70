@@ -137,6 +137,17 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       service_status: student.service_status,
     }))
 
+  const graduatedStudents = programFilteredStudents
+    .filter(student => effectiveStatusByStudent.get(student.id)?.programStatus === 'graduated')
+    .map(student => ({
+      name: `${student.first_name} ${student.last_name}`,
+      grade: getStudentGrade(student, gradesMap),
+      result: latestScreeningByStudent.get(student.id)?.result ?? 'N/A',
+      consent: consentSet.has(student.id) ? 'Yes' : 'No',
+      speech_ea: getSpeechEAName(student, speechEAs) || '-',
+      service_status: student.service_status,
+    }))
+
   const academicYear =
     dateFilter === 'school_year'
       ? getCurrentAcademicYear(new Date())
@@ -297,6 +308,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         academicYear={academicYear}
         qualifiedStudents={qualifiedStudents}
         subStudents={subStudents}
+        graduatedStudents={graduatedStudents}
       />
     </div>
   )
