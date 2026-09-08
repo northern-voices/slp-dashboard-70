@@ -341,4 +341,51 @@ export const edgeFunctionsApi = {
       throw error
     }
   },
+
+  async programCaseloadReport(
+    schoolId: string,
+    academic_year: string,
+    qualifiedStudents: {
+      name: string
+      grade: string
+      result: string
+      consent: string
+      speech_ea: string
+    }[],
+    subStudents: {
+      name: string
+      grade: string
+      result: string
+      consent: string
+      speech_ea: string
+    }[],
+    overrideEmails: string[],
+    password: string
+  ) {
+    try {
+      const generated_by = await this._getGeneratedBy()
+
+      const { data, error } = await supabase.functions.invoke('program-caseload-report', {
+        body: {
+          school_id: schoolId,
+          academic_year: academic_year,
+          qualified_students: qualifiedStudents,
+          sub_students: subStudents,
+          override_emails: overrideEmails,
+          generated_by,
+          password,
+        },
+      })
+
+      if (error) {
+        console.error('Error:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Failed to send program caseload report:', error)
+      throw error
+    }
+  },
 }
