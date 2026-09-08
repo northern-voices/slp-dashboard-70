@@ -1,5 +1,7 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
+import { SCREENING_RESULTS, ScreeningResultType } from '@/constants/screeningResults'
+import { ServiceStatus } from '@/types/database'
 
 interface CaseloadStudent {
   name: string
@@ -7,6 +9,7 @@ interface CaseloadStudent {
   result: string
   consent: string
   speech_ea: string
+  service_status?: ServiceStatus
 }
 
 interface ProgramCaseloadData {
@@ -25,14 +28,14 @@ interface TableBlock {
   heading: string
   variant: 'qualified' | 'sub'
   columns: string[]
-  rows: string[][]
+  rows: CaseloadStudent[]
 }
 
 interface PageSegment {
   heading: string
   variant: 'qualified' | 'sub'
   columns: string[]
-  rows: string[][]
+  rows: CaseloadStudent[]
 }
 
 const ROWS_FIRST_PAGE = 26
@@ -81,7 +84,26 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
   return pages
 }
 
-const BANNER_BG = '#5b7a8b'
+const RESULT_PDF_COLORS: Record<ScreeningResultType, { bg: string; text: string }> = {
+  no_errors: { bg: '#dcfce7', text: '#166534' },
+  age_appropriate: { bg: '#dbeafe', text: '#1e40af' },
+  monitor: { bg: '#fef9c3', text: '#854d0e' },
+  mild: { bg: '#fef3c7', text: '#92400e' },
+  moderate: { bg: '#ffedd5', text: '#9a3412' },
+  severe: { bg: '#fee2e2', text: '#991b1b' },
+  profound: { bg: '#fca5a5', text: '#991b1b' },
+  complex_needs: { bg: '#d8b4fe', text: '#6b21a8' },
+  unable_to_screen: { bg: '#f3e8ff', text: '#6b21a8' },
+  absent: { bg: '#f3f4f6', text: '#1f2937' },
+  non_registered_no_consent: { bg: '#f1f5f9', text: '#1e293b' },
+}
+
+const RESULT_LABEL_OVERRIDES: Partial<Record<ScreeningResultType, string>> = {
+  complex_needs: 'Complex Needs',
+  unable_to_screen: 'Refusal / Non-Compliant',
+}
+
+const COLUMN_FLEX = [1.5, 0.6, 1.1, 0.8, 1.2]
 
 const styles = StyleSheet.create({
   page: {
@@ -129,11 +151,89 @@ const styles = StyleSheet.create({
     borderWidth: 0.75,
     borderColor: '#000000',
     padding: 5,
-    fontSize: 8.5,
-    textAlign: 'center',
-    color: '#4d4b4b',
+    minHeight: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+  tableCellName: { alignItems: 'flex-start' },
+  tableCellText: { fontSize: 8.5, color: '#4d4b4b', textAlign: 'center' },
+  tableCellTextLeft: { fontSize: 8.5, color: '#4d4b4b', textAlign: 'left' },
+  noDataText: { fontSize: 7.5, color: '#9ca3af', fontStyle: 'italic' },
+
+  pill: { borderRadius: 8, paddingVertical: 2, paddingHorizontal: 6, marginTop: 2 },
+  pillText: { fontSize: 7.5, fontWeight: 700 },
+
+  pausedPill: { backgroundColor: '#f3e8ff' },
+  pausedPillText: { color: '#6b21a8' },
+
+  consentYesPill: { backgroundColor: '#dcfce7' },
+  consentYesText: { color: '#166534' },
+  consentNoPill: { backgroundColor: '#fee2e2' },
+  consentNoText: { color: '#b91c1c' },
 })
+
+const NameCell = ({ student }: { student: CaseloadStudent }) => (
+  <View style={[styles.tableCell, styles.tableCellName, { flex: COLUMN_FLEX[0] }]}>
+    <Text style={styles.tableCellTextLeft}>{student.name}</Text>
+    {student.service_status === 'paused' && (
+      <View style={[styles.pill, styles.pausedPill]}>
+        <Text style={[styles.pillText, styles.pausedPillText]}>Paused / Away</Text>
+      </View>
+    )}
+  </View>
+)
+
+const ResultCell = ({ result }: { result: string }) => {
+  const key = result as ScreeningResultType
+  const colors = RESULT_PDF_COLORS[key]
+  const config = SCREENING_RESULTS[key]
+
+  if (!colors || !config) {
+    return (
+      <View style={[styles.tableCell, { flex: COLUMN_FLEX[2] }]}>
+        <Text style={styles.noDataText}>No Screening Recorded</Text>
+      </View>
+    )
+  }
+
+  return (
+    <View style={[styles.tableCell, { flex: COLUMN_FLEX[2] }]}>
+      <View style={[styles.pill, { backgroundColor: colors.bg, marginTop: 0 }]}>
+        <Text style={[styles.pillText, { color: colors.text }]}>
+          {RESULT_LABEL_OVERRIDES[key] ?? config.label}
+        </Text>
+      </View>
+    </View>
+  )
+}
+
+const ConsentCell = ({ consent }: { consent: string }) => {
+  const isYes = consent === 'Yes'
+  return (
+    <View style={[styles.tableCell, { flex: COLUMN_FLEX[3] }]}>
+      <View
+        style={[
+          styles.pill,
+          isYes ? styles.consentYesPill : styles.consentNoPill,
+          { marginTop: 0 },
+        ]}>
+        <Text style={[styles.pillText, isYes ? styles.consentYesText : styles.consentNoText]}>
+          {consent}
+        </Text>
+      </View>
+    </View>
+  )
+}
+
+const SpeechEaCell = ({ speechEa }: { speechEa: string }) => (
+  <View style={[styles.tableCell, { flex: COLUMN_FLEX[4] }]}>
+    {speechEa === '-' ? (
+      <Text style={styles.noDataText}>No Speech EA assigned</Text>
+    ) : (
+      <Text style={styles.tableCellText}>{speechEa}</Text>
+    )}
+  </View>
+)
 
 const SegmentTable = ({ segment }: { segment: PageSegment }) => {
   const headingStyle = [
@@ -150,19 +250,21 @@ const SegmentTable = ({ segment }: { segment: PageSegment }) => {
       {segment.heading && <Text style={headingStyle}>{segment.heading}</Text>}
       <View style={styles.table}>
         <View style={styles.tableRow} wrap={false}>
-          {segment.columns.map(col => (
-            <Text key={col} style={[...headerCellStyle, { flex: 1 }]}>
+          {segment.columns.map((col, idx) => (
+            <Text key={col} style={[...headerCellStyle, { flex: COLUMN_FLEX[idx] }]}>
               {col}
             </Text>
           ))}
         </View>
-        {segment.rows.map((row, i) => (
+        {segment.rows.map((student, i) => (
           <View style={styles.tableRow} key={i} wrap={false}>
-            {row.map((cell, j) => (
-              <Text key={j} style={[styles.tableCell, { flex: 1 }]}>
-                {cell}
-              </Text>
-            ))}
+            <NameCell student={student} />
+            <View style={[styles.tableCell, { flex: COLUMN_FLEX[1] }]}>
+              <Text style={styles.tableCellText}>{student.grade}</Text>
+            </View>
+            <ResultCell result={student.result} />
+            <ConsentCell consent={student.consent} />
+            <SpeechEaCell speechEa={student.speech_ea} />
           </View>
         ))}
       </View>
@@ -179,13 +281,7 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
       heading: 'Qualified - Primary Caseload',
       variant: 'qualified',
       columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
-      rows: context.qualified_students.map(s => [
-        s.name,
-        s.grade,
-        s.result,
-        s.consent,
-        s.speech_ea,
-      ]),
+      rows: context.qualified_students,
     })
   }
 
@@ -194,7 +290,7 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
       heading: 'Subs',
       variant: 'sub',
       columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
-      rows: context.sub_students.map(s => [s.name, s.grade, s.result, s.consent, s.speech_ea]),
+      rows: context.sub_students,
     })
   }
 
