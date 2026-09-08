@@ -362,6 +362,14 @@ export const edgeFunctionsApi = {
       speech_ea: string
       service_status?: ServiceStatus
     }[],
+    graduatedStudents: {
+      name: string
+      grade: string
+      result: string
+      consent: string
+      speech_ea: string
+      service_status?: ServiceStatus
+    }[],
     overrideEmails: string[],
     password: string
   ) {
@@ -374,6 +382,7 @@ export const edgeFunctionsApi = {
           academic_year: academic_year,
           qualified_students: qualifiedStudents,
           sub_students: subStudents,
+          graduated_students: graduatedStudents,
           override_emails: overrideEmails,
           generated_by,
           password,
