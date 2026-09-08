@@ -2,7 +2,10 @@ import { ReportBanner, ReportFooter } from './shared/ReportBannerChrome'
 
 interface CaseloadStudent {
   name: string
+  grade: string
   result: string
+  consent: string
+  speech_ea: string
 }
 
 interface ProgramCaseloadData {
@@ -124,7 +127,7 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
     blocks.push({
       heading: 'Qualified - Primary Caseload',
       variant: 'qualified',
-      columns: ['STUDENT NAME', 'ACADEMIC YEAR', 'RESULT'],
+      columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
       rows: context.qualified_students.map(s => [s.name, context.academic_year, s.result]),
     })
   }
@@ -133,7 +136,7 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
     blocks.push({
       heading: 'Subs',
       variant: 'sub',
-      columns: ['STUDENT NAME', 'ACADEMIC YEAR', 'RESULT'],
+      columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
       rows: context.sub_students.map(s => [s.name, context.academic_year, s.result]),
     })
   }
