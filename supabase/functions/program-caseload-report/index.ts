@@ -168,6 +168,7 @@ Deno.serve(async req => {
       academic_year,
       qualified_students,
       sub_students,
+      graduated_students,
       override_emails,
       generated_by,
       password,
@@ -188,8 +189,13 @@ Deno.serve(async req => {
 
     const qualifiedStudents = Array.isArray(qualified_students) ? qualified_students : []
     const subStudents = Array.isArray(sub_students) ? sub_students : []
+    const graduatedStudents = Array.isArray(graduated_students) ? graduated_students : []
 
-    if (qualifiedStudents.length === 0 && subStudents.length === 0) {
+    if (
+      qualifiedStudents.length === 0 &&
+      subStudents.length === 0 &&
+      graduatedStudents.length === 0
+    ) {
       throw new Error('At least one qualified or sub student is required')
     }
 
@@ -230,12 +236,14 @@ Deno.serve(async req => {
     const reportData = {
       context: {
         school: schoolName,
-        student_count: qualifiedStudents.length + subStudents.length,
+        student_count: qualifiedStudents.length + subStudents.length + graduatedStudents.length,
         academic_year,
         qualified: qualifiedStudents.length > 0,
         sub: subStudents.length > 0,
+        graduated: graduatedStudents.length > 0,
         qualified_students: qualifiedStudents,
         sub_students: subStudents,
+        graduated_students: graduatedStudents,
       },
     }
 
@@ -281,6 +289,7 @@ Deno.serve(async req => {
           sent_to: override_emails,
           qualified_count: qualifiedStudents.length,
           sub_count: subStudents.length,
+          graduated_count: graduatedStudents.length,
           academic_year,
           school_name: schoolName,
           delivery_method: 'password_protected_link',
@@ -296,6 +305,7 @@ Deno.serve(async req => {
         school_name: schoolName,
         qualified_count: qualifiedStudents.length,
         sub_count: subStudents.length,
+        graduated_count: graduatedStudents.length,
         academic_year,
       }),
       {
