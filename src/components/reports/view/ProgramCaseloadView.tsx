@@ -18,21 +18,23 @@ interface ProgramCaseloadData {
     academic_year: string
     qualified: boolean
     sub: boolean
+    graduated: boolean
     qualified_students: CaseloadStudent[]
     sub_students: CaseloadStudent[]
+    graduated_students: CaseloadStudent[]
   }
 }
 
 interface TableBlock {
   heading: string
-  variant: 'qualified' | 'sub'
+  variant: 'qualified' | 'sub' | 'graduated'
   columns: string[]
   rows: CaseloadStudent[]
 }
 
 interface PageSegment {
   heading: string
-  variant: 'qualified' | 'sub'
+  variant: 'qualified' | 'sub' | 'graduated'
   columns: string[]
   rows: CaseloadStudent[]
 }
@@ -82,10 +84,18 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
   return pages
 }
 
+const VARIANT_STYLES = {
+  qualified: { heading: 'text-[#5b7a8b]', headerRow: 'bg-[#5b7a8b]', headerText: 'text-white' },
+  sub: { heading: 'text-[#8a6d4f]', headerRow: 'bg-[#e9e2d9]', headerText: 'text-[#4d4b4b]' },
+  graduated: { heading: 'text-[#3f6d8a]', headerRow: 'bg-[#7fa5bf]', headerText: 'text-white' },
+} as const
+
 const SegmentTable = ({ segment }: { segment: PageSegment }) => {
-  const headingColorClass = segment.variant === 'qualified' ? 'text-[#5b7a8b]' : 'text-[#8a6d4f]'
-  const headerRowClass = segment.variant === 'qualified' ? 'bg-[#5b7a8b]' : 'bg-[#e9e2d9]'
-  const headerTextClass = segment.variant === 'qualified' ? 'text-white' : 'text-[#4d4b4b]'
+  const {
+    heading: headingColorClass,
+    headerRow: headerRowClass,
+    headerText: headerTextClass,
+  } = VARIANT_STYLES[segment.variant]
 
   return (
     <>
@@ -165,6 +175,15 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
     })
   }
 
+  if (context.graduated && context.graduated_students?.length > 0) {
+    blocks.push({
+      heading: 'Graduated',
+      variant: 'graduated',
+      columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
+      rows: context.graduated_students,
+    })
+  }
+
   const pages = paginateBlocks(blocks, ROWS_FIRST_PAGE)
   const totalPages = pages.length || 1
 
@@ -192,9 +211,6 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
         <section className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden print:shadow-none'>
           <ReportBanner title='Program Caseload' />
           <div className='flex-1 px-10 pt-5'>
-            <h2 className="text-xl text-gray-600 text-center font-['Gotu'] mb-4">
-              Qualified & Sub Students
-            </h2>
             <InfoRow />
             <p className='text-sm text-gray-500 mt-4'>No qualified or sub students this year.</p>
           </div>
@@ -211,9 +227,6 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
               <div className='flex-1 px-10 pt-5'>
                 {i === 0 && (
                   <>
-                    <h2 className="text-xl text-gray-600 text-center font-['Gotu'] mb-4">
-                      Qualified & Sub Students
-                    </h2>
                     <InfoRow />
                   </>
                 )}

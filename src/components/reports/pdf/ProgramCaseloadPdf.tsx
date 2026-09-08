@@ -19,21 +19,23 @@ interface ProgramCaseloadData {
     academic_year: string
     qualified: boolean
     sub: boolean
+    graduated: boolean
     qualified_students: CaseloadStudent[]
     sub_students: CaseloadStudent[]
+    graduated_students: CaseloadStudent[]
   }
 }
 
 interface TableBlock {
   heading: string
-  variant: 'qualified' | 'sub'
+  variant: 'qualified' | 'sub' | 'graduated'
   columns: string[]
   rows: CaseloadStudent[]
 }
 
 interface PageSegment {
   heading: string
-  variant: 'qualified' | 'sub'
+  variant: 'qualified' | 'sub' | 'graduated'
   columns: string[]
   rows: CaseloadStudent[]
 }
@@ -132,6 +134,7 @@ const styles = StyleSheet.create({
   blockHeading: { fontFamily: 'Gotu', fontSize: 15, textAlign: 'center', marginBottom: 8 },
   blockHeadingQualified: { color: '#5b7a8b' },
   blockHeadingSub: { color: '#8a6d4f' },
+  blockHeadingGraduated: { color: '#3f6d8a' },
 
   table: { marginBottom: 14 },
   tableRow: { flexDirection: 'row' },
@@ -146,6 +149,7 @@ const styles = StyleSheet.create({
   },
   tableHeaderCellQualified: { backgroundColor: '#5b7a8b', color: '#ffffff' },
   tableHeaderCellSub: { backgroundColor: '#e9e2d9', color: '#4d4b4b' },
+  tableHeaderCellGraduated: { backgroundColor: '#7fa5bf', color: '#ffffff' },
 
   tableCell: {
     borderWidth: 0.75,
@@ -235,15 +239,21 @@ const SpeechEaCell = ({ speechEa }: { speechEa: string }) => (
   </View>
 )
 
+const HEADING_VARIANT_STYLE = {
+  qualified: styles.blockHeadingQualified,
+  sub: styles.blockHeadingSub,
+  graduated: styles.blockHeadingGraduated,
+}
+
+const HEADER_CELL_VARIANT_STYLE = {
+  qualified: styles.tableHeaderCellQualified,
+  sub: styles.tableHeaderCellSub,
+  graduated: styles.tableHeaderCellGraduated,
+}
+
 const SegmentTable = ({ segment }: { segment: PageSegment }) => {
-  const headingStyle = [
-    styles.blockHeading,
-    segment.variant === 'qualified' ? styles.blockHeadingQualified : styles.blockHeadingSub,
-  ]
-  const headerCellStyle = [
-    styles.tableHeaderCell,
-    segment.variant === 'qualified' ? styles.tableHeaderCellQualified : styles.tableHeaderCellSub,
-  ]
+  const headingStyle = [styles.blockHeading, HEADING_VARIANT_STYLE[segment.variant]]
+  const headerCellStyle = [styles.tableHeaderCell, HEADER_CELL_VARIANT_STYLE[segment.variant]]
 
   return (
     <>
@@ -294,6 +304,15 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
     })
   }
 
+  if (context.graduated && context.graduated_students?.length > 0) {
+    blocks.push({
+      heading: 'Graduated',
+      variant: 'graduated',
+      columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
+      rows: context.graduated_students,
+    })
+  }
+
   const pages = paginateBlocks(blocks, ROWS_FIRST_PAGE)
 
   return (
@@ -302,7 +321,6 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
         <Page size='LETTER' style={styles.page}>
           <ReportBanner title='Program Caseload' />
           <View style={styles.body}>
-            <Text style={styles.pageSubtitle}>Qualified & Sub Students</Text>
             <View style={styles.infoRow}>
               <Text>
                 <Text style={styles.infoLabel}>School: </Text>
@@ -326,7 +344,6 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
               <View style={styles.body}>
                 {i === 0 && (
                   <>
-                    <Text style={styles.pageSubtitle}>Qualified & Sub Students</Text>
                     <View style={styles.infoRow}>
                       <Text>
                         <Text style={styles.infoLabel}>School: </Text>
