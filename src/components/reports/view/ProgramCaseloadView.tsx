@@ -1,4 +1,6 @@
 import { ReportBanner, ReportFooter } from './shared/ReportBannerChrome'
+import { ResultBadge, ConsentBadge, ServiceStatusTag } from '@/components/caseload/CaseloadBadges'
+import { ServiceStatus } from '@/types/database'
 
 interface CaseloadStudent {
   name: string
@@ -6,6 +8,7 @@ interface CaseloadStudent {
   result: string
   consent: string
   speech_ea: string
+  service_status?: ServiceStatus
 }
 
 interface ProgramCaseloadData {
@@ -24,14 +27,14 @@ interface TableBlock {
   heading: string
   variant: 'qualified' | 'sub'
   columns: string[]
-  rows: string[][]
+  rows: CaseloadStudent[]
 }
 
 interface PageSegment {
   heading: string
   variant: 'qualified' | 'sub'
   columns: string[]
-  rows: string[][]
+  rows: CaseloadStudent[]
 }
 const ROWS_FIRST_PAGE = 26
 const ROWS_PER_PAGE = 32
@@ -104,13 +107,34 @@ const SegmentTable = ({ segment }: { segment: PageSegment }) => {
           </tr>
         </thead>
         <tbody>
-          {segment.rows.map((row, i) => (
+          {segment.rows.map((student, i) => (
             <tr key={i}>
-              {row.map((cell, j) => (
-                <td key={j} className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
-                  {cell}
-                </td>
-              ))}
+              <td className='border border-black py-2 px-3 text-left align-top'>
+                <div className='flex flex-col gap-1 items-start'>
+                  <span className='text-[#4d4b4b]'>{student.name}</span>
+                  <ServiceStatusTag status={student.service_status} />
+                </div>
+              </td>
+              <td className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
+                {student.grade}
+              </td>
+              <td className='border border-black py-1.5 px-2 text-center'>
+                {student.result && student.result !== 'N/A' ? (
+                  <ResultBadge result={student.result} />
+                ) : (
+                  <span className='text-[10px] text-gray-400 italic'>No Screening Recorded</span>
+                )}
+              </td>
+              <td className='border border-black py-1.5 px-2 text-center'>
+                <ConsentBadge hasConsent={student.consent === 'Yes'} />
+              </td>
+              <td className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
+                {student.speech_ea === '-' ? (
+                  <span className='text-[10px] text-gray-400 italic'>No Speech EA assigned</span>
+                ) : (
+                  student.speech_ea
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -128,13 +152,7 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
       heading: 'Qualified - Primary Caseload',
       variant: 'qualified',
       columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
-      rows: context.qualified_students.map(s => [
-        s.name,
-        s.grade,
-        s.result,
-        s.consent,
-        s.speech_ea,
-      ]),
+      rows: context.qualified_students,
     })
   }
 
@@ -143,7 +161,7 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
       heading: 'Subs',
       variant: 'sub',
       columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
-      rows: context.sub_students.map(s => [s.name, s.grade, s.result, s.consent, s.speech_ea]),
+      rows: context.sub_students,
     })
   }
 
