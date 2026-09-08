@@ -154,3 +154,166 @@ async function sendReportLinkEmail({
     throw new Error(`SES send failed: ${response.status} - ${errorText}`)
   }
 }
+
+Deno.serve(async req => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    // Parse request body
+    const {
+      school_id,
+      academic_year,
+      qualified_students,
+      sub_students,
+      override_emails,
+      generated_by,
+      password,
+    } = await req.json()
+
+    if (!school_id) {
+      throw new Error('school_id is required')
+    }
+    if (!academic_year) {
+      throw new Error('academic_year is required')
+    }
+    if (!Array.isArray(override_emails) || override_emails.length === 0) {
+      throw new Error('override_emails is required')
+    }
+    if (!password) {
+      throw new Error('password is required')
+    }
+
+    const qualifiedStudents = Array.isArray(qualified_students) ? qualified_students : []
+    const subStudents = Array.isArray(sub_students) ? sub_students : []
+
+    if (qualifiedStudents.length === 0 && subStudents.length === 0) {
+      throw new Error('At least one qualified or sub student is required')
+    }
+
+    console.log(
+      `Processing program caseload report for school: ${school_id}, year: ${academic_year}`
+    )
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
+    // 1. Get school information (trusted reference data - always fetched server-side,
+    //    never taken from the client, even though the roster itself is client-supplied)
+    const schoolUrl = `${supabaseUrl}/rest/v1/schools?id=eq.${school_id}&select=*`
+    const schoolResponse = await fetch(schoolUrl, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!schoolResponse.ok) {
+      throw new Error(`Failed to fetch school: ${schoolResponse.status}`)
+    }
+
+    const schools = await schoolResponse.json()
+    if (!schools || schools.length === 0) {
+      throw new Error('School not found')
+    }
+
+    const schoolName = schools[0].name.split('(')[0].trim()
+
+    console.log(`Found school: ${schoolName}`)
+
+    // 2. Build the report context - matches ProgramCaseloadData exactly, since this
+    //    report_type renders directly via ProgramCaseloadView/Pdf, not through the
+    //    generic Bulk dispatcher (so no metadata/template wrapper needed here)
+    const reportData = {
+      context: {
+        school: schoolName,
+        student_count: qualifiedStudents.length + subStudents.length,
+        academic_year,
+        qualified: qualifiedStudents.length > 0,
+        sub: subStudents.length > 0,
+        qualified_students: qualifiedStudents,
+        sub_students: subStudents,
+      },
+    }
+
+    // 3. Create a password-protected report token instead of emailing the PDF directly
+    const token = await createReportToken({
+      supabaseUrl,
+      supabaseKey,
+      password,
+      reportType: 'program_caseload_report',
+      reportData,
+      schoolId: school_id,
+      createdBy: generated_by,
+    })
+
+    const viewUrl = `${Deno.env.get('APP_BASE_URL')}/view-report/${token}`
+
+    console.log(`Sending secure report link to ${override_emails.join(', ')}...`)
+
+    await sendReportLinkEmail({
+      recipients: override_emails,
+      subject: `${schoolName} - Program Caseload - ${academic_year}`,
+      reportLabel: `${schoolName}'s program caseload report for ${academic_year}`,
+      viewUrl,
+    })
+
+    console.log('Secure report link sent successfully')
+
+    // 4. Log the generation in reports table
+    const reportInsertUrl = `${supabaseUrl}/rest/v1/reports`
+    await fetch(reportInsertUrl, {
+      method: 'POST',
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        school_id,
+        report_type: 'program_caseload_report',
+        file_key: `program_caseload_${school_id}_${academic_year}`,
+        generated_by: generated_by || null,
+        metadata: {
+          sent_to: override_emails,
+          qualified_count: qualifiedStudents.length,
+          sub_count: subStudents.length,
+          academic_year,
+          school_name: schoolName,
+          delivery_method: 'password_protected_link',
+          report_token: token,
+        },
+      }),
+    })
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Program caseload report generated and a secure link sent to ${override_emails.join(', ')}`,
+        school_name: schoolName,
+        qualified_count: qualifiedStudents.length,
+        sub_count: subStudents.length,
+        academic_year,
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    )
+  } catch (error) {
+    console.error('Error generating program caseload report:', error)
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        success: false,
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      }
+    )
+  }
+})
