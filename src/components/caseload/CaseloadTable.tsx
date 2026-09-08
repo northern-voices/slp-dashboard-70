@@ -123,6 +123,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       result: latestScreeningByStudent.get(student.id)?.result ?? 'N/A',
       consent: consentSet.has(student.id) ? 'Yes' : 'No',
       speech_ea: getSpeechEAName(student, speechEAs) || '-',
+      service_status: student.service_status,
     }))
 
   const subStudents = programFilteredStudents
@@ -133,6 +134,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       result: latestScreeningByStudent.get(student.id)?.result ?? 'N/A',
       consent: consentSet.has(student.id) ? 'Yes' : 'No',
       speech_ea: getSpeechEAName(student, speechEAs) || '-',
+      service_status: student.service_status,
     }))
 
   const academicYear =
