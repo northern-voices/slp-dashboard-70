@@ -15,6 +15,7 @@ interface CaseloadRow {
   speech_ea: string
   service_status?: ServiceStatus
   program_status: ProgramStatus
+  result_year: string | null
 }
 
 interface EmailCaseloadReportModalProps {

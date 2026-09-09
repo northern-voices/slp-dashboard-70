@@ -19,7 +19,11 @@ import { useCaseloadTableData } from './useCaseloadTableData'
 import { useCaseloadTableActions } from './useCaseloadTableActions'
 import { Button } from '@/components/ui/button'
 import { getStudentGrade, getSpeechEAName } from './caseloadUtils'
-import { getCurrentAcademicYear } from '@/lib/academicYear'
+import {
+  getCurrentAcademicYear,
+  isCurrentAcademicYear,
+  getAcademicYearShortLabel,
+} from '@/lib/academicYear'
 import EmailCaseloadReportModal from './EmailCaseloadReportModal'
 
 interface CaseloadTableProps {
@@ -115,6 +119,13 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     handleConfirmPause,
   } = useCaseloadTableActions(latestScreeningByStudent, refetchSchoolDetails)
 
+  const getResultYearLabel = (studentId: string) => {
+    const screening = latestScreeningByStudent.get(studentId)
+    return screening && !isCurrentAcademicYear(screening.created_at)
+      ? getAcademicYearShortLabel(screening.created_at)
+      : null
+  }
+
   const qualifiedStudents = programFilteredStudents
     .filter(student => effectiveStatusByStudent.get(student.id)?.programStatus === 'qualified')
     .map(student => ({
@@ -125,6 +136,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       speech_ea: getSpeechEAName(student, speechEAs) || '-',
       service_status: student.service_status,
       program_status: 'qualified' as const,
+      result_year: getResultYearLabel(student.id),
     }))
 
   const subStudents = programFilteredStudents
@@ -137,6 +149,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       speech_ea: getSpeechEAName(student, speechEAs) || '-',
       service_status: student.service_status,
       program_status: 'sub' as const,
+      result_year: getResultYearLabel(student.id),
     }))
 
   const graduatedStudents = programFilteredStudents
@@ -149,6 +162,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       speech_ea: getSpeechEAName(student, speechEAs) || '-',
       service_status: student.service_status,
       program_status: 'graduated' as const,
+      result_year: getResultYearLabel(student.id),
     }))
 
   const academicYear =
