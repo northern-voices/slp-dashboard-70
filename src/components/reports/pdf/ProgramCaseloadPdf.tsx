@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   table: { marginBottom: 14 },
   tableRow: { flexDirection: 'row' },
   tableHeaderCell: {
-    borderWidth: 0.75,
+    borderWidth: 0.5,
     borderColor: '#000000',
     padding: 6,
     fontSize: 8,
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   },
 
   tableCell: {
-    borderWidth: 0.75,
+    borderWidth: 0.5,
     borderColor: '#000000',
     padding: 5,
     minHeight: 22,
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   noDataText: { fontSize: 7.5, color: '#9ca3af' },
 
   pill: { borderRadius: 8, paddingVertical: 2, paddingHorizontal: 6, marginTop: 2 },
-  pillText: { fontSize: 7.5, fontWeight: 700 },
+  pillText: { fontSize: 7.5, fontWeight: 700, textAlign: 'center' },
 
   pausedPill: { backgroundColor: '#f3e8ff' },
   pausedPillText: { color: '#6b21a8' },
