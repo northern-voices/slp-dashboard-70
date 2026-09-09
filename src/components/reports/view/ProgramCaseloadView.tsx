@@ -32,104 +32,32 @@ interface TableBlock {
   rows: CaseloadStudent[]
 }
 
-interface PageSegment {
-  heading: string
-  variant: 'qualified' | 'sub' | 'graduated'
-  columns: string[]
-  rows: CaseloadStudent[]
-}
-const ROWS_FIRST_PAGE = 26
-const ROWS_PER_PAGE = 32
-const HEADING_ROWS = 2
-const PAUSED_ROW_WEIGHT = 2
-const DEFAULT_ROW_WEIGHT = 1
-
-const getRowWeight = (student: CaseloadStudent) =>
-  student.service_status === 'paused' ? PAUSED_ROW_WEIGHT : DEFAULT_ROW_WEIGHT
-// Paused/Away rows render a second line under the name, so they take roughly double
-// a normal row's height - budget by weight, not row count, or a page full of paused
-// students overflows before the row-count budget says it's time to break.
-const takeRowsForBudget = (rows: CaseloadStudent[], budget: number): CaseloadStudent[] => {
-  const taken: CaseloadStudent[] = []
-  let used = 0
-
-  for (const student of rows) {
-    const weight = getRowWeight(student)
-    if (taken.length > 0 && used + weight > budget) break
-    taken.push(student)
-    used += weight
-  }
-
-  return taken
-}
-
-const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegment[][] => {
-  const pages: PageSegment[][] = []
-  let currentPage: PageSegment[] = []
-  let remaining = firstPageBudget
-
-  for (const block of blocks) {
-    let rows = block.rows
-    let isFirstSegment = true
-
-    while (rows.length > 0) {
-      const availableForRows = remaining - HEADING_ROWS
-
-      if (availableForRows <= 0) {
-        pages.push(currentPage)
-        currentPage = []
-        remaining = ROWS_PER_PAGE
-        continue
-      }
-
-      const rowsForThisSegment = takeRowsForBudget(rows, availableForRows)
-      const weightUsed = rowsForThisSegment.reduce((sum, s) => sum + getRowWeight(s), 0)
-      currentPage.push({
-        heading: isFirstSegment ? block.heading : `${block.heading} (cont.)`,
-        variant: block.variant,
-        columns: block.columns,
-        rows: rowsForThisSegment,
-      })
-      remaining -= HEADING_ROWS + weightUsed
-      rows = rows.slice(rowsForThisSegment.length)
-      isFirstSegment = false
-
-      if (rows.length > 0) {
-        pages.push(currentPage)
-        currentPage = []
-        remaining = ROWS_PER_PAGE
-      }
-    }
-  }
-
-  if (currentPage.length > 0) pages.push(currentPage)
-  return pages
-}
-
 const VARIANT_STYLES = {
   qualified: { heading: 'text-[#5b7a8b]', headerRow: 'bg-[#5b7a8b]', headerText: 'text-white' },
   sub: { heading: 'text-[#8a6d4f]', headerRow: 'bg-[#e9e2d9]', headerText: 'text-[#4d4b4b]' },
   graduated: { heading: 'text-[#3f6d8a]', headerRow: 'bg-[#7fa5bf]', headerText: 'text-white' },
 } as const
 
-const SegmentTable = ({ segment }: { segment: PageSegment }) => {
+// One heading + one table per block, rendered in full - no page-count guessing.
+// If this is ever browser-printed, the browser's own print engine paginates the
+// flowing content automatically; print:break-inside-avoid on each row keeps a
+// single row from being split across a printed page boundary.
+const BlockTable = ({ block }: { block: TableBlock }) => {
   const {
     heading: headingColorClass,
     headerRow: headerRowClass,
     headerText: headerTextClass,
-  } = VARIANT_STYLES[segment.variant]
+  } = VARIANT_STYLES[block.variant]
 
   return (
     <>
-      {segment.heading && (
-        <h2 className={`text-lg font-['Gotu'] text-center mb-2 ${headingColorClass}`}>
-          {segment.heading}
-        </h2>
-      )}
-      <table className='w-full border border-black text-[10px] mb-4'>
+      <h2 className={`text-lg font-['Gotu'] text-center mb-2 ${headingColorClass}`}>
+        {block.heading}
+      </h2>
+      <table className='w-full border border-black text-[10px] mb-6'>
         <thead>
           <tr className={headerRowClass}>
-            {segment.columns.map(col => (
+            {block.columns.map(col => (
               <th
                 key={col}
                 className={`font-['Montserrat'] border border-black py-2 px-3 text-center text-xs font-bold ${headerTextClass}`}>
@@ -139,8 +67,8 @@ const SegmentTable = ({ segment }: { segment: PageSegment }) => {
           </tr>
         </thead>
         <tbody>
-          {segment.rows.map((student, i) => (
-            <tr key={i}>
+          {block.rows.map((student, i) => (
+            <tr key={i} className='print:break-inside-avoid'>
               <td className='border border-black py-2 px-3 text-left align-top'>
                 <div className='flex flex-col gap-1 items-start'>
                   <span className='text-[#4d4b4b]'>{student.name}</span>
@@ -206,67 +134,40 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
     })
   }
 
-  const pages = paginateBlocks(blocks, ROWS_FIRST_PAGE)
-  const totalPages = pages.length || 1
-
-  const InfoRow = () => (
-    <div className='flex justify-between mb-3'>
-      <p>
-        <span className='font-bold text-gray-900'>School: </span>
-        {context.school}
-      </p>
-      <p>
-        <span className='font-bold text-gray-900'>Student Count: </span>
-        {context.student_count}
-      </p>
-    </div>
-  )
-
   return (
-    <div className="space-y-6 print:space-y-0 font-['Nunito']">
+    <div className="font-['Nunito']">
       <link
         rel='stylesheet'
         href='https://fonts.googleapis.com/css2?family=Gotu&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;700&display=swap'
       />
 
-      {pages.length === 0 ? (
-        <section className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden print:shadow-none'>
-          <ReportBanner title='Program Caseload' />
-          <div className='flex-1 px-10 pt-5'>
-            <InfoRow />
-            <p className='text-sm text-gray-500 mt-4'>No qualified or sub students this year.</p>
+      <section className='bg-white shadow-sm w-full print:shadow-none'>
+        <ReportBanner title='Program Caseload' />
+        <div className='px-10 pt-5'>
+          <h2 className="text-xl text-gray-600 text-center font-['Gotu'] mb-4">
+            Qualified & Sub Students
+          </h2>
+          <div className='flex justify-between mb-3'>
+            <p>
+              <span className='font-bold text-gray-900'>School: </span>
+              {context.school}
+            </p>
+            <p>
+              <span className='font-bold text-gray-900'>Student Count: </span>
+              {context.student_count}
+            </p>
           </div>
-          <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' page={1} of={1} />
-        </section>
-      ) : (
-        pages.map((segments, i) => {
-          const isLastPage = i === totalPages - 1
-          return (
-            <section
-              key={i}
-              className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-              <ReportBanner title='Program Caseload' />
-              <div className='flex-1 px-10 pt-5'>
-                {i === 0 && (
-                  <>
-                    <InfoRow />
-                  </>
-                )}
-                {segments.map((segment, j) => (
-                  <SegmentTable key={j} segment={segment} />
-                ))}
-              </div>
-              {isLastPage && (
-                <ReportFooter
-                  brand='NORTHERN VOICES SPEECH SERVICES'
-                  page={i + 1}
-                  of={totalPages}
-                />
-              )}
-            </section>
-          )
-        })
-      )}
+
+          {blocks.length === 0 ? (
+            <p className='text-sm text-gray-500 mt-4'>
+              No qualified, sub, or graduated students this year.
+            </p>
+          ) : (
+            blocks.map((block, i) => <BlockTable key={i} block={block} />)
+          )}
+        </div>
+        <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
+      </section>
     </div>
   )
 }
