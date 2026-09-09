@@ -14,6 +14,7 @@ import MonthlyMeetingReportView from '@/components/reports/view/MonthlyMeetingRe
 import HearingScreenReportView from '@/components/reports/view/HearingScreenReportView'
 import BulkReportView from '@/components/reports/view/BulkReportView'
 import ProgramCaseloadView from '@/components/reports/view/ProgramCaseloadView'
+import ScreeningsTableView from '@/components/reports/view/ScreeningsTableView'
 
 type ViewState = 'locked' | 'verifying' | 'unlocked'
 
@@ -36,6 +37,7 @@ const REPORT_VIEWS: Record<string, ComponentType<{ data: never; reportType?: str
   school_wide_progress_reports: BulkReportView,
   school_wide_speech_screening_reports: BulkReportView,
   program_caseload_report: ProgramCaseloadView,
+  speech_screenings_report: ScreeningsTableView,
 }
 
 // Report types that download as a zip of individual student PDFs rather than one file.
@@ -221,6 +223,15 @@ const generateProgramCaseloadPdf = async (reportData: unknown) => {
   return pdf(<ProgramCaseloadPdf data={reportData as never} />).toBlob()
 }
 
+const generateScreeningsTablePdf = async (reportData: unknown) => {
+  const [{ pdf }, { default: ScreeningsTablePdf }] = await Promise.all([
+    import('@react-pdf/renderer'),
+    import('@/components/reports/pdf/ScreeningsTablePdf'),
+  ])
+
+  return pdf(<ScreeningsTablePdf data={reportData as never} />).toBlob()
+}
+
 const PDF_GENERATORS: Record<string, PdfGenerator> = {
   speech_screening_report: generateSpeechScreeningPdf,
   goal_sheet: generateGoalSheetPdf,
@@ -234,6 +245,7 @@ const PDF_GENERATORS: Record<string, PdfGenerator> = {
   school_wide_progress_reports: generateBulkReportZip,
   school_wide_speech_screening_reports: generateBulkReportZip,
   program_caseload_report: generateProgramCaseloadPdf,
+  speech_screenings_report: generateScreeningsTablePdf,
 }
 
 const ViewReport = () => {

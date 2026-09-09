@@ -406,4 +406,45 @@ export const edgeFunctionsApi = {
       throw error
     }
   },
+
+  async screeningsTableReport(
+    schoolId: string,
+    academic_year: string,
+    screenings: {
+      name: string
+      grade: string
+      result: string
+      program_status: ProgramStatus
+      service_status?: ServiceStatus
+      date: string
+      screener: string
+    }[],
+    overrideEmails: string[],
+    password: string
+  ) {
+    try {
+      const generated_by = await this._getGeneratedBy()
+
+      const { data, error } = await supabase.functions.invoke('speech-screenings-report', {
+        body: {
+          school_id: schoolId,
+          academic_year: academic_year,
+          screenings: screenings,
+          override_emails: overrideEmails,
+          generated_by,
+          password,
+        },
+      })
+
+      if (error) {
+        console.error('Error:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Failed to send speech screenings report:', error)
+      throw error
+    }
+  },
 }
