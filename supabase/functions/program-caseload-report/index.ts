@@ -191,14 +191,6 @@ Deno.serve(async req => {
     const subStudents = Array.isArray(sub_students) ? sub_students : []
     const graduatedStudents = Array.isArray(graduated_students) ? graduated_students : []
 
-    if (
-      qualifiedStudents.length === 0 &&
-      subStudents.length === 0 &&
-      graduatedStudents.length === 0
-    ) {
-      throw new Error('At least one qualified or sub student is required')
-    }
-
     console.log(
       `Processing program caseload report for school: ${school_id}, year: ${academic_year}`
     )
