@@ -11,6 +11,7 @@ interface CaseloadStudent {
   speech_ea: string
   service_status?: ServiceStatus
   program_status: ProgramStatus
+  result_year: string | null
 }
 
 interface ProgramCaseloadData {
@@ -112,6 +113,8 @@ const styles = StyleSheet.create({
   tableCellText: { fontSize: 8.5, color: '#4d4b4b', textAlign: 'center' },
   tableCellTextLeft: { fontSize: 8.5, color: '#4d4b4b', textAlign: 'left' },
   noDataText: { fontSize: 7.5, color: '#9ca3af' },
+  resultCellRow: { flexDirection: 'row', alignItems: 'center' },
+  resultYearText: { fontSize: 6.5, color: '#9ca3af', marginLeft: 3 },
 
   pill: { borderRadius: 8, paddingVertical: 2, paddingHorizontal: 6, marginTop: 2 },
   pillText: { fontSize: 7.5, fontWeight: 700, textAlign: 'center' },
@@ -136,7 +139,7 @@ const NameCell = ({ student }: { student: CaseloadStudent }) => (
   </View>
 )
 
-const ResultCell = ({ result }: { result: string }) => {
+const ResultCell = ({ result, resultYear }: { result: string; resultYear: string | null }) => {
   const key = result as ScreeningResultType
   const colors = RESULT_PDF_COLORS[key]
   const config = SCREENING_RESULTS[key]
@@ -151,10 +154,13 @@ const ResultCell = ({ result }: { result: string }) => {
 
   return (
     <View style={[styles.tableCell, { flex: COLUMN_FLEX[2] }]}>
-      <View style={[styles.pill, { backgroundColor: colors.bg, marginTop: 0 }]}>
-        <Text style={[styles.pillText, { color: colors.text }]}>
-          {RESULT_LABEL_OVERRIDES[key] ?? config.label}
-        </Text>
+      <View style={styles.resultCellRow}>
+        <View style={[styles.pill, { backgroundColor: colors.bg, marginTop: 0 }]}>
+          <Text style={[styles.pillText, { color: colors.text }]}>
+            {RESULT_LABEL_OVERRIDES[key] ?? config.label}
+          </Text>
+        </View>
+        {resultYear && <Text style={styles.resultYearText}>{resultYear}</Text>}
       </View>
     </View>
   )
@@ -214,7 +220,7 @@ const CaseloadTablePdf = ({ students }: { students: CaseloadStudent[] }) => (
         <View style={[styles.tableCell, { flex: COLUMN_FLEX[1] }]}>
           <Text style={styles.tableCellText}>{student.grade}</Text>
         </View>
-        <ResultCell result={student.result} />
+        <ResultCell result={student.result} resultYear={student.result_year} />
         <ProgramCell status={student.program_status} />
         <ConsentCell consent={student.consent} />
         <SpeechEaCell speechEa={student.speech_ea} />

@@ -15,6 +15,7 @@ interface CaseloadStudent {
   speech_ea: string
   service_status?: ServiceStatus
   program_status: ProgramStatus
+  result_year: string | null
 }
 
 interface ProgramCaseloadData {
@@ -90,24 +91,36 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
                         <ServiceStatusTag status={student.service_status} />
                       </div>
                     </td>
+
                     <td className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
                       {student.grade}
                     </td>
+
                     <td className='border border-black py-1.5 px-2 text-center'>
                       {student.result && student.result !== 'N/A' ? (
-                        <ResultBadge result={student.result} />
+                        <div className='flex items-center justify-center gap-1.5'>
+                          <ResultBadge result={student.result} />
+                          {student.result_year && (
+                            <span className='text-[10px] text-gray-400 whitespace-nowrap'>
+                              {student.result_year}
+                            </span>
+                          )}
+                        </div>
                       ) : (
                         <span className='text-[10px] text-gray-400 italic'>
                           No Screening Recorded
                         </span>
                       )}
                     </td>
+
                     <td className='border border-black py-1.5 px-2 text-center'>
                       <ProgramBadge status={student.program_status} />
                     </td>
+
                     <td className='border border-black py-1.5 px-2 text-center'>
                       <ConsentBadge hasConsent={student.consent === 'Yes'} />
                     </td>
+
                     <td className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
                       {student.speech_ea === '-' ? (
                         <span className='text-[10px] text-gray-400 italic'>
