@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   tableCellName: { alignItems: 'flex-start' },
   tableCellText: { fontSize: 8.5, color: '#4d4b4b', textAlign: 'center' },
   tableCellTextLeft: { fontSize: 8.5, color: '#4d4b4b', textAlign: 'left' },
-  noDataText: { fontSize: 7.5, color: '#9ca3af', fontStyle: 'italic' },
+  noDataText: { fontSize: 7.5, color: '#9ca3af' },
 
   pill: { borderRadius: 8, paddingVertical: 2, paddingHorizontal: 6, marginTop: 2 },
   pillText: { fontSize: 7.5, fontWeight: 700 },
