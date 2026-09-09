@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2, ChevronUp, ChevronDown } from 'lucide-react'
+import { Loader2, ChevronUp, ChevronDown, Mail } from 'lucide-react'
 import {
   ResponsiveTable,
   TableHeader,
@@ -44,6 +44,10 @@ import ScreeningTableRow from './ScreeningTableRow'
 import { useScreeningsFilter } from '@/hooks/screenings/use-screenings-filter'
 import ConsentFormModal from '@/components/students/ConsentFormModal'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
+import { format } from 'date-fns'
+import { parseDateSafely } from '@/utils/dateUtils'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
+import EmailScreeningsReportModal from './EmailScreeningsReportModal'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -94,6 +98,7 @@ const ScreeningsTable = ({
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
   const [consentStudent, setConsentStudent] = useState<Student | null>(null)
+  const [isEmailReportOpen, setIsEmailReportOpen] = useState(false)
 
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -150,7 +155,7 @@ const ScreeningsTable = ({
     (languageComprehensionFilter !== '' && languageComprehensionFilter !== 'all') ||
     (priorityRescreenFilter !== '' && priorityRescreenFilter !== 'all')
 
-  const shouldFetchAll = isFilterActive || deduplicateByStudent
+  const shouldFetchAll = isFilterActive || deduplicateByStudent || isEmailReportOpen
 
   const {
     data: schoolScreeningsData,
@@ -232,6 +237,24 @@ const ScreeningsTable = ({
     languageComprehensionFilter,
     priorityRescreenFilter,
   ])
+
+  const academicYear = dateRangeFilter.startsWith('sy_')
+    ? dateRangeFilter.replace('sy_', '')
+    : getCurrentAcademicYear(new Date())
+
+  const speechScreeningReportRows = sortedScreenings
+    .filter(screening => screening.source_table === 'speech')
+    .map(screening => ({
+      name: screening.student_name,
+      grade: getScreeningGrade(screening),
+      result: screening.result ?? 'N/A',
+      program_status: screening.program_status ?? 'none',
+      service_status: screening.service_status,
+      date: format(parseDateSafely(screening.date), 'MMM d, yyyy'),
+      screener: screening.screener,
+    }))
+
+  const isEmailReportDataLoading = isEmailReportOpen && isFetchingSchool
 
   const foundCount = shouldFetchAll ? filteredScreenings.length : totalCount
   const paginatedScreenings = sortedScreenings
@@ -838,7 +861,25 @@ const ScreeningsTable = ({
           options={sortOptions}
         />
 
-        <div className='flex justify-end mb-3'>
+        <div className='flex justify-end mb-3 gap-2'>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setIsEmailReportOpen(true)}
+            disabled={isEmailReportDataLoading}>
+            {isEmailReportDataLoading ? (
+              <>
+                <Loader2 className='w-4 h-4 mr-1 animate-spin' />
+                Loading...
+              </>
+            ) : (
+              <>
+                <Mail className='w-4 h-4 mr-1' />
+                Email Report
+              </>
+            )}
+          </Button>
+
           <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
             {foundCount} screening{foundCount !== 1 ? 's' : ''} found
           </span>
@@ -938,6 +979,14 @@ const ScreeningsTable = ({
           </div>
         )}
       </div>
+
+      <EmailScreeningsReportModal
+        isOpen={isEmailReportOpen && !isFetchingSchool}
+        onClose={() => setIsEmailReportOpen(false)}
+        schoolId={currentSchool?.id ?? ''}
+        academicYear={academicYear}
+        screenings={speechScreeningReportRows}
+      />
 
       <ScreeningDetailsModal
         isOpen={isDetailsModalOpen}
