@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search } from 'lucide-react'
+import { Search, Mail } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
   ResponsiveTable,
@@ -16,6 +17,14 @@ import CaseloadDialogs from './CaseloadDialogs'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
 import { useCaseloadTableData } from './useCaseloadTableData'
 import { useCaseloadTableActions } from './useCaseloadTableActions'
+import { Button } from '@/components/ui/button'
+import { getStudentGrade, getSpeechEAName } from './caseloadUtils'
+import {
+  getCurrentAcademicYear,
+  isCurrentAcademicYear,
+  getAcademicYearShortLabel,
+} from '@/lib/academicYear'
+import EmailCaseloadReportModal from './EmailCaseloadReportModal'
 
 interface CaseloadTableProps {
   students: Student[]
@@ -33,6 +42,8 @@ const sortOptions: SortOption[] = [
 ]
 
 const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) => {
+  const [isEmailReportOpen, setIsEmailReportOpen] = useState(false)
+
   const navigate = useNavigate()
 
   const handleNavigate = (path: string) => {
@@ -80,6 +91,8 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     totalPages,
     startIndex,
     effectiveItemsPerPage,
+    programFilteredStudents,
+    effectiveStatusByStudent,
   } = useCaseloadTableData(students, schoolId)
 
   const {
@@ -105,6 +118,57 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     handleStatusChange,
     handleConfirmPause,
   } = useCaseloadTableActions(latestScreeningByStudent, refetchSchoolDetails)
+
+  const getResultYearLabel = (studentId: string) => {
+    const screening = latestScreeningByStudent.get(studentId)
+    return screening && !isCurrentAcademicYear(screening.created_at)
+      ? getAcademicYearShortLabel(screening.created_at)
+      : null
+  }
+
+  const qualifiedStudents = programFilteredStudents
+    .filter(student => effectiveStatusByStudent.get(student.id)?.programStatus === 'qualified')
+    .map(student => ({
+      name: `${student.first_name} ${student.last_name}`,
+      grade: getStudentGrade(student, gradesMap),
+      result: latestScreeningByStudent.get(student.id)?.result ?? 'N/A',
+      consent: consentSet.has(student.id) ? 'Yes' : 'No',
+      speech_ea: getSpeechEAName(student, speechEAs) || '-',
+      service_status: student.service_status,
+      program_status: 'qualified' as const,
+      result_year: getResultYearLabel(student.id),
+    }))
+
+  const subStudents = programFilteredStudents
+    .filter(student => effectiveStatusByStudent.get(student.id)?.programStatus === 'sub')
+    .map(student => ({
+      name: `${student.first_name} ${student.last_name}`,
+      grade: getStudentGrade(student, gradesMap),
+      result: latestScreeningByStudent.get(student.id)?.result ?? 'N/A',
+      consent: consentSet.has(student.id) ? 'Yes' : 'No',
+      speech_ea: getSpeechEAName(student, speechEAs) || '-',
+      service_status: student.service_status,
+      program_status: 'sub' as const,
+      result_year: getResultYearLabel(student.id),
+    }))
+
+  const graduatedStudents = programFilteredStudents
+    .filter(student => effectiveStatusByStudent.get(student.id)?.programStatus === 'graduated')
+    .map(student => ({
+      name: `${student.first_name} ${student.last_name}`,
+      grade: getStudentGrade(student, gradesMap),
+      result: latestScreeningByStudent.get(student.id)?.result ?? 'N/A',
+      consent: consentSet.has(student.id) ? 'Yes' : 'No',
+      speech_ea: getSpeechEAName(student, speechEAs) || '-',
+      service_status: student.service_status,
+      program_status: 'graduated' as const,
+      result_year: getResultYearLabel(student.id),
+    }))
+
+  const academicYear =
+    dateFilter === 'school_year'
+      ? getCurrentAcademicYear(new Date())
+      : dateFilter.replace('sy_', '')
 
   if (isLoading) {
     return (
@@ -161,7 +225,12 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         options={sortOptions}
       />
 
-      <div className='flex justify-end mb-3'>
+      <div className='flex justify-end mb-3 gap-2'>
+        <Button variant='outline' size='sm' onClick={() => setIsEmailReportOpen(true)}>
+          <Mail className='w-4 h-4 mr-1' />
+          Email Report
+        </Button>
+
         <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
           {totalStudents} student{totalStudents !== 1 ? 's' : ''} found
         </span>
@@ -247,6 +316,16 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         pauseReason={pauseReason}
         setPauseReason={setPauseReason}
         onConfirmPause={handleConfirmPause}
+      />
+
+      <EmailCaseloadReportModal
+        isOpen={isEmailReportOpen}
+        onClose={() => setIsEmailReportOpen(false)}
+        schoolId={schoolId ?? ''}
+        academicYear={academicYear}
+        qualifiedStudents={qualifiedStudents}
+        subStudents={subStudents}
+        graduatedStudents={graduatedStudents}
       />
     </div>
   )

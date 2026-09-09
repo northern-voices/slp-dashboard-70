@@ -331,6 +331,8 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     latestScreeningByStudent,
     consentSet,
     caseloadStats,
+    programFilteredStudents,
+    effectiveStatusByStudent,
 
     paginatedStudents,
     totalStudents,

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { ServiceStatus, ProgramStatus } from '@/types/database'
 
 export const edgeFunctionsApi = {
   /**
@@ -338,6 +339,70 @@ export const edgeFunctionsApi = {
       return data
     } catch (error) {
       console.error('Failed to generate school wide hearing reports:', error)
+      throw error
+    }
+  },
+
+  async programCaseloadReport(
+    schoolId: string,
+    academic_year: string,
+    qualifiedStudents: {
+      name: string
+      grade: string
+      result: string
+      consent: string
+      speech_ea: string
+      service_status?: ServiceStatus
+      program_status: ProgramStatus
+      result_year: string | null
+    }[],
+    subStudents: {
+      name: string
+      grade: string
+      result: string
+      consent: string
+      speech_ea: string
+      service_status?: ServiceStatus
+      program_status: ProgramStatus
+      result_year: string | null
+    }[],
+    graduatedStudents: {
+      name: string
+      grade: string
+      result: string
+      consent: string
+      speech_ea: string
+      service_status?: ServiceStatus
+      program_status: ProgramStatus
+      result_year: string | null
+    }[],
+    overrideEmails: string[],
+    password: string
+  ) {
+    try {
+      const generated_by = await this._getGeneratedBy()
+
+      const { data, error } = await supabase.functions.invoke('program-caseload-report', {
+        body: {
+          school_id: schoolId,
+          academic_year: academic_year,
+          qualified_students: qualifiedStudents,
+          sub_students: subStudents,
+          graduated_students: graduatedStudents,
+          override_emails: overrideEmails,
+          generated_by,
+          password,
+        },
+      })
+
+      if (error) {
+        console.error('Error:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Failed to send program caseload report:', error)
       throw error
     }
   },
