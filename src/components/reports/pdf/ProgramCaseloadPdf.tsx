@@ -28,7 +28,7 @@ interface ProgramCaseloadData {
   }
 }
 
-const COLUMNS = ['STUDENT NAME', 'GRADE', 'RESULT', 'PROGRAM', 'THERAPY CONSENT', 'SPEECH EA']
+const COLUMNS = ['STUDENT NAME', 'GRADE', 'RESULT', 'PROGRAM', 'CONSENT', 'SPEECH EA']
 
 const RESULT_PDF_COLORS: Record<ScreeningResultType, { bg: string; text: string }> = {
   no_errors: { bg: '#dcfce7', text: '#166534' },
@@ -113,8 +113,8 @@ const styles = StyleSheet.create({
   tableCellText: { fontSize: 8.5, color: '#4d4b4b', textAlign: 'center' },
   tableCellTextLeft: { fontSize: 8.5, color: '#4d4b4b', textAlign: 'left' },
   noDataText: { fontSize: 7.5, color: '#9ca3af' },
-  resultCellRow: { flexDirection: 'row', alignItems: 'center' },
-  resultYearText: { fontSize: 6.5, color: '#9ca3af', marginLeft: 3 },
+  resultCellRow: { alignItems: 'center' },
+  resultYearText: { fontSize: 6.5, color: '#9ca3af', marginTop: 2 },
 
   pill: { borderRadius: 8, paddingVertical: 2, paddingHorizontal: 6, marginTop: 2 },
   pillText: { fontSize: 7.5, fontWeight: 700, textAlign: 'center' },

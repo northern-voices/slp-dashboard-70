@@ -32,7 +32,7 @@ interface ProgramCaseloadData {
   }
 }
 
-const COLUMNS = ['STUDENT NAME', 'GRADE', 'RESULT', 'PROGRAM', 'THERAPY CONSENT', 'SPEECH EA']
+const COLUMNS = ['STUDENT NAME', 'GRADE', 'RESULT', 'PROGRAM', 'CONSENT', 'SPEECH EA']
 
 const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
   const { context } = data
