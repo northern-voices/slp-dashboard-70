@@ -91,7 +91,7 @@ export const ReportBanner = ({
   backgroundColor?: string
   textColor?: string
 }) => (
-  <View style={[chromeStyles.banner, { backgroundColor }]}>
+  <View style={[chromeStyles.banner, { backgroundColor }]} fixed>
     <Text style={[chromeStyles.bannerTitle, { fontSize: titleFontSize, color: textColor }]}>
       {title}
     </Text>
