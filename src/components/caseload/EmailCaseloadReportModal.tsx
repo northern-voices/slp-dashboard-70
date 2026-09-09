@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
+import { upsertEmailHistory } from '@/api/emailHistory'
 import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/contexts/AuthContext'
+import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
+import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 import { ServiceStatus, ProgramStatus } from '@/types/database'
 
 interface CaseloadRow {
@@ -42,6 +46,17 @@ const EmailCaseloadReportModal = ({
   const [isSending, setIsSending] = useState(false)
   const { toast } = useToast()
 
+  const { user } = useAuth()
+  const defaultReportPassword = useDefaultReportPassword()
+  const emailHistory = useEmailSuggestions(user?.id, schoolId)
+
+  useEffect(() => {
+    if (isOpen && !password) {
+      setPassword(defaultReportPassword)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, defaultReportPassword])
+
   const handleSend = async () => {
     if (recipientEmails.length === 0 || !password) return
 
@@ -57,10 +72,14 @@ const EmailCaseloadReportModal = ({
         recipientEmails,
         password
       )
+
+      if (user?.id) upsertEmailHistory(user.id, recipientEmails).catch(console.error)
+
       toast({
         title: 'Report Sent',
         description: `Caseload report sent to ${recipientEmails.join(', ')}`,
       })
+
       onClose()
       setRecipientEmails([])
       setPassword('')
@@ -92,7 +111,7 @@ const EmailCaseloadReportModal = ({
           <MultiEmailInput
             recipientEmails={recipientEmails}
             onChange={setRecipientEmails}
-            emailHistory={[]}
+            emailHistory={emailHistory}
           />
 
           <ReportPasswordInput password={password} onChange={setPassword} />
@@ -112,5 +131,4 @@ const EmailCaseloadReportModal = ({
     </Dialog>
   )
 }
-
 export default EmailCaseloadReportModal
