@@ -5,7 +5,7 @@ import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { useToast } from '@/hooks/use-toast'
-import { ServiceStatus } from '@/types/database'
+import { ServiceStatus, ProgramStatus } from '@/types/database'
 
 interface CaseloadRow {
   name: string
@@ -14,6 +14,7 @@ interface CaseloadRow {
   consent: string
   speech_ea: string
   service_status?: ServiceStatus
+  program_status: ProgramStatus
 }
 
 interface EmailCaseloadReportModalProps {

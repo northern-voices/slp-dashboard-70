@@ -1,7 +1,7 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
 import { SCREENING_RESULTS, ScreeningResultType } from '@/constants/screeningResults'
-import { ServiceStatus } from '@/types/database'
+import { ServiceStatus, ProgramStatus } from '@/types/database'
 
 interface CaseloadStudent {
   name: string
@@ -10,6 +10,7 @@ interface CaseloadStudent {
   consent: string
   speech_ea: string
   service_status?: ServiceStatus
+  program_status: ProgramStatus
 }
 
 interface ProgramCaseloadData {
@@ -26,12 +27,7 @@ interface ProgramCaseloadData {
   }
 }
 
-interface TableBlock {
-  heading: string
-  variant: 'qualified' | 'sub' | 'graduated'
-  columns: string[]
-  rows: CaseloadStudent[]
-}
+const COLUMNS = ['STUDENT NAME', 'GRADE', 'RESULT', 'PROGRAM', 'THERAPY CONSENT', 'SPEECH EA']
 
 const RESULT_PDF_COLORS: Record<ScreeningResultType, { bg: string; text: string }> = {
   no_errors: { bg: '#dcfce7', text: '#166534' },
@@ -52,7 +48,18 @@ const RESULT_LABEL_OVERRIDES: Partial<Record<ScreeningResultType, string>> = {
   unable_to_screen: 'Refusal / Non-Compliant',
 }
 
-const COLUMN_FLEX = [1.5, 0.6, 1.1, 0.8, 1.2]
+// Mirrors ProgramBadge's Tailwind colors (bg-red-100/text-red-800, etc.) as hex,
+// since react-pdf can't consume Tailwind classes directly.
+const PROGRAM_PDF_STYLE: Record<ProgramStatus, { bg: string; text: string; label: string }> = {
+  qualified: { bg: '#fee2e2', text: '#991b1b', label: 'Qualifies' },
+  sub: { bg: '#ffedd5', text: '#9a3412', label: 'Sub' },
+  graduated: { bg: '#dbeafe', text: '#1e40af', label: 'Graduated' },
+  no_consent: { bg: '#fee2e2', text: '#1f2937', label: 'No Consent' },
+  not_in_program: { bg: '#dcfce7', text: '#166534', label: 'Not In Program' },
+  none: { bg: '#dcfce7', text: '#166534', label: 'Not In Program' },
+}
+
+const COLUMN_FLEX = [1.4, 0.55, 1.0, 0.8, 0.9, 1.15]
 
 const styles = StyleSheet.create({
   page: {
@@ -78,16 +85,6 @@ const styles = StyleSheet.create({
   infoLabel: { fontFamily: 'Nunito', fontWeight: 700, color: '#111827' },
 
   sectionText: { fontSize: 10, color: '#374151', marginTop: 16 },
-  blockHeading: {
-    fontFamily: 'Gotu',
-    fontSize: 15,
-    textAlign: 'center',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  blockHeadingQualified: { color: '#5b7a8b' },
-  blockHeadingSub: { color: '#8a6d4f' },
-  blockHeadingGraduated: { color: '#3f6d8a' },
 
   table: { marginBottom: 14 },
   tableRow: { flexDirection: 'row' },
@@ -99,10 +96,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat',
     fontWeight: 700,
     textAlign: 'center',
+    backgroundColor: '#5b7a8b',
+    color: '#ffffff',
   },
-  tableHeaderCellQualified: { backgroundColor: '#5b7a8b', color: '#ffffff' },
-  tableHeaderCellSub: { backgroundColor: '#e9e2d9', color: '#4d4b4b' },
-  tableHeaderCellGraduated: { backgroundColor: '#7fa5bf', color: '#ffffff' },
 
   tableCell: {
     borderWidth: 0.75,
@@ -164,10 +160,21 @@ const ResultCell = ({ result }: { result: string }) => {
   )
 }
 
+const ProgramCell = ({ status }: { status: ProgramStatus }) => {
+  const style = PROGRAM_PDF_STYLE[status] ?? PROGRAM_PDF_STYLE.none
+  return (
+    <View style={[styles.tableCell, { flex: COLUMN_FLEX[3] }]}>
+      <View style={[styles.pill, { backgroundColor: style.bg, marginTop: 0 }]}>
+        <Text style={[styles.pillText, { color: style.text }]}>{style.label}</Text>
+      </View>
+    </View>
+  )
+}
+
 const ConsentCell = ({ consent }: { consent: string }) => {
   const isYes = consent === 'Yes'
   return (
-    <View style={[styles.tableCell, { flex: COLUMN_FLEX[3] }]}>
+    <View style={[styles.tableCell, { flex: COLUMN_FLEX[4] }]}>
       <View
         style={[
           styles.pill,
@@ -183,7 +190,7 @@ const ConsentCell = ({ consent }: { consent: string }) => {
 }
 
 const SpeechEaCell = ({ speechEa }: { speechEa: string }) => (
-  <View style={[styles.tableCell, { flex: COLUMN_FLEX[4] }]}>
+  <View style={[styles.tableCell, { flex: COLUMN_FLEX[5] }]}>
     {speechEa === '-' ? (
       <Text style={styles.noDataText}>No Speech EA assigned</Text>
     ) : (
@@ -192,92 +199,45 @@ const SpeechEaCell = ({ speechEa }: { speechEa: string }) => (
   </View>
 )
 
-const HEADING_VARIANT_STYLE = {
-  qualified: styles.blockHeadingQualified,
-  sub: styles.blockHeadingSub,
-  graduated: styles.blockHeadingGraduated,
-}
-
-const HEADER_CELL_VARIANT_STYLE = {
-  qualified: styles.tableHeaderCellQualified,
-  sub: styles.tableHeaderCellSub,
-  graduated: styles.tableHeaderCellGraduated,
-}
-
-// One heading + one table per block, rendered once. React-pdf measures real content
-// height itself and inserts extra physical pages wherever a block's rows don't fit -
-// there's no manual page-budget math left to keep in sync with layout changes.
-// Trade-off: if a block's table spans more than one physical page, the column header
-// row and heading only appear once, at the top - they don't repeat on the
-// continuation the way the old "(cont.)" pages used to.
-const BlockTable = ({ block }: { block: TableBlock }) => {
-  const headingStyle = [styles.blockHeading, HEADING_VARIANT_STYLE[block.variant]]
-  const headerCellStyle = [styles.tableHeaderCell, HEADER_CELL_VARIANT_STYLE[block.variant]]
-
-  return (
-    <>
-      <Text style={headingStyle}>{block.heading}</Text>
-      <View style={styles.table}>
-        <View style={styles.tableRow} wrap={false}>
-          {block.columns.map((col, idx) => (
-            <Text key={col} style={[...headerCellStyle, { flex: COLUMN_FLEX[idx] }]}>
-              {col}
-            </Text>
-          ))}
+const CaseloadTablePdf = ({ students }: { students: CaseloadStudent[] }) => (
+  <View style={styles.table}>
+    <View style={styles.tableRow} wrap={false}>
+      {COLUMNS.map((col, idx) => (
+        <Text key={col} style={[styles.tableHeaderCell, { flex: COLUMN_FLEX[idx] }]}>
+          {col}
+        </Text>
+      ))}
+    </View>
+    {students.map((student, i) => (
+      <View style={styles.tableRow} key={i} wrap={false}>
+        <NameCell student={student} />
+        <View style={[styles.tableCell, { flex: COLUMN_FLEX[1] }]}>
+          <Text style={styles.tableCellText}>{student.grade}</Text>
         </View>
-        {block.rows.map((student, i) => (
-          <View style={styles.tableRow} key={i} wrap={false}>
-            <NameCell student={student} />
-            <View style={[styles.tableCell, { flex: COLUMN_FLEX[1] }]}>
-              <Text style={styles.tableCellText}>{student.grade}</Text>
-            </View>
-            <ResultCell result={student.result} />
-            <ConsentCell consent={student.consent} />
-            <SpeechEaCell speechEa={student.speech_ea} />
-          </View>
-        ))}
+        <ResultCell result={student.result} />
+        <ProgramCell status={student.program_status} />
+        <ConsentCell consent={student.consent} />
+        <SpeechEaCell speechEa={student.speech_ea} />
       </View>
-    </>
-  )
-}
+    ))}
+  </View>
+)
 
 const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
   const { context } = data
 
-  const blocks: TableBlock[] = []
-  if (context.qualified && context.qualified_students?.length > 0) {
-    blocks.push({
-      heading: 'Qualified - Primary Caseload',
-      variant: 'qualified',
-      columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
-      rows: context.qualified_students,
-    })
-  }
-
-  if (context.sub && context.sub_students?.length > 0) {
-    blocks.push({
-      heading: 'Subs',
-      variant: 'sub',
-      columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
-      rows: context.sub_students,
-    })
-  }
-
-  if (context.graduated && context.graduated_students?.length > 0) {
-    blocks.push({
-      heading: 'Graduated',
-      variant: 'graduated',
-      columns: ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA'],
-      rows: context.graduated_students,
-    })
-  }
+  const students: CaseloadStudent[] = [
+    ...(context.qualified ? context.qualified_students : []),
+    ...(context.sub ? context.sub_students : []),
+    ...(context.graduated ? context.graduated_students : []),
+  ]
 
   return (
     <Document>
       <Page size='LETTER' style={styles.page}>
         <ReportBanner title='Program Caseload' />
         <View style={styles.body}>
-          <Text style={styles.pageSubtitle}>Qualified & Sub Students</Text>
+          <Text style={styles.pageSubtitle}>Student Caseload</Text>
           <View style={styles.infoRow}>
             <Text>
               <Text style={styles.infoLabel}>School: </Text>
@@ -288,12 +248,12 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
               {context.student_count}
             </Text>
           </View>
-          {blocks.length === 0 ? (
+          {students.length === 0 ? (
             <Text style={styles.sectionText}>
               No qualified, sub, or graduated students this year.
             </Text>
           ) : (
-            blocks.map((block, i) => <BlockTable key={i} block={block} />)
+            <CaseloadTablePdf students={students} />
           )}
         </View>
         <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
