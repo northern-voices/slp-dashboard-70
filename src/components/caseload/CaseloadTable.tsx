@@ -124,6 +124,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       consent: consentSet.has(student.id) ? 'Yes' : 'No',
       speech_ea: getSpeechEAName(student, speechEAs) || '-',
       service_status: student.service_status,
+      program_status: 'qualified' as const,
     }))
 
   const subStudents = programFilteredStudents
@@ -135,6 +136,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       consent: consentSet.has(student.id) ? 'Yes' : 'No',
       speech_ea: getSpeechEAName(student, speechEAs) || '-',
       service_status: student.service_status,
+      program_status: 'sub' as const,
     }))
 
   const graduatedStudents = programFilteredStudents
@@ -146,6 +148,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       consent: consentSet.has(student.id) ? 'Yes' : 'No',
       speech_ea: getSpeechEAName(student, speechEAs) || '-',
       service_status: student.service_status,
+      program_status: 'graduated' as const,
     }))
 
   const academicYear =
