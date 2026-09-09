@@ -354,6 +354,7 @@ export const edgeFunctionsApi = {
       speech_ea: string
       service_status?: ServiceStatus
       program_status: ProgramStatus
+      result_year: string | null
     }[],
     subStudents: {
       name: string
@@ -363,6 +364,7 @@ export const edgeFunctionsApi = {
       speech_ea: string
       service_status?: ServiceStatus
       program_status: ProgramStatus
+      result_year: string | null
     }[],
     graduatedStudents: {
       name: string
@@ -372,6 +374,7 @@ export const edgeFunctionsApi = {
       speech_ea: string
       service_status?: ServiceStatus
       program_status: ProgramStatus
+      result_year: string | null
     }[],
     overrideEmails: string[],
     password: string
