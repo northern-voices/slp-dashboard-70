@@ -41,6 +41,27 @@ interface PageSegment {
 const ROWS_FIRST_PAGE = 26
 const ROWS_PER_PAGE = 32
 const HEADING_ROWS = 2
+const PAUSED_ROW_WEIGHT = 2
+const DEFAULT_ROW_WEIGHT = 1
+
+const getRowWeight = (student: CaseloadStudent) =>
+  student.service_status === 'paused' ? PAUSED_ROW_WEIGHT : DEFAULT_ROW_WEIGHT
+// Paused/Away rows render a second line under the name, so they take roughly double
+// a normal row's height - budget by weight, not row count, or a page full of paused
+// students overflows before the row-count budget says it's time to break.
+const takeRowsForBudget = (rows: CaseloadStudent[], budget: number): CaseloadStudent[] => {
+  const taken: CaseloadStudent[] = []
+  let used = 0
+
+  for (const student of rows) {
+    const weight = getRowWeight(student)
+    if (taken.length > 0 && used + weight > budget) break
+    taken.push(student)
+    used += weight
+  }
+
+  return taken
+}
 
 const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegment[][] => {
   const pages: PageSegment[][] = []
@@ -61,14 +82,15 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
         continue
       }
 
-      const rowsForThisSegment = rows.slice(0, availableForRows)
+      const rowsForThisSegment = takeRowsForBudget(rows, availableForRows)
+      const weightUsed = rowsForThisSegment.reduce((sum, s) => sum + getRowWeight(s), 0)
       currentPage.push({
         heading: isFirstSegment ? block.heading : `${block.heading} (cont.)`,
         variant: block.variant,
         columns: block.columns,
         rows: rowsForThisSegment,
       })
-      remaining -= HEADING_ROWS + rowsForThisSegment.length
+      remaining -= HEADING_ROWS + weightUsed
       rows = rows.slice(rowsForThisSegment.length)
       isFirstSegment = false
 
