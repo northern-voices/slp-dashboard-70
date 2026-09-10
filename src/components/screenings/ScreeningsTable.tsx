@@ -875,7 +875,7 @@ const ScreeningsTable = ({
             ) : (
               <>
                 <Mail className='w-4 h-4 mr-1' />
-                Email Report
+                Email Speech Screening
               </>
             )}
           </Button>
