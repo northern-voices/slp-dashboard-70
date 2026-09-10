@@ -243,7 +243,6 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
       <Page size='LETTER' style={styles.page}>
         <ReportBanner title='Program Caseload' />
         <View style={styles.body}>
-          <Text style={styles.pageSubtitle}>Student Caseload</Text>
           <View style={styles.infoRow}>
             <Text>
               <Text style={styles.infoLabel}>School: </Text>
