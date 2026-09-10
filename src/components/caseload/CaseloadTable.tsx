@@ -228,7 +228,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       <div className='flex justify-end mb-3 gap-2'>
         <Button variant='outline' size='sm' onClick={() => setIsEmailReportOpen(true)}>
           <Mail className='w-4 h-4 mr-1' />
-          Email Report
+          Email Caseload
         </Button>
 
         <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
