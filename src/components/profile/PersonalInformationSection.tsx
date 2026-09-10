@@ -58,10 +58,10 @@ const PersonalInformationSection = () => {
   const onSubmit = async (data: PersonalInfoFormData) => {
     if (!userProfile) return
 
-    const { error } = await supabase
-      .from('users')
-      .update({ first_name: data.firstName, last_name: data.lastName })
-      .eq('id', userProfile.user_id)
+    const { error } = await supabase.rpc('update_own_profile_name', {
+      new_first_name: data.firstName,
+      new_last_name: data.lastName,
+    })
 
     if (error) {
       toast({
