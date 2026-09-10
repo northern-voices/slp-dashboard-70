@@ -164,10 +164,9 @@ const AccountSettingsSection = () => {
       return
     }
 
-    const { error } = await supabase
-      .from('users')
-      .update({ default_report_password: defaultReportPassword })
-      .eq('id', user.id)
+    const { error } = await supabase.rpc('update_own_default_report_password', {
+      new_password: defaultReportPassword,
+    })
 
     setIsSavingReportPassword(false)
 
