@@ -37,7 +37,6 @@ const ScreeningsTableView = ({ data }: { data: ScreeningsTableData }) => {
       <section className='bg-white shadow-sm w-full print:shadow-none'>
         <ReportBanner title='Speech Screenings' />
         <div className='px-10 pt-5'>
-          <h2 className="text-xl text-gray-600 text-center font-['Gotu'] mb-4">Screenings</h2>
           <div className='flex justify-between mb-3'>
             <p>
               <span className='font-bold text-gray-900'>School: </span>
