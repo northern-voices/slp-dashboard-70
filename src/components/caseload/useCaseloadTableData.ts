@@ -20,7 +20,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(50)
 
-  const [gradeFilter, setGradeFilter] = useState<string>('all')
+  const [gradeFilter, setGradeFilter] = useState<string[]>([])
   const [resultFilter, setResultFilter] = useState<string>('all')
   const [consentFilter, setConsentFilter] = useState<'all' | 'yes' | 'no'>('all')
   const [eaFilter, setEaFilter] = useState<string>('all')
@@ -114,7 +114,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     schoolDetails?.schoolTeam?.filter(member => member.roles.includes('speech_ea')) ?? []
 
   const hasActiveFilters =
-    gradeFilter !== 'all' ||
+    gradeFilter.length > 0 ||
     resultFilter !== 'all' ||
     consentFilter !== 'all' ||
     eaFilter !== 'all' ||
@@ -122,7 +122,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     programStatusFilter !== 'all'
 
   const clearAllFilters = () => {
-    setGradeFilter('all')
+    setGradeFilter([])
     setResultFilter('all')
     setConsentFilter('all')
     setEaFilter('all')
@@ -162,7 +162,8 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     })()
 
     const matchesGrade =
-      gradeFilter === 'all' || getStudentGrade(student, gradesMap).includes(gradeFilter)
+      gradeFilter.length === 0 ||
+      gradeFilter.some(grade => getStudentGrade(student, gradesMap).includes(grade))
 
     const matchesResult = resultFilter === 'all' || (screening?.result ?? 'none') === resultFilter
 
