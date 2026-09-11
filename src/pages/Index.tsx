@@ -178,28 +178,27 @@ const DashboardContent = () => {
     }
   }
 
-  const handleSavePrimarySLP = async (data: {
-    firstName: string
-    lastName: string
-    email: string
-  }) => {
-    if (!currentSchool?.primary_slp_id) return
+  const handleSavePrimarySLP = async (data: { primarySlpId: string | null }) => {
+    if (!currentSchool) return
 
     setIsSavingSLP(true)
 
     try {
       const { error } = await supabase
-        .from('users')
+        .from('schools')
         .update({
-          first_name: data.firstName,
-          last_name: data.lastName,
-          email: data.email,
+          primary_slp_id: data.primarySlpId,
         })
-        .eq('id', currentSchool.primary_slp_id)
+        .eq('id', currentSchool.id)
 
       if (error) throw error
 
+      setCurrentSchool({ ...currentSchool, primary_slp_id: data.primarySlpId })
+
+      // Wait for a bit for React to re-render with the new currentSchool then invalidate and refetch
+      await new Promise(resolve => setTimeout(resolve, 100))
       queryClient.invalidateQueries({ queryKey: ['school-details', currentSchool.id] })
+
       toast.success('Primary SLP updated successfully')
       setIsEditSLPModalOpen(false)
     } catch (error) {
@@ -455,10 +454,9 @@ const DashboardContent = () => {
           onOpenChange={setIsEditSLPModalOpen}
           onSave={handleSavePrimarySLP}
           initialData={{
-            firstName: schoolData.primarySLP.name.split(' ')[0] || '',
-            lastName: schoolData.primarySLP.name.split(' ').slice(1).join(' ') || '',
-            email: schoolData.primarySLP.email,
+            primarySlpId: currentSchool.primary_slp_id,
           }}
+          availableSLPs={availableSLPs}
           isSaving={isSavingSLP}
         />
       )}

@@ -76,58 +76,31 @@ const EditPrimarySLPModal: React.FC<EditPrimarySLPModalProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className='py-4 space-y-5'>
-            <div className='grid grid-cols-2 gap-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='firstName' className='text-sm font-medium text-gray-700'>
-                  First Name <span className='text-red-500'>*</span>
-                </Label>
-                <Input
-                  id='firstName'
-                  placeholder='First name'
-                  {...register('firstName', { required: 'First name is required' })}
-                  className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
-                />
-                {errors.firstName && (
-                  <p className='text-xs text-red-500'>{errors.firstName.message}</p>
-                )}
-              </div>
-
-              <div className='space-y-2'>
-                <Label htmlFor='lastName' className='text-sm font-medium text-gray-700'>
-                  Last Name <span className='text-red-500'>*</span>
-                </Label>
-                <Input
-                  id='lastName'
-                  placeholder='Last name'
-                  {...register('lastName', { required: 'Last name is required' })}
-                  className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
-                />
-                {errors.lastName && (
-                  <p className='text-xs text-red-500'>{errors.lastName.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='email' className='text-sm font-medium text-gray-700'>
-                Email <span className='text-red-500'>*</span>
-              </Label>
-              <Input
-                id='email'
-                type='email'
-                placeholder='e.g., slp@school.org'
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: 'Please enter a valid email',
-                  },
-                })}
-                className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
-              />
-              {errors.email && <p className='text-xs text-red-500'>{errors.email.message}</p>}
-            </div>
+          <div className='py-4 space-y-2'>
+            <Label htmlFor='primarySlpId' className='text-sm font-medium text-gray-700'>
+              Primary SLP
+            </Label>
+            <Controller
+              name='primarySlpId'
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value || 'none'}
+                  onValueChange={value => field.onChange(value === 'none' ? null : value)}>
+                  <SelectTrigger className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'>
+                    <SelectValue placeholder='Select primary SLP...' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='none'>No Primary SLP</SelectItem>
+                    {availableSLPs.map(slp => (
+                      <SelectItem key={slp.id} value={slp.id}>
+                        {slp.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
           <DialogFooter className='mt-6'>
