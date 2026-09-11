@@ -13,10 +13,11 @@ import { Filter, X, ChevronUp, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { GRADE_MAPPING } from '@/constants/app'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
+import Multiselect from '../ui/multiselect'
 
 interface CaseloadFiltersProps {
-  gradeFilter: string
-  setGradeFilter: (v: string) => void
+  gradeFilter: string[]
+  setGradeFilter: (v: string[]) => void
   resultFilter: string
   setResultFilter: (v: string) => void
   consentFilter: 'all' | 'yes' | 'no'
@@ -52,7 +53,7 @@ const CaseloadFilters = ({
   const [isOpen, setIsOpen] = useState(false)
 
   const activeCount = [
-    gradeFilter !== 'all',
+    gradeFilter.length > 0,
     resultFilter !== 'all',
     consentFilter !== 'all',
     eaFilter !== 'all',
@@ -62,10 +63,12 @@ const CaseloadFilters = ({
 
   const hasActive = activeCount > 0
 
-  const withReset = (setter: (v: string) => void) => (v: string) => {
-    setter(v)
-    onPageReset()
-  }
+  const withReset =
+    <T,>(setter: (v: T) => void) =>
+    (v: T) => {
+      setter(v)
+      onPageReset()
+    }
 
   return (
     <Card className='border border-gray-200 shadow-sm'>
@@ -112,19 +115,15 @@ const CaseloadFilters = ({
               {/* Grade */}
               <div className='space-y-2'>
                 <label className='text-sm font-medium text-gray-700'>Grade</label>
-                <Select value={gradeFilter} onValueChange={withReset(setGradeFilter)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder='All Grades' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='all'>All Grades</SelectItem>
-                    {GRADE_MAPPING.map(g => (
-                      <SelectItem key={g.value} value={g.value}>
-                        {g.display}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Multiselect
+                  options={GRADE_MAPPING.map(g => g.value)}
+                  selected={gradeFilter}
+                  onChange={withReset(setGradeFilter)}
+                  placeholder='All Grades'
+                  searchPlaceholder='Search grades...'
+                  emptyMessage='No grades found.'
+                  showSelectAll={false}
+                />
               </div>
 
               {/* Result */}

@@ -43,6 +43,11 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
     ...(context.graduated ? context.graduated_students : []),
   ]
 
+  const qualifiedCount = students.filter(student => student.program_status === 'qualified').length
+  const subCount = students.filter(student => student.program_status === 'sub').length
+  const graduatedCount = students.filter(student => student.program_status === 'graduated').length
+  const pausedCount = students.filter(student => student.service_status === 'paused').length
+
   return (
     <div className="font-['Nunito']">
       <link
@@ -53,7 +58,6 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
       <section className='bg-white shadow-sm w-full print:shadow-none'>
         <ReportBanner title='Program Caseload' />
         <div className='px-10 pt-5'>
-          <h2 className="text-xl text-gray-600 text-center font-['Gotu'] mb-4">Student Caseload</h2>
           <div className='flex justify-between mb-3'>
             <p>
               <span className='font-bold text-gray-900'>School: </span>
@@ -62,6 +66,25 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
             <p>
               <span className='font-bold text-gray-900'>Student Count: </span>
               {context.student_count}
+            </p>
+          </div>
+
+          <div className='flex justify-between mb-3'>
+            <p>
+              <span className='font-bold text-gray-900'>Qualified: </span>
+              {qualifiedCount}
+            </p>
+            <p>
+              <span className='font-bold text-gray-900'>Sub: </span>
+              {subCount}
+            </p>
+            <p>
+              <span className='font-bold text-gray-900'>Graduated: </span>
+              {graduatedCount}
+            </p>
+            <p>
+              <span className='font-bold text-gray-900'>Paused/Away: </span>
+              {pausedCount}
             </p>
           </div>
 

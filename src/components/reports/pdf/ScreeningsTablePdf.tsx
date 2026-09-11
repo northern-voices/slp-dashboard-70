@@ -198,7 +198,6 @@ const ScreeningsTablePdf = ({ data }: { data: ScreeningsTableData }) => {
       <Page size='LETTER' style={styles.page}>
         <ReportBanner title='Speech Screenings' />
         <View style={styles.body}>
-          <Text style={styles.pageSubtitle}>Screenings</Text>
           <View style={styles.infoRow}>
             <Text>
               <Text style={styles.infoLabel}>School: </Text>
