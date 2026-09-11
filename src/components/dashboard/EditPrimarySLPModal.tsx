@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { UserCircle } from 'lucide-react'
 
@@ -36,14 +42,12 @@ const EditPrimarySLPModal: React.FC<EditPrimarySLPModalProps> = ({
   onOpenChange,
   onSave,
   initialData,
+  availableSLPs,
   isSaving = false,
 }) => {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<EditPrimarySLPFormData>({ defaultValues: initialData })
+  const { handleSubmit, control, reset } = useForm<EditPrimarySLPFormData>({
+    defaultValues: initialData,
+  })
 
   useEffect(() => {
     if (open) {
