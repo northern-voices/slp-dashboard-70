@@ -32,6 +32,17 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
 
   const activeOptions = doesNotQualify ? DOES_NOT_QUALIFY_OPTIONS : QUALIFIES_OPTIONS
 
+  const clearResultIfIncompatible = (newDoesNotQualify: boolean) => {
+    const newOptions = newDoesNotQualify ? DOES_NOT_QUALIFY_OPTIONS : QUALIFIES_OPTIONS
+    const currentResult = form.getValues('speech_screen_result')
+
+    const stillValid = newOptions.some(option => option.value === currentResult)
+
+    if (!stillValid) {
+      form.setValue('speech_screen_result', '')
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -47,7 +58,7 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
                 if (checked) {
                   form.setValue('qualifies_for_speech_program', false)
                   form.setValue('sub', false)
-                  form.setValue('speech_screen_result', '')
+                  clearResultIfIncompatible(true)
                 }
               }}
             />
@@ -64,7 +75,7 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
                 form.setValue('qualifies_for_speech_program', checked as boolean)
                 if (checked) {
                   form.setValue('sub', false)
-                  form.setValue('speech_screen_result', '')
+                  clearResultIfIncompatible(false)
                 }
               }}
             />
@@ -80,7 +91,7 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
               onCheckedChange={checked => {
                 form.setValue('sub', checked as boolean)
                 form.setValue('qualifies_for_speech_program', false)
-                if (checked) form.setValue('speech_screen_result', '')
+                if (checked) clearResultIfIncompatible(false)
               }}
             />
             <Label htmlFor='sub' className='text-sm font-medium'>
