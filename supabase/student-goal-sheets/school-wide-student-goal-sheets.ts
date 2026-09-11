@@ -296,6 +296,40 @@ Deno.serve(async (req: Request) => {
     const allScreenings = []
     const batchSize = 50 // Process 50 students at a time
 
+    const { start: academicYearStart } = getAcademicYearRange(academic_year)
+
+    const consentRecords: any[] = []
+    for (let i = 0; i < studentIds.length; i += batchSize) {
+      const batch = studentIds.slice(i, i + batchSize)
+      const consentUrl = `${supabaseUrl}/rest/v1/consent_forms?select=student_id,consent_purpose,consent_date&student_id=in.(${batch.join(
+        ','
+      )})`
+
+      const consentResponse = await fetch(consentUrl, {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!consentResponse.ok) {
+        throw new Error(`Failed to fetch consent forms: ${consentResponse.status}`)
+      }
+
+      const batchConsent = await consentResponse.json()
+
+      consentRecords.push(...batchConsent)
+    }
+
+    const consentedStudentIds = new Set(
+      consentRecords
+        .filter(
+          r => r.consent_purpose === 'therapy' && new Date(r.consent_date) >= academicYearStart
+        )
+        .map(r => r.student_id)
+    )
+
     console.log(`Processing ${studentIds.length} students in batches of ${batchSize}...`)
 
     for (let i = 0; i < studentIds.length; i += batchSize) {
