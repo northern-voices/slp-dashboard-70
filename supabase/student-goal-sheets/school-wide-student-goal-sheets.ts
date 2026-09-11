@@ -40,7 +40,12 @@ interface ProcessedError {
 
 interface StudentSummary {
   name: string
+  grade: string
   result: string
+  consent: string
+  speech_ea: string
+  service_status?: string
+  program_status: 'qualified' | 'sub'
 }
 
 const corsHeaders = {
@@ -271,7 +276,7 @@ Deno.serve(async (req: Request) => {
       throw new Error('No students found for this school')
     }
 
-    const speechEAsUrl = `${supabaseUrl}/rest/v1/school_staff?select=id,first_name,last_name&school_id=eq.${school_id}&is_active=eq.true&roles=cs.{speech_ea}`
+    const speechEAsUrl = `${supabaseUrl}/rest/v1/school_staff?select=id,first_name,last_name&school_id=eq.${school_id}&is_active=eq.true&roles=cs.${encodeURIComponent('["speech_ea"]')}`
     const speechEAsResponse = await fetch(speechEAsUrl, {
       headers: {
         apikey: supabaseKey,
@@ -500,7 +505,9 @@ Deno.serve(async (req: Request) => {
       schoolName,
       academic_year,
       qualifiedStudents,
-      subStudents
+      subStudents,
+      speechEANameById,
+      consentedStudentIds
     )
 
     console.log('Summary document created:', JSON.stringify(summaryDocument, null, 2))
@@ -1275,42 +1282,32 @@ function createIndividualGoalSheetObject(
   }
 }
 
-// Helper function to format result values for display
-function formatResultForDisplay(result: string): string {
-  const resultMap: Record<string, string> = {
-    absent: 'Absent',
-    passed: 'Passed',
-    non_registered_no_consent: 'No Consent',
-    complex_needs: 'Complex Needs',
-    age_appropriate: 'Age Appropriate',
-    monitor: 'Monitor',
-    mild: 'Mild',
-    moderate: 'Moderate',
-    severe: 'Severe',
-    profound: 'Profound',
-    no_errors: 'No Errors',
-  }
-
-  return resultMap[result] || result // fallback to original if not found
-}
-
 // Helper function to create school summary document object
 function createSchoolSummaryObject(
   schoolName: string,
   academicYear: string,
   qualifiedStudents: any[],
-  subStudents: any[]
+  subStudents: any[],
+  speechEANameById: Map<string, string>,
+  consentedStudentIds: Set<string>
 ) {
-  // Create student summary arrays for the template with formatted results
-  const qualifiedStudentSummaries: StudentSummary[] = qualifiedStudents.map(screening => ({
+  const toStudentSummary = (
+    screening: any,
+    programStatus: 'qualified' | 'sub'
+  ): StudentSummary => ({
     name: `${screening.students.first_name} ${screening.students.last_name}`,
-    result: formatResultForDisplay(screening.result?.replace('/', ':') || ''),
-  }))
+    grade: screening.school_grades?.grade_level || '',
+    result: screening.result?.replace('/', ':') || '',
+    consent: consentedStudentIds.has(screening.students.id) ? 'Yes' : 'No',
+    speech_ea: speechEANameById.get(screening.students.speech_ea_id) || '-',
+    service_status: screening.students.service_status,
+    program_status: programStatus,
+  })
 
-  const subStudentSummaries: StudentSummary[] = subStudents.map(screening => ({
-    name: `${screening.students.first_name} ${screening.students.last_name}`,
-    result: formatResultForDisplay(screening.result?.replace('/', ':') || ''),
-  }))
+  const qualifiedStudentSummaries = qualifiedStudents.map(screening =>
+    toStudentSummary(screening, 'qualified')
+  )
+  const subStudentSummaries = subStudents.map(screening => toStudentSummary(screening, 'sub'))
 
   return {
     metadata: {
