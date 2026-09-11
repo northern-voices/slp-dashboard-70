@@ -14,9 +14,12 @@ import { Label } from '@/components/ui/label'
 import { UserCircle } from 'lucide-react'
 
 interface EditPrimarySLPFormData {
-  firstName: string
-  lastName: string
-  email: string
+  primarySlpId: string | null
+}
+
+interface AvailableSLP {
+  id: string
+  name: string
 }
 
 interface EditPrimarySLPModalProps {
@@ -24,6 +27,7 @@ interface EditPrimarySLPModalProps {
   onOpenChange: (open: boolean) => void
   onSave: (data: EditPrimarySLPFormData) => Promise<void>
   initialData: EditPrimarySLPFormData
+  availableSLPs: AvailableSLP[]
   isSaving?: boolean
 }
 
