@@ -238,6 +238,11 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
     ...(context.graduated ? context.graduated_students : []),
   ]
 
+  const qualifiedCount = students.filter(student => student.program_status === 'qualified').length
+  const subCount = students.filter(student => student.program_status === 'sub').length
+  const graduatedCount = students.filter(student => student.program_status === 'graduated').length
+  const pausedCount = students.filter(student => student.service_status === 'paused').length
+
   return (
     <Document>
       <Page size='LETTER' style={styles.page}>
@@ -248,11 +253,32 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
               <Text style={styles.infoLabel}>School: </Text>
               {context.school}
             </Text>
+
             <Text>
               <Text style={styles.infoLabel}>Student Count: </Text>
               {context.student_count}
             </Text>
           </View>
+
+          <View style={styles.infoRow}>
+            <Text>
+              <Text style={styles.infoLabel}>Qualified: </Text>
+              {qualifiedCount}
+            </Text>
+            <Text>
+              <Text style={styles.infoLabel}>Sub: </Text>
+              {subCount}
+            </Text>
+            <Text>
+              <Text style={styles.infoLabel}>Graduated: </Text>
+              {graduatedCount}
+            </Text>
+            <Text>
+              <Text style={styles.infoLabel}>Paused/Away: </Text>
+              {pausedCount}
+            </Text>
+          </View>
+
           {students.length === 0 ? (
             <Text style={styles.sectionText}>
               No qualified, sub, or graduated students this year.
@@ -261,6 +287,7 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
             <CaseloadTablePdf students={students} />
           )}
         </View>
+
         <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
       </Page>
     </Document>
