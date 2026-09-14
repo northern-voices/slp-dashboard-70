@@ -507,6 +507,7 @@ const MultiStepSpeechScreeningForm = ({
                 studentData: {
                   program_status: determineProgramStatus(formData),
                   service_status: determineServiceStatus(formData),
+                  needs_priority_rescreen: (formData.priority_re_screen as boolean) || false,
                 },
               },
               {
