@@ -767,6 +767,44 @@ const ScreeningsTable = ({
     setIsDeleteDialogOpen(true)
   }
 
+  const handlePriorityRescreen = (screening: Screening) => {
+    const student = students.find(
+      s => s.id === screening.student_id || s.student_id === screening.student_id
+    )
+
+    if (!student) {
+      toast({
+        title: 'Error',
+        description: 'Student not found',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    updateStudent(
+      {
+        id: student.id,
+        studentData: { needs_priority_rescreen: true },
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Priority rescreen flagged',
+            description: `${screening.student_name} has been flagged for a priority rescreen`,
+            variant: 'default',
+          })
+        },
+        onError: () => {
+          toast({
+            title: 'Error',
+            description: 'Failed to flag student for priority rescreen',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
+  }
+
   const confirmDelete = () => {
     if (screeningToDelete && screeningToDelete.source_table) {
       const deletedStudentName = screeningToDelete.student_name
@@ -919,6 +957,7 @@ const ScreeningsTable = ({
                   getResultSelector={getResultSelector}
                   getProgramSelector={getProgramSelector}
                   onAddConsent={handleAddConsent}
+                  onPriorityRescreen={handlePriorityRescreen}
                   transferRecord={transferByStudentId.get(screening.student_id)}
                   currentSchoolId={currentSchool?.id ?? ''}
                   needsPriorityRescreen={

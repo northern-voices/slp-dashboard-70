@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Eye, Trash2, MoreHorizontal, Loader2, Mail, User, FilePlus } from 'lucide-react'
+import { Eye, Trash2, MoreHorizontal, Loader2, Mail, User, FilePlus, RefreshCw } from 'lucide-react'
 import type { Screening } from '@/types/database'
 
 interface ScreeningRowDropdownProps {
@@ -16,6 +16,7 @@ interface ScreeningRowDropdownProps {
   onEmailReport: (screening: Screening) => void
   onDelete: (screening: Screening) => void
   onAddConsent: (screening: Screening) => void
+  onPriorityRescreen: (screening: Screening) => void
   isTransferredOut?: boolean
 }
 
@@ -27,6 +28,7 @@ const ScreeningRowDropdown = ({
   onEmailReport,
   onDelete,
   onAddConsent,
+  onPriorityRescreen,
   isTransferredOut,
 }: ScreeningRowDropdownProps) => (
   <DropdownMenu>
@@ -60,6 +62,13 @@ const ScreeningRowDropdown = ({
         <Mail className='w-4 h-4 mr-2' />
         Send Report
       </DropdownMenuItem>
+
+      {!isTransferredOut && (
+        <DropdownMenuItem onClick={() => onPriorityRescreen(screening)}>
+          <RefreshCw className='w-4 h-4 mr-2' />
+          Priority Rescreen
+        </DropdownMenuItem>
+      )}
 
       <DropdownMenuItem
         className='text-red-600'

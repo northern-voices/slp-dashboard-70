@@ -20,6 +20,7 @@ interface ScreeningTableRowProps {
   getResultSelector: (screening: Screening) => React.ReactNode
   getProgramSelector: (screening: Screening) => React.ReactNode
   onAddConsent: (screening: Screening) => void
+  onPriorityRescreen: (screening: Screening) => void
   transferRecord?: {
     student_id: string
     from_school_id: string
@@ -45,6 +46,7 @@ const ScreeningTableRow = ({
   getResultSelector,
   getProgramSelector,
   onAddConsent,
+  onPriorityRescreen,
   transferRecord,
   currentSchoolId,
   needsPriorityRescreen,
@@ -113,6 +115,7 @@ const ScreeningTableRow = ({
               onEmailReport={onEmailReport}
               onDelete={onDelete}
               onAddConsent={onAddConsent}
+              onPriorityRescreen={onPriorityRescreen}
               isTransferredOut={!!transferredOut}
             />
           </div>
@@ -214,6 +217,7 @@ const ScreeningTableRow = ({
           onEmailReport={onEmailReport}
           onDelete={onDelete}
           onAddConsent={onAddConsent}
+          onPriorityRescreen={onPriorityRescreen}
           isTransferredOut={!!transferredOut}
         />
       </TableCell>
