@@ -921,6 +921,9 @@ const ScreeningsTable = ({
                   onAddConsent={handleAddConsent}
                   transferRecord={transferByStudentId.get(screening.student_id)}
                   currentSchoolId={currentSchool?.id ?? ''}
+                  needsPriorityRescreen={
+                    studentsMap.get(screening.student_id)?.needs_priority_rescreen
+                  }
                 />
               ))}
             </TableBody>

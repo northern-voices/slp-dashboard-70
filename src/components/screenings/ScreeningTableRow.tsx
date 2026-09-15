@@ -29,6 +29,7 @@ interface ScreeningTableRowProps {
     to_school: { id: string; name: string } | null
   } | null
   currentSchoolId?: string
+  needsPriorityRescreen?: boolean
 }
 
 const ScreeningTableRow = ({
@@ -46,6 +47,7 @@ const ScreeningTableRow = ({
   onAddConsent,
   transferRecord,
   currentSchoolId,
+  needsPriorityRescreen,
 }: ScreeningTableRowProps) => {
   const grade = getScreeningGrade(screening)
   const isLoadingGrade = grade === '...'
@@ -84,6 +86,13 @@ const ScreeningTableRow = ({
                     Paused / Away
                   </Badge>
                 )}
+
+                {needsPriorityRescreen && (
+                  <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>
+                    Priority Rescreen
+                  </Badge>
+                )}
+
                 {/* {transferredOut && (
                   <span className='text-xs font-medium text-orange-600'>
                     Transferred Out → {transferredOut}
@@ -148,6 +157,12 @@ const ScreeningTableRow = ({
           {isPaused && (
             <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
               Paused / Away
+            </Badge>
+          )}
+
+          {needsPriorityRescreen && (
+            <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>
+              Priority Rescreen
             </Badge>
           )}
 
