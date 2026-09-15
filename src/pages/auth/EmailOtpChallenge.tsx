@@ -74,7 +74,8 @@ const EmailOtpChallenge = () => {
 
       localStorage.setItem(`email_mfa_${userId}`, 'true')
       navigate(from, { replace: true })
-    } catch {
+    } catch (error) {
+      console.error('[EmailOtpChallenge] verifyOtp failed:', error)
       toast({
         title: 'Invalid code',
         description: 'Check your email and try again.',

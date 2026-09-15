@@ -47,10 +47,17 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           }
         } else {
           const emailVerified = localStorage.getItem(`email_mfa_${user.id}`) === 'true'
+          console.log('[ProtectedRoute] email MFA check', {
+            userId: user.id,
+            emailVerified,
+            storedValue: localStorage.getItem(`email_mfa_${user.id}`),
+          })
           if (!emailVerified) setMfaRedirect('email-challenge')
         }
       })
-      .catch(() => {})
+      .catch(error => {
+        console.error('[ProtectedRoute] MFA check failed:', error)
+      })
       .finally(() => setMfaChecked(true))
   }, [user?.id])
 
