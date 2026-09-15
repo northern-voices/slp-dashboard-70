@@ -630,6 +630,7 @@ const MultiStepSpeechScreeningForm = ({
     form.reset()
     setCurrentStep(1)
     setSelectedStudent(null)
+    onStudentSelect?.(null)
     setSelectedGrade('')
     setSelectedGradeId('')
     setGradeSchoolId('')
