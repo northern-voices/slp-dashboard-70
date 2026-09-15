@@ -116,11 +116,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[auth]', event, {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : null,
+        now: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        locksSupported: typeof navigator.locks !== 'undefined',
+      })
+
       if (session?.user) {
         const transformedUser = transformUser(session.user)
         setUser(transformedUser)
       } else {
         setUser(null)
+
         if (event === 'SIGNED_OUT') {
           toast({
             title: 'Session expired',
