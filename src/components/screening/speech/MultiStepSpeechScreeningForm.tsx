@@ -631,6 +631,7 @@ const MultiStepSpeechScreeningForm = ({
     form.reset()
     setCurrentStep(1)
     setSelectedStudent(null)
+    onStudentSelect?.(null)
     setSelectedGrade('')
     setSelectedGradeId('')
     setGradeSchoolId('')
@@ -638,6 +639,7 @@ const MultiStepSpeechScreeningForm = ({
     setIsNoConsent(false)
     setIsComplexNeeds(false)
     setIsUnableToScreen(false)
+    setResetKey(prev => prev + 1)
   }
 
   const handleGoToDashboard = () => {
@@ -652,6 +654,7 @@ const MultiStepSpeechScreeningForm = ({
       case 1:
         return (
           <SpeechScreeningStep1
+            key={resetKey}
             form={form as unknown as UseFormReturn<Record<string, unknown>>}
             selectedStudent={selectedStudent}
             selectedGrade={selectedGrade}
