@@ -3,7 +3,6 @@ import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-// import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -15,7 +14,6 @@ import { User } from 'lucide-react'
 import StudentSearchSelector from '../../StudentSearchSelector'
 import { Student } from '@/types/database'
 import { useSchoolGrades } from '@/hooks/use-school-grades'
-import { useOrganization } from '@/contexts/OrganizationContext'
 import { GRADE_MAPPING } from '@/constants/app'
 import { getCurrentAcademicYear, getCurrentAcademicYearStart } from '@/lib/academicYear'
 
