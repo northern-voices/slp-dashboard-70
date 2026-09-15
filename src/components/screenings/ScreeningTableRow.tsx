@@ -116,6 +116,7 @@ const ScreeningTableRow = ({
               onDelete={onDelete}
               onAddConsent={onAddConsent}
               onPriorityRescreen={onPriorityRescreen}
+              needsPriorityRescreen={needsPriorityRescreen}
               isTransferredOut={!!transferredOut}
             />
           </div>
@@ -218,6 +219,7 @@ const ScreeningTableRow = ({
           onDelete={onDelete}
           onAddConsent={onAddConsent}
           onPriorityRescreen={onPriorityRescreen}
+          needsPriorityRescreen={needsPriorityRescreen}
           isTransferredOut={!!transferredOut}
         />
       </TableCell>

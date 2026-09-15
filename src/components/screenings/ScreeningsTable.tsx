@@ -781,23 +781,27 @@ const ScreeningsTable = ({
       return
     }
 
+    const newValue = !student.needs_priority_rescreen
+
     updateStudent(
       {
         id: student.id,
-        studentData: { needs_priority_rescreen: true },
+        studentData: { needs_priority_rescreen: newValue },
       },
       {
         onSuccess: () => {
           toast({
-            title: 'Priority rescreen flagged',
-            description: `${screening.student_name} has been flagged for a priority rescreen`,
+            title: newValue ? 'Priority rescreen flagged' : 'Priority rescreen removed',
+            description: newValue
+              ? `${screening.student_name} has been flagged for a priority rescreen`
+              : `${screening.student_name} is no longer flagged for a priority rescreen`,
             variant: 'default',
           })
         },
         onError: () => {
           toast({
             title: 'Error',
-            description: 'Failed to flag student for priority rescreen',
+            description: 'Failed to update priority rescreen flag',
             variant: 'destructive',
           })
         },

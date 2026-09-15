@@ -17,6 +17,7 @@ interface ScreeningRowDropdownProps {
   onDelete: (screening: Screening) => void
   onAddConsent: (screening: Screening) => void
   onPriorityRescreen: (screening: Screening) => void
+  needsPriorityRescreen?: boolean
   isTransferredOut?: boolean
 }
 
@@ -29,6 +30,7 @@ const ScreeningRowDropdown = ({
   onDelete,
   onAddConsent,
   onPriorityRescreen,
+  needsPriorityRescreen,
   isTransferredOut,
 }: ScreeningRowDropdownProps) => (
   <DropdownMenu>
@@ -66,7 +68,7 @@ const ScreeningRowDropdown = ({
       {!isTransferredOut && (
         <DropdownMenuItem onClick={() => onPriorityRescreen(screening)}>
           <RefreshCw className='w-4 h-4 mr-2' />
-          Priority Rescreen
+          {needsPriorityRescreen ? 'Remove Priority Rescreen' : 'Priority Rescreen'}
         </DropdownMenuItem>
       )}
 
