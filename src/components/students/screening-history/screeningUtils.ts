@@ -1,3 +1,5 @@
+import { Screening } from '@/types/database'
+
 export const getStatusColor = (status: string) => {
   switch (status) {
     case 'completed':
@@ -32,6 +34,8 @@ export const getStatusDisplay = (status: string) => {
       return 'Qualifies'
     case 'sub':
       return 'Sub'
+    case 'to_be_determined':
+      return 'Pending - To Be Determined'
     case 'paused':
       return 'Pause/Away'
     case 'graduated':
@@ -41,7 +45,7 @@ export const getStatusDisplay = (status: string) => {
   }
 }
 
-export const groupScreeningsByRecency = (screenings: any[]) => {
+export const groupScreeningsByRecency = (screenings: Screening[]) => {
   const sixMonthsAgo = new Date()
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
@@ -61,7 +65,7 @@ export const groupScreeningsByRecency = (screenings: any[]) => {
       acc[year].push(screening)
       return acc
     },
-    {} as Record<number, any[]>
+    {} as Record<number, Screening[]>
   )
 
   return { recentScreenings, groupedHistorical }

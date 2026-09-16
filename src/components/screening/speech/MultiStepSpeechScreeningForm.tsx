@@ -258,12 +258,14 @@ const MultiStepSpeechScreeningForm = ({
     const noConsent = (formData.no_consent as { isNoConsent?: boolean })?.isNoConsent || false
     const sub = (formData.sub as boolean) || false
     const qualifies = (formData.qualifies_for_speech_program as boolean) || false
+    const toBeDetermined = (formData.to_be_determined as boolean) || false
     const graduated = (formData.graduated as boolean) || false
 
     if (noConsent) return 'no_consent'
     if (graduated) return 'graduated'
     if (sub) return 'sub'
     if (qualifies) return 'qualified'
+    if (toBeDetermined) return 'to_be_determined'
 
     return 'none'
   }
