@@ -35,6 +35,12 @@ export const ProgramBadge = ({ status }: { status?: ProgramStatus | null }) => {
       return <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     case 'graduated':
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+    case 'to_be_determined':
+      return (
+        <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>
+          Pending - TBD
+        </Badge>
+      )
     default:
       return (
         <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>

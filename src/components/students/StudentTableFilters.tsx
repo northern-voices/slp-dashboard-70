@@ -146,6 +146,7 @@ const StudentTableFilters = ({
                       <SelectItem value='qualified'>Qualifies</SelectItem>
                       <SelectItem value='not_in_program'>Not In Program</SelectItem>
                       <SelectItem value='sub'>Sub</SelectItem>
+                      <SelectItem value='to_be_determined'>Pending - To Be Determined</SelectItem>
                       <SelectItem value='no_consent'>No Consent</SelectItem>
                       <SelectItem value='none'>Not Set</SelectItem>
                     </SelectContent>

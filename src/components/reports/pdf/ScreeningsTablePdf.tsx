@@ -50,6 +50,7 @@ const PROGRAM_PDF_STYLE: Record<ProgramStatus, { bg: string; text: string; label
   sub: { bg: '#ffedd5', text: '#9a3412', label: 'Sub' },
   graduated: { bg: '#dbeafe', text: '#1e40af', label: 'Graduated' },
   no_consent: { bg: '#fee2e2', text: '#1f2937', label: 'No Consent' },
+  to_be_determined: { bg: '#fef9c3', text: '#854d0e', label: 'Pending - TBD' },
   not_in_program: { bg: '#dcfce7', text: '#166534', label: 'Not In Program' },
   none: { bg: '#dcfce7', text: '#166534', label: 'Not In Program' },
 }

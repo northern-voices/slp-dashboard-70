@@ -243,6 +243,12 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
       case 'qualified':
         return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
+      case 'to_be_determined':
+        return (
+          <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>
+            Pending - TBD
+          </Badge>
+        )
       case 'not_in_program':
         return (
           <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>

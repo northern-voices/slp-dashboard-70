@@ -282,6 +282,7 @@ export const useEditScreening = () => {
         if (formData.graduated) return 'graduated'
         if (formData.sub) return 'sub'
         if (formData.qualifies_for_speech_program) return 'qualified'
+        if (formData.to_be_determined) return 'to_be_determined'
         if (formData.qualifies_for_speech_program === false) return 'not_in_program'
         return 'none'
       }

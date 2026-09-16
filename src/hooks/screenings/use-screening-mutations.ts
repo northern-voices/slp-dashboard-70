@@ -109,6 +109,7 @@ export const useUpdateSpeechScreening = () => {
         if (consent?.no_consent) return 'no_consent'
         if (metadata?.sub) return 'sub'
         if (metadata?.qualifies_for_speech_program === true) return 'qualified'
+        if (metadata?.to_be_determined === true) return 'to_be_determined'
         return 'none'
       }
 

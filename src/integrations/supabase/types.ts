@@ -1000,7 +1000,15 @@ export type Database = {
         | 'jp_liaison'
         | 'learning_support_teacher'
       screening_type_enum: 'initial' | 'progress'
-      speech_program_status: 'none' | 'qualified' | 'sub' | 'graduated' | 'paused' | 'no_consent'
+      speech_program_status:
+        | 'none'
+        | 'qualified'
+        | 'sub'
+        | 'to_be_determined'
+        | 'transferred'
+        | 'graduated'
+        | 'paused'
+        | 'no_consent'
       speech_screening_result:
         | 'absent'
         | 'passed'
@@ -1186,7 +1194,16 @@ export const Constants = {
         'learning_support_teacher',
       ],
       screening_type_enum: ['initial', 'progress'],
-      speech_program_status: ['none', 'qualified', 'sub', 'graduated', 'paused', 'no_consent'],
+      speech_program_status: [
+        'none',
+        'qualified',
+        'sub',
+        'to_be_determined',
+        'transferred',
+        'graduated',
+        'paused',
+        'no_consent',
+      ],
       speech_screening_result: [
         'absent',
         'passed',
