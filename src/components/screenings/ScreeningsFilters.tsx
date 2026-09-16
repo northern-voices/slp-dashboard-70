@@ -116,18 +116,6 @@ const ScreeningsFilters = ({
 
   return (
     <div className='space-y-4'>
-      {/* Search Bar */}
-      <div className='mb-6 mt-5'>
-        <div className='relative'>
-          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
-          <Input
-            placeholder='Search by student or screener name'
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className='pl-10'
-          />
-        </div>
-      </div>
       <Card className='border border-gray-200 shadow-sm'>
         <Collapsible open={isFiltersExpanded} onOpenChange={setIsFiltersExpanded}>
           <CollapsibleTrigger asChild>
@@ -414,6 +402,19 @@ const ScreeningsFilters = ({
           </CollapsibleContent>
         </Collapsible>
       </Card>
+
+      {/* Search Bar */}
+      <div className='mb-6 mt-5'>
+        <div className='relative'>
+          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
+          <Input
+            placeholder='Search by student or screener name'
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className='pl-10'
+          />
+        </div>
+      </div>
     </div>
   )
 }
