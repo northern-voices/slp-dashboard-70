@@ -70,6 +70,7 @@ const MultiStepSpeechScreeningForm = ({
         notes: '',
       },
       priority_re_screen: false,
+      priority_re_screen_notes: '',
 
       // Step 2 fields
       screening_type: 'initial',
@@ -107,6 +108,7 @@ const MultiStepSpeechScreeningForm = ({
           absent: false,
           absence_notes: '',
           priority_re_screen: false,
+          priority_re_screen_notes: '',
         },
         screening_metadata: {
           screening_date: '',
@@ -163,7 +165,12 @@ const MultiStepSpeechScreeningForm = ({
         articulationNotes: articulation?.articulationNotes || '',
       },
       add_areas_of_concern: areasOfConcern,
-      attendance: { absent: false, absence_notes: '', priority_re_screen: false },
+      attendance: {
+        absent: false,
+        absence_notes: '',
+        priority_re_screen: false,
+        priority_re_screen_notes: '',
+      },
       additional_observations: errorPatterns?.additional_observations || '',
       screening_metadata: {
         screening_date: new Date().toLocaleDateString('en-CA'),
@@ -408,6 +415,7 @@ const MultiStepSpeechScreeningForm = ({
             absent: formAbsent,
             absence_notes: (absent.notes as string) || '',
             priority_re_screen: (formData.priority_re_screen as boolean) || false,
+            priority_re_screen_notes: (formData.priority_re_screen_notes as string) || '',
           },
           consent: {
             no_consent: formNoConsent,

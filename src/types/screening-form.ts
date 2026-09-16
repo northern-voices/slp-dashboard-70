@@ -55,6 +55,7 @@ export interface ErrorPatterns {
     absent: boolean
     absence_notes: string
     priority_re_screen: boolean
+    priority_re_screen_notes: string
   }
   articulation: {
     soundErrors: Array<{
@@ -115,6 +116,7 @@ export interface SpeechScreeningFormValues {
   general_articulation_notes?: string
   academic_year: string
   priority_re_screen: boolean
+  priority_re_screen_notes: string
   other_notes: string
   absent: {
     isAbsent: boolean

@@ -66,6 +66,7 @@ export const useEditScreening = () => {
           absent: false,
           absence_notes: '',
           priority_re_screen: false,
+          priority_re_screen_notes: '',
         },
         articulation: {
           soundErrors: [],
@@ -143,7 +144,12 @@ export const useEditScreening = () => {
         }
 
         const defaultErrorPatterns = {
-          attendance: { absent: false, absence_notes: '', priority_re_screen: false },
+          attendance: {
+            absent: false,
+            absence_notes: '',
+            priority_re_screen: false,
+            priority_re_screen_notes: '',
+          },
           articulation: { soundErrors: [], articulationNotes: '' },
           screening_metadata: {
             screening_date: '',
