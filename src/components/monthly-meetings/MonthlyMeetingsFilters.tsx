@@ -58,17 +58,6 @@ const MonthlyMeetingsFilters = ({
 
   return (
     <div className='space-y-4'>
-      {/* Search Bar - Always Visible */}
-      <div className='relative'>
-        <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
-        <Input
-          placeholder='Search by meeting title or participant...'
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          className='pl-10'
-        />
-      </div>
-
       <Card className='border border-gray-200 shadow-sm'>
         <Collapsible open={isFiltersExpanded} onOpenChange={setIsFiltersExpanded}>
           <CollapsibleTrigger asChild>
@@ -159,6 +148,17 @@ const MonthlyMeetingsFilters = ({
           </CollapsibleContent>
         </Collapsible>
       </Card>
+
+      {/* Search Bar - Always Visible */}
+      <div className='relative'>
+        <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
+        <Input
+          placeholder='Search by meeting title or participant...'
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className='pl-10'
+        />
+      </div>
     </div>
   )
 }
