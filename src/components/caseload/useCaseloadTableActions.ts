@@ -144,6 +144,7 @@ export const useCaseloadTableActions = (
         ...(currentErrorPatterns.screening_metadata || {}),
         qualifies_for_speech_program: newProgram === 'qualified',
         sub: newProgram === 'sub',
+        to_be_determined: newProgram === 'to_be_determined',
         graduated: newProgram === 'graduated',
       } as ErrorPatterns['screening_metadata'],
     }
