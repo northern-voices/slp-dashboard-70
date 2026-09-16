@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, CheckCircle, Clock, FileText, PauseCircle } from 'lucide-react'
+import { Calendar, CheckCircle, Clock, FileText, PauseCircle, UserX } from 'lucide-react'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import ScreeningStatsSkeleton from '@/components/skeletons/ScreeningStatsSkeleton'
@@ -10,6 +10,8 @@ interface ScreeningStatsProps {
   onClearAllFilters?: (deduplicate?: boolean) => void
   dateRangeFilter?: string
   activeProgramFilter?: string[]
+  resultFilter?: string
+  onResultFilterClick?: (value: string, deduplicate: boolean) => void
 }
 
 const ScreeningStats = ({
@@ -17,6 +19,8 @@ const ScreeningStats = ({
   onClearAllFilters,
   dateRangeFilter = 'school_year',
   activeProgramFilter = [],
+  resultFilter = 'all',
+  onResultFilterClick,
 }: ScreeningStatsProps) => {
   const { currentSchool } = useOrganization()
 
@@ -76,6 +80,10 @@ const ScreeningStats = ({
     latestScreenings.filter(s => s.service_status === 'paused').map(s => s.student_id)
   )
 
+  const absentStudentIds = new Set(
+    latestScreenings.filter(s => s.result === 'absent').map(s => s.student_id)
+  )
+
   const caseloadStudentIds = new Set([...qualifiedStudentIds, ...subStudentIds])
 
   // Raw screening record counts
@@ -85,6 +93,7 @@ const ScreeningStats = ({
     sub: schoolScreenings.filter(s => s.program_status === 'sub').length,
     paused: schoolScreenings.filter(s => s.service_status === 'paused').length,
     graduated: schoolScreenings.filter(s => s.program_status === 'graduated').length,
+    absent: schoolScreenings.filter(s => s.result === 'absent').length,
   }
 
   const stats = {
@@ -94,13 +103,21 @@ const ScreeningStats = ({
     pausedScreenings: pausedStudentIds.size,
     graduatedScreenings: graduatedStudentIds.size,
     caseloadScreenings: caseloadStudentIds.size,
+    absentScreenings: absentStudentIds.size,
   }
 
   const isActive = (values: string[]) =>
     values.length === activeProgramFilter.length &&
     values.every(value => activeProgramFilter.includes(value))
 
-  const isTotalActive = activeProgramFilter.length === 0
+  const isTotalActive = activeProgramFilter.length === 0 && resultFilter === 'all'
+  const isAbsentActive = resultFilter === 'absent'
+
+  const handleResultFilterClick = (value: string, deduplicate: boolean) => {
+    if (onResultFilterClick) {
+      onResultFilterClick(value, deduplicate)
+    }
+  }
 
   const handleCardClick = (filterValues: string[], deduplicate: boolean) => {
     if (onFilterClick) {
@@ -133,7 +150,7 @@ const ScreeningStats = ({
   }
 
   return (
-    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8'>
+    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
       {/* Total Screenings*/}
       <Card
         className={`cursor-pointer transition-colors ${
@@ -255,6 +272,29 @@ const ScreeningStats = ({
               handleCardClick(['graduated'], true)
             }}>
             {stats.graduatedScreenings} students
+          </button>
+        </CardContent>
+      </Card>
+
+      {/* Absent */}
+      <Card
+        className={`cursor-pointer transition-colors ${
+          isAbsentActive ? 'ring-2 ring-gray-400 bg-gray-100' : 'hover:bg-gray-50'
+        }`}
+        onClick={() => handleResultFilterClick('absent', false)}>
+        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+          <CardTitle className='text-sm font-medium'>Absent</CardTitle>
+          <UserX className='h-4 w-4 text-gray-600' />
+        </CardHeader>
+        <CardContent>
+          <div className='text-2xl font-bold'>{rawCounts.absent}</div>
+          <button
+            className='mt-2 text-xs text-blue-600 hover:underline'
+            onClick={e => {
+              e.stopPropagation()
+              handleResultFilterClick('absent', true)
+            }}>
+            {stats.absentScreenings} students
           </button>
         </CardContent>
       </Card>

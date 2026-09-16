@@ -125,6 +125,11 @@ const ScreeningsContent = () => {
           onClearAllFilters={clearAllFilters}
           dateRangeFilter={dateRangeFilter}
           activeProgramFilter={qualifiesForSpeechProgramFilter}
+          resultFilter={resultFilter}
+          onResultFilterClick={(value, deduplicate) => {
+            setResultFilter(value)
+            setDeduplicateByStudent(deduplicate)
+          }}
         />
       </div>
 
