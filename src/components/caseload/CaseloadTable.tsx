@@ -217,23 +217,25 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         onPageReset={() => setCurrentPage(1)}
       />
 
-      <SortControls
-        sortField={sortField}
-        setSortField={setSortField}
-        sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
-        options={sortOptions}
-      />
+      <div className='flex items-center justify-between mb-3 gap-2 flex-wrap'>
+        <SortControls
+          sortField={sortField}
+          setSortField={setSortField}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          options={sortOptions}
+        />
 
-      <div className='flex justify-end mb-3 gap-2'>
-        <Button variant='outline' size='sm' onClick={() => setIsEmailReportOpen(true)}>
-          <Mail className='w-4 h-4 mr-1' />
-          Email Caseload
-        </Button>
+        <div className='flex items-center gap-2'>
+          <Button variant='outline' size='sm' onClick={() => setIsEmailReportOpen(true)}>
+            <Mail className='w-4 h-4 mr-1' />
+            Email Caseload
+          </Button>
 
-        <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
-          {totalStudents} student{totalStudents !== 1 ? 's' : ''} found
-        </span>
+          <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
+            {totalStudents} student{totalStudents !== 1 ? 's' : ''} found
+          </span>
+        </div>
       </div>
 
       <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
