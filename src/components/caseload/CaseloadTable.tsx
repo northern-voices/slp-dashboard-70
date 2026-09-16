@@ -189,16 +189,6 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         onFilterChange={setProgramStatusFilter}
       />
 
-      <div className='relative'>
-        <Search className='absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2' />
-        <Input
-          placeholder='Search by student name...'
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          className='pl-10'
-        />
-      </div>
-
       <CaseloadFilters
         gradeFilter={gradeFilter}
         setGradeFilter={setGradeFilter}
@@ -216,6 +206,16 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         onClearAll={clearAllFilters}
         onPageReset={() => setCurrentPage(1)}
       />
+
+      <div className='relative'>
+        <Search className='absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2' />
+        <Input
+          placeholder='Search by student name...'
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className='pl-10'
+        />
+      </div>
 
       <div className='flex items-center justify-between mb-3 gap-2 flex-wrap'>
         <SortControls
