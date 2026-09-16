@@ -346,12 +346,23 @@ const SpeechScreeningsTable = ({
 
     if (screening.program_status === 'graduated')
       return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+
     if (screening.service_status === 'paused')
       return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
+
     if (screening.program_status === 'sub')
       return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
+
     if (screening.program_status === 'qualified')
       return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
+
+    if (screening.program_status === 'to_be_determined')
+      return (
+        <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>
+          Pending - TBD
+        </Badge>
+      )
+
     if (screening.program_status === 'not_in_program')
       return (
         <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>

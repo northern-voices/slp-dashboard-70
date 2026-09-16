@@ -16,6 +16,7 @@ export const PROGRAM_OPTIONS = [
   { value: 'qualified', label: 'Qualifies' },
   { value: 'none', label: 'Not In Program' },
   { value: 'sub', label: 'Sub' },
+  { value: 'to_be_determined', label: 'Pending - To Be Determined' },
   { value: 'graduated', label: 'Graduated' },
   { value: 'no_consent', label: 'Qualifies - No Consent' },
 ]

@@ -172,6 +172,7 @@ const ScreeningsList = ({
           ...currentMetadata,
           qualifies_for_speech_program: newProgram === 'qualified',
           sub: newProgram === 'sub',
+          to_be_determined: newProgram === 'to_be_determined',
           graduated: newProgram === 'graduated',
           paused: newProgram === 'paused',
         } as ErrorPatterns['screening_metadata'],
@@ -779,10 +780,19 @@ const ScreeningsList = ({
   const getQualificationBadge = (screening: Screening) => {
     if (screening.program_status === 'no_consent')
       return <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
+
     if (screening.program_status === 'sub')
       return <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>Sub</Badge>
+
     if (screening.program_status === 'qualified')
       return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
+
+    if (screening.program_status === 'to_be_determined')
+      return (
+        <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>
+          Pending - TBD
+        </Badge>
+      )
 
     return (
       <Badge className='bg-green-100 text-green-800 font-medium text-[10px]'>Not In Program</Badge>

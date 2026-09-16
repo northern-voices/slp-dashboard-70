@@ -74,6 +74,7 @@ export interface ErrorPatterns {
     qualifies_for_speech_program: boolean
     vocabulary_support_recommended: boolean
     sub?: boolean
+    to_be_determined?: boolean
     graduated?: boolean
     paused?: boolean
     transferred?: boolean
@@ -108,6 +109,7 @@ export interface SpeechScreeningFormValues {
   vocabulary_support_recommended: boolean
   qualifies_for_speech_program: boolean
   sub: boolean
+  to_be_determined: boolean
   graduated: boolean
   paused?: boolean
   complex_needs?: boolean

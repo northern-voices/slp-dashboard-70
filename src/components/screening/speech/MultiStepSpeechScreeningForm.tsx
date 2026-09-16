@@ -115,6 +115,7 @@ const MultiStepSpeechScreeningForm = ({
           qualifies_for_speech_program: false,
           vocabulary_support_recommended: false,
           sub: false,
+          to_be_determined: false,
           graduated: false,
         },
         additional_observations: '',
@@ -146,6 +147,7 @@ const MultiStepSpeechScreeningForm = ({
     form.setValue('screening_date', new Date().toLocaleDateString('en-CA'))
     form.setValue('speech_screen_result', initialScreeningData.result || '')
     form.setValue('sub', screeningMetadata?.sub || false)
+    form.setValue('to_be_determined', screeningMetadata?.to_be_determined || false)
     form.setValue(
       'qualifies_for_speech_program',
       screeningMetadata?.qualifies_for_speech_program || false
@@ -177,6 +179,7 @@ const MultiStepSpeechScreeningForm = ({
         qualifies_for_speech_program: screeningMetadata?.qualifies_for_speech_program || false,
         vocabulary_support_recommended: initialScreeningData.vocabulary_support || false,
         sub: screeningMetadata?.sub || false,
+        to_be_determined: screeningMetadata?.to_be_determined || false,
         graduated: screeningMetadata?.graduated || false,
         paused: screeningMetadata?.paused || false,
       },
@@ -258,12 +261,14 @@ const MultiStepSpeechScreeningForm = ({
     const noConsent = (formData.no_consent as { isNoConsent?: boolean })?.isNoConsent || false
     const sub = (formData.sub as boolean) || false
     const qualifies = (formData.qualifies_for_speech_program as boolean) || false
+    const toBeDetermined = (formData.to_be_determined as boolean) || false
     const graduated = (formData.graduated as boolean) || false
 
     if (noConsent) return 'no_consent'
     if (graduated) return 'graduated'
     if (sub) return 'sub'
     if (qualifies) return 'qualified'
+    if (toBeDetermined) return 'to_be_determined'
 
     return 'none'
   }

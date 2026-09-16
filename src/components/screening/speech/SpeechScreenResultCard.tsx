@@ -28,12 +28,14 @@ const QUALIFIES_OPTIONS = [
 const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
   const qualifies = form.watch('qualifies_for_speech_program')
   const sub = form.watch('sub')
-  const doesNotQualify = !qualifies && !sub
+  const toBeDetermined = form.watch('to_be_determined')
+  const doesNotQualify = !qualifies && !sub && !toBeDetermined
 
-  const activeOptions = doesNotQualify ? DOES_NOT_QUALIFY_OPTIONS : QUALIFIES_OPTIONS
+  const usesQualifiesOptions = qualifies || sub
+  const activeOptions = usesQualifiesOptions ? QUALIFIES_OPTIONS : DOES_NOT_QUALIFY_OPTIONS
 
-  const clearResultIfIncompatible = (newDoesNotQualify: boolean) => {
-    const newOptions = newDoesNotQualify ? DOES_NOT_QUALIFY_OPTIONS : QUALIFIES_OPTIONS
+  const clearResultIfIncompatible = (newUsesQualifiesOptions: boolean) => {
+    const newOptions = newUsesQualifiesOptions ? QUALIFIES_OPTIONS : DOES_NOT_QUALIFY_OPTIONS
     const currentResult = form.getValues('speech_screen_result')
 
     const stillValid = newOptions.some(option => option.value === currentResult)
@@ -53,12 +55,13 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
           <div className='flex items-center space-x-2'>
             <Checkbox
               id='does_not_qualify'
-              checked={!form.watch('qualifies_for_speech_program') && !form.watch('sub')}
+              checked={doesNotQualify}
               onCheckedChange={checked => {
                 if (checked) {
                   form.setValue('qualifies_for_speech_program', false)
                   form.setValue('sub', false)
-                  clearResultIfIncompatible(true)
+                  form.setValue('to_be_determined', false)
+                  clearResultIfIncompatible(false)
                 }
               }}
             />
@@ -75,7 +78,8 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
                 form.setValue('qualifies_for_speech_program', checked as boolean)
                 if (checked) {
                   form.setValue('sub', false)
-                  clearResultIfIncompatible(false)
+                  form.setValue('to_be_determined', false)
+                  clearResultIfIncompatible(true)
                 }
               }}
             />
@@ -91,11 +95,32 @@ const SpeechScreenResultCard = ({ form }: SpeechScreenResultCardProps) => {
               onCheckedChange={checked => {
                 form.setValue('sub', checked as boolean)
                 form.setValue('qualifies_for_speech_program', false)
-                if (checked) clearResultIfIncompatible(false)
+                if (checked) {
+                  form.setValue('to_be_determined', false)
+                  clearResultIfIncompatible(true)
+                }
               }}
             />
             <Label htmlFor='sub' className='text-sm font-medium'>
               Qualifies - Sub
+            </Label>
+          </div>
+
+          <div className='flex items-center space-x-2'>
+            <Checkbox
+              id='to_be_determined'
+              checked={form.watch('to_be_determined') || false}
+              onCheckedChange={checked => {
+                form.setValue('to_be_determined', checked as boolean)
+                if (checked) {
+                  form.setValue('qualifies_for_speech_program', false)
+                  form.setValue('sub', false)
+                  clearResultIfIncompatible(false)
+                }
+              }}
+            />
+            <Label htmlFor='to_be_determined' className='text-sm font-medium'>
+              Pending - To Be Determined
             </Label>
           </div>
 
