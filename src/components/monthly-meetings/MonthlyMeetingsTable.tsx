@@ -196,15 +196,15 @@ const MonthlyMeetingsTable = ({
         />
       )}
 
-      <SortControls
-        sortField={sortField}
-        setSortField={setSortField}
-        sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
-        options={sortOptions}
-      />
+      <div className='flex items-center justify-between mb-3 gap-2 flex-wrap'>
+        <SortControls
+          sortField={sortField}
+          setSortField={setSortField}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          options={sortOptions}
+        />
 
-      <div className='flex justify-end mb-3'>
         <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
           {filteredMeetings.length} meeting{filteredMeetings.length !== 1 ? 's' : ''} found
         </span>

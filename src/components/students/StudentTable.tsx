@@ -598,17 +598,17 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
         availableSchoolYears={availableSchoolYears}
       />
 
-      {/* Sort Controls */}
-      <SortControls
-        sortField={sortField}
-        setSortField={setSortField}
-        sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
-        options={sortOptions}
-      />
-
       {/* Students Table */}
-      <div className='flex justify-end mb-3'>
+      <div className='flex items-center justify-between mb-3 gap-2 flex-wrap'>
+        {/* Sort Controls */}
+        <SortControls
+          sortField={sortField}
+          setSortField={setSortField}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          options={sortOptions}
+        />
+
         <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
           {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''} found
         </span>
