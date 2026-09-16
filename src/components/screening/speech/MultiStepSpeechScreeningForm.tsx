@@ -115,6 +115,7 @@ const MultiStepSpeechScreeningForm = ({
           qualifies_for_speech_program: false,
           vocabulary_support_recommended: false,
           sub: false,
+          to_be_determined: false,
           graduated: false,
         },
         additional_observations: '',
@@ -146,6 +147,7 @@ const MultiStepSpeechScreeningForm = ({
     form.setValue('screening_date', new Date().toLocaleDateString('en-CA'))
     form.setValue('speech_screen_result', initialScreeningData.result || '')
     form.setValue('sub', screeningMetadata?.sub || false)
+    form.setValue('to_be_determined', screeningMetadata?.to_be_determined || false)
     form.setValue(
       'qualifies_for_speech_program',
       screeningMetadata?.qualifies_for_speech_program || false
@@ -177,6 +179,7 @@ const MultiStepSpeechScreeningForm = ({
         qualifies_for_speech_program: screeningMetadata?.qualifies_for_speech_program || false,
         vocabulary_support_recommended: initialScreeningData.vocabulary_support || false,
         sub: screeningMetadata?.sub || false,
+        to_be_determined: screeningMetadata?.to_be_determined || false,
         graduated: screeningMetadata?.graduated || false,
         paused: screeningMetadata?.paused || false,
       },
