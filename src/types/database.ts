@@ -60,6 +60,7 @@ export interface Student {
   qualifies_for_program?: boolean
   program_status?: ProgramStatus
   service_status?: ServiceStatus
+  needs_priority_rescreen?: boolean
   current_grade_id?: string | null
   speech_ea_id?: string | null
   created_at: string

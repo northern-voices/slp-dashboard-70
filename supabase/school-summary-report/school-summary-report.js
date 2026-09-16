@@ -225,12 +225,12 @@ Deno.serve(async req => {
       const batch = studentIds.slice(i, i + batchSize)
       console.log(
         `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
-          studentIds.length / batchSize,
-        )}: ${batch.length} students`,
+          studentIds.length / batchSize
+        )}: ${batch.length} students`
       )
 
       const screeningsUrl = `${supabaseUrl}/rest/v1/speech_screenings?student_id=in.(${batch.join(
-        ',',
+        ','
       )})&select=*,students(*),school_grades(*)`
 
       const screeningsResponse = await fetch(screeningsUrl, {
@@ -243,7 +243,7 @@ Deno.serve(async req => {
 
       if (!screeningsResponse.ok) {
         console.error(
-          `Failed to fetch speech screenings for batch starting at index ${i}: ${screeningsResponse.status}`,
+          `Failed to fetch speech screenings for batch starting at index ${i}: ${screeningsResponse.status}`
         )
         throw new Error(`Failed to fetch speech screenings: ${screeningsResponse.status}`)
       }
@@ -263,11 +263,11 @@ Deno.serve(async req => {
 
     // 4. Filter by academic year
     const filteredScreenings = allScreenings.filter(screening =>
-      isWithinAcademicYear(screening.created_at, academic_year),
+      isWithinAcademicYear(screening.created_at, academic_year)
     )
 
     console.log(
-      `Found ${filteredScreenings.length} screenings within academic year ${academic_year}`,
+      `Found ${filteredScreenings.length} screenings within academic year ${academic_year}`
     )
 
     // 5. Get the latest screening for each student
@@ -324,10 +324,14 @@ Deno.serve(async req => {
 
     // 9. Separate students into qualified, sub, and recommendations categories
     const qualifiedStudents = latestScreenings.filter(
-      screening => isQualifiedStudent(screening) && !isSubStudent(screening),
+      screening => isQualifiedStudent(screening) && !isSubStudent(screening)
     )
 
     const subStudents = latestScreenings.filter(isSubStudent)
+
+    const priorityRescreenStudents = latestScreenings.filter(
+      screening => screening.students?.needs_priority_rescreen === true
+    )
 
     const studentsRecommendationsAndReferrals = latestScreenings.filter(screening => {
       const referralNotes = screening.referral_notes || ''
@@ -335,8 +339,9 @@ Deno.serve(async req => {
     })
 
     console.log(
-      `Found ${qualifiedStudents.length} qualified students and ${subStudents.length} sub students`,
+      `Found ${qualifiedStudents.length} qualified students and ${subStudents.length} sub students`
     )
+    console.log(`Found ${priorityRescreenStudents.length} students flagged for priority rescreen`)
     console.log(`Found ${studentsRecommendationsAndReferrals.length} students with recommendations`)
 
     // 10. Determine which template to use based on whether there are recommendations
@@ -363,6 +368,8 @@ Deno.serve(async req => {
         qualified_students: qualifiedStudents.map(transformRecord),
         sub: subStudents.length > 0,
         sub_students: subStudents.map(transformRecord),
+        priority_rescreen: priorityRescreenStudents.length > 0,
+        students_priority_rescreen: priorityRescreenStudents.map(transformRecord),
         students_recommendations_and_referrals:
           studentsRecommendationsAndReferrals.map(transformRecord),
       },
@@ -454,7 +461,7 @@ Deno.serve(async req => {
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
-      },
+      }
     )
   } catch (error) {
     console.error('Error generating school summary report:', error)
@@ -491,7 +498,7 @@ Deno.serve(async req => {
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
-      },
+      }
     )
   }
 })

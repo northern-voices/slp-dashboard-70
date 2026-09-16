@@ -767,6 +767,48 @@ const ScreeningsTable = ({
     setIsDeleteDialogOpen(true)
   }
 
+  const handlePriorityRescreen = (screening: Screening) => {
+    const student = students.find(
+      s => s.id === screening.student_id || s.student_id === screening.student_id
+    )
+
+    if (!student) {
+      toast({
+        title: 'Error',
+        description: 'Student not found',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const newValue = !student.needs_priority_rescreen
+
+    updateStudent(
+      {
+        id: student.id,
+        studentData: { needs_priority_rescreen: newValue },
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: newValue ? 'Priority rescreen flagged' : 'Priority rescreen removed',
+            description: newValue
+              ? `${screening.student_name} has been flagged for a priority rescreen`
+              : `${screening.student_name} is no longer flagged for a priority rescreen`,
+            variant: 'default',
+          })
+        },
+        onError: () => {
+          toast({
+            title: 'Error',
+            description: 'Failed to update priority rescreen flag',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
+  }
+
   const confirmDelete = () => {
     if (screeningToDelete && screeningToDelete.source_table) {
       const deletedStudentName = screeningToDelete.student_name
@@ -919,8 +961,12 @@ const ScreeningsTable = ({
                   getResultSelector={getResultSelector}
                   getProgramSelector={getProgramSelector}
                   onAddConsent={handleAddConsent}
+                  onPriorityRescreen={handlePriorityRescreen}
                   transferRecord={transferByStudentId.get(screening.student_id)}
                   currentSchoolId={currentSchool?.id ?? ''}
+                  needsPriorityRescreen={
+                    studentsMap.get(screening.student_id)?.needs_priority_rescreen
+                  }
                 />
               ))}
             </TableBody>

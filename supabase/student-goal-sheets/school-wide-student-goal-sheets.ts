@@ -2,7 +2,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { AwsClient } from 'npm:aws4fetch@1'
 import QRCode from 'npm:qrcode@1.5.4'
-import { isWithinAcademicYear } from '../_shared/academicYear.ts'
+import { isWithinAcademicYear, getAcademicYearRange } from '../_shared/academicYear.ts'
 import { classifySoundErrors } from '../_shared/goalSheetLevels.ts'
 
 interface StudentInfo {
@@ -40,7 +40,12 @@ interface ProcessedError {
 
 interface StudentSummary {
   name: string
+  grade: string
   result: string
+  consent: string
+  speech_ea: string
+  service_status?: string
+  program_status: 'qualified' | 'sub'
 }
 
 const corsHeaders = {
@@ -271,6 +276,24 @@ Deno.serve(async (req: Request) => {
       throw new Error('No students found for this school')
     }
 
+    const speechEAsUrl = `${supabaseUrl}/rest/v1/school_staff?select=id,first_name,last_name&school_id=eq.${school_id}&is_active=eq.true&roles=cs.${encodeURIComponent('["speech_ea"]')}`
+    const speechEAsResponse = await fetch(speechEAsUrl, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!speechEAsResponse.ok) {
+      throw new Error(`Failed to fetch speech EAs: ${speechEAsResponse.status}`)
+    }
+
+    const speechEAs = await speechEAsResponse.json()
+    const speechEANameById = new Map(
+      speechEAs.map((ea: any) => [ea.id, `${ea.first_name} ${ea.last_name}`])
+    )
+
     const studentIds = students.map((student: any) => student.id)
     console.log(`Found ${studentIds.length} students for school`)
 
@@ -278,18 +301,52 @@ Deno.serve(async (req: Request) => {
     const allScreenings = []
     const batchSize = 50 // Process 50 students at a time
 
+    const { start: academicYearStart } = getAcademicYearRange(academic_year)
+
+    const consentRecords: any[] = []
+    for (let i = 0; i < studentIds.length; i += batchSize) {
+      const batch = studentIds.slice(i, i + batchSize)
+      const consentUrl = `${supabaseUrl}/rest/v1/consent_forms?select=student_id,consent_purpose,consent_date&student_id=in.(${batch.join(
+        ','
+      )})`
+
+      const consentResponse = await fetch(consentUrl, {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!consentResponse.ok) {
+        throw new Error(`Failed to fetch consent forms: ${consentResponse.status}`)
+      }
+
+      const batchConsent = await consentResponse.json()
+
+      consentRecords.push(...batchConsent)
+    }
+
+    const consentedStudentIds = new Set(
+      consentRecords
+        .filter(
+          r => r.consent_purpose === 'therapy' && new Date(r.consent_date) >= academicYearStart
+        )
+        .map(r => r.student_id)
+    )
+
     console.log(`Processing ${studentIds.length} students in batches of ${batchSize}...`)
 
     for (let i = 0; i < studentIds.length; i += batchSize) {
       const batch = studentIds.slice(i, i + batchSize)
       console.log(
         `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
-          studentIds.length / batchSize,
-        )}: ${batch.length} students`,
+          studentIds.length / batchSize
+        )}: ${batch.length} students`
       )
 
       const screeningsUrl = `${supabaseUrl}/rest/v1/speech_screenings?student_id=in.(${batch.join(
-        ',',
+        ','
       )})&select=*,students(*),school_grades(*)`
 
       const screeningsResponse = await fetch(screeningsUrl, {
@@ -302,7 +359,7 @@ Deno.serve(async (req: Request) => {
 
       if (!screeningsResponse.ok) {
         console.error(
-          `Failed to fetch speech screenings for batch starting at index ${i}: ${screeningsResponse.status}`,
+          `Failed to fetch speech screenings for batch starting at index ${i}: ${screeningsResponse.status}`
         )
         throw new Error(`Failed to fetch speech screenings: ${screeningsResponse.status}`)
       }
@@ -324,11 +381,11 @@ Deno.serve(async (req: Request) => {
     const filteredScreenings = allScreenings.filter(
       (screening: any) =>
         isWithinAcademicYear(screening.created_at, academic_year) &&
-        isQualifiedResult(screening.result, screening.error_patterns),
+        isQualifiedResult(screening.result, screening.error_patterns)
     )
 
     console.log(
-      `Found ${filteredScreenings.length} qualified screenings within academic year ${academic_year}`,
+      `Found ${filteredScreenings.length} qualified screenings within academic year ${academic_year}`
     )
 
     if (filteredScreenings.length === 0) {
@@ -353,7 +410,7 @@ Deno.serve(async (req: Request) => {
     }
 
     console.log(
-      `Separated: ${qualifiedStudents.length} qualified, ${subStudents.length} sub students`,
+      `Separated: ${qualifiedStudents.length} qualified, ${subStudents.length} sub students`
     )
 
     // 7. Process all student records to create individual goal sheet document objects
@@ -377,12 +434,12 @@ Deno.serve(async (req: Request) => {
         const levelErrors = await processErrorPatterns(
           screening.error_patterns || {},
           1,
-          studentInfo.grade,
+          studentInfo.grade
         )
         const otherLevelErrors = await processErrorPatterns(
           screening.error_patterns || {},
           2,
-          studentInfo.grade,
+          studentInfo.grade
         )
 
         const documentObject = createIndividualGoalSheetObject(
@@ -390,13 +447,13 @@ Deno.serve(async (req: Request) => {
           levelErrors,
           1,
           'Qualified',
-          otherLevelErrors,
+          otherLevelErrors
         )
         documentObjects.push(documentObject)
       } catch (error) {
         console.error(
           `Error processing qualified student ${screening.students.first_name} ${screening.students.last_name}:`,
-          error,
+          error
         )
       }
     }
@@ -419,12 +476,12 @@ Deno.serve(async (req: Request) => {
         const levelErrors = await processErrorPatterns(
           screening.error_patterns || {},
           1,
-          studentInfo.grade,
+          studentInfo.grade
         )
         const otherLevelErrors = await processErrorPatterns(
           screening.error_patterns || {},
           2,
-          studentInfo.grade,
+          studentInfo.grade
         )
 
         const documentObject = createIndividualGoalSheetObject(
@@ -432,13 +489,13 @@ Deno.serve(async (req: Request) => {
           levelErrors,
           1,
           'Sub',
-          otherLevelErrors,
+          otherLevelErrors
         )
         documentObjects.push(documentObject)
       } catch (error) {
         console.error(
           `Error processing sub student ${screening.students.first_name} ${screening.students.last_name}:`,
-          error,
+          error
         )
       }
     }
@@ -449,6 +506,8 @@ Deno.serve(async (req: Request) => {
       academic_year,
       qualifiedStudents,
       subStudents,
+      speechEANameById,
+      consentedStudentIds
     )
 
     console.log('Summary document created:', JSON.stringify(summaryDocument, null, 2))
@@ -478,7 +537,7 @@ Deno.serve(async (req: Request) => {
     //     (the doc-gen Lambda never returns PDF bytes and always attaches a real PDF
     //     whenever it emails, so it can't be used for a link-only notification)
     console.log(
-      `Creating secure report token for ${documentObjects.length} documents (${individualSheets.length} goal sheets + 1 summary)...`,
+      `Creating secure report token for ${documentObjects.length} documents (${individualSheets.length} goal sheets + 1 summary)...`
     )
 
     const token = await createReportToken({
@@ -567,7 +626,7 @@ Deno.serve(async (req: Request) => {
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
-      },
+      }
     )
   } catch (error) {
     console.error('Error generating school goal sheets:', error)
@@ -580,7 +639,7 @@ Deno.serve(async (req: Request) => {
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
-      },
+      }
     )
   }
 })
@@ -649,7 +708,7 @@ function getLatestScreeningsPerStudent(screenings: any[]): any[] {
 async function processErrorPatterns(
   errorPatterns: any,
   level: 1 | 2,
-  grade?: string,
+  grade?: string
 ): Promise<ProcessedError[]> {
   if (!errorPatterns || typeof errorPatterns !== 'object') {
     return []
@@ -677,13 +736,17 @@ async function processErrorPatterns(
 
   console.log('Processing sound errors for goal sheet:', soundErrors)
 
-  const { levels: soundLevels, escalatedBaseSounds, forcedWordSounds } = classifySoundErrors(
+  const {
+    levels: soundLevels,
+    escalatedBaseSounds,
+    forcedWordSounds,
+  } = classifySoundErrors(
     soundErrors.map((e: any) => ({
       sound: e?.sound || 'Unknown',
       errorPatterns: (e?.errorPatterns || []).filter((p: string) => p !== 'Stimulability'),
       stimulabilityOptions: e?.stimulabilityOptions || [],
     })),
-    grade,
+    grade
   )
 
   // Get the comprehensive error patterns lookup
@@ -697,7 +760,7 @@ async function processErrorPatterns(
 
     const sound = soundError.sound || 'Unknown'
     const errorPatterns = (soundError.errorPatterns || []).filter(
-      (p: string) => p !== 'Stimulability',
+      (p: string) => p !== 'Stimulability'
     )
     const otherNotes = soundError.otherNotes?.toLowerCase() || ''
     const stoppingSounds = soundError.stoppingSounds || []
@@ -726,7 +789,7 @@ async function processErrorPatterns(
       otherNotes,
       stoppingSounds,
       errorPatternsLookup,
-      allProcessedErrors,
+      allProcessedErrors
     )
   }
 
@@ -744,7 +807,7 @@ async function processErrorPatterns(
         '',
         [],
         errorPatternsLookup,
-        allProcessedErrors,
+        allProcessedErrors
       )
     }
   }
@@ -752,7 +815,7 @@ async function processErrorPatterns(
   console.log(
     `Final result: ${allProcessedErrors.length} Level ${level} errors (${allProcessedErrors
       .map(e => e.sound)
-      .join(', ')})`,
+      .join(', ')})`
   )
 
   return sortPhonologicalProcesses(allProcessedErrors, level === 1)
@@ -765,7 +828,7 @@ async function processIndividualSoundError(
   otherNotes: string,
   stoppingSounds: string[],
   errorPatternsLookup: any,
-  allProcessedErrors: ProcessedError[],
+  allProcessedErrors: ProcessedError[]
 ) {
   const stimulabilityLevel = (
     (soundError.stimulabilityOptions?.[0] as string) || 'word'
@@ -814,7 +877,7 @@ async function processIndividualSoundError(
             .replace(/\u201C/g, '') // Remove left smart quote
             .replace(/\u201D/g, '') // Remove right smart quote
             .replace(/"/g, '') // Remove straight quotes
-            .replace(/'/g, ''), // Remove single quotes
+            .replace(/'/g, '') // Remove single quotes
       )
       const combinedKey = normalizedPatterns.join(' and ')
       let errorInfo = errorPatternsLookup[sound]?.[combinedKey]
@@ -832,7 +895,7 @@ async function processIndividualSoundError(
           errorInfo.pattern,
           otherNotes?.toLowerCase() || errorInfo.example,
           combinedKey,
-          reversedKey,
+          reversedKey
         )
       } else {
         // No combined pattern found, process each pattern individually
@@ -841,7 +904,7 @@ async function processIndividualSoundError(
             await pushError(
               `Atypical Substitution`,
               otherNotes?.toLowerCase() || 'Error detected',
-              'Other',
+              'Other'
             )
           } else if (pattern === 'Stopping' && stoppingSounds.length > 0) {
             const stoppingSound = stoppingSounds[0]
@@ -853,7 +916,7 @@ async function processIndividualSoundError(
               errorInfo?.pattern || pattern,
               otherNotes?.toLowerCase() || errorInfo?.example || 'Error detected',
               stoppingKey,
-              pattern,
+              pattern
             )
           } else {
             const normalizedPattern = pattern
@@ -869,7 +932,7 @@ async function processIndividualSoundError(
               individualErrorInfo?.pattern || pattern,
               otherNotes?.toLowerCase() || individualErrorInfo?.example || 'Error detected',
               normalizedPattern,
-              pattern,
+              pattern
             )
           }
         }
@@ -882,7 +945,7 @@ async function processIndividualSoundError(
         await pushError(
           `Atypical Substitution`,
           otherNotes?.toLowerCase() || 'Error detected',
-          'Other',
+          'Other'
         )
       } else if (pattern === 'Stopping' && stoppingSounds.length > 0) {
         const stoppingSound = stoppingSounds[0]
@@ -894,7 +957,7 @@ async function processIndividualSoundError(
           errorInfo?.pattern || pattern,
           otherNotes?.toLowerCase() || errorInfo?.example || 'Error detected',
           stoppingKey,
-          pattern,
+          pattern
         )
       } else {
         let errorInfo = errorPatternsLookup[sound]?.[pattern]
@@ -916,7 +979,7 @@ async function processIndividualSoundError(
           errorInfo?.pattern || pattern,
           otherNotes?.toLowerCase() || errorInfo?.example || 'Error detected',
           pattern,
-          normalizedPattern,
+          normalizedPattern
         )
       }
     }
@@ -1076,23 +1139,23 @@ function sortPhonologicalProcesses(errors: ProcessedError[], isPrimary: boolean)
 
   // Check for specific backing patterns for goal sheet special ordering
   const hasStBacking = errors.some(
-    error => error.sound === 'St-' && error.pattern.includes('Backing'),
+    error => error.sound === 'St-' && error.pattern.includes('Backing')
   )
   const hasTBacking = errors.some(error => error.sound === 'T' && error.pattern.includes('Backing'))
   const hasDBacking = errors.some(error => error.sound === 'D' && error.pattern.includes('Backing'))
 
   // Check for specific fronting patterns for goal sheet special ordering
   const hasSkFronting = errors.some(
-    error => error.sound === 'Sk-' && error.pattern.includes('Fronting'),
+    error => error.sound === 'Sk-' && error.pattern.includes('Fronting')
   )
   const hasFinalKsFronting = errors.some(
-    error => error.sound === 'Final -ks' && error.pattern.includes('Fronting'),
+    error => error.sound === 'Final -ks' && error.pattern.includes('Fronting')
   )
   const hasKFronting = errors.some(
-    error => error.sound === 'K' && error.pattern.includes('Fronting'),
+    error => error.sound === 'K' && error.pattern.includes('Fronting')
   )
   const hasGFronting = errors.some(
-    error => error.sound === 'G' && error.pattern.includes('Fronting'),
+    error => error.sound === 'G' && error.pattern.includes('Fronting')
   )
 
   // Use special goal sheet order if ANY of the three backing conditions are met
@@ -1149,7 +1212,7 @@ function sortPhonologicalProcesses(errors: ProcessedError[], isPrimary: boolean)
   } else if (useGoalSheetFrontingOrder) {
     selectedOrder = goalSheetFrontingOrder
     console.log(
-      'Using special goal sheet fronting order: Sk-, Final -ks, K, or G fronting detected',
+      'Using special goal sheet fronting order: Sk-, Final -ks, K, or G fronting detected'
     )
   } else if (hasFronting) {
     selectedOrder = frontingSoundOrder
@@ -1188,7 +1251,7 @@ function createIndividualGoalSheetObject(
   errors: ProcessedError[],
   level: 1 | 2,
   directory: string,
-  otherLevelErrors?: ProcessedError[],
+  otherLevelErrors?: ProcessedError[]
 ) {
   const contextErrors = errors || []
   const otherErrors = otherLevelErrors || []
@@ -1219,42 +1282,32 @@ function createIndividualGoalSheetObject(
   }
 }
 
-// Helper function to format result values for display
-function formatResultForDisplay(result: string): string {
-  const resultMap: Record<string, string> = {
-    absent: 'Absent',
-    passed: 'Passed',
-    non_registered_no_consent: 'No Consent',
-    complex_needs: 'Complex Needs',
-    age_appropriate: 'Age Appropriate',
-    monitor: 'Monitor',
-    mild: 'Mild',
-    moderate: 'Moderate',
-    severe: 'Severe',
-    profound: 'Profound',
-    no_errors: 'No Errors',
-  }
-
-  return resultMap[result] || result // fallback to original if not found
-}
-
 // Helper function to create school summary document object
 function createSchoolSummaryObject(
   schoolName: string,
   academicYear: string,
   qualifiedStudents: any[],
   subStudents: any[],
+  speechEANameById: Map<string, string>,
+  consentedStudentIds: Set<string>
 ) {
-  // Create student summary arrays for the template with formatted results
-  const qualifiedStudentSummaries: StudentSummary[] = qualifiedStudents.map(screening => ({
+  const toStudentSummary = (
+    screening: any,
+    programStatus: 'qualified' | 'sub'
+  ): StudentSummary => ({
     name: `${screening.students.first_name} ${screening.students.last_name}`,
-    result: formatResultForDisplay(screening.result?.replace('/', ':') || ''),
-  }))
+    grade: screening.school_grades?.grade_level || '',
+    result: screening.result?.replace('/', ':') || '',
+    consent: consentedStudentIds.has(screening.students.id) ? 'Yes' : 'No',
+    speech_ea: speechEANameById.get(screening.students.speech_ea_id) || '-',
+    service_status: screening.students.service_status,
+    program_status: programStatus,
+  })
 
-  const subStudentSummaries: StudentSummary[] = subStudents.map(screening => ({
-    name: `${screening.students.first_name} ${screening.students.last_name}`,
-    result: formatResultForDisplay(screening.result?.replace('/', ':') || ''),
-  }))
+  const qualifiedStudentSummaries = qualifiedStudents.map(screening =>
+    toStudentSummary(screening, 'qualified')
+  )
+  const subStudentSummaries = subStudents.map(screening => toStudentSummary(screening, 'sub'))
 
   return {
     metadata: {
@@ -2626,10 +2679,7 @@ function getGoalSheetContent(): Record<
             'Adult model',
             'Animated Articulation: S & P',
           ],
-          audDiscrim: [
-            'Adult Model',
-            'Emphasizing and Exaggerating',
-          ],
+          audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
       'Omits P and Lateral Lisp': {
@@ -3598,16 +3648,8 @@ function getGoalSheetContent(): Record<
       Other: {
         qrCategories: ['S/Z', 'Final S Blends', 'Animated S', 'Animated T'],
         strategies: {
-          wordPhrase: [
-            'Adult Model',
-            'Emphasize & Exaggerate',
-            'Connect with SLP for strategies',
-          ],
-          sound: [
-            'Adult Model',
-            'Emphasize & Exaggerate',
-            'Connect with SLP for strategies',
-          ],
+          wordPhrase: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
+          sound: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },
@@ -3992,16 +4034,8 @@ function getGoalSheetContent(): Record<
       Other: {
         qrCategories: ['S/Z', 'Final S Blends', 'Animated S', 'Animated K'],
         strategies: {
-          wordPhrase: [
-            'Adult Model',
-            'Emphasize & Exaggerate',
-            'Connect with SLP for strategies',
-          ],
-          sound: [
-            'Adult Model',
-            'Emphasize & Exaggerate',
-            'Connect with SLP for strategies',
-          ],
+          wordPhrase: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
+          sound: ['Adult Model', 'Emphasize & Exaggerate', 'Connect with SLP for strategies'],
           audDiscrim: ['Adult Model', 'Emphasizing and Exaggerating'],
         },
       },

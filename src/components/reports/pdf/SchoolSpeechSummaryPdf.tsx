@@ -20,6 +20,8 @@ interface SchoolSpeechSummaryData {
     qualified_students: SummaryStudent[]
     sub: boolean
     sub_students: SummaryStudent[]
+    priority_rescreen: boolean
+    students_priority_rescreen: SummaryStudent[]
     students_recommendations_and_referrals: ReferralStudent[]
   }
 }
@@ -168,6 +170,20 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
 
   const sectionAPages = paginateBlocks(sectionABlocks, ROWS_FIRST_PAGE)
 
+  const hasPriorityRescreens = (context.students_priority_rescreen?.length ?? 0) > 0
+  const sectionPriorityPages = hasPriorityRescreens
+    ? paginateBlocks(
+        [
+          {
+            heading: '',
+            columns: ['STUDENT', 'GRADE'],
+            rows: context.students_priority_rescreen.map(s => [s.name, s.grade]),
+          },
+        ],
+        ROWS_FIRST_PAGE
+      )
+    : []
+
   const hasReferrals = (context.students_recommendations_and_referrals?.length ?? 0) > 0
   const sectionBPages = hasReferrals
     ? paginateBlocks(
@@ -186,7 +202,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
       )
     : []
 
-  const totalPages = sectionAPages.length + sectionBPages.length
+  const totalPages = sectionAPages.length + sectionPriorityPages.length + sectionBPages.length
 
   return (
     <Document>
@@ -224,8 +240,31 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
         )
       })}
 
-      {sectionBPages.map((segments, i) => {
+      {sectionPriorityPages.map((segments, i) => {
         const pageIndex = sectionAPages.length + i
+        const isLastPage = pageIndex === totalPages - 1
+        return (
+          <Page key={`p-${i}`} size='LETTER' style={styles.page}>
+            <ReportBanner title='School Summary Report' />
+            <View style={styles.body}>
+              {i === 0 && <Text style={styles.sectionLabel}>B. PRIORITY RESCREENS NEEDED:</Text>}
+              {segments.map((segment, j) => (
+                <SegmentTable key={j} segment={segment} />
+              ))}
+            </View>
+            {isLastPage && (
+              <ReportFooter
+                page={pageIndex + 1}
+                of={totalPages}
+                brand='NORTHERN VOICES SPEECH SERVICES'
+              />
+            )}
+          </Page>
+        )
+      })}
+
+      {sectionBPages.map((segments, i) => {
+        const pageIndex = sectionAPages.length + sectionPriorityPages.length + i
         const isLastPage = pageIndex === totalPages - 1
         return (
           <Page key={`b-${i}`} size='LETTER' style={styles.page}>
@@ -233,7 +272,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
             <View style={styles.body}>
               {i === 0 && (
                 <>
-                  <Text style={styles.sectionLabel}>B. STUDENT RECOMMENDATIONS AND REFERRALS:</Text>
+                  <Text style={styles.sectionLabel}>C. STUDENT RECOMMENDATIONS AND REFERRALS:</Text>
                   <Text style={styles.paragraph}>
                     Our Speech Therapists have an opportunity to briefly observe students during
                     class-wide speech screens. If the Speech Therapist noted any "red flags" or
@@ -249,7 +288,11 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
               ))}
             </View>
             {isLastPage && (
-              <ReportFooter page={i + 1} of={totalPages} brand='NORTHERN VOICES SPEECH SERVICES' />
+              <ReportFooter
+                page={pageIndex + 1}
+                of={totalPages}
+                brand='NORTHERN VOICES SPEECH SERVICES'
+              />
             )}
           </Page>
         )

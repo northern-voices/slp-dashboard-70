@@ -3,6 +3,7 @@ import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -81,6 +82,7 @@ const SpeechScreeningStep1 = ({
         !form.getValues('unable_to_screen')
       ) {
         form.setValue('priority_re_screen', false)
+        form.setValue('priority_re_screen_notes', '')
       }
 
       onAbsentChange?.(checked)
@@ -99,6 +101,7 @@ const SpeechScreeningStep1 = ({
         form.setValue('absent', { isAbsent: false, notes: '' })
         onAbsentChange?.(false)
         form.setValue('priority_re_screen', false)
+        form.setValue('priority_re_screen_notes', '')
       }
 
       form.setValue('no_consent', {
@@ -113,6 +116,7 @@ const SpeechScreeningStep1 = ({
         !form.getValues('unable_to_screen')
       ) {
         form.setValue('priority_re_screen', false)
+        form.setValue('priority_re_screen_notes', '')
       }
 
       onNoConsentChange?.(checked)
@@ -407,6 +411,7 @@ const SpeechScreeningStep1 = ({
                       !localNoConsentValue
                     ) {
                       form.setValue('priority_re_screen', false)
+                      form.setValue('priority_re_screen_notes', '')
                     }
                     onComplexNeedsChange?.(Boolean(checked))
                   }}
@@ -444,6 +449,7 @@ const SpeechScreeningStep1 = ({
                       !localNoConsentValue
                     ) {
                       form.setValue('priority_re_screen', false)
+                      form.setValue('priority_re_screen_notes', '')
                     }
                     onUnableToScreenChange?.(Boolean(checked))
                   }}
@@ -458,17 +464,36 @@ const SpeechScreeningStep1 = ({
               {localAbsentValue ||
               Boolean(form.watch('complex_needs')) ||
               Boolean(form.watch('unable_to_screen')) ? (
-                <div className='flex items-center space-x-2'>
-                  <Checkbox
-                    id='priority_re_screen'
-                    checked={Boolean(form.watch('priority_re_screen'))}
-                    onCheckedChange={checked => {
-                      form.setValue('priority_re_screen', Boolean(checked))
-                    }}
-                  />
-                  <Label htmlFor='priority_re_screen' className='text-sm font-medium'>
-                    Priority re-screen
-                  </Label>
+                <div>
+                  <div className='flex items-center space-x-2'>
+                    <Checkbox
+                      id='priority_re_screen'
+                      checked={Boolean(form.watch('priority_re_screen'))}
+                      onCheckedChange={checked => {
+                        form.setValue('priority_re_screen', Boolean(checked))
+                        if (!checked) {
+                          form.setValue('priority_re_screen_notes', '')
+                        }
+                      }}
+                    />
+                    <Label htmlFor='priority_re_screen' className='text-sm font-medium'>
+                      Priority re-screen
+                    </Label>
+                  </div>
+
+                  {Boolean(form.watch('priority_re_screen')) && (
+                    <div className='mt-2'>
+                      <Label htmlFor='priority_re_screen_notes' className='text-sm font-medium'>
+                        Priority Re-screen Notes (optional)
+                      </Label>
+                      <Textarea
+                        {...form.register('priority_re_screen_notes')}
+                        placeholder='Enter notes about why this student needs a priority re-screen'
+                        rows={2}
+                        className='mt-1'
+                      />
+                    </div>
+                  )}
                 </div>
               ) : (
                 ''

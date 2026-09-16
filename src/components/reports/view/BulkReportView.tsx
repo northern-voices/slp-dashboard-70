@@ -72,7 +72,7 @@ const BulkReportView = ({ data, reportType }: { data: BulkReportData; reportType
   return (
     <div className='space-y-4'>
       <div className='bg-white rounded-lg shadow p-4 flex flex-wrap items-end gap-4 print:hidden'>
-        {summaryDocs.length > 0 && (
+        {studentDocs.length > 0 && summaryDocs.length > 0 && (
           <div className='flex flex-col gap-1'>
             <label className='text-xs font-medium text-gray-600'>View</label>
             <select
