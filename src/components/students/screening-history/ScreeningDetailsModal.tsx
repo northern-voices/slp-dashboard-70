@@ -475,6 +475,15 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
             </p>
           </div>
         )}
+
+        {attendance.priority_re_screen && attendance.priority_re_screen_notes && (
+          <div>
+            <h5 className='mb-2 text-sm font-medium text-orange-800'>Priority Re-screen Notes:</h5>
+            <p className='p-3 text-sm text-gray-700 rounded-md bg-orange-50'>
+              {attendance.priority_re_screen_notes}
+            </p>
+          </div>
+        )}
       </div>
     )
   }
