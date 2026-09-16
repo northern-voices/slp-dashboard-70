@@ -128,6 +128,7 @@ export const useScreeningsFilter = ({
           if (filter === 'not_in_program') return screening.program_status === 'not_in_program'
           if (filter === 'sub') return screening.program_status === 'sub'
           if (filter === 'no_consent') return screening.program_status === 'no_consent'
+          if (filter === 'to_be_determined') return screening.program_status === 'to_be_determined'
           if (filter === 'paused') return screening.service_status === 'paused'
           if (filter === 'graduated') return screening.program_status === 'graduated'
           return false
