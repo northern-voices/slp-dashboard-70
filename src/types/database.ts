@@ -89,6 +89,7 @@ export type ProgramStatus =
   | 'qualified'
   | 'not_in_program'
   | 'sub'
+  | 'to_be_determined'
   | 'no_consent'
   | 'graduated'
 
