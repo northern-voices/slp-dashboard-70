@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   stimulabilityIcon: { width: 18, height: 18, marginBottom: 3 },
-  audDiscrimLabel: { fontSize: 8 },
+  stimulabilityValueSmall: { fontSize: 12 },
   strategyLabel: {
     fontSize: 9,
     fontFamily: 'Nunito',
@@ -437,12 +437,13 @@ const GoalWorksheetPage = ({
         <View style={styles.soundBox}>
           <Text style={styles.soundLabel}>TARGET:</Text>
           <Text style={styles.soundValue}>{error.sound}</Text>
-          <Text style={styles.soundLabel}>STIMULABILITY:</Text>
           {error.stimulability_option === 'non-stimulable' ? (
             <>
-              <Text style={[styles.soundValue, styles.audDiscrimLabel]}>
+              <Text style={styles.soundLabel}>At the</Text>
+              <Text style={[styles.soundValue, styles.stimulabilityValueSmall]}>
                 {getStimulabilityLabel(error.stimulability_option)}
               </Text>
+              <Text style={styles.soundLabel}>level</Text>
               <Svg viewBox='0 0 24 24' style={styles.stimulabilityIcon}>
                 <Path
                   d='M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0'
@@ -463,9 +464,13 @@ const GoalWorksheetPage = ({
               </Svg>
             </>
           ) : (
-            <Text style={styles.soundValue}>
-              {getStimulabilityLabel(error.stimulability_option)}
-            </Text>
+            <>
+              <Text style={styles.soundLabel}>At the</Text>
+              <Text style={[styles.soundValue, styles.stimulabilityValueSmall]}>
+                {getStimulabilityLabel(error.stimulability_option)}
+              </Text>
+              <Text style={styles.soundLabel}>level</Text>
+            </>
           )}
         </View>
         <View style={styles.strategyBox}>
