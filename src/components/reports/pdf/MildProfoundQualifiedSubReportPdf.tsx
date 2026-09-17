@@ -411,7 +411,7 @@ const MildProfoundQualifiedSubReportPdf = ({
             screen report for more information about their individual results.
           </Text>
           <Text style={styles.noteText}>
-            <Text style={styles.bold}>PLEASE NOTE: </Text>
+            <Text style={[styles.bold, { fontStyle: 'normal' }]}>PLEASE NOTE: </Text>
             A speech screen is not a comprehensive speech-language assessment or diagnosis. If
             additional assessment or other services are recommended for your child, this will
             be discussed with you.
