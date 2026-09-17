@@ -182,6 +182,7 @@ const styles = StyleSheet.create({
   consentBody: { paddingLeft: 48, paddingRight: 48 },
   sectionBar: {
     backgroundColor: '#EFE6DB',
+    borderRadius: 6,
     paddingTop: 6,
     paddingBottom: 6,
     paddingLeft: 10,
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
   sectionBarText: {
     fontFamily: 'Nunito',
     fontWeight: 700,
-    fontSize: 10,
+    fontSize: 12,
     letterSpacing: 0.5,
     color: '#111827',
   },
