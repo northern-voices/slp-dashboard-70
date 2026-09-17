@@ -75,7 +75,7 @@ const MildProfoundQualifiedSubReportView = ({
     <div className="space-y-6 print:space-y-0 font-['Nunito']">
       <link
         rel='stylesheet'
-        href='https://fonts.googleapis.com/css2?family=Gotu&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;700&family=Caveat&display=swap'
+        href='https://fonts.googleapis.com/css2?family=Gotu&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;700&family=Alex+Brush&display=swap'
       />
       {errorChunks.map((chunk, i) => {
         const isFirstPage = i === 0
@@ -214,7 +214,7 @@ const MildProfoundQualifiedSubReportView = ({
             We look forward to supporting your child and celebrating their progress throughout the
             school year!
           </p>
-          <p className="font-['Caveat'] text-2xl text-gray-900 mb-1">L. Brillinger</p>
+          <p className="font-['Alex_Brush'] text-3xl text-gray-900 mb-1">L. Brillinger</p>
           <p className='text-xs text-gray-700'>Lisa Brillinger, M.Sc., SLP | Registered SK, ON</p>
           <p className='text-xs text-gray-700'>lbrillinger@northern-voices.ca</p>
           <p className='text-xs text-gray-700'>(306) 930-0009</p>
