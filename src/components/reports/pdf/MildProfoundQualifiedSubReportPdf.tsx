@@ -40,6 +40,11 @@ Font.register({
   ],
 })
 
+Font.register({
+  family: 'Caveat',
+  src: 'https://fonts.gstatic.com/s/caveat/v18/WnznHAc5bAfYB2QRah7pcpNvOx-pjfJ9SIKih_a2wg.ttf',
+})
+
 interface ProcessedError {
   sound: string
   pattern: string
@@ -147,13 +152,14 @@ const styles = StyleSheet.create({
   checkboxBox: { width: 9, height: 9, borderWidth: 1, borderColor: '#000000', marginRight: 6 },
   checkboxLabel: { fontSize: 10, color: '#374151' },
   signatureRow: { flexDirection: 'row', marginTop: 20, marginBottom: 3 },
-  signatureLine: {
-    flex: 1,
-    borderBottomWidth: 1,
-    borderBottomColor: '#000000',
-    height: 16,
-    marginRight: 24,
+  signature: {
+    fontFamily: 'Caveat',
+    fontSize: 22,
+    color: '#111827',
+    marginBottom: 4,
+    marginTop: 10,
   },
+  signatureLine: { fontSize: 10, color: '#374151', marginBottom: 1 },
   signatureLabelRow: { flexDirection: 'row', marginBottom: 14 },
   signatureLabel: { flex: 1, fontSize: 9, color: '#374151', marginRight: 24 },
   consentAttainedBlock: { alignItems: 'flex-end', marginTop: 18 },
@@ -281,30 +287,46 @@ const MildProfoundQualifiedSubReportPdf = ({
 
         <Text style={styles.title}>SCHOOL SPEECH PROGRAM</Text>
 
-        <Text style={styles.paragraph}>
+        <Text style={[styles.paragraph, styles.bold]}>
           Your child is welcome to participate in the{' '}
-          <Text style={styles.italic}>Northern Voices Speech Services</Text> (NVSS) program at the
-          school to assist them with their speech development. This is an important step towards
-          enhancing your child's communication abilities. Early intervention is key to improving
-          speech outcomes, and our team is dedicated to supporting your child's progress!
+          <Text style={styles.italic}>Northern Voices</Text> school speech program to support them
+          with their speech development.
         </Text>
 
         <Text style={styles.paragraph}>
-          Many people know that speech sound disorders can affect a child's ability to be understood
-          by others, but what they might not realize are the long-term consequences that can occur
-          when they are left untreated. Communication difficulties can profoundly impact social
-          behaviour, self-esteem, relationships, literacy, learning, and overall academic
-          performance. In fact, the ability to communicate effectively is the very foundation of a
-          child's overall development and academic achievement, and early intervention is crucial!
-          The earlier support can be provided, the better the outcome.
+          Strong communication skills play a big role in confidence, relationships, classroom
+          participation, literacy and learning. Providing early speech support gives children the
+          opportunity to strengthen these skills in a supportive and encouraging environment. Our
+          goal is to help your child improve their speech and strengthen their communication skills.
+          We are excited to work with your child to support their progress!
         </Text>
 
         <Text style={styles.paragraph}>
-          Students involved in the NVSS school speech program will participate in one-on-one
-          sessions with an Educational Assistant who has received extensive training to help
-          children enhance their speech. Sessions will follow an individualized therapy program
-          developed by the Speech Language Pathologist.
+          Students participating in the school speech program will take part in one-on-one speech
+          practice sessions with a trained adult. Each child will follow an individualized speech
+          plan developed and overseen by a Speech-Language Pathologist, with activities tailored to
+          their specific speech needs. This gives your child opportunities to practise their speech
+          skills and build confidence in their communication.
         </Text>
+
+        <Text style={styles.paragraph}>
+          The frequency of speech practice sessions may vary throughout the school year based on
+          your child's individual needs, the size of the school's speech caseload, and staff
+          availability. Some students may participate in regular weekly sessions, while others may
+          receive periodic speech practice or support throughout the year. We encourage you to
+          connect with your school team and/or the Speech-Language Pathologist at any time if you
+          would like to learn more about your child's speech plan, session frequency, or progress.
+        </Text>
+
+        <Text style={[styles.paragraph, styles.bold]}>
+          We look forward to supporting your child and celebrating their progress throughout the
+          school year!
+        </Text>
+
+        <Text style={styles.signature}>L. Brillinger</Text>
+        <Text style={styles.signatureLine}>Lisa Brillinger, M.Sc., SLP | Registered SK, ON</Text>
+        <Text style={styles.signatureLine}>lbrillinger@northern-voices.ca</Text>
+        <Text style={styles.signatureLine}>(306) 930-0009</Text>
 
         <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' offset={1} />
       </Page>
