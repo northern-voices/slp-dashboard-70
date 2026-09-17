@@ -41,8 +41,8 @@ Font.register({
 })
 
 Font.register({
-  family: 'Caveat',
-  src: 'https://fonts.gstatic.com/s/caveat/v18/WnznHAc5bAfYB2QRah7pcpNvOx-pjfJ9SIKih_a2wg.ttf',
+  family: 'Alex Brush',
+  src: 'https://fonts.gstatic.com/s/alexbrush/v23/SZc83FzrJKuqFbwMKk6EtUI.ttf',
 })
 
 interface ProcessedError {
@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
   checkboxLabel: { fontSize: 10, color: '#374151' },
   signatureRow: { flexDirection: 'row', marginTop: 20, marginBottom: 3 },
   signature: {
-    fontFamily: 'Caveat',
-    fontSize: 22,
+    fontFamily: 'Alex Brush',
+    fontSize: 26,
     color: '#111827',
     marginBottom: 4,
     marginTop: 10,
