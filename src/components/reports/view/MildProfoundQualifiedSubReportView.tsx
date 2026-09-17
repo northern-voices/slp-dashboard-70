@@ -69,13 +69,13 @@ const MildProfoundQualifiedSubReportView = ({
 }) => {
   const { context } = data
   const errorChunks = chunkErrorRows(context.errors)
-  const totalPages = errorChunks.length + 3
+  const totalPages = errorChunks.length + 5
 
   return (
     <div className="space-y-6 print:space-y-0 font-['Nunito']">
       <link
         rel='stylesheet'
-        href='https://fonts.googleapis.com/css2?family=Gotu&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;700&display=swap'
+        href='https://fonts.googleapis.com/css2?family=Gotu&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;700&family=Alex+Brush&display=swap'
       />
       {errorChunks.map((chunk, i) => {
         const isFirstPage = i === 0
@@ -183,31 +183,41 @@ const MildProfoundQualifiedSubReportView = ({
             SCHOOL SPEECH PROGRAM
           </h1>
 
-          <p className='text-gray-700 leading-relaxed mb-4'>
+          <p className='text-gray-700 leading-relaxed mb-4 font-bold'>
             Your child is welcome to participate in the{' '}
-            <span className="font-['Montserrat'] italic">Northern Voices Speech Services</span>{' '}
-            (NVSS) program at the school to assist them with their speech development. This is an
-            important step towards enhancing your child's communication abilities. Early
-            intervention is key to improving speech outcomes, and our team is dedicated to
-            supporting your child's progress!
+            <span className="font-['Montserrat'] italic">Northern Voices</span> school speech
+            program to support them with their speech development.
           </p>
-
           <p className='text-gray-700 leading-relaxed mb-4'>
-            Many people know that speech sound disorders can affect a child's ability to be
-            understood by others, but what they might not realize are the long-term consequences
-            that can occur when they are left untreated. Communication difficulties can profoundly
-            impact social behaviour, self-esteem, relationships, literacy, learning, and overall
-            academic performance. In fact, the ability to communicate effectively is the very
-            foundation of a child's overall development and academic achievement, and early
-            intervention is crucial! The earlier support can be provided, the better the outcome.
+            Strong communication skills play a big role in confidence, relationships, classroom
+            participation, literacy and learning. Providing early speech support gives children the
+            opportunity to strengthen these skills in a supportive and encouraging environment. Our
+            goal is to help your child improve their speech and strengthen their communication
+            skills. We are excited to work with your child to support their progress!
           </p>
-
           <p className='text-gray-700 leading-relaxed mb-4'>
-            Students involved in the NVSS school speech program will participate in one-on-one
-            sessions with an Educational Assistant who has received extensive training to help
-            children enhance their speech. Sessions will follow an individualized therapy program
-            developed by the Speech Language Pathologist.
+            Students participating in the school speech program will take part in one-on-one speech
+            practice sessions with a trained adult. Each child will follow an individualized speech
+            plan developed and overseen by a Speech-Language Pathologist, with activities tailored
+            to their specific speech needs. This gives your child opportunities to practise their
+            speech skills and build confidence in their communication.
           </p>
+          <p className='text-gray-700 leading-relaxed mb-4'>
+            The frequency of speech practice sessions may vary throughout the school year based on
+            your child's individual needs, the size of the school's speech caseload, and staff
+            availability. Some students may participate in regular weekly sessions, while others may
+            receive periodic speech practice or support throughout the year. We encourage you to
+            connect with your school team and/or the Speech-Language Pathologist at any time if you
+            would like to learn more about your child's speech plan, session frequency, or progress.
+          </p>
+          <p className='text-gray-700 leading-relaxed mb-4 font-bold'>
+            We look forward to supporting your child and celebrating their progress throughout the
+            school year!
+          </p>
+          <p className="font-['Alex_Brush'] text-3xl text-gray-900 mb-1">L. Brillinger</p>
+          <p className='text-xs text-gray-700'>Lisa Brillinger, M.Sc., SLP | Registered SK, ON</p>
+          <p className='text-xs text-gray-700'>lbrillinger@northern-voices.ca</p>
+          <p className='text-xs text-gray-700'>(306) 930-0009</p>
         </div>
 
         <ReportFooter
@@ -217,118 +227,272 @@ const MildProfoundQualifiedSubReportView = ({
         />
       </section>
 
-      {/* Informed Consent page */}
-      <section className='bg-white shadow-sm w-full aspect-[8.5/11] pt-6 px-10 pb-8 flex flex-col break-after-page print:shadow-none print:pt-6 print:px-10 print:pb-8'>
-        <ReportHeader />
-
-        <div className='flex-1'>
-          <h1 className="text-3xl font-light text-gray-500 tracking-wide text-center font-['Gotu'] mb-1">
-            INFORMED CONSENT
+      {/* Consent page 1 of 3 */}
+      <section className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col break-after-page print:shadow-none'>
+        <div className='bg-[#55707C] px-10 py-6 flex items-center justify-between'>
+          <h1 className="font-['Gotu'] text-2xl text-white leading-snug">
+            CONSENT TO PARTICIPATE IN
+            <br />
+            THE SCHOOL SPEECH PROGRAM
           </h1>
-          <p className='text-center font-bold text-gray-500 text-sm tracking-wide mb-5'>
-            PARTICIPATING IN THE SCHOOL SPEECH PROGRAM
-          </p>
-
-          <div className='flex gap-6 mb-4 text-sm'>
-            <div className='flex-1 flex items-end gap-1'>
-              <span>Student:</span>
-              <span className='flex-1 border-b border-black h-3' />
+          <div className='flex items-center gap-2 shrink-0 ml-4'>
+            <img src='/icon.png' alt='' className='w-8 h-8 object-cover shrink-0' />
+            <div className='text-right leading-tight'>
+              <p className='font-bold text-sm tracking-wide text-white'>NORTHERN VOICES</p>
+              <p className="font-['Montserrat'] text-[10px] tracking-[0.2em] text-gray-200">
+                SPEECH SERVICES
+              </p>
             </div>
-            <div className='flex-1 flex items-end gap-1'>
-              <span>School:</span>
-              <span className='flex-1 border-b border-black h-3' />
-            </div>
-          </div>
-
-          <p className='font-bold text-gray-900 mb-1'>DEAR PARENT(S) / GUARDIANS(S):</p>
-          <p className='text-gray-700 leading-relaxed mb-3'>
-            Your child is eligible to receive speech services through the{' '}
-            <span className='font-bold'>Northern Voices Speech Services</span> School Program at
-            school. If you agree to your child receiving these services, please sign below.
-          </p>
-
-          <p className='text-gray-700 leading-relaxed mb-3'>
-            <span className='font-bold'>SPEECH SCREEN RESULTS | </span>
-            The results of a recent speech screen administered at the school indicated that your
-            child demonstrated some difficulties with certain speech sounds and may benefit from
-            targeted practice with a trained adult. Please see the attached report for details
-            outlining specific speech errors identified.
-          </p>
-
-          <p className='text-gray-700 leading-relaxed mb-3'>
-            <span className='font-bold'>PROGRAM | </span>
-            The speech program is designed to provide opportunities for your child to practice their
-            speech sounds to help them strengthen their communication skills. Improvements in speech
-            may also support growth in literacy and academic learning, while also encouraging
-            confidence and positive social interactions.
-          </p>
-
-          <p className='text-gray-700 leading-relaxed mb-3'>
-            Students involved in the Northern Voices Speech Program will participate in one-on-one
-            speech practice sessions ran by a trained Educational Assistant (working under the
-            guidance of the contracted speech-language pathologist). Frequency of sessions will
-            depend on severity of speech difficulties. Your child's student plan would be developed
-            by the Speech Therapist, and tailored to your child's speech screen results.
-          </p>
-
-          <p className='text-gray-700 leading-relaxed mb-3'>
-            You may request a copy of your child's speech practice plan or progress updates at any
-            time. Any personal information collected is kept confidential and will only be shared
-            with those directly involved in your child's educational program, in line with privacy
-            legislation and professional standards of practice. Participation in the program is
-            voluntary, and you may withdraw your consent at any time by notifying the school.
-          </p>
-
-          <p className='font-bold text-gray-900 mb-1'>CONSENT</p>
-          <p className='text-gray-700 leading-relaxed mb-3'>
-            I have read the information above and understand the purpose and process of the NVSS
-            school speech program:
-          </p>
-
-          <div className='flex items-center gap-1.5 mb-4'>
-            <div className='w-2.5 h-2.5 border border-black shrink-0' />
-            <span className='text-sm'>
-              I consent to my child participating in the NVSS school speech program.
-            </span>
-          </div>
-
-          <div className='flex gap-6 mb-1'>
-            <span className='flex-1 border-b border-black h-4' />
-            <span className='flex-1 border-b border-black h-4' />
-          </div>
-          <div className='flex gap-6 mb-4 text-xs text-gray-700'>
-            <span className='flex-1'>Parent/Caregiver Name</span>
-            <span className='flex-1'>Child's Name</span>
-          </div>
-
-          <div className='flex gap-6 mb-1'>
-            <span className='flex-1 border-b border-black h-4' />
-            <span className='flex-1 border-b border-black h-4' />
-          </div>
-          <div className='flex gap-6 mb-4 text-xs text-gray-700'>
-            <span className='flex-1'>Parent/Caregiver Signature</span>
-            <span className='flex-1'>Date</span>
-          </div>
-
-          <div className='flex flex-col items-end gap-1 text-xs text-gray-700'>
-            <span className='font-bold text-gray-900 text-sm mb-0.5'>Consent Attained:</span>
-            <span className='flex items-center gap-1.5'>
-              <span className='w-6 border-b border-black h-2.5' /> In Person
-            </span>
-            <span className='flex items-center gap-1.5'>
-              <span className='w-6 border-b border-black h-2.5' /> By Phone
-            </span>
-            <span className='flex items-center gap-1.5'>
-              <span className='w-6 border-b border-black h-2.5' /> By Video
-            </span>
           </div>
         </div>
 
-        <ReportFooter
-          page={errorChunks.length + 3}
-          of={totalPages}
-          brand='NORTHERN VOICES SPEECH SERVICES'
-        />
+        <div className='flex-1 flex flex-col px-10 pt-5 pb-8 print:px-10 print:pt-5 print:pb-8'>
+          <div className='flex-1'>
+            <div className='flex gap-6 mb-4 text-sm'>
+              <div className='flex-1 flex items-end gap-1'>
+                <span>Child's Name:</span>
+                <span className='flex-1 border-b border-black h-3' />
+              </div>
+              <div className='flex-1 flex items-end gap-1'>
+                <span>School:</span>
+                <span className='flex-1 border-b border-black h-3' />
+              </div>
+            </div>
+
+            <p className='font-bold text-gray-900 mb-1'>Dear Parent / Caregiver,</p>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              Your child is invited to receive additional speech support through the{' '}
+              <span className="font-['Montserrat'] italic">Northern Voices</span> School Speech
+              Program. Please review the information below before providing consent for your
+              child to participate.
+            </p>
+
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>
+                SPEECH SCREEN RESULTS
+              </p>
+            </div>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              A recent speech screen completed at your child's school identified speech sounds
+              that may benefit from additional practice. Please refer to your child's speech
+              screen report for more information about their individual results.
+            </p>
+            <p className='text-xs italic text-gray-700 mb-3.5 leading-snug'>
+              <span className='font-bold not-italic'>PLEASE NOTE: </span>
+              A speech screen is not a comprehensive speech-language assessment or diagnosis. If
+              additional assessment or other services are recommended for your child, this will
+              be discussed with you.
+            </p>
+
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>
+                SCHOOL SPEECH PROGRAM
+              </p>
+            </div>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              Students participating in the{' '}
+              <span className="font-['Montserrat'] italic">Northern Voices</span> School Speech
+              Program take part in one-on-one speech practice sessions with a trained school
+              staff member. Each child follows an individualized speech plan developed and
+              overseen by a Speech-Language Pathologist, with activities tailored to their
+              specific speech needs. Sessions follow a play-based model to help make learning
+              fun!
+            </p>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              The frequency of speech practice sessions may vary throughout the school year based
+              on your child's needs, the size of the school's speech caseload, and staff
+              availability. Some students may participate in regular weekly sessions, while
+              others may receive periodic speech practice throughout the year. Session frequency
+              may change as your child's needs or the school's caseload changes.
+            </p>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              Your child's speech may also be re-screened or reviewed throughout the school year
+              to monitor progress and help guide their speech plan.
+            </p>
+            <p className='text-gray-700 leading-relaxed'>
+              Every child progresses differently, and participation in the program does not
+              guarantee a specific rate of improvement. Your child's willingness to participate
+              will also be respected.
+            </p>
+          </div>
+
+          <ReportFooter
+            page={errorChunks.length + 3}
+            of={totalPages}
+            brand='NORTHERN VOICES SPEECH SERVICES'
+          />
+        </div>
+      </section>
+
+      {/* Consent page 2 of 3 */}
+      <section className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col break-after-page print:shadow-none'>
+        <div className='bg-[#55707C] px-10 py-6 flex items-center justify-between'>
+          <h1 className="font-['Gotu'] text-2xl text-white leading-snug">
+            CONSENT TO PARTICIPATE IN
+            <br />
+            THE SCHOOL SPEECH PROGRAM
+          </h1>
+          <div className='flex items-center gap-2 shrink-0 ml-4'>
+            <img src='/icon.png' alt='' className='w-8 h-8 object-cover shrink-0' />
+            <div className='text-right leading-tight'>
+              <p className='font-bold text-sm tracking-wide text-white'>NORTHERN VOICES</p>
+              <p className="font-['Montserrat'] text-[10px] tracking-[0.2em] text-gray-200">
+                SPEECH SERVICES
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className='flex-1 flex flex-col px-10 pt-5 pb-8 print:px-10 print:pt-5 print:pb-8'>
+          <div className='flex-1'>
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>
+                SCHOOL SPEECH PROGRAM
+              </p>
+            </div>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              If there is a significant change to the nature of the speech services being
+              provided to your child, you will be informed and additional consent will be
+              obtained where appropriate.
+            </p>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              We encourage you to connect with your school team and/or the Speech-Language
+              Pathologist at any time if you have questions or would like to learn more about
+              your child's speech plan, session frequency, or progress.
+            </p>
+
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>
+                PRIVACY &amp; SHARING OF INFORMATION
+              </p>
+            </div>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              To effectively provide and coordinate your child's speech program,{' '}
+              <span className="font-['Montserrat'] italic">Northern Voices</span> may collect,
+              use and retain information related to your child's speech development, screening
+              results, speech plan, participation and progress.
+            </p>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              Relevant information will only be shared between{' '}
+              <span className="font-['Montserrat'] italic">Northern Voices</span> team members
+              and school staff directly involved in your child's speech program for the purposes
+              of planning, providing, monitoring and coordinating speech support. Information
+              will be handled in accordance with applicable privacy requirements and
+              professional standards.
+            </p>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              You may contact the school or{' '}
+              <span className="font-['Montserrat'] italic">Northern Voices</span> if you have
+              questions about how your child's information is collected, used, stored or shared.
+            </p>
+
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>
+                VOLUNTARY PARTICIPATION
+              </p>
+            </div>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              Participation in the{' '}
+              <span className="font-['Montserrat'] italic">Northern Voices</span> School Speech
+              Program is voluntary. You may choose not to have your child participate, and
+              consent may be withdrawn at any time by contacting your child's school or the
+              Speech-Language Pathologist.
+            </p>
+            <p className='text-gray-700 leading-relaxed'>
+              You are welcome to ask questions about the program before providing consent or at
+              any time afterward.
+            </p>
+          </div>
+
+          <ReportFooter
+            page={errorChunks.length + 4}
+            of={totalPages}
+            brand='NORTHERN VOICES SPEECH SERVICES'
+          />
+        </div>
+      </section>
+
+      {/* Consent page 3 of 3 */}
+      <section className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col break-after-page print:shadow-none'>
+        <div className='bg-[#55707C] px-10 py-6 flex items-center justify-between'>
+          <h1 className="font-['Gotu'] text-2xl text-white leading-snug">
+            CONSENT TO PARTICIPATE IN
+            <br />
+            THE SCHOOL SPEECH PROGRAM
+          </h1>
+          <div className='flex items-center gap-2 shrink-0 ml-4'>
+            <img src='/icon.png' alt='' className='w-8 h-8 object-cover shrink-0' />
+            <div className='text-right leading-tight'>
+              <p className='font-bold text-sm tracking-wide text-white'>NORTHERN VOICES</p>
+              <p className="font-['Montserrat'] text-[10px] tracking-[0.2em] text-gray-200">
+                SPEECH SERVICES
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className='flex-1 flex flex-col px-10 pt-5 pb-8 print:px-10 print:pt-5 print:pb-8'>
+          <div className='flex-1'>
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>CONSENT</p>
+            </div>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              By signing below, I confirm that I have reviewed the information above and have had
+              the opportunity to ask questions.
+            </p>
+            <p className='text-gray-700 leading-relaxed mb-3'>
+              I consent to my child participating in the{' '}
+              <span className="font-['Montserrat'] italic">Northern Voices</span> School Speech
+              Program, including:
+            </p>
+
+            <ul className='list-disc list-inside text-gray-700 leading-snug mb-3 space-y-1.5'>
+              <li>
+                one-on-one speech practice with a trained school staff member using a speech plan
+                developed and overseen by a Speech-Language Pathologist;
+              </li>
+              <li>progress monitoring and re-screening as part of the program; and</li>
+              <li>
+                the collection, use and sharing of information between{' '}
+                <span className="font-['Montserrat'] italic">Northern Voices</span> and relevant
+                school personnel as described above for the purpose of providing and coordinating
+                my child's speech support.
+              </li>
+            </ul>
+
+            <p className='text-gray-700 leading-relaxed mb-5'>
+              I understand that the frequency of services may vary, that specific outcomes cannot
+              be guaranteed, and that I may withdraw consent at any time.
+            </p>
+
+            <div className='flex items-end gap-1 text-sm mb-5'>
+              <span>Parent/Caregiver or Authorized Decision-Maker:</span>
+              <span className='flex-1 border-b border-black h-3' />
+            </div>
+
+            <div className='flex items-end gap-1 text-sm mb-5'>
+              <span>Relationship to the Child:</span>
+              <span className='flex-1 border-b border-black h-3' />
+            </div>
+
+            <div className='flex gap-6 text-sm'>
+              <div className='flex-1 flex items-end gap-1'>
+                <span>Signature:</span>
+                <span className='flex-1 border-b border-black h-3' />
+              </div>
+              <div className='flex-1 flex items-end gap-1'>
+                <span>Date:</span>
+                <span className='flex-1 border-b border-black h-3' />
+              </div>
+            </div>
+          </div>
+
+          <ReportFooter
+            page={errorChunks.length + 5}
+            of={totalPages}
+            brand='NORTHERN VOICES SPEECH SERVICES'
+          />
+        </div>
       </section>
 
       <section className='bg-white shadow-sm w-full overflow-hidden'>
