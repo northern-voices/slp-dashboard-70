@@ -2,7 +2,12 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { AwsClient } from 'npm:aws4fetch@1'
 import QRCode from 'npm:qrcode@1.5.4'
-import { isWithinAcademicYear, getAcademicYearRange } from '../_shared/academicYear.ts'
+import {
+  isWithinAcademicYear,
+  getAcademicYearRange,
+  getAcademicYearShortLabel,
+  isCurrentAcademicYear,
+} from '../_shared/academicYear.ts'
 import { classifySoundErrors } from '../_shared/goalSheetLevels.ts'
 
 interface StudentInfo {
@@ -42,10 +47,11 @@ interface StudentSummary {
   name: string
   grade: string
   result: string
+  result_year: string | null
   consent: string
   speech_ea: string
   service_status?: string
-  program_status: 'qualified' | 'sub'
+  program_status: 'qualified' | 'sub' | 'graduated'
 }
 
 const corsHeaders = {
@@ -258,7 +264,8 @@ Deno.serve(async (req: Request) => {
     console.log(`Found school: ${school.name}`)
 
     // 2. Get all students for this school
-    const studentsUrl = `${supabaseUrl}/rest/v1/students?school_id=eq.${school_id}&select=id`
+    const studentsUrl = `${supabaseUrl}/rest/v1/students?school_id=eq.${school_id}&select=id,first_name,last_name,program_status,service_status,speech_ea_id,current_grade_id`
+
     const studentsResponse = await fetch(studentsUrl, {
       headers: {
         apikey: supabaseKey,
@@ -275,6 +282,22 @@ Deno.serve(async (req: Request) => {
     if (!students || students.length === 0) {
       throw new Error('No students found for this school')
     }
+
+    const gradesUrl = `${supabaseUrl}/rest/v1/school_grades?school_id=eq.${school_id}&select=id,grade_level`
+    const gradesResponse = await fetch(gradesUrl, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!gradesResponse.ok) {
+      throw new Error(`Failed to fetch school grades: ${gradesResponse.status}`)
+    }
+
+    const schoolGrades = await gradesResponse.json()
+    const gradeLevelById = new Map(schoolGrades.map((grade: any) => [grade.id, grade.grade_level]))
 
     const speechEAsUrl = `${supabaseUrl}/rest/v1/school_staff?select=id,first_name,last_name&school_id=eq.${school_id}&is_active=eq.true&roles=cs.${encodeURIComponent('["speech_ea"]')}`
     const speechEAsResponse = await fetch(speechEAsUrl, {
@@ -376,6 +399,17 @@ Deno.serve(async (req: Request) => {
     }
 
     console.log(`Found ${allScreenings.length} total screenings for school`)
+
+    // Latest screening per student across ALL years (not just this academic year) -
+    // powers the "Program Caseload" summary roster below, so result/result_year reflect
+    // each student's last screening even if it wasn't done during the current academic year.
+    const latestScreeningByStudentId = new Map<string, any>()
+    for (const screening of allScreenings) {
+      const existing = latestScreeningByStudentId.get(screening.student_id)
+      if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
+        latestScreeningByStudentId.set(screening.student_id, screening)
+      }
+    }
 
     // 4. Filter by academic year AND qualified students only
     const filteredScreenings = allScreenings.filter(
@@ -500,14 +534,53 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Full "Program Caseload" roster - every student currently marked qualified/sub/graduated
+    // on their record, regardless of when they were last screened. Mirrors the /caseload
+    // page's logic (useCaseloadTableData.ts / CaseloadTable.tsx), which reads
+    // students.program_status directly rather than deriving caseload membership from
+    // this year's screenings.
+    const toCaseloadStudent = (student: any) => {
+      const screening = latestScreeningByStudentId.get(student.id)
+
+      return {
+        name: `${student.first_name} ${student.last_name}`,
+        grade: gradeLevelById.get(student.current_grade_id) || 'N/A',
+        result: screening?.result ?? 'N/A',
+        result_year:
+          screening && !isCurrentAcademicYear(screening.created_at)
+            ? getAcademicYearShortLabel(screening.created_at)
+            : null,
+        consent: consentedStudentIds.has(student.id) ? 'Yes' : 'No',
+        speech_ea: speechEANameById.get(student.speech_ea_id) || '-',
+        service_status: student.service_status,
+        program_status: student.program_status,
+      }
+    }
+
+    const caseloadQualifiedStudents = students
+      .filter((student: any) => student.program_status === 'qualified')
+      .map(toCaseloadStudent)
+
+    const caseloadSubStudents = students
+      .filter((student: any) => student.program_status === 'sub')
+      .map(toCaseloadStudent)
+
+    const caseloadGraduatedStudents = students
+      .filter((student: any) => student.program_status === 'graduated')
+      .map(toCaseloadStudent)
+
+    console.log(
+      `Program Caseload roster: ${caseloadQualifiedStudents.length} qualified, ${caseloadSubStudents.length}
+  sub, ${caseloadGraduatedStudents.length} graduated`
+    )
+
     // 8. Create school summary document
     const summaryDocument = createSchoolSummaryObject(
       schoolName,
       academic_year,
-      qualifiedStudents,
-      subStudents,
-      speechEANameById,
-      consentedStudentIds
+      caseloadQualifiedStudents,
+      caseloadSubStudents,
+      caseloadGraduatedStudents
     )
 
     console.log('Summary document created:', JSON.stringify(summaryDocument, null, 2))
@@ -1286,29 +1359,10 @@ function createIndividualGoalSheetObject(
 function createSchoolSummaryObject(
   schoolName: string,
   academicYear: string,
-  qualifiedStudents: any[],
-  subStudents: any[],
-  speechEANameById: Map<string, string>,
-  consentedStudentIds: Set<string>
+  qualifiedStudents: StudentSummary[],
+  subStudents: StudentSummary[],
+  graduatedStudents: StudentSummary[]
 ) {
-  const toStudentSummary = (
-    screening: any,
-    programStatus: 'qualified' | 'sub'
-  ): StudentSummary => ({
-    name: `${screening.students.first_name} ${screening.students.last_name}`,
-    grade: screening.school_grades?.grade_level || '',
-    result: screening.result?.replace('/', ':') || '',
-    consent: consentedStudentIds.has(screening.students.id) ? 'Yes' : 'No',
-    speech_ea: speechEANameById.get(screening.students.speech_ea_id) || '-',
-    service_status: screening.students.service_status,
-    program_status: programStatus,
-  })
-
-  const qualifiedStudentSummaries = qualifiedStudents.map(screening =>
-    toStudentSummary(screening, 'qualified')
-  )
-  const subStudentSummaries = subStudents.map(screening => toStudentSummary(screening, 'sub'))
-
   return {
     metadata: {
       file_name: 'Caseload',
@@ -1320,12 +1374,14 @@ function createSchoolSummaryObject(
     },
     context: {
       school: schoolName,
-      student_count: qualifiedStudents.length + subStudents.length,
+      student_count: qualifiedStudents.length + subStudents.length + graduatedStudents.length,
       academic_year: academicYear,
-      qualified: qualifiedStudentSummaries.length > 0,
-      sub: subStudentSummaries.length > 0,
-      qualified_students: qualifiedStudentSummaries,
-      sub_students: subStudentSummaries,
+      qualified: qualifiedStudents.length > 0,
+      sub: subStudents.length > 0,
+      graduated: graduatedStudents.length > 0,
+      qualified_students: qualifiedStudents,
+      sub_students: subStudents,
+      graduated_students: graduatedStudents,
     },
   }
 }
