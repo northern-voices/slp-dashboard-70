@@ -267,8 +267,8 @@ const MildProfoundQualifiedSubReportView = ({
               child to participate.
             </p>
 
-            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5'>
-              <p className='font-bold text-[10px] tracking-wide text-gray-900'>
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>
                 SPEECH SCREEN RESULTS
               </p>
             </div>
@@ -284,8 +284,8 @@ const MildProfoundQualifiedSubReportView = ({
               be discussed with you.
             </p>
 
-            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5'>
-              <p className='font-bold text-[10px] tracking-wide text-gray-900'>
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>
                 SCHOOL SPEECH PROGRAM
               </p>
             </div>
@@ -345,8 +345,8 @@ const MildProfoundQualifiedSubReportView = ({
 
         <div className='flex-1 flex flex-col px-10 pt-5 pb-8 print:px-10 print:pt-5 print:pb-8'>
           <div className='flex-1'>
-            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mb-2.5'>
-              <p className='font-bold text-[10px] tracking-wide text-gray-900'>
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>
                 SCHOOL SPEECH PROGRAM
               </p>
             </div>
@@ -361,8 +361,8 @@ const MildProfoundQualifiedSubReportView = ({
               your child's speech plan, session frequency, or progress.
             </p>
 
-            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5'>
-              <p className='font-bold text-[10px] tracking-wide text-gray-900'>
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>
                 PRIVACY &amp; SHARING OF INFORMATION
               </p>
             </div>
@@ -386,8 +386,8 @@ const MildProfoundQualifiedSubReportView = ({
               questions about how your child's information is collected, used, stored or shared.
             </p>
 
-            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5'>
-              <p className='font-bold text-[10px] tracking-wide text-gray-900'>
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mt-3.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>
                 VOLUNTARY PARTICIPATION
               </p>
             </div>
@@ -433,8 +433,8 @@ const MildProfoundQualifiedSubReportView = ({
 
         <div className='flex-1 flex flex-col px-10 pt-5 pb-8 print:px-10 print:pt-5 print:pb-8'>
           <div className='flex-1'>
-            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mb-2.5'>
-              <p className='font-bold text-[10px] tracking-wide text-gray-900'>CONSENT</p>
+            <div className='bg-[#EFE6DB] px-2.5 py-1.5 mb-2.5 rounded-md'>
+              <p className='font-bold text-sm tracking-wide text-gray-900'>CONSENT</p>
             </div>
             <p className='text-gray-700 leading-relaxed mb-3'>
               By signing below, I confirm that I have reviewed the information above and have had
