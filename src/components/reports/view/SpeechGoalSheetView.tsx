@@ -197,18 +197,25 @@ const GoalWorksheetSection = ({
       <div className='w-[13%] pr-1 border-r border-gray-300'>
         <p className='font-normal text-gray-900 text-[9px] mb-0.5'>TARGET:</p>
         <p className='font-bold text-gray-900 text-base mb-1'>{error.sound}</p>
-        <p className='font-normal text-gray-900 text-[9px] mb-0.5'>STIMULABILITY:</p>
         {error.stimulability_option === 'non-stimulable' ? (
           <div className='flex flex-col items-start mb-1'>
-            <p className='font-bold text-gray-900 text-xs'>
-              {getStimulabilityLabel(error.stimulability_option)}
+            <p className='font-normal text-gray-900 text-[9px]'>
+              At the{' '}
+              <span className='font-bold text-gray-900 text-[10px]'>
+                {getStimulabilityLabel(error.stimulability_option)}
+              </span>{' '}
+              level
             </p>
-            <Ear className='w-[18px] h-[18px] text-gray-900 mt-1' strokeWidth={2} />
+            <Ear className='w-[13px] h-[13px] text-gray-900 mt-1' strokeWidth={2} />
           </div>
         ) : (
-          <p className='font-bold text-gray-900 text-base mb-1'>
-            {getStimulabilityLabel(error.stimulability_option)}
-          </p>
+          <>
+            <p className='font-normal text-gray-900 text-[9px]'>At the</p>
+            <p className='font-bold text-gray-900 text-base'>
+              {getStimulabilityLabel(error.stimulability_option)}
+            </p>
+            <p className='font-normal text-gray-900 text-[9px] mb-1'>level</p>
+          </>
         )}
       </div>
       <div className='w-[87%] pl-3 flex'>
