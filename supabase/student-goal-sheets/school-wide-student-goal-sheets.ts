@@ -218,8 +218,18 @@ Deno.serve(async (req: Request) => {
 
   try {
     // Parse request body
-    const { school_id, academic_year, override_emails, report_id, generated_by, password } =
-      await req.json()
+    const {
+      school_id,
+      academic_year,
+      caseload_scope,
+      override_emails,
+      report_id,
+      generated_by,
+      password,
+    } = await req.json()
+
+    const caseloadScope: 'school_year' | 'full_caseload' =
+      caseload_scope === 'school_year' ? 'school_year' : 'full_caseload'
 
     if (!school_id) {
       throw new Error('school_id is required')
@@ -422,30 +432,49 @@ Deno.serve(async (req: Request) => {
       `Found ${filteredScreenings.length} qualified screenings within academic year ${academic_year}`
     )
 
-    if (filteredScreenings.length === 0) {
-      throw new Error('No qualified students found for the specified school and academic year')
-    }
-
-    // 5. Get the latest screening for each qualified student
-    const latestScreenings = getLatestScreeningsPerStudent(filteredScreenings)
-    console.log(`Processing ${latestScreenings.length} unique qualified students`)
-
-    // 6. Separate students into Qualified and Sub categories
+    // 6. Separate students into Qualified and Sub categories. "school_year" only looks at screenings dated within the selected academic year (original behavior). "full_caseload" instead looks at every student currently marked qualified/sub on their record, building each worksheet from that student's latest screening regardless of year - graduated students are excluded here since they never get an individual worksheet, only a row in the Program Caseload summary below.
     const qualifiedStudents: any[] = []
     const subStudents: any[] = []
 
-    for (const screening of latestScreenings) {
-      const isSubStudent = isSubFlag(screening.error_patterns)
-      if (isSubStudent) {
-        subStudents.push(screening)
-      } else {
-        qualifiedStudents.push(screening)
+    if (caseloadScope === 'full_caseload') {
+      for (const student of students) {
+        if (student.program_status !== 'qualified' && student.program_status !== 'sub') continue
+
+        const screening = latestScreeningByStudentId.get(student.id)
+        if (!screening) continue // nothing to build a worksheet from
+
+        if (student.program_status === 'sub') {
+          subStudents.push(screening)
+        } else {
+          qualifiedStudents.push(screening)
+        }
+      }
+    } else {
+      // 5. Get the latest qualifying screening for each student, within this academic year
+      const latestScreenings = getLatestScreeningsPerStudent(filteredScreenings)
+
+      for (const screening of latestScreenings) {
+        const isSubStudent = isSubFlag(screening.error_patterns)
+
+        if (isSubStudent) {
+          subStudents.push(screening)
+        } else {
+          qualifiedStudents.push(screening)
+        }
       }
     }
 
     console.log(
       `Separated: ${qualifiedStudents.length} qualified, ${subStudents.length} sub students`
     )
+
+    if (qualifiedStudents.length === 0 && subStudents.length === 0) {
+      throw new Error(
+        caseloadScope === 'full_caseload'
+          ? 'No qualified or sub students found on the current caseload for this school'
+          : 'No qualified students found for the specified school and academic year'
+      )
+    }
 
     // 7. Process all student records to create individual goal sheet document objects
     const documentObjects: any[] = []
@@ -534,13 +563,9 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Full "Program Caseload" roster - every student currently marked qualified/sub/graduated
-    // on their record, regardless of when they were last screened. Mirrors the /caseload
-    // page's logic (useCaseloadTableData.ts / CaseloadTable.tsx), which reads
-    // students.program_status directly rather than deriving caseload membership from
-    // this year's screenings.
-    const toCaseloadStudent = (student: any) => {
-      const screening = latestScreeningByStudentId.get(student.id)
+    // Full "Program Caseload" roster - every student currently marked qualified/sub/graduated on their record, regardless of when they were last screened. Mirrors the /caseload page's logic (useCaseloadTableData.ts / CaseloadTable.tsx), which reads students.program_status directly rather than deriving caseload membership from this year's screenings.
+    const toCaseloadStudent = (student: any, screeningOverride?: any) => {
+      const screening = screeningOverride ?? latestScreeningByStudentId.get(student.id)
 
       return {
         name: `${student.first_name} ${student.last_name}`,
@@ -557,17 +582,25 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const caseloadQualifiedStudents = students
-      .filter((student: any) => student.program_status === 'qualified')
-      .map(toCaseloadStudent)
+    // Reuses the exact qualifiedStudents/subStudents built above, so the summary table's rows
+    // always match the worksheets actually generated in this same export, for either scope.
+    const caseloadQualifiedStudents = qualifiedStudents.map(screening =>
+      toCaseloadStudent(screening.students, screening)
+    )
 
-    const caseloadSubStudents = students
-      .filter((student: any) => student.program_status === 'sub')
-      .map(toCaseloadStudent)
+    const caseloadSubStudents = subStudents.map(screening =>
+      toCaseloadStudent(screening.students, screening)
+    )
 
-    const caseloadGraduatedStudents = students
-      .filter((student: any) => student.program_status === 'graduated')
-      .map(toCaseloadStudent)
+    // Graduated students only exist as a concept in "full_caseload" scope, and never get an
+    // individual worksheet - sourced fresh from the roster since they were deliberately
+    // excluded from qualifiedStudents/subStudents above.
+    const caseloadGraduatedStudents =
+      caseloadScope === 'full_caseload'
+        ? students
+            .filter((student: any) => student.program_status === 'graduated')
+            .map((student: any) => toCaseloadStudent(student))
+        : []
 
     console.log(
       `Program Caseload roster: ${caseloadQualifiedStudents.length} qualified, ${caseloadSubStudents.length}
