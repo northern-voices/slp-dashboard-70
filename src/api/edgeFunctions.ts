@@ -140,6 +140,7 @@ export const edgeFunctionsApi = {
   async schoolWideStudentGoalSheets(
     schoolId: string,
     academicYear: string,
+    caseloadScope: 'school_year' | 'full_caseload',
     overrideEmails: string[],
     password: string
   ) {
@@ -149,6 +150,7 @@ export const edgeFunctionsApi = {
         body: {
           school_id: schoolId,
           academic_year: academicYear,
+          caseload_scope: caseloadScope,
           override_emails: overrideEmails,
           generated_by,
           password,
