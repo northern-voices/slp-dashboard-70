@@ -135,6 +135,7 @@ const ReportGenerationForm = () => {
         result = await edgeFunctionsApi.schoolSummaryReport(
           currentSchool.id,
           data.academicYear,
+          data.caseloadScope,
           data.recipientEmails,
           data.password
         )
