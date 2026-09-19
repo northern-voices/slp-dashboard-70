@@ -37,6 +37,7 @@ import { getAcademicYearOptions } from '@/lib/academicYear'
 const reportSchema = z.object({
   reportType: z.string().min(1, 'Please select a report type'),
   academicYear: z.string().min(1, 'Please select an academic year'),
+  caseloadScope: z.enum(['school_year', 'full_caseload']),
   recipientEmails: z
     .array(z.string())
     .min(1, 'Please add at least one email')
@@ -67,11 +68,13 @@ const ReportGenerationForm = () => {
     defaultValues: {
       reportType: '',
       academicYear: currentAcademicYear,
+      caseloadScope: 'full_caseload',
       recipientEmails: [],
       password: '',
     },
   })
 
+  const selectedReportType = form.watch('reportType')
   const defaultReportPassword = useDefaultReportPassword()
 
   useEffect(() => {
@@ -132,6 +135,7 @@ const ReportGenerationForm = () => {
         result = await edgeFunctionsApi.schoolSummaryReport(
           currentSchool.id,
           data.academicYear,
+          data.caseloadScope,
           data.recipientEmails,
           data.password
         )
@@ -398,6 +402,42 @@ const ReportGenerationForm = () => {
                   </FormItem>
                 )}
               />
+
+              {selectedReportType === 'school-summary-report' && (
+                <FormField
+                  control={form.control}
+                  name='caseloadScope'
+                  render={({ field }) => (
+                    <FormItem className='w-full max-w-full space-y-3'>
+                      <FormLabel className='text-sm font-medium text-gray-700'>
+                        Caseload Scope
+                      </FormLabel>
+
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className='w-full'>
+                            <SelectValue placeholder='Select caseload scope' />
+                          </SelectTrigger>
+                        </FormControl>
+
+                        <SelectContent>
+                          <SelectItem value='full_caseload'>
+                            Full Caseload (All Active Students)
+                          </SelectItem>
+                          <SelectItem value='school_year'>This School Year Only</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <p className='text-xs text-gray-500'>
+                        Full Caseload includes every currently qualified and sub student on record,
+                        regardless of when they were last screened. This School Year Only includes
+                        just students screened and flagged within the selected academic year.
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}

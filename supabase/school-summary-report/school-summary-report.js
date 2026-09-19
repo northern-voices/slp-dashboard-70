@@ -147,8 +147,17 @@ Deno.serve(async req => {
 
   try {
     // Parse request body
-    const { school_id, academic_year, override_emails, report_id, generated_by, password } =
-      await req.json()
+    const {
+      school_id,
+      academic_year,
+      caseload_scope,
+      override_emails,
+      report_id,
+      generated_by,
+      password,
+    } = await req.json()
+
+    const caseloadScope = caseload_scope === 'school_year' ? 'school_year' : 'full_caseload'
 
     if (!school_id) {
       throw new Error('school_id is required')
@@ -194,7 +203,8 @@ Deno.serve(async req => {
     console.log(`Found school: ${schoolName}`)
 
     // 2. Get all students for this school
-    const studentsUrl = `${supabaseUrl}/rest/v1/students?school_id=eq.${school_id}&select=id`
+    const studentsUrl = `${supabaseUrl}/rest/v1/students?school_id=eq.${school_id}&select=id,first_name,last_name,program_status,current_grade_id`
+
     const studentsResponse = await fetch(studentsUrl, {
       headers: {
         apikey: supabaseKey,
@@ -211,6 +221,22 @@ Deno.serve(async req => {
     if (!students || students.length === 0) {
       throw new Error('No students found for this school')
     }
+
+    const gradesUrl = `${supabaseUrl}/rest/v1/school_grades?school_id=eq.${school_id}&select=id,grade_level`
+    const gradesResponse = await fetch(gradesUrl, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!gradesResponse.ok) {
+      throw new Error(`Failed to fetch school grades: ${gradesResponse.status}`)
+    }
+
+    const schoolGrades = await gradesResponse.json()
+    const gradeLevelById = new Map(schoolGrades.map(grade => [grade.id, grade.grade_level]))
 
     const studentIds = students.map(student => student.id)
     console.log(`Found ${studentIds.length} students for school`)
@@ -322,12 +348,19 @@ Deno.serve(async req => {
       )
     }
 
-    // 9. Separate students into qualified, sub, and recommendations categories
-    const qualifiedStudents = latestScreenings.filter(
-      screening => isQualifiedStudent(screening) && !isSubStudent(screening)
-    )
+    // 9. Separate students into qualified and sub categories. "school_year" only looks at screenings dated within the selected academic year (original behavior). "full_caseload" instead reads every student's current program_status directly, so a student who qualified in a prior year with no rescreen since still shows as currently eligible.
+    let qualifiedStudents
+    let subStudents
 
-    const subStudents = latestScreenings.filter(isSubStudent)
+    if (caseloadScope === 'full_caseload') {
+      qualifiedStudents = students.filter(student => student.program_status === 'qualified')
+      subStudents = students.filter(student => student.program_status === 'sub')
+    } else {
+      qualifiedStudents = latestScreenings.filter(
+        screening => isQualifiedStudent(screening) && !isSubStudent(screening)
+      )
+      subStudents = latestScreenings.filter(isSubStudent)
+    }
 
     const priorityRescreenStudents = latestScreenings.filter(
       screening => screening.students?.needs_priority_rescreen === true
@@ -352,6 +385,14 @@ Deno.serve(async req => {
 
     console.log(`Using template: ${templateName}`)
 
+    // Section A needs a different transform depending on scope: "school_year" entries are screenings (use the existing transformRecord), "full_caseload" entries are raw student records with no associated screening, so grade comes from gradeLevelById instead.
+    const toSummaryStudent = student => ({
+      name: `${student.first_name} ${student.last_name}`,
+      grade: gradeLevelById.get(student.current_grade_id) || '',
+    })
+
+    const transformSectionA = caseloadScope === 'full_caseload' ? toSummaryStudent : transformRecord
+
     // 11. Build the document object (this becomes the report_data behind the password gate)
     const documentObject = {
       metadata: {
@@ -365,9 +406,9 @@ Deno.serve(async req => {
         screening_date: academic_year,
         slp: 'Lisa Brillinger',
         qualified: qualifiedStudents.length > 0,
-        qualified_students: qualifiedStudents.map(transformRecord),
+        qualified_students: qualifiedStudents.map(transformSectionA),
         sub: subStudents.length > 0,
-        sub_students: subStudents.map(transformRecord),
+        sub_students: subStudents.map(transformSectionA),
         priority_rescreen: priorityRescreenStudents.length > 0,
         students_priority_rescreen: priorityRescreenStudents.map(transformRecord),
         students_recommendations_and_referrals:
