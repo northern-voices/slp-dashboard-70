@@ -48,6 +48,7 @@ import { format } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { getCurrentAcademicYear } from '@/lib/academicYear'
 import EmailScreeningsReportModal from './EmailScreeningsReportModal'
+import PriorityRescreenDialog from './PriorityRescreenDialog'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -99,6 +100,9 @@ const ScreeningsTable = ({
   const [pageSize, setPageSize] = useState(50)
   const [consentStudent, setConsentStudent] = useState<Student | null>(null)
   const [isEmailReportOpen, setIsEmailReportOpen] = useState(false)
+  const [screeningForPriorityRescreen, setScreeningForPriorityRescreen] =
+    useState<Screening | null>(null)
+  const [isSavingPriorityRescreen, setIsSavingPriorityRescreen] = useState(false)
 
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -779,6 +783,29 @@ const ScreeningsTable = ({
     setIsDeleteDialogOpen(true)
   }
 
+  const buildErrorPatternsWithAttendance = (
+    screening: Screening,
+    attendanceUpdates: Partial<ErrorPatterns['attendance']>
+  ): Partial<ErrorPatterns> => {
+    const currentErrorPatterns = screening.error_patterns || ({} as ErrorPatterns)
+
+    return {
+      articulation: currentErrorPatterns.articulation || ({} as ErrorPatterns['articulation']),
+      add_areas_of_concern:
+        currentErrorPatterns.add_areas_of_concern || ({} as ErrorPatterns['add_areas_of_concern']),
+      additional_observations: currentErrorPatterns.additional_observations || '',
+      consent: currentErrorPatterns.consent || {},
+      screening_metadata: currentErrorPatterns.screening_metadata || {},
+      attendance: {
+        absent: currentErrorPatterns.attendance?.absent || false,
+        absence_notes: currentErrorPatterns.attendance?.absence_notes || '',
+        priority_re_screen: currentErrorPatterns.attendance?.priority_re_screen || false,
+        priority_re_screen_notes: currentErrorPatterns.attendance?.priority_re_screen_notes || '',
+        ...attendanceUpdates,
+      },
+    }
+  }
+
   const handlePriorityRescreen = (screening: Screening) => {
     const student = students.find(
       s => s.id === screening.student_id || s.student_id === screening.student_id
@@ -793,27 +820,114 @@ const ScreeningsTable = ({
       return
     }
 
-    const newValue = !student.needs_priority_rescreen
+    if (student.needs_priority_rescreen) {
+      updateSpeechScreening(
+        {
+          id: screening.id,
+          data: {
+            error_patterns: buildErrorPatternsWithAttendance(screening, {
+              priority_re_screen: false,
+              priority_re_screen_notes: '',
+            }) as ErrorPatterns,
+          },
+        },
+        {
+          onSuccess: () => {
+            updateStudent(
+              { id: student.id, studentData: { needs_priority_rescreen: false } },
+              {
+                onSuccess: () => {
+                  toast({
+                    title: 'Priority rescreen removed',
+                    description: `${screening.student_name} is no longer flagged for a priority rescreen`,
+                    variant: 'default',
+                  })
+                },
+                onError: () => {
+                  toast({
+                    title: 'Error',
+                    description: 'Failed to update priority rescreen flag',
+                    variant: 'destructive',
+                  })
+                },
+              }
+            )
+          },
+          onError: () => {
+            toast({
+              title: 'Error',
+              description: 'Failed to update priority rescreen flag',
+              variant: 'destructive',
+            })
+          },
+        }
+      )
+      return
+    }
 
-    updateStudent(
+    setScreeningForPriorityRescreen(screening)
+  }
+
+  const handleConfirmPriorityRescreen = (notes: string) => {
+    const screening = screeningForPriorityRescreen
+    if (!screening) return
+
+    const student = students.find(
+      s => s.id === screening.student_id || s.student_id === screening.student_id
+    )
+
+    if (!student) {
+      toast({
+        title: 'Error',
+        description: 'Student not found',
+        variant: 'destructive',
+      })
+      setScreeningForPriorityRescreen(null)
+      return
+    }
+
+    setIsSavingPriorityRescreen(true)
+
+    updateSpeechScreening(
       {
-        id: student.id,
-        studentData: { needs_priority_rescreen: newValue },
+        id: screening.id,
+        data: {
+          error_patterns: buildErrorPatternsWithAttendance(screening, {
+            priority_re_screen: true,
+            priority_re_screen_notes: notes,
+          }) as ErrorPatterns,
+        },
       },
       {
         onSuccess: () => {
-          toast({
-            title: newValue ? 'Priority rescreen flagged' : 'Priority rescreen removed',
-            description: newValue
-              ? `${screening.student_name} has been flagged for a priority rescreen`
-              : `${screening.student_name} is no longer flagged for a priority rescreen`,
-            variant: 'default',
-          })
+          updateStudent(
+            { id: student.id, studentData: { needs_priority_rescreen: true } },
+            {
+              onSuccess: () => {
+                setIsSavingPriorityRescreen(false)
+                setScreeningForPriorityRescreen(null)
+                toast({
+                  title: 'Priority rescreen flagged',
+                  description: `${screening.student_name} has been flagged for a priority rescreen`,
+                  variant: 'default',
+                })
+              },
+              onError: () => {
+                setIsSavingPriorityRescreen(false)
+                toast({
+                  title: 'Error',
+                  description: 'Failed to update priority rescreen flag',
+                  variant: 'destructive',
+                })
+              },
+            }
+          )
         },
         onError: () => {
+          setIsSavingPriorityRescreen(false)
           toast({
             title: 'Error',
-            description: 'Failed to update priority rescreen flag',
+            description: 'Failed to save priority rescreen notes',
             variant: 'destructive',
           })
         },
@@ -1060,6 +1174,13 @@ const ScreeningsTable = ({
         isDeleting={isDeleting}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
+      />
+
+      <PriorityRescreenDialog
+        screening={screeningForPriorityRescreen}
+        isSaving={isSavingPriorityRescreen}
+        onConfirm={handleConfirmPriorityRescreen}
+        onCancel={() => setScreeningForPriorityRescreen(null)}
       />
 
       {/* Send Reports Modal */}
