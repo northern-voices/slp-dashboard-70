@@ -170,7 +170,7 @@ export const useScreeningsFilter = ({
 
       let matchesPriorityRescreen = true
       if (priorityRescreenFilter !== 'all') {
-        const pr = screening.error_patterns?.attendance?.priority_re_screen
+        const pr = studentsMap.get(screening.student_id)?.needs_priority_rescreen
         if (priorityRescreenFilter === 'true') {
           matchesPriorityRescreen = pr === true
         } else if (priorityRescreenFilter === 'false') {
