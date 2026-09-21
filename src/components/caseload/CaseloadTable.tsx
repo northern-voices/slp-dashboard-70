@@ -101,8 +101,10 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     setConsentStudent,
     pauseConfirmStudent,
     setPauseConfirmStudent,
+    pauseStudentName,
     pauseReason,
     setPauseReason,
+    cancelPauseConfirm,
     createEAForStudent,
     setCreateEAForStudent,
     eaToDelete,
@@ -314,10 +316,11 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         transferStudentTarget={transferStudentTarget}
         setTransferStudentTarget={setTransferStudentTarget}
         pauseConfirmStudent={pauseConfirmStudent}
-        setPauseConfirmStudent={setPauseConfirmStudent}
+        pauseStudentName={pauseStudentName}
         pauseReason={pauseReason}
         setPauseReason={setPauseReason}
         onConfirmPause={handleConfirmPause}
+        onCancelPause={cancelPauseConfirm}
       />
 
       <EmailCaseloadReportModal
