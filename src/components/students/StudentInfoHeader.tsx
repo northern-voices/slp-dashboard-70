@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { Card, CardContent } from '@/components/ui/card'
-import type { Student } from '@/types/database'
+import type { Student, ServiceStatus } from '@/types/database'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useToast } from '@/hooks/use-toast'
 import { studentsApi } from '@/api/students'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useQueryClient } from '@tanstack/react-query'
+import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
+import { usePauseStudent } from '@/hooks/students/use-pause-student'
+import PauseConfirmDialog from './PauseConfirmDialog'
 import TransferStudentDialog from './TransferStudentDialog'
 import { useConsentForms } from '@/hooks/students/use-consent-forms'
 import StudentBasicInfo from './StudentBasicInfo'
@@ -71,6 +74,43 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
       toast({ title: 'Error', description: 'Failed to update Speech EA.', variant: 'destructive' })
     }
   }
+
+  const { mutate: updateStudent } = useUpdateStudent()
+
+  const handleStatusChange = (student: Student, newStatus: ServiceStatus) => {
+    const resolvedStatus = newStatus === 'none' ? null : newStatus
+
+    updateStudent(
+      { id: student.id, studentData: { service_status: resolvedStatus } },
+      {
+        onSuccess: () => {
+          setLocalStudent(prev =>
+            prev && prev.id === student.id ? { ...prev, service_status: resolvedStatus } : prev
+          )
+          toast({ title: 'Status updated' })
+        },
+        onError: () => {
+          toast({ title: 'Error', description: 'Failed to update status.', variant: 'destructive' })
+        },
+      }
+    )
+  }
+
+  const {
+    pauseTarget: pauseConfirmStudent,
+    pauseStudentName,
+    pauseReason,
+    setPauseReason,
+    requestPause: handlePause,
+    resumeItem: handleResume,
+    confirmPause: handleConfirmPause,
+    cancelPause: handleCancelPause,
+    isSaving: isSavingPause,
+  } = usePauseStudent<Student>({
+    getStudentId: s => s.id,
+    getStudentName: s => `${s.first_name} ${s.last_name}`,
+    onStatusChange: handleStatusChange,
+  })
 
   const hasConsentThisYear = (() => {
     const { start, end } = getAcademicYearRange(getCurrentAcademicYear())
@@ -264,6 +304,8 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
               hasConsentThisYear={hasConsentThisYear}
               onEdit={handleEditName}
               onTransfer={() => setIsTransferDialogOpen(true)}
+              onResume={() => handleResume(localStudent)}
+              onPause={() => handlePause(localStudent)}
             />
             <StudentDetailsGrid
               student={localStudent}
@@ -299,6 +341,16 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
           open={isTransferDialogOpen}
           onOpenChange={setIsTransferDialogOpen}
           onSuccess={() => navigate('/students')}
+        />
+
+        <PauseConfirmDialog
+          open={!!pauseConfirmStudent}
+          studentName={pauseStudentName}
+          reason={pauseReason}
+          onReasonChange={setPauseReason}
+          onConfirm={handleConfirmPause}
+          onCancel={handleCancelPause}
+          isSaving={isSavingPause}
         />
       </CardContent>
     </Card>
