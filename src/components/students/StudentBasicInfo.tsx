@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { User, Edit, ArrowRightLeft } from 'lucide-react'
+import { User, Edit, ArrowRightLeft, PauseCircle, PlayCircle } from 'lucide-react'
 import type { Student } from '@/types/database'
 
 interface StudentBasicInfoProps {
@@ -8,6 +8,8 @@ interface StudentBasicInfoProps {
   hasConsentThisYear: boolean
   onEdit: () => void
   onTransfer: () => void
+  onResume: () => void
+  onPause: () => void
 }
 
 const StudentBasicInfo = ({
@@ -15,6 +17,8 @@ const StudentBasicInfo = ({
   hasConsentThisYear,
   onEdit,
   onTransfer,
+  onResume,
+  onPause,
 }: StudentBasicInfoProps) => (
   <div className='flex flex-col mb-4 sm:flex-row sm:items-center sm:justify-between'>
     <div className='flex items-center mb-3 space-x-3 sm:mb-0'>
@@ -43,6 +47,17 @@ const StudentBasicInfo = ({
         <Edit className='w-4 h-4 mr-2' />
         Edit
       </Button>
+      {student.service_status === 'paused' ? (
+        <Button variant='outline' size='sm' onClick={onResume}>
+          <PlayCircle className='w-4 h-4 mr-2' />
+          Resume
+        </Button>
+      ) : (
+        <Button variant='outline' size='sm' onClick={onPause}>
+          <PauseCircle className='w-4 h-4 mr-2' />
+          Pause / Away
+        </Button>
+      )}
     </div>
   </div>
 )
