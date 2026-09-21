@@ -83,9 +83,11 @@ const HearingScreeningTableRow = ({
             {screening.student_name || 'Unknown Student'}
           </div>
           {isPaused && (
-            <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
-              Paused / Away
-            </Badge>
+            <div className='flex items-center gap-1 flex-wrap'>
+              <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
+                Paused / Away
+              </Badge>
+            </div>
           )}
           {/* {transferredOut && (
             <span className='text-xs font-medium text-orange-600'>
