@@ -49,6 +49,8 @@ import { parseDateSafely } from '@/utils/dateUtils'
 import { getCurrentAcademicYear } from '@/lib/academicYear'
 import EmailScreeningsReportModal from './EmailScreeningsReportModal'
 import PriorityRescreenDialog from './PriorityRescreenDialog'
+import PauseConfirmDialog from '@/components/students/PauseConfirmDialog'
+import { usePauseStudent } from '@/hooks/students/use-pause-student'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -776,6 +778,22 @@ const ScreeningsTable = ({
     }
   }
 
+  const {
+    pauseTarget: pauseConfirmScreening,
+    pauseStudentName,
+    pauseReason,
+    setPauseReason,
+    requestPause: handlePause,
+    resumeItem: handleResume,
+    confirmPause: handleConfirmPause,
+    cancelPause: handleCancelPause,
+    isSaving: isSavingPause,
+  } = usePauseStudent<Screening>({
+    getStudentId: screening => screening.student_id,
+    getStudentName: screening => screening.student_name,
+    onStatusChange: handleStatusChange,
+  })
+
   const { mutate: deleteScreening, isPending: isDeleting } = useDeleteScreening()
 
   const handleDelete = (screening: Screening) => {
@@ -1090,6 +1108,8 @@ const ScreeningsTable = ({
                   getProgramSelector={getProgramSelector}
                   onAddConsent={handleAddConsent}
                   onPriorityRescreen={handlePriorityRescreen}
+                  onResume={handleResume}
+                  onPause={handlePause}
                   transferRecord={transferByStudentId.get(screening.student_id)}
                   currentSchoolId={currentSchool?.id ?? ''}
                   needsPriorityRescreen={
@@ -1181,6 +1201,16 @@ const ScreeningsTable = ({
         isSaving={isSavingPriorityRescreen}
         onConfirm={handleConfirmPriorityRescreen}
         onCancel={() => setScreeningForPriorityRescreen(null)}
+      />
+
+      <PauseConfirmDialog
+        open={!!pauseConfirmScreening}
+        studentName={pauseStudentName}
+        reason={pauseReason}
+        onReasonChange={setPauseReason}
+        onConfirm={handleConfirmPause}
+        onCancel={handleCancelPause}
+        isSaving={isSavingPause}
       />
 
       {/* Send Reports Modal */}
