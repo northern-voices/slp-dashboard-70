@@ -5,7 +5,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Eye, Trash2, MoreHorizontal, Loader2, Mail, User, FilePlus, RefreshCw } from 'lucide-react'
+import {
+  Eye,
+  Trash2,
+  MoreHorizontal,
+  Loader2,
+  Mail,
+  User,
+  FilePlus,
+  RefreshCw,
+  PauseCircle,
+  PlayCircle,
+} from 'lucide-react'
 import type { Screening } from '@/types/database'
 
 interface ScreeningRowDropdownProps {
@@ -17,7 +28,10 @@ interface ScreeningRowDropdownProps {
   onDelete: (screening: Screening) => void
   onAddConsent: (screening: Screening) => void
   onPriorityRescreen: (screening: Screening) => void
+  onResume: (screening: Screening) => void
+  onPause: (screening: Screening) => void
   needsPriorityRescreen?: boolean
+  isPaused?: boolean
   isTransferredOut?: boolean
 }
 
@@ -30,7 +44,10 @@ const ScreeningRowDropdown = ({
   onDelete,
   onAddConsent,
   onPriorityRescreen,
+  onResume,
+  onPause,
   needsPriorityRescreen,
+  isPaused,
   isTransferredOut,
 }: ScreeningRowDropdownProps) => (
   <DropdownMenu>
@@ -71,6 +88,20 @@ const ScreeningRowDropdown = ({
           {needsPriorityRescreen ? 'Remove Priority Rescreen' : 'Priority Rescreen'}
         </DropdownMenuItem>
       )}
+
+      {!isTransferredOut &&
+        screening.source_table === 'speech' &&
+        (isPaused ? (
+          <DropdownMenuItem onClick={() => onResume(screening)}>
+            <PlayCircle className='w-4 h-4 mr-2' />
+            Resume
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem onClick={() => onPause(screening)}>
+            <PauseCircle className='w-4 h-4 mr-2' />
+            Pause / Away
+          </DropdownMenuItem>
+        ))}
 
       <DropdownMenuItem
         className='text-red-600'
