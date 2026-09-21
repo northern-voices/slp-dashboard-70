@@ -10,8 +10,10 @@ import {
 } from '@/components/ui/responsive-table'
 import { useHearingScreenings } from '@/hooks/screenings/use-hearing-screenings'
 import { useDeleteHearingScreening } from '@/hooks/screenings/use-screening-hearing-mutations'
-import { Screening, Student } from '@/types/database'
+import { Screening, Student, ServiceStatus } from '@/types/database'
 import { useStudentsBySchool, useSchoolTransfers } from '@/hooks/students/use-students'
+import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
+import { usePauseStudent } from '@/hooks/students/use-pause-student'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
 import SendReportsModal from '@/components/screenings/SendReportsModal'
@@ -22,6 +24,7 @@ import HearingScreeningsPagination from './HearingScreeningsPagination'
 import HearingScreeningDeleteDialog from './HearingScreeningDeleteDialog'
 import HearingScreeningTableRow from '@/components/screenings/hearing/HearingScreeningTableRow'
 import ConsentFormModal from '@/components/students/ConsentFormModal'
+import PauseConfirmDialog from '@/components/students/PauseConfirmDialog'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
 import { matchesDateRangeFilter } from '@/lib/screeningDateRangeFilter'
 
@@ -87,6 +90,60 @@ const HearingScreeningsTable = ({
 
     return map
   }, [schoolTransfers])
+
+  const studentsById = useMemo(() => {
+    const map = new Map<string, Student>()
+    students.forEach(student => {
+      map.set(student.id, student)
+    })
+
+    return map
+  }, [students])
+
+  const { mutate: updateStudent } = useUpdateStudent()
+
+  const handleStatusChange = (screening: Screening, newStatus: ServiceStatus) => {
+    const student = studentsById.get(screening.student_id)
+
+    if (!student) {
+      toast({
+        title: 'Error',
+        description: 'Student not found',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    updateStudent(
+      { id: student.id, studentData: { service_status: newStatus === 'none' ? null : newStatus } },
+      {
+        onSuccess: () => toast({ title: 'Status updated' }),
+        onError: () => {
+          toast({
+            title: 'Error updating status',
+            description: 'Failed to update student status',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
+  }
+
+  const {
+    pauseTarget: pauseConfirmScreening,
+    pauseStudentName,
+    pauseReason,
+    setPauseReason,
+    requestPause: handlePause,
+    resumeItem: handleResume,
+    confirmPause: handleConfirmPause,
+    cancelPause: handleCancelPause,
+    isSaving: isSavingPause,
+  } = usePauseStudent<Screening>({
+    getStudentId: screening => screening.student_id,
+    getStudentName: screening => screening.student_name,
+    onStatusChange: handleStatusChange,
+  })
 
   // Delete mutation
   const deleteScreeningMutation = useDeleteHearingScreening()
@@ -419,6 +476,9 @@ const HearingScreeningsTable = ({
                   onSendReport={handleSendReport}
                   onDelete={handleDeleteClick}
                   onAddConsent={handleAddConsent}
+                  onResume={handleResume}
+                  onPause={handlePause}
+                  isPaused={studentsById.get(screening.student_id)?.service_status === 'paused'}
                   transferRecord={transferStudentById.get(screening.student_id)}
                   currentSchoolId={currentSchool?.id ?? ''}
                 />
@@ -468,6 +528,16 @@ const HearingScreeningsTable = ({
           student={consentStudent}
         />
       )}
+
+      <PauseConfirmDialog
+        open={!!pauseConfirmScreening}
+        studentName={pauseStudentName}
+        reason={pauseReason}
+        onReasonChange={setPauseReason}
+        onConfirm={handleConfirmPause}
+        onCancel={handleCancelPause}
+        isSaving={isSavingPause}
+      />
     </div>
   )
 }
