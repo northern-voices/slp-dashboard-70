@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { studentsApi } from '@/api/students'
 import { useUpdateStudent } from '@/hooks/students'
 import { useUpdateSpeechScreening } from '@/hooks/screenings'
 import { useToast } from '@/hooks/use-toast'
+import { usePauseStudent } from '@/hooks/students/use-pause-student'
 import { ProgramStatus, ServiceStatus, Screening, Student } from '@/types/database'
 import { ErrorPatterns } from '@/types/screening-form'
 import { SpeechEA } from './caseloadUtils'
@@ -19,8 +19,6 @@ export const useCaseloadTableActions = (
   const [updatingStudentId, setUpdatingStudentId] = useState<string | null>(null)
 
   const [consentStudent, setConsentStudent] = useState<Student | null>(null)
-  const [pauseConfirmStudent, setPauseConfirmStudent] = useState<Student | null>(null)
-  const [pauseReason, setPauseReason] = useState('')
   const [createEAForStudent, setCreateEAForStudent] = useState<Student | null>(null)
   const [eaToDelete, setEaToDelete] = useState<SpeechEA | null>(null)
   const [isDeletingEA, setIsDeletingEA] = useState(false)
@@ -211,28 +209,20 @@ export const useCaseloadTableActions = (
     )
   }
 
-  const handleConfirmPause = async () => {
-    if (!pauseConfirmStudent) return
-    handleStatusChange(pauseConfirmStudent, 'paused')
-
-    if (pauseReason.trim()) {
-      try {
-        await studentsApi.createStudentNote(
-          pauseConfirmStudent.id,
-          `Paused / Away: ${pauseReason.trim()}`
-        )
-      } catch {
-        toast({
-          title: 'Error',
-          description: 'Status updated, but the note failed to save.',
-          variant: 'destructive',
-        })
-      }
-    }
-
-    setPauseConfirmStudent(null)
-    setPauseReason('')
-  }
+  const {
+    pauseTarget: pauseConfirmStudent,
+    pauseStudentName,
+    pauseReason,
+    setPauseReason,
+    requestPause: setPauseConfirmStudent,
+    resumeItem,
+    confirmPause: handleConfirmPause,
+    cancelPause: cancelPauseConfirm,
+  } = usePauseStudent<Student>({
+    getStudentId: student => student.id,
+    getStudentName: student => `${student.first_name} ${student.last_name}`,
+    onStatusChange: handleStatusChange,
+  })
 
   return {
     updatingStudentId,
@@ -241,9 +231,12 @@ export const useCaseloadTableActions = (
     setConsentStudent,
     pauseConfirmStudent,
     setPauseConfirmStudent,
+    pauseStudentName,
     pauseReason,
     setPauseReason,
+    cancelPauseConfirm,
     createEAForStudent,
+
     setCreateEAForStudent,
     eaToDelete,
     setEaToDelete,
