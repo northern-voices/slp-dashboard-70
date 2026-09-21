@@ -21,6 +21,8 @@ interface ScreeningTableRowProps {
   getProgramSelector: (screening: Screening) => React.ReactNode
   onAddConsent: (screening: Screening) => void
   onPriorityRescreen: (screening: Screening) => void
+  onResume: (screening: Screening) => void
+  onPause: (screening: Screening) => void
   transferRecord?: {
     student_id: string
     from_school_id: string
@@ -47,6 +49,8 @@ const ScreeningTableRow = ({
   getProgramSelector,
   onAddConsent,
   onPriorityRescreen,
+  onResume,
+  onPause,
   transferRecord,
   currentSchoolId,
   needsPriorityRescreen,
@@ -116,7 +120,10 @@ const ScreeningTableRow = ({
               onDelete={onDelete}
               onAddConsent={onAddConsent}
               onPriorityRescreen={onPriorityRescreen}
+              onResume={onResume}
+              onPause={onPause}
               needsPriorityRescreen={needsPriorityRescreen}
+              isPaused={isPaused}
               isTransferredOut={!!transferredOut}
             />
           </div>
@@ -219,7 +226,10 @@ const ScreeningTableRow = ({
           onDelete={onDelete}
           onAddConsent={onAddConsent}
           onPriorityRescreen={onPriorityRescreen}
+          onResume={onResume}
+          onPause={onPause}
           needsPriorityRescreen={needsPriorityRescreen}
+          isPaused={isPaused}
           isTransferredOut={!!transferredOut}
         />
       </TableCell>
