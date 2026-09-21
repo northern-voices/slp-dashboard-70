@@ -1,7 +1,16 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Eye, Mail, Trash2, MoreHorizontal, User, FilePlus } from 'lucide-react'
+import {
+  Eye,
+  Mail,
+  Trash2,
+  MoreHorizontal,
+  User,
+  FilePlus,
+  PauseCircle,
+  PlayCircle,
+} from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +30,9 @@ interface HearingScreeningTableRowProps {
   onSendReport: (screening: Screening) => void
   onDelete: (screening: Screening) => void
   onAddConsent: (screening: Screening) => void
+  onResume: (screening: Screening) => void
+  onPause: (screening: Screening) => void
+  isPaused?: boolean
   transferRecord?: {
     student_id: string
     from_school_id: string
@@ -41,6 +53,9 @@ const HearingScreeningTableRow = ({
   onSendReport,
   onDelete,
   onAddConsent,
+  onResume,
+  onPause,
+  isPaused,
   transferRecord,
   currentSchoolId,
 }: HearingScreeningTableRowProps) => {
@@ -67,6 +82,11 @@ const HearingScreeningTableRow = ({
           <div className='font-semibold text-sm text-gray-900'>
             {screening.student_name || 'Unknown Student'}
           </div>
+          {isPaused && (
+            <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
+              Paused / Away
+            </Badge>
+          )}
           {/* {transferredOut && (
             <span className='text-xs font-medium text-orange-600'>
               Transferred Out → {transferredOut}
@@ -159,6 +179,18 @@ const HearingScreeningTableRow = ({
               <Mail className='w-4 h-4 mr-2' />
               Send Report
             </DropdownMenuItem>
+
+            {isPaused ? (
+              <DropdownMenuItem onClick={() => onResume(screening)}>
+                <PlayCircle className='w-4 h-4 mr-2' />
+                Resume
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem onClick={() => onPause(screening)}>
+                <PauseCircle className='w-4 h-4 mr-2' />
+                Pause / Away
+              </DropdownMenuItem>
+            )}
 
             <DropdownMenuItem className='text-red-600' onClick={() => onDelete(screening)}>
               <Trash2 className='w-4 h-4 mr-2' />
