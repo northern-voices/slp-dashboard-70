@@ -1,20 +1,9 @@
 import { Dispatch, SetStateAction } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Student } from '@/types/database'
 import ConsentFormModal from '../students/ConsentFormModal'
 import TransferStudentDialog from '../students/TransferStudentDialog'
+import PauseConfirmDialog from '../students/PauseConfirmDialog'
 import CreateEADialog from './CreateEADialog'
 import DeleteEADialog from './DeleteEADialog'
 import { SpeechEA } from './caseloadUtils'
@@ -33,10 +22,11 @@ interface CaseloadDialogsProps {
   transferStudentTarget: Student | null
   setTransferStudentTarget: Dispatch<SetStateAction<Student | null>>
   pauseConfirmStudent: Student | null
-  setPauseConfirmStudent: Dispatch<SetStateAction<Student | null>>
+  pauseStudentName: string
   pauseReason: string
-  setPauseReason: Dispatch<SetStateAction<string>>
+  setPauseReason: (value: string) => void
   onConfirmPause: () => void
+  onCancelPause: () => void
 }
 
 const CaseloadDialogs = ({
@@ -53,10 +43,11 @@ const CaseloadDialogs = ({
   transferStudentTarget,
   setTransferStudentTarget,
   pauseConfirmStudent,
-  setPauseConfirmStudent,
+  pauseStudentName,
   pauseReason,
   setPauseReason,
   onConfirmPause,
+  onCancelPause,
 }: CaseloadDialogsProps) => {
   const queryClient = useQueryClient()
 
@@ -101,44 +92,14 @@ const CaseloadDialogs = ({
         />
       )}
 
-      <AlertDialog
+      <PauseConfirmDialog
         open={!!pauseConfirmStudent}
-        onOpenChange={open => {
-          if (!open) {
-            setPauseConfirmStudent(null)
-            setPauseReason('')
-          }
-        }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Pause / mark student away?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will pause services for {pauseConfirmStudent?.first_name}{' '}
-              {pauseConfirmStudent?.last_name}. You can reactivate them later from this table.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <div className='py-2'>
-            <Label htmlFor='pause-reason' className='text-sm font-medium text-gray-700'>
-              Reason (optional)
-            </Label>
-            <Textarea
-              id='pause-reason'
-              value={pauseReason}
-              onChange={e => setPauseReason(e.target.value)}
-              placeholder='Why is this student being paused/away?'
-              className='mt-2 min-h-[80px]'
-            />
-          </div>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPauseConfirmStudent(null)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={onConfirmPause}>Pause / Away</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        studentName={pauseStudentName}
+        reason={pauseReason}
+        onReasonChange={setPauseReason}
+        onConfirm={onConfirmPause}
+        onCancel={onCancelPause}
+      />
     </>
   )
 }
