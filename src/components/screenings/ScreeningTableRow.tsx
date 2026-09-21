@@ -87,16 +87,20 @@ const ScreeningTableRow = ({
 
               <div className='flex flex-col gap-0.5 items-start'>
                 <h3 className='font-medium'>{screening.student_name}</h3>
-                {isPaused && (
-                  <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
-                    Paused / Away
-                  </Badge>
-                )}
+                {(isPaused || needsPriorityRescreen) && (
+                  <div className='flex items-center gap-1 flex-wrap'>
+                    {isPaused && (
+                      <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
+                        Paused / Away
+                      </Badge>
+                    )}
 
-                {needsPriorityRescreen && (
-                  <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>
-                    Priority Rescreen
-                  </Badge>
+                    {needsPriorityRescreen && (
+                      <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>
+                        Priority Rescreen
+                      </Badge>
+                    )}
+                  </div>
                 )}
 
                 {/* {transferredOut && (
@@ -165,16 +169,20 @@ const ScreeningTableRow = ({
             {screening.student_name}
           </div>
 
-          {isPaused && (
-            <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
-              Paused / Away
-            </Badge>
-          )}
+          {(isPaused || needsPriorityRescreen) && (
+            <div className='flex items-center gap-1 flex-wrap'>
+              {isPaused && (
+                <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>
+                  Paused / Away
+                </Badge>
+              )}
 
-          {needsPriorityRescreen && (
-            <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>
-              Priority Rescreen
-            </Badge>
+              {needsPriorityRescreen && (
+                <Badge className='bg-orange-100 text-orange-800 font-medium text-[10px]'>
+                  Priority Rescreen
+                </Badge>
+              )}
+            </div>
           )}
 
           {/* {transferredOut && (
