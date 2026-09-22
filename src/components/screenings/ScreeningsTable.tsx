@@ -813,7 +813,8 @@ const ScreeningsTable = ({
         currentErrorPatterns.add_areas_of_concern || ({} as ErrorPatterns['add_areas_of_concern']),
       additional_observations: currentErrorPatterns.additional_observations || '',
       consent: currentErrorPatterns.consent || {},
-      screening_metadata: currentErrorPatterns.screening_metadata || {},
+      screening_metadata:
+        currentErrorPatterns.screening_metadata || ({} as ErrorPatterns['screening_metadata']),
       attendance: {
         absent: currentErrorPatterns.attendance?.absent || false,
         absence_notes: currentErrorPatterns.attendance?.absence_notes || '',
