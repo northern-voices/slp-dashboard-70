@@ -41,23 +41,12 @@ export function useOfflineSync() {
           if (!gradeId && item.gradeInfo) {
             const { school_id, grade_level, academic_year } = item.gradeInfo
 
-            const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
+            const grade = await schoolGradesApi.getOrCreateGrade(
               school_id,
               grade_level,
               academic_year
             )
-
-            if (gradeAvailability.exists && gradeAvailability.grade?.id) {
-              gradeId = gradeAvailability.grade.id
-            } else {
-              // Create the grade
-              const newGrade = await schoolGradesApi.createSchoolGrade({
-                school_id,
-                grade_level,
-                academic_year,
-              })
-              gradeId = newGrade.id
-            }
+            gradeId = grade.id
           }
 
           if (!gradeId) {
