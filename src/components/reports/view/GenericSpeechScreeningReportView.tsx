@@ -194,11 +194,7 @@ const GenericSpeechScreeningReportView = ({ data }: { data: StudentSpeechReportD
 
       <section className='bg-white shadow-sm w-full overflow-hidden'>
         <img
-          src={
-            context.errors?.length > 0
-              ? '/teachspeech-app-poster-sound-errors.jpg'
-              : '/teachspeech-app-poster.jpg'
-          }
+          src='/teachspeech-app-poster.jpg'
           alt='Free access to the NVSS TeachSpeech app'
           className='w-full h-auto block'
         />
