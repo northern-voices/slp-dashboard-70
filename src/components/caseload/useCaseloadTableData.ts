@@ -5,6 +5,7 @@ import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
+import { useReturningAbsentStudents } from '@/hooks/students/use-returning-absent-students'
 import { GRADE_MAPPING } from '@/constants/app'
 import { getStudentGrade, getSpeechEAName, RESULT_SORT_ORDER } from './caseloadUtils'
 import {
@@ -12,6 +13,7 @@ import {
   getCurrentAcademicYearStartDate,
   getAcademicYearRange,
 } from '@/lib/academicYear'
+import { ReturningAbsentStudent } from '@/api/students'
 
 export const useCaseloadTableData = (students: Student[], schoolId?: string) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
@@ -26,6 +28,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
   const [eaFilter, setEaFilter] = useState<string>('all')
   const [dateFilter, setDateFilter] = useState<string>('school_year')
   const [programStatusFilter, setProgramStatusFilter] = useState<string>('all')
+  const [returningAbsentFilter, setReturningAbsentFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
@@ -110,6 +113,17 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     return map
   }, [students, latestScreeningByStudent, dateFilter])
 
+  const { data: returningAbsentStudents = [] } = useReturningAbsentStudents(schoolId)
+
+  const returningAbsentByStudent = useMemo(() => {
+    const map = new Map<string, ReturningAbsentStudent>()
+
+    if (dateFilter !== 'school_year') return map
+    returningAbsentStudents.forEach(r => map.set(r.student_id, r))
+
+    return map
+  }, [returningAbsentStudents, dateFilter])
+
   const speechEAs =
     schoolDetails?.schoolTeam?.filter(member => member.roles.includes('speech_ea')) ?? []
 
@@ -119,7 +133,8 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     consentFilter !== 'all' ||
     eaFilter !== 'all' ||
     dateFilter !== 'school_year' ||
-    programStatusFilter !== 'all'
+    programStatusFilter !== 'all' ||
+    returningAbsentFilter !== 'all'
 
   const clearAllFilters = () => {
     setGradeFilter([])
@@ -128,6 +143,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     setEaFilter('all')
     setDateFilter('school_year')
     setProgramStatusFilter('all')
+    setReturningAbsentFilter('all')
     setCurrentPage(1)
   }
 
@@ -175,13 +191,17 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
       eaFilter === 'all' ||
       (eaFilter === 'none' ? !student.speech_ea_id : student.speech_ea_id === eaFilter)
 
+    const matchesReturningAbsent =
+      returningAbsentFilter === 'all' || returningAbsentByStudent.has(student.id)
+
     return (
       matchesSearch &&
       matchesCaseload &&
       matchesGrade &&
       matchesResult &&
       matchesConsent &&
-      matchesEA
+      matchesEA &&
+      matchesReturningAbsent
     )
   })
 
@@ -334,6 +354,9 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     caseloadStats,
     programFilteredStudents,
     effectiveStatusByStudent,
+    returningAbsentByStudent,
+    returningAbsentFilter,
+    setReturningAbsentFilter,
 
     paginatedStudents,
     totalStudents,

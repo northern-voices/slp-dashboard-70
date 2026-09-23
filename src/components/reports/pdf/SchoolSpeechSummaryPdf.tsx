@@ -23,6 +23,8 @@ interface SchoolSpeechSummaryData {
     priority_rescreen: boolean
     students_priority_rescreen: SummaryStudent[]
     students_recommendations_and_referrals: ReferralStudent[]
+    returning_absent: boolean
+    returning_absent_students: SummaryStudent[]
   }
 }
 
@@ -202,7 +204,25 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
       )
     : []
 
-  const totalPages = sectionAPages.length + sectionPriorityPages.length + sectionBPages.length
+  const hasReturningAbsent = (context.returning_absent_students?.length ?? 0) > 0
+  const sectionReturningAbsentPages = hasReturningAbsent
+    ? paginateBlocks(
+        [
+          {
+            heading: '',
+            columns: ['STUDENT', 'GRADE'],
+            rows: context.returning_absent_students.map(s => [s.name, s.grade]),
+          },
+        ],
+        ROWS_FIRST_PAGE
+      )
+    : []
+
+  const totalPages =
+    sectionAPages.length +
+    sectionPriorityPages.length +
+    sectionBPages.length +
+    sectionReturningAbsentPages.length
 
   return (
     <Document>
@@ -282,6 +302,34 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
                     questions.
                   </Text>
                 </>
+              )}
+              {segments.map((segment, j) => (
+                <SegmentTable key={j} segment={segment} />
+              ))}
+            </View>
+            {isLastPage && (
+              <ReportFooter
+                page={pageIndex + 1}
+                of={totalPages}
+                brand='NORTHERN VOICES SPEECH SERVICES'
+              />
+            )}
+          </Page>
+        )
+      })}
+
+      {sectionReturningAbsentPages.map((segments, i) => {
+        const pageIndex =
+          sectionAPages.length + sectionPriorityPages.length + sectionBPages.length + i
+        const isLastPage = pageIndex === totalPages - 1
+        return (
+          <Page key={`r-${i}`} size='LETTER' style={styles.page}>
+            <ReportBanner title='School Summary Report' />
+            <View style={styles.body}>
+              {i === 0 && (
+                <Text style={styles.sectionLabel}>
+                  D. RETURNING STUDENTS NOT YET RESCREENED THIS YEAR:
+                </Text>
               )}
               {segments.map((segment, j) => (
                 <SegmentTable key={j} segment={segment} />

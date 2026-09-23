@@ -20,6 +20,7 @@ interface CaseloadRow {
   service_status?: ServiceStatus
   program_status: ProgramStatus
   result_year: string | null
+  returning_absent_status: 'absent' | 'not_yet_screened' | null
 }
 
 interface EmailCaseloadReportModalProps {

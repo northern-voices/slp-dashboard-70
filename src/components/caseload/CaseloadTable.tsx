@@ -93,6 +93,9 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     effectiveItemsPerPage,
     programFilteredStudents,
     effectiveStatusByStudent,
+    returningAbsentByStudent,
+    returningAbsentFilter,
+    setReturningAbsentFilter,
   } = useCaseloadTableData(students, schoolId)
 
   const {
@@ -139,6 +142,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       service_status: student.service_status,
       program_status: 'qualified' as const,
       result_year: getResultYearLabel(student.id),
+      returning_absent_status: returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
     }))
 
   const subStudents = programFilteredStudents
@@ -152,6 +156,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       service_status: student.service_status,
       program_status: 'sub' as const,
       result_year: getResultYearLabel(student.id),
+      returning_absent_status: returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
     }))
 
   const graduatedStudents = programFilteredStudents
@@ -165,6 +170,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       service_status: student.service_status,
       program_status: 'graduated' as const,
       result_year: getResultYearLabel(student.id),
+      returning_absent_status: returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
     }))
 
   const academicYear =
@@ -202,6 +208,8 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         setEaFilter={setEaFilter}
         dateFilter={dateFilter}
         setDateFilter={setDateFilter}
+        returningAbsentFilter={returningAbsentFilter}
+        setReturningAbsentFilter={setReturningAbsentFilter}
         programStatusFilter={programStatusFilter}
         speechEAs={speechEAs}
         availableSchoolYears={availableSchoolYears}
@@ -263,6 +271,9 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                 speechEAs={speechEAs}
                 screening={latestScreeningByStudent.get(student.id)}
                 hasConsent={consentSet.has(student.id)}
+                returningAbsentStatus={
+                  returningAbsentByStudent.get(student.id)?.current_year_status
+                }
                 updatingStudentId={updatingStudentId}
                 onResultChange={handleResultChange}
                 onProgramChange={handleProgramChange}
