@@ -142,6 +142,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       service_status: student.service_status,
       program_status: 'qualified' as const,
       result_year: getResultYearLabel(student.id),
+      returning_absent_status: returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
     }))
 
   const subStudents = programFilteredStudents
@@ -155,6 +156,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       service_status: student.service_status,
       program_status: 'sub' as const,
       result_year: getResultYearLabel(student.id),
+      returning_absent_status: returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
     }))
 
   const graduatedStudents = programFilteredStudents
@@ -168,6 +170,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       service_status: student.service_status,
       program_status: 'graduated' as const,
       result_year: getResultYearLabel(student.id),
+      returning_absent_status: returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
     }))
 
   const academicYear =
