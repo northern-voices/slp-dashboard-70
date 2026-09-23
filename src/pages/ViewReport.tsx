@@ -85,9 +85,12 @@ const generateSpeechScreeningPdf = async (reportData: unknown) => {
 
     const letterBlob = await pdf(<LetterPdf data={reportData as never} />).toBlob()
     const letterBytes = await letterBlob.arrayBuffer()
-    const posterBytes = await (
-      await fetch('/No-Consent_Non-Registered_Complex-Needs.pdf')
-    ).arrayBuffer()
+    const hasErrors =
+      ((reportData as { context?: { errors?: unknown[] } })?.context?.errors?.length ?? 0) > 0
+    const posterPath = hasErrors
+      ? '/No-Consent_Non-Registered_Complex-Needs-sound-errors.pdf'
+      : '/No-Consent_Non-Registered_Complex-Needs.pdf'
+    const posterBytes = await (await fetch(posterPath)).arrayBuffer()
 
     const mainDoc = await PDFDocument.load(letterBytes)
     const posterDoc = await PDFDocument.load(posterBytes)
@@ -196,7 +199,7 @@ const generateBulkReportZip = async (
 
   const documents = (reportData as { documents?: unknown[] })?.documents ?? []
   const zip = new JSZip()
-  let posterBytes: ArrayBuffer | null = null
+  const posterOnlyBytesByPath = new Map<string, ArrayBuffer>()
   const teachspeechPosterBytesByPath = new Map<string, ArrayBuffer>()
 
   for (let i = 0; i < documents.length; i++) {
@@ -210,10 +213,16 @@ const generateBulkReportZip = async (
 
     let docBytes: ArrayBuffer | Uint8Array
     if (templateName && POSTER_ONLY_TEMPLATES.has(templateName)) {
+      const docHasErrors =
+        ((documents[i] as { context?: { errors?: unknown[] } })?.context?.errors?.length ?? 0) > 0
+      const posterOnlyPath = docHasErrors
+        ? '/No-Consent_Non-Registered_Complex-Needs-sound-errors.pdf'
+        : '/No-Consent_Non-Registered_Complex-Needs.pdf'
+
+      let posterBytes = posterOnlyBytesByPath.get(posterOnlyPath)
       if (!posterBytes) {
-        posterBytes = await (
-          await fetch('/No-Consent_Non-Registered_Complex-Needs.pdf')
-        ).arrayBuffer()
+        posterBytes = await (await fetch(posterOnlyPath)).arrayBuffer()
+        posterOnlyBytesByPath.set(posterOnlyPath, posterBytes)
       }
 
       const LetterPdf =
