@@ -54,7 +54,7 @@ const ComplexNeedsLetterView = ({ data }: { data: ComplexNeedsLetterData }) => {
 
       <section className='bg-white shadow-sm w-full overflow-hidden'>
         <img
-          src='/No-Consent_Non-Registered_Complex-Needs-sound-errors.jpg'
+          src='/No-Consent_Non-Registered_Complex-Needs.jpg'
           alt='Free access to the NVSS TeachSpeech app'
           className='w-full h-auto block'
         />
