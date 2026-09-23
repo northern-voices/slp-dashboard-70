@@ -22,6 +22,8 @@ interface SchoolSpeechSummaryData {
     priority_rescreen: boolean
     students_priority_rescreen: SummaryStudent[]
     students_recommendations_and_referrals: ReferralStudent[]
+    returning_absent: boolean
+    returning_absent_students: SummaryStudent[]
   }
 }
 
@@ -167,7 +169,25 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
       )
     : []
 
-  const totalPages = sectionAPages.length + sectionPriorityPages.length + sectionBPages.length
+  const hasReturningAbsent = (context.returning_absent_students?.length ?? 0) > 0
+  const sectionReturningAbsentPages = hasReturningAbsent
+    ? paginateBlocks(
+        [
+          {
+            heading: '',
+            columns: ['STUDENT', 'GRADE'],
+            rows: context.returning_absent_students.map(s => [s.name, s.grade]),
+          },
+        ],
+        ROWS_FIRST_PAGE
+      )
+    : []
+
+  const totalPages =
+    sectionAPages.length +
+    sectionPriorityPages.length +
+    sectionBPages.length +
+    sectionReturningAbsentPages.length
 
   return (
     <div className="space-y-6 print:space-y-0 font-['Nunito']">
@@ -262,6 +282,36 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
                     questions.
                   </p>
                 </>
+              )}
+              {segments.map((segment, j) => (
+                <SegmentTable key={j} segment={segment} />
+              ))}
+            </div>
+            {isLastPage && (
+              <ReportFooter
+                brand='NORTHERN VOICES SPEECH SERVICES'
+                page={pageIndex + 1}
+                of={totalPages}
+              />
+            )}
+          </section>
+        )
+      })}
+
+      {sectionReturningAbsentPages.map((segments, i) => {
+        const pageIndex =
+          sectionAPages.length + sectionPriorityPages.length + sectionBPages.length + i
+        const isLastPage = pageIndex === totalPages - 1
+        return (
+          <section
+            key={`r-${i}`}
+            className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
+            <ReportBanner title='School Summary Report' />
+            <div className='flex-1 px-10 pt-5'>
+              {i === 0 && (
+                <p className='font-bold text-gray-900 mb-3'>
+                  D. RETURNING STUDENTS NOT YET RESCREENED THIS YEAR:
+                </p>
               )}
               {segments.map((segment, j) => (
                 <SegmentTable key={j} segment={segment} />
