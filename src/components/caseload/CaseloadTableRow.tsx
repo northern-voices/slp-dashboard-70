@@ -29,7 +29,13 @@ import { Button } from '@/components/ui/button'
 import { RESULT_OPTIONS, PROGRAM_OPTIONS } from '@/constants/screeningOptions'
 import { Student, Screening, ProgramStatus, ServiceStatus } from '@/types/database'
 import { SchoolGrade } from '@/api/schoolGrades'
-import { ResultBadge, ProgramBadge, ServiceStatusTag, ConsentBadge } from './CaseloadBadges'
+import {
+  ResultBadge,
+  ProgramBadge,
+  ServiceStatusTag,
+  ConsentBadge,
+  ReturningAbsentBadge,
+} from './CaseloadBadges'
 import { getStudentGrade, getSpeechEAName, SpeechEA } from './caseloadUtils'
 import { isCurrentAcademicYear, getAcademicYearShortLabel } from '@/lib/academicYear'
 
@@ -40,6 +46,7 @@ interface CaseloadTableRowProps {
   screening: Screening | undefined
   hasConsent: boolean
   updatingStudentId: string | null
+  returningAbsentStatus?: 'absent' | 'not_yet_screened'
   onResultChange: (student: Student, newResult: string) => void
   onProgramChange: (student: Student, newProgram: ProgramStatus) => void
   onStatusChange: (student: Student, newStatus: ServiceStatus) => void
@@ -58,6 +65,7 @@ const CaseloadTableRow = ({
   screening,
   hasConsent,
   updatingStudentId,
+  returningAbsentStatus,
   onResultChange,
   onProgramChange,
   onStatusChange,
@@ -77,7 +85,10 @@ const CaseloadTableRow = ({
           <span>
             {student.first_name} {student.last_name}
           </span>
-          <ServiceStatusTag status={student.service_status} />
+          <div className='flex items-center gap-1 flex-wrap'>
+            <ServiceStatusTag status={student.service_status} />
+            <ReturningAbsentBadge status={returningAbsentStatus} />
+          </div>
         </div>
       </TableCell>
 

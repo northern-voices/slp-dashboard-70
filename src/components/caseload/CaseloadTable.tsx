@@ -93,6 +93,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     effectiveItemsPerPage,
     programFilteredStudents,
     effectiveStatusByStudent,
+    returningAbsentByStudent,
   } = useCaseloadTableData(students, schoolId)
 
   const {
@@ -263,6 +264,9 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                 speechEAs={speechEAs}
                 screening={latestScreeningByStudent.get(student.id)}
                 hasConsent={consentSet.has(student.id)}
+                returningAbsentStatus={
+                  returningAbsentByStudent.get(student.id)?.current_year_status
+                }
                 updatingStudentId={updatingStudentId}
                 onResultChange={handleResultChange}
                 onProgramChange={handleProgramChange}
