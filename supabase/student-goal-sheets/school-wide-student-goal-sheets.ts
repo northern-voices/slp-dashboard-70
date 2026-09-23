@@ -163,14 +163,14 @@ async function sendReportLinkEmail({
                     </div>
                   </div>
                   <h1 style="margin: 0 0 8px; font-size: 22px; font-weight: 700; color: #111827; text-align: center;">
-                    Your Report is Ready
+                    Your goal sheets are ready
                   </h1>
                   <p style="margin: 0 0 32px; font-size: 15px; color: #6B7280; text-align: center; line-height: 1.5;">
                     A secure copy of ${reportLabel} is ready to view. You'll need the password provided to you separately to open it.
                   </p>
                   <div style="text-align: center; margin-bottom: 32px;">
                     <a href="${viewUrl}" style="display: inline-block; background-color: #005AE0; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none; padding: 12px 32px; border-radius: 8px;">
-                      View Report
+                      View Goal Sheets
                     </a>
                   </div>
                   <p style="margin: 0; font-size: 13px; color: #9CA3AF; text-align: center; line-height: 1.6;">
@@ -729,7 +729,7 @@ Deno.serve(async (req: Request) => {
 
     await sendReportLinkEmail({
       recipients: override_emails,
-      subject: `${schoolName} - Student Goal Sheets - ${academic_year}`,
+      subject: `Goal Sheets - ${schoolName} - ${academic_year}`,
       reportLabel: `${schoolName}'s student goal sheets for ${academic_year}`,
       viewUrl,
     })
