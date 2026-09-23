@@ -321,9 +321,11 @@ const ViewReport = () => {
 
       const downloadName = studentName
         ? `${studentName} - NVSS Student Report.${extension}`
-        : schoolName
-          ? `${schoolName}${academicYear ? ` - ${academicYear}` : ''} - NVSS Reports.${extension}`
-          : `NVSS Report.${extension}`
+        : reportType === 'school_wide_goal_sheets' && schoolName
+          ? `Goal Sheets - ${schoolName}${academicYear ? ` - ${academicYear}` : ''}.${extension}`
+          : schoolName
+            ? `${schoolName}${academicYear ? ` - ${academicYear}` : ''} - NVSS Reports.${extension}`
+            : `NVSS Report.${extension}`
 
       const link = document.createElement('a')
       link.href = url
