@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { Screening } from '@/types/database'
 import { UserRole } from '@/types/database'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 interface RawHearingScreening {
   id: string
@@ -385,6 +386,17 @@ export const hearingScreeningsApi = {
 
       if (!newScreening) {
         throw new Error('No data returned from insert operation')
+      }
+
+      if (newScreening.school_grades?.academic_year === getCurrentAcademicYear()) {
+        const { error: gradeSyncError } = await supabase
+          .from('students')
+          .update({ current_grade_id: newScreening.grade_id })
+          .eq('id', data.student_id)
+
+        if (gradeSyncError) {
+          console.error('Error syncing student current_grade_id:', gradeSyncError)
+        }
       }
 
       return transformHearingScreening(newScreening)

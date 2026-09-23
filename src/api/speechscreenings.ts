@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { ErrorPatterns } from '@/types/screening-form'
 import { Screening, UserRole, ProgramStatus, ServiceStatus } from '@/types/database'
-import { getCurrentAcademicYearStartDate } from '@/lib/academicYear'
+import { getCurrentAcademicYearStartDate, getCurrentAcademicYear } from '@/lib/academicYear'
 
 type SpeechScreeningResult = string
 
@@ -520,6 +520,17 @@ export const speechScreeningsApi = {
 
       if (!newScreening) {
         throw new Error('No data returned from insert operation')
+      }
+
+      if (newScreening.school_grades?.academic_year === getCurrentAcademicYear()) {
+        const { error: gradeSyncError } = await supabase
+          .from('students')
+          .update({ current_grade_id: newScreening.grade_id })
+          .eq('id', data.student_id)
+
+        if (gradeSyncError) {
+          console.error('Error syncing student current_grade_id:', gradeSyncError)
+        }
       }
 
       // Safely access nested objects with null checks
