@@ -175,7 +175,7 @@ const MildProfoundNoQualifiedSubReportView = ({
 
       <section className='bg-white shadow-sm w-full overflow-hidden'>
         <img
-          src='/teachspeech-app-poster.jpg'
+          src='/teachspeech-app-poster-sound-errors.jpg'
           alt='Free access to the NVSS TeachSpeech app'
           className='w-full h-auto block'
         />
