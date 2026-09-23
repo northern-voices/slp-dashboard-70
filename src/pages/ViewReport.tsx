@@ -355,7 +355,9 @@ const ViewReport = () => {
                   ? `Generating ${pdfProgress.current}/${pdfProgress.total}...`
                   : 'Generating PDF...'
                 : isZipDownload
-                  ? 'Download Reports (ZIP)'
+                  ? reportType === 'school_wide_goal_sheets'
+                    ? 'Download Goal Sheets (ZIP)'
+                    : 'Download Reports (ZIP)'
                   : 'Download / Print PDF'}
             </Button>
           </div>
