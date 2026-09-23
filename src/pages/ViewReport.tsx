@@ -85,12 +85,9 @@ const generateSpeechScreeningPdf = async (reportData: unknown) => {
 
     const letterBlob = await pdf(<LetterPdf data={reportData as never} />).toBlob()
     const letterBytes = await letterBlob.arrayBuffer()
-    const hasErrors =
-      ((reportData as { context?: { errors?: unknown[] } })?.context?.errors?.length ?? 0) > 0
-    const posterPath = hasErrors
-      ? '/No-Consent_Non-Registered_Complex-Needs-sound-errors.pdf'
-      : '/No-Consent_Non-Registered_Complex-Needs.pdf'
-    const posterBytes = await (await fetch(posterPath)).arrayBuffer()
+    const posterBytes = await (
+      await fetch('/No-Consent_Non-Registered_Complex-Needs-sound-errors.pdf')
+    ).arrayBuffer()
 
     const mainDoc = await PDFDocument.load(letterBytes)
     const posterDoc = await PDFDocument.load(posterBytes)
@@ -109,12 +106,7 @@ const generateSpeechScreeningPdf = async (reportData: unknown) => {
 
   const mainBlob = await pdf(<StudentSpeechReportPdf data={reportData as never} />).toBlob()
   const mainBytes = await mainBlob.arrayBuffer()
-  const hasErrors =
-    ((reportData as { context?: { errors?: unknown[] } })?.context?.errors?.length ?? 0) > 0
-  const posterPath = hasErrors
-    ? '/teachspeech-app-poster-sound-errors.pdf'
-    : '/teachspeech-app-poster.pdf'
-  const posterBytes = await (await fetch(posterPath)).arrayBuffer()
+  const posterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
 
   const mainDoc = await PDFDocument.load(mainBytes)
   const posterDoc = await PDFDocument.load(posterBytes)
@@ -199,8 +191,8 @@ const generateBulkReportZip = async (
 
   const documents = (reportData as { documents?: unknown[] })?.documents ?? []
   const zip = new JSZip()
-  const posterOnlyBytesByPath = new Map<string, ArrayBuffer>()
-  const teachspeechPosterBytesByPath = new Map<string, ArrayBuffer>()
+  let posterOnlyBytes: ArrayBuffer | null = null
+  let teachspeechPosterBytes: ArrayBuffer | null = null
 
   for (let i = 0; i < documents.length; i++) {
     onProgress?.(i + 1, documents.length)
@@ -213,16 +205,10 @@ const generateBulkReportZip = async (
 
     let docBytes: ArrayBuffer | Uint8Array
     if (templateName && POSTER_ONLY_TEMPLATES.has(templateName)) {
-      const docHasErrors =
-        ((documents[i] as { context?: { errors?: unknown[] } })?.context?.errors?.length ?? 0) > 0
-      const posterOnlyPath = docHasErrors
-        ? '/No-Consent_Non-Registered_Complex-Needs-sound-errors.pdf'
-        : '/No-Consent_Non-Registered_Complex-Needs.pdf'
-
-      let posterBytes = posterOnlyBytesByPath.get(posterOnlyPath)
-      if (!posterBytes) {
-        posterBytes = await (await fetch(posterOnlyPath)).arrayBuffer()
-        posterOnlyBytesByPath.set(posterOnlyPath, posterBytes)
+      if (!posterOnlyBytes) {
+        posterOnlyBytes = await (
+          await fetch('/No-Consent_Non-Registered_Complex-Needs-sound-errors.pdf')
+        ).arrayBuffer()
       }
 
       const LetterPdf =
@@ -231,21 +217,15 @@ const generateBulkReportZip = async (
       const letterBytes = await letterBlob.arrayBuffer()
 
       const mainDoc = await PDFDocument.load(letterBytes)
-      const posterDoc = await PDFDocument.load(posterBytes)
+      const posterDoc = await PDFDocument.load(posterOnlyBytes)
       const [posterPage] = await mainDoc.copyPages(posterDoc, [0])
       mainDoc.addPage(posterPage)
       docBytes = await mainDoc.save()
     } else if (templateName && TEACHSPEECH_POSTER_TEMPLATES.has(templateName)) {
-      const docHasErrors =
-        ((documents[i] as { context?: { errors?: unknown[] } })?.context?.errors?.length ?? 0) > 0
-      const teachspeechPosterPath = docHasErrors
-        ? '/teachspeech-app-poster-sound-errors.pdf'
-        : '/teachspeech-app-poster.pdf'
-
-      let teachspeechPosterBytes = teachspeechPosterBytesByPath.get(teachspeechPosterPath)
       if (!teachspeechPosterBytes) {
-        teachspeechPosterBytes = await (await fetch(teachspeechPosterPath)).arrayBuffer()
-        teachspeechPosterBytesByPath.set(teachspeechPosterPath, teachspeechPosterBytes)
+        teachspeechPosterBytes = await (
+          await fetch('/teachspeech-app-poster.pdf')
+        ).arrayBuffer()
       }
 
       const docBlob = await pdf(<BulkDocumentPdf data={documents[i] as never} />).toBlob()
