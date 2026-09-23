@@ -359,6 +359,7 @@ export const edgeFunctionsApi = {
       service_status?: ServiceStatus
       program_status: ProgramStatus
       result_year: string | null
+      returning_absent_status: 'absent' | 'not_yet_screened' | null
     }[],
     subStudents: {
       name: string
@@ -369,6 +370,7 @@ export const edgeFunctionsApi = {
       service_status?: ServiceStatus
       program_status: ProgramStatus
       result_year: string | null
+      returning_absent_status: 'absent' | 'not_yet_screened' | null
     }[],
     graduatedStudents: {
       name: string
@@ -379,6 +381,7 @@ export const edgeFunctionsApi = {
       service_status?: ServiceStatus
       program_status: ProgramStatus
       result_year: string | null
+      returning_absent_status: 'absent' | 'not_yet_screened' | null
     }[],
     overrideEmails: string[],
     password: string
