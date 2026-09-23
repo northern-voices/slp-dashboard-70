@@ -185,51 +185,33 @@ export const hearingScreeningsApi = {
   ): Promise<Screening[]> => {
     try {
       // Build base query for specific student
-      let query = supabase
+      const query = supabase
         .from('hearing_screenings')
         .select(
           `
-          id,
-          student_id,
-          screener_id,
-          grade_id,
-          right_volume_db,
-          right_pressure,
-          right_compliance,
-          left_volume_db,
-          left_pressure,
-          left_compliance,
-          right_ear_volume_result,
-          right_ear_pressure_result,
-          right_ear_compliance_result,
-          left_ear_volume_result,
-          left_ear_pressure_result,
-          left_ear_compliance_result,
-          right_ear_result,
-          left_ear_result,
-          result,
-          clinical_notes,
-          referral_notes,
-          created_at,
-          updated_at,
-          students (
-            id,
-            first_name,
-            last_name,
-            school_id,
-            student_id
-          ),
-          school_grades (
-            id,
-            grade_level,
-            academic_year
-          ),
-          users (
-            id,
-            first_name,
-            last_name
-          )
-        `
+            *,
+            students (
+              id,
+              first_name,
+              last_name,
+              school_id,
+              student_id,
+              schools (
+                id,
+                name
+              )
+            ),
+            school_grades (
+              id,
+              grade_level,
+              academic_year
+            ),
+            users (
+              id,
+              first_name,
+              last_name
+            )
+          `
         )
         .eq('student_id', studentId)
 
@@ -338,44 +320,29 @@ export const hearingScreeningsApi = {
         .insert(insertData)
         .select(
           `
-        id,
-        student_id,
-        screener_id,
-        grade_id,
-        right_volume_db,
-        right_pressure,
-        right_compliance,
-        left_volume_db,
-        left_pressure,
-        left_compliance,
-        right_ear_volume_result,
-        right_ear_pressure_result,
-        right_ear_compliance_result,
-        left_ear_volume_result,
-        left_ear_pressure_result,
-        left_ear_compliance_result,
-        clinical_notes,
-        referral_notes,
-        created_at,
-        updated_at,
-        students (
-          id,
-          first_name,
-          last_name,
-          school_id,
-          student_id
-        ),
-        school_grades (
-          id,
-          grade_level,
-          academic_year
-        ),
-        users (
-          id,
-          first_name,
-          last_name
-        )
-      `
+          *,
+          students (
+            id,
+            first_name,
+            last_name,
+            school_id,
+            student_id,
+            schools (
+              id,
+              name
+            )
+          ),
+          school_grades (
+            id,
+            grade_level,
+            academic_year
+          ),
+          users (
+            id,
+            first_name,
+            last_name
+          )
+        `
         )
         .single()
 
@@ -430,44 +397,29 @@ export const hearingScreeningsApi = {
         .eq('id', id)
         .select(
           `
-        id,
-        student_id,
-        screener_id,
-        grade_id,
-        right_volume_db,
-        right_pressure,
-        right_compliance,
-        left_volume_db,
-        left_pressure,
-        left_compliance,
-        right_ear_volume_result,
-        right_ear_pressure_result,
-        right_ear_compliance_result,
-        left_ear_volume_result,
-        left_ear_pressure_result,
-        left_ear_compliance_result,
-        clinical_notes,
-        referral_notes,
-        created_at,
-        updated_at,
-        students (
-          id,
-          first_name,
-          last_name,
-          school_id,
-          student_id
-        ),
-        school_grades (
-          id,
-          grade_level,
-          academic_year
-        ),
-        users (
-          id,
-          first_name,
-          last_name
-        )
-      `
+          *,
+          students (
+            id,
+            first_name,
+            last_name,
+            school_id,
+            student_id,
+            schools (
+              id,
+              name
+            )
+          ),
+          school_grades (
+            id,
+            grade_level,
+            academic_year
+          ),
+          users (
+            id,
+            first_name,
+            last_name
+          )
+        `
         )
         .single()
 
