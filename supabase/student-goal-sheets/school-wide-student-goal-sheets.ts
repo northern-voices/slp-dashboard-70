@@ -52,6 +52,7 @@ interface StudentSummary {
   speech_ea: string
   service_status?: string
   program_status: 'qualified' | 'sub' | 'graduated'
+  returning_absent_status: 'absent' | 'not_yet_screened' | null
 }
 
 const corsHeaders = {
@@ -327,6 +328,43 @@ Deno.serve(async (req: Request) => {
       speechEAs.map((ea: any) => [ea.id, `${ea.first_name} ${ea.last_name}`])
     )
 
+    // Get returning-absent students (qualified/sub last year, absent or not yet screened
+    // this year) - always current-state, matching the "Program Caseload" roster below,
+    // which is likewise independent of the requested academic_year/caseload_scope.
+    const returningAbsentResponse = await fetch(
+      `${supabaseUrl}/rest/v1/rpc/get_returning_absent_students`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ p_school_id: school_id }),
+      }
+    )
+
+    if (!returningAbsentResponse.ok) {
+      throw new Error(
+        `Failed to fetch returning absent students: ${returningAbsentResponse.status}`
+      )
+    }
+
+    const returningAbsentRows: Array<{
+      student_id: string
+      first_name: string
+      last_name: string
+      program_status: 'qualified' | 'sub'
+      last_qualifying_screening_date: string
+      current_year_status: 'absent' | 'not_yet_screened'
+    }> = await returningAbsentResponse.json()
+
+    const returningAbsentByStudentId = new Map(
+      returningAbsentRows.map(row => [row.student_id, row])
+    )
+
+    console.log(`Found ${returningAbsentByStudentId.size} returning-absent students`)
+
     const studentIds = students.map((student: any) => student.id)
     console.log(`Found ${studentIds.length} students for school`)
 
@@ -421,6 +459,19 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Same as above but skips 'absent' results, which carry no error_patterns to build a
+    // worksheet from. Powers "full_caseload" individual worksheets so a returning student
+    // who's absent this year still gets a worksheet built from their last real screening,
+    // instead of an empty one - the summary roster above still shows the true latest result.
+    const latestUsableScreeningByStudentId = new Map<string, any>()
+    for (const screening of allScreenings) {
+      if (screening.result === 'absent') continue
+      const existing = latestUsableScreeningByStudentId.get(screening.student_id)
+      if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
+        latestUsableScreeningByStudentId.set(screening.student_id, screening)
+      }
+    }
+
     // 4. Filter by academic year AND qualified students only
     const filteredScreenings = allScreenings.filter(
       (screening: any) =>
@@ -440,8 +491,8 @@ Deno.serve(async (req: Request) => {
       for (const student of students) {
         if (student.program_status !== 'qualified' && student.program_status !== 'sub') continue
 
-        const screening = latestScreeningByStudentId.get(student.id)
-        if (!screening) continue // nothing to build a worksheet from
+        const screening = latestUsableScreeningByStudentId.get(student.id)
+        if (!screening) continue // nothing usable to build a worksheet from
 
         if (student.program_status === 'sub') {
           subStudents.push(screening)
@@ -579,17 +630,28 @@ Deno.serve(async (req: Request) => {
         speech_ea: speechEANameById.get(student.speech_ea_id) || '-',
         service_status: student.service_status,
         program_status: student.program_status,
+        returning_absent_status:
+          returningAbsentByStudentId.get(student.id)?.current_year_status ?? null,
       }
     }
 
     // Reuses the exact qualifiedStudents/subStudents built above, so the summary table's rows
-    // always match the worksheets actually generated in this same export, for either scope.
+    // always match the worksheets actually generated in this same export, for either scope -
+    // except in "full_caseload" scope, where the worksheet may now be built from an older,
+    // usable screening (see latestUsableScreeningByStudentId above). The summary row should
+    // still reflect each student's true latest result (e.g. "Absent"), not the fallback one
+    // the worksheet content came from, so it's looked up separately in that scope.
+    const toSummaryScreening = (screening: any) =>
+      caseloadScope === 'full_caseload'
+        ? latestScreeningByStudentId.get(screening.students.id)
+        : screening
+
     const caseloadQualifiedStudents = qualifiedStudents.map(screening =>
-      toCaseloadStudent(screening.students, screening)
+      toCaseloadStudent(screening.students, toSummaryScreening(screening))
     )
 
     const caseloadSubStudents = subStudents.map(screening =>
-      toCaseloadStudent(screening.students, screening)
+      toCaseloadStudent(screening.students, toSummaryScreening(screening))
     )
 
     // Graduated students only exist as a concept in "full_caseload" scope, and never get an
