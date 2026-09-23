@@ -50,6 +50,16 @@ export const ProgramBadge = ({ status }: { status?: ProgramStatus | null }) => {
   }
 }
 
+export const ReturningAbsentBadge = ({ status }: { status?: 'absent' | 'not_yet_screened' }) => {
+  if (status !== 'absent') return null
+
+  return (
+    <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>
+      Absent This Year
+    </Badge>
+  )
+}
+
 export const ServiceStatusTag = ({ status }: { status?: ServiceStatus | null }) => {
   switch (status) {
     case 'paused':
