@@ -94,6 +94,8 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     programFilteredStudents,
     effectiveStatusByStudent,
     returningAbsentByStudent,
+    returningAbsentFilter,
+    setReturningAbsentFilter,
   } = useCaseloadTableData(students, schoolId)
 
   const {
@@ -203,6 +205,8 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         setEaFilter={setEaFilter}
         dateFilter={dateFilter}
         setDateFilter={setDateFilter}
+        returningAbsentFilter={returningAbsentFilter}
+        setReturningAbsentFilter={setReturningAbsentFilter}
         programStatusFilter={programStatusFilter}
         speechEAs={speechEAs}
         availableSchoolYears={availableSchoolYears}

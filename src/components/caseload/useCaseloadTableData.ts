@@ -28,6 +28,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
   const [eaFilter, setEaFilter] = useState<string>('all')
   const [dateFilter, setDateFilter] = useState<string>('school_year')
   const [programStatusFilter, setProgramStatusFilter] = useState<string>('all')
+  const [returningAbsentFilter, setReturningAbsentFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
@@ -132,7 +133,8 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     consentFilter !== 'all' ||
     eaFilter !== 'all' ||
     dateFilter !== 'school_year' ||
-    programStatusFilter !== 'all'
+    programStatusFilter !== 'all' ||
+    returningAbsentFilter !== 'all'
 
   const clearAllFilters = () => {
     setGradeFilter([])
@@ -141,6 +143,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     setEaFilter('all')
     setDateFilter('school_year')
     setProgramStatusFilter('all')
+    setReturningAbsentFilter('all')
     setCurrentPage(1)
   }
 
@@ -188,15 +191,27 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
       eaFilter === 'all' ||
       (eaFilter === 'none' ? !student.speech_ea_id : student.speech_ea_id === eaFilter)
 
+    const matchesReturningAbsent =
+      returningAbsentFilter === 'all' || returningAbsentByStudent.has(student.id)
+
     return (
       matchesSearch &&
       matchesCaseload &&
       matchesGrade &&
       matchesResult &&
       matchesConsent &&
-      matchesEA
+      matchesEA &&
+      matchesReturningAbsent
     )
   })
+
+  if (returningAbsentFilter === 'true') {
+    console.log(
+      '[returningAbsentFilter] matched students:',
+      filteredStudents.map(s => `${s.first_name} ${s.last_name}`)
+    )
+    console.log('[returningAbsentFilter] count:', filteredStudents.length)
+  }
 
   const caseloadStats = {
     qualified: filteredStudents.filter(
@@ -348,6 +363,8 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     programFilteredStudents,
     effectiveStatusByStudent,
     returningAbsentByStudent,
+    returningAbsentFilter,
+    setReturningAbsentFilter,
 
     paginatedStudents,
     totalStudents,

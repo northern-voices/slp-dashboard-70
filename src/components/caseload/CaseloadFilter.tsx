@@ -26,6 +26,8 @@ interface CaseloadFiltersProps {
   setEaFilter: (v: string) => void
   dateFilter: string
   setDateFilter: (v: string) => void
+  returningAbsentFilter: string
+  setReturningAbsentFilter: (v: string) => void
   programStatusFilter: string
   speechEAs: Array<{ id: string; name: string }>
   availableSchoolYears: string[]
@@ -45,6 +47,8 @@ const CaseloadFilters = ({
   dateFilter,
   setDateFilter,
   programStatusFilter,
+  returningAbsentFilter,
+  setReturningAbsentFilter,
   speechEAs,
   availableSchoolYears,
   onClearAll,
@@ -59,6 +63,7 @@ const CaseloadFilters = ({
     eaFilter !== 'all',
     dateFilter !== 'school_year',
     programStatusFilter !== 'all',
+    returningAbsentFilter !== 'all',
   ].filter(Boolean).length
 
   const hasActive = activeCount > 0
@@ -199,6 +204,29 @@ const CaseloadFilters = ({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            <div className='border-t border-gray-200 pt-4 mt-4'>
+              <h4 className='text-sm font-semibold text-gray-700 mb-3'>Quick Filters</h4>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
+                <div className='flex items-center space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors'>
+                  <input
+                    type='checkbox'
+                    id='returning_absent_filter'
+                    checked={returningAbsentFilter === 'true'}
+                    onChange={e => {
+                      setReturningAbsentFilter(e.target.checked ? 'true' : 'all')
+                      onPageReset()
+                    }}
+                    className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                  />
+                  <label
+                    htmlFor='returning_absent_filter'
+                    className='text-sm font-medium text-gray-700 cursor-pointer'>
+                    Returning Students Not Yet Rescreened
+                  </label>
+                </div>
               </div>
             </div>
           </CardContent>
