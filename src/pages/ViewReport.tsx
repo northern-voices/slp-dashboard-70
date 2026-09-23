@@ -48,7 +48,28 @@ const ZIP_REPORT_TYPES = new Set([
   'school_wide_speech_screening_reports',
 ])
 
+// Download filename prefix per bulk report type, e.g. "Goal Sheets - Some School - 2026-2027.zip".
+// Report types not listed here fall back to the generic "{school} - {year} - NVSS Reports" name.
+const REPORT_TYPE_DOWNLOAD_PREFIXES: Record<string, string> = {
+  school_wide_goal_sheets: 'Goal Sheets',
+  school_wide_speech_screening_reports: 'Student Reports',
+  school_wide_hearing_reports: 'Hearing Reports',
+  school_wide_progress_reports: 'Progress Reports',
+}
+
 const POSTER_ONLY_TEMPLATES = new Set(['Complex Needs', 'Non Registered No Consent'])
+
+// Other individual speech-screening report templates that also get the TeachSpeech
+// app poster appended, matching what generateSpeechScreeningPdf already does for
+// single-report downloads - BulkDocumentPdf's own dispatch has no poster step.
+const TEACHSPEECH_POSTER_TEMPLATES = new Set([
+  'No Errors',
+  'Non Compliant',
+  'Absent',
+  'Mild Profound No Qualified Sub',
+  'Mild Profound Qualified Sub',
+  'Passed Age Appropriate',
+])
 
 const generateSpeechScreeningPdf = async (reportData: unknown) => {
   const templateName = (reportData as { template?: { name?: string } })?.template?.name
@@ -145,9 +166,9 @@ const generateSchoolSummaryPdf = async (reportData: unknown) => {
 }
 
 // Renders each document as its own PDF (applying the same poster-only short-circuit
-// generateSpeechScreeningPdf uses, since BulkDocumentPdf's own dispatch has no case
-// for the poster-only speech templates) and zips them, organized into the same
-// grade-directory structure the backend already computes per document.
+// AND the same TeachSpeech poster merge that generateSpeechScreeningPdf uses, since
+// BulkDocumentPdf's own dispatch has no case for either) and zips them, organized
+// into the same grade-directory structure the backend already computes per document.
 const generateBulkReportZip = async (
   reportData: unknown,
   onProgress?: (current: number, total: number) => void
@@ -171,6 +192,7 @@ const generateBulkReportZip = async (
   const documents = (reportData as { documents?: unknown[] })?.documents ?? []
   const zip = new JSZip()
   let posterBytes: ArrayBuffer | null = null
+  let teachspeechPosterBytes: ArrayBuffer | null = null
 
   for (let i = 0; i < documents.length; i++) {
     onProgress?.(i + 1, documents.length)
@@ -196,6 +218,19 @@ const generateBulkReportZip = async (
 
       const mainDoc = await PDFDocument.load(letterBytes)
       const posterDoc = await PDFDocument.load(posterBytes)
+      const [posterPage] = await mainDoc.copyPages(posterDoc, [0])
+      mainDoc.addPage(posterPage)
+      docBytes = await mainDoc.save()
+    } else if (templateName && TEACHSPEECH_POSTER_TEMPLATES.has(templateName)) {
+      if (!teachspeechPosterBytes) {
+        teachspeechPosterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
+      }
+
+      const docBlob = await pdf(<BulkDocumentPdf data={documents[i] as never} />).toBlob()
+      const mainBytes = await docBlob.arrayBuffer()
+
+      const mainDoc = await PDFDocument.load(mainBytes)
+      const posterDoc = await PDFDocument.load(teachspeechPosterBytes)
       const [posterPage] = await mainDoc.copyPages(posterDoc, [0])
       mainDoc.addPage(posterPage)
       docBytes = await mainDoc.save()
@@ -319,11 +354,15 @@ const ViewReport = () => {
       const academicYear = (reportData as { academic_year?: string })?.academic_year
       const extension = blob.type === 'application/zip' ? 'zip' : 'pdf'
 
+      const downloadPrefix = reportType ? REPORT_TYPE_DOWNLOAD_PREFIXES[reportType] : undefined
+
       const downloadName = studentName
         ? `${studentName} - NVSS Student Report.${extension}`
-        : schoolName
-          ? `${schoolName}${academicYear ? ` - ${academicYear}` : ''} - NVSS Reports.${extension}`
-          : `NVSS Report.${extension}`
+        : downloadPrefix && schoolName
+          ? `${downloadPrefix} - ${schoolName}${academicYear ? ` - ${academicYear}` : ''}.${extension}`
+          : schoolName
+            ? `${schoolName}${academicYear ? ` - ${academicYear}` : ''} - NVSS Reports.${extension}`
+            : `NVSS Report.${extension}`
 
       const link = document.createElement('a')
       link.href = url
@@ -353,7 +392,9 @@ const ViewReport = () => {
                   ? `Generating ${pdfProgress.current}/${pdfProgress.total}...`
                   : 'Generating PDF...'
                 : isZipDownload
-                  ? 'Download Reports (ZIP)'
+                  ? reportType === 'school_wide_goal_sheets'
+                    ? 'Download Goal Sheets (ZIP)'
+                    : 'Download Reports (ZIP)'
                   : 'Download / Print PDF'}
             </Button>
           </div>

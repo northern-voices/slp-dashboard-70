@@ -1,6 +1,15 @@
 import { supabase } from '@/lib/supabase'
 import { Student } from '@/types/database'
 
+export interface ReturningAbsentStudent {
+  student_id: string
+  first_name: string
+  last_name: string
+  program_status: 'qualified' | 'sub'
+  last_qualifying_screening_date: string
+  current_year_status: 'absent' | 'not_yet_screened'
+}
+
 export const studentsApi = {
   // Get all students for an organization
   getStudents: async (organizationId?: string): Promise<Student[]> => {
@@ -66,6 +75,21 @@ export const studentsApi = {
       return students || []
     } catch (error) {
       console.error('Error fetching students by grade:', error)
+      throw error
+    }
+  },
+
+  getReturningAbsentStudents: async (schoolId: string): Promise<ReturningAbsentStudent[]> => {
+    try {
+      const { data, error } = await supabase.rpc('get_returning_absent_students', {
+        p_school_id: schoolId,
+      })
+
+      if (error) throw error
+
+      return data || []
+    } catch (error) {
+      console.error('Error fetching returning absent students:', error)
       throw error
     }
   },

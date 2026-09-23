@@ -4,6 +4,7 @@ import {
   ConsentBadge,
   ServiceStatusTag,
   ProgramBadge,
+  ReturningAbsentBadge,
 } from '@/components/caseload/CaseloadBadges'
 import { ServiceStatus, ProgramStatus } from '@/types/database'
 
@@ -16,6 +17,7 @@ interface CaseloadStudent {
   service_status?: ServiceStatus
   program_status: ProgramStatus
   result_year: string | null
+  returning_absent_status: 'absent' | 'not_yet_screened' | null
 }
 
 interface ProgramCaseloadData {
@@ -111,7 +113,10 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
                     <td className='border border-black py-2 px-3 text-left align-top'>
                       <div className='flex flex-col gap-1 items-start'>
                         <span className='text-[#4d4b4b]'>{student.name}</span>
-                        <ServiceStatusTag status={student.service_status} />
+                        <div className='flex items-center gap-1 flex-wrap'>
+                          <ServiceStatusTag status={student.service_status} />
+                          <ReturningAbsentBadge status={student.returning_absent_status ?? undefined} />
+                        </div>
                       </div>
                     </td>
 

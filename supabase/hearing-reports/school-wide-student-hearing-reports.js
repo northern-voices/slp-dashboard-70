@@ -348,7 +348,7 @@ Deno.serve(async req => {
 
     await sendReportLinkEmail({
       recipients: recipientEmails,
-      subject: `${emailSchoolName}: NVSS Student Reports`,
+      subject: `Hearing Reports - ${emailSchoolName} - ${academic_year}`,
       reportLabel: `${emailSchoolName}'s student hearing reports for ${academic_year}`,
       viewUrl,
     })

@@ -377,6 +377,47 @@ Deno.serve(async req => {
     console.log(`Found ${priorityRescreenStudents.length} students flagged for priority rescreen`)
     console.log(`Found ${studentsRecommendationsAndReferrals.length} students with recommendations`)
 
+    // 9b. Get returning-absent students (qualified/sub last year, absent or not yet
+    //     screened this year). Only meaningful when this report's academic_year IS
+    //     the year currently in progress, since the RPC always compares against "now" -
+    //     showing it against a past academic_year would be comparing the wrong years.
+    const isReportForCurrentYear = isWithinAcademicYear(new Date().toISOString(), academic_year)
+    let returningAbsentStudents = []
+
+    if (isReportForCurrentYear) {
+      const returningAbsentResponse = await fetch(
+        `${supabaseUrl}/rest/v1/rpc/get_returning_absent_students`,
+        {
+          method: 'POST',
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ p_school_id: school_id }),
+        }
+      )
+
+      if (!returningAbsentResponse.ok) {
+        throw new Error(
+          `Failed to fetch returning absent students: ${returningAbsentResponse.status}`
+        )
+      }
+
+      const returningAbsentRows = await returningAbsentResponse.json()
+      const studentById = new Map(students.map(student => [student.id, student]))
+
+      returningAbsentStudents = returningAbsentRows.map(row => {
+        const student = studentById.get(row.student_id)
+        return {
+          name: `${row.first_name} ${row.last_name}`,
+          grade: student ? gradeLevelById.get(student.current_grade_id) || '' : '',
+        }
+      })
+    }
+
+    console.log(`Found ${returningAbsentStudents.length} returning-absent students`)
+
     // 10. Determine which template to use based on whether there are recommendations
     const hasRecommendations = studentsRecommendationsAndReferrals.length > 0
     const templateName = hasRecommendations
@@ -413,6 +454,8 @@ Deno.serve(async req => {
         students_priority_rescreen: priorityRescreenStudents.map(transformRecord),
         students_recommendations_and_referrals:
           studentsRecommendationsAndReferrals.map(transformRecord),
+        returning_absent: returningAbsentStudents.length > 0,
+        returning_absent_students: returningAbsentStudents,
       },
     }
 

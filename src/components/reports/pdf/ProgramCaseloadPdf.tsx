@@ -12,6 +12,7 @@ interface CaseloadStudent {
   service_status?: ServiceStatus
   program_status: ProgramStatus
   result_year: string | null
+  returning_absent_status: 'absent' | 'not_yet_screened' | null
 }
 
 interface ProgramCaseloadData {
@@ -123,6 +124,11 @@ const styles = StyleSheet.create({
   pausedPill: { backgroundColor: '#f3e8ff' },
   pausedPillText: { color: '#6b21a8' },
 
+  // Matches ReturningAbsentBadge's yellow (bg-yellow-100/text-yellow-800), same hex
+  // pair already used for PROGRAM_PDF_STYLE.to_be_determined below.
+  returningAbsentPill: { backgroundColor: '#fef9c3' },
+  returningAbsentPillText: { color: '#854d0e' },
+
   consentYesPill: { backgroundColor: '#dcfce7' },
   consentYesText: { color: '#166534' },
   consentNoPill: { backgroundColor: '#fee2e2' },
@@ -135,6 +141,11 @@ const NameCell = ({ student }: { student: CaseloadStudent }) => (
     {student.service_status === 'paused' && (
       <View style={[styles.pill, styles.pausedPill]}>
         <Text style={[styles.pillText, styles.pausedPillText]}>Paused / Away</Text>
+      </View>
+    )}
+    {student.returning_absent_status === 'absent' && (
+      <View style={[styles.pill, styles.returningAbsentPill]}>
+        <Text style={[styles.pillText, styles.returningAbsentPillText]}>Absent This Year</Text>
       </View>
     )}
   </View>

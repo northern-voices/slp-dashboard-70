@@ -437,7 +437,7 @@ Deno.serve(async (req: Request) => {
 
     await sendReportLinkEmail({
       recipients: override_emails,
-      subject: `${schoolName} - Student Reports - ${academic_year}`,
+      subject: `Student Reports - ${schoolName} - ${academic_year}`,
       reportLabel: `${schoolName}'s student reports for ${academic_year}`,
       viewUrl,
     })
