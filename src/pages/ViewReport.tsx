@@ -86,7 +86,7 @@ const generateSpeechScreeningPdf = async (reportData: unknown) => {
     const letterBlob = await pdf(<LetterPdf data={reportData as never} />).toBlob()
     const letterBytes = await letterBlob.arrayBuffer()
     const posterBytes = await (
-      await fetch('/No-Consent_Non-Registered_Complex-Needs-sound-errors.pdf')
+      await fetch('/No-Consent_Non-Registered_Complex-Needs.pdf')
     ).arrayBuffer()
 
     const mainDoc = await PDFDocument.load(letterBytes)
@@ -106,7 +106,9 @@ const generateSpeechScreeningPdf = async (reportData: unknown) => {
 
   const mainBlob = await pdf(<StudentSpeechReportPdf data={reportData as never} />).toBlob()
   const mainBytes = await mainBlob.arrayBuffer()
-  const posterBytes = await (await fetch('/teachspeech-app-poster.pdf')).arrayBuffer()
+  const posterBytes = await (
+    await fetch('/teachspeech-app-poster-sound-errors.pdf')
+  ).arrayBuffer()
 
   const mainDoc = await PDFDocument.load(mainBytes)
   const posterDoc = await PDFDocument.load(posterBytes)
@@ -207,7 +209,7 @@ const generateBulkReportZip = async (
     if (templateName && POSTER_ONLY_TEMPLATES.has(templateName)) {
       if (!posterOnlyBytes) {
         posterOnlyBytes = await (
-          await fetch('/No-Consent_Non-Registered_Complex-Needs-sound-errors.pdf')
+          await fetch('/No-Consent_Non-Registered_Complex-Needs.pdf')
         ).arrayBuffer()
       }
 
@@ -224,7 +226,7 @@ const generateBulkReportZip = async (
     } else if (templateName && TEACHSPEECH_POSTER_TEMPLATES.has(templateName)) {
       if (!teachspeechPosterBytes) {
         teachspeechPosterBytes = await (
-          await fetch('/teachspeech-app-poster.pdf')
+          await fetch('/teachspeech-app-poster-sound-errors.pdf')
         ).arrayBuffer()
       }
 
