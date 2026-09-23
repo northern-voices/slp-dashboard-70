@@ -48,6 +48,15 @@ const ZIP_REPORT_TYPES = new Set([
   'school_wide_speech_screening_reports',
 ])
 
+// Download filename prefix per bulk report type, e.g. "Goal Sheets - Some School - 2026-2027.zip".
+// Report types not listed here fall back to the generic "{school} - {year} - NVSS Reports" name.
+const REPORT_TYPE_DOWNLOAD_PREFIXES: Record<string, string> = {
+  school_wide_goal_sheets: 'Goal Sheets',
+  school_wide_speech_screening_reports: 'Student Reports',
+  school_wide_hearing_reports: 'Hearing Reports',
+  school_wide_progress_reports: 'Progress Reports',
+}
+
 const POSTER_ONLY_TEMPLATES = new Set(['Complex Needs', 'Non Registered No Consent'])
 
 const generateSpeechScreeningPdf = async (reportData: unknown) => {
@@ -319,15 +328,15 @@ const ViewReport = () => {
       const academicYear = (reportData as { academic_year?: string })?.academic_year
       const extension = blob.type === 'application/zip' ? 'zip' : 'pdf'
 
+      const downloadPrefix = reportType ? REPORT_TYPE_DOWNLOAD_PREFIXES[reportType] : undefined
+
       const downloadName = studentName
         ? `${studentName} - NVSS Student Report.${extension}`
-        : reportType === 'school_wide_goal_sheets' && schoolName
-          ? `Goal Sheets - ${schoolName}${academicYear ? ` - ${academicYear}` : ''}.${extension}`
-          : reportType === 'school_wide_speech_screening_reports' && schoolName
-            ? `Student Reports - ${schoolName}${academicYear ? ` - ${academicYear}` : ''}.${extension}`
-            : schoolName
-              ? `${schoolName}${academicYear ? ` - ${academicYear}` : ''} - NVSS Reports.${extension}`
-              : `NVSS Report.${extension}`
+        : downloadPrefix && schoolName
+          ? `${downloadPrefix} - ${schoolName}${academicYear ? ` - ${academicYear}` : ''}.${extension}`
+          : schoolName
+            ? `${schoolName}${academicYear ? ` - ${academicYear}` : ''} - NVSS Reports.${extension}`
+            : `NVSS Report.${extension}`
 
       const link = document.createElement('a')
       link.href = url
