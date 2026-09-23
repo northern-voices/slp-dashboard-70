@@ -1,16 +1,8 @@
 import { ReportHeader, ReportFooter } from './shared/ReportSimpleChrome'
 
-interface ProcessedError {
-  sound: string
-  pattern: string
-  example: string
-  targetSound: string
-}
-
 interface ComplexNeedsLetterData {
   context: {
     student_name: string
-    errors?: ProcessedError[]
   }
 }
 
@@ -62,11 +54,7 @@ const ComplexNeedsLetterView = ({ data }: { data: ComplexNeedsLetterData }) => {
 
       <section className='bg-white shadow-sm w-full overflow-hidden'>
         <img
-          src={
-            context.errors?.length > 0
-              ? '/No-Consent_Non-Registered_Complex-Needs-sound-errors.jpg'
-              : '/No-Consent_Non-Registered_Complex-Needs.jpg'
-          }
+          src='/No-Consent_Non-Registered_Complex-Needs-sound-errors.jpg'
           alt='Free access to the NVSS TeachSpeech app'
           className='w-full h-auto block'
         />
