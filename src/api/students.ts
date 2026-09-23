@@ -81,7 +81,7 @@ export const studentsApi = {
 
   getReturningAbsentStudents: async (schoolId: string): Promise<ReturningAbsentStudent[]> => {
     try {
-      const { data, error } = await supabase.rpc('get_return_absent_students', {
+      const { data, error } = await supabase.rpc('get_returning_absent_students', {
         p_school_id: schoolId,
       })
 
