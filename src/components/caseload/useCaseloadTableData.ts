@@ -205,14 +205,6 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     )
   })
 
-  if (returningAbsentFilter === 'true') {
-    console.log(
-      '[returningAbsentFilter] matched students:',
-      filteredStudents.map(s => `${s.first_name} ${s.last_name}`)
-    )
-    console.log('[returningAbsentFilter] count:', filteredStudents.length)
-  }
-
   const caseloadStats = {
     qualified: filteredStudents.filter(
       s => effectiveStatusByStudent.get(s.id)?.programStatus === 'qualified'
