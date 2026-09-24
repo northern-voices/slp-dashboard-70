@@ -29,15 +29,13 @@ const EditScreeningContent = () => {
     isEditingStudent,
     editedFirstName,
     editedLastName,
-    editedGradeId,
-    availableGrades,
-    isLoadingGrades,
+    editedGradeLevel,
     clinicalNotesOpen,
     referralNotesOpen,
     progressNotesOpen,
     setEditedFirstName,
     setEditedLastName,
-    setEditedGradeId,
+    setEditedGradeLevel,
     setClinicalNotesOpen,
     setReferralNotesOpen,
     setProgressNotesOpen,
@@ -222,12 +220,10 @@ const EditScreeningContent = () => {
         open={isEditingStudent}
         firstName={editedFirstName}
         lastName={editedLastName}
-        gradeId={editedGradeId}
-        availableGrades={availableGrades}
-        isLoadingGrades={isLoadingGrades}
+        gradeLevel={editedGradeLevel}
         onFirstNameChange={setEditedFirstName}
         onLastNameChange={setEditedLastName}
-        onGradeChange={setEditedGradeId}
+        onGradeLevelChange={setEditedGradeLevel}
         onSave={handleSaveStudent}
         onCancel={handleCancelEditStudent}
       />
