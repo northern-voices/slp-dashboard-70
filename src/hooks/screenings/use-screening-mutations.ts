@@ -147,18 +147,9 @@ export const useUpdateSpeechScreening = () => {
     },
 
     onSuccess: () => {
-      // Invalidate and refetch all screening-related queries
-      queryClient.invalidateQueries({
-        queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['speech-screenings', user?.id, userProfile?.role, currentOrganization?.id],
-      })
-
-      // Force refetch of the main screenings query to ensure immediate update
-      queryClient.refetchQueries({
-        queryKey: ['screenings', user?.id, userProfile?.role, currentOrganization?.id],
-      })
+      queryClient.invalidateQueries({ queryKey: ['screenings'] })
+      queryClient.invalidateQueries({ queryKey: ['speech-screenings'] })
+      queryClient.refetchQueries({ queryKey: ['screenings'] })
     },
     onError: (error, variables, context) => {
       if (context?.previousScreenings) {
