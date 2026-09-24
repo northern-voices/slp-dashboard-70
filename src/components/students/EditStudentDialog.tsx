@@ -15,19 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import LoadingSpinner from '@/components/common/LoadingSpinner'
-import type { SchoolGrade } from '@/api/schoolGrades'
+import { GRADE_MAPPING } from '@/constants/app'
 
 interface EditStudentDialogProps {
   open: boolean
   firstName: string
   lastName: string
-  gradeId: string
-  availableGrades: SchoolGrade[]
-  isLoadingGrades: boolean
+  gradeLevel: string
   onFirstNameChange: (value: string) => void
   onLastNameChange: (value: string) => void
-  onGradeChange: (value: string) => void
+  onGradeLevelChange: (value: string) => void
   onSave: () => void
   onCancel: () => void
 }
@@ -36,12 +33,10 @@ const EditStudentDialog = ({
   open,
   firstName,
   lastName,
-  gradeId,
-  availableGrades,
-  isLoadingGrades,
+  gradeLevel,
   onFirstNameChange,
   onLastNameChange,
-  onGradeChange,
+  onGradeLevelChange,
   onSave,
   onCancel,
 }: EditStudentDialogProps) => (
@@ -56,7 +51,9 @@ const EditStudentDialog = ({
       }}>
       <DialogHeader>
         <DialogTitle>Edit Student Information</DialogTitle>
-        <DialogDescription>Update the student's first name, last name.</DialogDescription>
+        <DialogDescription>
+          Update the student's first name, last name, and grade.
+        </DialogDescription>
       </DialogHeader>
 
       <div className='py-4 space-y-4'>
@@ -78,27 +75,21 @@ const EditStudentDialog = ({
           />
         </div>
 
-        {/* <div className='space-y-2'>
+        <div className='space-y-2'>
           <label className='text-sm font-medium text-gray-700'>Current Grade</label>
-          {isLoadingGrades ? (
-            <div className='flex items-center justify-center py-2'>
-              <LoadingSpinner size='sm' />
-            </div>
-          ) : (
-            <Select value={gradeId || undefined} onValueChange={onGradeChange}>
-              <SelectTrigger>
-                <SelectValue placeholder='Select grade (optional)' />
-              </SelectTrigger>
-              <SelectContent>
-                {availableGrades.map(grade => (
-                  <SelectItem key={grade.id} value={grade.id}>
-                    {grade.grade_level} ({grade.academic_year})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div> */}
+          <Select value={gradeLevel || undefined} onValueChange={onGradeLevelChange}>
+            <SelectTrigger>
+              <SelectValue placeholder='Select grade' />
+            </SelectTrigger>
+            <SelectContent>
+              {GRADE_MAPPING.map(grade => (
+                <SelectItem key={grade.value} value={grade.value}>
+                  {grade.display}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <DialogFooter>
