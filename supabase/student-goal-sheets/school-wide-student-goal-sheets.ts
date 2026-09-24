@@ -491,6 +491,11 @@ Deno.serve(async (req: Request) => {
       for (const student of students) {
         if (student.program_status !== 'qualified' && student.program_status !== 'sub') continue
 
+        // A later screening attempt that came back "No Consent" overrides a stale
+        // qualified/sub program_status - the student shouldn't be on caseload at all.
+        if (latestScreeningByStudentId.get(student.id)?.result === 'non_registered_no_consent')
+          continue
+
         const screening = latestUsableScreeningByStudentId.get(student.id)
         if (!screening) continue // nothing usable to build a worksheet from
 
