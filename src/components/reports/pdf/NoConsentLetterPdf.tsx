@@ -86,10 +86,12 @@ const NoConsentLetterPdf = ({ data }: { data: NoConsentLetterData }) => {
           development at home.
         </Text>
         <Text style={styles.paragraph}>
-          If you change your mind and would like your child to participate in a speech screening in
-          the future, please reach out to your school team. We would be happy to connect with you,
-          answer any questions, and discuss available screening opportunities.
+          Your child was respectfully deferred from the speech and language screening process
+          following the withdrawal of consent. If you change your mind at any time and would like
+          your child to be seen by the speech-language pathologist, please contact the school and we
+          would be happy to arrange a future screening opportunity.
         </Text>
+
         <Text style={styles.paragraph}>We hope you enjoy exploring the TeachSpeech app!</Text>
         <Text style={styles.bold}>Northern Voices Speech Services</Text>
 
