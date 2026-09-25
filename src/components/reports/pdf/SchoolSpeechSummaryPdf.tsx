@@ -257,7 +257,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
     ? paginateBlocks(
         [
           {
-            heading: 'Returning Students Not Yet Rescreened This Year',
+            heading: 'Students on Caseload Not Yet Rescreened',
             columns: ['STUDENT', 'GRADE'],
             rows: context.returning_absent_students.map(s => [s.name, s.grade]),
             colorKey: 'returning_absent',
