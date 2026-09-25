@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
+import { GRADE_MAPPING } from '@/constants/app'
 
 interface SummaryStudent {
   name: string
@@ -11,6 +12,14 @@ interface ReferralStudent {
   grade: string
   recommendations_and_referrals: string
 }
+
+const gradeOrderIndex = (grade: string): number => {
+  const index = GRADE_MAPPING.findIndex(g => grade.includes(g.value))
+  return index === -1 ? Infinity : index
+}
+
+const sortByGrade = <T extends { grade: string }>(students: T[]): T[] =>
+  [...students].sort((a, b) => gradeOrderIndex(a.grade) - gradeOrderIndex(b.grade))
 
 interface SchoolSpeechSummaryData {
   context: {
@@ -203,7 +212,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
     sectionABlocks.push({
       heading: 'Qualified - Primary Caseload',
       columns: ['STUDENT', 'GRADE'],
-      rows: context.qualified_students.map(s => [s.name, s.grade]),
+      rows: sortByGrade(context.qualified_students).map(s => [s.name, s.grade]),
       colorKey: 'qualified',
     })
   }
@@ -211,7 +220,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
     sectionABlocks.push({
       heading: 'Subs',
       columns: ['STUDENT', 'GRADE'],
-      rows: context.sub_students.map(s => [s.name, s.grade]),
+      rows: sortByGrade(context.sub_students).map(s => [s.name, s.grade]),
       colorKey: 'sub',
     })
   }
@@ -225,7 +234,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
           {
             heading: 'Priority Rescreens Needed',
             columns: ['STUDENT', 'GRADE'],
-            rows: context.students_priority_rescreen.map(s => [s.name, s.grade]),
+            rows: sortByGrade(context.students_priority_rescreen).map(s => [s.name, s.grade]),
             colorKey: 'priority_rescreen',
           },
         ],
@@ -240,7 +249,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
           {
             heading: 'Student Recommendations and Referrals',
             columns: ['STUDENT', 'GRADE', 'Notes'],
-            rows: context.students_recommendations_and_referrals.map(s => [
+            rows: sortByGrade(context.students_recommendations_and_referrals).map(s => [
               s.name,
               s.grade,
               s.recommendations_and_referrals,
@@ -259,7 +268,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
           {
             heading: 'Students on Caseload Not Yet Rescreened',
             columns: ['STUDENT', 'GRADE'],
-            rows: context.returning_absent_students.map(s => [s.name, s.grade]),
+            rows: sortByGrade(context.returning_absent_students).map(s => [s.name, s.grade]),
             colorKey: 'returning_absent',
           },
         ],
