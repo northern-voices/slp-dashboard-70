@@ -32,12 +32,20 @@ interface TableBlock {
   heading: string
   columns: string[]
   rows: string[][]
+  colorKey?: 'qualified' | 'sub'
 }
 
 interface PageSegment {
   heading: string
   columns: string[]
   rows: string[][]
+  colorKey?: 'qualified' | 'sub'
+}
+
+// Mirrors PROGRAM_PDF_STYLE in ProgramCaseloadPdf.tsx so Qualified/Sub read the same across reports.
+const SEGMENT_HEADING_COLORS: Record<'qualified' | 'sub', { bg: string; text: string }> = {
+  qualified: { bg: '#fee2e2', text: '#991b1b' },
+  sub: { bg: '#ffedd5', text: '#9a3412' },
 }
 
 const ROWS_FIRST_PAGE = 22
@@ -68,6 +76,7 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
         heading: isFirstSegment ? block.heading : `${block.heading} (cont.)`,
         columns: block.columns,
         rows: rowsForThisSegment,
+        colorKey: block.colorKey,
       })
       remaining -= HEADING_ROWS + rowsForThisSegment.length
       rows = rows.slice(rowsForThisSegment.length)
@@ -105,17 +114,29 @@ const styles = StyleSheet.create({
 
   blockHeading: { fontFamily: 'Gotu', fontSize: 15, color: '#1f2937', marginBottom: 8 },
 
+  segmentHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginBottom: 8,
+    borderRadius: 4,
+  },
+  segmentAccentBar: { width: 4, height: 11, borderRadius: 2, marginRight: 6 },
+  segmentHeaderText: { fontFamily: 'Montserrat', fontWeight: 700, fontSize: 10, letterSpacing: 1 },
+
   table: { marginBottom: 14 },
   tableRow: { flexDirection: 'row' },
   tableHeaderCell: {
     borderWidth: 0.75,
     borderColor: '#000000',
-    backgroundColor: '#f2f2f2',
-    padding: 5,
+    backgroundColor: '#5b7a8b',
+    padding: 6,
     fontSize: 8,
     fontFamily: 'Montserrat',
     fontWeight: 700,
     textAlign: 'center',
+    color: '#ffffff',
   },
   tableCell: {
     borderWidth: 0.75,
@@ -125,31 +146,48 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#4d4b4b',
   },
+  tableRowEven: { backgroundColor: '#f9fafb' },
 })
 
-const SegmentTable = ({ segment }: { segment: PageSegment }) => (
-  <>
-    {segment.heading && <Text style={styles.blockHeading}>{segment.heading}</Text>}
-    <View style={styles.table}>
-      <View style={styles.tableRow} wrap={false}>
-        {segment.columns.map(col => (
-          <Text key={col} style={[styles.tableHeaderCell, { flex: 1 }]}>
-            {col}
-          </Text>
+const SegmentTable = ({ segment }: { segment: PageSegment }) => {
+  const headingColors = segment.colorKey ? SEGMENT_HEADING_COLORS[segment.colorKey] : null
+
+  return (
+    <>
+      {segment.heading &&
+        (headingColors ? (
+          <View style={[styles.segmentHeaderRow, { backgroundColor: headingColors.bg }]}>
+            <View style={[styles.segmentAccentBar, { backgroundColor: headingColors.text }]} />
+            <Text style={[styles.segmentHeaderText, { color: headingColors.text }]}>
+              {segment.heading.toUpperCase()}
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.blockHeading}>{segment.heading}</Text>
         ))}
-      </View>
-      {segment.rows.map((row, i) => (
-        <View style={styles.tableRow} key={i} wrap={false}>
-          {row.map((cell, j) => (
-            <Text key={j} style={[styles.tableCell, { flex: 1 }]}>
-              {cell}
+      <View style={styles.table}>
+        <View style={styles.tableRow} wrap={false}>
+          {segment.columns.map(col => (
+            <Text key={col} style={[styles.tableHeaderCell, { flex: 1 }]}>
+              {col}
             </Text>
           ))}
         </View>
-      ))}
-    </View>
-  </>
-)
+        {segment.rows.map((row, i) => (
+          <View style={styles.tableRow} key={i} wrap={false}>
+            {row.map((cell, j) => (
+              <Text
+                key={j}
+                style={[styles.tableCell, i % 2 === 1 ? styles.tableRowEven : null, { flex: 1 }]}>
+                {cell}
+              </Text>
+            ))}
+          </View>
+        ))}
+      </View>
+    </>
+  )
+}
 
 const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => {
   const { context } = data
@@ -160,6 +198,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
       heading: 'Qualified - Primary Caseload',
       columns: ['STUDENT', 'GRADE'],
       rows: context.qualified_students.map(s => [s.name, s.grade]),
+      colorKey: 'qualified',
     })
   }
   if (context.sub && context.sub_students?.length > 0) {
@@ -167,6 +206,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
       heading: 'Subs',
       columns: ['STUDENT', 'GRADE'],
       rows: context.sub_students.map(s => [s.name, s.grade]),
+      colorKey: 'sub',
     })
   }
 
