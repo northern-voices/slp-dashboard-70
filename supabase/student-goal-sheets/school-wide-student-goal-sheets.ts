@@ -640,39 +640,57 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Reuses the exact qualifiedStudents/subStudents built above, so the summary table's rows
-    // always match the worksheets actually generated in this same export, for either scope -
-    // except in "full_caseload" scope, where the worksheet may now be built from an older,
-    // usable screening (see latestUsableScreeningByStudentId above). The summary row should
-    // still reflect each student's true latest result (e.g. "Absent"), not the fallback one
-    // the worksheet content came from, so it's looked up separately in that scope.
-    const toSummaryScreening = (screening: any) =>
-      caseloadScope === 'full_caseload'
-        ? latestScreeningByStudentId.get(screening.students.id)
-        : screening
-
-    const caseloadQualifiedStudents = qualifiedStudents.map(screening =>
-      toCaseloadStudent(screening.students, toSummaryScreening(screening))
-    )
-
-    const caseloadSubStudents = subStudents.map(screening =>
-      toCaseloadStudent(screening.students, toSummaryScreening(screening))
-    )
-
-    // Graduated students only exist as a concept in "full_caseload" scope, and never get an
-    // individual worksheet - sourced fresh from the roster since they were deliberately
-    // excluded from qualifiedStudents/subStudents above. Same No Consent override applies:
-    // a later No Consent result overrides a stale graduated program_status.
-    const caseloadGraduatedStudents =
+    // Full "Program Caseload" roster - every student currently marked qualified/sub on their
+    // record, regardless of whether they have a usable screening to build a worksheet from.
+    // Mirrors the /caseload page's logic (useCaseloadTableData.ts), which reads
+    // students.program_status directly rather than deriving caseload membership from
+    // screenings - so a never-screened qualified/sub student still shows up here even though
+    // they get no individual worksheet above. Same No Consent override applies as graduated
+    // below. In "school_year" scope there's no such gap, so just reuse the screenings already
+    // separated into qualifiedStudents/subStudents.
+    const caseloadQualifiedStudents = (
       caseloadScope === 'full_caseload'
         ? students
             .filter(
               (student: any) =>
-                student.program_status === 'graduated' &&
+                student.program_status === 'qualified' &&
                 latestScreeningByStudentId.get(student.id)?.result !== 'non_registered_no_consent'
             )
             .map((student: any) => toCaseloadStudent(student))
+        : qualifiedStudents.map(screening => toCaseloadStudent(screening.students, screening))
+    ).sort(compareCaseloadRosterEntries)
+
+    const caseloadSubStudents = (
+      caseloadScope === 'full_caseload'
+        ? students
+            .filter(
+              (student: any) =>
+                student.program_status === 'sub' &&
+                latestScreeningByStudentId.get(student.id)?.result !== 'non_registered_no_consent'
+            )
+            .map((student: any) => toCaseloadStudent(student))
+        : subStudents.map(screening => toCaseloadStudent(screening.students, screening))
+    ).sort(compareCaseloadRosterEntries)
+
+    // Graduated students only exist as a concept in "full_caseload" scope, and never get an
+    // individual worksheet - sourced fresh from the roster since they were deliberately
+    // excluded from qualifiedStudents/subStudents above. Same No Consent override applies:
+    // a later No Consent result overrides a stale graduated program_status. program_status also
+    // never resets once a student graduates - if they weren't screened again this year, it can
+    // still read 'graduated' from a prior year, so only include them if their latest screening
+    // (the one that actually set them to graduated) falls within the current academic year.
+    const caseloadGraduatedStudents = (
+      caseloadScope === 'full_caseload'
+        ? students
+            .filter((student: any) => {
+              if (student.program_status !== 'graduated') return false
+              const latest = latestScreeningByStudentId.get(student.id)
+              if (latest?.result === 'non_registered_no_consent') return false
+              return !!latest && isCurrentAcademicYear(latest.created_at)
+            })
+            .map((student: any) => toCaseloadStudent(student))
         : []
+    ).sort(compareCaseloadRosterEntries)
 
     console.log(
       `Program Caseload roster: ${caseloadQualifiedStudents.length} qualified, ${caseloadSubStudents.length}
@@ -862,6 +880,56 @@ function isSubFlag(errorPatterns) {
 
   // Fix: Handle string values from PostgreSQL JSON
   return patterns?.screening_metadata?.sub === true || patterns?.screening_metadata?.sub === 'true'
+}
+
+// Mirrors GRADE_MAPPING in src/constants/app.ts, used to order the Program Caseload roster
+// the same way the /caseload page does (program status, then this grade order).
+const GRADE_ORDER = [
+  'Headstart',
+  'Nursery',
+  'Pre-K',
+  'K4',
+  'K5',
+  'Kindergarten',
+  'K/1',
+  '1',
+  '1/2',
+  '2',
+  '2/3',
+  '3',
+  '3/4',
+  '4',
+  '4/5',
+  '5',
+  '5/6',
+  '6',
+  '6/7',
+  '7',
+  '7/8',
+  '8',
+  '8/9',
+  '9',
+  '9/10',
+  '10',
+  '10/11',
+  '11',
+  '11/12',
+  '12',
+]
+
+function gradeOrderIndex(grade: string): number {
+  const index = GRADE_ORDER.findIndex(value => grade.includes(value))
+  return index === -1 ? Infinity : index
+}
+
+// Same ordering the /caseload page uses when sorted by program status: within a program status
+// group, non-paused students come first, then paused, each sub-group ordered by grade.
+function compareCaseloadRosterEntries(a: { grade: string; service_status?: string }, b: { grade: string; service_status?: string }): number {
+  const aPaused = a.service_status === 'paused'
+  const bPaused = b.service_status === 'paused'
+  if (aPaused !== bPaused) return aPaused ? 1 : -1
+
+  return gradeOrderIndex(a.grade) - gradeOrderIndex(b.grade)
 }
 
 // Helper function to get latest screening per student
