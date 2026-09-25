@@ -270,6 +270,11 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
               <Text style={styles.infoLabel}>Student Count: </Text>
               {context.student_count}
             </Text>
+
+            <Text>
+              <Text style={styles.infoLabel}>School Year: </Text>
+              {context.academic_year}
+            </Text>
           </View>
 
           <View style={styles.infoRow}>
