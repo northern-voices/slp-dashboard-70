@@ -31,12 +31,23 @@ interface TableBlock {
   heading: string
   columns: string[]
   rows: string[][]
+  colorKey?: 'qualified' | 'sub'
 }
 
 interface PageSegment {
   heading: string
   columns: string[]
   rows: string[][]
+  colorKey?: 'qualified' | 'sub'
+}
+
+// Mirrors ProgramBadge's colors so Qualified/Sub read the same way across every report.
+const SEGMENT_HEADING_STYLES: Record<
+  'qualified' | 'sub',
+  { bg: string; text: string; bar: string }
+> = {
+  qualified: { bg: 'bg-red-100', text: 'text-red-800', bar: 'bg-red-800' },
+  sub: { bg: 'bg-orange-100', text: 'text-orange-800', bar: 'bg-orange-800' },
 }
 
 const ROWS_FIRST_PAGE = 22
@@ -67,6 +78,7 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
         heading: isFirstSegment ? block.heading : `${block.heading} (cont.)`,
         columns: block.columns,
         rows: rowsForThisSegment,
+        colorKey: block.colorKey,
       })
       remaining -= HEADING_ROWS + rowsForThisSegment.length
       rows = rows.slice(rowsForThisSegment.length)
@@ -84,37 +96,52 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
   return pages
 }
 
-const SegmentTable = ({ segment }: { segment: PageSegment }) => (
-  <>
-    {segment.heading && (
-      <p className="text-lg font-['Gotu'] text-gray-800 mb-2">{segment.heading}</p>
-    )}
-    <table className='w-full border border-black text-[10px] mb-4'>
-      <thead>
-        <tr className='bg-[#f2f2f2]'>
-          {segment.columns.map(col => (
-            <th
-              key={col}
-              className="font-['Montserrat'] border border-black py-1.5 px-2 text-center text-[8px] font-bold">
-              {col}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {segment.rows.map((row, i) => (
-          <tr key={i}>
-            {row.map((cell, j) => (
-              <td key={j} className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
-                {cell}
-              </td>
+const SegmentTable = ({ segment }: { segment: PageSegment }) => {
+  const headingStyle = segment.colorKey ? SEGMENT_HEADING_STYLES[segment.colorKey] : null
+
+  return (
+    <div className='mb-4 rounded-md overflow-hidden border border-gray-300'>
+      {segment.heading &&
+        (headingStyle ? (
+          <div className={`flex items-center gap-2 ${headingStyle.bg} px-3 py-1.5`}>
+            <span className={`w-1.5 h-3.5 rounded-full ${headingStyle.bar}`} />
+            <p
+              className={`font-['Montserrat'] text-xs font-bold uppercase tracking-wider ${headingStyle.text}`}>
+              {segment.heading}
+            </p>
+          </div>
+        ) : (
+          <p className="text-lg font-['Gotu'] text-gray-800 px-3 pt-2">{segment.heading}</p>
+        ))}
+      <table className='w-full text-[10px] border-collapse'>
+        <thead>
+          <tr className='bg-[#5b7a8b]'>
+            {segment.columns.map(col => (
+              <th
+                key={col}
+                className="font-['Montserrat'] py-2 px-2 text-center text-[8px] font-bold text-white tracking-wide">
+                {col}
+              </th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </>
-)
+        </thead>
+        <tbody>
+          {segment.rows.map((row, i) => (
+            <tr key={i} className={i % 2 === 1 ? 'bg-gray-50' : 'bg-white'}>
+              {row.map((cell, j) => (
+                <td
+                  key={j}
+                  className='py-1.5 px-2 text-center text-[#4d4b4b] border-t border-gray-200'>
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) => {
   const { context } = data
@@ -125,6 +152,7 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
       heading: 'Qualified - Primary Caseload',
       columns: ['STUDENT', 'GRADE'],
       rows: context.qualified_students.map(s => [s.name, s.grade]),
+      colorKey: 'qualified',
     })
   }
   if (context.sub && context.sub_students?.length > 0) {
@@ -132,6 +160,7 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
       heading: 'Subs',
       columns: ['STUDENT', 'GRADE'],
       rows: context.sub_students.map(s => [s.name, s.grade]),
+      colorKey: 'sub',
     })
   }
 
