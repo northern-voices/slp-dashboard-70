@@ -491,6 +491,11 @@ Deno.serve(async (req: Request) => {
       for (const student of students) {
         if (student.program_status !== 'qualified' && student.program_status !== 'sub') continue
 
+        // A later screening attempt that came back "No Consent" overrides a stale
+        // qualified/sub program_status - the student shouldn't be on caseload at all.
+        if (latestScreeningByStudentId.get(student.id)?.result === 'non_registered_no_consent')
+          continue
+
         const screening = latestUsableScreeningByStudentId.get(student.id)
         if (!screening) continue // nothing usable to build a worksheet from
 
@@ -656,11 +661,16 @@ Deno.serve(async (req: Request) => {
 
     // Graduated students only exist as a concept in "full_caseload" scope, and never get an
     // individual worksheet - sourced fresh from the roster since they were deliberately
-    // excluded from qualifiedStudents/subStudents above.
+    // excluded from qualifiedStudents/subStudents above. Same No Consent override applies:
+    // a later No Consent result overrides a stale graduated program_status.
     const caseloadGraduatedStudents =
       caseloadScope === 'full_caseload'
         ? students
-            .filter((student: any) => student.program_status === 'graduated')
+            .filter(
+              (student: any) =>
+                student.program_status === 'graduated' &&
+                latestScreeningByStudentId.get(student.id)?.result !== 'non_registered_no_consent'
+            )
             .map((student: any) => toCaseloadStudent(student))
         : []
 

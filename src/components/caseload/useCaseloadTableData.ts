@@ -171,6 +171,8 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     const screening = latestScreeningByStudent.get(student.id)
 
     const matchesCaseload = (() => {
+      if (screening?.result === 'non_registered_no_consent') return false
+
       const { programStatus } = effectiveStatusByStudent.get(student.id) ?? {}
       return (
         programStatus === 'qualified' || programStatus === 'sub' || programStatus === 'graduated'

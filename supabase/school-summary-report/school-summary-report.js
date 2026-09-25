@@ -353,8 +353,25 @@ Deno.serve(async req => {
     let subStudents
 
     if (caseloadScope === 'full_caseload') {
-      qualifiedStudents = students.filter(student => student.program_status === 'qualified')
-      subStudents = students.filter(student => student.program_status === 'sub')
+      // Latest screening per student across ALL years, so a later "No Consent" attempt
+      // overrides a stale qualified/sub program_status - such students shouldn't be on
+      // caseload at all, even though their record still says qualified/sub.
+      const latestScreeningByStudentId = new Map()
+      allScreenings.forEach(screening => {
+        const existing = latestScreeningByStudentId.get(screening.student_id)
+        if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
+          latestScreeningByStudentId.set(screening.student_id, screening)
+        }
+      })
+      const hasNoConsent = student =>
+        latestScreeningByStudentId.get(student.id)?.result === 'non_registered_no_consent'
+
+      qualifiedStudents = students.filter(
+        student => student.program_status === 'qualified' && !hasNoConsent(student)
+      )
+      subStudents = students.filter(
+        student => student.program_status === 'sub' && !hasNoConsent(student)
+      )
     } else {
       qualifiedStudents = latestScreenings.filter(
         screening => isQualifiedStudent(screening) && !isSubStudent(screening)
