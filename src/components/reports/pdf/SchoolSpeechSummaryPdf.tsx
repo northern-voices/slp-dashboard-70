@@ -28,24 +28,30 @@ interface SchoolSpeechSummaryData {
   }
 }
 
+type SegmentColorKey = 'qualified' | 'sub' | 'priority_rescreen' | 'referral' | 'returning_absent'
+
 interface TableBlock {
   heading: string
   columns: string[]
   rows: string[][]
-  colorKey?: 'qualified' | 'sub'
+  colorKey?: SegmentColorKey
 }
 
 interface PageSegment {
   heading: string
   columns: string[]
   rows: string[][]
-  colorKey?: 'qualified' | 'sub'
+  colorKey?: SegmentColorKey
 }
 
-// Mirrors PROGRAM_PDF_STYLE in ProgramCaseloadPdf.tsx so Qualified/Sub read the same across reports.
-const SEGMENT_HEADING_COLORS: Record<'qualified' | 'sub', { bg: string; text: string }> = {
+// Mirrors PROGRAM_PDF_STYLE in ProgramCaseloadPdf.tsx (Qualified/Sub) and the Returning Absent
+// badge's yellow, so each category reads the same way across every report.
+const SEGMENT_HEADING_COLORS: Record<SegmentColorKey, { bg: string; text: string }> = {
   qualified: { bg: '#fee2e2', text: '#991b1b' },
   sub: { bg: '#ffedd5', text: '#9a3412' },
+  priority_rescreen: { bg: '#ccfbf1', text: '#115e59' },
+  referral: { bg: '#f3e8ff', text: '#6b21a8' },
+  returning_absent: { bg: '#fef9c3', text: '#854d0e' },
 }
 
 const ROWS_FIRST_PAGE = 22
@@ -217,9 +223,10 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
     ? paginateBlocks(
         [
           {
-            heading: '',
+            heading: 'Priority Rescreens Needed',
             columns: ['STUDENT', 'GRADE'],
             rows: context.students_priority_rescreen.map(s => [s.name, s.grade]),
+            colorKey: 'priority_rescreen',
           },
         ],
         ROWS_FIRST_PAGE
@@ -231,13 +238,14 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
     ? paginateBlocks(
         [
           {
-            heading: '',
+            heading: 'Student Recommendations and Referrals',
             columns: ['STUDENT', 'GRADE', 'Notes'],
             rows: context.students_recommendations_and_referrals.map(s => [
               s.name,
               s.grade,
               s.recommendations_and_referrals,
             ]),
+            colorKey: 'referral',
           },
         ],
         ROWS_FIRST_PAGE
@@ -249,9 +257,10 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
     ? paginateBlocks(
         [
           {
-            heading: '',
+            heading: 'Returning Students Not Yet Rescreened This Year',
             columns: ['STUDENT', 'GRADE'],
             rows: context.returning_absent_students.map(s => [s.name, s.grade]),
+            colorKey: 'returning_absent',
           },
         ],
         ROWS_FIRST_PAGE
@@ -285,7 +294,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
                     </Text>
                   </View>
                   <Text style={styles.sectionLabel}>
-                    A. STUDENTS ELIGIBLE TO PARTICIPATE IN SPEECH PROGRAM:
+                    STUDENTS ELIGIBLE TO PARTICIPATE IN SPEECH PROGRAM:
                   </Text>
                 </>
               )}
@@ -307,7 +316,6 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
           <Page key={`p-${i}`} size='LETTER' style={styles.page}>
             <ReportBanner title='School Summary Report' />
             <View style={styles.body}>
-              {i === 0 && <Text style={styles.sectionLabel}>B. PRIORITY RESCREENS NEEDED:</Text>}
               {segments.map((segment, j) => (
                 <SegmentTable key={j} segment={segment} />
               ))}
@@ -331,17 +339,14 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
             <ReportBanner title='School Summary Report' />
             <View style={styles.body}>
               {i === 0 && (
-                <>
-                  <Text style={styles.sectionLabel}>C. STUDENT RECOMMENDATIONS AND REFERRALS:</Text>
-                  <Text style={styles.paragraph}>
-                    Our Speech Therapists have an opportunity to briefly observe students during
-                    class-wide speech screens. If the Speech Therapist noted any "red flags" or
-                    "developmental concerns" this does not necessarily mean anything is wrong!
-                    Recommendations listed below simply serve as proactive steps and suggestions to
-                    ensure student success. Please contact your Speech Therapist if you have any
-                    questions.
-                  </Text>
-                </>
+                <Text style={styles.paragraph}>
+                  Our Speech Therapists have an opportunity to briefly observe students during
+                  class-wide speech screens. If the Speech Therapist noted any "red flags" or
+                  "developmental concerns" this does not necessarily mean anything is wrong!
+                  Recommendations listed below simply serve as proactive steps and suggestions to
+                  ensure student success. Please contact your Speech Therapist if you have any
+                  questions.
+                </Text>
               )}
               {segments.map((segment, j) => (
                 <SegmentTable key={j} segment={segment} />
@@ -366,11 +371,6 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
           <Page key={`r-${i}`} size='LETTER' style={styles.page}>
             <ReportBanner title='School Summary Report' />
             <View style={styles.body}>
-              {i === 0 && (
-                <Text style={styles.sectionLabel}>
-                  D. RETURNING STUDENTS NOT YET RESCREENED THIS YEAR:
-                </Text>
-              )}
               {segments.map((segment, j) => (
                 <SegmentTable key={j} segment={segment} />
               ))}
