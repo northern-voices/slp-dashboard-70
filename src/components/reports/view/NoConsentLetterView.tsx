@@ -37,16 +37,12 @@ const NoConsentLetterView = ({ data }: { data: NoConsentLetterData }) => {
             Speech-Language Pathologist.
           </p>
           <p className='text-gray-700 leading-relaxed mb-3'>
-            Even though your child did not participate in the screening, your family is still
-            welcome to access the Northern Voices speech app at no cost through your school. The app
-            includes games, activities, videos, and practical tools that families can use to support
-            speech development at home.
+            Your child was respectfully deferred from the speech and language screening process
+            following the withdrawal of consent. If you change your mind at any time and would like
+            your child to be seen by the speech-language pathologist, please contact the school and
+            we would be happy to arrange a future screening opportunity.
           </p>
-          <p className='text-gray-700 leading-relaxed mb-3'>
-            If you change your mind and would like your child to participate in a speech screening
-            in the future, please reach out to your school team. We would be happy to connect with
-            you, answer any questions, and discuss available screening opportunities.
-          </p>
+
           <p className='text-gray-700 leading-relaxed mb-3'>
             We hope you enjoy exploring the TeachSpeech app!
           </p>

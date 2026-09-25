@@ -1,4 +1,5 @@
 import { ReportBanner, ReportFooter } from './shared/ReportBannerChrome'
+import { GRADE_MAPPING } from '@/constants/app'
 
 interface SummaryStudent {
   name: string
@@ -10,6 +11,14 @@ interface ReferralStudent {
   grade: string
   recommendations_and_referrals: string
 }
+
+const gradeOrderIndex = (grade: string): number => {
+  const index = GRADE_MAPPING.findIndex(g => grade.includes(g.value))
+  return index === -1 ? Infinity : index
+}
+
+const sortByGrade = <T extends { grade: string }>(students: T[]): T[] =>
+  [...students].sort((a, b) => gradeOrderIndex(a.grade) - gradeOrderIndex(b.grade))
 
 interface SchoolSpeechSummaryData {
   context: {
@@ -27,16 +36,30 @@ interface SchoolSpeechSummaryData {
   }
 }
 
+type SegmentColorKey = 'qualified' | 'sub' | 'priority_rescreen' | 'referral' | 'returning_absent'
+
 interface TableBlock {
   heading: string
   columns: string[]
   rows: string[][]
+  colorKey?: SegmentColorKey
 }
 
 interface PageSegment {
   heading: string
   columns: string[]
   rows: string[][]
+  colorKey?: SegmentColorKey
+}
+
+// Mirrors ProgramBadge's colors (Qualified/Sub) and ReturningAbsentBadge's yellow, so each
+// category reads the same way across every report.
+const SEGMENT_HEADING_STYLES: Record<SegmentColorKey, { bg: string; text: string; bar: string }> = {
+  qualified: { bg: 'bg-red-100', text: 'text-red-800', bar: 'bg-red-800' },
+  sub: { bg: 'bg-orange-100', text: 'text-orange-800', bar: 'bg-orange-800' },
+  priority_rescreen: { bg: 'bg-teal-100', text: 'text-teal-800', bar: 'bg-teal-800' },
+  referral: { bg: 'bg-purple-100', text: 'text-purple-800', bar: 'bg-purple-800' },
+  returning_absent: { bg: 'bg-yellow-100', text: 'text-yellow-800', bar: 'bg-yellow-800' },
 }
 
 const ROWS_FIRST_PAGE = 22
@@ -67,6 +90,7 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
         heading: isFirstSegment ? block.heading : `${block.heading} (cont.)`,
         columns: block.columns,
         rows: rowsForThisSegment,
+        colorKey: block.colorKey,
       })
       remaining -= HEADING_ROWS + rowsForThisSegment.length
       rows = rows.slice(rowsForThisSegment.length)
@@ -84,37 +108,52 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
   return pages
 }
 
-const SegmentTable = ({ segment }: { segment: PageSegment }) => (
-  <>
-    {segment.heading && (
-      <p className="text-lg font-['Gotu'] text-gray-800 mb-2">{segment.heading}</p>
-    )}
-    <table className='w-full border border-black text-[10px] mb-4'>
-      <thead>
-        <tr className='bg-[#f2f2f2]'>
-          {segment.columns.map(col => (
-            <th
-              key={col}
-              className="font-['Montserrat'] border border-black py-1.5 px-2 text-center text-[8px] font-bold">
-              {col}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {segment.rows.map((row, i) => (
-          <tr key={i}>
-            {row.map((cell, j) => (
-              <td key={j} className='border border-black py-1.5 px-2 text-center text-[#4d4b4b]'>
-                {cell}
-              </td>
+const SegmentTable = ({ segment }: { segment: PageSegment }) => {
+  const headingStyle = segment.colorKey ? SEGMENT_HEADING_STYLES[segment.colorKey] : null
+
+  return (
+    <div className='mb-4 rounded-md overflow-hidden border border-gray-300'>
+      {segment.heading &&
+        (headingStyle ? (
+          <div className={`flex items-center gap-2 ${headingStyle.bg} px-3 py-1.5`}>
+            <span className={`w-1.5 h-3.5 rounded-full ${headingStyle.bar}`} />
+            <p
+              className={`font-['Montserrat'] text-xs font-bold uppercase tracking-wider ${headingStyle.text}`}>
+              {segment.heading}
+            </p>
+          </div>
+        ) : (
+          <p className="text-lg font-['Gotu'] text-gray-800 px-3 pt-2">{segment.heading}</p>
+        ))}
+      <table className='w-full text-[10px] border-collapse'>
+        <thead>
+          <tr className='bg-[#5b7a8b]'>
+            {segment.columns.map(col => (
+              <th
+                key={col}
+                className="font-['Montserrat'] py-2 px-2 text-center text-[8px] font-bold text-white tracking-wide">
+                {col}
+              </th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </>
-)
+        </thead>
+        <tbody>
+          {segment.rows.map((row, i) => (
+            <tr key={i} className={i % 2 === 1 ? 'bg-gray-50' : 'bg-white'}>
+              {row.map((cell, j) => (
+                <td
+                  key={j}
+                  className='py-1.5 px-2 text-center text-[#4d4b4b] border-t border-gray-200'>
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) => {
   const { context } = data
@@ -124,14 +163,16 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
     sectionABlocks.push({
       heading: 'Qualified - Primary Caseload',
       columns: ['STUDENT', 'GRADE'],
-      rows: context.qualified_students.map(s => [s.name, s.grade]),
+      rows: sortByGrade(context.qualified_students).map(s => [s.name, s.grade]),
+      colorKey: 'qualified',
     })
   }
   if (context.sub && context.sub_students?.length > 0) {
     sectionABlocks.push({
       heading: 'Subs',
       columns: ['STUDENT', 'GRADE'],
-      rows: context.sub_students.map(s => [s.name, s.grade]),
+      rows: sortByGrade(context.sub_students).map(s => [s.name, s.grade]),
+      colorKey: 'sub',
     })
   }
 
@@ -142,9 +183,13 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
     ? paginateBlocks(
         [
           {
-            heading: '',
+            heading: 'Priority Rescreens Needed',
             columns: ['STUDENT', 'GRADE'],
-            rows: context.students_priority_rescreen.map(student => [student.name, student.grade]),
+            rows: sortByGrade(context.students_priority_rescreen).map(student => [
+              student.name,
+              student.grade,
+            ]),
+            colorKey: 'priority_rescreen',
           },
         ],
         ROWS_FIRST_PAGE
@@ -156,13 +201,14 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
     ? paginateBlocks(
         [
           {
-            heading: '',
+            heading: 'Student Recommendations and Referrals',
             columns: ['STUDENT', 'GRADE', 'Notes'],
-            rows: context.students_recommendations_and_referrals.map(s => [
+            rows: sortByGrade(context.students_recommendations_and_referrals).map(s => [
               s.name,
               s.grade,
               s.recommendations_and_referrals,
             ]),
+            colorKey: 'referral',
           },
         ],
         ROWS_FIRST_PAGE
@@ -174,9 +220,10 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
     ? paginateBlocks(
         [
           {
-            heading: '',
+            heading: 'Students on Caseload Not Yet Rescreened',
             columns: ['STUDENT', 'GRADE'],
-            rows: context.returning_absent_students.map(s => [s.name, s.grade]),
+            rows: sortByGrade(context.returning_absent_students).map(s => [s.name, s.grade]),
+            colorKey: 'returning_absent',
           },
         ],
         ROWS_FIRST_PAGE
@@ -217,7 +264,7 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
                     </p>
                   </div>
                   <p className='font-bold text-gray-900 mb-3'>
-                    A. STUDENTS ELIGIBLE TO PARTICIPATE IN SPEECH PROGRAM:
+                    STUDENTS ELIGIBLE TO PARTICIPATE IN SPEECH PROGRAM:
                   </p>
                 </>
               )}
@@ -241,9 +288,6 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
             className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
             <ReportBanner title='School Summary Report' />
             <div className='flex-1 px-10 pt-5'>
-              {i === 0 && (
-                <p className='font-bold text-gray-900 mb-3'>B. PRIORITY RESCREENS NEEDED:</p>
-              )}
               {segments.map((segment, j) => (
                 <SegmentTable key={j} segment={segment} />
               ))}
@@ -269,19 +313,14 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
             <ReportBanner title='School Summary Report' />
             <div className='flex-1 px-10 pt-5'>
               {i === 0 && (
-                <>
-                  <p className='font-bold text-gray-900 mb-3'>
-                    C. STUDENT RECOMMENDATIONS AND REFERRALS:
-                  </p>
-                  <p className='text-sm text-gray-700 mb-4'>
-                    Our Speech Therapists have an opportunity to briefly observe students during
-                    class-wide speech screens. If the Speech Therapist noted any "red flags" or
-                    "developmental concerns" this does not necessarily mean anything is wrong!
-                    Recommendations listed below simply serve as proactive steps and suggestions to
-                    ensure student success. Please contact your Speech Therapist if you have any
-                    questions.
-                  </p>
-                </>
+                <p className='text-sm text-gray-700 mb-4'>
+                  Our Speech Therapists have an opportunity to briefly observe students during
+                  class-wide speech screens. If the Speech Therapist noted any "red flags" or
+                  "developmental concerns" this does not necessarily mean anything is wrong!
+                  Recommendations listed below simply serve as proactive steps and suggestions to
+                  ensure student success. Please contact your Speech Therapist if you have any
+                  questions.
+                </p>
               )}
               {segments.map((segment, j) => (
                 <SegmentTable key={j} segment={segment} />
@@ -308,11 +347,6 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
             className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
             <ReportBanner title='School Summary Report' />
             <div className='flex-1 px-10 pt-5'>
-              {i === 0 && (
-                <p className='font-bold text-gray-900 mb-3'>
-                  D. RETURNING STUDENTS NOT YET RESCREENED THIS YEAR:
-                </p>
-              )}
               {segments.map((segment, j) => (
                 <SegmentTable key={j} segment={segment} />
               ))}

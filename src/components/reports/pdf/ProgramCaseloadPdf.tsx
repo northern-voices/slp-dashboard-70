@@ -89,6 +89,22 @@ const styles = StyleSheet.create({
 
   sectionText: { fontSize: 10, color: '#374151', marginTop: 16 },
 
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginTop: 16,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+  },
+  sectionHeaderLeft: { flexDirection: 'row', alignItems: 'center' },
+  sectionAccentBar: { width: 4, height: 11, borderRadius: 2, marginRight: 6 },
+  sectionHeaderTitle: { fontFamily: 'Montserrat', fontWeight: 700, fontSize: 10, letterSpacing: 1 },
+  sectionCountBadge: { borderRadius: 9, paddingVertical: 2, paddingHorizontal: 8 },
+  sectionCountText: { fontFamily: 'Montserrat', fontWeight: 700, fontSize: 9, color: '#ffffff' },
+
   table: { marginBottom: 14 },
   tableRow: { flexDirection: 'row' },
   tableHeaderCell: {
@@ -217,6 +233,31 @@ const SpeechEaCell = ({ speechEa }: { speechEa: string }) => (
   </View>
 )
 
+const SectionHeaderPdf = ({
+  title,
+  count,
+  colorKey,
+}: {
+  title: string
+  count: number
+  colorKey: 'qualified' | 'sub' | 'graduated'
+}) => {
+  const colors = PROGRAM_PDF_STYLE[colorKey]
+  return (
+    <View style={[styles.sectionHeaderRow, { backgroundColor: colors.bg }]}>
+      <View style={styles.sectionHeaderLeft}>
+        <View style={[styles.sectionAccentBar, { backgroundColor: colors.text }]} />
+        <Text style={[styles.sectionHeaderTitle, { color: colors.text }]}>
+          {title.toUpperCase()}
+        </Text>
+      </View>
+      <View style={[styles.sectionCountBadge, { backgroundColor: colors.text }]}>
+        <Text style={styles.sectionCountText}>{count}</Text>
+      </View>
+    </View>
+  )
+}
+
 const CaseloadTablePdf = ({ students }: { students: CaseloadStudent[] }) => (
   <View style={styles.table}>
     <View style={styles.tableRow} wrap={false}>
@@ -270,6 +311,11 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
               <Text style={styles.infoLabel}>Student Count: </Text>
               {context.student_count}
             </Text>
+
+            <Text>
+              <Text style={styles.infoLabel}>School Year: </Text>
+              {context.academic_year}
+            </Text>
           </View>
 
           <View style={styles.infoRow}>
@@ -296,7 +342,40 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
               No qualified, sub, or graduated students this year.
             </Text>
           ) : (
-            <CaseloadTablePdf students={students} />
+            <>
+              {context.qualified && context.qualified_students.length > 0 && (
+                <View>
+                  <SectionHeaderPdf
+                    title='Qualified'
+                    count={context.qualified_students.length}
+                    colorKey='qualified'
+                  />
+                  <CaseloadTablePdf students={context.qualified_students} />
+                </View>
+              )}
+
+              {context.sub && context.sub_students.length > 0 && (
+                <View>
+                  <SectionHeaderPdf
+                    title='Sub'
+                    count={context.sub_students.length}
+                    colorKey='sub'
+                  />
+                  <CaseloadTablePdf students={context.sub_students} />
+                </View>
+              )}
+
+              {context.graduated && context.graduated_students.length > 0 && (
+                <View>
+                  <SectionHeaderPdf
+                    title='Graduated'
+                    count={context.graduated_students.length}
+                    colorKey='graduated'
+                  />
+                  <CaseloadTablePdf students={context.graduated_students} />
+                </View>
+              )}
+            </>
           )}
         </View>
 

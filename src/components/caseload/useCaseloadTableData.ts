@@ -12,6 +12,7 @@ import {
   getCurrentAcademicYear,
   getCurrentAcademicYearStartDate,
   getAcademicYearRange,
+  isCurrentAcademicYear,
 } from '@/lib/academicYear'
 import { ReturningAbsentStudent } from '@/api/students'
 
@@ -171,7 +172,15 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     const screening = latestScreeningByStudent.get(student.id)
 
     const matchesCaseload = (() => {
+      if (screening?.result === 'non_registered_no_consent') return false
+
       const { programStatus } = effectiveStatusByStudent.get(student.id) ?? {}
+
+      // program_status never resets once a student graduates - if they weren't screened again this year, it can still read 'graduated' from a prior year. Only show them on the caseload for the year they actually graduated in. Skip this check when browsing a specific past school year (dateFilter starting with 'sy_'), since latestScreeningByStudent is already scoped to that year there, so the screening is inherently from that year.
+      if (programStatus === 'graduated' && !dateFilter.startsWith('sy_')) {
+        return !!screening && isCurrentAcademicYear(screening.created_at)
+      }
+
       return (
         programStatus === 'qualified' || programStatus === 'sub' || programStatus === 'graduated'
       )
