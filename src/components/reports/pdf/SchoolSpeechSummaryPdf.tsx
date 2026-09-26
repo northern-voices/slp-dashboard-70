@@ -44,6 +44,7 @@ interface TableBlock {
   columns: string[]
   rows: string[][]
   colorKey?: SegmentColorKey
+  intro?: string
 }
 
 interface PageSegment {
@@ -51,6 +52,7 @@ interface PageSegment {
   columns: string[]
   rows: string[][]
   colorKey?: SegmentColorKey
+  intro?: string
 }
 
 // Mirrors PROGRAM_PDF_STYLE in ProgramCaseloadPdf.tsx (Qualified/Sub) and the Returning Absent
@@ -63,10 +65,20 @@ const SEGMENT_HEADING_COLORS: Record<SegmentColorKey, { bg: string; text: string
   returning_absent: { bg: '#fef9c3', text: '#854d0e' },
 }
 
-const ROWS_FIRST_PAGE = 22
-const ROWS_PER_PAGE = 28
-const HEADING_ROWS = 2
+const ROWS_FIRST_PAGE = 26
+const ROWS_PER_PAGE = 32
+// Each segment's colored banner + rounded card border + bottom margin costs more than a plain
+// table header row did in the old design - reserving only 2 here let the last table on a busy
+// page (several segments stacked) actually overflow and get visually clipped.
+const HEADING_ROWS = 3
+const INTRO_ROWS = 6
+// Never leave fewer than this many rows stranded alone on a continuation page - trim the
+// earlier page back instead so a split table's "(cont.)" page always has a decent chunk.
+const MIN_ORPHAN_ROWS = 4
 
+// Paginates every table block as one continuous stream, so a new category (Sub, Priority
+// Rescreens, etc.) starts right where the previous one left off on the same page instead of
+// always forcing a fresh page per category.
 const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegment[][] => {
   const pages: PageSegment[][] = []
   let currentPage: PageSegment[] = []
@@ -77,7 +89,22 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
     let isFirstSegment = true
 
     while (rows.length > 0) {
-      const availableForRows = remaining - HEADING_ROWS
+      const introRows = isFirstSegment && block.intro ? INTRO_ROWS : 0
+      let availableForRows = remaining - HEADING_ROWS - introRows
+
+      if (availableForRows <= 0) {
+        pages.push(currentPage)
+        currentPage = []
+        remaining = ROWS_PER_PAGE
+        continue
+      }
+
+      if (rows.length > availableForRows) {
+        const tailRows = rows.length - availableForRows
+        if (tailRows < MIN_ORPHAN_ROWS) {
+          availableForRows = Math.max(0, rows.length - MIN_ORPHAN_ROWS)
+        }
+      }
 
       if (availableForRows <= 0) {
         pages.push(currentPage)
@@ -92,8 +119,9 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
         columns: block.columns,
         rows: rowsForThisSegment,
         colorKey: block.colorKey,
+        intro: isFirstSegment ? block.intro : undefined,
       })
-      remaining -= HEADING_ROWS + rowsForThisSegment.length
+      remaining -= HEADING_ROWS + introRows + rowsForThisSegment.length
       rows = rows.slice(rowsForThisSegment.length)
       isFirstSegment = false
 
@@ -169,6 +197,7 @@ const SegmentTable = ({ segment }: { segment: PageSegment }) => {
 
   return (
     <>
+      {segment.intro && <Text style={styles.paragraph}>{segment.intro}</Text>}
       {segment.heading &&
         (headingColors ? (
           <View style={[styles.segmentHeaderRow, { backgroundColor: headingColors.bg }]}>
@@ -207,17 +236,21 @@ const SegmentTable = ({ segment }: { segment: PageSegment }) => {
 const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => {
   const { context } = data
 
-  const sectionABlocks: TableBlock[] = []
-  if (context.qualified && context.qualified_students?.length > 0) {
-    sectionABlocks.push({
+  const blocks: TableBlock[] = []
+
+  const hasQualified = context.qualified && (context.qualified_students?.length ?? 0) > 0
+  const hasSub = context.sub && (context.sub_students?.length ?? 0) > 0
+
+  if (hasQualified) {
+    blocks.push({
       heading: 'Qualified - Primary Caseload',
       columns: ['STUDENT', 'GRADE'],
       rows: sortByGrade(context.qualified_students).map(s => [s.name, s.grade]),
       colorKey: 'qualified',
     })
   }
-  if (context.sub && context.sub_students?.length > 0) {
-    sectionABlocks.push({
+  if (hasSub) {
+    blocks.push({
       heading: 'Subs',
       columns: ['STUDENT', 'GRADE'],
       rows: sortByGrade(context.sub_students).map(s => [s.name, s.grade]),
@@ -225,136 +258,69 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
     })
   }
 
-  const sectionAPages = paginateBlocks(sectionABlocks, ROWS_FIRST_PAGE)
+  if ((context.students_priority_rescreen?.length ?? 0) > 0) {
+    blocks.push({
+      heading: 'Priority Rescreens (Absent)',
+      columns: ['STUDENT', 'GRADE'],
+      rows: sortByGrade(context.students_priority_rescreen).map(s => [s.name, s.grade]),
+      colorKey: 'priority_rescreen',
+    })
+  }
 
-  const hasPriorityRescreens = (context.students_priority_rescreen?.length ?? 0) > 0
-  const sectionPriorityPages = hasPriorityRescreens
-    ? paginateBlocks(
-        [
-          {
-            heading: 'Priority Rescreens (Absent)',
-            columns: ['STUDENT', 'GRADE'],
-            rows: sortByGrade(context.students_priority_rescreen).map(s => [s.name, s.grade]),
-            colorKey: 'priority_rescreen',
-          },
-        ],
-        ROWS_FIRST_PAGE
-      )
-    : []
+  if ((context.students_recommendations_and_referrals?.length ?? 0) > 0) {
+    blocks.push({
+      heading: 'Student Recommendations and Referrals',
+      columns: ['STUDENT', 'GRADE', 'Notes'],
+      rows: sortByGrade(context.students_recommendations_and_referrals).map(s => [
+        s.name,
+        s.grade,
+        s.recommendations_and_referrals,
+      ]),
+      colorKey: 'referral',
+      intro:
+        'Our Speech Therapists have an opportunity to briefly observe students during ' +
+        'class-wide speech screens. If the Speech Therapist noted any "red flags" or ' +
+        '"developmental concerns" this does not necessarily mean anything is wrong! ' +
+        'Recommendations listed below simply serve as proactive steps and suggestions to ' +
+        'ensure student success. Please contact your Speech Therapist if you have any questions.',
+    })
+  }
 
-  const hasReferrals = (context.students_recommendations_and_referrals?.length ?? 0) > 0
-  const sectionBPages = hasReferrals
-    ? paginateBlocks(
-        [
-          {
-            heading: 'Student Recommendations and Referrals',
-            columns: ['STUDENT', 'GRADE', 'Notes'],
-            rows: sortByGrade(context.students_recommendations_and_referrals).map(s => [
-              s.name,
-              s.grade,
-              s.recommendations_and_referrals,
-            ]),
-            colorKey: 'referral',
-          },
-        ],
-        ROWS_FIRST_PAGE
-      )
-    : []
+  if ((context.returning_absent_students?.length ?? 0) > 0) {
+    blocks.push({
+      heading: 'Students on Caseload from Last Year (Requiring Screens)',
+      columns: ['STUDENT', 'GRADE'],
+      rows: sortByGrade(context.returning_absent_students).map(s => [s.name, s.grade]),
+      colorKey: 'returning_absent',
+    })
+  }
 
-  const hasReturningAbsent = (context.returning_absent_students?.length ?? 0) > 0
-  const sectionReturningAbsentPages = hasReturningAbsent
-    ? paginateBlocks(
-        [
-          {
-            heading: 'Students on Caseload Not Yet Rescreened',
-            columns: ['STUDENT', 'GRADE'],
-            rows: sortByGrade(context.returning_absent_students).map(s => [s.name, s.grade]),
-            colorKey: 'returning_absent',
-          },
-        ],
-        ROWS_FIRST_PAGE
-      )
-    : []
-
-  const totalPages =
-    sectionAPages.length +
-    sectionPriorityPages.length +
-    sectionBPages.length +
-    sectionReturningAbsentPages.length
+  const pages = paginateBlocks(blocks, ROWS_FIRST_PAGE)
+  const totalPages = pages.length
 
   return (
     <Document>
-      {sectionAPages.map((segments, i) => {
+      {pages.map((segments, i) => {
         const isLastPage = i === totalPages - 1
         return (
-          <Page key={`a-${i}`} size='LETTER' style={styles.page}>
+          <Page key={i} size='LETTER' style={styles.page}>
             <ReportBanner title='School Summary Report' />
             <View style={styles.body}>
               {i === 0 && (
-                <>
-                  <View style={styles.infoRow}>
-                    <Text>
-                      <Text style={styles.infoLabel}>Screening Date(s): </Text>
-                      {context.screening_date}
-                    </Text>
-                    <Text>
-                      <Text style={styles.infoLabel}>SLP: </Text>
-                      {context.slp}
-                    </Text>
-                  </View>
-                  <Text style={styles.sectionLabel}>
-                    STUDENTS ELIGIBLE TO PARTICIPATE IN SPEECH PROGRAM:
+                <View style={styles.infoRow}>
+                  <Text>
+                    <Text style={styles.infoLabel}>Screening Date(s): </Text>
+                    {context.screening_date}
                   </Text>
-                </>
+                  <Text>
+                    <Text style={styles.infoLabel}>SLP: </Text>
+                    {context.slp}
+                  </Text>
+                </View>
               )}
-              {segments.map((segment, j) => (
-                <SegmentTable key={j} segment={segment} />
-              ))}
-            </View>
-            {isLastPage && (
-              <ReportFooter page={i + 1} of={totalPages} brand='NORTHERN VOICES SPEECH SERVICES' />
-            )}
-          </Page>
-        )
-      })}
-
-      {sectionPriorityPages.map((segments, i) => {
-        const pageIndex = sectionAPages.length + i
-        const isLastPage = pageIndex === totalPages - 1
-        return (
-          <Page key={`p-${i}`} size='LETTER' style={styles.page}>
-            <ReportBanner title='School Summary Report' />
-            <View style={styles.body}>
-              {segments.map((segment, j) => (
-                <SegmentTable key={j} segment={segment} />
-              ))}
-            </View>
-            {isLastPage && (
-              <ReportFooter
-                page={pageIndex + 1}
-                of={totalPages}
-                brand='NORTHERN VOICES SPEECH SERVICES'
-              />
-            )}
-          </Page>
-        )
-      })}
-
-      {sectionBPages.map((segments, i) => {
-        const pageIndex = sectionAPages.length + sectionPriorityPages.length + i
-        const isLastPage = pageIndex === totalPages - 1
-        return (
-          <Page key={`b-${i}`} size='LETTER' style={styles.page}>
-            <ReportBanner title='School Summary Report' />
-            <View style={styles.body}>
-              {i === 0 && (
-                <Text style={styles.paragraph}>
-                  Our Speech Therapists have an opportunity to briefly observe students during
-                  class-wide speech screens. If the Speech Therapist noted any "red flags" or
-                  "developmental concerns" this does not necessarily mean anything is wrong!
-                  Recommendations listed below simply serve as proactive steps and suggestions to
-                  ensure student success. Please contact your Speech Therapist if you have any
-                  questions.
+              {i === 0 && (hasQualified || hasSub) && (
+                <Text style={styles.sectionLabel}>
+                  STUDENTS ELIGIBLE TO PARTICIPATE IN SPEECH PROGRAM:
                 </Text>
               )}
               {segments.map((segment, j) => (
@@ -362,34 +328,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
               ))}
             </View>
             {isLastPage && (
-              <ReportFooter
-                page={pageIndex + 1}
-                of={totalPages}
-                brand='NORTHERN VOICES SPEECH SERVICES'
-              />
-            )}
-          </Page>
-        )
-      })}
-
-      {sectionReturningAbsentPages.map((segments, i) => {
-        const pageIndex =
-          sectionAPages.length + sectionPriorityPages.length + sectionBPages.length + i
-        const isLastPage = pageIndex === totalPages - 1
-        return (
-          <Page key={`r-${i}`} size='LETTER' style={styles.page}>
-            <ReportBanner title='School Summary Report' />
-            <View style={styles.body}>
-              {segments.map((segment, j) => (
-                <SegmentTable key={j} segment={segment} />
-              ))}
-            </View>
-            {isLastPage && (
-              <ReportFooter
-                page={pageIndex + 1}
-                of={totalPages}
-                brand='NORTHERN VOICES SPEECH SERVICES'
-              />
+              <ReportFooter page={i + 1} of={totalPages} brand='NORTHERN VOICES SPEECH SERVICES' />
             )}
           </Page>
         )
