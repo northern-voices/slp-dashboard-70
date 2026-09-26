@@ -232,7 +232,7 @@ const SchoolSpeechSummaryPdf = ({ data }: { data: SchoolSpeechSummaryData }) => 
     ? paginateBlocks(
         [
           {
-            heading: 'Priority Rescreens Needed',
+            heading: 'Priority Rescreens (Absent)',
             columns: ['STUDENT', 'GRADE'],
             rows: sortByGrade(context.students_priority_rescreen).map(s => [s.name, s.grade]),
             colorKey: 'priority_rescreen',
