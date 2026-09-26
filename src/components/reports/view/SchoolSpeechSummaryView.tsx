@@ -43,6 +43,7 @@ interface TableBlock {
   columns: string[]
   rows: string[][]
   colorKey?: SegmentColorKey
+  intro?: string
 }
 
 interface PageSegment {
@@ -50,6 +51,7 @@ interface PageSegment {
   columns: string[]
   rows: string[][]
   colorKey?: SegmentColorKey
+  intro?: string
 }
 
 // Mirrors ProgramBadge's colors (Qualified/Sub) and ReturningAbsentBadge's yellow, so each
@@ -62,10 +64,20 @@ const SEGMENT_HEADING_STYLES: Record<SegmentColorKey, { bg: string; text: string
   returning_absent: { bg: 'bg-yellow-100', text: 'text-yellow-800', bar: 'bg-yellow-800' },
 }
 
-const ROWS_FIRST_PAGE = 22
-const ROWS_PER_PAGE = 28
-const HEADING_ROWS = 2
+const ROWS_FIRST_PAGE = 26
+const ROWS_PER_PAGE = 32
+// Each segment's colored banner + rounded card border + bottom margin costs more than a plain
+// table header row did in the old design - reserving only 2 here let the last table on a busy
+// page (several segments stacked) actually overflow and get visually clipped.
+const HEADING_ROWS = 3
+const INTRO_ROWS = 6
+// Never leave fewer than this many rows stranded alone on a continuation page - trim the
+// earlier page back instead so a split table's "(cont.)" page always has a decent chunk.
+const MIN_ORPHAN_ROWS = 4
 
+// Paginates every table block as one continuous stream, so a new category (Sub, Priority
+// Rescreens, etc.) starts right where the previous one left off on the same page instead of
+// always forcing a fresh page per category.
 const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegment[][] => {
   const pages: PageSegment[][] = []
   let currentPage: PageSegment[] = []
@@ -76,7 +88,22 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
     let isFirstSegment = true
 
     while (rows.length > 0) {
-      const availableForRows = remaining - HEADING_ROWS
+      const introRows = isFirstSegment && block.intro ? INTRO_ROWS : 0
+      let availableForRows = remaining - HEADING_ROWS - introRows
+
+      if (availableForRows <= 0) {
+        pages.push(currentPage)
+        currentPage = []
+        remaining = ROWS_PER_PAGE
+        continue
+      }
+
+      if (rows.length > availableForRows) {
+        const tailRows = rows.length - availableForRows
+        if (tailRows < MIN_ORPHAN_ROWS) {
+          availableForRows = Math.max(0, rows.length - MIN_ORPHAN_ROWS)
+        }
+      }
 
       if (availableForRows <= 0) {
         pages.push(currentPage)
@@ -91,8 +118,9 @@ const paginateBlocks = (blocks: TableBlock[], firstPageBudget: number): PageSegm
         columns: block.columns,
         rows: rowsForThisSegment,
         colorKey: block.colorKey,
+        intro: isFirstSegment ? block.intro : undefined,
       })
-      remaining -= HEADING_ROWS + rowsForThisSegment.length
+      remaining -= HEADING_ROWS + introRows + rowsForThisSegment.length
       rows = rows.slice(rowsForThisSegment.length)
       isFirstSegment = false
 
@@ -112,45 +140,48 @@ const SegmentTable = ({ segment }: { segment: PageSegment }) => {
   const headingStyle = segment.colorKey ? SEGMENT_HEADING_STYLES[segment.colorKey] : null
 
   return (
-    <div className='mb-4 rounded-md overflow-hidden border border-gray-300'>
-      {segment.heading &&
-        (headingStyle ? (
-          <div className={`flex items-center gap-2 ${headingStyle.bg} px-3 py-1.5`}>
-            <span className={`w-1.5 h-3.5 rounded-full ${headingStyle.bar}`} />
-            <p
-              className={`font-['Montserrat'] text-xs font-bold uppercase tracking-wider ${headingStyle.text}`}>
-              {segment.heading}
-            </p>
-          </div>
-        ) : (
-          <p className="text-lg font-['Gotu'] text-gray-800 px-3 pt-2">{segment.heading}</p>
-        ))}
-      <table className='w-full text-[10px] border-collapse'>
-        <thead>
-          <tr className='bg-[#5b7a8b]'>
-            {segment.columns.map(col => (
-              <th
-                key={col}
-                className="font-['Montserrat'] py-2 px-2 text-center text-[8px] font-bold text-white tracking-wide">
-                {col}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {segment.rows.map((row, i) => (
-            <tr key={i} className={i % 2 === 1 ? 'bg-gray-50' : 'bg-white'}>
-              {row.map((cell, j) => (
-                <td
-                  key={j}
-                  className='py-1.5 px-2 text-center text-[#4d4b4b] border-t border-gray-200'>
-                  {cell}
-                </td>
+    <div className='mb-4'>
+      {segment.intro && <p className='text-sm text-gray-700 mb-3'>{segment.intro}</p>}
+      <div className='rounded-md overflow-hidden border border-gray-300'>
+        {segment.heading &&
+          (headingStyle ? (
+            <div className={`flex items-center gap-2 ${headingStyle.bg} px-3 py-1.5`}>
+              <span className={`w-1.5 h-3.5 rounded-full ${headingStyle.bar}`} />
+              <p
+                className={`font-['Montserrat'] text-xs font-bold uppercase tracking-wider ${headingStyle.text}`}>
+                {segment.heading}
+              </p>
+            </div>
+          ) : (
+            <p className="text-lg font-['Gotu'] text-gray-800 px-3 pt-2">{segment.heading}</p>
+          ))}
+        <table className='w-full text-[10px] border-collapse'>
+          <thead>
+            <tr className='bg-[#5b7a8b]'>
+              {segment.columns.map(col => (
+                <th
+                  key={col}
+                  className="font-['Montserrat'] py-2 px-2 text-center text-[8px] font-bold text-white tracking-wide">
+                  {col}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {segment.rows.map((row, i) => (
+              <tr key={i} className={i % 2 === 1 ? 'bg-gray-50' : 'bg-white'}>
+                {row.map((cell, j) => (
+                  <td
+                    key={j}
+                    className='py-1.5 px-2 text-center text-[#4d4b4b] border-t border-gray-200'>
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -158,17 +189,21 @@ const SegmentTable = ({ segment }: { segment: PageSegment }) => {
 const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) => {
   const { context } = data
 
-  const sectionABlocks: TableBlock[] = []
-  if (context.qualified && context.qualified_students?.length > 0) {
-    sectionABlocks.push({
+  const blocks: TableBlock[] = []
+
+  const hasQualified = context.qualified && (context.qualified_students?.length ?? 0) > 0
+  const hasSub = context.sub && (context.sub_students?.length ?? 0) > 0
+
+  if (hasQualified) {
+    blocks.push({
       heading: 'Qualified - Primary Caseload',
       columns: ['STUDENT', 'GRADE'],
       rows: sortByGrade(context.qualified_students).map(s => [s.name, s.grade]),
       colorKey: 'qualified',
     })
   }
-  if (context.sub && context.sub_students?.length > 0) {
-    sectionABlocks.push({
+  if (hasSub) {
+    blocks.push({
       heading: 'Subs',
       columns: ['STUDENT', 'GRADE'],
       rows: sortByGrade(context.sub_students).map(s => [s.name, s.grade]),
@@ -176,65 +211,48 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
     })
   }
 
-  const sectionAPages = paginateBlocks(sectionABlocks, ROWS_FIRST_PAGE)
+  if ((context.students_priority_rescreen?.length ?? 0) > 0) {
+    blocks.push({
+      heading: 'Priority Rescreens (Absent)',
+      columns: ['STUDENT', 'GRADE'],
+      rows: sortByGrade(context.students_priority_rescreen).map(student => [
+        student.name,
+        student.grade,
+      ]),
+      colorKey: 'priority_rescreen',
+    })
+  }
 
-  const hasPriorityRescreens = (context.students_priority_rescreen?.length ?? 0) > 0
-  const sectionPriorityPages = hasPriorityRescreens
-    ? paginateBlocks(
-        [
-          {
-            heading: 'Priority Rescreens (Absent)',
-            columns: ['STUDENT', 'GRADE'],
-            rows: sortByGrade(context.students_priority_rescreen).map(student => [
-              student.name,
-              student.grade,
-            ]),
-            colorKey: 'priority_rescreen',
-          },
-        ],
-        ROWS_FIRST_PAGE
-      )
-    : []
+  if ((context.students_recommendations_and_referrals?.length ?? 0) > 0) {
+    blocks.push({
+      heading: 'Student Recommendations and Referrals',
+      columns: ['STUDENT', 'GRADE', 'Notes'],
+      rows: sortByGrade(context.students_recommendations_and_referrals).map(s => [
+        s.name,
+        s.grade,
+        s.recommendations_and_referrals,
+      ]),
+      colorKey: 'referral',
+      intro:
+        'Our Speech Therapists have an opportunity to briefly observe students during ' +
+        'class-wide speech screens. If the Speech Therapist noted any "red flags" or ' +
+        '"developmental concerns" this does not necessarily mean anything is wrong! ' +
+        'Recommendations listed below simply serve as proactive steps and suggestions to ' +
+        'ensure student success. Please contact your Speech Therapist if you have any questions.',
+    })
+  }
 
-  const hasReferrals = (context.students_recommendations_and_referrals?.length ?? 0) > 0
-  const sectionBPages = hasReferrals
-    ? paginateBlocks(
-        [
-          {
-            heading: 'Student Recommendations and Referrals',
-            columns: ['STUDENT', 'GRADE', 'Notes'],
-            rows: sortByGrade(context.students_recommendations_and_referrals).map(s => [
-              s.name,
-              s.grade,
-              s.recommendations_and_referrals,
-            ]),
-            colorKey: 'referral',
-          },
-        ],
-        ROWS_FIRST_PAGE
-      )
-    : []
+  if ((context.returning_absent_students?.length ?? 0) > 0) {
+    blocks.push({
+      heading: 'Students on Caseload from Last Year (Requiring Screens)',
+      columns: ['STUDENT', 'GRADE'],
+      rows: sortByGrade(context.returning_absent_students).map(s => [s.name, s.grade]),
+      colorKey: 'returning_absent',
+    })
+  }
 
-  const hasReturningAbsent = (context.returning_absent_students?.length ?? 0) > 0
-  const sectionReturningAbsentPages = hasReturningAbsent
-    ? paginateBlocks(
-        [
-          {
-            heading: 'Students on Caseload Not Yet Rescreened',
-            columns: ['STUDENT', 'GRADE'],
-            rows: sortByGrade(context.returning_absent_students).map(s => [s.name, s.grade]),
-            colorKey: 'returning_absent',
-          },
-        ],
-        ROWS_FIRST_PAGE
-      )
-    : []
-
-  const totalPages =
-    sectionAPages.length +
-    sectionPriorityPages.length +
-    sectionBPages.length +
-    sectionReturningAbsentPages.length
+  const pages = paginateBlocks(blocks, ROWS_FIRST_PAGE)
+  const totalPages = pages.length
 
   return (
     <div className="space-y-6 print:space-y-0 font-['Nunito']">
@@ -243,83 +261,29 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
         href='https://fonts.googleapis.com/css2?family=Gotu&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;700&display=swap'
       />
 
-      {sectionAPages.map((segments, i) => {
+      {pages.map((segments, i) => {
         const isLastPage = i === totalPages - 1
         return (
           <section
-            key={`a-${i}`}
+            key={i}
             className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
             <ReportBanner title='School Summary Report' />
             <div className='flex-1 px-10 pt-5'>
               {i === 0 && (
-                <>
-                  <div className='flex justify-between mb-3'>
-                    <p>
-                      <span className='font-bold text-gray-900'>Screening Date(s): </span>
-                      {context.screening_date}
-                    </p>
-                    <p>
-                      <span className='font-bold text-gray-900'>SLP: </span>
-                      {context.slp}
-                    </p>
-                  </div>
-                  <p className='font-bold text-gray-900 mb-3'>
-                    STUDENTS ELIGIBLE TO PARTICIPATE IN SPEECH PROGRAM:
+                <div className='flex justify-between mb-3'>
+                  <p>
+                    <span className='font-bold text-gray-900'>Screening Date(s): </span>
+                    {context.screening_date}
                   </p>
-                </>
+                  <p>
+                    <span className='font-bold text-gray-900'>SLP: </span>
+                    {context.slp}
+                  </p>
+                </div>
               )}
-              {segments.map((segment, j) => (
-                <SegmentTable key={j} segment={segment} />
-              ))}
-            </div>
-            {isLastPage && (
-              <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' page={i + 1} of={totalPages} />
-            )}
-          </section>
-        )
-      })}
-
-      {sectionPriorityPages.map((segments, i) => {
-        const pageIndex = sectionAPages.length + i
-        const isLastPage = pageIndex === totalPages - 1
-        return (
-          <section
-            key={`p-${i}`}
-            className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-            <ReportBanner title='School Summary Report' />
-            <div className='flex-1 px-10 pt-5'>
-              {segments.map((segment, j) => (
-                <SegmentTable key={j} segment={segment} />
-              ))}
-            </div>
-            {isLastPage && (
-              <ReportFooter
-                brand='NORTHERN VOICES SPEECH SERVICES'
-                page={pageIndex + 1}
-                of={totalPages}
-              />
-            )}
-          </section>
-        )
-      })}
-
-      {sectionBPages.map((segments, i) => {
-        const pageIndex = sectionAPages.length + sectionPriorityPages.length + i
-        const isLastPage = pageIndex === totalPages - 1
-        return (
-          <section
-            key={`b-${i}`}
-            className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-            <ReportBanner title='School Summary Report' />
-            <div className='flex-1 px-10 pt-5'>
-              {i === 0 && (
-                <p className='text-sm text-gray-700 mb-4'>
-                  Our Speech Therapists have an opportunity to briefly observe students during
-                  class-wide speech screens. If the Speech Therapist noted any "red flags" or
-                  "developmental concerns" this does not necessarily mean anything is wrong!
-                  Recommendations listed below simply serve as proactive steps and suggestions to
-                  ensure student success. Please contact your Speech Therapist if you have any
-                  questions.
+              {i === 0 && (hasQualified || hasSub) && (
+                <p className='font-bold text-gray-900 mb-3'>
+                  STUDENTS ELIGIBLE TO PARTICIPATE IN SPEECH PROGRAM:
                 </p>
               )}
               {segments.map((segment, j) => (
@@ -327,36 +291,7 @@ const SchoolSpeechSummaryView = ({ data }: { data: SchoolSpeechSummaryData }) =>
               ))}
             </div>
             {isLastPage && (
-              <ReportFooter
-                brand='NORTHERN VOICES SPEECH SERVICES'
-                page={pageIndex + 1}
-                of={totalPages}
-              />
-            )}
-          </section>
-        )
-      })}
-
-      {sectionReturningAbsentPages.map((segments, i) => {
-        const pageIndex =
-          sectionAPages.length + sectionPriorityPages.length + sectionBPages.length + i
-        const isLastPage = pageIndex === totalPages - 1
-        return (
-          <section
-            key={`r-${i}`}
-            className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
-            <ReportBanner title='School Summary Report' />
-            <div className='flex-1 px-10 pt-5'>
-              {segments.map((segment, j) => (
-                <SegmentTable key={j} segment={segment} />
-              ))}
-            </div>
-            {isLastPage && (
-              <ReportFooter
-                brand='NORTHERN VOICES SPEECH SERVICES'
-                page={pageIndex + 1}
-                of={totalPages}
-              />
+              <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' page={i + 1} of={totalPages} />
             )}
           </section>
         )
