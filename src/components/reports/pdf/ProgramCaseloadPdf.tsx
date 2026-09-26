@@ -100,10 +100,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 4,
   },
   sectionHeaderLeft: { flexDirection: 'row', alignItems: 'center' },
-  sectionAccentBar: { width: 4, height: 11, borderRadius: 2, marginRight: 6 },
   sectionHeaderTitle: { fontFamily: 'Montserrat', fontWeight: 700, fontSize: 10, letterSpacing: 1 },
-  sectionCountBadge: { borderRadius: 9, paddingVertical: 2, paddingHorizontal: 8 },
-  sectionCountText: { fontFamily: 'Montserrat', fontWeight: 700, fontSize: 9, color: '#ffffff' },
+  sectionCountText: { fontFamily: 'Montserrat', fontWeight: 700, fontSize: 10 },
 
   table: { marginBottom: 14 },
   tableRow: { flexDirection: 'row' },
@@ -246,14 +244,11 @@ const SectionHeaderPdf = ({
   return (
     <View style={[styles.sectionHeaderRow, { backgroundColor: colors.bg }]}>
       <View style={styles.sectionHeaderLeft}>
-        <View style={[styles.sectionAccentBar, { backgroundColor: colors.text }]} />
         <Text style={[styles.sectionHeaderTitle, { color: colors.text }]}>
           {title.toUpperCase()}
         </Text>
       </View>
-      <View style={[styles.sectionCountBadge, { backgroundColor: colors.text }]}>
-        <Text style={styles.sectionCountText}>{count}</Text>
-      </View>
+      <Text style={[styles.sectionCountText, { color: colors.text }]}>({count})</Text>
     </View>
   )
 }
