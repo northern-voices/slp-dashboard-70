@@ -91,7 +91,6 @@ const styles = StyleSheet.create({
 
   sectionHeaderRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 6,
     paddingHorizontal: 10,
@@ -99,9 +98,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 4,
     borderTopRightRadius: 4,
   },
-  sectionHeaderLeft: { flexDirection: 'row', alignItems: 'center' },
   sectionHeaderTitle: { fontFamily: 'Montserrat', fontWeight: 700, fontSize: 10, letterSpacing: 1 },
-  sectionCountText: { fontFamily: 'Montserrat', fontWeight: 700, fontSize: 10 },
 
   table: { marginBottom: 14 },
   tableRow: { flexDirection: 'row' },
@@ -243,12 +240,9 @@ const SectionHeaderPdf = ({
   const colors = PROGRAM_PDF_STYLE[colorKey]
   return (
     <View style={[styles.sectionHeaderRow, { backgroundColor: colors.bg }]}>
-      <View style={styles.sectionHeaderLeft}>
-        <Text style={[styles.sectionHeaderTitle, { color: colors.text }]}>
-          {title.toUpperCase()}
-        </Text>
-      </View>
-      <Text style={[styles.sectionCountText, { color: colors.text }]}>({count})</Text>
+      <Text style={[styles.sectionHeaderTitle, { color: colors.text }]}>
+        {title.toUpperCase()} ({count})
+      </Text>
     </View>
   )
 }
