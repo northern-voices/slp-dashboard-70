@@ -165,7 +165,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderRadius: 4,
   },
-  segmentAccentBar: { width: 4, height: 11, borderRadius: 2, marginRight: 6 },
   segmentHeaderText: { fontFamily: 'Montserrat', fontWeight: 700, fontSize: 10, letterSpacing: 1 },
 
   table: { marginBottom: 14 },
@@ -201,7 +200,6 @@ const SegmentTable = ({ segment }: { segment: PageSegment }) => {
       {segment.heading &&
         (headingColors ? (
           <View style={[styles.segmentHeaderRow, { backgroundColor: headingColors.bg }]}>
-            <View style={[styles.segmentAccentBar, { backgroundColor: headingColors.text }]} />
             <Text style={[styles.segmentHeaderText, { color: headingColors.text }]}>
               {segment.heading.toUpperCase()}
             </Text>
