@@ -36,10 +36,10 @@ interface ProgramCaseloadData {
 
 const COLUMNS = ['STUDENT NAME', 'GRADE', 'RESULT', 'PROGRAM', 'CONSENT', 'SPEECH EA']
 
-const SECTION_STYLES: Record<'qualified' | 'sub' | 'graduated', { bg: string; text: string; bar: string }> = {
-  qualified: { bg: 'bg-red-100', text: 'text-red-800', bar: 'bg-red-800' },
-  sub: { bg: 'bg-orange-100', text: 'text-orange-800', bar: 'bg-orange-800' },
-  graduated: { bg: 'bg-blue-100', text: 'text-blue-800', bar: 'bg-blue-800' },
+const SECTION_STYLES: Record<'qualified' | 'sub' | 'graduated', { bg: string; text: string }> = {
+  qualified: { bg: 'bg-red-100', text: 'text-red-800' },
+  sub: { bg: 'bg-orange-100', text: 'text-orange-800' },
+  graduated: { bg: 'bg-blue-100', text: 'text-blue-800' },
 }
 
 const CaseloadSection = ({
@@ -58,15 +58,13 @@ const CaseloadSection = ({
     <div className='mb-6'>
       <div className={`flex items-center justify-between ${style.bg} rounded-t-md px-3 py-2`}>
         <div className='flex items-center gap-2'>
-          <span className={`w-1.5 h-4 rounded-full ${style.bar}`} />
           <h2
             className={`font-['Montserrat'] text-xs font-bold uppercase tracking-wider ${style.text}`}>
             {title}
           </h2>
         </div>
-        <span
-          className={`font-['Montserrat'] text-[11px] font-bold text-white ${style.bar} rounded-full px-2.5 py-0.5`}>
-          {students.length}
+        <span className={`font-['Montserrat'] text-xs font-bold ${style.text}`}>
+          ({students.length})
         </span>
       </div>
       <table className='w-full border border-black text-[10px]'>
