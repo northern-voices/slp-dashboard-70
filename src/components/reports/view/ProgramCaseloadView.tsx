@@ -56,16 +56,11 @@ const CaseloadSection = ({
 
   return (
     <div className='mb-6'>
-      <div className={`flex items-center justify-between ${style.bg} rounded-t-md px-3 py-2`}>
-        <div className='flex items-center gap-2'>
-          <h2
-            className={`font-['Montserrat'] text-xs font-bold uppercase tracking-wider ${style.text}`}>
-            {title}
-          </h2>
-        </div>
-        <span className={`font-['Montserrat'] text-xs font-bold ${style.text}`}>
-          ({students.length})
-        </span>
+      <div className={`flex items-center ${style.bg} rounded-t-md px-3 py-2`}>
+        <h2
+          className={`font-['Montserrat'] text-xs font-bold uppercase tracking-wider ${style.text}`}>
+          {title} ({students.length})
+        </h2>
       </div>
       <table className='w-full border border-black text-[10px]'>
         <thead>
