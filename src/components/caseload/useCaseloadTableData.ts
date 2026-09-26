@@ -56,14 +56,17 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     currentSchool ?? null
   )
 
-  const { data: allScreeningsData } = useScreeningsBySchool(schoolId, 'all', 1, 10000)
+  // excludeTransferred: false - the caseload needs a student's true screening history even if
+  // their service_status has since been marked 'transferred', otherwise it shows "No Screening
+  // Recorded" for a student who was genuinely screened.
+  const { data: allScreeningsData } = useScreeningsBySchool(schoolId, 'all', 1, 10000, false)
   const allSchoolScreenings = useMemo(
     () => allScreeningsData?.screenings ?? [],
     [allScreeningsData]
   )
 
   const apiDateFilter = dateFilter === 'school_year' ? 'school_year' : 'all'
-  const { data: screeningsData } = useScreeningsBySchool(schoolId, apiDateFilter, 1, 10000)
+  const { data: screeningsData } = useScreeningsBySchool(schoolId, apiDateFilter, 1, 10000, false)
   const schoolScreenings = useMemo(() => screeningsData?.screenings ?? [], [screeningsData])
 
   const availableSchoolYears = useMemo(() => {

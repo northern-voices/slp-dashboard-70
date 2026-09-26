@@ -62,7 +62,8 @@ export const useScreeningsBySchool = (
   schoolId?: string,
   dateFilter?: 'all' | 'school_year',
   page: number = 1,
-  pageSize: number = 50
+  pageSize: number = 50,
+  excludeTransferred: boolean = true
 ) => {
   const { user } = useAuth()
   const { userProfile } = useOrganization()
@@ -77,6 +78,7 @@ export const useScreeningsBySchool = (
       dateFilter,
       page,
       pageSize,
+      excludeTransferred,
     ],
     queryFn: async () => {
       if (!schoolId) return { screenings: [], totalCount: 0 }
@@ -88,7 +90,8 @@ export const useScreeningsBySchool = (
         userProfile?.role as UserRole,
         dateFilter || 'school_year',
         page,
-        pageSize
+        pageSize,
+        excludeTransferred
       )
 
       // Add source table information
