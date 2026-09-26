@@ -684,7 +684,12 @@ export const speechScreeningsApi = {
     userRole?: UserRole,
     dateFilter?: 'all' | 'school_year',
     page: number = 1,
-    pageSize: number = 50
+    pageSize: number = 50,
+    // Screenings page hides transferred students from its counts/list (see ScreeningStats.tsx).
+    // The Caseload page needs the true screening history regardless of a student's current
+    // service_status, so it passes false here - otherwise a student who has since been marked
+    // transferred would show "No Screening Recorded" despite having one on record.
+    excludeTransferred: boolean = true
   ): Promise<{ data: Screening[]; totalCount: number }> => {
     try {
       const schoolYearStart = getCurrentAcademicYearStartDate()
@@ -723,7 +728,12 @@ export const speechScreeningsApi = {
           { count: 'exact' }
         )
         .eq('school_grades.school_id', schoolId)
-        .or('service_status.neq.transferred,service_status.is.null', { foreignTable: 'students' })
+
+      if (excludeTransferred) {
+        query = query.or('service_status.neq.transferred,service_status.is.null', {
+          foreignTable: 'students',
+        })
+      }
 
       // Apply date filter at database level (default to school year)
       if (dateFilter !== 'all') {
