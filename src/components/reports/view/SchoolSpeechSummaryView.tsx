@@ -56,12 +56,12 @@ interface PageSegment {
 
 // Mirrors ProgramBadge's colors (Qualified/Sub) and ReturningAbsentBadge's yellow, so each
 // category reads the same way across every report.
-const SEGMENT_HEADING_STYLES: Record<SegmentColorKey, { bg: string; text: string; bar: string }> = {
-  qualified: { bg: 'bg-red-100', text: 'text-red-800', bar: 'bg-red-800' },
-  sub: { bg: 'bg-orange-100', text: 'text-orange-800', bar: 'bg-orange-800' },
-  priority_rescreen: { bg: 'bg-teal-100', text: 'text-teal-800', bar: 'bg-teal-800' },
-  referral: { bg: 'bg-purple-100', text: 'text-purple-800', bar: 'bg-purple-800' },
-  returning_absent: { bg: 'bg-yellow-100', text: 'text-yellow-800', bar: 'bg-yellow-800' },
+const SEGMENT_HEADING_STYLES: Record<SegmentColorKey, { bg: string; text: string }> = {
+  qualified: { bg: 'bg-red-100', text: 'text-red-800' },
+  sub: { bg: 'bg-orange-100', text: 'text-orange-800' },
+  priority_rescreen: { bg: 'bg-teal-100', text: 'text-teal-800' },
+  referral: { bg: 'bg-purple-100', text: 'text-purple-800' },
+  returning_absent: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
 }
 
 const ROWS_FIRST_PAGE = 26
@@ -146,7 +146,6 @@ const SegmentTable = ({ segment }: { segment: PageSegment }) => {
         {segment.heading &&
           (headingStyle ? (
             <div className={`flex items-center gap-2 ${headingStyle.bg} px-3 py-1.5`}>
-              <span className={`w-1.5 h-3.5 rounded-full ${headingStyle.bar}`} />
               <p
                 className={`font-['Montserrat'] text-xs font-bold uppercase tracking-wider ${headingStyle.text}`}>
                 {segment.heading}
