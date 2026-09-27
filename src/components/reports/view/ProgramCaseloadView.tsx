@@ -3,7 +3,6 @@ import {
   ResultBadge,
   ConsentBadge,
   ServiceStatusTag,
-  ProgramBadge,
   ReturningAbsentBadge,
 } from '@/components/caseload/CaseloadBadges'
 import { ServiceStatus, ProgramStatus } from '@/types/database'
@@ -34,7 +33,7 @@ interface ProgramCaseloadData {
   }
 }
 
-const COLUMNS = ['STUDENT NAME', 'GRADE', 'RESULT', 'PROGRAM', 'CONSENT', 'SPEECH EA']
+const COLUMNS = ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA']
 
 const SECTION_STYLES: Record<'qualified' | 'sub' | 'graduated', { bg: string; text: string }> = {
   qualified: { bg: 'bg-red-100', text: 'text-red-800' },
@@ -104,10 +103,6 @@ const CaseloadSection = ({
                 ) : (
                   <span className='text-[10px] text-gray-400 italic'>No Screening Recorded</span>
                 )}
-              </td>
-
-              <td className='border border-black py-1.5 px-2 text-center'>
-                <ProgramBadge status={student.program_status} />
               </td>
 
               <td className='border border-black py-1.5 px-2 text-center'>
