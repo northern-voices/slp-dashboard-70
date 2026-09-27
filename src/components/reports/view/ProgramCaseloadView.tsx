@@ -153,10 +153,6 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
               <span className='font-bold text-gray-900'>School: </span>
               {context.school}
             </p>
-            <p>
-              <span className='font-bold text-gray-900'>Student Count: </span>
-              {context.student_count}
-            </p>
 
             <p>
               <span className='font-bold text-gray-900'>School Year: </span>
@@ -165,6 +161,10 @@ const ProgramCaseloadView = ({ data }: { data: ProgramCaseloadData }) => {
           </div>
 
           <div className='flex justify-between mb-3'>
+            <p>
+              <span className='font-bold text-gray-900'>Caseload: </span>
+              {context.student_count}
+            </p>
             <p>
               <span className='font-bold text-gray-900'>Qualified: </span>
               {qualifiedCount}
