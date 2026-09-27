@@ -29,7 +29,7 @@ interface ProgramCaseloadData {
   }
 }
 
-const COLUMNS = ['STUDENT NAME', 'GRADE', 'RESULT', 'PROGRAM', 'CONSENT', 'SPEECH EA']
+const COLUMNS = ['STUDENT NAME', 'GRADE', 'RESULT', 'CONSENT', 'SPEECH EA']
 
 const RESULT_PDF_COLORS: Record<ScreeningResultType, { bg: string; text: string }> = {
   no_errors: { bg: '#dcfce7', text: '#166534' },
@@ -62,7 +62,7 @@ const PROGRAM_PDF_STYLE: Record<ProgramStatus, { bg: string; text: string; label
   none: { bg: '#dcfce7', text: '#166534', label: 'Not In Program' },
 }
 
-const COLUMN_FLEX = [1.4, 0.55, 1.0, 0.8, 0.9, 1.15]
+const COLUMN_FLEX = [1.4, 0.55, 1.0, 0.9, 1.15]
 
 const styles = StyleSheet.create({
   page: {
@@ -91,7 +91,6 @@ const styles = StyleSheet.create({
 
   sectionHeaderRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 6,
     paddingHorizontal: 10,
@@ -99,11 +98,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 4,
     borderTopRightRadius: 4,
   },
-  sectionHeaderLeft: { flexDirection: 'row', alignItems: 'center' },
-  sectionAccentBar: { width: 4, height: 11, borderRadius: 2, marginRight: 6 },
   sectionHeaderTitle: { fontFamily: 'Montserrat', fontWeight: 700, fontSize: 10, letterSpacing: 1 },
-  sectionCountBadge: { borderRadius: 9, paddingVertical: 2, paddingHorizontal: 8 },
-  sectionCountText: { fontFamily: 'Montserrat', fontWeight: 700, fontSize: 9, color: '#ffffff' },
 
   table: { marginBottom: 14 },
   tableRow: { flexDirection: 'row' },
@@ -194,21 +189,10 @@ const ResultCell = ({ result, resultYear }: { result: string; resultYear: string
   )
 }
 
-const ProgramCell = ({ status }: { status: ProgramStatus }) => {
-  const style = PROGRAM_PDF_STYLE[status] ?? PROGRAM_PDF_STYLE.none
-  return (
-    <View style={[styles.tableCell, { flex: COLUMN_FLEX[3] }]}>
-      <View style={[styles.pill, { backgroundColor: style.bg, marginTop: 0 }]}>
-        <Text style={[styles.pillText, { color: style.text }]}>{style.label}</Text>
-      </View>
-    </View>
-  )
-}
-
 const ConsentCell = ({ consent }: { consent: string }) => {
   const isYes = consent === 'Yes'
   return (
-    <View style={[styles.tableCell, { flex: COLUMN_FLEX[4] }]}>
+    <View style={[styles.tableCell, { flex: COLUMN_FLEX[3] }]}>
       <View
         style={[
           styles.pill,
@@ -224,7 +208,7 @@ const ConsentCell = ({ consent }: { consent: string }) => {
 }
 
 const SpeechEaCell = ({ speechEa }: { speechEa: string }) => (
-  <View style={[styles.tableCell, { flex: COLUMN_FLEX[5] }]}>
+  <View style={[styles.tableCell, { flex: COLUMN_FLEX[4] }]}>
     {speechEa === '-' ? (
       <Text style={styles.noDataText}>No Speech EA assigned</Text>
     ) : (
@@ -245,15 +229,9 @@ const SectionHeaderPdf = ({
   const colors = PROGRAM_PDF_STYLE[colorKey]
   return (
     <View style={[styles.sectionHeaderRow, { backgroundColor: colors.bg }]}>
-      <View style={styles.sectionHeaderLeft}>
-        <View style={[styles.sectionAccentBar, { backgroundColor: colors.text }]} />
-        <Text style={[styles.sectionHeaderTitle, { color: colors.text }]}>
-          {title.toUpperCase()}
-        </Text>
-      </View>
-      <View style={[styles.sectionCountBadge, { backgroundColor: colors.text }]}>
-        <Text style={styles.sectionCountText}>{count}</Text>
-      </View>
+      <Text style={[styles.sectionHeaderTitle, { color: colors.text }]}>
+        {title.toUpperCase()} ({count})
+      </Text>
     </View>
   )
 }
@@ -274,7 +252,6 @@ const CaseloadTablePdf = ({ students }: { students: CaseloadStudent[] }) => (
           <Text style={styles.tableCellText}>{student.grade}</Text>
         </View>
         <ResultCell result={student.result} resultYear={student.result_year} />
-        <ProgramCell status={student.program_status} />
         <ConsentCell consent={student.consent} />
         <SpeechEaCell speechEa={student.speech_ea} />
       </View>
@@ -308,17 +285,16 @@ const ProgramCaseloadPdf = ({ data }: { data: ProgramCaseloadData }) => {
             </Text>
 
             <Text>
-              <Text style={styles.infoLabel}>Student Count: </Text>
-              {context.student_count}
-            </Text>
-
-            <Text>
               <Text style={styles.infoLabel}>School Year: </Text>
               {context.academic_year}
             </Text>
           </View>
 
           <View style={styles.infoRow}>
+            <Text>
+              <Text style={styles.infoLabel}>Caseload: </Text>
+              {context.student_count}
+            </Text>
             <Text>
               <Text style={styles.infoLabel}>Qualified: </Text>
               {qualifiedCount}
