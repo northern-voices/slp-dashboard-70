@@ -70,9 +70,6 @@ const SpeechScreeningStep1 = ({
         })
         form.setValue('qualifies_for_speech_program', false)
         form.setValue('sub', false)
-        form.setValue('to_be_determined', true)
-      } else {
-        form.setValue('to_be_determined', false)
       }
 
       form.setValue('absent', {

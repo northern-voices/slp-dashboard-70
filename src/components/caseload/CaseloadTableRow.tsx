@@ -37,7 +37,7 @@ import {
   ReturningAbsentBadge,
 } from './CaseloadBadges'
 import { getStudentGrade, getSpeechEAName, SpeechEA } from './caseloadUtils'
-import { isCurrentAcademicYear, getAcademicYearShortLabel } from '@/lib/academicYear'
+import { isCurrentAcademicYear } from '@/lib/academicYear'
 
 interface CaseloadTableRowProps {
   student: Student
@@ -102,12 +102,12 @@ const CaseloadTableRow = ({
             disabled={isUpdating}>
             <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
               <SelectValue>
-                <div className='flex items-center gap-1.5'>
+                <div className='flex items-center gap-1.5 flex-wrap'>
                   {isUpdating && <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />}
                   <ResultBadge result={screening.result} />
                   {!isCurrentAcademicYear(screening.created_at) && (
-                    <span className='text-[10px] text-gray-400 whitespace-nowrap'>
-                      {getAcademicYearShortLabel(screening.created_at)}
+                    <span className='text-[10px] font-medium text-yellow-800 bg-yellow-100 rounded px-1.5 py-0.5 whitespace-nowrap'>
+                      Due for Screening
                     </span>
                   )}
                 </div>
