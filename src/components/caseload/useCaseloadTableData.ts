@@ -51,6 +51,10 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
     fetchGrades()
   }, [schoolId])
 
+  const registerGrade = (grade: SchoolGrade) => {
+    setGradesMap(prev => new Map(prev).set(grade.id, grade))
+  }
+
   const { currentSchool } = useOrganization()
   const { data: schoolDetails, refetch: refetchSchoolDetails } = useSchoolDetails(
     currentSchool ?? null
@@ -330,6 +334,7 @@ export const useCaseloadTableData = (students: Student[], schoolId?: string) => 
 
   return {
     gradesMap,
+    registerGrade,
     speechEAs,
     refetchSchoolDetails,
 
