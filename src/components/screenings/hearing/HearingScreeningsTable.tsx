@@ -9,7 +9,10 @@ import {
   TableCell,
 } from '@/components/ui/responsive-table'
 import { useHearingScreenings } from '@/hooks/screenings/use-hearing-screenings'
-import { useDeleteHearingScreening } from '@/hooks/screenings/use-screening-hearing-mutations'
+import {
+  useDeleteHearingScreening,
+  useUpdateHearingScreening,
+} from '@/hooks/screenings/use-screening-hearing-mutations'
 import { Screening, Student, ServiceStatus } from '@/types/database'
 import { useStudentsBySchool, useSchoolTransfers } from '@/hooks/students/use-students'
 import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
@@ -27,6 +30,18 @@ import ConsentFormModal from '@/components/students/ConsentFormModal'
 import PauseConfirmDialog from '@/components/students/PauseConfirmDialog'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
 import { matchesDateRangeFilter } from '@/lib/screeningDateRangeFilter'
+import { useSchoolGradesBySchool } from '@/hooks/use-school-grades'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { GRADE_MAPPING } from '@/constants/app'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Loader2 } from 'lucide-react'
 
 interface HearingScreeningsTableProps {
   searchTerm: string
@@ -64,6 +79,11 @@ const HearingScreeningsTable = ({
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
   const [consentStudent, setConsentStudent] = useState<Student | null>(null)
+  const [updatingGradeId, setUpdatingGradeId] = useState<string | null>(null)
+  const [optimisticGrade, setOptimisticGrade] = useState<{
+    screeningId: string
+    gradeLevel: string
+  } | null>(null)
 
   const { currentSchool } = useOrganization()
   const { toast } = useToast()
@@ -95,12 +115,181 @@ const HearingScreeningsTable = ({
     const map = new Map<string, Student>()
     students.forEach(student => {
       map.set(student.id, student)
+      if (student.student_id) map.set(student.student_id, student)
     })
 
     return map
   }, [students])
 
+  const { data: grades = [], isLoading: isLoadingGrades } = useSchoolGradesBySchool(
+    currentSchool?.id
+  )
+
+  const gradesMap = useMemo(() => {
+    const map = new Map<string, SchoolGrade>()
+    grades.forEach(grade => {
+      map.set(grade.id, grade)
+    })
+    return map
+  }, [grades])
+
   const { mutate: updateStudent } = useUpdateStudent()
+  const { mutate: updateHearingScreening } = useUpdateHearingScreening()
+
+  const getScreeningGrade = (screening: Screening): string => {
+    if (screening.grade) return screening.grade
+
+    const student = studentsById.get(screening.student_id)
+    if (student?.current_grade_id) {
+      if (isLoadingGrades) return '...'
+      const grade = gradesMap.get(student.current_grade_id)
+      if (grade) return grade.grade_level
+    }
+
+    return 'N/A'
+  }
+
+  const getDisplayGrade = (screening: Screening): string => {
+    if (optimisticGrade?.screeningId === screening.id) return optimisticGrade.gradeLevel
+    return getScreeningGrade(screening)
+  }
+
+  const getGradeValue = (screening: Screening): string => {
+    const grade = getDisplayGrade(screening)
+    return grade === 'N/A' || grade === '...' ? '' : grade
+  }
+
+  const handleGradeChange = (screening: Screening, newGradeLevel: string) => {
+    const student = studentsById.get(screening.student_id)
+
+    if (!student) {
+      toast({ title: 'Error updating grade', description: 'Student not found', variant: 'destructive' })
+      return
+    }
+
+    setUpdatingGradeId(screening.id)
+    setOptimisticGrade({ screeningId: screening.id, gradeLevel: newGradeLevel })
+
+    schoolGradesApi
+      .getOrCreateGrade(
+        screening.school_id,
+        newGradeLevel,
+        screening.academic_year || getCurrentAcademicYear()
+      )
+      .then(resolvedGrade => {
+        updateHearingScreening(
+          { id: screening.id, data: { grade_id: resolvedGrade.id } },
+          {
+            onSuccess: () => {
+              const studentScreenings = screenings.filter(
+                s => s.student_id === screening.student_id
+              )
+              const mostRecentScreening = studentScreenings.sort(
+                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+              )[0]
+              const isLatestScreening = mostRecentScreening?.id === screening.id
+
+              if (isLatestScreening && resolvedGrade.academic_year === getCurrentAcademicYear()) {
+                updateStudent(
+                  { id: student.id, studentData: { current_grade_id: resolvedGrade.id } },
+                  {
+                    onSuccess: () => {
+                      setUpdatingGradeId(null)
+                      toast({
+                        title: 'Grade updated',
+                        description: `Successfully updated grade for ${screening.student_name}`,
+                        variant: 'default',
+                      })
+                    },
+                    onError: () => {
+                      setUpdatingGradeId(null)
+                      setOptimisticGrade(null)
+                      toast({
+                        title: 'Warning',
+                        description: 'Screening updated but failed to update student grade',
+                        variant: 'destructive',
+                      })
+                    },
+                  }
+                )
+              } else {
+                setUpdatingGradeId(null)
+                toast({
+                  title: 'Grade updated',
+                  description: 'Successfully updated grade for this screening (historical record)',
+                  variant: 'default',
+                })
+              }
+            },
+            onError: error => {
+              setUpdatingGradeId(null)
+              setOptimisticGrade(null)
+              toast({
+                title: 'Error updating grade',
+                description: error.message || 'Failed to update grade',
+                variant: 'destructive',
+              })
+            },
+          }
+        )
+      })
+      .catch(error => {
+        setUpdatingGradeId(null)
+        setOptimisticGrade(null)
+        toast({
+          title: 'Error updating grade',
+          description: error.message || 'Failed to resolve grade',
+          variant: 'destructive',
+        })
+      })
+  }
+
+  const getGradeSelector = (screening: Screening) => {
+    const transferRecord = transferStudentById.get(screening.student_id)
+    const isTransferredOut =
+      transferRecord?.from_school_id === currentSchool?.id ||
+      (!transferRecord && !!currentSchool?.id && screening.school_id !== currentSchool?.id)
+
+    const grade = getDisplayGrade(screening)
+    const isLoadingGrade = grade === '...'
+
+    if (isTransferredOut) {
+      return (
+        <span className='text-xs text-gray-600'>
+          {isLoadingGrade ? '' : grade === 'N/A' ? '-' : grade}
+        </span>
+      )
+    }
+
+    const isThisScreeningUpdating = updatingGradeId === screening.id
+
+    return (
+      <Select
+        value={getGradeValue(screening) || undefined}
+        onValueChange={value => handleGradeChange(screening, value)}
+        disabled={isThisScreeningUpdating || isLoadingGrade}>
+        <SelectTrigger className='w-auto h-6 px-1 py-0 text-xs border-none hover:bg-transparent focus:ring-0'>
+          <SelectValue placeholder='Select grade'>
+            <div className='flex items-center gap-1'>
+              {isThisScreeningUpdating && (
+                <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />
+              )}
+              <span className='text-xs text-gray-600'>
+                Grade: {isLoadingGrade ? '' : grade === 'N/A' ? 'Select grade' : grade}
+              </span>
+            </div>
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {GRADE_MAPPING.map(option => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.display}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )
+  }
 
   const handleStatusChange = (screening: Screening, newStatus: ServiceStatus) => {
     const student = studentsById.get(screening.student_id)
@@ -478,6 +667,7 @@ const HearingScreeningsTable = ({
                   onAddConsent={handleAddConsent}
                   onResume={handleResume}
                   onPause={handlePause}
+                  getGradeSelector={getGradeSelector}
                   isPaused={studentsById.get(screening.student_id)?.service_status === 'paused'}
                   transferRecord={transferStudentById.get(screening.student_id)}
                   currentSchoolId={currentSchool?.id ?? ''}

@@ -32,6 +32,7 @@ interface HearingScreeningTableRowProps {
   onAddConsent: (screening: Screening) => void
   onResume: (screening: Screening) => void
   onPause: (screening: Screening) => void
+  getGradeSelector: (screening: Screening) => React.ReactNode
   isPaused?: boolean
   transferRecord?: {
     student_id: string
@@ -55,6 +56,7 @@ const HearingScreeningTableRow = ({
   onAddConsent,
   onResume,
   onPause,
+  getGradeSelector,
   isPaused,
   transferRecord,
   currentSchoolId,
@@ -94,7 +96,7 @@ const HearingScreeningTableRow = ({
               Transferred Out → {transferredOut}
             </span>
           )} */}
-          <div className='text-xs text-gray-600'>Grade: {screening.grade || 'N/A'}</div>
+          {getGradeSelector(screening)}
           {screening.result && (
             <Badge variant='secondary' className='text-xs mt-1'>
               {screening.result === 'absent' && 'Absent'}

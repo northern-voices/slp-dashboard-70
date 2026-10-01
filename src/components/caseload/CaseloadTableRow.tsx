@@ -38,6 +38,7 @@ import {
 } from './CaseloadBadges'
 import { getStudentGrade, getSpeechEAName, SpeechEA } from './caseloadUtils'
 import { isCurrentAcademicYear } from '@/lib/academicYear'
+import { GRADE_MAPPING } from '@/constants/app'
 
 interface CaseloadTableRowProps {
   student: Student
@@ -50,6 +51,7 @@ interface CaseloadTableRowProps {
   onResultChange: (student: Student, newResult: string) => void
   onProgramChange: (student: Student, newProgram: ProgramStatus) => void
   onStatusChange: (student: Student, newStatus: ServiceStatus) => void
+  onGradeChange: (student: Student, newGradeLevel: string) => void
   onAssignEA: (student: Student, staffId: string) => void
   onViewStudent: (studentId: string) => void
   setConsentStudent: Dispatch<SetStateAction<Student | null>>
@@ -69,6 +71,7 @@ const CaseloadTableRow = ({
   onResultChange,
   onProgramChange,
   onStatusChange,
+  onGradeChange,
   onAssignEA,
   onViewStudent,
   setConsentStudent,
@@ -77,6 +80,7 @@ const CaseloadTableRow = ({
   setPauseConfirmStudent,
 }: CaseloadTableRowProps) => {
   const isUpdating = updatingStudentId === student.id
+  const grade = getStudentGrade(student, gradesMap)
 
   return (
     <ResponsiveTableRow>
@@ -92,7 +96,28 @@ const CaseloadTableRow = ({
         </div>
       </TableCell>
 
-      <TableCell>{getStudentGrade(student, gradesMap)}</TableCell>
+      <TableCell>
+        <Select
+          value={grade === 'N/A' ? undefined : grade}
+          onValueChange={value => onGradeChange(student, value)}
+          disabled={isUpdating}>
+          <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+            <SelectValue placeholder='Select grade'>
+              <div className='flex items-center gap-1.5'>
+                {isUpdating && <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />}
+                <span>{grade === 'N/A' ? '-' : grade}</span>
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {GRADE_MAPPING.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.display}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </TableCell>
 
       <TableCell>
         {screening ? (

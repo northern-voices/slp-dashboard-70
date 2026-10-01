@@ -34,9 +34,7 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
   const [isEditingName, setIsEditingName] = useState(false)
   const [editedFirstName, setEditedFirstName] = useState('')
   const [editedLastName, setEditedLastName] = useState('')
-  const [editedGradeId, setEditedGradeId] = useState('')
-  const [availableGrades, setAvailableGrades] = useState<SchoolGrade[]>([])
-  const [isLoadingGrades, setIsLoadingGrades] = useState(false)
+  const [editedGradeLevel, setEditedGradeLevel] = useState('')
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
   const [currentGrade, setCurrentGrade] = useState<SchoolGrade | null>(null)
   const [isLoadingCurrentGrade, setIsLoadingCurrentGrade] = useState(false)
@@ -121,10 +119,31 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
     })
   })()
 
-  // Update local student when prop changes
   useEffect(() => {
     setLocalStudent(student || null)
   }, [student])
+
+  // Update local student when prop changes
+  useEffect(() => {
+    if (!localStudent?.current_grade_id || !localStudent?.school_id) {
+      setCurrentGrade(null)
+      return
+    }
+
+    setIsLoadingCurrentGrade(true)
+    schoolGradesApi
+      .getSchoolGradesBySchool(localStudent.school_id)
+      .then(grades => {
+        setCurrentGrade(grades.find(g => g.id === localStudent.current_grade_id) || null)
+      })
+      .catch(error => {
+        console.error('Error fetching current grade:', error)
+        setCurrentGrade(null)
+      })
+      .finally(() => {
+        setIsLoadingCurrentGrade(false)
+      })
+  }, [localStudent?.id, localStudent?.current_grade_id, localStudent?.school_id])
 
   const getAge = (birthDate: string) => {
     const today = new Date()
@@ -151,29 +170,8 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
     if (!localStudent) return
     setEditedFirstName(localStudent.first_name)
     setEditedLastName(localStudent.last_name)
-    setEditedGradeId(localStudent.current_grade_id || '')
+    setEditedGradeLevel(currentGrade?.grade_level || '')
     setIsEditingName(true)
-
-    // Fetch available grades for the student's school in the background
-    if (localStudent.school_id) {
-      setIsLoadingGrades(true)
-      schoolGradesApi
-        .getSchoolGradesBySchool(localStudent.school_id)
-        .then(grades => {
-          setAvailableGrades(grades)
-        })
-        .catch(error => {
-          console.error('Error fetching grades:', error)
-          toast({
-            title: 'Error',
-            description: 'Failed to load available grades.',
-            variant: 'destructive',
-          })
-        })
-        .finally(() => {
-          setIsLoadingGrades(false)
-        })
-    }
   }
 
   const handleSaveName = async () => {
@@ -187,10 +185,20 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
     }
 
     try {
+      let resolvedGrade: SchoolGrade | null = null
+
+      if (editedGradeLevel && localStudent.school_id) {
+        resolvedGrade = await schoolGradesApi.getOrCreateGrade(
+          localStudent.school_id,
+          editedGradeLevel,
+          getCurrentAcademicYear()
+        )
+      }
+
       await studentsApi.updateStudent(localStudent.id, {
         first_name: editedFirstName.trim(),
         last_name: editedLastName.trim(),
-        current_grade_id: editedGradeId || undefined,
+        current_grade_id: resolvedGrade?.id,
       })
 
       // Invalidate React Query cache to refetch student data
@@ -202,16 +210,10 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
         ...localStudent,
         first_name: editedFirstName.trim(),
         last_name: editedLastName.trim(),
-        current_grade_id: editedGradeId || null,
+        current_grade_id: resolvedGrade?.id || null,
       })
 
-      // Update current grade display
-      if (editedGradeId) {
-        const selectedGrade = availableGrades.find(g => g.id === editedGradeId)
-        setCurrentGrade(selectedGrade || null)
-      } else {
-        setCurrentGrade(null)
-      }
+      setCurrentGrade(resolvedGrade)
 
       setIsEditingName(false)
       toast({
@@ -219,7 +221,6 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
         description: 'Student information has been successfully updated.',
       })
 
-      // Trigger a refresh of the student data if onEdit is provided
       if (onEdit) {
         onEdit()
       }
@@ -237,8 +238,7 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
     setIsEditingName(false)
     setEditedFirstName('')
     setEditedLastName('')
-    setEditedGradeId('')
-    setAvailableGrades([])
+    setEditedGradeLevel('')
   }
 
   if (isLoading) {
@@ -326,12 +326,10 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
           open={isEditingName}
           firstName={editedFirstName}
           lastName={editedLastName}
-          gradeId={editedGradeId}
-          availableGrades={availableGrades}
-          isLoadingGrades={isLoadingGrades}
+          gradeLevel={editedGradeLevel}
           onFirstNameChange={setEditedFirstName}
           onLastNameChange={setEditedLastName}
-          onGradeChange={setEditedGradeId}
+          onGradeLevelChange={setEditedGradeLevel}
           onSave={handleSaveName}
           onCancel={handleCancelEditName}
         />

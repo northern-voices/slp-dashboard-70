@@ -56,6 +56,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
 
   const {
     gradesMap,
+    registerGrade,
     speechEAs,
     refetchSchoolDetails,
     sortField,
@@ -121,8 +122,9 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     handleResultChange,
     handleProgramChange,
     handleStatusChange,
+    handleGradeChange,
     handleConfirmPause,
-  } = useCaseloadTableActions(latestScreeningByStudent, refetchSchoolDetails)
+  } = useCaseloadTableActions(latestScreeningByStudent, refetchSchoolDetails, registerGrade)
 
   const getResultYearLabel = (studentId: string) => {
     const screening = latestScreeningByStudent.get(studentId)
@@ -278,6 +280,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                 onResultChange={handleResultChange}
                 onProgramChange={handleProgramChange}
                 onStatusChange={handleStatusChange}
+                onGradeChange={handleGradeChange}
                 onAssignEA={handleAssignEA}
                 onViewStudent={handleNavigate}
                 setConsentStudent={setConsentStudent}

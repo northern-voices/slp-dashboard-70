@@ -336,35 +336,16 @@ const MultiStepSpeechScreeningForm = ({
         try {
           const academicYear = (formData.academic_year as string) || getCurrentAcademicYear()
 
-          const gradeAvailability = await schoolGradesApi.checkGradeAvailability(
+          const grade = await schoolGradesApi.getOrCreateGrade(
             currentSchool.id,
             selectedGrade,
             academicYear
           )
 
-          if (!gradeAvailability.exists) {
-            try {
-              const newGrade = await schoolGradesApi.createSchoolGrade({
-                school_id: currentSchool.id,
-                grade_level: selectedGrade,
-                academic_year: academicYear,
-              })
-
-              validatedGradeId = newGrade.id
-              validatedSchoolId = newGrade.school_id
-              setSelectedGradeId(newGrade.id)
-              setGradeSchoolId(newGrade.school_id)
-            } catch (createError) {
-              console.error('Failed to create new grade:', createError)
-            }
-          } else {
-            if (gradeAvailability.grade?.id && gradeAvailability.grade?.school_id) {
-              validatedGradeId = gradeAvailability.grade.id
-              validatedSchoolId = gradeAvailability.grade.school_id
-              setSelectedGradeId(gradeAvailability.grade.id)
-              setGradeSchoolId(gradeAvailability.grade.school_id)
-            }
-          }
+          validatedGradeId = grade.id
+          validatedSchoolId = grade.school_id
+          setSelectedGradeId(grade.id)
+          setGradeSchoolId(grade.school_id)
         } catch (error) {
           console.error('Grade validation error:', error)
         }

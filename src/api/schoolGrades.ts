@@ -318,4 +318,26 @@ export const schoolGradesApi = {
       throw error
     }
   },
+
+  getOrCreateGrade: async (
+    schoolId: string,
+    gradeLevel: string,
+    academicYear: string
+  ): Promise<SchoolGrade> => {
+    const availability = await schoolGradesApi.checkGradeAvailability(
+      schoolId,
+      gradeLevel,
+      academicYear
+    )
+
+    if (availability.exists && availability.grade) {
+      return availability.grade
+    }
+
+    return schoolGradesApi.createSchoolGrade({
+      school_id: schoolId,
+      grade_level: gradeLevel,
+      academic_year: academicYear,
+    })
+  },
 }
