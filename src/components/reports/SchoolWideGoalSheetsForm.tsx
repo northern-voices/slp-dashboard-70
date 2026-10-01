@@ -83,6 +83,13 @@ const SchoolWideGoalSheetsForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultReportPassword])
 
+  useEffect(() => {
+    if (user?.email && form.getValues('recipientEmails').length === 0) {
+      form.setValue('recipientEmails', [user.email])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.email])
+
   const initialReports = [
     {
       value: 'initial-goal-sheets',
@@ -167,7 +174,13 @@ const SchoolWideGoalSheetsForm = () => {
     setModalType('success')
     setModalMessage('')
     // Reset form after successful submission
-    form.reset()
+    form.reset({
+      reportType: '',
+      academicYear: currentAcademicYear,
+      caseloadScope: 'full_caseload',
+      recipientEmails: user?.email ? [user.email] : [],
+      password: defaultReportPassword,
+    })
   }
 
   const handleCloseModal = () => {
