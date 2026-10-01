@@ -11,7 +11,7 @@ export const useEmailSuggestions = (userId?: string, schoolIds?: string | string
     if (!userId) return
 
     Promise.all([getEmailHistory(userId), getSchoolStaffEmails(ids)])
-      .then(([history, staff]) => setEmails(Array.from(new Set([...history, ...staff]))))
+      .then(([history, staff]) => setEmails(Array.from(new Set([...staff, ...history]))))
       .catch(console.error)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, key])
