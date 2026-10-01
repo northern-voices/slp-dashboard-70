@@ -18,6 +18,8 @@ const BulkReportView = ({ data, reportType }: { data: BulkReportData; reportType
   const documents = useMemo(() => data.documents ?? [], [data.documents])
 
   const groupLabel = reportType === 'school_wide_goal_sheets' ? 'Group' : 'Grade'
+  const summaryLabel =
+    reportType === 'school_wide_goal_sheets' ? 'Program Caseload' : 'School Summary'
 
   const studentDocs = useMemo(
     () => documents.filter(doc => !!doc.context?.student_name),
@@ -80,7 +82,7 @@ const BulkReportView = ({ data, reportType }: { data: BulkReportData; reportType
               onChange={e => setView(e.target.value as 'student' | 'summary')}
               className='border border-gray-300 rounded-md px-3 py-2 text-sm'>
               <option value='student'>Student Report</option>
-              <option value='summary'>School Summary</option>
+              <option value='summary'>{summaryLabel}</option>
             </select>
           </div>
         )}
