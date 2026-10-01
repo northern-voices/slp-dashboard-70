@@ -195,6 +195,7 @@ const ScreeningsTable = ({
     const studentsMapping = new Map<string, Student>()
     students.forEach(student => {
       studentsMapping.set(student.id, student)
+      if (student.student_id) studentsMapping.set(student.student_id, student)
     })
     setStudentsMap(studentsMapping)
   }, [currentSchool?.id, students])
