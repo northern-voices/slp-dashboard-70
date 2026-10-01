@@ -50,6 +50,7 @@ export const useUpdateHearingScreening = () => {
     }: {
       id: string
       data: Partial<{
+        grade_id: string
         right_volume_db: number | null
         right_pressure: number | null
         right_compliance: number | null
