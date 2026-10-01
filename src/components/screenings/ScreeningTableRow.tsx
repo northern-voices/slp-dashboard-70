@@ -3,7 +3,6 @@ import { ResponsiveTableRow, TableCell } from '@/components/ui/responsive-table'
 import { format } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { Badge } from '@/components/ui/badge'
-import { Loader2 } from 'lucide-react'
 import type { Screening } from '@/types/database'
 import ScreeningRowDropdown from './ScreeningRowDropdown'
 
@@ -16,7 +15,7 @@ interface ScreeningTableRowProps {
   onViewStudent: (screening: Screening) => void
   onEmailReport: (screening: Screening) => void
   onDelete: (screening: Screening) => void
-  getScreeningGrade: (screening: Screening) => string
+  getGradeSelector: (screening: Screening) => React.ReactNode
   getResultSelector: (screening: Screening) => React.ReactNode
   getProgramSelector: (screening: Screening) => React.ReactNode
   onAddConsent: (screening: Screening) => void
@@ -44,7 +43,7 @@ const ScreeningTableRow = ({
   onViewStudent,
   onEmailReport,
   onDelete,
-  getScreeningGrade,
+  getGradeSelector,
   getResultSelector,
   getProgramSelector,
   onAddConsent,
@@ -55,9 +54,6 @@ const ScreeningTableRow = ({
   currentSchoolId,
   needsPriorityRescreen,
 }: ScreeningTableRowProps) => {
-  const grade = getScreeningGrade(screening)
-  const isLoadingGrade = grade === '...'
-
   const transferredOut =
     transferRecord && currentSchoolId && transferRecord.from_school_id === currentSchoolId
       ? screening.school_id !== currentSchoolId
@@ -148,11 +144,7 @@ const ScreeningTableRow = ({
             <p>
               <span className='font-medium'>Student ID:</span> {screening.student_id}
             </p>
-            {!isLoadingGrade && grade !== 'N/A' && (
-              <p>
-                <span className='font-medium'>Grade:</span> {grade}
-              </p>
-            )}
+            <div className='flex items-center gap-2'>{getGradeSelector(screening)}</div>
           </div>
         </div>
       }>
@@ -204,15 +196,7 @@ const ScreeningTableRow = ({
         <div className='w-full min-w-[120px]'>{getProgramSelector(screening)}</div>
       </TableCell>
       <TableCell className='max-w-0'>
-        <div className='truncate' title={isLoadingGrade ? '' : grade}>
-          {isLoadingGrade ? (
-            <Loader2 className='inline w-3 h-3 text-gray-400 animate-spin' />
-          ) : grade === 'N/A' ? (
-            '-'
-          ) : (
-            grade
-          )}
-        </div>
+        <div className='w-full min-w-[80px]'>{getGradeSelector(screening)}</div>
       </TableCell>
       <TableCell className='max-w-0'>
         <div className='truncate' title={format(parseDateSafely(screening.date), 'MMM d, yyyy')}>

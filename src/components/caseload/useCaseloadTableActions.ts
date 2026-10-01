@@ -7,10 +7,13 @@ import { usePauseStudent } from '@/hooks/students/use-pause-student'
 import { ProgramStatus, ServiceStatus, Screening, Student } from '@/types/database'
 import { ErrorPatterns } from '@/types/screening-form'
 import { SpeechEA } from './caseloadUtils'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 export const useCaseloadTableActions = (
   latestScreeningByStudent: Map<string, Screening>,
-  refetchSchoolDetails: () => void
+  refetchSchoolDetails: () => void,
+  registerGrade: (grade: SchoolGrade) => void
 ) => {
   const { mutate: updateStudent } = useUpdateStudent()
   const { mutate: updateSpeechScreening } = useUpdateSpeechScreening()
@@ -209,6 +212,51 @@ export const useCaseloadTableActions = (
     )
   }
 
+  const handleGradeChange = (student: Student, newGradeLevel: string) => {
+    if (!student.school_id) {
+      toast({
+        title: 'Error updating grade',
+        description: 'Student has no school assigned',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setUpdatingStudentId(student.id)
+
+    schoolGradesApi
+      .getOrCreateGrade(student.school_id, newGradeLevel, getCurrentAcademicYear())
+      .then(resolvedGrade => {
+        registerGrade(resolvedGrade)
+
+        updateStudent(
+          { id: student.id, studentData: { current_grade_id: resolvedGrade.id } },
+          {
+            onSuccess: () => {
+              setUpdatingStudentId(null)
+              toast({ title: 'Grade updated' })
+            },
+            onError: () => {
+              setUpdatingStudentId(null)
+              toast({
+                title: 'Error updating grade',
+                description: 'Failed to update student grade',
+                variant: 'destructive',
+              })
+            },
+          }
+        )
+      })
+      .catch(error => {
+        setUpdatingStudentId(null)
+        toast({
+          title: 'Error updating grade',
+          description: error.message || 'Failed to resolve grade',
+          variant: 'destructive',
+        })
+      })
+  }
+
   const {
     pauseTarget: pauseConfirmStudent,
     pauseStudentName,
@@ -250,6 +298,7 @@ export const useCaseloadTableActions = (
     handleResultChange,
     handleProgramChange,
     handleStatusChange,
+    handleGradeChange,
     handleConfirmPause,
   }
 }

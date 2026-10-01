@@ -14,6 +14,7 @@ import { speechScreeningsApi } from '@/api/speechscreenings'
 import { SpeechScreeningFormValues } from '@/types/screening-form'
 import { Screening, ProgramStatus, ServiceStatus } from '@/types/database'
 import { format } from 'date-fns'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 export const useEditScreening = () => {
   const { screeningId } = useParams<{ screeningId: string }>()
@@ -31,9 +32,7 @@ export const useEditScreening = () => {
   const [isEditingStudent, setIsEditingStudent] = useState(false)
   const [editedFirstName, setEditedFirstName] = useState('')
   const [editedLastName, setEditedLastName] = useState('')
-  const [editedGradeId, setEditedGradeId] = useState<string>('')
-  const [availableGrades, setAvailableGrades] = useState<SchoolGrade[]>([])
-  const [isLoadingGrades, setIsLoadingGrades] = useState(false)
+  const [editedGradeLevel, setEditedGradeLevel] = useState<string>('')
   const [clinicalNotesOpen, setClinicalNotesOpen] = useState(false)
   const [referralNotesOpen, setReferralNotesOpen] = useState(false)
   const [progressNotesOpen, setProgressNotesOpen] = useState(false)
@@ -355,24 +354,8 @@ export const useEditScreening = () => {
     }
     setEditedFirstName(studentData.first_name)
     setEditedLastName(studentData.last_name)
-    setEditedGradeId(studentData.current_grade_id || '')
+    setEditedGradeLevel(studentCurrentGrade || '')
     setIsEditingStudent(true)
-
-    if (currentSchool?.id) {
-      setIsLoadingGrades(true)
-      schoolGradesApi
-        .getSchoolGradesBySchool(currentSchool.id)
-        .then(grades => setAvailableGrades(grades))
-        .catch(error => {
-          console.error('Error fetching grades:', error)
-          toast({
-            title: 'Error',
-            description: 'Failed to load available grades.',
-            variant: 'destructive',
-          })
-        })
-        .finally(() => setIsLoadingGrades(false))
-    }
   }
 
   const handleSaveStudent = async () => {
@@ -386,12 +369,22 @@ export const useEditScreening = () => {
     }
 
     try {
+      let resolvedGrade: SchoolGrade | null = null
+
+      if (editedGradeLevel && currentSchool?.id) {
+        resolvedGrade = await schoolGradesApi.getOrCreateGrade(
+          currentSchool.id,
+          editedGradeLevel,
+          getCurrentAcademicYear()
+        )
+      }
+
       await updateStudent.mutateAsync({
         id: studentData.id,
         studentData: {
           first_name: editedFirstName.trim(),
           last_name: editedLastName.trim(),
-          current_grade_id: editedGradeId || undefined,
+          current_grade_id: resolvedGrade?.id,
         },
       })
 
@@ -399,7 +392,7 @@ export const useEditScreening = () => {
         ...studentData,
         first_name: editedFirstName.trim(),
         last_name: editedLastName.trim(),
-        current_grade_id: editedGradeId || null,
+        current_grade_id: resolvedGrade?.id || null,
       }
       setStudentData(updatedStudent)
 
@@ -410,12 +403,9 @@ export const useEditScreening = () => {
         })
       }
 
-      if (editedGradeId) {
-        const selectedGrade = availableGrades.find(g => g.id === editedGradeId)
-        if (selectedGrade) {
-          setStudentCurrentGrade(selectedGrade.grade_level)
-          setGradesMatch(screening?.grade_id === editedGradeId)
-        }
+      if (resolvedGrade) {
+        setStudentCurrentGrade(resolvedGrade.grade_level)
+        setGradesMatch(screening?.grade_id === resolvedGrade?.id)
       } else {
         setStudentCurrentGrade(null)
         setGradesMatch(screening?.grade_id ? false : true)
@@ -445,8 +435,7 @@ export const useEditScreening = () => {
     setIsEditingStudent(false)
     setEditedFirstName('')
     setEditedLastName('')
-    setEditedGradeId('')
-    setAvailableGrades([])
+    setEditedGradeLevel('')
   }
 
   return {
@@ -461,15 +450,13 @@ export const useEditScreening = () => {
     isEditingStudent,
     editedFirstName,
     editedLastName,
-    editedGradeId,
-    availableGrades,
-    isLoadingGrades,
+    editedGradeLevel,
     clinicalNotesOpen,
     referralNotesOpen,
     progressNotesOpen,
     setEditedFirstName,
     setEditedLastName,
-    setEditedGradeId,
+    setEditedGradeLevel,
     setClinicalNotesOpen,
     setReferralNotesOpen,
     setProgressNotesOpen,

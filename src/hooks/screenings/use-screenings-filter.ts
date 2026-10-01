@@ -45,6 +45,8 @@ export const useScreeningsFilter = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
 
   const getScreeningGrade = (screening: Screening): string => {
+    if (screening.grade) return screening.grade
+
     const student = studentsMap.get(screening.student_id)
 
     if (student?.current_grade_id) {
@@ -55,7 +57,7 @@ export const useScreeningsFilter = ({
       if (grade) return grade.grade_level
     }
 
-    return screening.grade || 'N/A'
+    return 'N/A'
   }
 
   const latestScreeningsByStudent = useMemo(() => {
