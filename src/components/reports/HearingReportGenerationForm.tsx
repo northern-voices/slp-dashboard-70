@@ -83,6 +83,13 @@ const HearingReportGenerationForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultReportPassword])
 
+  useEffect(() => {
+    if (user?.email && form.getValues('recipientEmails').length === 0) {
+      form.setValue('recipientEmails', [user.email])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.email])
+
   const hearingReports = [
     {
       value: 'school-wide-hearing-reports',
@@ -191,7 +198,12 @@ const HearingReportGenerationForm = () => {
     setIsSuccessModalOpen(false)
     setModalType('success')
     setModalMessage('')
-    form.reset()
+    form.reset({
+      reportType: '',
+      academicYear: currentAcademicYear,
+      recipientEmails: user?.email ? [user.email] : [],
+      password: defaultReportPassword,
+    })
   }
 
   const handleCloseModal = () => {
