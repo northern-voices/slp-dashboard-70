@@ -254,9 +254,10 @@ const SchoolWideGoalSheetsForm = () => {
                     </Select>
 
                     <p className='text-xs text-gray-500'>
-                      Full Caseload includes every qualified, sub, and graduated student on record,
-                      regardless of when they were last screened. This School Year Only includes
-                      just students screened and qualified within the selected academic year.
+                      Full Caseload includes every qualified and sub student on record regardless of
+                      when they were last screened, plus any student who graduated this academic
+                      year. This School Year Only includes just students screened and qualified
+                      within the selected academic year.
                     </p>
 
                     <FormMessage />
