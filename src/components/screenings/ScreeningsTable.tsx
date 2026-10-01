@@ -98,6 +98,10 @@ const ScreeningsTable = ({
   const [updatingScreeningId, setUpdatingScreeningId] = useState<string | null>(null)
   const [updatingProgramId, setUpdatingProgramId] = useState<string | null>(null)
   const [updatingGradeId, setUpdatingGradeId] = useState<string | null>(null)
+  const [optimisticGrade, setOptimisticGrade] = useState<{
+    screeningId: string
+    gradeLevel: string
+  } | null>(null)
   const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
   const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
@@ -368,8 +372,13 @@ const ScreeningsTable = ({
     return getQualificationBadge(screening)
   }
 
+  const getDisplayGrade = (screening: Screening): string => {
+    if (optimisticGrade?.screeningId === screening.id) return optimisticGrade.gradeLevel
+    return getScreeningGrade(screening)
+  }
+
   const getGradeValue = (screening: Screening): string => {
-    const grade = getScreeningGrade(screening)
+    const grade = getDisplayGrade(screening)
     return grade === 'N/A' || grade === '...' ? '' : grade
   }
 
@@ -379,7 +388,7 @@ const ScreeningsTable = ({
       transferRecord?.from_school_id === currentSchool?.id ||
       (!transferRecord && !!currentSchool?.id && screening.school_id !== currentSchool?.id)
 
-    const grade = getScreeningGrade(screening)
+    const grade = getDisplayGrade(screening)
     const isLoadingGrade = grade === '...'
 
     if (isTransferredOut) {
@@ -857,6 +866,7 @@ const ScreeningsTable = ({
     }
 
     setUpdatingGradeId(screening.id)
+    setOptimisticGrade({ screeningId: screening.id, gradeLevel: newGradeLevel })
 
     schoolGradesApi
       .getOrCreateGrade(
@@ -896,6 +906,7 @@ const ScreeningsTable = ({
                     },
                     onError: () => {
                       setUpdatingGradeId(null)
+                      setOptimisticGrade(null)
                       toast({
                         title: 'Warning',
                         description: 'Screening updated but failed to update student grade',
@@ -915,6 +926,7 @@ const ScreeningsTable = ({
             },
             onError: error => {
               setUpdatingGradeId(null)
+              setOptimisticGrade(null)
               toast({
                 title: 'Error updating grade',
                 description: error.message || 'Failed to update grade',
@@ -926,6 +938,7 @@ const ScreeningsTable = ({
       })
       .catch(error => {
         setUpdatingGradeId(null)
+        setOptimisticGrade(null)
         toast({
           title: 'Error updating grade',
           description: error.message || 'Failed to resolve grade',
