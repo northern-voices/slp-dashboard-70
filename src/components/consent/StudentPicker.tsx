@@ -12,6 +12,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import { Student } from '@/types/database'
+import { withDuplicateLabels, formatScreeningInfo } from '@/lib/student-duplicate-label'
+import { useLastScreeningInfoForStudents } from '@/hooks/students/use-students'
 
 interface StudentPickerProps {
   students: Student[]
@@ -25,13 +27,21 @@ const StudentPicker = ({ students, value, onChange }: StudentPickerProps) => {
 
   const selectedStudent = students.find(student => student.id === value)
 
+  const labeledStudents = withDuplicateLabels(students)
+
   const studentsToShow = searchValue
-    ? students.filter(student =>
+    ? labeledStudents.filter(student =>
         `${student.first_name} ${student.last_name}`
           .toLowerCase()
           .includes(searchValue.toLowerCase())
       )
-    : students
+    : labeledStudents
+
+  const duplicateStudentIds = labeledStudents
+    .filter(student => student.duplicateLabel)
+    .map(student => student.id)
+
+  const { data: duplicateScreeningInfo = {} } = useLastScreeningInfoForStudents(duplicateStudentIds)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -69,7 +79,7 @@ const StudentPicker = ({ students, value, onChange }: StudentPickerProps) => {
               {studentsToShow.map(student => (
                 <CommandItem
                   key={student.id}
-                  value={`${student.first_name} ${student.last_name}`}
+                  value={`${student.first_name} ${student.last_name} ${student.id}`}
                   onSelect={() => {
                     onChange(student.id)
                     setOpen(false)
@@ -82,7 +92,19 @@ const StudentPicker = ({ students, value, onChange }: StudentPickerProps) => {
                       value === student.id ? 'opacity-100' : ' opacity-0'
                     )}
                   />
-                  {student.first_name} {student.last_name}
+                  <div className='flex flex-col'>
+                    <span>
+                      {student.first_name} {student.last_name}
+                      {student.duplicateLabel && (
+                        <span className='text-muted-foreground'> ({student.duplicateLabel})</span>
+                      )}
+                    </span>
+                    {student.duplicateLabel && (
+                      <span className='text-xs text-muted-foreground'>
+                        {formatScreeningInfo(duplicateScreeningInfo[student.id])}
+                      </span>
+                    )}
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>
