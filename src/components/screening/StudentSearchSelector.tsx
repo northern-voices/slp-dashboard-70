@@ -115,6 +115,8 @@ const StudentSearchSelector = ({
         : studentsBySchool
     : []
 
+  const labeledStudentsToShow = withDuplicateLabels(studentsToShow)
+
   const isLoading = currentSchool ? (gradeFilter ? loadingByGrade : loadingBySchool) : false
 
   const newStudentForm = useForm<NewStudentFormData>({
@@ -420,7 +422,7 @@ const StudentSearchSelector = ({
                   )}
                 </CommandEmpty>
                 <CommandGroup>
-                  {studentsToShow.map(student => (
+                  {labeledStudentsToShow.map(student => (
                     <CommandItem
                       key={student.id}
                       value={`${student.first_name} ${student.last_name} ${student.student_id}`}
@@ -435,11 +437,17 @@ const StudentSearchSelector = ({
                       <div className='flex flex-col'>
                         <span className='font-medium'>
                           {student.first_name} {student.last_name}
+                          {student.duplicateLabel && (
+                            <span className='text-muted-foreground'>
+                              {' '}
+                              ({student.duplicateLabel})
+                            </span>
+                          )}
                         </span>
-                        <span className='text-sm text-muted-foreground'></span>
                       </div>
                     </CommandItem>
                   ))}
+
                   {shouldShowAddNew && isStudentCreatable && (
                     <CommandItem
                       value='add-new-student'
