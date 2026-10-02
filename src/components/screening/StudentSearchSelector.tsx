@@ -30,9 +30,10 @@ import { Input } from '@/components/ui/input'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { withDuplicateLabels } from '@/lib/student-duplicate-label'
 import ExistingStudentMatches from './ExistingStudentMatches'
 import type { LastScreeningInfo } from '@/api/students'
+import { useLastScreeningInfoForStudents } from '@/hooks/students/use-students'
+import { withDuplicateLabels, formatScreeningInfo } from '@/lib/student-duplicate-label'
 
 interface StudentSearchSelectorProps {
   onStudentSelect: (student: Student | null) => void
@@ -116,6 +117,12 @@ const StudentSearchSelector = ({
     : []
 
   const labeledStudentsToShow = withDuplicateLabels(studentsToShow)
+
+  const duplicateStudentIds = labeledStudentsToShow
+    .filter(student => student.duplicateLabel)
+    .map(student => student.id)
+
+  const { data: duplicateScreeningInfo = {} } = useLastScreeningInfoForStudents(duplicateStudentIds)
 
   const isLoading = currentSchool ? (gradeFilter ? loadingByGrade : loadingBySchool) : false
 
@@ -444,6 +451,11 @@ const StudentSearchSelector = ({
                             </span>
                           )}
                         </span>
+                        {student.duplicateLabel && (
+                          <span className='text-xs text-muted-foreground'>
+                            {formatScreeningInfo(duplicateScreeningInfo[student.id])}
+                          </span>
+                        )}
                       </div>
                     </CommandItem>
                   ))}
