@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Student } from '@/types/database'
 import { LastScreeningInfo } from '@/api/students'
+import { formatScreeningInfo } from '@/lib/student-duplicate-label'
 
 interface ExistingStudentMatchesProps {
   matches: Array<Student & { duplicateLabel: string | null }>
@@ -10,16 +11,6 @@ interface ExistingStudentMatchesProps {
   lastName: string
   onSelectExisting: (student: Student) => void
   onCreateNewAnyway: () => void
-}
-
-const formatScreeningInfo = (info?: LastScreeningInfo) => {
-  if (!info) return 'No screenings yet'
-  const date = new Date(info.date).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-  return info.grade ? `Last screen: ${date} — Grade ${info.grade}` : `Last screen: ${date}`
 }
 
 const ExistingStudentMatches = ({
