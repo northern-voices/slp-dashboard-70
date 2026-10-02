@@ -1,3 +1,5 @@
+import type { LastScreeningInfo } from '@/api/students'
+
 export function withDuplicateLabels<
   T extends { id: string; first_name: string; last_name: string; created_at: string },
 >(students: T[]): Array<T & { duplicateLabel: string | null }> {
@@ -28,4 +30,14 @@ export function withDuplicateLabels<
     ...student,
     duplicateLabel: labelById.get(student.id) ?? null,
   }))
+}
+
+export function formatScreeningInfo(info?: LastScreeningInfo): string {
+  if (!info) return 'No screenings yet'
+  const date = new Date(info.date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  return info.grade ? `Last screen: ${date} — Grade ${info.grade}` : `Last screen: ${date}`
 }
