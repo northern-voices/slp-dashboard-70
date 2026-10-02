@@ -128,3 +128,13 @@ export const useSchoolTransfers = (schoolId: string) =>
     queryFn: () => studentsApi.getTransfersBySchool(schoolId),
     enabled: !!schoolId,
   })
+
+export const useStudentNameMatches = (schoolId?: string, firstName?: string, lastName?: string) => {
+  return useQuery({
+    queryKey: ['students', 'name-matches', schoolId, firstName, lastName],
+    queryFn: () => studentsApi.findStudentsByName(schoolId!, firstName!, lastName!),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    enabled: !!schoolId && !!firstName && !!lastName,
+  })
+}
