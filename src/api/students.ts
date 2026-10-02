@@ -10,6 +10,12 @@ export interface ReturningAbsentStudent {
   current_year_status: 'absent' | 'not_yet_screened'
 }
 
+export interface LastScreeningInfo {
+  studentId: string
+  date: string
+  grade: string | null
+}
+
 export const studentsApi = {
   // Get all students for an organization
   getStudents: async (organizationId?: string): Promise<Student[]> => {
@@ -605,5 +611,32 @@ export const studentsApi = {
       console.error('Error fetching school transfer history:', error)
       throw error
     }
+  },
+
+  // Find all existing students at a school whose name matches (case/whitespace-insensitive)
+  findStudentsByName: async (
+    schoolId: string,
+    firstName: string,
+    lastName: string
+  ): Promise<Student[]> => {
+    if (!schoolId || !firstName || !lastName) return []
+
+    const normalizedFirstName = firstName.trim().replace(/\s+/g, ' ')
+    const normalizedLastName = lastName.trim().replace(/\s+/g, ' ')
+
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .eq('school_id', schoolId)
+      .ilike('first_name', normalizedFirstName)
+      .ilike('last_name', normalizedLastName)
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      console.error('Error finding students by name:', error)
+      throw error
+    }
+
+    return data || []
   },
 }
