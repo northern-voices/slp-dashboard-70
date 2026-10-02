@@ -37,7 +37,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { useStudentsBySchool, useSchoolTransfers } from '@/hooks/students/use-students'
+import {
+  useStudentsBySchool,
+  useSchoolTransfers,
+  useLastScreeningInfoForStudents,
+} from '@/hooks/students/use-students'
 import { useCreateStudent, useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { studentsApi } from '@/api/students'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
@@ -52,7 +56,7 @@ import {
   getAcademicYearRange,
 } from '@/lib/academicYear'
 import { matchesDateRangeFilter } from '@/lib/screeningDateRangeFilter'
-import { withDuplicateLabels } from '@/lib/student-duplicate-label'
+import { withDuplicateLabels, formatScreeningInfo } from '@/lib/student-duplicate-label'
 import ExistingStudentMatches from '@/components/screening/ExistingStudentMatches'
 import type { LastScreeningInfo } from '@/api/students'
 
@@ -313,6 +317,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   }
 
   const labeledStudents = withDuplicateLabels(students)
+  const duplicateStudentIds = labeledStudents
+    .filter(student => student.duplicateLabel)
+    .map(student => student.id)
+
+  const { data: duplicateScreeningInfo = {} } = useLastScreeningInfoForStudents(duplicateStudentIds)
   const filteredStudents = labeledStudents
     .filter(student => {
       const fullName = `${student.first_name} ${student.last_name}`.toLowerCase()
@@ -656,6 +665,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
                         <span className='text-muted-foreground'> ({student.duplicateLabel})</span>
                       )}
                     </span>
+                    {student.duplicateLabel && (
+                      <span className='text-xs text-muted-foreground'>
+                        {formatScreeningInfo(duplicateScreeningInfo[student.id])}
+                      </span>
+                    )}
 
                     {/* {(() => {
                       const transfer = transferByStudentId.get(student.id)
