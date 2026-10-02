@@ -81,6 +81,18 @@ export const useStudentsBySchool = (schoolId?: string) => {
   })
 }
 
+export const useLastScreeningInfoForStudents = (studentIds: string[]) => {
+  const sortedIds = [...studentIds].sort()
+
+  return useQuery({
+    queryKey: ['students', 'last-screening-info', sortedIds],
+    queryFn: () => studentsApi.getLastScreeningInfoForStudents(sortedIds),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    enabled: sortedIds.length > 0,
+  })
+}
+
 export const useStudentCountBySchool = (schoolId?: string) => {
   return useQuery({
     queryKey: ['students', 'count', schoolId],
