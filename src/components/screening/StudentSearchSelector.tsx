@@ -411,7 +411,7 @@ const StudentSearchSelector = ({
                           onClick={handleShowNewStudentForm}
                           className='w-full'>
                           <UserPlus className='w-4 h-4 mr-2' />
-                          Add New Student asdf
+                          Add New Student
                         </Button>
                       )}
                     </div>
@@ -498,76 +498,88 @@ const StudentSearchSelector = ({
             </DialogTitle>
           </DialogHeader>
 
-          <Form {...newStudentForm}>
-            <form
-              onSubmit={e => {
-                e.preventDefault()
-                e.stopPropagation()
-
-                return newStudentForm.handleSubmit(data => {
-                  checkForMatchesAndProceed(data, e)
-                  return false
-                })(e)
+          {pendingMatches.length > 0 ? (
+            <ExistingStudentMatches
+              matches={pendingMatches}
+              screeningInfo={pendingScreeningInfo}
+              firstName={pendingFormData?.first_name ?? ''}
+              lastName={pendingFormData?.last_name ?? ''}
+              onSelectExisting={student => {
+                onStudentSelect(student)
+                setShowNewStudentForm(false)
+                setOpen(false)
+                setSearchValue('')
+                setPendingMatches([])
+                setPendingScreeningInfo({})
+                setPendingFormData(null)
+                newStudentForm.reset()
               }}
-              className='space-y-4'>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <FormField
-                  control={newStudentForm.control}
-                  name='first_name'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder='Emma' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              onCreateNewAnyway={() => {
+                if (pendingFormData) {
+                  createStudentRecord(pendingFormData)
+                }
+                setPendingMatches([])
+                setPendingScreeningInfo({})
+              }}
+            />
+          ) : (
+            <Form {...newStudentForm}>
+              <form
+                onSubmit={e => {
+                  e.preventDefault()
+                  e.stopPropagation()
 
-                <FormField
-                  control={newStudentForm.control}
-                  name='last_name'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder='Johnson' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                  return newStudentForm.handleSubmit(data => {
+                    checkForMatchesAndProceed(data, e)
+                    return false
+                  })(e)
+                }}
+                className='space-y-4'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <FormField
+                    control={newStudentForm.control}
+                    name='first_name'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder='Emma' {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* <FormField
-                control={newStudentForm.control}
-                name='date_of_birth'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date of Birth</FormLabel>
-                    <FormControl>
-                      <Input type='date' {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /> */}
+                  <FormField
+                    control={newStudentForm.control}
+                    name='last_name'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder='Johnson' {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className='flex justify-end space-x-2 pt-4'>
-                <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>
-                  Cancel
-                </Button>
-                <Button
-                  type='submit'
-                  disabled={createStudentMutation.isPending || updateStudentMutation.isPending}>
-                  {createStudentMutation.isPending || updateStudentMutation.isPending
-                    ? 'Creating...'
-                    : 'Add Student'}
-                </Button>
-              </div>
-            </form>
-          </Form>
+                <div className='flex justify-end space-x-2 pt-4'>
+                  <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type='submit'
+                    disabled={createStudentMutation.isPending || updateStudentMutation.isPending}>
+                    {createStudentMutation.isPending || updateStudentMutation.isPending
+                      ? 'Creating...'
+                      : 'Add Student'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
         </DialogContent>
       </Dialog>
     </div>
