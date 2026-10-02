@@ -30,6 +30,9 @@ import { Input } from '@/components/ui/input'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { withDuplicateLabels } from '@/lib/student-duplicate-label'
+import ExistingStudentMatches from './ExistingStudentMatches'
+import type { LastScreeningInfo } from '@/api/students'
 
 interface StudentSearchSelectorProps {
   onStudentSelect: (student: Student | null) => void
@@ -55,6 +58,14 @@ const StudentSearchSelector = ({
   const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [showNewStudentForm, setShowNewStudentForm] = useState(false)
+  const [pendingMatches, setPendingMatches] = useState<
+    Array<Student & { duplicateLabel: string | null }>
+  >([])
+  const [pendingScreeningInfo, setPendingScreeningInfo] = useState<
+    Record<string, LastScreeningInfo>
+  >({})
+  const [pendingFormData, setPendingFormData] = useState<NewStudentFormData | null>(null)
+
   const { toast } = useToast()
 
   const { userProfile, availableSchools, currentSchool, isLoading: orgLoading } = useOrganization()
@@ -126,7 +137,7 @@ const StudentSearchSelector = ({
     setSearchValue('')
   }
 
-  const handleCreateNewStudent = async (data: NewStudentFormData, e?: React.FormEvent) => {
+  const checkForMatchesAndProceed = async (data: NewStudentFormData, e?: React.FormEvent) => {
     if (e) {
       e.preventDefault()
       e.stopPropagation()
@@ -142,32 +153,36 @@ const StudentSearchSelector = ({
     }
 
     try {
-      const duplicate = await studentsApi.checkDuplicateStudent(
+      const matches = await studentsApi.findStudentsByName(
         currentSchool.id,
         data.first_name,
-        data.last_name,
-        data.date_of_birth
+        data.last_name
       )
 
-      if (duplicate) {
-        toast({
-          title: 'Duplicate Student',
-          description: `A student with the name "${data.first_name} ${data.last_name}"${
-            data.date_of_birth ? ` and birthdate ${data.date_of_birth}` : ''
-          } already exists in this school.`,
-          variant: 'destructive',
-        })
+      if (matches.length > 0) {
+        const screeningInfo = await studentsApi.getLastScreeningInfoForStudents(
+          matches.map(student => student.id)
+        )
+        setPendingMatches(withDuplicateLabels(matches))
+        setPendingScreeningInfo(screeningInfo)
+        setPendingFormData(data)
         return
       }
     } catch (error) {
-      console.error('Error checking for duplicate:', error)
+      console.error('Error checking for existing students:', error)
       toast({
         title: 'Error',
-        description: 'Failed to check for duplicate students. Please try again.',
+        description: 'Failed to check for existing students. Please try again.',
         variant: 'destructive',
       })
       return
     }
+
+    createStudentRecord(data)
+  }
+
+  const createStudentRecord = (data: NewStudentFormData) => {
+    if (!currentSchool) return
 
     const schoolAbbreviation = currentSchool.name
       .split(' ')
@@ -178,7 +193,6 @@ const StudentSearchSelector = ({
     const timestamp = Date.now().toString(36)
     const tempStudentId = `${schoolAbbreviation}-TEMP-${timestamp}`
 
-    // Create student with temporary ID
     createStudentMutation.mutate(
       {
         first_name: data.first_name.trim().replace(/\s+/g, ' '),
@@ -204,6 +218,8 @@ const StudentSearchSelector = ({
                 setShowNewStudentForm(false)
                 setOpen(false)
                 setSearchValue('')
+                setPendingMatches([])
+                setPendingFormData(null)
                 newStudentForm.reset()
 
                 onStudentSelect(updatedStudent as Student)
@@ -264,6 +280,9 @@ const StudentSearchSelector = ({
     setShowNewStudentForm(false)
     newStudentForm.reset()
     setSearchValue('')
+    setPendingMatches([])
+    setPendingScreeningInfo({})
+    setPendingFormData(null)
   }
 
   const shouldShowAddNew = searchValue.length >= 2 && studentsToShow.length === 0 && !isLoading
@@ -486,7 +505,7 @@ const StudentSearchSelector = ({
                 e.stopPropagation()
 
                 return newStudentForm.handleSubmit(data => {
-                  handleCreateNewStudent(data, e)
+                  checkForMatchesAndProceed(data, e)
                   return false
                 })(e)
               }}
