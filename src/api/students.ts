@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Student } from '@/types/database'
+import { execSync } from 'child_process'
 
 export interface ReturningAbsentStudent {
   student_id: string
@@ -638,5 +639,50 @@ export const studentsApi = {
     }
 
     return data || []
+  },
+
+  // Get the most recent screening (Speech or hearing) for each given student
+  getLastScreeningInfoForStudents: async (
+    studentIds: string[]
+  ): Promise<Record<string, LastScreeningInfo>> => {
+    if (studentIds.length === 0) return {}
+
+    const [{ data: speech, error: speechError }, { data: hearing, error: hearingError }] =
+      await Promise.all([
+        supabase
+          .from('speech_screenings')
+          .select('student_id, created_at, school_grades!left(grade_level)')
+          .in('student_id', studentIds),
+        supabase
+          .from('hearing_screenings')
+          .select('student_id, created_at, school_grades!left(grade_level)')
+          .in('student_id', studentIds),
+      ])
+
+    if (speechError) throw speechError
+    if (hearingError) throw hearingError
+
+    const all = [...(speech || []), ...(hearing || [])]
+
+    const result: Record<string, LastScreeningInfo> = {}
+
+    for (const screening of all) {
+      const existing = result[screening.student_id]
+      const isNewer = !existing || new Date(screening.created_at) > new Date(existing.date)
+
+      if (isNewer) {
+        const schoolGrade = Array.isArray(screening.school_grades)
+          ? screening.school_grades[0]
+          : screening.school_grades
+
+        result[screening.student_id] = {
+          studentId: screening.student_id,
+          date: screening.created_at,
+          grade: schoolGrade?.grade_level ?? null,
+        }
+      }
+    }
+
+    return result
   },
 }
