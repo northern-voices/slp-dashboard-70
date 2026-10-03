@@ -23,13 +23,14 @@ import { Student, Screening } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { useUpdateStudent } from '@/hooks/students'
+import { useUpdateStudent, useLastScreeningInfoForStudents } from '@/hooks/students'
 import CreateEADialog from '@/components/caseload/CreateEADialog'
 import { SelectSeparator } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import SortControls, { SortOption } from '@/components/ui/SortControls'
 import { type StudentData } from '@/api/monthlymeetings'
 import { getCurrentAcademicYearStartDate } from '@/lib/academicYear'
+import { withDuplicateLabels, formatScreeningInfo } from '@/lib/student-duplicate-label'
 
 interface MonthlyMeetingsStudentTableProps {
   students: Student[]
@@ -191,6 +192,14 @@ const MonthlyMeetingsStudentTable = ({
     }
   }
 
+  const labeledStudents = withDuplicateLabels(students)
+
+  const duplicateStudentIds = labeledStudents
+    .filter(student => student.duplicateLabel)
+    .map(student => student.id)
+
+  const { data: duplicateScreeningInfo = {} } = useLastScreeningInfoForStudents(duplicateStudentIds)
+
   if (isLoading) {
     return (
       <div className='flex items-center justify-center py-8'>
@@ -203,7 +212,7 @@ const MonthlyMeetingsStudentTable = ({
   }
 
   // Filter and sort students
-  const filteredStudents = students
+  const filteredStudents = labeledStudents
     .filter(student => {
       const status = getProgramStatus(student)
       return status === 'sub' || status === 'qualified' || status === 'paused'
@@ -310,7 +319,19 @@ const MonthlyMeetingsStudentTable = ({
           {paginatedStudents.map(student => (
             <ResponsiveTableRow key={student.id}>
               <TableCell>
-                {student.first_name} {student.last_name}
+                <div className='flex flex-col gap-0.5'>
+                  <span>
+                    {student.first_name} {student.last_name}
+                    {student.duplicateLabel && (
+                      <span className='text-muted-foreground'> ({student.duplicateLabel})</span>
+                    )}
+                  </span>
+                  {student.duplicateLabel && (
+                    <span className='text-xs text-muted-foreground'>
+                      {formatScreeningInfo(duplicateScreeningInfo[student.id])}
+                    </span>
+                  )}
+                </div>
               </TableCell>
 
               <TableCell>{getStudentGrade(student)}</TableCell>
