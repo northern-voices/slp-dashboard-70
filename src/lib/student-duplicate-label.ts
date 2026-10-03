@@ -41,7 +41,7 @@ export function formatScreeningInfo(info?: LastScreeningInfo): string {
   })
 
   if (info.grade && info.academicYear) {
-    return `Last screen: ${date} — ${info.grade} - ${info.academicYear}`
+    return `Last screen: ${date} — ${info.grade} (${info.academicYear})`
   }
 
   return info.grade ? `Last screen: ${date} — ${info.grade}` : `Last screen: ${date}`
