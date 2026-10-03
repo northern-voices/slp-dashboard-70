@@ -25,6 +25,8 @@ import {
   getAcademicYearShortLabel,
 } from '@/lib/academicYear'
 import EmailCaseloadReportModal from './EmailCaseloadReportModal'
+import { withDuplicateLabels, formatScreeningInfo } from '@/lib/student-duplicate-label'
+import { useLastScreeningInfoForStudents } from '@/hooks/students/use-students'
 
 interface CaseloadTableProps {
   students: Student[]
@@ -53,6 +55,14 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       navigate(`/students/${path}`)
     }
   }
+
+  const labeledStudents = withDuplicateLabels(students)
+
+  const duplicateStudentIds = labeledStudents
+    .filter(student => student.duplicateLabel)
+    .map(student => student.id)
+
+  const { data: duplicateScreeningInfo = {} } = useLastScreeningInfoForStudents(duplicateStudentIds)
 
   const {
     gradesMap,
@@ -97,7 +107,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     returningAbsentByStudent,
     returningAbsentFilter,
     setReturningAbsentFilter,
-  } = useCaseloadTableData(students, schoolId)
+  } = useCaseloadTableData(labeledStudents, schoolId)
 
   const {
     updatingStudentId,
@@ -144,7 +154,8 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       service_status: student.service_status,
       program_status: 'qualified' as const,
       result_year: getResultYearLabel(student.id),
-      returning_absent_status: returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
+      returning_absent_status:
+        returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
     }))
 
   const subStudents = programFilteredStudents
@@ -158,7 +169,8 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       service_status: student.service_status,
       program_status: 'sub' as const,
       result_year: getResultYearLabel(student.id),
-      returning_absent_status: returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
+      returning_absent_status:
+        returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
     }))
 
   const graduatedStudents = programFilteredStudents
@@ -172,7 +184,8 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
       service_status: student.service_status,
       program_status: 'graduated' as const,
       result_year: getResultYearLabel(student.id),
-      returning_absent_status: returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
+      returning_absent_status:
+        returningAbsentByStudent.get(student.id)?.current_year_status ?? null,
     }))
 
   const academicYear =
@@ -270,6 +283,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                 key={student.id}
                 student={student}
                 gradesMap={gradesMap}
+                duplicateScreeningInfo={duplicateScreeningInfo}
                 speechEAs={speechEAs}
                 screening={latestScreeningByStudent.get(student.id)}
                 hasConsent={consentSet.has(student.id)}
