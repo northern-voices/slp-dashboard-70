@@ -15,6 +15,7 @@ export interface LastScreeningInfo {
   studentId: string
   date: string
   grade: string | null
+  academicYear: string | null
 }
 
 export const studentsApi = {
@@ -651,11 +652,11 @@ export const studentsApi = {
       await Promise.all([
         supabase
           .from('speech_screenings')
-          .select('student_id, created_at, school_grades!left(grade_level)')
+          .select('student_id, created_at, school_grades!left(grade_level, academic_year)')
           .in('student_id', studentIds),
         supabase
           .from('hearing_screenings')
-          .select('student_id, created_at, school_grades!left(grade_level)')
+          .select('student_id, created_at, school_grades!left(grade_level, academic_year)')
           .in('student_id', studentIds),
       ])
 
@@ -679,6 +680,7 @@ export const studentsApi = {
           studentId: screening.student_id,
           date: screening.created_at,
           grade: schoolGrade?.grade_level ?? null,
+          academicYear: schoolGrade?.academic_year ?? null,
         }
       }
     }
