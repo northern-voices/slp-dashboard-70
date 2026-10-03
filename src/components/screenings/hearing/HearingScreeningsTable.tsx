@@ -15,6 +15,7 @@ import {
 } from '@/hooks/screenings/use-screening-hearing-mutations'
 import { Screening, Student, ServiceStatus } from '@/types/database'
 import { useStudentsBySchool, useSchoolTransfers } from '@/hooks/students/use-students'
+import { withDuplicateLabels } from '@/lib/student-duplicate-label'
 import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { usePauseStudent } from '@/hooks/students/use-pause-student'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -112,8 +113,8 @@ const HearingScreeningsTable = ({
   }, [schoolTransfers])
 
   const studentsById = useMemo(() => {
-    const map = new Map<string, Student>()
-    students.forEach(student => {
+    const map = new Map<string, Student & { duplicateLabel: string | null }>()
+    withDuplicateLabels(students).forEach(student => {
       map.set(student.id, student)
       if (student.student_id) map.set(student.student_id, student)
     })
@@ -671,6 +672,7 @@ const HearingScreeningsTable = ({
                   isPaused={studentsById.get(screening.student_id)?.service_status === 'paused'}
                   transferRecord={transferStudentById.get(screening.student_id)}
                   currentSchoolId={currentSchool?.id ?? ''}
+                  duplicateLabel={studentsById.get(screening.student_id)?.duplicateLabel ?? null}
                 />
               ))
             )}
