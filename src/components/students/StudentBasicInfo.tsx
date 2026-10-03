@@ -5,6 +5,7 @@ import type { Student } from '@/types/database'
 
 interface StudentBasicInfoProps {
   student: Student
+  duplicateLabel?: string | null
   hasConsentThisYear: boolean
   onEdit: () => void
   onTransfer: () => void
@@ -14,6 +15,7 @@ interface StudentBasicInfoProps {
 
 const StudentBasicInfo = ({
   student,
+  duplicateLabel,
   hasConsentThisYear,
   onEdit,
   onTransfer,
@@ -28,6 +30,7 @@ const StudentBasicInfo = ({
       <div className='flex items-center gap-2 flex-wrap'>
         <h1 className='text-2xl font-semibold text-gray-900'>
           {student.first_name} {student.last_name}
+          {duplicateLabel && <span className='text-muted-foreground'> ({duplicateLabel})</span>}
         </h1>
         {hasConsentThisYear ? (
           <Badge className='bg-green-100 text-green-700 border-green-200'>Consent on File</Badge>

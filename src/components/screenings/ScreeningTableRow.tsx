@@ -32,6 +32,7 @@ interface ScreeningTableRowProps {
   } | null
   currentSchoolId?: string
   needsPriorityRescreen?: boolean
+  duplicateLabel?: string | null
 }
 
 const ScreeningTableRow = ({
@@ -53,6 +54,7 @@ const ScreeningTableRow = ({
   transferRecord,
   currentSchoolId,
   needsPriorityRescreen,
+  duplicateLabel,
 }: ScreeningTableRowProps) => {
   const transferredOut =
     transferRecord && currentSchoolId && transferRecord.from_school_id === currentSchoolId
@@ -82,7 +84,12 @@ const ScreeningTableRow = ({
               />
 
               <div className='flex flex-col gap-0.5 items-start'>
-                <h3 className='font-medium'>{screening.student_name}</h3>
+                <h3 className='font-medium'>
+                  {screening.student_name}
+                  {duplicateLabel && (
+                    <span className='text-muted-foreground'> ({duplicateLabel})</span>
+                  )}
+                </h3>
                 {(isPaused || needsPriorityRescreen) && (
                   <div className='flex items-center gap-1 flex-wrap'>
                     {isPaused && (
@@ -159,6 +166,9 @@ const ScreeningTableRow = ({
         <div className='flex flex-col gap-0.5 items-start'>
           <div className='text-base font-medium truncate' title={screening.student_name}>
             {screening.student_name}
+            {duplicateLabel && (
+              <span className='text-muted-foreground'> ({duplicateLabel})</span>
+            )}
           </div>
 
           {(isPaused || needsPriorityRescreen) && (

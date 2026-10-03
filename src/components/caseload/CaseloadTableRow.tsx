@@ -39,9 +39,12 @@ import {
 import { getStudentGrade, getSpeechEAName, SpeechEA } from './caseloadUtils'
 import { isCurrentAcademicYear } from '@/lib/academicYear'
 import { GRADE_MAPPING } from '@/constants/app'
+import { formatScreeningInfo } from '@/lib/student-duplicate-label'
+import type { LastScreeningInfo } from '@/api/students'
 
 interface CaseloadTableRowProps {
-  student: Student
+  student: Student & { duplicateLabel: string | null }
+  duplicateScreeningInfo: Record<string, LastScreeningInfo>
   gradesMap: Map<string, SchoolGrade>
   speechEAs: SpeechEA[]
   screening: Screening | undefined
@@ -62,6 +65,7 @@ interface CaseloadTableRowProps {
 
 const CaseloadTableRow = ({
   student,
+  duplicateScreeningInfo,
   gradesMap,
   speechEAs,
   screening,
@@ -88,7 +92,15 @@ const CaseloadTableRow = ({
         <div className='flex flex-col gap-1 items-start'>
           <span>
             {student.first_name} {student.last_name}
+            {student.duplicateLabel && (
+              <span className='text-muted-foreground'> ({student.duplicateLabel})</span>
+            )}
           </span>
+          {student.duplicateLabel && (
+            <span className='text-xs text-muted-foreground'>
+              {formatScreeningInfo(duplicateScreeningInfo[student.id])}
+            </span>
+          )}
           <div className='flex items-center gap-1 flex-wrap'>
             <ServiceStatusTag status={student.service_status} />
             <ReturningAbsentBadge status={returningAbsentStatus} />
