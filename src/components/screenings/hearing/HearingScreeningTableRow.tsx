@@ -43,6 +43,7 @@ interface HearingScreeningTableRowProps {
     to_school: { id: string; name: string } | null
   } | null
   currentSchoolId?: string
+  duplicateLabel?: string | null
 }
 
 const HearingScreeningTableRow = ({
@@ -60,6 +61,7 @@ const HearingScreeningTableRow = ({
   isPaused,
   transferRecord,
   currentSchoolId,
+  duplicateLabel,
 }: HearingScreeningTableRowProps) => {
   const transferredOut =
     transferRecord && currentSchoolId && transferRecord.from_school_id === currentSchoolId
@@ -83,6 +85,9 @@ const HearingScreeningTableRow = ({
         <div className='space-y-1'>
           <div className='font-semibold text-sm text-gray-900'>
             {screening.student_name || 'Unknown Student'}
+            {duplicateLabel && (
+              <span className='text-muted-foreground'> ({duplicateLabel})</span>
+            )}
           </div>
           {isPaused && (
             <div className='flex items-center gap-1 flex-wrap'>
