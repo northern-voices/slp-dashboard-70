@@ -53,6 +53,7 @@ import EmailScreeningsReportModal from './EmailScreeningsReportModal'
 import PriorityRescreenDialog from './PriorityRescreenDialog'
 import PauseConfirmDialog from '@/components/students/PauseConfirmDialog'
 import { usePauseStudent } from '@/hooks/students/use-pause-student'
+import { withDuplicateLabels } from '@/lib/student-duplicate-label'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -104,7 +105,9 @@ const ScreeningsTable = ({
   } | null>(null)
   const [screeningToEmail, setScreeningToEmail] = useState<Screening | null>(null)
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
-  const [studentsMap, setStudentsMap] = useState<Map<string, Student>>(new Map())
+  const [studentsMap, setStudentsMap] = useState<
+    Map<string, Student & { duplicateLabel: string | null }>
+  >(new Map())
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
   const [consentStudent, setConsentStudent] = useState<Student | null>(null)
@@ -192,8 +195,8 @@ const ScreeningsTable = ({
       return
     }
 
-    const studentsMapping = new Map<string, Student>()
-    students.forEach(student => {
+    const studentsMapping = new Map<string, Student & { duplicateLabel: string | null }>()
+    withDuplicateLabels(students).forEach(student => {
       studentsMapping.set(student.id, student)
       if (student.student_id) studentsMapping.set(student.student_id, student)
     })
@@ -1286,6 +1289,7 @@ const ScreeningsTable = ({
                   needsPriorityRescreen={
                     studentsMap.get(screening.student_id)?.needs_priority_rescreen
                   }
+                  duplicateLabel={studentsMap.get(screening.student_id)?.duplicateLabel ?? null}
                 />
               ))}
             </TableBody>
