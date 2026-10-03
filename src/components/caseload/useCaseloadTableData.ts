@@ -16,7 +16,7 @@ import {
 } from '@/lib/academicYear'
 import { ReturningAbsentStudent } from '@/api/students'
 
-export const useCaseloadTableData = (students: Student[], schoolId?: string) => {
+export const useCaseloadTableData = <T extends Student>(students: T[], schoolId?: string) => {
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
   const [sortField, setSortField] = useState<string | null>('program_status')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('asc')

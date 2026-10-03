@@ -22,6 +22,8 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudentTransferHistory } from '@/hooks/students'
 import TransferHistorySection from './TransferHistorySection'
 import { getCurrentAcademicYear, getAcademicYearRange } from '@/lib/academicYear'
+import { useStudentNameMatches } from '@/hooks/students'
+import { withDuplicateLabels } from '@/lib/student-duplicate-label'
 
 interface StudentInfoHeaderProps {
   student?: Student | null
@@ -57,6 +59,16 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
   )
 
   const isViewingFromOldSchool = localStudent?.school_id !== currentSchool?.id
+
+  const { data: nameMatches = [] } = useStudentNameMatches(
+    localStudent?.school_id,
+    localStudent?.first_name,
+    localStudent?.last_name
+  )
+
+  const duplicateLabel =
+    withDuplicateLabels(nameMatches).find(match => match.id === localStudent?.id)?.duplicateLabel ??
+    null
 
   const speechEAs = (schoolDetails?.schoolTeam ?? []).filter(m => m.roles.includes('speech_ea'))
 
@@ -301,12 +313,14 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
 
             <StudentBasicInfo
               student={localStudent}
+              duplicateLabel={duplicateLabel}
               hasConsentThisYear={hasConsentThisYear}
               onEdit={handleEditName}
               onTransfer={() => setIsTransferDialogOpen(true)}
               onResume={() => handleResume(localStudent)}
               onPause={() => handlePause(localStudent)}
             />
+
             <StudentDetailsGrid
               student={localStudent}
               currentGrade={currentGrade}

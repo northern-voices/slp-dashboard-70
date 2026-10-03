@@ -30,6 +30,10 @@ import { Input } from '@/components/ui/input'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import ExistingStudentMatches from './ExistingStudentMatches'
+import type { LastScreeningInfo } from '@/api/students'
+import { useLastScreeningInfoForStudents } from '@/hooks/students/use-students'
+import { withDuplicateLabels, formatScreeningInfo } from '@/lib/student-duplicate-label'
 
 interface StudentSearchSelectorProps {
   onStudentSelect: (student: Student | null) => void
@@ -55,6 +59,14 @@ const StudentSearchSelector = ({
   const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [showNewStudentForm, setShowNewStudentForm] = useState(false)
+  const [pendingMatches, setPendingMatches] = useState<
+    Array<Student & { duplicateLabel: string | null }>
+  >([])
+  const [pendingScreeningInfo, setPendingScreeningInfo] = useState<
+    Record<string, LastScreeningInfo>
+  >({})
+  const [pendingFormData, setPendingFormData] = useState<NewStudentFormData | null>(null)
+
   const { toast } = useToast()
 
   const { userProfile, availableSchools, currentSchool, isLoading: orgLoading } = useOrganization()
@@ -104,6 +116,14 @@ const StudentSearchSelector = ({
         : studentsBySchool
     : []
 
+  const labeledStudentsToShow = withDuplicateLabels(studentsToShow)
+
+  const duplicateStudentIds = labeledStudentsToShow
+    .filter(student => student.duplicateLabel)
+    .map(student => student.id)
+
+  const { data: duplicateScreeningInfo = {} } = useLastScreeningInfoForStudents(duplicateStudentIds)
+
   const isLoading = currentSchool ? (gradeFilter ? loadingByGrade : loadingBySchool) : false
 
   const newStudentForm = useForm<NewStudentFormData>({
@@ -126,7 +146,7 @@ const StudentSearchSelector = ({
     setSearchValue('')
   }
 
-  const handleCreateNewStudent = async (data: NewStudentFormData, e?: React.FormEvent) => {
+  const checkForMatchesAndProceed = async (data: NewStudentFormData, e?: React.FormEvent) => {
     if (e) {
       e.preventDefault()
       e.stopPropagation()
@@ -142,32 +162,36 @@ const StudentSearchSelector = ({
     }
 
     try {
-      const duplicate = await studentsApi.checkDuplicateStudent(
+      const matches = await studentsApi.findStudentsByName(
         currentSchool.id,
         data.first_name,
-        data.last_name,
-        data.date_of_birth
+        data.last_name
       )
 
-      if (duplicate) {
-        toast({
-          title: 'Duplicate Student',
-          description: `A student with the name "${data.first_name} ${data.last_name}"${
-            data.date_of_birth ? ` and birthdate ${data.date_of_birth}` : ''
-          } already exists in this school.`,
-          variant: 'destructive',
-        })
+      if (matches.length > 0) {
+        const screeningInfo = await studentsApi.getLastScreeningInfoForStudents(
+          matches.map(student => student.id)
+        )
+        setPendingMatches(withDuplicateLabels(matches))
+        setPendingScreeningInfo(screeningInfo)
+        setPendingFormData(data)
         return
       }
     } catch (error) {
-      console.error('Error checking for duplicate:', error)
+      console.error('Error checking for existing students:', error)
       toast({
         title: 'Error',
-        description: 'Failed to check for duplicate students. Please try again.',
+        description: 'Failed to check for existing students. Please try again.',
         variant: 'destructive',
       })
       return
     }
+
+    createStudentRecord(data)
+  }
+
+  const createStudentRecord = (data: NewStudentFormData) => {
+    if (!currentSchool) return
 
     const schoolAbbreviation = currentSchool.name
       .split(' ')
@@ -178,7 +202,6 @@ const StudentSearchSelector = ({
     const timestamp = Date.now().toString(36)
     const tempStudentId = `${schoolAbbreviation}-TEMP-${timestamp}`
 
-    // Create student with temporary ID
     createStudentMutation.mutate(
       {
         first_name: data.first_name.trim().replace(/\s+/g, ' '),
@@ -204,6 +227,8 @@ const StudentSearchSelector = ({
                 setShowNewStudentForm(false)
                 setOpen(false)
                 setSearchValue('')
+                setPendingMatches([])
+                setPendingFormData(null)
                 newStudentForm.reset()
 
                 onStudentSelect(updatedStudent as Student)
@@ -264,6 +289,9 @@ const StudentSearchSelector = ({
     setShowNewStudentForm(false)
     newStudentForm.reset()
     setSearchValue('')
+    setPendingMatches([])
+    setPendingScreeningInfo({})
+    setPendingFormData(null)
   }
 
   const shouldShowAddNew = searchValue.length >= 2 && studentsToShow.length === 0 && !isLoading
@@ -392,7 +420,7 @@ const StudentSearchSelector = ({
                           onClick={handleShowNewStudentForm}
                           className='w-full'>
                           <UserPlus className='w-4 h-4 mr-2' />
-                          Add New Student asdf
+                          Add New Student
                         </Button>
                       )}
                     </div>
@@ -401,7 +429,7 @@ const StudentSearchSelector = ({
                   )}
                 </CommandEmpty>
                 <CommandGroup>
-                  {studentsToShow.map(student => (
+                  {labeledStudentsToShow.map(student => (
                     <CommandItem
                       key={student.id}
                       value={`${student.first_name} ${student.last_name} ${student.student_id}`}
@@ -416,11 +444,22 @@ const StudentSearchSelector = ({
                       <div className='flex flex-col'>
                         <span className='font-medium'>
                           {student.first_name} {student.last_name}
+                          {student.duplicateLabel && (
+                            <span className='text-muted-foreground'>
+                              {' '}
+                              ({student.duplicateLabel})
+                            </span>
+                          )}
                         </span>
-                        <span className='text-sm text-muted-foreground'></span>
+                        {student.duplicateLabel && (
+                          <span className='text-xs text-muted-foreground'>
+                            {formatScreeningInfo(duplicateScreeningInfo[student.id])}
+                          </span>
+                        )}
                       </div>
                     </CommandItem>
                   ))}
+
                   {shouldShowAddNew && isStudentCreatable && (
                     <CommandItem
                       value='add-new-student'
@@ -479,76 +518,88 @@ const StudentSearchSelector = ({
             </DialogTitle>
           </DialogHeader>
 
-          <Form {...newStudentForm}>
-            <form
-              onSubmit={e => {
-                e.preventDefault()
-                e.stopPropagation()
-
-                return newStudentForm.handleSubmit(data => {
-                  handleCreateNewStudent(data, e)
-                  return false
-                })(e)
+          {pendingMatches.length > 0 ? (
+            <ExistingStudentMatches
+              matches={pendingMatches}
+              screeningInfo={pendingScreeningInfo}
+              firstName={pendingFormData?.first_name ?? ''}
+              lastName={pendingFormData?.last_name ?? ''}
+              onSelectExisting={student => {
+                onStudentSelect(student)
+                setShowNewStudentForm(false)
+                setOpen(false)
+                setSearchValue('')
+                setPendingMatches([])
+                setPendingScreeningInfo({})
+                setPendingFormData(null)
+                newStudentForm.reset()
               }}
-              className='space-y-4'>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <FormField
-                  control={newStudentForm.control}
-                  name='first_name'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder='Emma' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              onCreateNewAnyway={() => {
+                if (pendingFormData) {
+                  createStudentRecord(pendingFormData)
+                }
+                setPendingMatches([])
+                setPendingScreeningInfo({})
+              }}
+            />
+          ) : (
+            <Form {...newStudentForm}>
+              <form
+                onSubmit={e => {
+                  e.preventDefault()
+                  e.stopPropagation()
 
-                <FormField
-                  control={newStudentForm.control}
-                  name='last_name'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder='Johnson' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                  return newStudentForm.handleSubmit(data => {
+                    checkForMatchesAndProceed(data, e)
+                    return false
+                  })(e)
+                }}
+                className='space-y-4'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <FormField
+                    control={newStudentForm.control}
+                    name='first_name'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder='Emma' {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* <FormField
-                control={newStudentForm.control}
-                name='date_of_birth'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date of Birth</FormLabel>
-                    <FormControl>
-                      <Input type='date' {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /> */}
+                  <FormField
+                    control={newStudentForm.control}
+                    name='last_name'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder='Johnson' {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className='flex justify-end space-x-2 pt-4'>
-                <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>
-                  Cancel
-                </Button>
-                <Button
-                  type='submit'
-                  disabled={createStudentMutation.isPending || updateStudentMutation.isPending}>
-                  {createStudentMutation.isPending || updateStudentMutation.isPending
-                    ? 'Creating...'
-                    : 'Add Student'}
-                </Button>
-              </div>
-            </form>
-          </Form>
+                <div className='flex justify-end space-x-2 pt-4'>
+                  <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type='submit'
+                    disabled={createStudentMutation.isPending || updateStudentMutation.isPending}>
+                    {createStudentMutation.isPending || updateStudentMutation.isPending
+                      ? 'Creating...'
+                      : 'Add Student'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
         </DialogContent>
       </Dialog>
     </div>

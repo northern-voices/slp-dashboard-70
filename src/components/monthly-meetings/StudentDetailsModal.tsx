@@ -26,7 +26,7 @@ import { type StudentData } from '@/api/monthlymeetings'
 interface StudentDetailsModalProps {
   open: boolean
   onClose: () => void
-  selectedStudent: Student | null
+  selectedStudent: (Student & { duplicateLabel?: string | null }) | null
   studentData: StudentData
   setStudentData: (updater: StudentData | ((prev: StudentData) => StudentData)) => void
   meetingId?: string
@@ -94,6 +94,9 @@ const StudentDetailsModal = ({
           <DialogTitle>
             Student Details:{' '}
             {selectedStudent ? `${selectedStudent.first_name} ${selectedStudent.last_name}` : ''}
+            {selectedStudent?.duplicateLabel && (
+              <span className='text-muted-foreground'> ({selectedStudent.duplicateLabel})</span>
+            )}
           </DialogTitle>
           {selectedStudent?.current_grade_id && (
             <p className='text-sm text-gray-500'>Grade: {getStudentGrade()}</p>
