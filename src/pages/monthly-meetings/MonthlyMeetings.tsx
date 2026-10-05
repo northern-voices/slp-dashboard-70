@@ -30,9 +30,11 @@ const MonthlyMeetingsContent = () => {
   const { data: meetings = [] } = useMonthlyMeetingsBySchool(currentSchool?.id, 'all')
 
   const availableSchoolYears = useMemo(() => {
+    const currentYear = getCurrentAcademicYear()
     const years = new Set<string>()
     meetings.forEach(meeting => {
-      years.add(getCurrentAcademicYear(new Date(meeting.meeting_date)))
+      const year = getCurrentAcademicYear(new Date(meeting.meeting_date))
+      if (year !== currentYear) years.add(year)
     })
 
     return Array.from(years).sort().reverse()
