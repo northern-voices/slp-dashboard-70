@@ -14,6 +14,40 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Search, Filter, ChevronDown, ChevronUp, X, RefreshCw } from 'lucide-react'
 import { GRADE_MAPPING } from '@/constants/app'
 
+const RESULT_LABELS: Record<string, string> = {
+  no_errors: 'No Errors',
+  age_appropriate: 'Age Appropriate',
+  monitor: 'Monitor',
+  mild: 'Mild',
+  moderate: 'Moderate',
+  severe: 'Severe',
+  profound: 'Profound',
+  complex_needs: 'Complex Needs',
+  unable_to_screen: 'Non-Compliant',
+  absent: 'Absent',
+  non_registered_no_consent: 'No Consent',
+}
+
+const DATE_RANGE_LABELS: Record<string, string> = {
+  today: 'Today',
+  week: 'This Week',
+  month: 'This Month',
+  quarter: 'This Quarter',
+  school_year: 'This School Year',
+}
+
+const PROGRAM_STATUS_OPTIONS = [
+  { value: 'qualified', label: 'Qualifies' },
+  { value: 'not_in_program', label: 'Not in Program' },
+  { value: 'sub', label: 'Sub' },
+  { value: 'to_be_determined', label: 'Pending - To Be Determined' },
+]
+
+const SERVICE_STATUS_OPTIONS = [
+  { value: 'paused', label: 'Pause/Away' },
+  { value: 'graduated', label: 'Graduated' },
+]
+
 interface ScreeningsFiltersProps {
   searchTerm: string
   setSearchTerm: (value: string) => void
@@ -226,13 +260,7 @@ const ScreeningsFilters = ({
                 <div className='space-y-2'>
                   <label className='text-sm font-medium text-gray-700'>Program Status</label>
                   <div className='flex flex-wrap gap-x-6 gap-y-1'>
-                    {[
-                      { value: 'qualified', label: 'Qualifies' },
-                      { value: 'not_in_program', label: 'Not in Program' },
-                      { value: 'sub', label: 'Sub' },
-                      { value: 'to_be_determined', label: 'Pending - To Be Determined' },
-                      // { value: 'no_consent', label: 'No Consent' },
-                    ].map(option => (
+                    {PROGRAM_STATUS_OPTIONS.map(option => (
                       <div key={option.value} className='flex items-center space-x-2'>
                         <input
                           type='checkbox'
@@ -265,10 +293,7 @@ const ScreeningsFilters = ({
                 <div className='space-y-2'>
                   <label className='text-sm font-medium text-gray-700'>Status</label>
                   <div className='flex flex-wrap gap-x-6 gap-y-1'>
-                    {[
-                      { value: 'paused', label: 'Pause/Away' },
-                      { value: 'graduated', label: 'Graduated' },
-                    ].map(option => (
+                    {SERVICE_STATUS_OPTIONS.map(option => (
                       <div key={option.value} className='flex items-center space-x-2'>
                         <input
                           type='checkbox'
