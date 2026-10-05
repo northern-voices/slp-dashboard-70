@@ -27,9 +27,14 @@ const HearingScreenings = () => {
   const { data: screenings = [], isLoading } = useHearingScreenings(currentSchool?.id)
 
   const availableSchoolYears = useMemo(() => {
+    const currentYear = getCurrentAcademicYear()
+
     const years = new Set<string>()
+
     screenings.forEach(screening => {
-      years.add(getCurrentAcademicYear(new Date(screening.created_at)))
+      const year = getCurrentAcademicYear(new Date(screening.created_at))
+
+      if (year !== currentYear) years.add(year)
     })
 
     return Array.from(years).sort().reverse()
