@@ -131,21 +131,95 @@ const ScreeningsFilters = ({
     setPriorityRescreenFilter('all')
   }
 
-  // Get active filter count
-  const getActiveFilterCount = () => {
-    let count = 0
-    if (searchTerm) count++
-    if (resultFilter !== 'all') count++
-    if (dateRangeFilter !== 'all') count++
-    if (qualifiesForSpeechProgramFilter.length > 0) count++
-    if (vocabularySupportFilter !== 'all') count++
-    if (casFilter !== 'all') count++
-    if (gradeFilter !== 'all') count++
-    if (recommendationsFilter !== 'all') count++
-    if (clinicalNotesFilter !== 'all') count++
-    if (languageComprehensionFilter !== 'all') count++
-    if (priorityRescreenFilter !== 'all') count++
-    return count
+  // Build the list of currently active filters, each with a label and a way to clear just that one
+  const getActiveFilters = (): { key: string; label: string; onRemove: () => void }[] => {
+    const filters: { key: string; label: string; onRemove: () => void }[] = []
+
+    if (searchTerm) {
+      filters.push({
+        key: 'search',
+        label: `Search: "${searchTerm}"`,
+        onRemove: () => setSearchTerm(''),
+      })
+    }
+    if (resultFilter !== 'all') {
+      filters.push({
+        key: 'result',
+        label: `Result: ${RESULT_LABELS[resultFilter] ?? resultFilter}`,
+        onRemove: () => setResultFilter('all'),
+      })
+    }
+    if (dateRangeFilter !== 'all') {
+      const label = dateRangeFilter.startsWith('sy_')
+        ? dateRangeFilter.replace('sy_', '')
+        : (DATE_RANGE_LABELS[dateRangeFilter] ?? dateRangeFilter)
+      filters.push({ key: 'dateRange', label, onRemove: () => setDateRangeFilter('all') })
+    }
+    if (gradeFilter !== 'all') {
+      const grade = GRADE_MAPPING.find(g => g.value === gradeFilter)
+      filters.push({
+        key: 'grade',
+        label: `Grade: ${grade?.display ?? gradeFilter}`,
+        onRemove: () => setGradeFilter('all'),
+      })
+    }
+    qualifiesForSpeechProgramFilter.forEach(value => {
+      const option = [...PROGRAM_STATUS_OPTIONS, ...SERVICE_STATUS_OPTIONS].find(
+        o => o.value === value
+      )
+      filters.push({
+        key: `qualifies_${value}`,
+        label: option?.label ?? value,
+        onRemove: () =>
+          setQualifiesForSpeechProgramFilter(
+            qualifiesForSpeechProgramFilter.filter(v => v !== value)
+          ),
+      })
+    })
+    if (vocabularySupportFilter !== 'all') {
+      filters.push({
+        key: 'vocabularySupport',
+        label: 'Vocabulary Support Recommended',
+        onRemove: () => setVocabularySupportFilter('all'),
+      })
+    }
+    if (casFilter !== 'all') {
+      filters.push({
+        key: 'cas',
+        label: 'Suspected CAS Notes',
+        onRemove: () => setCasFilter('all'),
+      })
+    }
+    if (languageComprehensionFilter !== 'all') {
+      filters.push({
+        key: 'languageComprehension',
+        label: 'Language Comprehension Concern',
+        onRemove: () => setLanguageComprehensionFilter('all'),
+      })
+    }
+    if (priorityRescreenFilter !== 'all') {
+      filters.push({
+        key: 'priorityRescreen',
+        label: 'Priority Rescreen Required',
+        onRemove: () => setPriorityRescreenFilter('all'),
+      })
+    }
+    if (recommendationsFilter !== 'all') {
+      filters.push({
+        key: 'recommendations',
+        label: 'Has Referral Notes',
+        onRemove: () => setRecommendationsFilter('all'),
+      })
+    }
+    if (clinicalNotesFilter !== 'all') {
+      filters.push({
+        key: 'clinicalNotes',
+        label: 'Has Clinical Notes',
+        onRemove: () => setClinicalNotesFilter('all'),
+      })
+    }
+
+    return filters
   }
 
   return (
@@ -158,11 +232,6 @@ const ScreeningsFilters = ({
                 <div className='flex items-center gap-3'>
                   <Filter className='w-4 h-4 text-gray-600' />
                   <CardTitle className='text-base font-semibold'>Filters</CardTitle>
-                  {hasActiveFilters && (
-                    <Badge variant='secondary' className='bg-blue-100 text-blue-700'>
-                      {getActiveFilterCount()} active
-                    </Badge>
-                  )}
                 </div>
                 <div className='flex items-center gap-2'>
                   {hasActiveFilters && (
@@ -185,6 +254,28 @@ const ScreeningsFilters = ({
                   )}
                 </div>
               </div>
+              {hasActiveFilters && (
+                <div className='flex flex-wrap gap-2 mt-2'>
+                  {getActiveFilters().map(filter => (
+                    <Badge
+                      key={filter.key}
+                      variant='secondary'
+                      className='bg-blue-100 text-blue-700 flex items-center gap-1 pr-1'>
+                      {filter.label}
+                      <button
+                        type='button'
+                        onClick={e => {
+                          e.stopPropagation()
+                          filter.onRemove()
+                        }}
+                        className='hover:bg-blue-200 rounded-full p-0.5'
+                        aria-label={`Remove ${filter.label} filter`}>
+                        <X className='w-3 h-3' />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </CardHeader>
           </CollapsibleTrigger>
 
