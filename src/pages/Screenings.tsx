@@ -23,10 +23,15 @@ const ScreeningsContent = () => {
       ? (schoolScreeningsData?.screenings ?? [])
       : (allScreeningsData ?? [])
 
+    const currentYear = getCurrentAcademicYear()
     const years = new Set<string>()
+
     screeningsForYears.forEach(s => {
-      years.add(getCurrentAcademicYear(new Date(s.created_at)))
+      const year = getCurrentAcademicYear(new Date(s.created_at))
+
+      if (year !== currentYear) years.add(year)
     })
+
     return Array.from(years).sort().reverse() // newest first
   }, [currentSchool, schoolScreeningsData, allScreeningsData])
 
