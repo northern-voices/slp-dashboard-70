@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useUpdateSpeechScreening } from '@/hooks/screenings/use-screening-mutations'
@@ -43,7 +43,10 @@ import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import { Screening } from '@/types/database'
 import { ErrorPatterns } from '@/types/screening-form'
 import { ProgramStatus, ServiceStatus } from '@/types/database'
-import { getCurrentAcademicYearStartDate } from '@/lib/academicYear'
+import { getCurrentAcademicYearStartDate, getCurrentAcademicYear } from '@/lib/academicYear'
+import { useSchoolGradesBySchool } from '@/hooks/use-school-grades'
+import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
+import { GRADE_MAPPING } from '@/constants/app'
 
 interface ScreeningsListProps {
   studentId?: string
@@ -85,9 +88,12 @@ const ScreeningsList = ({
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
   const [updatingScreeningId, setUpdatingScreeningId] = useState<string | null>(null)
   const [updatingProgramId, setUpdatingProgramId] = useState<string | null>(null)
+  const [updatingGradeId, setUpdatingGradeId] = useState<string | null>(null)
+  const [optimisticGrade, setOptimisticGrade] = useState<{
+    screeningId: string
+    gradeLevel: string
+  } | null>(null)
 
-  // Use React Query to fetch screenings data for the specific student
-  // Only fetch if studentId is provided
   const { data: allScreenings, isLoading, error } = useScreeningsByStudent(studentId || '')
 
   const { userProfile } = useOrganization()
@@ -107,6 +113,17 @@ const ScreeningsList = ({
   const { mutate: updateStudent } = useUpdateStudent()
   const { toast } = useToast()
   const { data: student } = useStudent(studentId || '')
+  const { data: grades = [], isLoading: isLoadingGrades } = useSchoolGradesBySchool(
+    student?.school_id
+  )
+
+  const gradesMap = useMemo(() => {
+    const map = new Map<string, SchoolGrade>()
+    grades.forEach(grade => {
+      map.set(grade.id, grade)
+    })
+    return map
+  }, [grades])
 
   const handleResultChange = (screening: Screening, newResult: string) => {
     if (screening.source_table === 'speech') {
@@ -328,6 +345,152 @@ const ScreeningsList = ({
     }
 
     return getResultBadge(screening.result)
+  }
+
+  const getScreeningGrade = (screening: Screening): string => {
+    if (screening.grade) return screening.grade
+
+    if (student?.current_grade_id) {
+      if (isLoadingGrades) return '...'
+
+      const grade = gradesMap.get(student.current_grade_id)
+      if (grade) return grade.grade_level
+    }
+
+    return 'N/A'
+  }
+
+  const getDisplayGrade = (screening: Screening): string => {
+    if (optimisticGrade?.screeningId === screening.id) return optimisticGrade.gradeLevel
+
+    return getScreeningGrade(screening)
+  }
+
+  const getGradeValue = (screening: Screening): string => {
+    const grade = getDisplayGrade(screening)
+    return grade === 'N/A' || grade === '...' ? '' : grade
+  }
+
+  const handleGradeChange = (screening: Screening, newGradeLevel: string) => {
+    if (!student) {
+      toast({
+        title: 'Error updating grade',
+        description: 'Student not found',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setUpdatingGradeId(screening.id)
+    setOptimisticGrade({ screeningId: screening.id, gradeLevel: newGradeLevel })
+
+    schoolGradesApi
+      .getOrCreateGrade(
+        screening.school_id,
+        newGradeLevel,
+        screening.academic_year || getCurrentAcademicYear()
+      )
+      .then(resolvedGrade => {
+        updateSpeechScreening(
+          { id: screening.id, data: { grade_id: resolvedGrade.id } },
+          {
+            onSuccess: () => {
+              const mostRecentScreening = speechScreenings.sort(
+                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+              )[0]
+              const isLatestScreening = mostRecentScreening?.id === screening.id
+
+              if (isLatestScreening && resolvedGrade.academic_year === getCurrentAcademicYear()) {
+                updateStudent(
+                  { id: student.id, studentData: { current_grade_id: resolvedGrade.id } },
+                  {
+                    onSuccess: () => {
+                      setUpdatingGradeId(null)
+                      toast({
+                        title: 'Grade updated',
+                        description: `Successfully updated grade for ${screening.student_name}`,
+                        variant: 'default',
+                      })
+                    },
+                    onError: () => {
+                      setUpdatingGradeId(null)
+                      setOptimisticGrade(null)
+                      toast({
+                        title: 'Warning',
+                        description: 'Screening updated but failed to update student grade',
+                        variant: 'destructive',
+                      })
+                    },
+                  }
+                )
+              } else {
+                setUpdatingGradeId(null)
+                toast({
+                  title: 'Grade updated',
+                  description: 'Successfully updated grade for this screening (historical record)',
+                  variant: 'default',
+                })
+              }
+            },
+            onError: error => {
+              setUpdatingGradeId(null)
+              setOptimisticGrade(null)
+              toast({
+                title: 'Error updating grade',
+                description: error.message || 'Failed to update grade',
+                variant: 'destructive',
+              })
+            },
+          }
+        )
+      })
+      .catch(error => {
+        setUpdatingGradeId(null)
+        setOptimisticGrade(null)
+        toast({
+          title: 'Error updating grade',
+          description: error.message || 'Failed to resolve grade',
+          variant: 'destructive',
+        })
+      })
+  }
+
+  const getGradeSelector = (screening: Screening) => {
+    const grade = getDisplayGrade(screening)
+    const isLoadingGrade = grade === '...'
+
+    if (screening.source_table === 'speech') {
+      const isThisScreeningUpdating = updatingGradeId === screening.id
+
+      return (
+        <Select
+          value={getGradeValue(screening) || undefined}
+          onValueChange={value => handleGradeChange(screening, value)}
+          disabled={isThisScreeningUpdating || isLoadingGrade}>
+          <SelectTrigger className='w-full h-8 border-none p-0 hover:bg-transparent focus:ring-0'>
+            <SelectValue placeholder='Select grade'>
+              <div className='flex items-center gap-2'>
+                {isThisScreeningUpdating && (
+                  <Loader2 className='w-3 h-3 animate-spin text-blue-600' />
+                )}
+                <span className='truncate'>
+                  {isLoadingGrade ? '' : grade === 'N/A' ? 'Select grade' : grade}
+                </span>
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {GRADE_MAPPING.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.display}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )
+    }
+
+    return <span className='text-sm'>{isLoadingGrade ? '' : grade === 'N/A' ? '-' : grade}</span>
   }
 
   const extendedProgramOptions = [...PROGRAM_OPTIONS]
@@ -960,11 +1123,7 @@ const ScreeningsList = ({
                           <span className='font-medium'>Date:</span>{' '}
                           {format(parseDateSafely(screening.date), 'MMM d, yyyy')}
                         </p>
-                        {screening.grade && (
-                          <p>
-                            <span className='font-medium'>Grade:</span> {screening.grade}
-                          </p>
-                        )}
+                        <div className='flex items-center gap-2'>{getGradeSelector(screening)}</div>
                       </div>
                     </div>
                   }>
@@ -982,9 +1141,7 @@ const ScreeningsList = ({
                     <div className='w-full min-w-[120px]'>{getProgramSelector(screening)}</div>
                   </TableCell>
                   <TableCell className='max-w-0'>
-                    <div className='truncate' title={screening.grade || 'No grade'}>
-                      {screening.grade || '-'}
-                    </div>
+                    <div className='w-full min-w-[80px]'>{getGradeSelector(screening)}</div>
                   </TableCell>
                   <TableCell className='max-w-0'>
                     <div
