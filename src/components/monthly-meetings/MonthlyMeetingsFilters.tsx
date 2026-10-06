@@ -14,6 +14,14 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { useGetUsers } from '@/hooks/users/use-users'
 
+const DATE_RANGE_LABELS: Record<string, string> = {
+  today: 'Today',
+  week: 'This Week',
+  month: 'This Month',
+  quarter: 'This Quarter',
+  school_year: 'This School Year',
+}
+
 interface MonthlyMeetingsFiltersProps {
   searchTerm: string
   setSearchTerm: (value: string) => void
@@ -37,23 +45,42 @@ const MonthlyMeetingsFilters = ({
   const { data: users = [], isLoading: isLoadingUsers } = useGetUsers()
 
   // Check if any filters are active
-  const hasActiveFilters =
-    searchTerm || dateRangeFilter !== 'school_year' || facilitatorFilter !== 'all'
+  const hasActiveFilters = searchTerm || dateRangeFilter !== 'all' || facilitatorFilter !== 'all'
 
   // Clear all filters
   const clearAllFilters = () => {
     setSearchTerm('')
-    setDateRangeFilter('school_year')
+    setDateRangeFilter('all')
     setFacilitatorFilter('all')
   }
 
-  // Get active filter count
-  const getActiveFilterCount = () => {
-    let count = 0
-    if (searchTerm) count++
-    if (dateRangeFilter !== 'school_year') count++
-    if (facilitatorFilter !== 'all') count++
-    return count
+  // Build the list of currently active filters, each with a label and a way to clear just that one
+  const getActiveFilters = (): { key: string; label: string; onRemove: () => void }[] => {
+    const filters: { key: string; label: string; onRemove: () => void }[] = []
+
+    if (searchTerm) {
+      filters.push({
+        key: 'search',
+        label: `Search: "${searchTerm}"`,
+        onRemove: () => setSearchTerm(''),
+      })
+    }
+    if (dateRangeFilter !== 'all') {
+      const label = dateRangeFilter.startsWith('sy_')
+        ? dateRangeFilter.replace('sy_', '')
+        : (DATE_RANGE_LABELS[dateRangeFilter] ?? dateRangeFilter)
+      filters.push({ key: 'dateRange', label, onRemove: () => setDateRangeFilter('all') })
+    }
+    if (facilitatorFilter !== 'all') {
+      const facilitator = users.find(u => u.id === facilitatorFilter)
+      filters.push({
+        key: 'facilitator',
+        label: `Facilitator: ${facilitator ? `${facilitator.first_name} ${facilitator.last_name}` : facilitatorFilter}`,
+        onRemove: () => setFacilitatorFilter('all'),
+      })
+    }
+
+    return filters
   }
 
   return (
@@ -66,11 +93,6 @@ const MonthlyMeetingsFilters = ({
                 <div className='flex items-center gap-3'>
                   <Filter className='w-4 h-4 text-gray-600' />
                   <CardTitle className='text-base font-semibold'>Filters</CardTitle>
-                  {hasActiveFilters && (
-                    <Badge variant='secondary' className='bg-blue-100 text-blue-700'>
-                      {getActiveFilterCount()} active
-                    </Badge>
-                  )}
                 </div>
                 <div className='flex items-center gap-2'>
                   {hasActiveFilters && (
@@ -93,6 +115,28 @@ const MonthlyMeetingsFilters = ({
                   )}
                 </div>
               </div>
+              {hasActiveFilters && (
+                <div className='flex flex-wrap gap-2 mt-2'>
+                  {getActiveFilters().map(filter => (
+                    <Badge
+                      key={filter.key}
+                      variant='secondary'
+                      className='bg-blue-100 text-blue-700 flex items-center gap-1 pr-1'>
+                      {filter.label}
+                      <button
+                        type='button'
+                        onClick={e => {
+                          e.stopPropagation()
+                          filter.onRemove()
+                        }}
+                        className='hover:bg-blue-200 rounded-full p-0.5'
+                        aria-label={`Remove ${filter.label} filter`}>
+                        <X className='w-3 h-3' />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </CardHeader>
           </CollapsibleTrigger>
 
