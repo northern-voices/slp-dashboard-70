@@ -70,7 +70,7 @@ const CaseloadFilters = ({
     resultFilter !== 'all',
     consentFilter !== 'all',
     eaFilter !== 'all',
-    dateFilter !== 'school_year',
+    dateFilter !== 'all',
     programStatusFilter !== 'all',
     returningAbsentFilter !== 'all',
   ].filter(Boolean).length
@@ -130,6 +130,12 @@ const CaseloadFilters = ({
         },
       })
     }
+    if (dateFilter !== 'all') {
+      const label = dateFilter.startsWith('sy_')
+        ? dateFilter.replace('sy_', '')
+        : 'This School Year'
+      filters.push({ key: 'dateRange', label, onRemove: () => withReset(setDateFilter)('all') })
+    }
 
     return filters
   }
@@ -173,23 +179,6 @@ const CaseloadFilters = ({
               </div>
             </div>
             <div className='flex flex-wrap gap-2 mt-2'>
-              <Badge
-                variant='secondary'
-                className='bg-blue-100 text-blue-700 flex items-center gap-1 pr-1'>
-                {dateFilter === 'school_year' ? 'This School Year' : dateFilter.replace('sy_', '')}
-                {dateFilter !== 'school_year' && (
-                  <button
-                    type='button'
-                    onClick={e => {
-                      e.stopPropagation()
-                      withReset(setDateFilter)('school_year')
-                    }}
-                    className='hover:bg-blue-200 rounded-full p-0.5'
-                    aria-label='Reset to This School Year'>
-                    <X className='w-3 h-3' />
-                  </button>
-                )}
-              </Badge>
               {getActiveFilters().map(filter => (
                 <Badge
                   key={filter.key}
@@ -294,6 +283,7 @@ const CaseloadFilters = ({
                     <SelectValue placeholder='This School Year' />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value='all'>All Time</SelectItem>
                     <SelectItem value='school_year'>This School Year</SelectItem>
                     {availableSchoolYears.map(year => (
                       <SelectItem key={year} value={`sy_${year}`}>

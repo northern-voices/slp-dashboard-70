@@ -140,7 +140,7 @@ export const useCaseloadTableData = <T extends Student>(students: T[], schoolId?
     resultFilter !== 'all' ||
     consentFilter !== 'all' ||
     eaFilter !== 'all' ||
-    dateFilter !== 'school_year' ||
+    dateFilter !== 'all' ||
     programStatusFilter !== 'all' ||
     returningAbsentFilter !== 'all'
 
@@ -149,7 +149,7 @@ export const useCaseloadTableData = <T extends Student>(students: T[], schoolId?
     setResultFilter('all')
     setConsentFilter('all')
     setEaFilter('all')
-    setDateFilter('school_year')
+    setDateFilter('all')
     setProgramStatusFilter('all')
     setReturningAbsentFilter('all')
     setCurrentPage(1)
