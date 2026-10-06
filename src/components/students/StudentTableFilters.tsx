@@ -15,6 +15,23 @@ import {
 import { Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { GRADE_MAPPING } from '@/constants/app'
 
+const PROGRAM_LABELS: Record<string, string> = {
+  qualified: 'Qualifies',
+  not_in_program: 'Not In Program',
+  sub: 'Sub',
+  to_be_determined: 'Pending - To Be Determined',
+  no_consent: 'No Consent',
+  none: 'Not Set',
+}
+
+const DATE_RANGE_LABELS: Record<string, string> = {
+  today: 'Today',
+  week: 'This Week',
+  month: 'This Month',
+  school_year: 'This School Year',
+  last_school_year: 'Last School Year',
+}
+
 interface StudentTableFiltersProps {
   searchTerm: string
   setSearchTerm: (value: string) => void
@@ -52,14 +69,40 @@ const StudentTableFilters = ({
     setProgramFilter('all')
   }
 
-  // Get active filter count
-  const getActiveFilterCount = () => {
-    let count = 0
-    if (searchTerm) count++
-    if (gradeFilter !== 'all') count++
-    if (dateRangeFilter !== 'all') count++
-    if (programFilter !== 'all') count++
-    return count
+  // Build the list of currently active filters, each with a label and a way to clear just that one
+  const getActiveFilters = (): { key: string; label: string; onRemove: () => void }[] => {
+    const filters: { key: string; label: string; onRemove: () => void }[] = []
+
+    if (searchTerm) {
+      filters.push({
+        key: 'search',
+        label: `Search: "${searchTerm}"`,
+        onRemove: () => setSearchTerm(''),
+      })
+    }
+    if (gradeFilter !== 'all') {
+      const grade = GRADE_MAPPING.find(g => g.value === gradeFilter)
+      filters.push({
+        key: 'grade',
+        label: `Grade: ${grade?.display ?? gradeFilter}`,
+        onRemove: () => setGradeFilter('all'),
+      })
+    }
+    if (programFilter !== 'all') {
+      filters.push({
+        key: 'program',
+        label: `Program: ${PROGRAM_LABELS[programFilter] ?? programFilter}`,
+        onRemove: () => setProgramFilter('all'),
+      })
+    }
+    if (dateRangeFilter !== 'all') {
+      const label = dateRangeFilter.startsWith('sy_')
+        ? dateRangeFilter.replace('sy_', '')
+        : (DATE_RANGE_LABELS[dateRangeFilter] ?? dateRangeFilter)
+      filters.push({ key: 'dateRange', label, onRemove: () => setDateRangeFilter('all') })
+    }
+
+    return filters
   }
 
   return (
@@ -72,11 +115,6 @@ const StudentTableFilters = ({
                 <div className='flex items-center gap-3'>
                   <Filter className='w-4 h-4 text-gray-600' />
                   <CardTitle className='text-base font-semibold'>Filters</CardTitle>
-                  {hasActiveFilters && (
-                    <Badge variant='secondary' className='bg-blue-100 text-blue-700'>
-                      {getActiveFilterCount()} active
-                    </Badge>
-                  )}
                 </div>
                 <div className='flex items-center gap-2'>
                   {hasActiveFilters && (
@@ -99,6 +137,28 @@ const StudentTableFilters = ({
                   )}
                 </div>
               </div>
+              {hasActiveFilters && (
+                <div className='flex flex-wrap gap-2 mt-2'>
+                  {getActiveFilters().map(filter => (
+                    <Badge
+                      key={filter.key}
+                      variant='secondary'
+                      className='bg-blue-100 text-blue-700 flex items-center gap-1 pr-1'>
+                      {filter.label}
+                      <button
+                        type='button'
+                        onClick={e => {
+                          e.stopPropagation()
+                          filter.onRemove()
+                        }}
+                        className='hover:bg-blue-200 rounded-full p-0.5'
+                        aria-label={`Remove ${filter.label} filter`}>
+                        <X className='w-3 h-3' />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </CardHeader>
           </CollapsibleTrigger>
 
