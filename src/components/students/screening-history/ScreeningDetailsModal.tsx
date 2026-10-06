@@ -617,6 +617,32 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
     )
   }
 
+  const renderGraduationInfo = () => {
+    const metadata = currentScreening.error_patterns?.screening_metadata
+    const graduatedDate = metadata?.graduated_date
+    const graduatedNotes = metadata?.graduated_notes
+
+    if (!graduatedDate) return null
+
+    return (
+      <div className='space-y-4'>
+        <div>
+          <h5 className='mb-2 text-sm font-medium text-blue-800'>Graduated On:</h5>
+          <p className='p-3 text-sm text-gray-700 rounded-md bg-blue-50'>
+            {format(parseDateSafely(graduatedDate), 'MMM d, yyyy')}
+          </p>
+        </div>
+
+        {graduatedNotes && (
+          <div>
+            <h5 className='mb-2 text-sm font-medium text-blue-800'>Graduation Notes:</h5>
+            <p className='p-3 text-sm text-gray-700 rounded-md bg-blue-50'>{graduatedNotes}</p>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
@@ -785,26 +811,23 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
           {/* Enhanced Backend Details for Speech Screenings */}
           {currentScreening.error_patterns && (
             <div className='space-y-6'>
-              {/* Attendance Information */}
               {renderAttendanceInfo()}
 
-              {/* Only show other details if student is not absent */}
+              {renderGraduationInfo()}
+
               {!currentScreening.error_patterns.attendance?.absent && (
                 <>
-                  {/* Screening Metadata */}
                   {renderScreeningMetadata()}
 
-                  {/* Articulation Data */}
                   {renderArticulationData()}
 
-                  {/* Areas of Concern */}
                   {renderAreasOfConcern()}
                 </>
               )}
             </div>
           )}
 
-          {/* Notes Section - Only show if not absent */}
+          {/* Notes Section  */}
           {!currentScreening.error_patterns?.attendance?.absent && (
             <div className='space-y-4'>
               {(currentScreening.clinical_notes || isEditingClinicalNotes) && (
