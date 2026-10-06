@@ -15,6 +15,13 @@ import { GRADE_MAPPING } from '@/constants/app'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import Multiselect from '../ui/multiselect'
 
+const PROGRAM_STATUS_LABELS: Record<string, string> = {
+  qualified: 'Qualified',
+  sub: 'Subs',
+  paused: 'Pause / Away',
+  graduated: 'Graduated',
+}
+
 interface CaseloadFiltersProps {
   gradeFilter: string[]
   setGradeFilter: (v: string[]) => void
@@ -22,6 +29,7 @@ interface CaseloadFiltersProps {
   setResultFilter: (v: string) => void
   consentFilter: 'all' | 'yes' | 'no'
   setConsentFilter: (v: 'all' | 'yes' | 'no') => void
+  setProgramStatusFilter: (v: string) => void
   eaFilter: string
   setEaFilter: (v: string) => void
   dateFilter: string
@@ -47,6 +55,7 @@ const CaseloadFilters = ({
   dateFilter,
   setDateFilter,
   programStatusFilter,
+  setProgramStatusFilter,
   returningAbsentFilter,
   setReturningAbsentFilter,
   speechEAs,
@@ -68,6 +77,63 @@ const CaseloadFilters = ({
 
   const hasActive = activeCount > 0
 
+  // Build the list of currently active filters, excluding School Year (always shown separately)
+  const getActiveFilters = (): { key: string; label: string; onRemove: () => void }[] => {
+    const filters: { key: string; label: string; onRemove: () => void }[] = []
+    gradeFilter.forEach(value => {
+      const grade = GRADE_MAPPING.find(g => g.value === value)
+      filters.push({
+        key: `grade_${value}`,
+        label: `Grade: ${grade?.display ?? value}`,
+        onRemove: () => withReset(setGradeFilter)(gradeFilter.filter(v => v !== value)),
+      })
+    })
+    if (resultFilter !== 'all') {
+      filters.push({
+        key: 'result',
+        label: `Result: ${SCREENING_RESULTS[resultFilter]?.label ?? resultFilter}`,
+        onRemove: () => withReset(setResultFilter)('all'),
+      })
+    }
+    if (consentFilter !== 'all') {
+      filters.push({
+        key: 'consent',
+        label: consentFilter === 'yes' ? 'Consented' : 'No Consent',
+        onRemove: () => {
+          setConsentFilter('all')
+          onPageReset()
+        },
+      })
+    }
+    if (eaFilter !== 'all') {
+      const ea = speechEAs.find(e => e.id === eaFilter)
+      filters.push({
+        key: 'ea',
+        label: `Speech EA: ${eaFilter === 'none' ? 'Unassigned' : (ea?.name ?? eaFilter)}`,
+        onRemove: () => withReset(setEaFilter)('all'),
+      })
+    }
+    if (programStatusFilter !== 'all') {
+      filters.push({
+        key: 'programStatus',
+        label: PROGRAM_STATUS_LABELS[programStatusFilter] ?? programStatusFilter,
+        onRemove: () => setProgramStatusFilter('all'),
+      })
+    }
+    if (returningAbsentFilter !== 'all') {
+      filters.push({
+        key: 'returningAbsent',
+        label: 'Returning Students Not Yet Rescreened',
+        onRemove: () => {
+          setReturningAbsentFilter('all')
+          onPageReset()
+        },
+      })
+    }
+
+    return filters
+  }
+
   const withReset =
     <T,>(setter: (v: T) => void) =>
     (v: T) => {
@@ -84,11 +150,6 @@ const CaseloadFilters = ({
               <div className='flex items-center gap-3'>
                 <Filter className='w-4 h-4 text-gray-600' />
                 <CardTitle className='text-base font-semibold'>Filters</CardTitle>
-                {hasActive && (
-                  <Badge variant='secondary' className='bg-blue-100 text-blue-700'>
-                    {activeCount} active
-                  </Badge>
-                )}
               </div>
               <div className='flex items-center gap-2'>
                 {hasActive && (
@@ -110,6 +171,43 @@ const CaseloadFilters = ({
                   <ChevronDown className='w-4 h-4 text-gray-600' />
                 )}
               </div>
+            </div>
+            <div className='flex flex-wrap gap-2 mt-2'>
+              <Badge
+                variant='secondary'
+                className='bg-blue-100 text-blue-700 flex items-center gap-1 pr-1'>
+                {dateFilter === 'school_year' ? 'This School Year' : dateFilter.replace('sy_', '')}
+                {dateFilter !== 'school_year' && (
+                  <button
+                    type='button'
+                    onClick={e => {
+                      e.stopPropagation()
+                      withReset(setDateFilter)('school_year')
+                    }}
+                    className='hover:bg-blue-200 rounded-full p-0.5'
+                    aria-label='Reset to This School Year'>
+                    <X className='w-3 h-3' />
+                  </button>
+                )}
+              </Badge>
+              {getActiveFilters().map(filter => (
+                <Badge
+                  key={filter.key}
+                  variant='secondary'
+                  className='bg-blue-100 text-blue-700 flex items-center gap-1 pr-1'>
+                  {filter.label}
+                  <button
+                    type='button'
+                    onClick={e => {
+                      e.stopPropagation()
+                      filter.onRemove()
+                    }}
+                    className='hover:bg-blue-200 rounded-full p-0.5'
+                    aria-label={`Remove ${filter.label} filter`}>
+                    <X className='w-3 h-3' />
+                  </button>
+                </Badge>
+              ))}
             </div>
           </CardHeader>
         </CollapsibleTrigger>

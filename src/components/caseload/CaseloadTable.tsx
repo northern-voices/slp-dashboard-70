@@ -226,6 +226,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
         returningAbsentFilter={returningAbsentFilter}
         setReturningAbsentFilter={setReturningAbsentFilter}
         programStatusFilter={programStatusFilter}
+        setProgramStatusFilter={setProgramStatusFilter}
         speechEAs={speechEAs}
         availableSchoolYears={availableSchoolYears}
         onClearAll={clearAllFilters}
