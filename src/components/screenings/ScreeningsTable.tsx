@@ -683,7 +683,7 @@ const ScreeningsTable = ({
           qualifies_for_speech_program: newProgram === 'qualified',
           sub: newProgram === 'sub',
           to_be_determined: newProgram === 'to_be_determined',
-          graduated: newProgram === 'graduated',
+          graduated: false,
         } as ErrorPatterns['screening_metadata'],
       }
 
