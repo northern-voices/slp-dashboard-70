@@ -315,7 +315,18 @@ const ScreeningsTable = ({
     }
 
     if (screening.program_status === 'graduated') {
-      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+      const graduatedDate = screening.error_patterns?.screening_metadata?.graduated_date
+
+      return (
+        <div className='flex flex-col items-start gap-0.5'>
+          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+          {graduatedDate && (
+            <span className='text-[10px] text-gray-500'>
+              {format(parseDateSafely(graduatedDate), 'MMM d, yyyy')}
+            </span>
+          )}
+        </div>
+      )
     }
 
     if (screening.program_status === 'to_be_determined') {
@@ -354,7 +365,7 @@ const ScreeningsTable = ({
           value={getProgramValue(screening)}
           onValueChange={value => handleProgramChange(screening, value as ProgramStatus)}
           disabled={isThisScreeningUpdating}>
-          <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+          <SelectTrigger className='w-full h-auto p-0 min-h-8 border-none hover:bg-transparent focus:ring-0'>
             <SelectValue placeholder='Select program'>
               <div className='flex items-center gap-2'>
                 {isThisScreeningUpdating && (
