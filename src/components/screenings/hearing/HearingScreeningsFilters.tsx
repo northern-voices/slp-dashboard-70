@@ -14,6 +14,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { GRADE_MAPPING } from '@/constants/app'
 
+const RESULT_LABELS: Record<string, string> = {
+  passed: 'Passed',
+  referred: 'Referred',
+  absent: 'Absent',
+}
+
+const DATE_RANGE_LABELS: Record<string, string> = {
+  today: 'Today',
+  week: 'This Week',
+  month: 'This Month',
+  quarter: 'This Quarter',
+  school_year: 'This School Year',
+}
+
 interface HearingScreeningsFiltersProps {
   searchTerm: string
   setSearchTerm: (value: string) => void
@@ -54,7 +68,7 @@ const HearingScreeningsFilters = ({
   // Check if any filters are active
   const hasActiveFilters =
     searchTerm ||
-    dateRangeFilter !== 'school_year' ||
+    dateRangeFilter !== 'all' ||
     gradeFilter !== 'all' ||
     resultFilter !== 'all' ||
     referralNotesFilter !== 'all' ||
@@ -64,7 +78,7 @@ const HearingScreeningsFilters = ({
   // Clear all filters
   const clearAllFilters = () => {
     setSearchTerm('')
-    setDateRangeFilter('school_year')
+    setDateRangeFilter('all')
     setGradeFilter('all')
     setResultFilter('all')
     setReferralNotesFilter('all')
@@ -72,17 +86,61 @@ const HearingScreeningsFilters = ({
     setComplexNeedsFilter('all')
   }
 
-  // Get active filter count
-  const getActiveFilterCount = () => {
-    let count = 0
-    if (searchTerm) count++
-    if (dateRangeFilter !== 'school_year') count++
-    if (gradeFilter !== 'all') count++
-    if (resultFilter !== 'all') count++
-    if (referralNotesFilter !== 'all') count++
-    if (nonCompliantFilter !== 'all') count++
-    if (complexNeedsFilter !== 'all') count++
-    return count
+  // Build the list of currently active filters, each with a label and a way to clear just that one
+  const getActiveFilters = (): { key: string; label: string; onRemove: () => void }[] => {
+    const filters: { key: string; label: string; onRemove: () => void }[] = []
+
+    if (searchTerm) {
+      filters.push({
+        key: 'search',
+        label: `Search: "${searchTerm}"`,
+        onRemove: () => setSearchTerm(''),
+      })
+    }
+    if (dateRangeFilter !== 'all') {
+      const label = dateRangeFilter.startsWith('sy_')
+        ? dateRangeFilter.replace('sy_', '')
+        : (DATE_RANGE_LABELS[dateRangeFilter] ?? dateRangeFilter)
+      filters.push({ key: 'dateRange', label, onRemove: () => setDateRangeFilter('all') })
+    }
+    if (gradeFilter !== 'all') {
+      const grade = GRADE_MAPPING.find(g => g.value === gradeFilter)
+      filters.push({
+        key: 'grade',
+        label: `Grade: ${grade?.display ?? gradeFilter}`,
+        onRemove: () => setGradeFilter('all'),
+      })
+    }
+    if (resultFilter !== 'all') {
+      filters.push({
+        key: 'result',
+        label: `Result: ${RESULT_LABELS[resultFilter] ?? resultFilter}`,
+        onRemove: () => setResultFilter('all'),
+      })
+    }
+    if (referralNotesFilter !== 'all') {
+      filters.push({
+        key: 'referralNotes',
+        label: 'Has Referral Notes',
+        onRemove: () => setReferralNotesFilter('all'),
+      })
+    }
+    if (nonCompliantFilter !== 'all') {
+      filters.push({
+        key: 'nonCompliant',
+        label: 'Non-Compliant',
+        onRemove: () => setNonCompliantFilter('all'),
+      })
+    }
+    if (complexNeedsFilter !== 'all') {
+      filters.push({
+        key: 'complexNeeds',
+        label: 'Complex Needs',
+        onRemove: () => setComplexNeedsFilter('all'),
+      })
+    }
+
+    return filters
   }
 
   return (
@@ -95,11 +153,6 @@ const HearingScreeningsFilters = ({
                 <div className='flex items-center gap-3'>
                   <Filter className='w-4 h-4 text-gray-600' />
                   <CardTitle className='text-base font-semibold'>Filters</CardTitle>
-                  {hasActiveFilters && (
-                    <Badge variant='secondary' className='bg-blue-100 text-blue-700'>
-                      {getActiveFilterCount()} active
-                    </Badge>
-                  )}
                 </div>
                 <div className='flex items-center gap-2'>
                   {hasActiveFilters && (
@@ -122,6 +175,28 @@ const HearingScreeningsFilters = ({
                   )}
                 </div>
               </div>
+              {hasActiveFilters && (
+                <div className='flex flex-wrap gap-2 mt-2'>
+                  {getActiveFilters().map(filter => (
+                    <Badge
+                      key={filter.key}
+                      variant='secondary'
+                      className='bg-blue-100 text-blue-700 flex items-center gap-1 pr-1'>
+                      {filter.label}
+                      <button
+                        type='button'
+                        onClick={e => {
+                          e.stopPropagation()
+                          filter.onRemove()
+                        }}
+                        className='hover:bg-blue-200 rounded-full p-0.5'
+                        aria-label={`Remove ${filter.label} filter`}>
+                        <X className='w-3 h-3' />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </CardHeader>
           </CollapsibleTrigger>
 
