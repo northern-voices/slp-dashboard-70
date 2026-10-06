@@ -154,7 +154,17 @@ const SegmentTable = ({ segment }: { segment: PageSegment }) => {
           ) : (
             <p className="text-lg font-['Gotu'] text-gray-800 px-3 pt-2">{segment.heading}</p>
           ))}
-        <table className='w-full text-[10px] border-collapse'>
+        <table className='w-full table-fixed text-[10px] border-collapse'>
+          <colgroup>
+            {segment.columns.map(col => (
+              <col
+                key={col}
+                className={
+                  col === 'GRADE' ? (segment.columns.length === 3 ? 'w-1/3' : 'w-1/2') : undefined
+                }
+              />
+            ))}
+          </colgroup>
           <thead>
             <tr className='bg-[#5b7a8b]'>
               {segment.columns.map(col => (
