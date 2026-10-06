@@ -54,6 +54,7 @@ import PriorityRescreenDialog from './PriorityRescreenDialog'
 import PauseConfirmDialog from '@/components/students/PauseConfirmDialog'
 import { usePauseStudent } from '@/hooks/students/use-pause-student'
 import { withDuplicateLabels } from '@/lib/student-duplicate-label'
+import GraduateConfirmDialog from './GraduateConfirmDialog'
 
 interface ScreeningsTableProps {
   searchTerm: string
@@ -115,6 +116,8 @@ const ScreeningsTable = ({
   const [screeningForPriorityRescreen, setScreeningForPriorityRescreen] =
     useState<Screening | null>(null)
   const [isSavingPriorityRescreen, setIsSavingPriorityRescreen] = useState(false)
+  const [screeningForGraduation, setScreeningForGraduation] = useState<Screening | null>(null)
+  const [isSavingGraduation, setIsSavingGraduation] = useState(false)
 
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -640,6 +643,11 @@ const ScreeningsTable = ({
 
   const handleProgramChange = (screening: Screening, newProgram: ProgramStatus) => {
     if (screening.source_table === 'speech') {
+      if (newProgram === 'graduated') {
+        setScreeningForGraduation(screening)
+        return
+      }
+
       setUpdatingProgramId(screening.id)
 
       const student = studentsMap.get(screening.student_id)
@@ -752,6 +760,111 @@ const ScreeningsTable = ({
         variant: 'destructive',
       })
     }
+  }
+
+  const handleConfirmGraduation = (notes: string) => {
+    const screening = screeningForGraduation
+    if (!screening) return
+
+    const student = studentsMap.get(screening.student_id)
+
+    if (!student) {
+      toast({
+        title: 'Error updating program qualification',
+        description: 'Student not found',
+        variant: 'destructive',
+      })
+      setScreeningForGraduation(null)
+      return
+    }
+
+    setIsSavingGraduation(true)
+
+    const currentErrorPatterns = screening.error_patterns || ({} as ErrorPatterns)
+    const currentMetadata = currentErrorPatterns.screening_metadata || {}
+    const currentConsent = currentErrorPatterns.consent || {}
+
+    const cleanErrorPatterns: Partial<ErrorPatterns> = {
+      articulation: currentErrorPatterns.articulation || ({} as ErrorPatterns['articulation']),
+      add_areas_of_concern:
+        currentErrorPatterns.add_areas_of_concern || ({} as ErrorPatterns['add_areas_of_concern']),
+      attendance: currentErrorPatterns.attendance || ({} as ErrorPatterns['attendance']),
+      additional_observations: currentErrorPatterns.additional_observations || '',
+      consent: {
+        ...currentConsent,
+        no_consent: false,
+      },
+      screening_metadata: {
+        ...currentMetadata,
+        qualifies_for_speech_program: false,
+        sub: false,
+        to_be_determined: false,
+        graduated: true,
+        graduated_date: new Date().toLocaleDateString('en-CA'),
+        graduated_notes: notes.trim(),
+      } as ErrorPatterns['screening_metadata'],
+    }
+
+    const studentScreenings = schoolScreenings.filter(
+      s => s.student_id === screening.student_id && s.source_table === 'speech'
+    )
+    const mostRecentScreening = studentScreenings.sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )[0]
+    const isLatestScreening = mostRecentScreening?.id === screening.id
+
+    updateSpeechScreening(
+      { id: screening.id, data: { error_patterns: cleanErrorPatterns as ErrorPatterns } },
+      {
+        onSuccess: () => {
+          if (isLatestScreening) {
+            updateStudent(
+              { id: student.id, studentData: { program_status: 'graduated' } },
+              {
+                onSuccess: () => {
+                  setIsSavingGraduation(false)
+                  setScreeningForGraduation(null)
+                  toast({
+                    title: 'Student graduated',
+                    description: `Successfully graduated ${screening.student_name}`,
+                    variant: 'default',
+                  })
+                },
+                onError: () => {
+                  setIsSavingGraduation(false)
+                  setScreeningForGraduation(null)
+                  toast({
+                    title: 'Warning',
+                    description: 'Screening updated but failed to update student program status',
+                    variant: 'destructive',
+                  })
+                },
+              }
+            )
+          } else {
+            setIsSavingGraduation(false)
+            setScreeningForGraduation(null)
+            toast({
+              title: 'Student graduated',
+              description: 'Successfully graduated this screening (historical record)',
+              variant: 'default',
+            })
+          }
+        },
+        onError: error => {
+          setIsSavingGraduation(false)
+          toast({
+            title: 'Error updating program qualification',
+            description: error.message || 'Failed to update program status',
+            variant: 'destructive',
+          })
+        },
+      }
+    )
+  }
+
+  const handleCancelGraduation = () => {
+    setScreeningForGraduation(null)
   }
 
   const handleStatusChange = (screening: Screening, newStatus: ServiceStatus) => {
@@ -1376,6 +1489,13 @@ const ScreeningsTable = ({
         isSaving={isSavingPriorityRescreen}
         onConfirm={handleConfirmPriorityRescreen}
         onCancel={() => setScreeningForPriorityRescreen(null)}
+      />
+
+      <GraduateConfirmDialog
+        screening={screeningForGraduation}
+        isSaving={isSavingGraduation}
+        onConfirm={handleConfirmGraduation}
+        onCancel={handleCancelGraduation}
       />
 
       <PauseConfirmDialog
