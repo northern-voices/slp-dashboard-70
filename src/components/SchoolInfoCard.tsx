@@ -200,10 +200,12 @@ const SchoolInfoCard: React.FC<SchoolInfoCardProps> = ({
                       <Mail className='w-3.5 h-3.5' />
                       <span>{primarySLP.email || 'No email'}</span>
                     </div>
-                    <div className='flex items-center space-x-2 text-sm text-gray-600'>
-                      <Phone className='w-3.5 h-3.5' />
-                      <span>{primarySLP.phone || 'No phone'}</span>
-                    </div>
+                    {primarySLP.phone && (
+                      <div className='flex items-center space-x-2 text-sm text-gray-600'>
+                        <Phone className='w-3.5 h-3.5' />
+                        <span>{primarySLP.phone}</span>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className='p-4 border rounded-lg bg-amber-50 border-amber-100'>

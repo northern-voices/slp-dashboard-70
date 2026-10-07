@@ -16,6 +16,8 @@ import { useForm } from 'react-hook-form'
 import { Camera, Save } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { formatPhoneNumber, unformatPhoneNumber } from '@/utils/formatters'
+import { validationUtils } from '@/utils/validationUtils'
 
 interface PersonalInfoFormData {
   firstName: string
@@ -37,7 +39,7 @@ const PersonalInformationSection = () => {
       firstName: userProfile?.first_name || '',
       lastName: userProfile?.last_name || '',
       email: userProfile?.email || '',
-      phone: userProfile?.phone || '',
+      phone: userProfile?.phone ? formatPhoneNumber(userProfile.phone) : '',
       licenseNumber: userProfile?.license_number || '',
     },
   })
@@ -49,7 +51,7 @@ const PersonalInformationSection = () => {
         firstName: userProfile.first_name || '',
         lastName: userProfile.last_name || '',
         email: userProfile.email || '',
-        phone: userProfile.phone || '',
+        phone: userProfile.phone ? formatPhoneNumber(userProfile.phone) : '',
         licenseNumber: userProfile.license_number || '',
       })
     }
@@ -61,6 +63,7 @@ const PersonalInformationSection = () => {
     const { error } = await supabase.rpc('update_own_profile_name', {
       new_first_name: data.firstName,
       new_last_name: data.lastName,
+      new_phone: data.phone ? unformatPhoneNumber(data.phone) : '',
     })
 
     if (error) {
@@ -169,11 +172,24 @@ const PersonalInformationSection = () => {
                   <FormField
                     control={form.control}
                     name='phone'
+                    rules={{
+                      validate: value =>
+                        !value ||
+                        validationUtils.isValidPhoneNumber(value) ||
+                        'Please enter a valid phone number',
+                    }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input {...field} disabled={!isEditing} />
+                          <Input
+                            {...field}
+                            type='tel'
+                            maxLength={14}
+                            placeholder='e.g., (555) 123-4567'
+                            disabled={!isEditing}
+                            onChange={e => field.onChange(formatPhoneNumber(e.target.value))}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
