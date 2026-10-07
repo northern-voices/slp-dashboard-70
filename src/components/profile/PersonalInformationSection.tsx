@@ -61,6 +61,7 @@ const PersonalInformationSection = () => {
     const { error } = await supabase.rpc('update_own_profile_name', {
       new_first_name: data.firstName,
       new_last_name: data.lastName,
+      new_phone: data.phone,
     })
 
     if (error) {
