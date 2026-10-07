@@ -179,11 +179,14 @@ const CaseloadTableRow = ({
           value={student.program_status ?? 'none'}
           onValueChange={value => onProgramChange(student, value as ProgramStatus)}
           disabled={isUpdating}>
-          <SelectTrigger className='w-full h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
+          <SelectTrigger className='w-full h-auto min-h-8 p-0 border-none hover:bg-transparent focus:ring-0'>
             <SelectValue>
               <div className='flex items-center gap-2'>
                 {isUpdating && <Loader2 className='w-3 h-3 text-blue-600 animate-spin' />}
-                <ProgramBadge status={student.program_status} />
+                <ProgramBadge
+                  status={student.program_status}
+                  graduatedDate={screening?.error_patterns?.screening_metadata?.graduated_date}
+                />
               </div>
             </SelectValue>
           </SelectTrigger>
