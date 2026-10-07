@@ -2,6 +2,8 @@ import { Badge } from '@/components/ui/badge'
 import { FileCheck, FileX } from 'lucide-react'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import { ProgramStatus, ServiceStatus } from '@/types/database'
+import { format } from 'date-fns'
+import { parseDateSafely } from '@/utils/dateUtils'
 
 const RESULT_BADGE_LABELS: Partial<Record<keyof typeof SCREENING_RESULTS, string>> = {
   complex_needs: 'Complex Needs',
@@ -25,7 +27,13 @@ export const ResultBadge = ({ result }: { result?: string | null }) => {
   )
 }
 
-export const ProgramBadge = ({ status }: { status?: ProgramStatus | null }) => {
+export const ProgramBadge = ({
+  status,
+  graduatedDate,
+}: {
+  status?: ProgramStatus | null
+  graduatedDate?: string | null
+}) => {
   switch (status || 'none') {
     case 'qualified':
       return <Badge className='bg-red-100 text-red-800 font-medium text-[10px]'>Qualifies</Badge>
@@ -34,7 +42,16 @@ export const ProgramBadge = ({ status }: { status?: ProgramStatus | null }) => {
     case 'no_consent':
       return <Badge className='bg-red-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
     case 'graduated':
-      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+      return (
+        <div className='flex flex-col items-start gap-0.5'>
+          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+          {graduatedDate && (
+            <span className='text-[10px] text-gray-500'>
+              {format(parseDateSafely(graduatedDate), 'MMM d, yyyy')}
+            </span>
+          )}
+        </div>
+      )
     case 'to_be_determined':
       return (
         <Badge className='bg-yellow-100 text-yellow-800 font-medium text-[10px]'>
