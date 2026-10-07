@@ -172,7 +172,7 @@ const ConsentFormModal = ({ isOpen, onClose, student }: ConsentFormModalProps) =
               ref={fileInputRef}
               type='file'
               multiple
-              accept='image/*'
+              accept='image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
               className='hidden'
               onChange={handleFileChange}
             />
