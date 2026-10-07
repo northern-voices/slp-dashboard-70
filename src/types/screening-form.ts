@@ -76,6 +76,8 @@ export interface ErrorPatterns {
     sub?: boolean
     to_be_determined?: boolean
     graduated?: boolean
+    graduated_date?: string
+    graduated_notes?: string
     paused?: boolean
     transferred?: boolean
   }
