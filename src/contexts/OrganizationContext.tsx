@@ -106,6 +106,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         first_name: userData.first_name,
         last_name: userData.last_name,
         email: userData.email,
+        phone: userData.phone || '',
         license_number: '',
         role: userData.role,
         active: true,
