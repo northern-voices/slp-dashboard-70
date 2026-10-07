@@ -31,6 +31,7 @@ import MultiEmailInput from './shared/MultiEmailInput'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import ReportPasswordInput from './shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
+import { parseDateSafely } from '@/utils/dateUtils'
 
 const SpeechStudentReports = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
@@ -390,8 +391,20 @@ const SpeechScreeningsTable = ({
     if (noConsent)
       return <Badge className='bg-gray-100 text-gray-800 font-medium text-[10px]'>No Consent</Badge>
 
-    if (screening.program_status === 'graduated')
-      return <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+    if (screening.program_status === 'graduated') {
+      const graduatedDate = screening.error_patterns?.screening_metadata?.graduated_date
+
+      return (
+        <div className='flex flex-col items-start gap-0.5'>
+          <Badge className='bg-blue-100 text-blue-800 font-medium text-[10px]'>Graduated</Badge>
+          {graduatedDate && (
+            <span className='text-[10px] text-gray-500'>
+              {format(parseDateSafely(graduatedDate), 'MMM d, yyyy')}
+            </span>
+          )}
+        </div>
+      )
+    }
 
     if (screening.service_status === 'paused')
       return <Badge className='bg-purple-100 text-purple-800 font-medium text-[10px]'>Pause</Badge>
