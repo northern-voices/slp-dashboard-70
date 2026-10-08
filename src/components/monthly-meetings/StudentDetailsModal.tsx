@@ -79,7 +79,14 @@ const StudentDetailsModal = ({
   const { data: studentScreenings = [], isLoading: isLoadingScreenings } =
     useSpeechScreeningsByStudent(selectedStudent?.id)
 
-  const mostRecentScreening = studentScreenings[0]
+  const mostRecentScreening = studentScreenings.find(
+    screening => !screening.error_patterns?.attendance?.absent
+  )
+
+  const wasAbsentMoreRecently = Boolean(
+    studentScreenings[0]?.error_patterns?.attendance?.absent &&
+    studentScreenings[0].id !== mostRecentScreening?.id
+  )
 
   const { data: studentMeetings = [], isLoading: isLoadingMeetings } = useMonthlyMeetingsByStudent(
     selectedStudent?.id
@@ -118,13 +125,18 @@ const StudentDetailsModal = ({
             ) : mostRecentScreening ? (
               <LastScreeningCard
                 screening={mostRecentScreening}
+                wasAbsentMoreRecently={wasAbsentMoreRecently}
                 onViewDetails={() => setShowScreeningModal(true)}
               />
             ) : (
               <div className='p-4 border border-gray-200 border-dashed bg-gray-50/50 rounded-xl'>
                 <div className='flex items-center gap-2'>
                   <div className='w-2 h-2 bg-gray-300 rounded-full' />
-                  <span className='text-sm text-gray-400'>No speech screenings on record</span>
+                  <span className='text-sm text-gray-400'>
+                    {studentScreenings.length > 0
+                      ? 'No completed screening on record (all marked absent)'
+                      : 'No speech screenings on record'}
+                  </span>
                 </div>
               </div>
             )}
