@@ -1,7 +1,8 @@
-import { Eye } from 'lucide-react'
+import { Calendar, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { parseDateSafely } from '@/utils/dateUtils'
 
 interface LastScreeningCardProps {
   screening: {
@@ -10,10 +11,15 @@ interface LastScreeningCardProps {
     screener?: string
     result?: string
   }
+  wasAbsentMoreRecently?: boolean
   onViewDetails: () => void
 }
 
-const LastScreeningCard = ({ screening, onViewDetails }: LastScreeningCardProps) => {
+const LastScreeningCard = ({
+  screening,
+  wasAbsentMoreRecently,
+  onViewDetails,
+}: LastScreeningCardProps) => {
   if (!screening) return null
 
   const getResultBadgeStyle = (result?: string) => {
@@ -42,10 +48,31 @@ const LastScreeningCard = ({ screening, onViewDetails }: LastScreeningCardProps)
           Last Screening
         </span>
       </div>
-      <div className='mb-3'>
-        <Badge className={cn('text-xs font-medium', getResultBadgeStyle(screening.result))}>
-          {formatResult(screening.result)}
-        </Badge>
+      <div className='space-y-2 mb-3'>
+        <div className='flex items-center gap-1.5 flex-wrap'>
+          <Badge className={cn('text-xs font-medium', getResultBadgeStyle(screening.result))}>
+            {formatResult(screening.result)}
+          </Badge>
+
+          {wasAbsentMoreRecently && (
+            <Badge className='text-xs font-medium bg-red-100 text-red-700 border border-red-200'>
+              Recently Absent
+            </Badge>
+          )}
+        </div>
+
+        {screening.screening_date && (
+          <div className='flex items-center gap-1.5 text-xs text-gray-500'>
+            <Calendar className='w-3 h-3' />
+            <span>
+              {parseDateSafely(screening.screening_date).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </span>
+          </div>
+        )}
       </div>
       <div className='mt-auto'>
         <Button
