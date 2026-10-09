@@ -8,6 +8,105 @@ export type Database = {
   }
   public: {
     Tables: {
+      dynamic_goal_sheet_sessions: {
+        Row: {
+          activities: string | null
+          additional_comments: string | null
+          created_at: string
+          goal_sheet_id: string
+          id: string
+          progress_notes: string | null
+          session_date: string | null
+          session_number: number
+          sound_rating: Database['public']['Enums']['dynamic_goal_sheet_rating'] | null
+          updated_at: string
+        }
+        Insert: {
+          activities?: string | null
+          additional_comments?: string | null
+          created_at?: string
+          goal_sheet_id: string
+          id?: string
+          progress_notes?: string | null
+          session_date?: string | null
+          session_number: number
+          sound_rating?: Database['public']['Enums']['dynamic_goal_sheet_rating'] | null
+          updated_at?: string
+        }
+        Update: {
+          activities?: string | null
+          additional_comments?: string | null
+          created_at?: string
+          goal_sheet_id?: string
+          id?: string
+          progress_notes?: string | null
+          session_date?: string | null
+          session_number?: number
+          sound_rating?: Database['public']['Enums']['dynamic_goal_sheet_rating'] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'dynamic_goal_sheet_sessions_goal_sheet_id_fkey'
+            columns: ['goal_sheet_id']
+            isOneToOne: false
+            referencedRelation: 'dynamic_goal_sheets'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      dynamic_goal_sheets: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          goal_text: string
+          id: string
+          school_id: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          goal_text: string
+          id?: string
+          school_id: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          goal_text?: string
+          id?: string
+          school_id?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'dynamic_goal_sheets_created_by_fkey'
+            columns: ['created_by']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'dynamic_goal_sheets_school_id_fkey'
+            columns: ['school_id']
+            isOneToOne: false
+            referencedRelation: 'schools'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'dynamic_goal_sheets_student_id_fkey'
+            columns: ['student_id']
+            isOneToOne: false
+            referencedRelation: 'students'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       hearing_screenings: {
         Row: {
           clinical_notes: string | null
@@ -969,6 +1068,11 @@ export type Database = {
         | 'phone_call'
         | 'email'
         | 'consult_outside_providers'
+      dynamic_goal_sheet_rating:
+        | 'not_saying'
+        | 'sound_only'
+        | 'most_words_with_cues'
+        | 'most_words_independent'
       hearing_screening_note: 'absent' | 'non_compliant' | 'complex_needs' | 'results_uncertain'
       hearing_screening_note_type:
         | 'absent'
@@ -1159,6 +1263,12 @@ export const Constants = {
         'phone_call',
         'email',
         'consult_outside_providers',
+      ],
+      dynamic_goal_sheet_rating: [
+        'not_saying',
+        'sound_only',
+        'most_words_with_cues',
+        'most_words_independent',
       ],
       hearing_screening_note: ['absent', 'non_compliant', 'complex_needs', 'results_uncertain'],
       hearing_screening_note_type: [
