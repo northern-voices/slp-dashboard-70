@@ -146,6 +146,40 @@ export interface Screening {
   source_table?: 'speech' | 'hearing'
 }
 
+export interface DynamicGoalSheet {
+  id: string
+  school_id: string
+  student_id: string
+  goal_text: string
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DynamicGoalSheetSession {
+  id: string
+  goal_sheet_id: string
+  session_number: number
+  session_date: string | null
+  sound_rating: DynamicGoalSheetRating | null
+  activities: string | null
+  progress_notes: string | null
+  additional_comments: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DynamicGoalSheetWithSessions extends DynamicGoalSheet {
+  sessions: DynamicGoalSheetSession[]
+  student?: Pick<Student, 'id' | 'first_name' | 'last_name'>
+}
+
+export type DynamicGoalSheetRating =
+  | 'not_saying'
+  | 'sound_only'
+  | 'most_words_with_cues'
+  | 'most_words_independent'
+
 export interface OrgUser {
   id: string
   email: string
