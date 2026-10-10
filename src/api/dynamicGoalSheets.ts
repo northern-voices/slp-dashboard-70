@@ -96,4 +96,15 @@ export const dynamicGoalSheetsApi = {
       throw error
     }
   },
+  getGoalSheetById: async (id: string): Promise<DynamicGoalSheetWithSessions> => {
+    const { data, error } = await supabase
+      .from('dynamic_goal_sheets')
+      .select(DYNAMIC_GOAL_SHEET_SELECT)
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+
+    return transformDynamicGoalSheet(data)
+  },
 }
