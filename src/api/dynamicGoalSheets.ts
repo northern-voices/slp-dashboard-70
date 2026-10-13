@@ -107,4 +107,27 @@ export const dynamicGoalSheetsApi = {
 
     return transformDynamicGoalSheet(data)
   },
+  getGoalSheetsByStudent: async (studentId: string): Promise<DynamicGoalSheetWithSessions[]> => {
+    const { data, error } = await supabase
+      .from('dynamic_goal_sheets')
+      .select(DYNAMIC_GOAL_SHEET_SELECT)
+      .eq('student_id', studentId)
+      .order('updated_at', { ascending: false })
+
+    if (error) throw error
+
+    return data.map(transformDynamicGoalSheet)
+  },
+
+  getGoalSheetsBySchool: async (schoolId: string): Promise<DynamicGoalSheetWithSessions[]> => {
+    const { data, error } = await supabase
+      .from('dynamic_goal_sheets')
+      .select(DYNAMIC_GOAL_SHEET_SELECT)
+      .eq('school_id', schoolId)
+      .order('updated_at', { ascending: false })
+
+    if (error) throw error
+
+    return data.map(transformDynamicGoalSheet)
+  },
 }
