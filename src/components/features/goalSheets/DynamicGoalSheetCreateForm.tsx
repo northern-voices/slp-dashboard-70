@@ -1,23 +1,36 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudent } from '@/hooks/students/use-students'
 import { useCreateDynamicGoalSheet } from '@/hooks/goalSheets/use-dynamic-goal-sheets-mutations'
 import { useToast } from '@/hooks/use-toast'
-import type { Student } from '@/types/database'
+import DynamicGoalSheetBuilder from './DynamicGoalSheetBuilder'
+import DynamicGoalSheetPage from './DynamicGoalSheetPage'
+import type { DynamicGoalSheetSession, Student } from '@/types/database'
 
 interface DynamicGoalSheetCreateFormProps {
   lockedStudentId?: string
 }
 
+const PREVIEW_SESSIONS: DynamicGoalSheetSession[] = [1, 2, 3].map(session_number => ({
+  id: `preview-${session_number}`,
+  goal_sheet_id: 'preview',
+  session_number,
+  session_date: null,
+  sound_rating: null,
+  activities: null,
+  progress_notes: null,
+  additional_comments: null,
+  created_at: '',
+  updated_at: '',
+}))
+
 const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateFormProps) => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [goalText, setGoalText] = useState('')
+  const [createdSheetId, setCreatedSheetId] = useState<string | null>(null)
 
-  const navigate = useNavigate()
   const { currentSchool } = useOrganization()
   const { toast } = useToast()
 
@@ -37,11 +50,7 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
       },
       {
         onSuccess: newSheet => {
-          const path = currentSchool
-            ? `/school/${currentSchool.id}/speech-screening-reports/dynamic-goal-sheets/${newSheet.id}`
-            : `/speech-screening-reports/dynamic-goal-sheets/${newSheet.id}`
-
-          navigate(path)
+          setCreatedSheetId(newSheet.id)
         },
         onError: () => {
           toast({
@@ -54,8 +63,18 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
     )
   }
 
+  if (createdSheetId) {
+    return <DynamicGoalSheetBuilder sheetId={createdSheetId} />
+  }
+
+  const studentName = student
+    ? `${student.first_name} ${student.last_name}`
+    : lockedStudentId && isLoadingLockedStudent
+      ? 'Loading student...'
+      : 'Select a student'
+
   return (
-    <div className='space-y-4'>
+    <div className='space-y-6'>
       <div className='space-y-2'>
         <label className='text-xl font-medium text-gray-700'>Student</label>
         {lockedStudentId ? (
@@ -77,21 +96,19 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
         )}
       </div>
 
-      <div className='space-y-2'>
-        <label className='text-xl font-medium text-gray-700'>Goal</label>
-        <Textarea
-          value={goalText}
-          onChange={e => setGoalText(e.target.value)}
-          placeholder='Describe the goal for this student...'
-          rows={4}
-        />
+      <DynamicGoalSheetPage
+        studentName={studentName}
+        sessions={PREVIEW_SESSIONS}
+        goalText={goalText}
+        onGoalTextChange={setGoalText}
+        onGoalTextBlur={() => {}}
+      />
 
-        <Button
-          onClick={handleSubmit}
-          disabled={!student || !goalText.trim() || createGoalSheet.isPending}>
-          {createGoalSheet.isPending ? 'Creating...' : 'Create Goal Sheet'}
-        </Button>
-      </div>
+      <Button
+        onClick={handleSubmit}
+        disabled={!student || !goalText.trim() || createGoalSheet.isPending}>
+        {createGoalSheet.isPending ? 'Creating...' : 'Create Goal Sheet'}
+      </Button>
     </div>
   )
 }
