@@ -7,3 +7,19 @@ type CreateDynamicGoalSheetInput = {
   schoolId: string
   goalText: string
 }
+
+export const useCreateDynamicGoalSheet = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<DynamicGoalSheetWithSessions, Error, CreateDynamicGoalSheetInput>({
+    mutationFn: data => dynamicGoalSheetsApi.createGoalSheet(data),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dynamic-goal-sheets'] })
+    },
+
+    onError: error => {
+      console.error('Failed to create dynamic goal sheet:', error)
+    },
+  })
+}
