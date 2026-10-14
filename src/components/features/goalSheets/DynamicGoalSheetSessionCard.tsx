@@ -48,34 +48,34 @@ const DynamicGoalSheetSessionCard = ({
         </div>
 
         <div className='text-xs sm:w-[62%] sm:pl-3'>
-          <p className='mb-2 leading-snug'>
-            <span className="font-['Montserrat'] italic font-bold">Goal: </span>
+          <div className='flex items-start gap-1 mb-2 leading-snug'>
+            <span className="font-['Montserrat'] italic font-bold shrink-0">Goal:</span>
             <textarea
               value={goalText}
               onChange={e => onGoalTextChange(e.target.value)}
               onBlur={onGoalTextBlur}
               rows={2}
               placeholder='Describe the goal for this student...'
-              className='inline w-full p-0 align-top bg-transparent border-0 resize-none text-xs leading-snug focus:outline-none focus:ring-0'
+              className='flex-1 p-0 bg-transparent border-0 resize-none text-xs leading-snug focus:outline-none focus:ring-0'
             />
-          </p>
+          </div>
           <p className='mb-3 text-gray-700'>Date: ______________________</p>
 
-          <p className='mb-1 font-bold text-gray-900'>Activities / Games</p>
-          <div className='h-4 mb-2 border-b border-gray-400' />
+          <p className='mt-1 mb-1 font-bold text-gray-900'>Activities / Games</p>
+          <div className='h-3.5 mb-1 border-b border-gray-400' />
 
-          <p className='mb-1 font-bold text-gray-900'>
+          <p className='mt-1 mb-1 font-bold text-gray-900'>
             Progress / Improvement{' '}
             <span className="font-['Montserrat'] italic font-normal text-gray-500">
               (Speech, confidence, social skills, language, vocabulary, etc.)
             </span>
           </p>
-          <div className='h-4 mb-2 border-b border-gray-400' />
+          <div className='h-3.5 mb-1 border-b border-gray-400' />
 
-          <p className='mb-1 font-bold text-gray-900'>
+          <p className='mt-1 mb-1 font-bold text-gray-900'>
             Additional comments, questions, or concerns
           </p>
-          <div className='h-4 border-b border-gray-400' />
+          <div className='h-3.5 mb-1 border-b border-gray-400' />
         </div>
       </div>
     </div>
