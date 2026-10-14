@@ -1,5 +1,9 @@
 import { supabase } from '@/lib/supabase'
-import type { DynamicGoalSheetRating, DynamicGoalSheetWithSessions } from '@/types/database'
+import type {
+  DynamicGoalSheetRating,
+  DynamicGoalSheetSession,
+  DynamicGoalSheetWithSessions,
+} from '@/types/database'
 
 const DYNAMIC_GOAL_SHEET_SELECT = `
   *,
@@ -138,5 +142,33 @@ export const dynamicGoalSheetsApi = {
       .eq('id', id)
 
     if (error) throw error
+  },
+
+  addSession: async (goalSheetId: string): Promise<DynamicGoalSheetSession> => {
+    try {
+      const { data: existingSessions, error: countError } = await supabase
+        .from('dynamic_goal_sheet_sessions')
+        .select('session_number')
+        .eq('goal_sheet_id', goalSheetId)
+        .order('session_number', { ascending: false })
+        .limit(1)
+
+      if (countError) throw countError
+
+      const nextSessionNumber = (existingSessions[0]?.session_number ?? 0) + 1
+
+      const { data: newSession, error: insertError } = await supabase
+        .from('dynamic_goal_sheet_sessions')
+        .insert({ goal_sheet_id: goalSheetId, session_number: nextSessionNumber })
+        .select()
+        .single()
+
+      if (insertError) throw insertError
+
+      return newSession
+    } catch (error) {
+      console.error('Error adding dynamic goal sheet session:', error)
+      throw error
+    }
   },
 }
