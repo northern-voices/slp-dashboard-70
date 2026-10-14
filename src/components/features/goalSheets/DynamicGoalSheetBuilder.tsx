@@ -20,9 +20,8 @@ import {
   useDeleteDynamicGoalSheet,
 } from '@/hooks/goalSheets/use-dynamic-goal-sheets-mutations'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import DynamicGoalSheetSessionCard from './DynamicGoalSheetSessionCard'
+import DynamicGoalSheetPage from './DynamicGoalSheetPage'
 import { exportDynamicGoalSheetPdf } from '@/lib/exportDynamicGoalSheetPdf'
-import { ReportBanner, ReportFooter } from '@/components/reports/view/shared/ReportBannerChrome'
 
 interface DynamicGoalSheetBuilderProps {
   sheetId: string
@@ -121,28 +120,13 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
         </AlertDialog>
       </div>
 
-      <section className="flex flex-col w-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-sm font-['Nunito']">
-        <ReportBanner title='Goal Sheet' />
-
-        <div className='flex-1 px-10 pt-5'>
-          <p className='mb-3 font-bold text-gray-900'>
-            STUDENT: {sheet.student?.first_name} {sheet.student?.last_name}
-          </p>
-
-          {sheet.sessions.map((session, index) => (
-            <DynamicGoalSheetSessionCard
-              key={session.id}
-              session={session}
-              index={index}
-              goalText={goalText}
-              onGoalTextChange={setGoalText}
-              onGoalTextBlur={handleGoalTextBlur}
-            />
-          ))}
-        </div>
-
-        <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
-      </section>
+      <DynamicGoalSheetPage
+        studentName={`${sheet.student?.first_name ?? ''} ${sheet.student?.last_name ?? ''}`.trim()}
+        sessions={sheet.sessions}
+        goalText={goalText}
+        onGoalTextChange={setGoalText}
+        onGoalTextBlur={handleGoalTextBlur}
+      />
     </div>
   )
 }
