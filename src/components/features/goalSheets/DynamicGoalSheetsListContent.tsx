@@ -30,27 +30,33 @@ import {
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useDeleteDynamicGoalSheet } from '@/hooks/goalSheets/use-dynamic-goal-sheets-mutations'
 import { exportDynamicGoalSheetPdf } from '@/lib/exportDynamicGoalSheetPdf'
-import type { DynamicGoalSheetWithSessions } from '@/types/database'
+import type { DynamicGoalSheetWithPages } from '@/types/database'
 
 interface DynamicGoalSheetsListContentProps {
-  sheets: DynamicGoalSheetWithSessions[]
+  sheets: DynamicGoalSheetWithPages[]
   isLoading: boolean
+}
+
+const getGoalSummary = (sheet: DynamicGoalSheetWithPages) => {
+  const [firstPage, ...rest] = sheet.pages
+  if (!firstPage) return ''
+  return rest.length > 0 ? `${firstPage.goal_text} (+${rest.length} more)` : firstPage.goal_text
 }
 
 const DynamicGoalSheetsListContent = ({ sheets, isLoading }: DynamicGoalSheetsListContentProps) => {
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
   const deleteGoalSheet = useDeleteDynamicGoalSheet()
-  const [sheetToDelete, setSheetToDelete] = useState<DynamicGoalSheetWithSessions | null>(null)
+  const [sheetToDelete, setSheetToDelete] = useState<DynamicGoalSheetWithPages | null>(null)
 
-  const handleOpen = (sheet: DynamicGoalSheetWithSessions) => {
+  const handleOpen = (sheet: DynamicGoalSheetWithPages) => {
     const path = currentSchool
       ? `/school/${currentSchool.id}/speech-screening-reports/dynamic-goal-sheets/${sheet.id}`
       : `/speech-screening-reports/dynamic-goal-sheets/${sheet.id}`
     navigate(path)
   }
 
-  const handleExportPdf = (sheet: DynamicGoalSheetWithSessions) => {
+  const handleExportPdf = (sheet: DynamicGoalSheetWithPages) => {
     exportDynamicGoalSheetPdf(sheet).catch(error => {
       console.error('Failed to export PDF:', error)
     })
@@ -72,9 +78,10 @@ const DynamicGoalSheetsListContent = ({ sheets, isLoading }: DynamicGoalSheetsLi
   }
 
   if (sheets.length === 0) {
-    return <div className='py-8 text-sm text-center text-gray-500'>No dynamic goal sheets found.</div>
+    return (
+      <div className='py-8 text-sm text-center text-gray-500'>No dynamic goal sheets found.</div>
+    )
   }
-
   return (
     <>
       <ResponsiveTable className='w-full'>
@@ -82,7 +89,7 @@ const DynamicGoalSheetsListContent = ({ sheets, isLoading }: DynamicGoalSheetsLi
           <tr>
             <TableHead>Student</TableHead>
             <TableHead>Goal</TableHead>
-            <TableHead>Sessions</TableHead>
+            <TableHead>Pages</TableHead>
             <TableHead>Last Updated</TableHead>
             <TableHead className='w-12'></TableHead>
           </tr>
@@ -98,10 +105,10 @@ const DynamicGoalSheetsListContent = ({ sheets, isLoading }: DynamicGoalSheetsLi
                   <h3 className='font-medium'>
                     {sheet.student?.first_name} {sheet.student?.last_name}
                   </h3>
-                  <p className='text-sm text-gray-600 truncate'>{sheet.goal_text}</p>
+                  <p className='text-sm text-gray-600 truncate'>{getGoalSummary(sheet)}</p>
                   <p className='text-xs text-gray-500'>
-                    {sheet.sessions.length} session{sheet.sessions.length === 1 ? '' : 's'} ·
-                    Updated {format(new Date(sheet.updated_at), 'MMM d, yyyy')}
+                    {sheet.pages.length} page{sheet.pages.length === 1 ? '' : 's'} · Updated{' '}
+                    {format(new Date(sheet.updated_at), 'MMM d, yyyy')}
                   </p>
                 </div>
               }>
@@ -111,11 +118,11 @@ const DynamicGoalSheetsListContent = ({ sheets, isLoading }: DynamicGoalSheetsLi
                 </div>
               </TableCell>
               <TableCell className='max-w-0'>
-                <div className='truncate' title={sheet.goal_text}>
-                  {sheet.goal_text}
+                <div className='truncate' title={getGoalSummary(sheet)}>
+                  {getGoalSummary(sheet)}
                 </div>
               </TableCell>
-              <TableCell>{sheet.sessions.length}</TableCell>
+              <TableCell>{sheet.pages.length}</TableCell>
               <TableCell className='whitespace-nowrap'>
                 {format(new Date(sheet.updated_at), 'MMM d, yyyy')}
               </TableCell>
@@ -135,7 +142,9 @@ const DynamicGoalSheetsListContent = ({ sheets, isLoading }: DynamicGoalSheetsLi
                       <Download className='w-4 h-4 mr-2' />
                       Export PDF
                     </DropdownMenuItem>
-                    <DropdownMenuItem className='text-red-600' onClick={() => setSheetToDelete(sheet)}>
+                    <DropdownMenuItem
+                      className='text-red-600'
+                      onClick={() => setSheetToDelete(sheet)}>
                       <Trash2 className='w-4 h-4 mr-2' />
                       Delete
                     </DropdownMenuItem>
@@ -153,8 +162,7 @@ const DynamicGoalSheetsListContent = ({ sheets, isLoading }: DynamicGoalSheetsLi
             <AlertDialogTitle>Delete this goal sheet?</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete the goal sheet for {sheetToDelete?.student?.first_name}{' '}
-              {sheetToDelete?.student?.last_name} and all its sessions. This action cannot be
-              undone.
+              {sheetToDelete?.student?.last_name} and all its pages. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
