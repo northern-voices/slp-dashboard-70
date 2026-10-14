@@ -38,6 +38,21 @@ const DynamicGoalSheetPage = ({
           onGoalTextBlur={onGoalTextBlur}
         />
       ))}
+
+      <div className='flex mb-6'>
+        <div className='flex items-center justify-center flex-1 py-2 border border-[#b7b7b7] bg-[#e9e2d9] mr-px'>
+          <div className='w-2 h-2 mr-1.5 rounded-full border border-gray-700' />
+          <span className="font-['Montserrat'] text-xs font-bold tracking-wide text-gray-700">
+            MASTERED
+          </span>
+        </div>
+        <div className='flex items-center justify-center flex-1 py-2 border border-[#b7b7b7] bg-[#e9e2d9]'>
+          <div className='w-2 h-2 mr-1.5 rounded-full border border-gray-700' />
+          <span className="font-['Montserrat'] text-xs font-bold tracking-wide text-gray-700">
+            NEEDS MORE PRACTICE
+          </span>
+        </div>
+      </div>
     </div>
 
     <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
