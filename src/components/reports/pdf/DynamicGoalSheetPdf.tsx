@@ -125,6 +125,34 @@ const styles = StyleSheet.create({
     height: 9,
     marginBottom: 1,
   },
+
+  statusRow: { flexDirection: 'row', marginTop: 4 },
+  statusPill: {
+    flex: 1,
+    backgroundColor: TAN_BG,
+    borderWidth: 0.75,
+    borderColor: '#b7b7b7',
+    paddingVertical: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusPillLeft: { marginRight: 0.5 },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: '#374151',
+    marginRight: 4,
+  },
+  statusLabel: {
+    fontSize: 8,
+    fontFamily: 'Montserrat',
+    fontWeight: 700,
+    letterSpacing: 1,
+    color: '#374151',
+  },
 })
 
 const Checkbox = ({ label, checked }: { label: string; checked?: boolean }) => (
@@ -218,6 +246,19 @@ const DynamicGoalSheetPdf = ({ data }: { data: DynamicGoalSheetPdfData }) => {
                 </View>
               </View>
             ))}
+
+            {pageIndex === pagesToRender.length - 1 && (
+              <View style={styles.statusRow}>
+                <View style={[styles.statusPill, styles.statusPillLeft]}>
+                  <View style={styles.statusDot} />
+                  <Text style={styles.statusLabel}>MASTERED</Text>
+                </View>
+                <View style={styles.statusPill}>
+                  <View style={styles.statusDot} />
+                  <Text style={styles.statusLabel}>NEEDS MORE PRACTICE</Text>
+                </View>
+              </View>
+            )}
           </View>
 
           <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
