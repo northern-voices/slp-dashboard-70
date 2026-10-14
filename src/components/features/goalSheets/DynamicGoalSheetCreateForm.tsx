@@ -38,8 +38,8 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
       {
         onSuccess: newSheet => {
           const path = currentSchool
-            ? `/school/${currentSchool.id}/dynamic-goal-sheets/${newSheet.id}`
-            : `/dynamic-goal-sheets/${newSheet.id}`
+            ? `/school/${currentSchool.id}/speech-screening-reports/dynamic-goal-sheets/${newSheet.id}`
+            : `/speech-screening-reports/dynamic-goal-sheets/${newSheet.id}`
 
           navigate(path)
         },
