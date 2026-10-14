@@ -16,6 +16,7 @@ import {
   RefreshCw,
   PauseCircle,
   PlayCircle,
+  ClipboardEdit,
 } from 'lucide-react'
 import type { Screening } from '@/types/database'
 
@@ -30,6 +31,7 @@ interface ScreeningRowDropdownProps {
   onPriorityRescreen: (screening: Screening) => void
   onResume: (screening: Screening) => void
   onPause: (screening: Screening) => void
+  onCreateDynamicGoalSheet: (screening: Screening) => void
   needsPriorityRescreen?: boolean
   isPaused?: boolean
   isTransferredOut?: boolean
@@ -46,6 +48,7 @@ const ScreeningRowDropdown = ({
   onPriorityRescreen,
   onResume,
   onPause,
+  onCreateDynamicGoalSheet,
   needsPriorityRescreen,
   isPaused,
   isTransferredOut,
@@ -80,6 +83,11 @@ const ScreeningRowDropdown = ({
       <DropdownMenuItem onClick={() => onEmailReport(screening)}>
         <Mail className='w-4 h-4 mr-2' />
         Send Report
+      </DropdownMenuItem>
+
+      <DropdownMenuItem onClick={() => onCreateDynamicGoalSheet(screening)}>
+        <ClipboardEdit className='w-4 h-4 mr-2' />
+        Create Dynamic Goal Sheet
       </DropdownMenuItem>
 
       {!isTransferredOut && (
