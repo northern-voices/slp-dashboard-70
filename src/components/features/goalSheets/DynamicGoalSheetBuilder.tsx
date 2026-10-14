@@ -12,12 +12,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Download, Trash2 } from 'lucide-react'
+import { Download, Plus, Trash2 } from 'lucide-react'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useDynamicGoalSheet } from '@/hooks/goalSheets/use-dynamic-goal-sheets'
 import {
-  useUpdateGoalText,
+  useUpdatePageGoalText,
   useDeleteDynamicGoalSheet,
+  useAddPage,
 } from '@/hooks/goalSheets/use-dynamic-goal-sheets-mutations'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import DynamicGoalSheetPage from './DynamicGoalSheetPage'
@@ -32,19 +33,29 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
   const { currentSchool } = useOrganization()
 
   const { data: sheet, isLoading } = useDynamicGoalSheet(sheetId)
-  const updateGoalText = useUpdateGoalText()
+  const updatePageGoalText = useUpdatePageGoalText()
   const deleteGoalSheet = useDeleteDynamicGoalSheet()
+  const addPage = useAddPage()
 
-  const [goalText, setGoalText] = useState('')
+  const [goalTextByPageId, setGoalTextByPageId] = useState<Record<string, string>>({})
   const [isExportingPdf, setIsExportingPdf] = useState(false)
 
   useEffect(() => {
-    if (sheet) setGoalText(sheet.goal_text)
+    if (!sheet) return
+    setGoalTextByPageId(prev => {
+      const next = { ...prev }
+      for (const page of sheet.pages) {
+        if (!(page.id in next)) next[page.id] = page.goal_text
+      }
+      return next
+    })
   }, [sheet])
 
-  const handleGoalTextBlur = () => {
-    if (!sheet || goalText === sheet.goal_text) return
-    updateGoalText.mutate({ id: sheet.id, goalText })
+  const handleGoalTextBlur = (pageId: string) => {
+    const originalPage = sheet?.pages.find(page => page.id === pageId)
+    const goalText = goalTextByPageId[pageId]
+    if (!originalPage || goalText === undefined || goalText === originalPage.goal_text) return
+    updatePageGoalText.mutate({ pageId, goalText })
   }
 
   const handleExportPdf = async () => {
@@ -58,6 +69,11 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
     } finally {
       setIsExportingPdf(false)
     }
+  }
+
+  const handleAddPage = () => {
+    if (!sheet) return
+    addPage.mutate({ goalSheetId: sheet.id, goalText: '' })
   }
 
   const handleDelete = () => {
@@ -84,6 +100,8 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
     return <p className='text-gray-600'>Goal sheet not found.</p>
   }
 
+  const studentName = `${sheet.student?.first_name ?? ''} ${sheet.student?.last_name ?? ''}`.trim()
+
   return (
     <div className='space-y-4'>
       <div className='flex items-center justify-end gap-2'>
@@ -103,8 +121,8 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
             <AlertDialogHeader>
               <AlertDialogTitle>Delete this goal sheet?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete this goal sheet and all its sessions. This action
-                cannot be undone.
+                This will permanently delete this goal sheet and all its pages. This action cannot
+                be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -120,13 +138,30 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
         </AlertDialog>
       </div>
 
-      <DynamicGoalSheetPage
-        studentName={`${sheet.student?.first_name ?? ''} ${sheet.student?.last_name ?? ''}`.trim()}
-        sessions={sheet.sessions}
-        goalText={goalText}
-        onGoalTextChange={setGoalText}
-        onGoalTextBlur={handleGoalTextBlur}
-      />
+      {sheet.pages.map(page => (
+        <DynamicGoalSheetPage
+          key={page.id}
+          studentName={studentName}
+          pageNumber={page.page_number}
+          totalPages={sheet.pages.length}
+          sessions={page.sessions}
+          goalText={goalTextByPageId[page.id] ?? ''}
+          onGoalTextChange={value => setGoalTextByPageId(prev => ({ ...prev, [page.id]: value }))}
+          onGoalTextBlur={() => handleGoalTextBlur(page.id)}
+        />
+      ))}
+
+      <div className='flex justify-center'>
+        <Button
+          variant='outline'
+          size='icon'
+          onClick={handleAddPage}
+          disabled={addPage.isPending}
+          className='w-12 h-12 rounded-full border-2'
+          aria-label='Add new goal sheet page'>
+          <Plus className='w-6 h-6' />
+        </Button>
+      </div>
     </div>
   )
 }
