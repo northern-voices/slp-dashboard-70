@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { DYNAMIC_GOAL_SHEET_RATING_OPTIONS } from '@/constants/dynamicGoalSheet'
 import type { DynamicGoalSheetSession } from '@/types/database'
 
@@ -24,6 +25,14 @@ const DynamicGoalSheetSessionCard = ({
   onGoalTextBlur,
 }: DynamicGoalSheetSessionCardProps) => {
   const isTan = index === 1
+  const goalTextareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    const el = goalTextareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [goalText])
 
   return (
     <div className='border border-[#b7b7b7] mb-3'>
@@ -48,15 +57,16 @@ const DynamicGoalSheetSessionCard = ({
         </div>
 
         <div className='text-xs sm:w-[62%] sm:pl-4'>
-          <div className='flex items-start gap-1 mb-2 leading-snug'>
+          <div className='flex items-start gap-1 mb-1 leading-snug'>
             <span className="font-['Montserrat'] italic font-bold shrink-0">Goal:</span>
             <textarea
+              ref={goalTextareaRef}
               value={goalText}
               onChange={e => onGoalTextChange(e.target.value)}
               onBlur={onGoalTextBlur}
-              rows={2}
+              rows={1}
               placeholder='Describe the goal for this student...'
-              className='flex-1 p-0 bg-transparent border-0 resize-none text-xs leading-snug focus:outline-none focus:ring-0'
+              className='flex-1 p-0 overflow-hidden bg-transparent border-0 resize-none text-xs leading-snug focus:outline-none focus:ring-0'
             />
           </div>
           <p className='mb-3 text-gray-700'>Date: ______________________</p>
