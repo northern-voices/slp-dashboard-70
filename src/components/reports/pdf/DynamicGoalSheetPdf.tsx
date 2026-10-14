@@ -15,23 +15,19 @@ Font.register({
   ],
 })
 
-interface DynamicGoalSheetPdfData {
-  studentName: string
+interface DynamicGoalSheetPdfPage {
+  pageNumber: number
   goalText: string
   sessions: DynamicGoalSheetSession[]
 }
 
+interface DynamicGoalSheetPdfData {
+  studentName: string
+  pages: DynamicGoalSheetPdfPage[]
+}
+
 const BANNER_BG = '#5b7a8b'
 const TAN_BG = '#e9e2d9'
-const SESSIONS_PER_PAGE = 3
-
-const chunk = <T,>(items: T[], size: number): T[][] => {
-  const chunks: T[][] = []
-  for (let i = 0; i < items.length; i += size) {
-    chunks.push(items.slice(i, i + size))
-  }
-  return chunks
-}
 
 const styles = StyleSheet.create({
   page: {
@@ -163,19 +159,18 @@ const Checkbox = ({ label, checked }: { label: string; checked?: boolean }) => (
 )
 
 const DynamicGoalSheetPdf = ({ data }: { data: DynamicGoalSheetPdfData }) => {
-  const pages = chunk(data.sessions, SESSIONS_PER_PAGE)
-  const pagesToRender = pages.length > 0 ? pages : [[]]
+  const totalPages = data.pages.length
 
   return (
     <Document>
-      {pagesToRender.map((pageSessions, pageIndex) => (
-        <Page key={pageIndex} size='LETTER' style={styles.page}>
+      {data.pages.map(page => (
+        <Page key={page.pageNumber} size='LETTER' style={styles.page}>
           <ReportBanner title='Goal Sheet' />
 
           <View style={styles.body}>
             <Text style={styles.studentLine}>STUDENT: {data.studentName}</Text>
 
-            {pageSessions.map((session, i) => (
+            {page.sessions.map((session, i) => (
               <View key={session.id} style={styles.sessionCard} wrap={false}>
                 <View
                   style={[
@@ -206,7 +201,7 @@ const DynamicGoalSheetPdf = ({ data }: { data: DynamicGoalSheetPdfData }) => {
                   <View style={styles.sessionRight}>
                     <Text style={styles.sessionText}>
                       <Text style={styles.italicBold}>Goal: </Text>
-                      {data.goalText}
+                      {page.goalText}
                     </Text>
                     <Text style={styles.dateLine}>
                       Date:{' '}
@@ -247,21 +242,23 @@ const DynamicGoalSheetPdf = ({ data }: { data: DynamicGoalSheetPdfData }) => {
               </View>
             ))}
 
-            {pageIndex === pagesToRender.length - 1 && (
-              <View style={styles.statusRow}>
-                <View style={[styles.statusPill, styles.statusPillLeft]}>
-                  <View style={styles.statusDot} />
-                  <Text style={styles.statusLabel}>MASTERED</Text>
-                </View>
-                <View style={styles.statusPill}>
-                  <View style={styles.statusDot} />
-                  <Text style={styles.statusLabel}>NEEDS MORE PRACTICE</Text>
-                </View>
+            <View style={styles.statusRow}>
+              <View style={[styles.statusPill, styles.statusPillLeft]}>
+                <View style={styles.statusDot} />
+                <Text style={styles.statusLabel}>MASTERED</Text>
               </View>
-            )}
+              <View style={styles.statusPill}>
+                <View style={styles.statusDot} />
+                <Text style={styles.statusLabel}>NEEDS MORE PRACTICE</Text>
+              </View>
+            </View>
           </View>
 
-          <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
+          <ReportFooter
+            page={page.pageNumber}
+            of={totalPages}
+            brand='NORTHERN VOICES SPEECH SERVICES'
+          />
         </Page>
       ))}
     </Document>
