@@ -23,3 +23,19 @@ export const useCreateDynamicGoalSheet = () => {
     },
   })
 }
+
+export const useUpdateGoalText = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<void, Error, { id: string; goalText: string }>({
+    mutationFn: ({ id, goalText }) => dynamicGoalSheetsApi.updateGoalText(id, goalText),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dynamic-goal-sheets'] })
+    },
+
+    onError: error => {
+      console.error('Failed to update goal text:', error)
+    },
+  })
+}
