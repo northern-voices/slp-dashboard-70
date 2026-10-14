@@ -1,145 +1,84 @@
-import { useEffect, useState } from 'react'
-import { format } from 'date-fns'
-import { Card } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Button } from '@/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
-import { CalendarIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { DYNAMIC_GOAL_SHEET_RATING_OPTIONS } from '@/constants/dynamicGoalSheet'
-import { useUpdateSession } from '@/hooks/goalSheets/use-dynamic-goal-sheets-mutations'
-import type { DynamicGoalSheetSession, DynamicGoalSheetRating } from '@/types/database'
+import type { DynamicGoalSheetSession } from '@/types/database'
 
 interface DynamicGoalSheetSessionCardProps {
   session: DynamicGoalSheetSession
+  index: number
+  goalText: string
+  onGoalTextChange: (value: string) => void
+  onGoalTextBlur: () => void
 }
 
-const DynamicGoalSheetSessionCard = ({ session }: DynamicGoalSheetSessionCardProps) => {
-  const updateSession = useUpdateSession()
+const Checkbox = ({ label }: { label: string }) => (
+  <div className='flex items-start gap-1.5 mb-1'>
+    <div className='w-2.5 h-2.5 border border-gray-700 shrink-0 mt-0.5' />
+    <span className='text-xs leading-tight'>{label}</span>
+  </div>
+)
 
-  const [activities, setActivities] = useState(session.activities ?? '')
-  const [progressNotes, setProgressNotes] = useState(session.progress_notes ?? '')
-  const [additionalComments, setAdditionalComments] = useState(session.additional_comments ?? '')
-
-  useEffect(() => {
-    setActivities(session.activities ?? '')
-    setProgressNotes(session.progress_notes ?? '')
-    setAdditionalComments(session.additional_comments ?? '')
-  }, [session.id, session.activities, session.progress_notes, session.additional_comments])
-
-  const handleRatingChange = (value: DynamicGoalSheetRating) => {
-    updateSession.mutate({ sessionId: session.id, data: { sound_rating: value } })
-  }
-
-  const handleDateSelect = (date: Date | undefined) => {
-    updateSession.mutate({
-      sessionId: session.id,
-      data: { session_date: date ? format(date, 'yyyy-MM-dd') : null },
-    })
-  }
-
-  const handleBlurField = (
-    field: 'activities' | 'progress_notes' | 'additional_comments',
-    value: string,
-    original: string | null
-  ) => {
-    if (value === (original ?? '')) return
-    updateSession.mutate({ sessionId: session.id, data: { [field]: value } })
-  }
-
-  const sessionDate = session.session_date ? new Date(session.session_date) : undefined
+const DynamicGoalSheetSessionCard = ({
+  session,
+  index,
+  goalText,
+  onGoalTextChange,
+  onGoalTextBlur,
+}: DynamicGoalSheetSessionCardProps) => {
+  const isTan = index === 1
 
   return (
-    <Card className='overflow-hidden'>
-      <div className='px-4 py-2 font-semibold text-white bg-slate-600'>
-        SESSION {session.session_number}
+    <div className='border border-[#b7b7b7] mb-3'>
+      <div className={`py-1.5 px-3 ${isTan ? 'bg-[#e9e2d9]' : 'bg-[#5b7a8b]'}`}>
+        <p
+          className={`font-semibold text-center text-xs tracking-wide ${
+            isTan ? 'text-[#4d4b4b]' : 'text-white'
+          }`}>
+          SESSION {session.session_number}
+        </p>
       </div>
-
-      <div className='grid grid-cols-1 gap-6 p-4 md:grid-cols-2'>
-        <div className='space-y-2'>
-          <p className='text-sm font-medium text-gray-900'>How did the student do?</p>
-          <p className='text-xs italic text-gray-500'>Were they able to say the sound?</p>
-
-          <RadioGroup
-            value={session.sound_rating ?? undefined}
-            onValueChange={value => handleRatingChange(value as DynamicGoalSheetRating)}
-            className='space-y-2'>
-            {DYNAMIC_GOAL_SHEET_RATING_OPTIONS.map(option => (
-              <div key={option.value} className='flex items-start space-x-2'>
-                <RadioGroupItem value={option.value} id={`${session.id}-${option.value}`} />
-                <label htmlFor={`${session.id}-${option.value}`} className='text-sm text-gray-700'>
-                  {option.label}
-                </label>
-              </div>
-            ))}
-          </RadioGroup>
+      <div
+        className={`flex flex-col gap-4 p-3 sm:flex-row ${isTan ? 'bg-[#f9f7f4]' : 'bg-[#eff3f6]'}`}>
+        <div className='border-gray-300 sm:w-[38%] sm:pr-3 sm:border-r'>
+          <p className='mb-0.5 text-xs font-semibold text-gray-900'>How did the student do?</p>
+          <p className='mb-1.5 text-[11px] italic text-gray-500'>
+            Were they able to say the sound?
+          </p>
+          {DYNAMIC_GOAL_SHEET_RATING_OPTIONS.map(option => (
+            <Checkbox key={option.value} label={option.label} />
+          ))}
         </div>
 
-        <div className='space-y-4'>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant='outline'
-                size='sm'
-                className={cn('w-full md:w-48 justify-start text-left font-normal')}>
-                <CalendarIcon className='w-4 h-4 mr-2' />
-                {sessionDate ? format(sessionDate, 'PPP') : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className='w-auto p-0' align='start'>
-              <Calendar
-                mode='single'
-                selected={sessionDate}
-                onSelect={handleDateSelect}
-                initialFocus
-                className='p-3 pointer-events-auto'
-              />
-            </PopoverContent>
-          </Popover>
-
-          <div className='space-y-1'>
-            <label className='text-sm font-medium text-gray-700'>Activities</label>
-            <Textarea
-              value={activities}
-              onChange={e => setActivities(e.target.value)}
-              onBlur={() => handleBlurField('activities', activities, session.activities)}
+        <div className='text-xs sm:w-[62%] sm:pl-3'>
+          <p className='mb-2 leading-snug'>
+            <span className='italic font-semibold'>Goal: </span>
+            <textarea
+              value={goalText}
+              onChange={e => onGoalTextChange(e.target.value)}
+              onBlur={onGoalTextBlur}
               rows={2}
+              placeholder='Describe the goal for this student...'
+              className='inline w-full p-0 align-top bg-transparent border-0 resize-none text-xs leading-snug focus:outline-none focus:ring-0'
             />
-          </div>
+          </p>
+          <p className='mb-3 text-gray-700'>Date: ______________________</p>
 
-          <div className='space-y-1'>
-            <label className='text-sm font-medium text-gray-700'>
-              Progress / Improvement{' '}
-              <span className='text-xs font-normal text-gray-400'>
-                (Speech, confidence, social skills, language, vocabulary)
-              </span>
-            </label>
-            <Textarea
-              value={progressNotes}
-              onChange={e => setProgressNotes(e.target.value)}
-              onBlur={() => handleBlurField('progress_notes', progressNotes, session.progress_notes)}
-              rows={2}
-            />
-          </div>
+          <p className='mb-1 font-semibold text-gray-900'>Activities / Games</p>
+          <div className='h-4 mb-2 border-b border-gray-400' />
 
-          <div className='space-y-1'>
-            <label className='text-sm font-medium text-gray-700'>
-              Additional comments, questions, or concerns
-            </label>
-            <Textarea
-              value={additionalComments}
-              onChange={e => setAdditionalComments(e.target.value)}
-              onBlur={() =>
-                handleBlurField('additional_comments', additionalComments, session.additional_comments)
-              }
-              rows={2}
-            />
-          </div>
+          <p className='mb-1 font-semibold text-gray-900'>
+            Progress / Improvement{' '}
+            <span className='italic font-normal text-gray-500'>
+              (Speech, confidence, social skills, language, vocabulary, etc.)
+            </span>
+          </p>
+          <div className='h-4 mb-2 border-b border-gray-400' />
+
+          <p className='mb-1 font-semibold text-gray-900'>
+            Additional comments, questions, or concerns
+          </p>
+          <div className='h-4 border-b border-gray-400' />
         </div>
       </div>
-    </Card>
+    </div>
   )
 }
 
