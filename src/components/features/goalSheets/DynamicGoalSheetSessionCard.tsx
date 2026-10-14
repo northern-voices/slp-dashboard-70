@@ -29,7 +29,7 @@ const DynamicGoalSheetSessionCard = ({
     <div className='border border-[#b7b7b7] mb-3'>
       <div className={`py-1.5 px-3 ${isTan ? 'bg-[#e9e2d9]' : 'bg-[#5b7a8b]'}`}>
         <p
-          className={`font-semibold text-center text-xs tracking-wide ${
+          className={`font-['Montserrat'] font-bold text-center text-xs tracking-wide ${
             isTan ? 'text-[#4d4b4b]' : 'text-white'
           }`}>
           SESSION {session.session_number}
@@ -38,8 +38,8 @@ const DynamicGoalSheetSessionCard = ({
       <div
         className={`flex flex-col gap-4 p-3 sm:flex-row ${isTan ? 'bg-[#f9f7f4]' : 'bg-[#eff3f6]'}`}>
         <div className='border-gray-300 sm:w-[38%] sm:pr-3 sm:border-r'>
-          <p className='mb-0.5 text-xs font-semibold text-gray-900'>How did the student do?</p>
-          <p className='mb-1.5 text-[11px] italic text-gray-500'>
+          <p className='mb-0.5 text-xs font-bold text-gray-900'>How did the student do?</p>
+          <p className="font-['Montserrat'] mb-1.5 text-[11px] italic text-gray-500">
             Were they able to say the sound?
           </p>
           {DYNAMIC_GOAL_SHEET_RATING_OPTIONS.map(option => (
@@ -49,7 +49,7 @@ const DynamicGoalSheetSessionCard = ({
 
         <div className='text-xs sm:w-[62%] sm:pl-3'>
           <p className='mb-2 leading-snug'>
-            <span className='italic font-semibold'>Goal: </span>
+            <span className="font-['Montserrat'] italic font-bold">Goal: </span>
             <textarea
               value={goalText}
               onChange={e => onGoalTextChange(e.target.value)}
@@ -61,18 +61,18 @@ const DynamicGoalSheetSessionCard = ({
           </p>
           <p className='mb-3 text-gray-700'>Date: ______________________</p>
 
-          <p className='mb-1 font-semibold text-gray-900'>Activities / Games</p>
+          <p className='mb-1 font-bold text-gray-900'>Activities / Games</p>
           <div className='h-4 mb-2 border-b border-gray-400' />
 
-          <p className='mb-1 font-semibold text-gray-900'>
+          <p className='mb-1 font-bold text-gray-900'>
             Progress / Improvement{' '}
-            <span className='italic font-normal text-gray-500'>
+            <span className="font-['Montserrat'] italic font-normal text-gray-500">
               (Speech, confidence, social skills, language, vocabulary, etc.)
             </span>
           </p>
           <div className='h-4 mb-2 border-b border-gray-400' />
 
-          <p className='mb-1 font-semibold text-gray-900'>
+          <p className='mb-1 font-bold text-gray-900'>
             Additional comments, questions, or concerns
           </p>
           <div className='h-4 border-b border-gray-400' />
