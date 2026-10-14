@@ -8,13 +8,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      dynamic_goal_sheet_pages: {
+        Row: {
+          created_at: string
+          goal_sheet_id: string
+          goal_text: string
+          id: string
+          page_number: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          goal_sheet_id: string
+          goal_text: string
+          id?: string
+          page_number: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          goal_sheet_id?: string
+          goal_text?: string
+          id?: string
+          page_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'dynamic_goal_sheet_pages_goal_sheet_id_fkey'
+            columns: ['goal_sheet_id']
+            isOneToOne: false
+            referencedRelation: 'dynamic_goal_sheets'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       dynamic_goal_sheet_sessions: {
         Row: {
           activities: string | null
           additional_comments: string | null
           created_at: string
-          goal_sheet_id: string
           id: string
+          page_id: string
           progress_notes: string | null
           session_date: string | null
           session_number: number
@@ -25,8 +60,8 @@ export type Database = {
           activities?: string | null
           additional_comments?: string | null
           created_at?: string
-          goal_sheet_id: string
           id?: string
+          page_id: string
           progress_notes?: string | null
           session_date?: string | null
           session_number: number
@@ -37,8 +72,8 @@ export type Database = {
           activities?: string | null
           additional_comments?: string | null
           created_at?: string
-          goal_sheet_id?: string
           id?: string
+          page_id?: string
           progress_notes?: string | null
           session_date?: string | null
           session_number?: number
@@ -47,10 +82,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'dynamic_goal_sheet_sessions_goal_sheet_id_fkey'
-            columns: ['goal_sheet_id']
+            foreignKeyName: 'dynamic_goal_sheet_sessions_page_id_fkey'
+            columns: ['page_id']
             isOneToOne: false
-            referencedRelation: 'dynamic_goal_sheets'
+            referencedRelation: 'dynamic_goal_sheet_pages'
             referencedColumns: ['id']
           },
         ]
@@ -59,7 +94,6 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
-          goal_text: string
           id: string
           school_id: string
           student_id: string
@@ -68,7 +102,6 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
-          goal_text: string
           id?: string
           school_id: string
           student_id: string
@@ -77,7 +110,6 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
-          goal_text?: string
           id?: string
           school_id?: string
           student_id?: string
