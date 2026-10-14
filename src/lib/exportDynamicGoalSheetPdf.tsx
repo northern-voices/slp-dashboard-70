@@ -1,6 +1,6 @@
-import type { DynamicGoalSheetWithSessions } from '@/types/database'
+import type { DynamicGoalSheetWithPages } from '@/types/database'
 
-export const exportDynamicGoalSheetPdf = async (sheet: DynamicGoalSheetWithSessions) => {
+export const exportDynamicGoalSheetPdf = async (sheet: DynamicGoalSheetWithPages) => {
   const [{ pdf }, { default: DynamicGoalSheetPdf }] = await Promise.all([
     import('@react-pdf/renderer'),
     import('@/components/reports/pdf/DynamicGoalSheetPdf'),
@@ -10,7 +10,14 @@ export const exportDynamicGoalSheetPdf = async (sheet: DynamicGoalSheetWithSessi
 
   const blob = await pdf(
     <DynamicGoalSheetPdf
-      data={{ studentName, goalText: sheet.goal_text, sessions: sheet.sessions }}
+      data={{
+        studentName,
+        pages: sheet.pages.map(page => ({
+          pageNumber: page.page_number,
+          goalText: page.goal_text,
+          sessions: page.sessions,
+        })),
+      }}
     />
   ).toBlob()
 
