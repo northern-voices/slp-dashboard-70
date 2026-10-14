@@ -130,4 +130,13 @@ export const dynamicGoalSheetsApi = {
 
     return data.map(transformDynamicGoalSheet)
   },
+
+  updateGoalText: async (id: string, goalText: string): Promise<void> => {
+    const { error } = await supabase
+      .from('dynamic_goal_sheets')
+      .update({ goal_text: goalText, updated_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (error) throw error
+  },
 }
