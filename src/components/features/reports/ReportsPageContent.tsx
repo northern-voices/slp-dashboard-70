@@ -1,4 +1,4 @@
-import { User, Ear, Building2, Target, ChevronRight } from 'lucide-react'
+import { User, Ear, Building2, Target, ChevronRight, ClipboardEdit } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ElementType } from 'react'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -85,6 +85,19 @@ const sections: {
     schoolWide: {
       description: 'Export combined goal sheets for all students',
       route: 'school-wide-goal-sheets',
+    },
+  },
+  {
+    label: 'Dynamic Goal Sheets',
+    color: 'orange',
+    individual: {
+      description: 'Start a new free-form goal sheet for a student',
+      route: 'dynamic-goal-sheets/new',
+      Icon: ClipboardEdit,
+    },
+    schoolWide: {
+      description: 'Browse and manage saved dynamic goal sheets',
+      route: 'dynamic-goal-sheets',
     },
   },
 ]
