@@ -171,4 +171,26 @@ export const dynamicGoalSheetsApi = {
       throw error
     }
   },
+
+  updateSession: async (
+    sessionId: string,
+    data: Partial<{
+      session_date: string | null
+      sound_rating: DynamicGoalSheetRating | null
+      activities: string | null
+      progress_notes: string | null
+      additional_comments: string | null
+    }>
+  ): Promise<DynamicGoalSheetSession> => {
+    const { data: updatedSession, error } = await supabase
+      .from('dynamic_goal_sheet_sessions')
+      .update({ ...data, updated_at: new Date().toISOString() })
+      .eq('id', sessionId)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return updatedSession
+  },
 }
