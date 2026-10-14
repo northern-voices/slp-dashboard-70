@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +22,7 @@ import {
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import DynamicGoalSheetSessionCard from './DynamicGoalSheetSessionCard'
 import { exportDynamicGoalSheetPdf } from '@/lib/exportDynamicGoalSheetPdf'
+import { ReportBanner, ReportFooter } from '@/components/reports/view/shared/ReportBannerChrome'
 
 interface DynamicGoalSheetBuilderProps {
   sheetId: string
@@ -86,32 +86,20 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
   }
 
   return (
-    <div className='space-y-6'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <h2 className='text-2xl font-semibold text-gray-900'>GOAL SHEET</h2>
-          <p className='text-gray-700'>
-            STUDENT: {sheet.student?.first_name} {sheet.student?.last_name}
-          </p>
-        </div>
+    <div className='space-y-4'>
+      <div className='flex items-center justify-end gap-2'>
+        <Button variant='outline' size='sm' onClick={handleExportPdf} disabled={isExportingPdf}>
+          <Download className='w-4 h-4 mr-2' />
+          {isExportingPdf ? 'Exporting...' : 'Export PDF'}
+        </Button>
 
-        <div className='flex items-center gap-2'>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={handleExportPdf}
-            disabled={isExportingPdf}>
-            <Download className='w-4 h-4 mr-2' />
-            {isExportingPdf ? 'Exporting...' : 'Export PDF'}
-          </Button>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant='outline' size='sm' className='text-red-600'>
-                <Trash2 className='w-4 h-4 mr-2' />
-                Delete Sheet
-              </Button>
-            </AlertDialogTrigger>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant='outline' size='sm' className='text-red-600'>
+              <Trash2 className='w-4 h-4 mr-2' />
+              Delete Sheet
+            </Button>
+          </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete this goal sheet?</AlertDialogTitle>
@@ -131,24 +119,30 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      </div>
+
+      <section className="flex flex-col w-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-sm font-['Nunito']">
+        <ReportBanner title='Goal Sheet' />
+
+        <div className='flex-1 px-10 pt-5'>
+          <p className='mb-3 font-bold text-gray-900'>
+            STUDENT: {sheet.student?.first_name} {sheet.student?.last_name}
+          </p>
+
+          {sheet.sessions.map((session, index) => (
+            <DynamicGoalSheetSessionCard
+              key={session.id}
+              session={session}
+              index={index}
+              goalText={goalText}
+              onGoalTextChange={setGoalText}
+              onGoalTextBlur={handleGoalTextBlur}
+            />
+          ))}
         </div>
-      </div>
 
-      <div className='space-y-2'>
-        <label className='text-sm font-medium text-gray-700'>Goal</label>
-        <Textarea
-          value={goalText}
-          onChange={e => setGoalText(e.target.value)}
-          onBlur={handleGoalTextBlur}
-          rows={3}
-        />
-      </div>
-
-      <div className='space-y-4'>
-        {sheet.sessions.map(session => (
-          <DynamicGoalSheetSessionCard key={session.id} session={session} />
-        ))}
-      </div>
+        <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
+      </section>
     </div>
   )
 }
