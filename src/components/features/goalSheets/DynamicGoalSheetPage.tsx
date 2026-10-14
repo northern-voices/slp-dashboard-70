@@ -4,6 +4,8 @@ import type { DynamicGoalSheetSession } from '@/types/database'
 
 interface DynamicGoalSheetPageProps {
   studentName: string
+  pageNumber: number
+  totalPages: number
   sessions: DynamicGoalSheetSession[]
   goalText: string
   onGoalTextChange: (value: string) => void
@@ -12,6 +14,8 @@ interface DynamicGoalSheetPageProps {
 
 const DynamicGoalSheetPage = ({
   studentName,
+  pageNumber,
+  totalPages,
   sessions,
   goalText,
   onGoalTextChange,
@@ -55,7 +59,7 @@ const DynamicGoalSheetPage = ({
       </div>
     </div>
 
-    <ReportFooter brand='NORTHERN VOICES SPEECH SERVICES' />
+    <ReportFooter page={pageNumber} of={totalPages} brand='NORTHERN VOICES SPEECH SERVICES' />
   </section>
 )
 
