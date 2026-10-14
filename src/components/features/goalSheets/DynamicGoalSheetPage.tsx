@@ -17,7 +17,7 @@ const DynamicGoalSheetPage = ({
   onGoalTextChange,
   onGoalTextBlur,
 }: DynamicGoalSheetPageProps) => (
-  <section className="flex flex-col w-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-sm font-['Nunito']">
+  <section className="flex flex-col w-full max-w-5xl mx-auto overflow-hidden bg-white rounded-lg shadow-sm font-['Nunito']">
     <link
       rel='stylesheet'
       href='https://fonts.googleapis.com/css2?family=Gotu&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;700&display=swap'
