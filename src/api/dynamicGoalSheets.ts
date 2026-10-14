@@ -82,7 +82,9 @@ export const dynamicGoalSheetsApi = {
 
       const { error: sessionError } = await supabase
         .from('dynamic_goal_sheet_sessions')
-        .insert({ goal_sheet_id: newSheet.id, session_number: 1 })
+        .insert(
+          [1, 2, 3].map(session_number => ({ goal_sheet_id: newSheet.id, session_number }))
+        )
 
       if (sessionError) throw sessionError
 
