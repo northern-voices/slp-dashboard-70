@@ -87,7 +87,7 @@ const ScreeningRowDropdown = ({
 
       <DropdownMenuItem onClick={() => onCreateDynamicGoalSheet(screening)}>
         <ClipboardEdit className='w-4 h-4 mr-2' />
-        Create Dynamic Goal Sheet
+        Create Goal Sheet
       </DropdownMenuItem>
 
       {!isTransferredOut && (
