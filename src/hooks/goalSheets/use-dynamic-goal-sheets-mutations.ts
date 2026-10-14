@@ -88,3 +88,19 @@ export const useUpdateSession = () => {
     },
   })
 }
+
+export const useDeleteDynamicGoalSheet = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<void, Error, string>({
+    mutationFn: (id: string) => dynamicGoalSheetsApi.deleteGoalSheet(id),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dynamic-goal-sheets'] })
+    },
+
+    onError: error => {
+      console.error('Failed to delete dynamic goal sheet:', error)
+    },
+  })
+}
