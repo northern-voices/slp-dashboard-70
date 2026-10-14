@@ -3,19 +3,20 @@ import { dynamicGoalSheetsApi } from '@/api/dynamicGoalSheets'
 import type {
   DynamicGoalSheetRating,
   DynamicGoalSheetSession,
-  DynamicGoalSheetWithSessions,
+  DynamicGoalSheetPageWithSessions,
+  DynamicGoalSheetWithPages,
 } from '@/types/database'
 
 type CreateDynamicGoalSheetInput = {
   studentId: string
   schoolId: string
-  goalText: string
+  goalTexts: string[]
 }
 
 export const useCreateDynamicGoalSheet = () => {
   const queryClient = useQueryClient()
 
-  return useMutation<DynamicGoalSheetWithSessions, Error, CreateDynamicGoalSheetInput>({
+  return useMutation<DynamicGoalSheetWithPages, Error, CreateDynamicGoalSheetInput>({
     mutationFn: data => dynamicGoalSheetsApi.createGoalSheet(data),
 
     onSuccess: () => {
@@ -28,11 +29,11 @@ export const useCreateDynamicGoalSheet = () => {
   })
 }
 
-export const useUpdateGoalText = () => {
+export const useUpdatePageGoalText = () => {
   const queryClient = useQueryClient()
 
-  return useMutation<void, Error, { id: string; goalText: string }>({
-    mutationFn: ({ id, goalText }) => dynamicGoalSheetsApi.updateGoalText(id, goalText),
+  return useMutation<void, Error, { pageId: string; goalText: string }>({
+    mutationFn: ({ pageId, goalText }) => dynamicGoalSheetsApi.updatePageGoalText(pageId, goalText),
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dynamic-goal-sheets'] })
@@ -44,11 +45,31 @@ export const useUpdateGoalText = () => {
   })
 }
 
+export const useAddPage = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<
+    DynamicGoalSheetPageWithSessions,
+    Error,
+    { goalSheetId: string; goalText: string }
+  >({
+    mutationFn: ({ goalSheetId, goalText }) => dynamicGoalSheetsApi.addPage(goalSheetId, goalText),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dynamic-goal-sheets'] })
+    },
+
+    onError: error => {
+      console.error('Failed to add goal sheet page:', error)
+    },
+  })
+}
+
 export const useAddSession = () => {
   const queryClient = useQueryClient()
 
   return useMutation<DynamicGoalSheetSession, Error, string>({
-    mutationFn: (goalSheetId: string) => dynamicGoalSheetsApi.addSession(goalSheetId),
+    mutationFn: (pageId: string) => dynamicGoalSheetsApi.addSession(pageId),
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dynamic-goal-sheets'] })
