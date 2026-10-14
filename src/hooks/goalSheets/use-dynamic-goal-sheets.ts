@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { dynamicGoalSheetsApi } from '@/api/dynamicGoalSheets'
-import type { DynamicGoalSheetWithSessions } from '@/types/database'
+import type { DynamicGoalSheetWithPages } from '@/types/database'
 
 export const useDynamicGoalSheet = (id?: string) => {
-  return useQuery<DynamicGoalSheetWithSessions, Error>({
+  return useQuery<DynamicGoalSheetWithPages, Error>({
     queryKey: ['dynamic-goal-sheets', 'by-id', id],
     queryFn: () => {
       if (!id) throw new Error('Goal sheet ID is required')
@@ -15,7 +15,7 @@ export const useDynamicGoalSheet = (id?: string) => {
 }
 
 export const useDynamicGoalSheetsByStudent = (studentId?: string) => {
-  return useQuery<DynamicGoalSheetWithSessions[], Error>({
+  return useQuery<DynamicGoalSheetWithPages[], Error>({
     queryKey: ['dynamic-goal-sheets', 'by-student', studentId],
     queryFn: () => {
       if (!studentId) throw new Error('Student ID is required')
@@ -27,7 +27,7 @@ export const useDynamicGoalSheetsByStudent = (studentId?: string) => {
 }
 
 export const useDynamicGoalSheetsBySchool = (schoolId?: string) => {
-  return useQuery<DynamicGoalSheetWithSessions[], Error>({
+  return useQuery<DynamicGoalSheetWithPages[], Error>({
     queryKey: ['dynamic-goal-sheets', 'by-school', schoolId],
     queryFn: () => {
       if (!schoolId) throw new Error('School ID is required')
