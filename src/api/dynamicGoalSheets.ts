@@ -194,8 +194,8 @@ export const dynamicGoalSheetsApi = {
     return updatedSession
   },
 
-  deleteGoalSession: async (id: string): Promise<void> => {
-    const { error } = await supabase.from('dynamic_goal_sheet').delete().eq('id', id)
+  deleteGoalSheet: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('dynamic_goal_sheets').delete().eq('id', id)
 
     if (error) throw error
   },
