@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useStudent } from '@/hooks/students/use-students'
@@ -15,7 +16,7 @@ interface DynamicGoalSheetCreateFormProps {
 
 const PREVIEW_SESSIONS: DynamicGoalSheetSession[] = [1, 2, 3].map(session_number => ({
   id: `preview-${session_number}`,
-  goal_sheet_id: 'preview',
+  page_id: 'preview',
   session_number,
   session_date: null,
   sound_rating: null,
@@ -28,7 +29,7 @@ const PREVIEW_SESSIONS: DynamicGoalSheetSession[] = [1, 2, 3].map(session_number
 
 const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateFormProps) => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [goalText, setGoalText] = useState('')
+  const [draftGoalTexts, setDraftGoalTexts] = useState<string[]>([''])
   const [createdSheetId, setCreatedSheetId] = useState<string | null>(null)
 
   const { currentSchool } = useOrganization()
@@ -38,15 +39,25 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
   const createGoalSheet = useCreateDynamicGoalSheet()
 
   const student = lockedStudentId ? lockedStudent : selectedStudent
+  const trimmedGoalTexts = draftGoalTexts.map(text => text.trim())
+  const canSubmit = !!student && !!currentSchool && trimmedGoalTexts.every(text => text.length > 0)
+
+  const handleDraftGoalTextChange = (index: number, value: string) => {
+    setDraftGoalTexts(prev => prev.map((text, i) => (i === index ? value : text)))
+  }
+
+  const handleAddDraftPage = () => {
+    setDraftGoalTexts(prev => [...prev, ''])
+  }
 
   const handleSubmit = () => {
-    if (!student || !currentSchool || !goalText.trim()) return
+    if (!canSubmit || !student || !currentSchool) return
 
     createGoalSheet.mutate(
       {
         studentId: student.id,
         schoolId: currentSchool.id,
-        goalText: goalText.trim(),
+        goalTexts: trimmedGoalTexts,
       },
       {
         onSuccess: newSheet => {
@@ -96,19 +107,35 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
         )}
       </div>
 
-      <DynamicGoalSheetPage
-        studentName={studentName}
-        sessions={PREVIEW_SESSIONS}
-        goalText={goalText}
-        onGoalTextChange={setGoalText}
-        onGoalTextBlur={() => {}}
-      />
+      {draftGoalTexts.map((goalText, index) => (
+        <DynamicGoalSheetPage
+          key={index}
+          studentName={studentName}
+          pageNumber={index + 1}
+          totalPages={draftGoalTexts.length}
+          sessions={PREVIEW_SESSIONS}
+          goalText={goalText}
+          onGoalTextChange={value => handleDraftGoalTextChange(index, value)}
+          onGoalTextBlur={() => {}}
+        />
+      ))}
 
-      <Button
-        onClick={handleSubmit}
-        disabled={!student || !goalText.trim() || createGoalSheet.isPending}>
-        {createGoalSheet.isPending ? 'Creating...' : 'Create Goal Sheet'}
-      </Button>
+      <div className='flex justify-center'>
+        <Button
+          variant='outline'
+          size='icon'
+          onClick={handleAddDraftPage}
+          className='w-12 h-12 rounded-full border-2'
+          aria-label='Add another page'>
+          <Plus className='w-6 h-6' />
+        </Button>
+      </div>
+
+      <div className='flex justify-center'>
+        <Button onClick={handleSubmit} disabled={!canSubmit || createGoalSheet.isPending}>
+          {createGoalSheet.isPending ? 'Creating...' : 'Create Goal Sheet'}
+        </Button>
+      </div>
     </div>
   )
 }
