@@ -150,15 +150,23 @@ export interface DynamicGoalSheet {
   id: string
   school_id: string
   student_id: string
-  goal_text: string
   created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DynamicGoalSheetPage {
+  id: string
+  goal_sheet_id: string
+  page_number: number
+  goal_text: string
   created_at: string
   updated_at: string
 }
 
 export interface DynamicGoalSheetSession {
   id: string
-  goal_sheet_id: string
+  page_id: string
   session_number: number
   session_date: string | null
   sound_rating: DynamicGoalSheetRating | null
@@ -169,8 +177,12 @@ export interface DynamicGoalSheetSession {
   updated_at: string
 }
 
-export interface DynamicGoalSheetWithSessions extends DynamicGoalSheet {
+export interface DynamicGoalSheetPageWithSessions extends DynamicGoalSheetPage {
   sessions: DynamicGoalSheetSession[]
+}
+
+export interface DynamicGoalSheetWithPages extends DynamicGoalSheet {
+  pages: DynamicGoalSheetPageWithSessions[]
   student?: Pick<Student, 'id' | 'first_name' | 'last_name'>
 }
 
