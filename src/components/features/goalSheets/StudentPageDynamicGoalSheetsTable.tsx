@@ -1,0 +1,7 @@
+import { useNavigate } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useDynamicGoalSheetsByStudent } from '@/hooks/goalSheets/use-dynamic-goal-sheets'
+import DynamicGoalSheetsListContent from './DynamicGoalSheetsListContent'
