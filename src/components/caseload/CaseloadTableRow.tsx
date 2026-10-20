@@ -35,6 +35,7 @@ import {
   ServiceStatusTag,
   ConsentBadge,
   ReturningAbsentBadge,
+  GoalSheetBadge,
 } from './CaseloadBadges'
 import { getStudentGrade, getSpeechEAName, SpeechEA } from './caseloadUtils'
 import { isCurrentAcademicYear } from '@/lib/academicYear'
@@ -51,6 +52,7 @@ interface CaseloadTableRowProps {
   hasConsent: boolean
   updatingStudentId: string | null
   returningAbsentStatus?: 'absent' | 'not_yet_screened'
+  hasGoalSheet: boolean
   onResultChange: (student: Student, newResult: string) => void
   onProgramChange: (student: Student, newProgram: ProgramStatus) => void
   onStatusChange: (student: Student, newStatus: ServiceStatus) => void
@@ -72,6 +74,7 @@ const CaseloadTableRow = ({
   hasConsent,
   updatingStudentId,
   returningAbsentStatus,
+  hasGoalSheet,
   onResultChange,
   onProgramChange,
   onStatusChange,
@@ -104,6 +107,7 @@ const CaseloadTableRow = ({
           <div className='flex items-center gap-1 flex-wrap'>
             <ServiceStatusTag status={student.service_status} />
             <ReturningAbsentBadge status={returningAbsentStatus} />
+            <GoalSheetBadge hasGoalSheet={hasGoalSheet} />
           </div>
         </div>
       </TableCell>
