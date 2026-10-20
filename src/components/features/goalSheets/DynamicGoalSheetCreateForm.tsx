@@ -110,6 +110,7 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
       {draftGoalTexts.map((goalText, index) => (
         <DynamicGoalSheetPage
           key={index}
+          studentId={student?.id}
           studentName={studentName}
           pageNumber={index + 1}
           totalPages={draftGoalTexts.length}
