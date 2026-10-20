@@ -35,6 +35,7 @@ import type { DynamicGoalSheetWithPages } from '@/types/database'
 interface DynamicGoalSheetsListContentProps {
   sheets: DynamicGoalSheetWithPages[]
   isLoading: boolean
+  hideStudentColumn?: boolean
 }
 
 const getGoalSummary = (sheet: DynamicGoalSheetWithPages) => {
@@ -43,7 +44,11 @@ const getGoalSummary = (sheet: DynamicGoalSheetWithPages) => {
   return rest.length > 0 ? `${firstPage.goal_text} (+${rest.length} more)` : firstPage.goal_text
 }
 
-const DynamicGoalSheetsListContent = ({ sheets, isLoading }: DynamicGoalSheetsListContentProps) => {
+const DynamicGoalSheetsListContent = ({
+  sheets,
+  isLoading,
+  hideStudentColumn,
+}: DynamicGoalSheetsListContentProps) => {
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
   const deleteGoalSheet = useDeleteDynamicGoalSheet()
@@ -87,7 +92,7 @@ const DynamicGoalSheetsListContent = ({ sheets, isLoading }: DynamicGoalSheetsLi
       <ResponsiveTable className='w-full'>
         <TableHeader>
           <tr>
-            <TableHead>Student</TableHead>
+            {!hideStudentColumn && <TableHead>Student</TableHead>}
             <TableHead>Goal</TableHead>
             <TableHead>Pages</TableHead>
             <TableHead>Last Updated</TableHead>
@@ -112,11 +117,13 @@ const DynamicGoalSheetsListContent = ({ sheets, isLoading }: DynamicGoalSheetsLi
                   </p>
                 </div>
               }>
-              <TableCell className='max-w-0'>
-                <div className='truncate'>
-                  {sheet.student?.first_name} {sheet.student?.last_name}
-                </div>
-              </TableCell>
+              {!hideStudentColumn && (
+                <TableCell className='max-w-0'>
+                  <div className='truncate'>
+                    {sheet.student?.first_name} {sheet.student?.last_name}
+                  </div>
+                </TableCell>
+              )}
               <TableCell className='max-w-0'>
                 <div className='truncate' title={getGoalSummary(sheet)}>
                   {getGoalSummary(sheet)}
