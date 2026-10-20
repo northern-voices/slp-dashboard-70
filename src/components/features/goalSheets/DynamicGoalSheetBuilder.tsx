@@ -141,6 +141,7 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
       {sheet.pages.map(page => (
         <DynamicGoalSheetPage
           key={page.id}
+          studentId={sheet.student_id}
           studentName={studentName}
           pageNumber={page.page_number}
           totalPages={sheet.pages.length}
