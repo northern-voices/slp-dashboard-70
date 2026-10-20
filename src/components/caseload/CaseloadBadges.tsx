@@ -77,6 +77,12 @@ export const ReturningAbsentBadge = ({ status }: { status?: 'absent' | 'not_yet_
   )
 }
 
+export const GoalSheetBadge = ({ hasGoalSheet }: { hasGoalSheet: boolean }) => {
+  if (!hasGoalSheet) return null
+
+  return <Badge className='bg-indigo-100 text-indigo-800 font-medium text-[10px]'>Goal Sheet</Badge>
+}
+
 export const ServiceStatusTag = ({ status }: { status?: ServiceStatus | null }) => {
   switch (status) {
     case 'paused':
