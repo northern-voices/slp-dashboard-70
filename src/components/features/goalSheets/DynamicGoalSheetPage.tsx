@@ -1,8 +1,10 @@
 import { ReportBanner, ReportFooter } from '@/components/reports/view/shared/ReportBannerChrome'
 import DynamicGoalSheetSessionCard from './DynamicGoalSheetSessionCard'
+import StudentScreeningSheet from './StudentScreeningSheet'
 import type { DynamicGoalSheetSession } from '@/types/database'
 
 interface DynamicGoalSheetPageProps {
+  studentId?: string
   studentName: string
   pageNumber: number
   totalPages: number
@@ -13,6 +15,7 @@ interface DynamicGoalSheetPageProps {
 }
 
 const DynamicGoalSheetPage = ({
+  studentId,
   studentName,
   pageNumber,
   totalPages,
@@ -30,7 +33,10 @@ const DynamicGoalSheetPage = ({
     <ReportBanner title='Goal Sheet' />
 
     <div className='flex-1 px-10 pt-5'>
-      <p className='mb-3 font-bold text-gray-900'>STUDENT: {studentName}</p>
+      <div className='flex items-center justify-between mb-3'>
+        <p className='font-bold text-gray-900'>STUDENT: {studentName}</p>
+        <StudentScreeningSheet studentId={studentId} studentName={studentName} />
+      </div>
 
       {sessions.map((session, index) => (
         <DynamicGoalSheetSessionCard
