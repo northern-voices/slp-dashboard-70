@@ -2,7 +2,14 @@ import { FileSearch } from 'lucide-react'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import { ResultBadge } from '@/components/caseload/CaseloadBadges'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings'
 import { parseDateSafely } from '@/utils/dateUtils'
@@ -29,14 +36,20 @@ const StudentScreeningSheet = ({ studentId, studentName }: StudentScreeningSheet
 
       <SheetContent className='w-full overflow-y-auto sm:max-w-xl'>
         <SheetHeader>
-          <SheetTitle>Speech Screening - {studentName}</SheetTitle>
+          <SheetTitle className='flex items-center gap-2'>
+            <FileSearch className='w-5 h-5' />
+            Speech Screening
+          </SheetTitle>
+          <SheetDescription>{studentName}</SheetDescription>
         </SheetHeader>
 
         {!latestScreening ? (
-          <p className='mt-4 text-sm text-gray-500'>No speech screening on record.</p>
+          <div className='py-8 text-sm text-center text-gray-500'>
+            No speech screening on record.
+          </div>
         ) : (
-          <div className='mt-4 space-y-4'>
-            <div className='flex items-center justify-between'>
+          <div className='mt-2 space-y-6'>
+            <div className='flex items-center justify-between p-4 rounded-lg bg-gray-50'>
               <span className='text-sm text-gray-600'>
                 {format(parseDateSafely(latestScreening.created_at), 'MMM d, yyyy')}
               </span>
@@ -45,7 +58,7 @@ const StudentScreeningSheet = ({ studentId, studentName }: StudentScreeningSheet
 
             {!!latestScreening.error_patterns?.articulation?.soundErrors?.length && (
               <div className='space-y-2'>
-                <h4 className='text-sm font-medium text-gray-900'>Sounds in Error</h4>
+                <h4 className='font-medium text-gray-900'>Sounds in Error</h4>
                 <div className='flex flex-wrap gap-2'>
                   {latestScreening.error_patterns.articulation.soundErrors.map(
                     (soundError, index) => (
@@ -59,8 +72,8 @@ const StudentScreeningSheet = ({ studentId, studentName }: StudentScreeningSheet
             )}
 
             {latestScreening.clinical_notes && (
-              <div className='space-y-1'>
-                <h4 className='text-sm font-medium text-gray-900'>Clinical Notes</h4>
+              <div className='space-y-2'>
+                <h4 className='font-medium text-gray-900'>Clinical Notes</h4>
                 <p className='p-3 text-sm text-gray-700 rounded-md bg-gray-50'>
                   {latestScreening.clinical_notes}
                 </p>
@@ -68,8 +81,8 @@ const StudentScreeningSheet = ({ studentId, studentName }: StudentScreeningSheet
             )}
 
             {latestScreening.progress_notes && (
-              <div className='space-y-1'>
-                <h4 className='text-sm font-medium text-gray-900'>Progress Notes</h4>
+              <div className='space-y-2'>
+                <h4 className='font-medium text-gray-900'>Progress Notes</h4>
                 <p className='p-3 text-sm text-gray-700 rounded-md bg-gray-50'>
                   {latestScreening.progress_notes}
                 </p>
