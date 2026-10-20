@@ -96,6 +96,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
     availableSchoolYears,
     latestScreeningByStudent,
     consentSet,
+    goalSheetStudentIds,
     caseloadStats,
     paginatedStudents,
     totalStudents,
@@ -288,6 +289,7 @@ const CaseloadTable = ({ students, isLoading, schoolId }: CaseloadTableProps) =>
                 speechEAs={speechEAs}
                 screening={latestScreeningByStudent.get(student.id)}
                 hasConsent={consentSet.has(student.id)}
+                hasGoalSheet={goalSheetStudentIds.has(student.id)}
                 returningAbsentStatus={
                   returningAbsentByStudent.get(student.id)?.current_year_status
                 }
