@@ -93,9 +93,9 @@ const DynamicGoalSheetsListContent = ({
         <TableHeader>
           <tr>
             {!hideStudentColumn && <TableHead>Student</TableHead>}
-            <TableHead>Goal</TableHead>
-            <TableHead>Pages</TableHead>
-            <TableHead>Last Updated</TableHead>
+            <TableHead className={hideStudentColumn ? 'w-1/3' : undefined}>Goal</TableHead>
+            <TableHead className={hideStudentColumn ? 'w-1/5' : undefined}>Pages</TableHead>
+            <TableHead className={hideStudentColumn ? 'w-1/5' : undefined}>Last Updated</TableHead>
             <TableHead className='w-12'></TableHead>
           </tr>
         </TableHeader>
