@@ -538,6 +538,19 @@ Deno.serve(async (req: Request) => {
     // Process qualified students
     for (const screening of qualifiedStudents) {
       try {
+        const dynamicGoalSheet = await getLatestDynamicGoalSheet(
+          supabaseUrl,
+          supabaseKey,
+          screening.student_id
+        )
+        if (dynamicGoalSheet) {
+          const studentName = `${screening.students.first_name} ${screening.students.last_name}`
+          documentObjects.push(
+            createDynamicGoalSheetDocumentObject(studentName, 'Qualified', dynamicGoalSheet)
+          )
+          continue
+        }
+
         const studentInfo: StudentInfo = {
           first_name: screening.students.first_name,
           last_name: screening.students.last_name,
@@ -580,6 +593,19 @@ Deno.serve(async (req: Request) => {
     // Process sub students
     for (const screening of subStudents) {
       try {
+        const dynamicGoalSheet = await getLatestDynamicGoalSheet(
+          supabaseUrl,
+          supabaseKey,
+          screening.student_id
+        )
+        if (dynamicGoalSheet) {
+          const studentName = `${screening.students.first_name} ${screening.students.last_name}`
+          documentObjects.push(
+            createDynamicGoalSheetDocumentObject(studentName, 'Sub', dynamicGoalSheet)
+          )
+          continue
+        }
+
         const studentInfo: StudentInfo = {
           first_name: screening.students.first_name,
           last_name: screening.students.last_name,
@@ -924,7 +950,10 @@ function gradeOrderIndex(grade: string): number {
 
 // Same ordering the /caseload page uses when sorted by program status: within a program status
 // group, non-paused students come first, then paused, each sub-group ordered by grade.
-function compareCaseloadRosterEntries(a: { grade: string; service_status?: string }, b: { grade: string; service_status?: string }): number {
+function compareCaseloadRosterEntries(
+  a: { grade: string; service_status?: string },
+  b: { grade: string; service_status?: string }
+): number {
   const aPaused = a.service_status === 'paused'
   const bPaused = b.service_status === 'paused'
   if (aPaused !== bPaused) return aPaused ? 1 : -1
@@ -1524,6 +1553,67 @@ function createIndividualGoalSheetObject(
       secondary_table_errors: [],
       level_1_table_errors: toTableErrors(level === 1 ? contextErrors : otherErrors),
       level_2_table_errors: toTableErrors(level === 2 ? contextErrors : otherErrors),
+    },
+  }
+}
+
+// Fetches a student's most recently updated Dynamic Goal Sheet, if any, with its
+// pages and sessions nested - mirrors dynamicGoalSheetsApi.getGoalSheetsByStudent's
+// select shape (src/api/dynamicGoalSheets.ts), just via a raw REST call since this
+// function has no shared Supabase client module.
+async function getLatestDynamicGoalSheet(
+  supabaseUrl: string,
+  supabaseKey: string,
+  studentId: string
+) {
+  const url = `${supabaseUrl}/rest/v1/dynamic_goal_sheets?student_id=eq.${studentId}&select=*,pages:dynamic_goal_sheet_pages(*,sessions:dynamic_goal_sheet_sessions(*))&order=updated_at.desc&limit=1`
+
+  const response = await fetch(url, {
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch dynamic goal sheets: ${response.status}`)
+  }
+
+  const sheets = await response.json()
+  return sheets[0] ?? null
+}
+
+// Builds the bulk-report document for a student whose Dynamic Goal Sheet takes
+// priority over their algorithmic one. 'Dynamic Goal Sheet' must stay in
+// template.name - BulkDocumentView/BulkDocumentPdf dispatch on it, and it must
+// contain the substring 'Goal Sheet' to keep the individualSheets count filter
+// below working the same way it does for the algorithmic template name.
+function createDynamicGoalSheetDocumentObject(
+  studentName: string,
+  directory: string,
+  goalSheet: any
+) {
+  return {
+    metadata: {
+      file_name: `${studentName.replace(/\s+/g, '_')}-DGS`,
+      directory,
+    },
+    template: {
+      name: 'Dynamic Goal Sheet',
+      version: 1,
+    },
+    context: {
+      student_name: studentName,
+      pages: [...goalSheet.pages]
+        .sort((a: any, b: any) => a.page_number - b.page_number)
+        .map((page: any) => ({
+          page_number: page.page_number,
+          goal_text: page.goal_text,
+          sessions: [...page.sessions].sort(
+            (a: any, b: any) => a.session_number - b.session_number
+          ),
+        })),
     },
   }
 }
