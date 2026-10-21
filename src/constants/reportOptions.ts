@@ -1,4 +1,4 @@
-import { BookOpen, Target, TrendingUp, List } from 'lucide-react'
+import { BookOpen, Target, TrendingUp, List, PenLine } from 'lucide-react'
 
 export const SPEECH_REPORT_OPTIONS = [
   {
@@ -22,6 +22,12 @@ export const SPEECH_GOAL_SHEET_OPTIONS = [
     label: 'Goal Sheet',
     description: 'Individualized goal tracking sheet with specific objectives and progress metrics',
     icon: Target,
+  },
+  {
+    value: 'dynamic-goal-sheet',
+    label: 'Dynamic Goal Sheet',
+    description: "Send one of this student's free-form goal sheets",
+    icon: PenLine,
   },
   // {
   //   value: 'progress-goal-sheet',
