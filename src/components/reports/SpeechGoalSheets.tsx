@@ -193,7 +193,7 @@ const SpeechGoalSheets = () => {
         )}
 
         {/* Speech Screenings Table */}
-        {selectedStudent && (
+        {selectedStudent && selectedReports.includes('initial-goal-sheet') && (
           <div className='space-y-3'>
             <h3 className='text-xl font-medium text-gray-700'>Screenings</h3>
             <SpeechScreeningsTable
