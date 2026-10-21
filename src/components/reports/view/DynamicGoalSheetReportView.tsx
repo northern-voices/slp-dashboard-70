@@ -24,3 +24,15 @@ const Checkbox = ({ label, checked }: { label: string; checked?: boolean }) => (
     <span className='text-[11px] leading-tight'>{label}</span>
   </div>
 )
+
+const SessionCard = ({
+  session,
+  index,
+  goalText,
+}: {
+  session: DynamicGoalSheetSession
+  index: number
+  goalText: string
+}) => {
+  const isTan = (index = 1)
+}
