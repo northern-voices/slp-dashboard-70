@@ -123,7 +123,7 @@ const DynamicGoalSheetReportView = ({ data }: { data: DynamicGoalSheetReportData
       {context.pages.map(page => (
         <section
           key={page.page_number}
-          className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
+          className='bg-white shadow-sm w-full flex flex-col overflow-hidden break-after-page print:shadow-none'>
           <ReportBanner title='Goal Sheet' />
 
           <div className='flex-1 px-10 pt-5'>
