@@ -15,3 +15,12 @@ interface DynamicGoalSheetReportData {
     pages: DynamicGoalSheetReportData[]
   }
 }
+
+const Checkbox = ({ label, checked }: { label: string; checked?: boolean }) => (
+  <div className='flex items-start gap-1.6 mb-1'>
+    <div
+      className={`w-2.5 h-2.5 border border-gray-700 shrink-0 mt-0.5 ${checked ? 'bg-gray-700' : ''}`}
+    />
+    <span className='text-[11px] leading-tight'>{label}</span>
+  </div>
+)
