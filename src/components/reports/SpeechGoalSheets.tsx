@@ -30,8 +30,9 @@ import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 import { parseDateSafely } from '@/utils/dateUtils'
+import { useDynamicGoalSheetsByStudent } from '@/hooks/goalSheets/use-dynamic-goal-sheets'
 
-type GoalSheetLevel = 1 | 2 | 'both' | 'custom'
+type GoalSheetLevel = 1 | 2 | 'both'
 
 const SpeechGoalSheets = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
@@ -39,6 +40,7 @@ const SpeechGoalSheets = () => {
     SPEECH_GOAL_SHEET_OPTIONS[0].value,
   ])
   const [selectedScreening, setSelectedScreening] = useState<Screening | null>(null)
+  const [selectedDynamicGoalSheetId, setSelectedDynamicGoalSheetId] = useState<string | null>(null)
   const [selectedLevel, setSelectedLevel] = useState<GoalSheetLevel | null>(null)
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
   const [isEmailLoading, setIsEmailLoading] = useState(false)
@@ -55,6 +57,7 @@ const SpeechGoalSheets = () => {
   const navigate = useNavigate()
   const { currentSchool } = useOrganization()
   const { user } = useAuth()
+  const { data: dynamicGoalSheets = [] } = useDynamicGoalSheetsByStudent(selectedStudent?.id)
 
   useEffect(() => {
     if (user?.email) setRecipientEmails([user.email])
@@ -64,6 +67,10 @@ const SpeechGoalSheets = () => {
     if (defaultReportPassword) setPassword(defaultReportPassword)
   }, [defaultReportPassword])
 
+  useEffect(() => {
+    setSelectedDynamicGoalSheetId(dynamicGoalSheets[0]?.id ?? null)
+  }, [dynamicGoalSheets])
+
   const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleToggleReport = (value: string) => {
@@ -72,23 +79,37 @@ const SpeechGoalSheets = () => {
     )
   }
 
+  const getGoalSummary = (sheet: { pages: { goal_text: string }[] }) => {
+    const [firstPage, ...rest] = sheet.pages
+    if (!firstPage) return ''
+    return rest.length > 0 ? `${firstPage.goal_text} (+${rest.length} more)` : firstPage.goal_text
+  }
+
   const handleSendEmail = async () => {
+    const needsInitialGoalSheet = selectedReports.includes('initial-goal-sheet')
+    const needsDynamicGoalSheet = selectedReports.includes('dynamic-goal-sheet')
+
     if (
-      !selectedScreening ||
-      selectedLevel === null ||
-      selectedLevel === 'custom' ||
       selectedReports.length === 0 ||
-      recipientEmails.length === 0
+      recipientEmails.length === 0 ||
+      (needsInitialGoalSheet && (!selectedScreening || selectedLevel === null)) ||
+      (needsDynamicGoalSheet && !selectedDynamicGoalSheetId)
     )
       return
 
     setIsEmailLoading(true)
     try {
       for (const reportType of selectedReports) {
-        if (reportType === 'initial-goal-sheet') {
+        if (reportType === 'initial-goal-sheet' && selectedScreening && selectedLevel !== null) {
           await edgeFunctionsApi.studentGoalSheet(
             selectedScreening.id,
             selectedLevel,
+            recipientEmails,
+            password
+          )
+        } else if (reportType === 'dynamic-goal-sheet' && selectedDynamicGoalSheetId) {
+          await edgeFunctionsApi.studentDynamicGoalSheet(
+            selectedDynamicGoalSheetId,
             recipientEmails,
             password
           )
@@ -116,6 +137,7 @@ const SpeechGoalSheets = () => {
     setSelectedStudent(student)
     setSelectedScreening(null)
     setSelectedLevel(null)
+    setSelectedDynamicGoalSheetId(null)
   }
 
   const handleGoBackToReports = () => {
@@ -128,6 +150,7 @@ const SpeechGoalSheets = () => {
     setSelectedStudent(null)
     setSelectedScreening(null)
     setSelectedLevel(null)
+    setSelectedDynamicGoalSheetId(null)
     setSelectedReports([SPEECH_GOAL_SHEET_OPTIONS[0].value])
     setRecipientEmails(user?.email ? [user.email] : [])
     setPassword(defaultReportPassword)
@@ -186,15 +209,13 @@ const SpeechGoalSheets = () => {
         )}
 
         {/* Level Selector */}
-        {selectedStudent && selectedScreening && (
+        {selectedStudent && selectedScreening && selectedReports.includes('initial-goal-sheet') && (
           <div className='space-y-2'>
             <h3 className='text-xl font-medium text-gray-700'>Select Level</h3>
             <RadioGroup
               value={selectedLevel === null ? '' : String(selectedLevel)}
               onValueChange={value =>
-                setSelectedLevel(
-                  value === 'custom' || value === 'both' ? value : (Number(value) as 1 | 2)
-                )
+                setSelectedLevel(value === 'both' ? value : (Number(value) as 1 | 2))
               }
               className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4'>
               <label
@@ -226,15 +247,56 @@ const SpeechGoalSheets = () => {
                   <p className='text-xs text-gray-500'>Send Level 1 & 2 together</p>
                 </div>
               </label>
-
-              <div className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg opacity-50 cursor-not-allowed'>
-                <RadioGroupItem value='custom' id='level-custom' disabled />
-                <div>
-                  <p className='font-medium text-gray-900'>Create Your Own</p>
-                  <p className='text-xs text-gray-500'>Coming soon</p>
-                </div>
-              </div>
             </RadioGroup>
+          </div>
+        )}
+        {/* Dynamic Goal Sheet Picker */}
+        {selectedStudent && selectedReports.includes('dynamic-goal-sheet') && (
+          <div className='space-y-2'>
+            <h3 className='text-xl font-medium text-gray-700'>Select Dynamic Goal Sheet</h3>
+
+            {dynamicGoalSheets.length === 0 ? (
+              <div className='py-4 text-sm text-center text-gray-500'>
+                No dynamic goal sheets found for this student.
+              </div>
+            ) : dynamicGoalSheets.length === 1 ? (
+              <div className='p-4 border border-blue-200 rounded-lg bg-blue-50'>
+                <p className='text-sm font-medium text-blue-900'>
+                  {getGoalSummary(dynamicGoalSheets[0])}
+                </p>
+                <p className='mt-1 text-xs text-blue-700'>
+                  Last updated{' '}
+                  {format(parseDateSafely(dynamicGoalSheets[0].updated_at), 'MMM d, yyyy')}
+                </p>
+              </div>
+            ) : (
+              <RadioGroup
+                value={selectedDynamicGoalSheetId ?? ''}
+                onValueChange={setSelectedDynamicGoalSheetId}
+                className='space-y-2'>
+                {dynamicGoalSheets.map((sheet, index) => (
+                  <label
+                    key={sheet.id}
+                    htmlFor={`dynamic-goal-sheet-${sheet.id}`}
+                    className='flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 has-[[data-state=checked]]:border-blue-500 has-[[data-state=checked]]:bg-blue-50'>
+                    <RadioGroupItem value={sheet.id} id={`dynamic-goal-sheet-${sheet.id}`} />
+                    <div>
+                      <p className='font-medium text-gray-900'>
+                        {getGoalSummary(sheet)}
+                        {index === 0 && (
+                          <span className='ml-2 text-xs font-normal text-blue-600'>
+                            (Most recent)
+                          </span>
+                        )}
+                      </p>
+                      <p className='text-xs text-gray-500'>
+                        Last updated {format(parseDateSafely(sheet.updated_at), 'MMM d, yyyy')}
+                      </p>
+                    </div>
+                  </label>
+                ))}
+              </RadioGroup>
+            )}
           </div>
         )}
       </div>
@@ -262,13 +324,13 @@ const SpeechGoalSheets = () => {
               size='sm'
               className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
               disabled={
-                !selectedScreening ||
-                selectedLevel === null ||
-                selectedLevel === 'custom' ||
                 selectedReports.length === 0 ||
                 recipientEmails.length === 0 ||
                 !password.trim() ||
-                isEmailLoading
+                isEmailLoading ||
+                (selectedReports.includes('initial-goal-sheet') &&
+                  (!selectedScreening || selectedLevel === null)) ||
+                (selectedReports.includes('dynamic-goal-sheet') && !selectedDynamicGoalSheetId)
               }>
               <Send className='w-4 h-4 mr-2' />
               {isEmailLoading ? 'Sending...' : 'Send Reports'}
