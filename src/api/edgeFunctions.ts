@@ -1,3 +1,4 @@
+import StudentPageDynamicGoalSheetsTable from '@/components/features/goalSheets/StudentPageDynamicGoalSheetsTable'
 import { supabase } from '@/lib/supabase'
 import { ServiceStatus, ProgramStatus } from '@/types/database'
 
@@ -451,6 +452,35 @@ export const edgeFunctionsApi = {
       return data
     } catch (error) {
       console.error('Failed to send speech screenings report:', error)
+      throw error
+    }
+  },
+
+  async studentDynamicGoalSheet(
+    dynamicGoalSheetId: string,
+    overrideEmails: string[],
+    password: string
+  ) {
+    try {
+      const generated_by = await this._getGeneratedBy()
+
+      const { data, error } = await supabase.functions.invoke('student-dynamic-goal-sheet', {
+        body: {
+          dynamic_goal_sheet_id: dynamicGoalSheetId,
+          override_emails: overrideEmails,
+          generated_by,
+          password,
+        },
+      })
+
+      if (error) {
+        console.error('Error:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Failed to generate student dynamic goal sheet:', error)
       throw error
     }
   },
