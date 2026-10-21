@@ -2,6 +2,7 @@ import { Document, Page, Text } from '@react-pdf/renderer'
 import StudentSpeechReportPdf from './StudentSpeechReportPdf'
 import HearingScreenReportPdf from './HearingScreenReportPdf'
 import SpeechGoalSheetPdf from './SpeechGoalSheetPdf'
+import DynamicGoalSheetReportPdf from './DynamicGoalSheetReportPdf'
 import SpeechProgressReportPdf from './SpeechProgressReportPdf'
 import SchoolSpeechSummaryPdf from './SchoolSpeechSummaryPdf'
 import SchoolHearingSummaryPdf from './SchoolHearingSummaryPdf'
@@ -43,6 +44,9 @@ const BulkDocumentPdf = ({ data }: { data: BulkDocument }) => {
     case 'Goal Sheet Primary Secondary':
     case 'Goal Sheet Primary Only v2':
       return <SpeechGoalSheetPdf data={data as never} />
+
+    case 'Dynamic Goal Sheet':
+      return <DynamicGoalSheetReportPdf data={data as never} />
 
     case 'Student Progress Report':
       return <SpeechProgressReportPdf data={data as never} />
