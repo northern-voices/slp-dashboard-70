@@ -12,12 +12,12 @@ interface DynamicGoalSheetReportPage {
 interface DynamicGoalSheetReportData {
   context: {
     student_name: string
-    pages: DynamicGoalSheetReportData[]
+    pages: DynamicGoalSheetReportPage[]
   }
 }
 
 const Checkbox = ({ label, checked }: { label: string; checked?: boolean }) => (
-  <div className='flex items-start gap-1.6 mb-1'>
+  <div className='flex items-start gap-1.5 mb-1'>
     <div
       className={`w-2.5 h-2.5 border border-gray-700 shrink-0 mt-0.5 ${checked ? 'bg-gray-700' : ''}`}
     />
@@ -34,7 +34,7 @@ const SessionCard = ({
   index: number
   goalText: string
 }) => {
-  const isTan = (index = 1)
+  const isTan = index === 1
 
   return (
     <div className='border border-[#b7b7b7] mb-3'>
@@ -108,3 +108,61 @@ const SessionCard = ({
     </div>
   )
 }
+
+const DynamicGoalSheetReportView = ({ data }: { data: DynamicGoalSheetReportData }) => {
+  const { context } = data
+  const totalPages = context.pages.length
+
+  return (
+    <div className="space-y-6 print:space-y-0 font-['Nunito']">
+      <link
+        rel='stylesheet'
+        href='https://fonts.googleapis.com/css2?family=Gotu&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;700&display=swap'
+      />
+
+      {context.pages.map(page => (
+        <section
+          key={page.page_number}
+          className='bg-white shadow-sm w-full aspect-[8.5/11] flex flex-col overflow-hidden break-after-page print:shadow-none'>
+          <ReportBanner title='Goal Sheet' />
+
+          <div className='flex-1 px-10 pt-5'>
+            <p className='mb-3 font-bold text-gray-900'>STUDENT: {context.student_name}</p>
+
+            {page.sessions.map((session, index) => (
+              <SessionCard
+                key={session.id}
+                session={session}
+                index={index}
+                goalText={page.goal_text}
+              />
+            ))}
+
+            <div className='flex mb-6'>
+              <div className='flex items-center justify-center flex-1 py-2 border border-[#b7b7b7] bg-[#e9e2d9] mr-px'>
+                <div className='w-2 h-2 mr-1.5 rounded-full border border-gray-700' />
+                <span className="font-['Montserrat'] text-xs font-bold tracking-wide text-gray-700">
+                  MASTERED
+                </span>
+              </div>
+              <div className='flex items-center justify-center flex-1 py-2 border border-[#b7b7b7] bg-[#e9e2d9]'>
+                <div className='w-2 h-2 mr-1.5 rounded-full border border-gray-700' />
+                <span className="font-['Montserrat'] text-xs font-bold tracking-wide text-gray-700">
+                  NEEDS MORE PRACTICE
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <ReportFooter
+            page={page.page_number}
+            of={totalPages}
+            brand='NORTHERN VOICES SPEECH SERVICES'
+          />
+        </section>
+      ))}
+    </div>
+  )
+}
+
+export default DynamicGoalSheetReportView
