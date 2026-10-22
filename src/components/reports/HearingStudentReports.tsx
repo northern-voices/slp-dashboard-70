@@ -27,6 +27,7 @@ import ReportSendModal from '@/components/reports/shared/ReportSendModal'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
+import { remove } from 'jszip'
 
 const HEARING_REPORT_OPTIONS = [
   {
@@ -66,7 +67,11 @@ const HearingStudentReports = () => {
     if (defaultReportPassword) setPassword(defaultReportPassword)
   }, [defaultReportPassword])
 
-  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
+  const {
+    emails: emailHistory,
+    removableEmails,
+    removeEmail,
+  } = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleToggleReport = (value: string) => {
     setSelectedReports(prev =>
@@ -179,6 +184,8 @@ const HearingStudentReports = () => {
             recipientEmails={recipientEmails}
             onChange={setRecipientEmails}
             emailHistory={emailHistory}
+            removableEmails={removableEmails}
+            onDeleteSuggestion={removeEmail}
           />
 
           <ReportPasswordInput password={password} onChange={setPassword} />
