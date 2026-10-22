@@ -16,7 +16,7 @@ import ScreeningDetailsModal from '@/components/students/screening-history/Scree
 import { Badge } from '@/components/ui/badge'
 import { format, subMonths } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
-import { ProgramBadge } from '@/components/caseload/CaseloadBadges'
+import { ProgramBadge, ResultBadge } from '@/components/caseload/CaseloadBadges'
 
 const SpeechScreeningContent = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
@@ -98,11 +98,7 @@ const SpeechScreeningContent = () => {
                 />
 
                 <span className='text-xs text-amber-600 font-medium'>Result:</span>
-                <Badge className='bg-amber-100 text-amber-800 text-xs'>
-                  {latestScreening.result
-                    ?.replace(/_/g, ' ')
-                    .replace(/\b\w/g, c => c.toUpperCase()) || '-'}
-                </Badge>
+                <ResultBadge result={latestScreening.result} />
               </>
             ) : (
               <span className='text-xs text-amber-700'>No previous screenings found.</span>
