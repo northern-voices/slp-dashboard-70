@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Trash2, Mail, X, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -144,7 +144,7 @@ const MonthlyMeetingBulkActions = ({
 
   return (
     <>
-      <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
+      <div className='p-4 border border-blue-200 rounded-lg bg-blue-50'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2'>
             <span className='text-sm font-medium text-blue-900'>
@@ -228,7 +228,7 @@ const MonthlyMeetingBulkActions = ({
               Send all selected meeting reports to up to 5 email addresses.
             </DialogDescription>
           </DialogHeader>
-          <div className='space-y-4 py-4'>
+          <div className='py-4 space-y-4'>
             <MultiEmailInput
               recipientEmails={bulkEmails}
               onChange={setBulkEmails}
