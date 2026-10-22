@@ -85,7 +85,11 @@ const BulkSendReportsModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, defaultReportPassword])
 
-  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
+  const {
+    emails: emailHistory,
+    removableEmails,
+    removeEmail,
+  } = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleSendReports = async () => {
     if (recipientEmails.length === 0 || (!isHearingOnly && selectedReports.length === 0)) return
@@ -361,6 +365,8 @@ const BulkSendReportsModal = ({
             recipientEmails={recipientEmails}
             onChange={setRecipientEmails}
             emailHistory={emailHistory}
+            removableEmails={removableEmails}
+            onDeleteSuggestion={removeEmail}
           />
 
           <ReportPasswordInput password={password} onChange={setPassword} />
