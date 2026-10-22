@@ -7,13 +7,21 @@ interface MultiEmailInputProps {
   recipientEmails: string[]
   onChange: (emails: string[]) => void
   emailHistory: string[]
+  removableEmails?: Set<string>
+  onDeleteSuggestion?: (email: string) => void
 }
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
 const DROPDOWN_MAX_HEIGHT = 160
 
-const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmailInputProps) => {
+const MultiEmailInput = ({
+  recipientEmails,
+  onChange,
+  emailHistory,
+  removableEmails,
+  onDeleteSuggestion,
+}: MultiEmailInputProps) => {
   const [emailInput, setEmailInput] = useState('')
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
@@ -82,6 +90,11 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
       history =>
         history.toLowerCase().includes(value.toLowerCase()) && !recipientEmails.includes(history)
     )
+
+  const handleDeleteSuggestion = (email: string) => {
+    setSuggestions(prev => prev.filter(e => e !== email))
+    onDeleteSuggestion?.(email)
+  }
 
   return (
     <div className='space-y-1'>
@@ -169,12 +182,28 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
                   {suggestions.map((email, index) => (
                     <li
                       key={email}
-                      onMouseDown={e => {
-                        e.preventDefault()
-                        addEmail(email)
-                      }}
-                      className={`px-3 py-2 text-sm cursor-pointer truncate ${index === highlightedIndex ? 'bg-gray-100' : 'hover:bg-gray-100'}`}>
-                      {email}
+                      className={`flex items-center justify-between gap-2 px-3 py-2 text-sm ${index === highlightedIndex ? 'bg-gray-100' : 'hover:bg-gray-100'}`}>
+                      <span
+                        onMouseDown={e => {
+                          e.preventDefault()
+                          addEmail(email)
+                        }}
+                        className='flex-1 cursor-pointer truncate'>
+                        {email}
+                      </span>
+                      {removableEmails?.has(email) && (
+                        <button
+                          type='button'
+                          onMouseDown={e => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleDeleteSuggestion(email)
+                          }}
+                          className='shrink-0 rounded-full p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-700'
+                          aria-label={`Remove ${email} from suggestions`}>
+                          <X className='w-3 h-3' />
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>
