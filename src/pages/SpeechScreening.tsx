@@ -16,6 +16,7 @@ import ScreeningDetailsModal from '@/components/students/screening-history/Scree
 import { Badge } from '@/components/ui/badge'
 import { format, subMonths } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
+import { ProgramBadge } from '@/components/caseload/CaseloadBadges'
 
 const SpeechScreeningContent = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
@@ -91,21 +92,10 @@ const SpeechScreeningContent = () => {
                 </span>
 
                 <span className='text-xs text-amber-600 font-medium'>Status:</span>
-                <Badge
-                  className={`text-xs ${
-                    programStatus === 'qualified'
-                      ? 'bg-green-100 text-green-800'
-                      : programStatus === 'sub'
-                        ? 'bg-blue-100 text-blue-800'
-                        : programStatus === 'no_consent'
-                          ? 'bg-gray-100 text-gray-800'
-                          : 'bg-amber-100 text-amber-800'
-                  }`}>
-                  {programStatus === 'no_consent'
-                    ? 'No Consent'
-                    : programStatus?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) ||
-                      '-'}
-                </Badge>
+                <ProgramBadge
+                  status={programStatus}
+                  graduatedDate={latestScreening.error_patterns?.screening_metadata?.graduated_date}
+                />
 
                 <span className='text-xs text-amber-600 font-medium'>Result:</span>
                 <Badge className='bg-amber-100 text-amber-800 text-xs'>
