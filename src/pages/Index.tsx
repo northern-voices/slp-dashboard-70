@@ -225,6 +225,7 @@ const DashboardContent = () => {
     name: string
     roles: string[]
     email: string
+    phone: string
   }) => {
     if (!currentSchool) {
       console.error('No school selected')
@@ -243,6 +244,7 @@ const DashboardContent = () => {
           last_name: lastName,
           roles: member.roles,
           email: member.email,
+          phone: member.phone,
         })
         .eq('id', member.id)
 

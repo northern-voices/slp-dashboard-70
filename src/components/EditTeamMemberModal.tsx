@@ -86,7 +86,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className='py-4 space-y-6'>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className='py-4 space-y-6'>
           {/* Name Field */}
           <div className='space-y-2'>
             <Label htmlFor='name' className='text-sm font-medium text-gray-700'>
@@ -98,6 +98,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
               {...register('name', { required: true })}
               className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
             />
+            {errors.name && <p className='text-xs text-red-500'>Full name is required</p>}
           </div>
 
           {/* Email Field */}
@@ -112,6 +113,7 @@ const EditTeamMemberModal: React.FC<EditTeamMemberModalProps> = ({
               {...register('email', { required: true })}
               className='h-10 border-gray-200 rounded-lg focus:border-brand focus:ring-brand'
             />
+            {errors.email && <p className='text-xs text-red-500'>Email address is required</p>}
           </div>
 
           {/* Phone Field */}
