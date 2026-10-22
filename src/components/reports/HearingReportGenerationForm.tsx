@@ -59,7 +59,11 @@ const HearingReportGenerationForm = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
+  const {
+    emails: emailHistory,
+    removableEmails,
+    removeEmail,
+  } = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const academicYears = getAcademicYearOptions()
   const currentAcademicYear = academicYears[academicYears.length - 1]
@@ -344,6 +348,8 @@ const HearingReportGenerationForm = () => {
                         recipientEmails={field.value}
                         onChange={field.onChange}
                         emailHistory={emailHistory}
+                        removableEmails={removableEmails}
+                        onDeleteSuggestion={removeEmail}
                       />
                     </FormControl>
                     <FormMessage />
