@@ -53,7 +53,11 @@ const MonthlyMeetingBulkActions = ({
 
   const deleteMonthlyMeeting = useDeleteMonthlyMeeting()
 
-  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
+  const {
+    emails: emailHistory,
+    removableEmails,
+    removeEmail,
+  } = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleBulkDelete = async () => {
     setIsDeleting(true)
@@ -229,6 +233,8 @@ const MonthlyMeetingBulkActions = ({
               recipientEmails={bulkEmails}
               onChange={setBulkEmails}
               emailHistory={emailHistory}
+              removableEmails={removableEmails}
+              onDeleteSuggestion={removeEmail}
             />
           </div>
           <DialogFooter>
