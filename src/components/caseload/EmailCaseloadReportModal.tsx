@@ -45,11 +45,16 @@ const EmailCaseloadReportModal = ({
   const [recipientEmails, setRecipientEmails] = useState<string[]>([])
   const [password, setPassword] = useState('')
   const [isSending, setIsSending] = useState(false)
+
   const { toast } = useToast()
 
   const { user } = useAuth()
   const defaultReportPassword = useDefaultReportPassword()
-  const emailHistory = useEmailSuggestions(user?.id, schoolId)
+  const {
+    emails: emailHistory,
+    removableEmails,
+    removeEmail,
+  } = useEmailSuggestions(user?.id, schoolId)
 
   useEffect(() => {
     if (isOpen && !password) {
@@ -113,6 +118,8 @@ const EmailCaseloadReportModal = ({
             recipientEmails={recipientEmails}
             onChange={setRecipientEmails}
             emailHistory={emailHistory}
+            removableEmails={removableEmails}
+            onDeleteSuggestion={removeEmail}
           />
 
           <ReportPasswordInput password={password} onChange={setPassword} />
