@@ -18,17 +18,46 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const [openUpward, setOpenUpward] = useState(false)
+  const [canScrollMore, setCanScrollMore] = useState(false)
+  const [scrollThumb, setScrollThumb] = useState<{ heightPct: number; topPct: number } | null>(null)
 
+  const listRef = useRef<HTMLUListElement>(null)
   const inputWrapperRef = useRef<HTMLDivElement>(null)
 
+  const updateScrollHint = () => {
+    const el = listRef.current
+    if (!el) {
+      setCanScrollMore(false)
+      setScrollThumb(null)
+      return
+    }
+
+    const { scrollHeight, scrollTop, clientHeight } = el
+    setCanScrollMore(scrollHeight - scrollTop - clientHeight > 1)
+
+    if (scrollHeight <= clientHeight) {
+      setScrollThumb(null)
+      return
+    }
+
+    setScrollThumb({
+      heightPct: (clientHeight / scrollHeight) * 100,
+      topPct: (scrollTop / scrollHeight) * 100,
+    })
+  }
+
   useLayoutEffect(() => {
-    if (suggestions.length === 0 || !inputWrapperRef.current) return
+    if (suggestions.length === 0 || !inputWrapperRef.current) {
+      setCanScrollMore(false)
+      return
+    }
 
     const rect = inputWrapperRef.current.getBoundingClientRect()
     const spaceBelow = window.innerHeight - rect.bottom
     const spaceAbove = rect.top
 
     setOpenUpward(spaceBelow < DROPDOWN_MAX_HEIGHT && spaceAbove > spaceBelow)
+    updateScrollHint()
   }, [suggestions])
 
   const addEmail = (email: string) => {
@@ -131,20 +160,36 @@ const MultiEmailInput = ({ recipientEmails, onChange, emailHistory }: MultiEmail
             />
 
             {suggestions.length > 0 && (
-              <ul
-                className={`absolute z-10 left-0 right-0 bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto ${openUpward ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
-                {suggestions.map((email, index) => (
-                  <li
-                    key={email}
-                    onMouseDown={e => {
-                      e.preventDefault()
-                      addEmail(email)
-                    }}
-                    className={`px-3 py-2 text-sm cursor-pointer truncate ${index === highlightedIndex ? 'bg-gray-100' : 'hover:bg-gray-100'}`}>
-                    {email}
-                  </li>
-                ))}
-              </ul>
+              <div
+                className={`absolute z-10 left-0 right-0 ${openUpward ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
+                <ul
+                  ref={listRef}
+                  onScroll={updateScrollHint}
+                  className='suggestions-scrollbar bg-white border border-gray-200 rounded-md shadow-md max-h-40 overflow-y-auto'>
+                  {suggestions.map((email, index) => (
+                    <li
+                      key={email}
+                      onMouseDown={e => {
+                        e.preventDefault()
+                        addEmail(email)
+                      }}
+                      className={`px-3 py-2 text-sm cursor-pointer truncate ${index === highlightedIndex ? 'bg-gray-100' : 'hover:bg-gray-100'}`}>
+                      {email}
+                    </li>
+                  ))}
+                </ul>
+                {canScrollMore && (
+                  <div className='pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white to-transparent rounded-b-md' />
+                )}
+                {scrollThumb && (
+                  <div className='pointer-events-none absolute right-0.5 top-1 bottom-1 w-2 rounded-full bg-gray-100'>
+                    <div
+                      className='absolute inset-x-0 rounded-full bg-gray-300'
+                      style={{ height: `${scrollThumb.heightPct}%`, top: `${scrollThumb.topPct}%` }}
+                    />
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
