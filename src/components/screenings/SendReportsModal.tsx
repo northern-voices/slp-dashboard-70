@@ -51,7 +51,11 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
   const { currentSchool } = useOrganization()
   const defaultReportPassword = useDefaultReportPassword()
 
-  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
+  const {
+    emails: emailHistory,
+    removableEmails,
+    removeEmail,
+  } = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const { data: studentScreenings } = useSpeechScreeningsByStudent(screening?.student_id)
   const isAbsentScreening = (s: Screening) =>
@@ -358,6 +362,8 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
               recipientEmails={recipientEmails}
               onChange={setRecipientEmails}
               emailHistory={emailHistory}
+              removableEmails={removableEmails}
+              onDeleteSuggestion={removeEmail}
             />
 
             <ReportPasswordInput password={password} onChange={setPassword} />
