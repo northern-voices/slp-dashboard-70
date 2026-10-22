@@ -537,3 +537,12 @@ body {
 .read-the-docs {
   color: #888;
 }
+
+/* Native scrollbar hidden — replaced by a custom-rendered thumb in MultiEmailInput */
+.suggestions-scrollbar {
+  scrollbar-width: none;
+}
+
+.suggestions-scrollbar::-webkit-scrollbar {
+  display: none;
+}
