@@ -24,3 +24,13 @@ export const upsertEmailHistory = async (userId: string, emails: string[]): Prom
 
   if (error) throw error
 }
+
+export const deleteEmailHistory = async (userId: string, email: string): Promise<void> => {
+  const { error } = await supabase
+    .from('email_recipient_history')
+    .delete()
+    .eq('user_id', userId)
+    .eq('email', email)
+
+  if (error) throw error
+}
