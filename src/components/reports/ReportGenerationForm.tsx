@@ -58,7 +58,11 @@ const ReportGenerationForm = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
+  const {
+    emails: emailHistory,
+    removableEmails,
+    removeEmail,
+  } = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const academicYears = getAcademicYearOptions()
   const currentAcademicYear = academicYears[academicYears.length - 1]
@@ -462,6 +466,8 @@ const ReportGenerationForm = () => {
                         recipientEmails={field.value}
                         onChange={field.onChange}
                         emailHistory={emailHistory}
+                        removableEmails={removableEmails}
+                        onDeleteSuggestion={removeEmail}
                       />
                     </FormControl>
                     <FormMessage />
