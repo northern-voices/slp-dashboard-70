@@ -71,7 +71,11 @@ const SpeechGoalSheets = () => {
     setSelectedDynamicGoalSheetId(dynamicGoalSheets[0]?.id ?? null)
   }, [dynamicGoalSheets])
 
-  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
+  const {
+    emails: emailHistory,
+    removableEmails,
+    removeEmail,
+  } = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleToggleReport = (value: string) => {
     setSelectedReports(prev =>
@@ -313,6 +317,8 @@ const SpeechGoalSheets = () => {
             recipientEmails={recipientEmails}
             onChange={setRecipientEmails}
             emailHistory={emailHistory}
+            removableEmails={removableEmails}
+            onDeleteSuggestion={removeEmail}
           />
 
           <ReportPasswordInput password={password} onChange={setPassword} />
