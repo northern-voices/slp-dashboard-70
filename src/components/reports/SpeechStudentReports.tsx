@@ -112,7 +112,11 @@ const SpeechStudentReports = () => {
     }
   }
 
-  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
+  const {
+    emails: emailHistory,
+    removableEmails,
+    removeEmail,
+  } = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleStudentSelect = (student: Student | null) => {
     setSelectedStudent(student)
@@ -253,6 +257,8 @@ const SpeechStudentReports = () => {
               recipientEmails={recipientEmails}
               onChange={setRecipientEmails}
               emailHistory={emailHistory}
+              removableEmails={removableEmails}
+              onDeleteSuggestion={removeEmail}
             />
 
             <ReportPasswordInput password={password} onChange={setPassword} />
