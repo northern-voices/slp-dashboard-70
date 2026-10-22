@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Trash2, Mail, X, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -28,6 +28,8 @@ import { upsertEmailHistory } from '@/api/emailHistory'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
+import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 
 interface MonthlyMeetingBulkActionsProps {
   selectedCount: number
@@ -46,12 +48,22 @@ const MonthlyMeetingBulkActions = ({
   const [isSendingEmails, setIsSendingEmails] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteProgress, setDeleteProgress] = useState(0)
+  const [password, setPassword] = useState('')
 
   const { toast } = useToast()
   const { user } = useAuth()
   const { currentSchool } = useOrganization()
+  const defaultReportPassword = useDefaultReportPassword()
 
   const deleteMonthlyMeeting = useDeleteMonthlyMeeting()
+
+  useEffect(() => {
+    if (showEmailDialog && !password) {
+      setPassword(defaultReportPassword)
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showEmailDialog, defaultReportPassword])
 
   const {
     emails: emailHistory,
@@ -113,7 +125,7 @@ const MonthlyMeetingBulkActions = ({
 
     for (const meeting of selectedMeetings) {
       try {
-        await edgeFunctionsApi.monthlyMeetings(meeting.id, bulkEmails)
+        await edgeFunctionsApi.monthlyMeetings(meeting.id, bulkEmails, password)
 
         successCount++
       } catch {
@@ -126,6 +138,7 @@ const MonthlyMeetingBulkActions = ({
     setIsSendingEmails(false)
     setShowEmailDialog(false)
     setBulkEmails([])
+    setPassword(defaultReportPassword)
     onClearSelection()
 
     if (failCount === 0) {
@@ -236,6 +249,8 @@ const MonthlyMeetingBulkActions = ({
               removableEmails={removableEmails}
               onDeleteSuggestion={removeEmail}
             />
+
+            <ReportPasswordInput password={password} onChange={setPassword} />
           </div>
           <DialogFooter>
             <Button
@@ -244,7 +259,9 @@ const MonthlyMeetingBulkActions = ({
               disabled={isSendingEmails}>
               Cancel
             </Button>
-            <Button onClick={handleBulkEmail} disabled={isSendingEmails || bulkEmails.length === 0}>
+            <Button
+              onClick={handleBulkEmail}
+              disabled={isSendingEmails || bulkEmails.length === 0 || !password.trim()}>
               {isSendingEmails ? (
                 <>
                   <Loader2 className='w-4 h-4 mr-2 animate-spin' />
