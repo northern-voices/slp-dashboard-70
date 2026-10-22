@@ -13,7 +13,6 @@ import { Student } from '@/types/database'
 import { useRedirectOnSchoolChange } from '@/hooks/use-redirect-on-school-change'
 import { useSpeechScreeningsByStudent } from '@/hooks/screenings/use-screenings'
 import ScreeningDetailsModal from '@/components/students/screening-history/ScreeningDetailsModal'
-import { Badge } from '@/components/ui/badge'
 import { format, subMonths } from 'date-fns'
 import { parseDateSafely } from '@/utils/dateUtils'
 import { ProgramBadge, ResultBadge } from '@/components/caseload/CaseloadBadges'
@@ -27,7 +26,6 @@ const SpeechScreeningContent = () => {
   }>()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { userProfile } = useOrganization()
 
   useRedirectOnSchoolChange('/screenings')
 
