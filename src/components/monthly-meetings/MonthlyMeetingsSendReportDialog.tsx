@@ -48,7 +48,11 @@ const MonthlyMeetingsSendReportDialog = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultReportPassword])
 
-  const emailHistory = useEmailSuggestions(user?.id, currentSchool?.id)
+  const {
+    emails: emailHistory,
+    removableEmails,
+    removeEmail,
+  } = useEmailSuggestions(user?.id, currentSchool?.id)
 
   const handleClose = () => {
     setEmails(user?.email ? [user.email] : [])
@@ -96,6 +100,8 @@ const MonthlyMeetingsSendReportDialog = ({
             recipientEmails={emails}
             onChange={setEmails}
             emailHistory={emailHistory}
+            removableEmails={removableEmails}
+            onDeleteSuggestion={removeEmail}
           />
 
           <ReportPasswordInput password={password} onChange={setPassword} />
