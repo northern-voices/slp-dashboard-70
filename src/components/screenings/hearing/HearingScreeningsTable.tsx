@@ -21,7 +21,7 @@ import { usePauseStudent } from '@/hooks/students/use-pause-student'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import HearingScreeningDetailsModal from '@/components/students/screening-history/HearingScreeningDetailsModal'
 import SendReportsModal from '@/components/screenings/SendReportsModal'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useToast } from '@/hooks/use-toast'
 import ScreeningBulkActions from '@/components/screenings/ScreeningBulkActions'
 import HearingScreeningsPagination from './HearingScreeningsPagination'
@@ -86,7 +86,7 @@ const HearingScreeningsTable = ({
     gradeLevel: string
   } | null>(null)
 
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -164,7 +164,11 @@ const HearingScreeningsTable = ({
     const student = studentsById.get(screening.student_id)
 
     if (!student) {
-      toast({ title: 'Error updating grade', description: 'Student not found', variant: 'destructive' })
+      toast({
+        title: 'Error updating grade',
+        description: 'Student not found',
+        variant: 'destructive',
+      })
       return
     }
 
@@ -573,7 +577,7 @@ const HearingScreeningsTable = ({
 
   if (isLoading) {
     return (
-      <div className='flex justify-center items-center h-64'>
+      <div className='flex items-center justify-center h-64'>
         <LoadingSpinner size='lg' />
       </div>
     )
@@ -599,7 +603,7 @@ const HearingScreeningsTable = ({
         />
       )}
 
-      <div className='flex items-center justify-between mb-3 gap-2 flex-wrap'>
+      <div className='flex flex-wrap items-center justify-between gap-2 mb-3'>
         <SortControls
           sortField={sortField}
           setSortField={setSortField}
@@ -608,12 +612,12 @@ const HearingScreeningsTable = ({
           options={sortOptions}
         />
 
-        <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
+        <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
           {sortedScreenings.length} screening{sortedScreenings.length !== 1 ? 's' : ''} found
         </span>
       </div>
 
-      <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+      <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
         <ResponsiveTable>
           <TableHeader>
             <tr>
@@ -650,7 +654,7 @@ const HearingScreeningsTable = ({
           <TableBody>
             {paginatedScreenings.length === 0 ? (
               <tr>
-                <TableCell colSpan={10} className='text-center py-8 text-gray-500'>
+                <TableCell colSpan={10} className='py-8 text-center text-gray-500'>
                   No hearing screenings found
                 </TableCell>
               </tr>
