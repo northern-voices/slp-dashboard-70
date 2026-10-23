@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSchoolGradesBySchool } from '@/hooks/use-school-grades'
 import { useNavigate } from 'react-router-dom'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -29,7 +29,7 @@ const HearingScreeningDetailsModal = ({
   const [currentScreening, setCurrentScreening] = useState<Screening | null>(null)
 
   const navigate = useNavigate()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   // Update currentScreening when screening prop changes
   useEffect(() => {
@@ -165,9 +165,9 @@ const HearingScreeningDetailsModal = ({
 
         <div className='space-y-6'>
           {/* Header Information */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg'>
+          <div className='grid grid-cols-1 gap-4 p-4 rounded-lg md:grid-cols-2 bg-gray-50'>
             <div>
-              <h3 className='font-medium text-gray-900 mb-2'>Student Information</h3>
+              <h3 className='mb-2 font-medium text-gray-900'>Student Information</h3>
               <div className='space-y-1'>
                 <div className='flex items-center gap-2'>
                   <User className='w-4 h-4 text-gray-500' />
@@ -175,44 +175,44 @@ const HearingScreeningDetailsModal = ({
                 </div>
                 {isLoadingGrades ? (
                   <div className='ml-6'>
-                    <div className='animate-pulse bg-gray-200 h-5 w-32 rounded'></div>
+                    <div className='w-32 h-5 bg-gray-200 rounded animate-pulse'></div>
                   </div>
                 ) : (
                   <>
-                    <p className='text-sm text-gray-600 ml-6'>
+                    <p className='ml-6 text-sm text-gray-600'>
                       {gradesMatch ? 'Grade:' : 'Screening Grade:'} {screeningGrade}
                     </p>
                     {!gradesMatch && studentCurrentGrade && (
-                      <p className='text-sm text-gray-600 ml-6'>
+                      <p className='ml-6 text-sm text-gray-600'>
                         Student Current Grade: {studentCurrentGrade}
                       </p>
                     )}
                   </>
                 )}
                 {currentScreening.academic_year && (
-                  <p className='text-sm text-gray-600 ml-6'>
+                  <p className='ml-6 text-sm text-gray-600'>
                     Academic Year: {currentScreening.academic_year}
                   </p>
                 )}
-                <p className='text-sm text-gray-600 ml-6'>
+                <p className='ml-6 text-sm text-gray-600'>
                   School: {currentScreening.school_name || 'Unknown School'}
                 </p>
               </div>
             </div>
 
             <div>
-              <h3 className='font-medium text-gray-900 mb-2'>Screening Information</h3>
+              <h3 className='mb-2 font-medium text-gray-900'>Screening Information</h3>
               <div className='space-y-1'>
-                <p className='text-sm text-gray-600 ml-2'>Screener: {currentScreening.screener}</p>
-                <p className='text-sm text-gray-600 ml-2'>
+                <p className='ml-2 text-sm text-gray-600'>Screener: {currentScreening.screener}</p>
+                <p className='ml-2 text-sm text-gray-600'>
                   Screening Date:{' '}
                   {format(new Date(currentScreening.created_at), 'MMM d, yyyy h:mm a')}
                 </p>
-                <p className='text-sm text-gray-600 ml-2'>
+                <p className='ml-2 text-sm text-gray-600'>
                   Updated: {format(new Date(currentScreening.updated_at), 'MMM d, yyyy h:mm a')}
                 </p>
                 {currentScreening.result && currentScreening.result !== '' && (
-                  <div className='flex items-center gap-2 ml-2 mt-2'>
+                  <div className='flex items-center gap-2 mt-2 ml-2'>
                     <span className='text-sm text-gray-600'>Result:</span>
                     <Badge variant='secondary'>
                       {currentScreening.result === 'absent' && 'Absent'}
@@ -230,12 +230,12 @@ const HearingScreeningDetailsModal = ({
           <div className='space-y-4'>
             <h3 className='font-medium text-gray-900'>Tympanometry Results</h3>
 
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               {/* Right Ear */}
-              <div className='p-4 bg-blue-50 rounded-lg border border-blue-200'>
-                <h4 className='font-medium text-blue-900 mb-3'>Right Ear</h4>
+              <div className='p-4 border border-blue-200 rounded-lg bg-blue-50'>
+                <h4 className='mb-3 font-medium text-blue-900'>Right Ear</h4>
                 <div className='space-y-3'>
-                  <div className='flex justify-between items-center'>
+                  <div className='flex items-center justify-between'>
                     <span className='text-sm text-gray-700'>Volume:</span>
                     <div className='flex items-center gap-2'>
                       <span className='font-medium'>
@@ -255,7 +255,7 @@ const HearingScreeningDetailsModal = ({
                       </Badge>
                     </div>
                   </div>
-                  <div className='flex justify-between items-center'>
+                  <div className='flex items-center justify-between'>
                     <span className='text-sm text-gray-700'>Compliance:</span>
                     <div className='flex items-center gap-2'>
                       <span className='font-medium'>
@@ -277,7 +277,7 @@ const HearingScreeningDetailsModal = ({
                       </Badge>
                     </div>
                   </div>
-                  <div className='flex justify-between items-center'>
+                  <div className='flex items-center justify-between'>
                     <span className='text-sm text-gray-700'>Pressure:</span>
                     <div className='flex items-center gap-2'>
                       <span className='font-medium'>
@@ -298,8 +298,8 @@ const HearingScreeningDetailsModal = ({
                     </div>
                   </div>
                   {currentScreening.right_ear_result && (
-                    <div className='mt-3 pt-3 border-t border-blue-300'>
-                      <span className='text-xs font-medium text-blue-900 block mb-1'>
+                    <div className='pt-3 mt-3 border-t border-blue-300'>
+                      <span className='block mb-1 text-xs font-medium text-blue-900'>
                         Overall Result:
                       </span>
                       <p className='text-sm text-blue-800'>{currentScreening.right_ear_result}</p>
@@ -309,10 +309,10 @@ const HearingScreeningDetailsModal = ({
               </div>
 
               {/* Left Ear */}
-              <div className='p-4 bg-purple-50 rounded-lg border border-purple-200'>
-                <h4 className='font-medium text-purple-900 mb-3'>Left Ear</h4>
+              <div className='p-4 border border-purple-200 rounded-lg bg-purple-50'>
+                <h4 className='mb-3 font-medium text-purple-900'>Left Ear</h4>
                 <div className='space-y-3'>
-                  <div className='flex justify-between items-center'>
+                  <div className='flex items-center justify-between'>
                     <span className='text-sm text-gray-700'>Volume:</span>
                     <div className='flex items-center gap-2'>
                       <span className='font-medium'>
@@ -332,7 +332,7 @@ const HearingScreeningDetailsModal = ({
                       </Badge>
                     </div>
                   </div>
-                  <div className='flex justify-between items-center'>
+                  <div className='flex items-center justify-between'>
                     <span className='text-sm text-gray-700'>Compliance:</span>
                     <div className='flex items-center gap-2'>
                       <span className='font-medium'>
@@ -354,7 +354,7 @@ const HearingScreeningDetailsModal = ({
                       </Badge>
                     </div>
                   </div>
-                  <div className='flex justify-between items-center'>
+                  <div className='flex items-center justify-between'>
                     <span className='text-sm text-gray-700'>Pressure:</span>
                     <div className='flex items-center gap-2'>
                       <span className='font-medium'>
@@ -375,8 +375,8 @@ const HearingScreeningDetailsModal = ({
                     </div>
                   </div>
                   {currentScreening.left_ear_result && (
-                    <div className='mt-3 pt-3 border-t border-purple-300'>
-                      <span className='text-xs font-medium text-purple-900 block mb-1'>
+                    <div className='pt-3 mt-3 border-t border-purple-300'>
+                      <span className='block mb-1 text-xs font-medium text-purple-900'>
                         Overall Result:
                       </span>
                       <p className='text-sm text-purple-800'>{currentScreening.left_ear_result}</p>
@@ -412,7 +412,7 @@ const HearingScreeningDetailsModal = ({
                       className='min-h-[100px] text-sm'
                       placeholder='Enter clinical observations...'
                     />
-                    <div className='flex gap-2 justify-end'>
+                    <div className='flex justify-end gap-2'>
                       <Button variant='outline' size='sm' onClick={handleCancelClinicalNotes}>
                         <XCircle className='w-3 h-3 mr-1' />
                         Cancel
@@ -424,7 +424,7 @@ const HearingScreeningDetailsModal = ({
                     </div>
                   </div>
                 ) : (
-                  <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
+                  <p className='p-3 text-sm text-gray-700 rounded-md bg-gray-50'>
                     {currentScreening.clinical_notes}
                   </p>
                 )}
@@ -456,7 +456,7 @@ const HearingScreeningDetailsModal = ({
                     className='min-h-[100px] text-sm'
                     placeholder='Enter referral notes...'
                   />
-                  <div className='flex gap-2 justify-end'>
+                  <div className='flex justify-end gap-2'>
                     <Button variant='outline' size='sm' onClick={handleCancelReferralNotes}>
                       <XCircle className='w-3 h-3 mr-1' />
                       Cancel
@@ -468,7 +468,7 @@ const HearingScreeningDetailsModal = ({
                   </div>
                 </div>
               ) : (
-                <p className='text-sm text-gray-700 p-3 bg-gray-50 rounded-md'>
+                <p className='p-3 text-sm text-gray-700 rounded-md bg-gray-50'>
                   {currentScreening.referral_notes}
                 </p>
               )}
