@@ -5,7 +5,7 @@ import { Student } from '@/types/database'
 import { useCreateSpeechScreening } from '@/hooks/screenings'
 import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { useAuth } from '@/contexts/AuthContext'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useToast } from '@/hooks/use-toast'
 import { schoolGradesApi } from '@/api/schoolGrades'
 import { Screening } from '@/types/database'
@@ -50,7 +50,7 @@ const MultiStepSpeechScreeningForm = ({
 
   const isSubmittingRef = useRef(false)
   const { user } = useAuth()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { toast } = useToast()
   const createScreening = useCreateSpeechScreening()
   const updateStudent = useUpdateStudent()
