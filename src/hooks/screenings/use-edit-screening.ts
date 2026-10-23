@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useToast } from '@/hooks/use-toast'
 import { useUpdateSpeechScreening } from '@/hooks/screenings/use-screening-mutations'
 import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
@@ -20,7 +21,8 @@ export const useEditScreening = () => {
   const { screeningId } = useParams<{ screeningId: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { userProfile, currentSchool } = useOrganization()
+  const { userProfile } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   const [screening, setScreening] = useState<Screening | null>(null)
   const [screeningGrade, setScreeningGrade] = useState<string>('N/A')
