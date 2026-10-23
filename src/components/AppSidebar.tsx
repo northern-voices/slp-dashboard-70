@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useLocation } from 'react-router-dom'
 import SidebarHeader from './sidebar/SidebarHeader'
 import SidebarFooter from './sidebar/SidebarFooter'
@@ -15,7 +16,8 @@ interface AppSidebarProps {
 }
 
 const AppSidebar = ({ userName = 'Dr. Sarah Johnson', className }: AppSidebarProps) => {
-  const { userProfile, currentSchool, isLoading } = useOrganization()
+  const { userProfile, isLoading } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const location = useLocation()
   const [resolvedRole, setResolvedRole] = useState<string | null>(null)
 
@@ -34,7 +36,7 @@ const AppSidebar = ({ userName = 'Dr. Sarah Johnson', className }: AppSidebarPro
 
   return (
     <div className={`hidden md:block ${className || ''}`}>
-      <Sidebar className='border-r border-gray-100 bg-white'>
+      <Sidebar className='bg-white border-r border-gray-100'>
         <SidebarHeader />
 
         <SidebarContent className='px-3 py-2'>
