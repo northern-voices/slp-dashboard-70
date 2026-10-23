@@ -5,6 +5,7 @@ import StudentInfoHeader from '@/components/students/StudentInfoHeader'
 import StudentScreeningHistory from '@/components/students/StudentScreeningHistory'
 import StudentDetailPagination from '@/components/students/StudentDetailPagination'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useToast } from '@/hooks/use-toast'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import StudentPageMonthlyMeetingsTable from '@/components/monthly-meetings/StudentPageMonthlyMeetingsTable'
@@ -16,7 +17,8 @@ const StudentProfileContent = () => {
   const { studentId, schoolId } = useParams<{ studentId: string; schoolId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const { userProfile, currentSchool } = useOrganization()
+  const { userProfile } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { toast } = useToast()
 
   useRedirectOnSchoolChange('/students')
@@ -119,7 +121,7 @@ const StudentProfileContent = () => {
   const hasNext = currentStudentIndex < allStudents.length - 1
 
   return (
-    <main className='flex-1 p-4 md:p-6 lg:p-8 pb-8'>
+    <main className='flex-1 p-4 pb-8 md:p-6 lg:p-8'>
       <StudentDetailPagination
         currentStudent={`${student.first_name} ${student.last_name}`}
         currentIndex={currentStudentIndex}
