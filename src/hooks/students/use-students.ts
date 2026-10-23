@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { studentsApi } from '@/api/students'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { Student } from '@/types/database'
 
 const getStudentsCache = (key: string): Student[] => {
@@ -33,7 +34,7 @@ export const useStudents = () => {
 }
 
 export const useStudentsByGrade = (gradeLevel: string) => {
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const cacheKey = `cached_students_grade_${currentSchool?.id}_${gradeLevel}`
 
   return useQuery({
