@@ -1,12 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-} from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import { Organization, School, SLPProfile } from '@/types/database'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -14,12 +6,9 @@ import { useLocalStorage } from '@/hooks/useLocalStorage'
 
 interface OrganizationContextType {
   currentOrganization: Organization | null
-  currentSchool: School | null
   userProfile: SLPProfile | null
   availableSchools: School[]
   isLoading: boolean
-  setCurrentSchool: (school: School | null) => void
-  clearCurrentSchool: () => void
   refreshData: () => Promise<void>
 }
 
@@ -47,26 +36,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   const [isLoading, setIsLoading] = useState(true)
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // Use localStorage to persist the selected school
-  const [currentSchool, setCurrentSchoolState] = useLocalStorage<School | null>(
-    'selectedSchool',
-    null
-  )
-
-  // Store the setter function in a ref to prevent recreation
-  const setCurrentSchoolStateRef = useRef(setCurrentSchoolState)
-  setCurrentSchoolStateRef.current = setCurrentSchoolState
-
   const { user } = useAuth()
-
-  // Memoized functions to prevent recreation on every render
-  const setCurrentSchool = useCallback((school: School | null) => {
-    setCurrentSchoolStateRef.current(school)
-  }, [])
-
-  const clearCurrentSchool = useCallback(() => {
-    setCurrentSchoolStateRef.current(null)
-  }, [])
 
   const refreshData = useCallback(async () => {
     if (!user) {
@@ -203,20 +173,6 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
       }))
 
       setAvailableSchoolsState(transformedSchools)
-
-      // Validate and restore persisted school if it exists
-      // Use the current value from state, not the parameter
-      const currentSchoolValue = currentSchool
-
-      if (currentSchoolValue) {
-        const freshSchool = transformedSchools.find(s => s.id === currentSchoolValue.id)
-        if (!freshSchool) {
-          clearCurrentSchool()
-        } else {
-          setCurrentSchool(freshSchool)
-        }
-      }
-
       setIsInitialized(true)
     } catch (error) {
       console.error('Error loading organization data:', error)
@@ -224,7 +180,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
     } finally {
       setIsLoading(false)
     }
-  }, [user, clearCurrentSchool]) // Remove currentSchool dependency
+  }, [user])
 
   // Only fetch data once when user changes
   useEffect(() => {
@@ -238,35 +194,21 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
     if (!user) {
       setCurrentOrganization(null)
       setUserProfile(null)
-      clearCurrentSchool()
       setIsLoading(false)
       setIsInitialized(false)
     }
-  }, [user, clearCurrentSchool])
+  }, [user])
 
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo(
     () => ({
       currentOrganization,
-      currentSchool,
       userProfile,
       availableSchools,
       isLoading: isLoading || !isInitialized,
-      setCurrentSchool,
-      clearCurrentSchool,
       refreshData,
     }),
-    [
-      currentOrganization,
-      currentSchool,
-      userProfile,
-      availableSchools,
-      isLoading,
-      isInitialized,
-      setCurrentSchool,
-      clearCurrentSchool,
-      refreshData,
-    ]
+    [currentOrganization, userProfile, availableSchools, isLoading, isInitialized, refreshData]
   )
 
   return <OrganizationContext.Provider value={value}>{children}</OrganizationContext.Provider>
