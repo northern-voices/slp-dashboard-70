@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Student, Screening, ProgramStatus, ServiceStatus } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { useReturningAbsentStudents } from '@/hooks/students/use-returning-absent-students'
@@ -56,7 +56,7 @@ export const useCaseloadTableData = <T extends Student>(students: T[], schoolId?
     setGradesMap(prev => new Map(prev).set(grade.id, grade))
   }
 
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { data: schoolDetails, refetch: refetchSchoolDetails } = useSchoolDetails(
     currentSchool ?? null
   )
