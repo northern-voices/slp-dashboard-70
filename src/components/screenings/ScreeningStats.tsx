@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, CheckCircle, Clock, FileText, PauseCircle, UserX } from 'lucide-react'
 import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import ScreeningStatsSkeleton from '@/components/skeletons/ScreeningStatsSkeleton'
 import { matchesDateRangeFilter } from '@/lib/screeningDateRangeFilter'
 
@@ -22,7 +22,7 @@ const ScreeningStats = ({
   resultFilter = 'all',
   onResultFilterClick,
 }: ScreeningStatsProps) => {
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   const {
     data: allScreeningsData,
@@ -137,7 +137,7 @@ const ScreeningStats = ({
 
   if (error) {
     return (
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
+      <div className='grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4'>
         <Card>
           <CardContent className='pt-6'>
             <div className='text-center text-red-600'>
@@ -150,16 +150,16 @@ const ScreeningStats = ({
   }
 
   return (
-    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
+    <div className='grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-3'>
       {/* Total Screenings*/}
       <Card
         className={`cursor-pointer transition-colors ${
           isTotalActive ? 'ring-2 ring-blue-300 bg-blue-50' : 'hover:bg-gray-50'
         }`}
         onClick={() => handleClearAll()}>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+        <CardHeader className='flex flex-row items-center justify-between pb-2 space-y-0'>
           <CardTitle className='text-sm font-medium'>Total Screenings</CardTitle>
-          <FileText className='h-4 w-4 text-blue-600' />
+          <FileText className='w-4 h-4 text-blue-600' />
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{rawCounts.total}</div>
@@ -190,9 +190,9 @@ const ScreeningStats = ({
           isActive(['qualified']) ? 'ring-2 ring-red-300 bg-red-50' : 'hover:bg-gray-50'
         }`}
         onClick={() => handleCardClick(['qualified'], false)}>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+        <CardHeader className='flex flex-row items-center justify-between pb-2 space-y-0'>
           <CardTitle className='text-sm font-medium'>Qualified</CardTitle>
-          <CheckCircle className='h-4 w-4 text-red-500' />
+          <CheckCircle className='w-4 h-4 text-red-500' />
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{rawCounts.qualified}</div>
@@ -213,9 +213,9 @@ const ScreeningStats = ({
           isActive(['sub']) ? 'ring-2 ring-orange-300 bg-orange-50' : 'hover:bg-gray-50'
         }`}
         onClick={() => handleCardClick(['sub'], false)}>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+        <CardHeader className='flex flex-row items-center justify-between pb-2 space-y-0'>
           <CardTitle className='text-sm font-medium'>Subs</CardTitle>
-          <Clock className='h-4 w-4 text-orange-500' />
+          <Clock className='w-4 h-4 text-orange-500' />
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{rawCounts.sub}</div>
@@ -236,9 +236,9 @@ const ScreeningStats = ({
           isActive(['paused']) ? 'ring-2 ring-purple-300 bg-purple-50' : 'hover:bg-gray-50'
         }`}
         onClick={() => handleCardClick(['paused'], false)}>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+        <CardHeader className='flex flex-row items-center justify-between pb-2 space-y-0'>
           <CardTitle className='text-sm font-medium'>Pause / Away</CardTitle>
-          <PauseCircle className='h-4 w-4 text-purple-500' />
+          <PauseCircle className='w-4 h-4 text-purple-500' />
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{rawCounts.paused}</div>
@@ -259,9 +259,9 @@ const ScreeningStats = ({
           isActive(['graduated']) ? 'ring-2 ring-blue-300 bg-blue-50' : 'hover:bg-gray-50'
         }`}
         onClick={() => handleCardClick(['graduated'], false)}>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+        <CardHeader className='flex flex-row items-center justify-between pb-2 space-y-0'>
           <CardTitle className='text-sm font-medium'>Graduated</CardTitle>
-          <Calendar className='h-4 w-4 text-blue-500' />
+          <Calendar className='w-4 h-4 text-blue-500' />
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{rawCounts.graduated}</div>
@@ -282,9 +282,9 @@ const ScreeningStats = ({
           isAbsentActive ? 'ring-2 ring-gray-400 bg-gray-100' : 'hover:bg-gray-50'
         }`}
         onClick={() => handleResultFilterClick('absent', false)}>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+        <CardHeader className='flex flex-row items-center justify-between pb-2 space-y-0'>
           <CardTitle className='text-sm font-medium'>Absent</CardTitle>
-          <UserX className='h-4 w-4 text-gray-600' />
+          <UserX className='w-4 h-4 text-gray-600' />
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{rawCounts.absent}</div>
