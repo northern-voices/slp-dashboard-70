@@ -2,11 +2,13 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileText, ArrowUp, ArrowDown, Minus, GraduationCap } from 'lucide-react'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useStudentCountBySchool } from '@/hooks/students'
 import { useRecentScreeningsBySchool } from '@/hooks/screenings'
 
 const DashboardStats = () => {
-  const { currentSchool, isLoading: orgLoading } = useOrganization()
+  const { isLoading: orgLoading } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   // Fetch real data based on current school
   const { data: studentCount = 0, isLoading: studentsLoading } = useStudentCountBySchool(
@@ -78,7 +80,7 @@ const DashboardStats = () => {
 
   if (isLoading) {
     return (
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+      <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
         {[1, 2].map(i => (
           <Card key={i} className='bg-white border border-gray-100 shadow-sm rounded-xl'>
             <CardHeader className='pb-3'>
@@ -89,10 +91,10 @@ const DashboardStats = () => {
             </CardHeader>
             <CardContent className='pt-0'>
               <div className='space-y-3'>
-                <div className='h-8 bg-gray-200 rounded w-16 animate-pulse'></div>
+                <div className='w-16 h-8 bg-gray-200 rounded animate-pulse'></div>
                 <div className='flex items-center justify-between'>
-                  <div className='h-4 bg-gray-200 rounded w-24 animate-pulse'></div>
-                  <div className='h-6 bg-gray-200 rounded-full w-16 animate-pulse'></div>
+                  <div className='w-24 h-4 bg-gray-200 rounded animate-pulse'></div>
+                  <div className='w-16 h-6 bg-gray-200 rounded-full animate-pulse'></div>
                 </div>
               </div>
             </CardContent>
@@ -103,14 +105,14 @@ const DashboardStats = () => {
   }
 
   return (
-    <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+    <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
       {stats.map((stat, index) => (
         <Card
           key={index}
-          className='bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl'>
+          className='transition-all duration-200 bg-white border border-gray-100 shadow-sm hover:shadow-md rounded-xl'>
           <CardHeader className='pb-3'>
             <div className='flex items-center justify-between'>
-              <CardTitle className='text-sm font-medium text-gray-600 tracking-wide'>
+              <CardTitle className='text-sm font-medium tracking-wide text-gray-600'>
                 {stat.title}
               </CardTitle>
               <div
@@ -121,11 +123,11 @@ const DashboardStats = () => {
           </CardHeader>
           <CardContent className='pt-0'>
             <div className='space-y-3'>
-              <div className='text-3xl font-semibold text-gray-900 tracking-tight'>
+              <div className='text-3xl font-semibold tracking-tight text-gray-900'>
                 {stat.value}
               </div>
               <div className='flex items-center justify-between'>
-                <p className='text-sm text-gray-500 font-medium'>{stat.change}</p>
+                <p className='text-sm font-medium text-gray-500'>{stat.change}</p>
                 {/* <div
                   className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium ${getTrendColor(
                     stat.trend

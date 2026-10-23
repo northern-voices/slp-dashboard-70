@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useAuth } from '@/contexts/AuthContext'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
 import { Mail, User, Send, Eye } from 'lucide-react'
@@ -55,7 +55,7 @@ const SpeechGoalSheets = () => {
   const defaultReportPassword = useDefaultReportPassword()
 
   const navigate = useNavigate()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { user } = useAuth()
   const { data: dynamicGoalSheets = [] } = useDynamicGoalSheetsByStudent(selectedStudent?.id)
 

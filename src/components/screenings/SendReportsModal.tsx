@@ -25,7 +25,7 @@ import { SPEECH_REPORT_OPTIONS, SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/re
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
 import { Badge } from '@/components/ui/badge'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
@@ -48,7 +48,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
   const [password, setPassword] = useState('')
 
   const { user } = useAuth()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const defaultReportPassword = useDefaultReportPassword()
 
   const {
@@ -233,7 +233,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
       <Dialog open={isOpen} onOpenChange={handleModalClose}>
         <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
           <DialogHeader>
-            <DialogTitle className='text-xl font-medium text-gray-700 flex items-center gap-2'>
+            <DialogTitle className='flex items-center gap-2 text-xl font-medium text-gray-700'>
               <Mail className='w-5 h-5' />
               Send {screening?.student_name}'s Reports
             </DialogTitle>
@@ -243,7 +243,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
             {/* Report Type Selection */}
             <div className='space-y-3'>
               <Label className='text-sm font-medium'>Select Type of Report</Label>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+              <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
                 {getAvailableReports().map(report => {
                   const Icon = report.icon
                   const isSelected = selectedReports.includes(report.value)
@@ -265,7 +265,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                             : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                         }
                       `}>
-                      <div className='flex items-start space-x-3 w-full'>
+                      <div className='flex items-start w-full space-x-3'>
                         <div
                           className={`
                           flex-shrink-0 p-2 rounded-lg
@@ -305,7 +305,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                 <div>
                   <Label className='text-sm font-medium'>Compare Against</Label>
                   {comparisonOptions.length === 0 ? (
-                    <div className='mt-1 p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-sm'>
+                    <div className='p-3 mt-1 text-sm border rounded-lg border-amber-200 bg-amber-50 text-amber-800'>
                       This student needs at least one other (non-absent) speech screening on record
                       to generate a progress report.
                     </div>
@@ -374,7 +374,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
                 onClick={handleSendEmail}
                 variant='default'
                 size='sm'
-                className='w-full h-9 bg-blue-600 hover:bg-blue-700 text-white'
+                className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
                 disabled={
                   recipientEmails.length === 0 ||
                   !screening ||
@@ -396,7 +396,7 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
       {/* Success/Error Modal */}
       <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
         <DialogContent className='mx-auto'>
-          <div className='flex flex-col items-center text-center space-y-6'>
+          <div className='flex flex-col items-center space-y-6 text-center'>
             {/* Icon */}
             <div className='flex justify-center'>
               {modalType === 'success' ? (
@@ -411,16 +411,16 @@ const SendReportsModal = ({ isOpen, onClose, screening }: SendReportsModalProps)
               <DialogTitle className='text-2xl font-semibold text-gray-900'>
                 {modalType === 'success' ? 'Report Sent Successfully!' : 'Error Sending Report'}
               </DialogTitle>
-              <DialogDescription className='text-gray-600 text-base leading-relaxed'>
+              <DialogDescription className='text-base leading-relaxed text-gray-600'>
                 {modalMessage}
               </DialogDescription>
             </div>
 
             {/* Action Button */}
-            <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
+            <div className='flex flex-col w-full gap-3 sm:flex-row sm:w-auto'>
               <Button
                 onClick={handleCloseSuccessModal}
-                className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
                 {modalType === 'success' ? 'Done' : 'Try Again'}
               </Button>
             </div>

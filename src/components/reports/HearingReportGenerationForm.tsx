@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useAuth } from '@/contexts/AuthContext'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -54,7 +54,7 @@ const HearingReportGenerationForm = () => {
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
 
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { toast } = useToast()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -218,23 +218,23 @@ const HearingReportGenerationForm = () => {
 
   return (
     <TooltipProvider>
-      <Card className='w-full max-w-full bg-white border border-gray-200 shadow-sm overflow-hidden'>
-        <CardHeader className='pb-4 sm:pb-6 px-4 sm:px-6'>
-          <CardTitle className='text-lg sm:text-xl font-semibold text-gray-900'>
+      <Card className='w-full max-w-full overflow-hidden bg-white border border-gray-200 shadow-sm'>
+        <CardHeader className='px-4 pb-4 sm:pb-6 sm:px-6'>
+          <CardTitle className='text-lg font-semibold text-gray-900 sm:text-xl'>
             Generate School Wide Hearing Report
           </CardTitle>
-          <p className='text-sm text-gray-600 mt-2 leading-relaxed'>
+          <p className='mt-2 text-sm leading-relaxed text-gray-600'>
             Create comprehensive hearing screening reports for all students
           </p>
         </CardHeader>
-        <CardContent className='px-4 sm:px-6 space-y-6'>
+        <CardContent className='px-4 space-y-6 sm:px-6'>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
               <FormField
                 control={form.control}
                 name='academicYear'
                 render={({ field }) => (
-                  <FormItem className='space-y-3 w-full max-w-full'>
+                  <FormItem className='w-full max-w-full space-y-3'>
                     <FormLabel className='text-sm font-medium text-gray-700'>
                       Select Academic Year
                     </FormLabel>
@@ -268,7 +268,7 @@ const HearingReportGenerationForm = () => {
                     <FormControl>
                       <div className='space-y-4'>
                         <div className='space-y-3'>
-                          <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
+                          <div className='grid grid-cols-1 gap-3 lg:grid-cols-2'>
                             {hearingReports.map(type => {
                               const Icon = type.icon
                               const isSelected = field.value === type.value
@@ -291,7 +291,7 @@ const HearingReportGenerationForm = () => {
                                 : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                             }
                           `}>
-                                      <div className='flex items-start space-x-3 w-full'>
+                                      <div className='flex items-start w-full space-x-3'>
                                         <div
                                           className={`
                               flex-shrink-0 p-2 rounded-lg
@@ -342,7 +342,7 @@ const HearingReportGenerationForm = () => {
                 control={form.control}
                 name='recipientEmails'
                 render={({ field }) => (
-                  <FormItem className='space-y-3 w-full max-w-full'>
+                  <FormItem className='w-full max-w-full space-y-3'>
                     <FormControl>
                       <MultiEmailInput
                         recipientEmails={field.value}
@@ -370,14 +370,14 @@ const HearingReportGenerationForm = () => {
                 )}
               />
 
-              <div className='flex flex-col sm:flex-row gap-3 pt-6 w-full'>
+              <div className='flex flex-col w-full gap-3 pt-6 sm:flex-row'>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       type='button'
                       variant='outline'
                       onClick={handleClearForm}
-                      className='h-9 w-full'
+                      className='w-full h-9'
                       disabled={isSubmitting}>
                       Clear Form
                     </Button>
@@ -392,7 +392,7 @@ const HearingReportGenerationForm = () => {
                     <Button
                       type='submit'
                       variant='default'
-                      className='h-9 bg-blue-600 hover:bg-blue-700 text-white w-full'
+                      className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
                       disabled={isSubmitting}>
                       {isSubmitting ? (
                         <>
@@ -417,7 +417,7 @@ const HearingReportGenerationForm = () => {
       {/* Success/Error Modal */}
       <Dialog open={isSuccessModalOpen} onOpenChange={() => {}}>
         <DialogContent className='mx-auto'>
-          <div className='flex flex-col items-center text-center space-y-6'>
+          <div className='flex flex-col items-center space-y-6 text-center'>
             <div className='flex justify-center'>
               {modalType === 'success' ? (
                 <CheckCircle className='w-16 h-16 text-green-600' />
@@ -430,24 +430,24 @@ const HearingReportGenerationForm = () => {
               <DialogTitle className='text-2xl font-semibold text-gray-900'>
                 {modalType === 'success' ? 'Report Generation Started!' : 'Error Generating Report'}
               </DialogTitle>
-              <DialogDescription className='text-gray-600 text-base leading-relaxed'>
+              <DialogDescription className='text-base leading-relaxed text-gray-600'>
                 {modalMessage}
               </DialogDescription>
             </div>
 
-            <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
+            <div className='flex flex-col w-full gap-3 sm:flex-row sm:w-auto'>
               {modalType === 'success' ? (
                 <>
                   <Button
                     onClick={handleStayOnPage}
-                    className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                    className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
                     <Plus className='w-4 h-4' />
                     Generate Another Report
                   </Button>
                   <Button
                     onClick={handleGoBackToReports}
                     variant='outline'
-                    className='w-full sm:w-auto px-6 py-2'>
+                    className='w-full px-6 py-2 sm:w-auto'>
                     <List className='w-4 h-4' />
                     Back to Reports
                   </Button>
@@ -455,7 +455,7 @@ const HearingReportGenerationForm = () => {
               ) : (
                 <Button
                   onClick={handleCloseModal}
-                  className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                  className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
                   Try Again
                 </Button>
               )}

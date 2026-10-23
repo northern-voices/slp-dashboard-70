@@ -9,6 +9,8 @@ export const ROUTES = {
   MANAGEMENT: '/management',
 } as const
 
+export const SCHOOL_FREE_ROUTES = ['/profile', '/notifications', ROUTES.MANAGEMENT] as const
+
 export const USER_ROLES = {
   SLP: 'slp',
   ADMIN: 'admin',

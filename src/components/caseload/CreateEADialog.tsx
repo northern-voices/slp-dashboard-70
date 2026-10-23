@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useQueryClient } from '@tanstack/react-query'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useToast } from '@/hooks/use-toast'
 import {
   Dialog,
@@ -28,7 +28,7 @@ const CreateEADialog = ({ open, onOpenChange, schoolId, onCreated }: CreateEADia
   const [email, setEmail] = useState('')
   const [isCreating, setIsCreating] = useState(false)
 
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -122,7 +122,7 @@ const CreateEADialog = ({ open, onOpenChange, schoolId, onCreated }: CreateEADia
           </div>
 
           <div className='px-3 py-2 rounded-lg bg-purple-50'>
-            <p className='text-xs text-purple-700 font-medium'>Role: Speech Education Assistant</p>
+            <p className='text-xs font-medium text-purple-700'>Role: Speech Education Assistant</p>
           </div>
         </div>
 

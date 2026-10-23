@@ -15,6 +15,7 @@ import { Student } from '@/types/database'
 import { useStudentsByGrade, useStudentsBySchool } from '@/hooks/students/use-students'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { studentsApi } from '@/api/students'
@@ -69,7 +70,8 @@ const StudentSearchSelector = ({
 
   const { toast } = useToast()
 
-  const { userProfile, availableSchools, currentSchool, isLoading: orgLoading } = useOrganization()
+  const { userProfile, availableSchools, isLoading: orgLoading } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const queryClient = useQueryClient()
 
   const createStudentMutation = useMutation({
@@ -300,7 +302,7 @@ const StudentSearchSelector = ({
     <div className='space-y-2'>
       {/* Combined School Info and Create Student Section */}
       {currentSchool && (
-        <div className='bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm'>
+        <div className='p-4 border border-blue-200 rounded-lg shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50'>
           <div className='flex items-center justify-between'>
             {/* School Info */}
             <div className='flex items-center space-x-3'>
@@ -336,7 +338,7 @@ const StudentSearchSelector = ({
                 <Button
                   type='button'
                   onClick={handleShowNewStudentForm}
-                  className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors duration-200 flex items-center space-x-2'>
+                  className='flex items-center px-4 py-2 space-x-2 text-white transition-colors duration-200 bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700'>
                   <UserPlus className='w-4 h-4' />
                   <span>Add Student</span>
                 </Button>
@@ -348,7 +350,7 @@ const StudentSearchSelector = ({
 
       {/* Show warning if no school is selected */}
       {!currentSchool && (
-        <div className='p-4 border border-orange-200 bg-orange-50 rounded-md'>
+        <div className='p-4 border border-orange-200 rounded-md bg-orange-50'>
           <div className='flex items-center space-x-2'>
             <div className='w-2 h-2 bg-orange-500 rounded-full'></div>
             <span className='text-sm font-medium text-orange-800'>
@@ -365,7 +367,7 @@ const StudentSearchSelector = ({
             role='combobox'
             aria-expanded={open}
             disabled={!currentSchool}
-            className='w-full justify-between text-left'>
+            className='justify-between w-full text-left'>
             <span className='truncate'>
               {selectedStudent
                 ? `${selectedStudent.first_name} ${selectedStudent.last_name}`
@@ -383,11 +385,11 @@ const StudentSearchSelector = ({
                     e.stopPropagation()
                     handleClearSelection()
                   }}
-                  className='h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded-full'>
-                  <X className='h-3 w-3' />
+                  className='w-6 h-6 p-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10'>
+                  <X className='w-3 h-3' />
                 </Button>
               )}
-              <ChevronsUpDown className='h-4 w-4 shrink-0 opacity-50' />
+              <ChevronsUpDown className='w-4 h-4 opacity-50 shrink-0' />
             </div>
           </Button>
         </PopoverTrigger>
@@ -411,7 +413,7 @@ const StudentSearchSelector = ({
                     'Loading students...'
                   ) : shouldShowAddNew ? (
                     <div className='p-2'>
-                      <p className='text-sm text-muted-foreground mb-2'>No student found.</p>
+                      <p className='mb-2 text-sm text-muted-foreground'>No student found.</p>
                       {isStudentCreatable && (
                         <Button
                           type='button'
@@ -464,8 +466,8 @@ const StudentSearchSelector = ({
                     <CommandItem
                       value='add-new-student'
                       onSelect={handleShowNewStudentForm}
-                      className='cursor-pointer border-t'>
-                      <Plus className='mr-2 h-4 w-4' />
+                      className='border-t cursor-pointer'>
+                      <Plus className='w-4 h-4 mr-2' />
                       <span className='font-medium'>Add New Student</span>
                     </CommandItem>
                   )}
@@ -474,14 +476,14 @@ const StudentSearchSelector = ({
 
               {/* Sticky Create New Student button at bottom */}
               {isStudentCreatable && (
-                <div className='border-t bg-background sticky bottom-0 p-2'>
+                <div className='sticky bottom-0 p-2 border-t bg-background'>
                   <Button
                     type='button'
                     variant='outline'
                     size='sm'
                     onClick={handleShowNewStudentForm}
-                    className='w-full justify-start text-sm'>
-                    <Plus className='mr-2 h-4 w-4' />
+                    className='justify-start w-full text-sm'>
+                    <Plus className='w-4 h-4 mr-2' />
                     Create New Student
                   </Button>
                 </div>
@@ -555,7 +557,7 @@ const StudentSearchSelector = ({
                   })(e)
                 }}
                 className='space-y-4'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                   <FormField
                     control={newStudentForm.control}
                     name='first_name'
@@ -585,7 +587,7 @@ const StudentSearchSelector = ({
                   />
                 </div>
 
-                <div className='flex justify-end space-x-2 pt-4'>
+                <div className='flex justify-end pt-4 space-x-2'>
                   <Button type='button' variant='outline' onClick={handleCloseNewStudentForm}>
                     Cancel
                   </Button>

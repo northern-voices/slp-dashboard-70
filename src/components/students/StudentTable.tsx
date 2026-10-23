@@ -36,7 +36,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useToast } from '@/hooks/use-toast'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import {
   useStudentsBySchool,
   useSchoolTransfers,
@@ -111,7 +111,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
     )
   }
 
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const createStudentMutation = useCreateStudent()
   const updateStudentMutation = useUpdateStudent()
 
@@ -622,7 +622,7 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       />
 
       {/* Students Table */}
-      <div className='flex items-center justify-between mb-3 gap-2 flex-wrap'>
+      <div className='flex flex-wrap items-center justify-between gap-2 mb-3'>
         {/* Sort Controls */}
         <SortControls
           sortField={sortField}

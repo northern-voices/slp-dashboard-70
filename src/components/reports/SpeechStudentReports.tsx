@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useAuth } from '@/contexts/AuthContext'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
 import { CheckCircle, Mail, User, Send, Eye } from 'lucide-react'
@@ -54,7 +54,7 @@ const SpeechStudentReports = () => {
 
   const defaultReportPassword = useDefaultReportPassword()
   const navigate = useNavigate()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { user } = useAuth()
 
   // Pre-fill email with current user's email on component mount

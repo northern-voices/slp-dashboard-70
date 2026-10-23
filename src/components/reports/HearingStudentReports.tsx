@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useAuth } from '@/contexts/AuthContext'
 import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
@@ -55,7 +55,7 @@ const HearingStudentReports = () => {
   const defaultReportPassword = useDefaultReportPassword()
 
   const navigate = useNavigate()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { user } = useAuth()
 
   // Pre-fill email with current user's email on component mount
@@ -136,7 +136,7 @@ const HearingStudentReports = () => {
 
         {/* Selected Student Info */}
         {selectedStudent && (
-          <div className='p-3 bg-blue-50 rounded-lg border border-blue-200'>
+          <div className='p-3 border border-blue-200 rounded-lg bg-blue-50'>
             <div className='flex items-center gap-2'>
               <User className='w-4 h-4 text-blue-600' />
               <span className='font-medium text-blue-900'>
@@ -174,8 +174,8 @@ const HearingStudentReports = () => {
 
       {/* Email Section */}
       {selectedStudent && (
-        <div className='mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200'>
-          <h4 className='text-xl font-medium text-gray-700 mb-4 flex items-center gap-2'>
+        <div className='p-4 mt-6 border border-gray-200 rounded-lg bg-gray-50'>
+          <h4 className='flex items-center gap-2 mb-4 text-xl font-medium text-gray-700'>
             <Mail className='w-5 h-5' />
             Send {selectedStudent.first_name}'s Reports
           </h4>
@@ -195,7 +195,7 @@ const HearingStudentReports = () => {
               onClick={handleSendEmail}
               variant='default'
               size='sm'
-              className='w-full h-9 bg-blue-600 hover:bg-blue-700 text-white'
+              className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
               disabled={
                 !selectedScreening ||
                 selectedReports.length === 0 ||
@@ -259,7 +259,7 @@ const HearingScreeningsTable = ({
 
   if (studentScreenings.length === 0) {
     return (
-      <div className='text-sm text-gray-500 text-center py-4'>
+      <div className='py-4 text-sm text-center text-gray-500'>
         No hearing screenings found for this student.
       </div>
     )
@@ -287,9 +287,9 @@ const HearingScreeningsTable = ({
   }
 
   return (
-    <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+    <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
       {/* Table Header */}
-      <div className='bg-gray-50 border-b border-gray-200 px-6 py-3'>
+      <div className='px-6 py-3 border-b border-gray-200 bg-gray-50'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-3'>
             <span className='text-sm font-medium text-gray-900'>Select a Screening</span>
@@ -298,7 +298,7 @@ const HearingScreeningsTable = ({
             <div className='flex items-center gap-2'>
               <Badge
                 variant='outline'
-                className='bg-blue-50 text-blue-600 border-blue-300 font-medium px-3 text-center flex items-center justify-center'>
+                className='flex items-center justify-center px-3 font-medium text-center text-blue-600 border-blue-300 bg-blue-50'>
                 Total: {studentScreenings.length}
               </Badge>
             </div>
@@ -308,14 +308,14 @@ const HearingScreeningsTable = ({
               size='sm'
               disabled={!selectedScreening}
               onClick={() => onSelectScreening(null)}
-              className='h-7 text-xs ml-2'>
+              className='ml-2 text-xs h-7'>
               Clear
             </Button>
           </div>
         </div>
       </div>
 
-      <div className='max-h-96 overflow-y-auto'>
+      <div className='overflow-y-auto max-h-96'>
         <RadioGroup
           value={selectedScreening?.id || ''}
           onValueChange={value => {
@@ -350,7 +350,7 @@ const HearingScreeningsTable = ({
                           variant='ghost'
                           size='sm'
                           onClick={() => onViewDetails(screening)}
-                          className='h-8 w-8 p-0 hover:bg-gray-100'>
+                          className='w-8 h-8 p-0 hover:bg-gray-100'>
                           <Eye className='w-4 h-4' />
                         </Button>
                       </div>
@@ -440,7 +440,7 @@ const HearingScreeningsTable = ({
                       {screening.screener}
                     </div>
                   </TableCell>
-                  <TableCell className='py-4 px-4'>
+                  <TableCell className='px-4 py-4'>
                     <div className='space-y-1 text-xs'>
                       <div className='flex items-center gap-2'>
                         <span className='font-medium text-blue-700'>Vol:</span>
@@ -492,7 +492,7 @@ const HearingScreeningsTable = ({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className='py-4 px-4'>
+                  <TableCell className='px-4 py-4'>
                     <div className='space-y-1 text-xs'>
                       <div className='flex items-center gap-2'>
                         <span className='font-medium text-blue-700'>Vol:</span>
@@ -549,7 +549,7 @@ const HearingScreeningsTable = ({
                       variant='ghost'
                       size='sm'
                       onClick={() => onViewDetails(screening)}
-                      className='h-8 w-8 p-0 hover:bg-gray-100'>
+                      className='w-8 h-8 p-0 hover:bg-gray-100'>
                       <Eye className='w-4 h-4' />
                     </Button>
                   </TableCell>

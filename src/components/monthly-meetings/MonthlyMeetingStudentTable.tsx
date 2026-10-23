@@ -22,7 +22,7 @@ import { GRADE_MAPPING } from '@/constants/app'
 import { Student, Screening } from '@/types/database'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useUpdateStudent, useLastScreeningInfoForStudents } from '@/hooks/students'
 import CreateEADialog from '@/components/caseload/CreateEADialog'
 import { SelectSeparator } from '@/components/ui/select'
@@ -88,7 +88,7 @@ const MonthlyMeetingsStudentTable = ({
     fetchGrades()
   }, [schoolId])
 
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { data: schoolDetails } = useSchoolDetails(currentSchool ?? null)
 
   const speechEAs = schoolDetails?.schoolTeam?.filter(m => m.roles.includes('speech_ea')) ?? []

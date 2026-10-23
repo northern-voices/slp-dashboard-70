@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useStudent } from '@/hooks/students/use-students'
 import { useCreateDynamicGoalSheet } from '@/hooks/goalSheets/use-dynamic-goal-sheets-mutations'
 import { useToast } from '@/hooks/use-toast'
@@ -32,7 +32,7 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
   const [draftGoalTexts, setDraftGoalTexts] = useState<string[]>([''])
   const [createdSheetId, setCreatedSheetId] = useState<string | null>(null)
 
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { toast } = useToast()
 
   const { data: lockedStudent, isLoading: isLoadingLockedStudent } = useStudent(lockedStudentId)
@@ -126,7 +126,7 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
           variant='outline'
           size='icon'
           onClick={handleAddDraftPage}
-          className='w-12 h-12 rounded-full border-2'
+          className='w-12 h-12 border-2 rounded-full'
           aria-label='Add another page'>
           <Plus className='w-6 h-6' />
         </Button>

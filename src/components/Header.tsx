@@ -18,6 +18,7 @@ import { ScreeningFormData } from '@/types/screening'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserRole } from '@/types/database'
 
@@ -41,7 +42,8 @@ const Header = ({
   const { toast } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
-  const { currentSchool, userProfile: orgUserProfile, isLoading } = useOrganization()
+  const { userProfile: orgUserProfile, isLoading } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { logout } = useAuth()
   const [resolvedRole, setResolvedRole] = useState<string | null>(null)
 
@@ -113,38 +115,38 @@ const Header = ({
               variant='ghost'
               size='sm'
               onClick={() => setShowMobileNav(true)}
-              className='md:hidden -ml-1 mr-2 h-8 w-8 p-0'>
-              <Menu className='h-5 w-5' />
+              className='w-8 h-8 p-0 mr-2 -ml-1 md:hidden'>
+              <Menu className='w-5 h-5' />
             </Button>
 
             {/* Desktop sidebar trigger */}
-            <SidebarTrigger className='hidden md:flex -ml-1 mr-2' />
+            <SidebarTrigger className='hidden mr-2 -ml-1 md:flex' />
 
             {/* Mobile brand */}
-            <div className='md:hidden flex items-center space-x-3'>
-              <div className='w-8 h-8 bg-brand rounded-lg flex items-center justify-center'>
-                <span className='text-white font-semibold text-sm'>SLP</span>
+            <div className='flex items-center space-x-3 md:hidden'>
+              <div className='flex items-center justify-center w-8 h-8 rounded-lg bg-brand'>
+                <span className='text-sm font-semibold text-white'>SLP</span>
               </div>
-              <span className='font-semibold text-gray-900 hidden md:block'>Dashboard</span>
+              <span className='hidden font-semibold text-gray-900 md:block'>Dashboard</span>
             </div>
 
             {/* School name display */}
             {currentSchool && (
-              <div className='hidden md:flex items-center ml-4'>
-                <span className='text-blue-600 font-semibold text-lg'>{currentSchool.name}</span>
+              <div className='items-center hidden ml-4 md:flex'>
+                <span className='text-lg font-semibold text-blue-600'>{currentSchool.name}</span>
               </div>
             )}
           </div>
 
           {/* Right side - User actions */}
-          <div className='flex items-center md:space-x-3 space-x-2'>
+          <div className='flex items-center space-x-2 md:space-x-3'>
             {/* Submit Ticket Button - commented out for now
             {shouldShowSubmitTicketButton && (
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={handleSubmitTicketClick}
-                className="hidden md:flex text-gray-700 hover:text-gray-900 hover:bg-gray-50 md:h-9 h-10 md:px-3 px-3 md:text-sm text-sm"
+                className="hidden h-10 px-3 text-sm text-gray-700 md:flex hover:text-gray-900 hover:bg-gray-50 md:h-9 md:px-3 md:text-sm"
               >
                 <HandHeart className="md:w-4 md:h-4 w-3.5 h-3.5 mr-2" />
                 Submit Ticket
@@ -160,62 +162,62 @@ const Header = ({
               <DropdownMenuTrigger asChild>
                 <Button
                   variant='ghost'
-                  className='relative md:h-9 md:w-9 h-8 w-8 rounded-lg hover:bg-gray-50 p-0'>
+                  className='relative w-8 h-8 p-0 rounded-lg md:h-9 md:w-9 hover:bg-gray-50'>
                   <Avatar className='md:h-8 md:w-8 h-7 w-7'>
-                    <AvatarFallback className='bg-gray-100 text-gray-700 md:text-sm text-xs font-medium'>
+                    <AvatarFallback className='text-xs font-medium text-gray-700 bg-gray-100 md:text-sm'>
                       {initials}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className='w-64 bg-white shadow-lg border border-gray-100 rounded-xl p-2'
+                className='w-64 p-2 bg-white border border-gray-100 shadow-lg rounded-xl'
                 align='end'
                 forceMount>
                 <div className='flex items-center gap-3 p-3 rounded-lg'>
                   <Avatar className='h-9 w-9'>
-                    <AvatarFallback className='bg-gray-100 text-gray-700 text-sm font-medium'>
+                    <AvatarFallback className='text-sm font-medium text-gray-700 bg-gray-100'>
                       {initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className='flex flex-col space-y-0.5 leading-none'>
-                    <p className='font-medium text-gray-900 text-sm'>{userName}</p>
-                    <p className='text-xs text-gray-500 leading-relaxed'>
+                    <p className='text-sm font-medium text-gray-900'>{userName}</p>
+                    <p className='text-xs leading-relaxed text-gray-500'>
                       {getRoleDisplayName(userRole)}
                     </p>
                   </div>
                 </div>
-                <DropdownMenuSeparator className='bg-gray-100 my-2' />
+                <DropdownMenuSeparator className='my-2 bg-gray-100' />
                 <DropdownMenuItem
-                  className='text-gray-700 hover:bg-gray-50 focus:bg-gray-50 rounded-lg px-3 py-2'
+                  className='px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-50 focus:bg-gray-50'
                   asChild>
                   <a href='/profile' className='flex items-center'>
-                    <User className='mr-3 h-4 w-4' />
+                    <User className='w-4 h-4 mr-3' />
                     Profile
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  className='text-gray-700 hover:bg-gray-50 focus:bg-gray-50 rounded-lg px-3 py-2'
+                  className='px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-50 focus:bg-gray-50'
                   asChild>
                   <a href='/profile?tab=account' className='flex items-center'>
-                    <SettingsIcon className='mr-3 h-4 w-4' />
+                    <SettingsIcon className='w-4 h-4 mr-3' />
                     Settings
                   </a>
                 </DropdownMenuItem>
                 {(resolvedRole === 'admin' || resolvedRole === 'super_admin') && (
                   <DropdownMenuItem
-                    className='text-gray-700 hover:bg-gray-50 focus:bg-gray-50 rounded-lg px-3 py-2'
+                    className='px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-50 focus:bg-gray-50'
                     asChild>
                     <Link to='/management' className='flex items-center'>
-                      <Building2 className='mr-3 h-4 w-4' />
+                      <Building2 className='w-4 h-4 mr-3' />
                       Management
                     </Link>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator className='bg-gray-100 my-2' />
+                <DropdownMenuSeparator className='my-2 bg-gray-100' />
                 <DropdownMenuItem
                   onClick={logout}
-                  className='text-gray-700 hover:bg-gray-50 focus:bg-gray-50 rounded-lg px-3 py-2'>
+                  className='px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-50 focus:bg-gray-50'>
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>

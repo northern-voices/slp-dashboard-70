@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -44,7 +44,7 @@ const StudentDetailsModal = ({
   const [showMeetingModal, setShowMeetingModal] = useState(false)
   const [gradesMap, setGradesMap] = useState<Map<string, SchoolGrade>>(new Map())
 
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   useEffect(() => {
     const fetchGrades = async () => {
@@ -110,9 +110,9 @@ const StudentDetailsModal = ({
           )}
           <div className='grid grid-cols-2 gap-3 mt-3'>
             {isLoadingScreenings ? (
-              <div className='flex flex-col h-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden animate-pulse'>
+              <div className='flex flex-col h-full p-4 overflow-hidden bg-white border border-gray-200 shadow-sm rounded-xl animate-pulse'>
                 <div className='flex items-center gap-2 mb-3'>
-                  <div className='w-6 h-6 rounded-full bg-gray-200' />
+                  <div className='w-6 h-6 bg-gray-200 rounded-full' />
                   <div className='w-24 h-3 bg-gray-200 rounded' />
                 </div>
                 <div className='mb-3'>
@@ -142,13 +142,13 @@ const StudentDetailsModal = ({
             )}
 
             {isLoadingMeetings ? (
-              <div className='flex flex-col h-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden animate-pulse'>
+              <div className='flex flex-col h-full p-4 overflow-hidden bg-white border border-gray-200 shadow-sm rounded-xl animate-pulse'>
                 <div className='flex items-center gap-2 mb-3'>
-                  <div className='w-6 h-6 rounded-full bg-gray-200' />
+                  <div className='w-6 h-6 bg-gray-200 rounded-full' />
                   <div className='w-24 h-3 bg-gray-200 rounded' />
                 </div>
-                <div className='space-y-2 mb-3'>
-                  <div className='w-28 h-5 bg-gray-200 rounded-full' />
+                <div className='mb-3 space-y-2'>
+                  <div className='h-5 bg-gray-200 rounded-full w-28' />
                   <div className='flex items-center gap-1.5'>
                     <div className='w-3 h-3 bg-gray-200 rounded' />
                     <div className='w-20 h-3 bg-gray-200 rounded' />

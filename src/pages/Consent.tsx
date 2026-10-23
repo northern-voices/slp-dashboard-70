@@ -1,20 +1,20 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useConsentFormsBySchool } from '@/hooks/students/use-consent-forms'
 import ConsentTable from '@/components/consent/ConsentTable'
 import BulkConsentFormModal from '@/components/consent/BulkConsentFormModal'
 
 const Consent = () => {
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { data: forms = [], isLoading } = useConsentFormsBySchool(currentSchool?.id)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
 
   if (!currentSchool) {
     return (
-      <div className='text-center py-12'>
-        <h3 className='text-lg font-medium text-gray-900 mb-2'>Select a School</h3>
+      <div className='py-12 text-center'>
+        <h3 className='mb-2 text-lg font-medium text-gray-900'>Select a School</h3>
         <p className='text-gray-600'>
           Use the school selector in the sidebar to choose which school to view consent forms from.
         </p>
@@ -31,7 +31,7 @@ const Consent = () => {
         </div>
 
         <Button size='sm' onClick={() => setIsBulkModalOpen(true)}>
-          <Plus className='h-4 w-4' />
+          <Plus className='w-4 h-4' />
           Add
         </Button>
       </div>

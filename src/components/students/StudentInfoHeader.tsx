@@ -18,7 +18,7 @@ import StudentDetailsGrid from './StudentDetailsGrid'
 import StudentNotes from './StudentNotes'
 import EditStudentDialog from '@/components/students/EditStudentDialog'
 import { useSchoolDetails } from '@/hooks/school/useSchoolDetails'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useStudentTransferHistory } from '@/hooks/students'
 import TransferHistorySection from './TransferHistorySection'
 import { getCurrentAcademicYear, getAcademicYearRange } from '@/lib/academicYear'
@@ -42,7 +42,7 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
   const [isLoadingCurrentGrade, setIsLoadingCurrentGrade] = useState(false)
 
   const { toast } = useToast()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 

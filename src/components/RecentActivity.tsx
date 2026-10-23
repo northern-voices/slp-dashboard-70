@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useStudentsBySchool } from '@/hooks/students'
 import { useScreenings } from '@/hooks/screenings'
 import { formatDistanceToNow } from 'date-fns'
@@ -12,7 +13,8 @@ import { Screening } from '@/types/database'
 
 const RecentActivity = () => {
   const navigate = useNavigate()
-  const { currentSchool, userProfile } = useOrganization()
+  const { userProfile } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   // Fetch recent students and screenings
   const { data: students = [], isLoading: studentsLoading } = useStudentsBySchool(currentSchool?.id)
@@ -103,16 +105,16 @@ const RecentActivity = () => {
 
   if (isLoading) {
     return (
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+      <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
         {[1, 2].map(i => (
           <Card key={i} className='bg-white border border-gray-100 shadow-sm rounded-xl'>
             <CardHeader className='pb-3'>
-              <div className='h-4 bg-gray-200 rounded w-32 animate-pulse'></div>
+              <div className='w-32 h-4 bg-gray-200 rounded animate-pulse'></div>
             </CardHeader>
             <CardContent className='pt-0'>
               <div className='space-y-3'>
                 {[1, 2, 3].map(j => (
-                  <div key={j} className='h-4 bg-gray-200 rounded w-full animate-pulse'></div>
+                  <div key={j} className='w-full h-4 bg-gray-200 rounded animate-pulse'></div>
                 ))}
               </div>
             </CardContent>
@@ -124,13 +126,13 @@ const RecentActivity = () => {
 
   if (!currentSchool) {
     return (
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+      <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
         <Card className='bg-white border border-gray-100 shadow-sm rounded-xl'>
           <CardContent className='p-6'>
             <div className='text-center'>
-              <GraduationCap className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>Select a School</h3>
-              <p className='text-gray-600 text-sm'>
+              <GraduationCap className='w-12 h-12 mx-auto mb-4 text-gray-400' />
+              <h3 className='mb-2 text-lg font-medium text-gray-900'>Select a School</h3>
+              <p className='text-sm text-gray-600'>
                 Choose a school to view recent activity and manage students.
               </p>
             </div>
@@ -141,7 +143,7 @@ const RecentActivity = () => {
   }
 
   return (
-    <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+    <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
       {/* Recent Students */}
       <Card className='bg-white border border-gray-100 shadow-sm rounded-xl'>
         <CardHeader className='pb-3'>
@@ -162,10 +164,10 @@ const RecentActivity = () => {
               {recentStudents.map(student => (
                 <div
                   key={student.id}
-                  className='flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer'
+                  className='flex items-center justify-between p-3 transition-colors rounded-lg cursor-pointer hover:bg-gray-50'
                   onClick={() => handleViewStudent(student.id)}>
                   <div className='flex items-center space-x-3'>
-                    <div className='w-8 h-8 bg-brand/10 rounded-full flex items-center justify-center'>
+                    <div className='flex items-center justify-center w-8 h-8 rounded-full bg-brand/10'>
                       <GraduationCap className='w-4 h-4 text-brand' />
                     </div>
                     <div>
@@ -175,16 +177,16 @@ const RecentActivity = () => {
                       <p className='text-xs text-gray-500'>{student.grade || 'N/A'}</p>
                     </div>
                   </div>
-                  <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
+                  <Button variant='ghost' size='sm' className='w-8 h-8 p-0'>
                     <Eye className='w-4 h-4' />
                   </Button>
                 </div>
               ))}
             </div>
           ) : (
-            <div className='text-center py-6'>
-              <GraduationCap className='w-12 h-12 text-gray-400 mx-auto mb-3' />
-              <p className='text-gray-600 text-sm'>No students found in this school.</p>
+            <div className='py-6 text-center'>
+              <GraduationCap className='w-12 h-12 mx-auto mb-3 text-gray-400' />
+              <p className='text-sm text-gray-600'>No students found in this school.</p>
             </div>
           )}
         </CardContent>
@@ -210,9 +212,9 @@ const RecentActivity = () => {
               {recentScreenings.map(screening => (
                 <div
                   key={screening.id}
-                  className='flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors'>
+                  className='flex items-center justify-between p-3 transition-colors rounded-lg hover:bg-gray-50'>
                   <div className='flex items-center space-x-3'>
-                    <div className='w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center'>
+                    <div className='flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100'>
                       <FileText className='w-4 h-4 text-emerald-600' />
                     </div>
                     <div>
@@ -243,9 +245,9 @@ const RecentActivity = () => {
               ))}
             </div>
           ) : (
-            <div className='text-center py-6'>
-              <FileText className='w-12 h-12 text-gray-400 mx-auto mb-3' />
-              <p className='text-gray-600 text-sm'>No recent screenings found.</p>
+            <div className='py-6 text-center'>
+              <FileText className='w-12 h-12 mx-auto mb-3 text-gray-400' />
+              <p className='text-sm text-gray-600'>No recent screenings found.</p>
             </div>
           )}
         </CardContent>

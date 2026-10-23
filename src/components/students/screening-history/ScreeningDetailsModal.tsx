@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -46,7 +46,7 @@ const ScreeningDetailsModal = ({ isOpen, onClose, screening }: ScreeningDetailsM
   const [progressNotesText, setProgressNotesText] = useState('')
 
   const navigate = useNavigate()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   const updateSpeechScreening = useUpdateSpeechScreening()
 

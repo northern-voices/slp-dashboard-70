@@ -21,7 +21,7 @@ import {
   TableBody,
 } from '@/components/ui/responsive-table'
 import { School, Screening, Student, ProgramStatus, ServiceStatus } from '@/types/database'
-import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
+import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import {
   useDeleteScreening,
   useUpdateSpeechScreening,
@@ -122,13 +122,6 @@ const ScreeningsTable = ({
   const navigate = useNavigate()
   const { toast } = useToast()
 
-  const {
-    data: allScreeningsData,
-    isLoading: isLoadingAll,
-    isFetching: isFetchingAll,
-    error: errorAll,
-  } = useScreenings()
-
   const { mutate: updateSpeechScreening } = useUpdateSpeechScreening()
   const { mutate: updateStudent } = useUpdateStudent()
 
@@ -178,9 +171,9 @@ const ScreeningsTable = ({
 
   const {
     data: schoolScreeningsData,
-    isLoading: isLoadingSchool,
+    isLoading,
     isFetching: isFetchingSchool,
-    error: errorSchool,
+    error,
   } = useScreeningsBySchool(
     currentSchool?.id,
     dateRangeFilter === 'school_year' ? 'school_year' : 'all',
@@ -206,12 +199,7 @@ const ScreeningsTable = ({
     setStudentsMap(studentsMapping)
   }, [currentSchool?.id, students])
 
-  const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
-  const error = currentSchool ? errorSchool : errorAll
-
-  const schoolScreenings = currentSchool
-    ? (schoolScreeningsData?.screenings ?? [])
-    : (allScreeningsData ?? [])
+  const schoolScreenings = schoolScreeningsData?.screenings ?? []
 
   const {
     filteredScreenings,
@@ -365,7 +353,7 @@ const ScreeningsTable = ({
           value={getProgramValue(screening)}
           onValueChange={value => handleProgramChange(screening, value as ProgramStatus)}
           disabled={isThisScreeningUpdating}>
-          <SelectTrigger className='w-full h-auto p-0 min-h-8 border-none hover:bg-transparent focus:ring-0'>
+          <SelectTrigger className='w-full h-auto p-0 border-none min-h-8 hover:bg-transparent focus:ring-0'>
             <SelectValue placeholder='Select program'>
               <div className='flex items-center gap-2'>
                 {isThisScreeningUpdating && (
@@ -1315,6 +1303,14 @@ const ScreeningsTable = ({
     { label: 'Date', value: 'date', defaultDirection: 'desc' },
   ]
 
+  if (!currentSchool) {
+    return (
+      <div className='p-8 text-center bg-white border border-gray-200 rounded-lg'>
+        <p className='text-gray-500'>No school selected.</p>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return <ScreeningsTableSkeleton />
   }
@@ -1345,7 +1341,7 @@ const ScreeningsTable = ({
           />
         )}
 
-        <div className='flex items-center justify-between mb-3 gap-2 flex-wrap'>
+        <div className='flex flex-wrap items-center justify-between gap-2 mb-3'>
           <SortControls
             sortField={sortField}
             setSortField={setSortField}

@@ -1,13 +1,13 @@
 import { ArrowLeft, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useDynamicGoalSheetsBySchool } from '@/hooks/goalSheets/use-dynamic-goal-sheets'
 import DynamicGoalSheetsListContent from '@/components/features/goalSheets/DynamicGoalSheetsListContent'
 
 const DynamicGoalSheets = () => {
   const navigate = useNavigate()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { data: sheets = [], isLoading } = useDynamicGoalSheetsBySchool(currentSchool?.id)
 
   const handleCreateNew = () => {

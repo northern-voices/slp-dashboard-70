@@ -13,21 +13,20 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { School } from '@/types/database'
 
 const SchoolSelector = () => {
   const [open, setOpen] = React.useState(false)
-  const { currentSchool, availableSchools, setCurrentSchool, isLoading } = useOrganization()
+  const { availableSchools, isLoading } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const navigate = useNavigate()
-  const { schoolId } = useParams<{ schoolId: string }>()
   const location = useLocation()
 
-  // Function to navigate to school-based route
   const navigateToSchool = (school: School) => {
     const currentPath = location.pathname
 
-    // Close dropdown immediately for instant feedback
     setOpen(false)
 
     let newPath: string
@@ -43,20 +42,16 @@ const SchoolSelector = () => {
     }
 
     navigate(newPath, { replace: true })
-
-    setTimeout(() => {
-      setCurrentSchool(school)
-    }, 0)
   }
 
   if (isLoading) {
     return (
-      <Button variant='outline' disabled className='w-full justify-between text-left font-normal'>
-        <div className='flex items-center space-x-2 min-w-0'>
-          <Skeleton className='w-4 h-4 rounded flex-shrink-0' />
-          <Skeleton className='h-4 w-32' />
+      <Button variant='outline' disabled className='justify-between w-full font-normal text-left'>
+        <div className='flex items-center min-w-0 space-x-2'>
+          <Skeleton className='flex-shrink-0 w-4 h-4 rounded' />
+          <Skeleton className='w-32 h-4' />
         </div>
-        <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+        <ChevronsUpDown className='w-4 h-4 ml-2 opacity-50 shrink-0' />
       </Button>
     )
   }
@@ -68,20 +63,20 @@ const SchoolSelector = () => {
           variant='outline'
           role='combobox'
           aria-expanded={open}
-          className='w-full justify-between text-left font-normal'>
-          <div className='flex items-center space-x-2 min-w-0'>
-            <div className='w-4 h-4 rounded flex items-center justify-center overflow-hidden flex-shrink-0'>
+          className='justify-between w-full font-normal text-left'>
+          <div className='flex items-center min-w-0 space-x-2'>
+            <div className='flex items-center justify-center flex-shrink-0 w-4 h-4 overflow-hidden rounded'>
               <img
                 src='/lovable-uploads/bc930c0b-cb09-4e70-9ac0-a44c74d79d80.png'
                 alt='School Logo'
-                className='w-full h-full object-contain'
+                className='object-contain w-full h-full'
               />
             </div>
             <span className='truncate'>
               {currentSchool ? currentSchool.name : 'Select school...'}
             </span>
           </div>
-          <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+          <ChevronsUpDown className='w-4 h-4 ml-2 opacity-50 shrink-0' />
         </Button>
       </PopoverTrigger>
       <PopoverContent className='w-full p-0' align='start'>
@@ -107,11 +102,11 @@ const SchoolSelector = () => {
                       )}
                     />
                     <div className='flex items-center space-x-2'>
-                      <div className='w-4 h-4 rounded flex items-center justify-center overflow-hidden flex-shrink-0'>
+                      <div className='flex items-center justify-center flex-shrink-0 w-4 h-4 overflow-hidden rounded'>
                         <img
                           src='/lovable-uploads/bc930c0b-cb09-4e70-9ac0-a44c74d79d80.png'
                           alt='School Logo'
-                          className='w-full h-full object-contain'
+                          className='object-contain w-full h-full'
                         />
                       </div>
                       <div className='flex flex-col'>

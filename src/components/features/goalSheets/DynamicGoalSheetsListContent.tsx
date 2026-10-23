@@ -27,7 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useDeleteDynamicGoalSheet } from '@/hooks/goalSheets/use-dynamic-goal-sheets-mutations'
 import { exportDynamicGoalSheetPdf } from '@/lib/exportDynamicGoalSheetPdf'
 import type { DynamicGoalSheetWithPages } from '@/types/database'
@@ -50,7 +50,7 @@ const DynamicGoalSheetsListContent = ({
   hideStudentColumn,
 }: DynamicGoalSheetsListContentProps) => {
   const navigate = useNavigate()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const deleteGoalSheet = useDeleteDynamicGoalSheet()
   const [sheetToDelete, setSheetToDelete] = useState<DynamicGoalSheetWithPages | null>(null)
 

@@ -1,9 +1,9 @@
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import CaseloadTable from '@/components/caseload/CaseloadTable'
 
 const Caseload = () => {
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { data: students = [], isLoading } = useStudentsBySchool(currentSchool?.id)
 
   return (

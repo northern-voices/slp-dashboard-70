@@ -27,7 +27,7 @@ import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { upsertEmailHistory } from '@/api/emailHistory'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
 
@@ -52,7 +52,7 @@ const MonthlyMeetingBulkActions = ({
 
   const { toast } = useToast()
   const { user } = useAuth()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const defaultReportPassword = useDefaultReportPassword()
 
   const deleteMonthlyMeeting = useDeleteMonthlyMeeting()

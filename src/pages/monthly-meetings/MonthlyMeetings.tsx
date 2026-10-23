@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -25,7 +25,7 @@ const MonthlyMeetingsContent = () => {
   const location = useLocation()
   const [activeTab, setActiveTab] = useState(location.state?.activeTab ?? 'progress_checkin')
 
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   const { data: meetings = [] } = useMonthlyMeetingsBySchool(currentSchool?.id, 'all')
 
@@ -49,11 +49,11 @@ const MonthlyMeetingsContent = () => {
   }
 
   return (
-    <main className='max-w-7xl mx-auto'>
+    <main className='mx-auto max-w-7xl'>
       <div className='mb-8'>
         <div className='flex items-center justify-between mb-6'>
           <div>
-            <h1 className='text-3xl font-semibold text-gray-900 mb-2'>Meetings</h1>
+            <h1 className='mb-2 text-3xl font-semibold text-gray-900'>Meetings</h1>
             <p className='text-gray-600'>
               Manage and track all meetings
               {currentSchool && ` for ${currentSchool.name}`}
