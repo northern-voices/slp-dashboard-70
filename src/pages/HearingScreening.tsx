@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft } from 'lucide-react'
 import MultiStepHearingScreeningForm from '@/components/screening/hearing/MultiStepHearingScreeningForm'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useToast } from '@/hooks/use-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { useStudent } from '@/hooks/students/use-students'
@@ -20,7 +21,8 @@ const HearingScreeningContent = () => {
   }>()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { userProfile, currentSchool } = useOrganization()
+  const { userProfile } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { user } = useAuth()
 
   useRedirectOnSchoolChange('/screenings/hearing')
@@ -190,7 +192,7 @@ const HearingScreeningContent = () => {
 
   if (loading) {
     return (
-      <div className='flex justify-center items-center h-64'>
+      <div className='flex items-center justify-center h-64'>
         <LoadingSpinner size='lg' />
       </div>
     )
@@ -204,7 +206,7 @@ const HearingScreeningContent = () => {
             variant='ghost'
             size='sm'
             onClick={handleCancel}
-            className='text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2'>
+            className='px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100'>
             <ChevronLeft className='w-4 h-4 mr-1' />
             Back
           </Button>
@@ -235,7 +237,7 @@ const HearingScreeningContent = () => {
       </div>
 
       {/* Screening Form */}
-      <div className='bg-white rounded-lg border border-gray-200 shadow-sm'>
+      <div className='bg-white border border-gray-200 rounded-lg shadow-sm'>
         <div className='p-6'>
           <MultiStepHearingScreeningForm
             onSubmit={handleSubmit}
