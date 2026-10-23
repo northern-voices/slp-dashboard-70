@@ -14,7 +14,7 @@ import {
   TableCell,
 } from '@/components/ui/responsive-table'
 import { Loader2, Calendar, Eye, Edit2 } from 'lucide-react'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
 import {
@@ -32,7 +32,7 @@ interface StudentPageMonthlyMeetingsTableProps {
 
 const StudentPageMonthlyMeetingsTable = ({ studentId }: StudentPageMonthlyMeetingsTableProps) => {
   const navigate = useNavigate()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const [selectedMeetingForDetails, setSelectedMeetingForDetails] = useState<MonthlyMeeting | null>(
     null
   )
