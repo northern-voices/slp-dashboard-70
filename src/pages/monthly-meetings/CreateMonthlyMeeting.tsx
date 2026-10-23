@@ -2,7 +2,7 @@ import React, { useState, useEffect, Component } from 'react'
 import type { ReactNode } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, Calendar, X } from 'lucide-react'
@@ -85,7 +85,7 @@ const CreateMonthlyMeetingContent = () => {
   const location = useLocation()
 
   const { toast } = useToast()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { user } = useAuth()
 
   const meetingTypeFromNav = location.state?.meeting_type ?? 'progress_checkin'
@@ -448,7 +448,7 @@ const CreateMonthlyMeetingContent = () => {
                 </p>
               </div>
 
-              <div className='space-y-2 hidden'>
+              <div className='hidden space-y-2'>
                 <Label htmlFor='meeting_type'>Meeting Type *</Label>
                 <Controller
                   name='meeting_type'
