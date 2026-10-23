@@ -8,20 +8,17 @@ import ScreeningStats from '@/components/screenings/ScreeningStats'
 import ScreeningsFilters from '@/components/screenings/ScreeningsFilters'
 import ScreeningsTable from '@/components/screenings/ScreeningsTable'
 import { Screening } from '@/types/database'
-import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
+import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 const ScreeningsContent = () => {
   const { currentSchool } = useCurrentSchool()
 
-  const { data: allScreeningsData } = useScreenings()
   const { data: schoolScreeningsData } = useScreeningsBySchool(currentSchool?.id, 'all')
   const schoolScreenings = schoolScreeningsData?.screenings ?? []
 
   const availableSchoolYears = useMemo(() => {
-    const screeningsForYears = currentSchool
-      ? (schoolScreeningsData?.screenings ?? [])
-      : (allScreeningsData ?? [])
+    const screeningsForYears = schoolScreeningsData?.screenings ?? []
 
     const currentYear = getCurrentAcademicYear()
     const years = new Set<string>()
@@ -33,7 +30,7 @@ const ScreeningsContent = () => {
     })
 
     return Array.from(years).sort().reverse() // newest first
-  }, [currentSchool, schoolScreeningsData, allScreeningsData])
+  }, [currentSchool, schoolScreeningsData])
 
   const [selectedScreenings, setSelectedScreenings] = useState<Screening[]>([])
   const [searchTerm, setSearchTerm] = useState('')
