@@ -15,7 +15,7 @@ import { edgeFunctionsApi } from '@/api/edgeFunctions'
 import { upsertEmailHistory } from '@/api/emailHistory'
 import { Loader2, Mail } from 'lucide-react'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
@@ -39,7 +39,7 @@ const MonthlyMeetingsSendReportDialog = ({
 
   const { user } = useAuth()
   const defaultReportPassword = useDefaultReportPassword()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   useEffect(() => {
     if (open && !password) {
@@ -95,7 +95,7 @@ const MonthlyMeetingsSendReportDialog = ({
             Send the monthly meeting report for "{meeting?.meeting_title}" via email.
           </DialogDescription>
         </DialogHeader>
-        <div className='space-y-4 py-4'>
+        <div className='py-4 space-y-4'>
           <MultiEmailInput
             recipientEmails={emails}
             onChange={setEmails}
