@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, CheckCircle, Clock, FileText, PauseCircle, UserX } from 'lucide-react'
-import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
+import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import ScreeningStatsSkeleton from '@/components/skeletons/ScreeningStatsSkeleton'
 import { matchesDateRangeFilter } from '@/lib/screeningDateRangeFilter'
@@ -25,17 +25,9 @@ const ScreeningStats = ({
   const { currentSchool } = useCurrentSchool()
 
   const {
-    data: allScreeningsData,
-    isLoading: isLoadingAll,
-    isFetching: isFetchingAll,
-    error: errorAll,
-  } = useScreenings()
-
-  const {
     data: schoolScreeningsData,
-    isLoading: isLoadingSchool,
-    isFetching: isFetchingSchool,
-    error: errorSchool,
+    isLoading,
+    error,
   } = useScreeningsBySchool(
     currentSchool?.id,
     'all',
@@ -44,15 +36,9 @@ const ScreeningStats = ({
   )
 
   // TODO: Temporarily hide transferred from count for now
-  const schoolScreenings = (
-    currentSchool ? (schoolScreeningsData?.screenings ?? []) : (allScreeningsData ?? [])
-  )
+  const schoolScreenings = (schoolScreeningsData?.screenings ?? [])
     .filter(screening => screening.service_status !== 'transferred')
     .filter(screening => matchesDateRangeFilter(new Date(screening.created_at), dateRangeFilter))
-
-  const isLoading = currentSchool ? isLoadingSchool : isLoadingAll
-  const isFetching = currentSchool ? isFetchingSchool : isFetchingAll
-  const error = currentSchool ? errorSchool : errorAll
 
   // Get the latest screening per student
   const latestScreeningByStudent = new Map<string, (typeof schoolScreenings)[0]>()
@@ -129,6 +115,20 @@ const ScreeningStats = ({
     if (onClearAllFilters) {
       onClearAllFilters(deduplicate)
     }
+  }
+
+  if (!currentSchool) {
+    return (
+      <div className='grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4'>
+        <Card>
+          <CardContent className='pt-6'>
+            <div className='text-center text-gray-500'>
+              <p className='text-sm'>No school selected</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   if (isLoading) {
