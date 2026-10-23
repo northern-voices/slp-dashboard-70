@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, Calendar, X } from 'lucide-react'
@@ -90,7 +90,7 @@ const EditMonthlyMeetingContent = () => {
   const { toast } = useToast()
 
   const { meetingId } = useParams<{ meetingId: string }>()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   const updateMonthlyMeeting = useUpdateMonthlyMeeting()
   const { data: students = [], isLoading: isLoadingStudents } = useStudentsBySchool(
@@ -459,7 +459,7 @@ const EditMonthlyMeetingContent = () => {
 
                   <div className='space-y-2'>
                     <Label>Meeting Type</Label>
-                    <div className='flex h-12 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm opacity-60 cursor-not-allowed'>
+                    <div className='flex items-center w-full h-12 px-3 py-2 text-sm border rounded-md cursor-not-allowed border-input bg-background opacity-60'>
                       <MeetingTypeBadge type={watchedValues.meeting_type || null} />
                     </div>
                   </div>
