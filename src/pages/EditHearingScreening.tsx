@@ -31,7 +31,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useUpdateHearingScreening } from '@/hooks/screenings/use-screening-hearing-mutations'
 import { useHearingScreeningById } from '@/hooks/screenings/use-hearing-screenings'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useUpdateStudent } from '@/hooks/students/use-students-mutations'
 import { schoolGradesApi, type SchoolGrade } from '@/api/schoolGrades'
 import { studentsApi } from '@/api/students'
@@ -69,7 +69,7 @@ const EditHearingScreeningContent = () => {
   const { screeningId } = useParams<{ screeningId: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const updateStudent = useUpdateStudent()
 
   const updateHearingScreening = useUpdateHearingScreening()
@@ -279,7 +279,7 @@ const EditHearingScreeningContent = () => {
       <div className='flex items-center justify-center h-screen'>
         <div className='text-center'>
           <h2 className='text-2xl font-semibold text-gray-900'>Screening not found</h2>
-          <p className='text-gray-600 mt-2'>The screening you're looking for doesn't exist.</p>
+          <p className='mt-2 text-gray-600'>The screening you're looking for doesn't exist.</p>
           <Button onClick={handleGoBack} className='mt-4'>
             Go Back
           </Button>
@@ -302,7 +302,7 @@ const EditHearingScreeningContent = () => {
         </div>
       </div>
 
-      <div className='bg-white rounded-lg border border-gray-200 shadow-sm'>
+      <div className='bg-white border border-gray-200 rounded-lg shadow-sm'>
         <div className='p-6'>
           <div className='space-y-6'>
             {/* Screening Details */}
@@ -314,7 +314,7 @@ const EditHearingScreeningContent = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-4'>
-                <div className='mb-4 py-3 px-5 bg-blue-50 rounded-lg border border-blue-200'>
+                <div className='px-5 py-3 mb-4 border border-blue-200 rounded-lg bg-blue-50'>
                   <div className='flex items-center justify-between'>
                     <div className='flex-1'>
                       <div className='flex items-center gap-2'>
@@ -342,18 +342,18 @@ const EditHearingScreeningContent = () => {
                 </div>
 
                 <div>
-                  <Label className='mb-2 block'>Screening Date</Label>
+                  <Label className='block mb-2'>Screening Date</Label>
                   <Input
                     type='text'
                     value={screeningDate}
                     readOnly
-                    className='bg-gray-50 cursor-not-allowed'
+                    className='cursor-not-allowed bg-gray-50'
                   />
                 </div>
 
                 {/* Screening Result */}
                 <div>
-                  <Label className='mb-2 block'>Screening Result</Label>
+                  <Label className='block mb-2'>Screening Result</Label>
                   <div className='relative'>
                     <Select
                       value={form.watch('result') || ''}
@@ -374,7 +374,7 @@ const EditHearingScreeningContent = () => {
                       <button
                         type='button'
                         onClick={() => form.setValue('result', '')}
-                        className='absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors'>
+                        className='absolute p-1 transition-colors -translate-y-1/2 rounded-full right-8 top-1/2 hover:bg-gray-100'>
                         <X className='w-4 h-4 text-gray-500' />
                       </button>
                     )}
@@ -392,10 +392,10 @@ const EditHearingScreeningContent = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                   {/* Right Ear */}
                   <div>
-                    <h4 className='font-medium mb-3'>Right Ear</h4>
+                    <h4 className='mb-3 font-medium'>Right Ear</h4>
                     <div className='space-y-3'>
                       <div>
                         <Label className='text-sm font-medium text-gray-700'>R+ Volume (ml)</Label>
@@ -406,7 +406,7 @@ const EditHearingScreeningContent = () => {
                           {...form.register('right_vol')}
                           disabled={rightVolImmeasurable}
                         />
-                        <div className='flex items-center space-x-2 mt-2'>
+                        <div className='flex items-center mt-2 space-x-2'>
                           <Checkbox
                             id='right_vol_immeasurable'
                             checked={rightVolImmeasurable}
@@ -433,7 +433,7 @@ const EditHearingScreeningContent = () => {
                           {...form.register('right_compliance')}
                           disabled={rightCompImmeasurable}
                         />
-                        <div className='flex items-center space-x-2 mt-2'>
+                        <div className='flex items-center mt-2 space-x-2'>
                           <Checkbox
                             id='right_comp_immeasurable'
                             checked={rightCompImmeasurable}
@@ -460,7 +460,7 @@ const EditHearingScreeningContent = () => {
                           {...form.register('right_press')}
                           disabled={rightPressImmeasurable}
                         />
-                        <div className='flex items-center space-x-2 mt-2'>
+                        <div className='flex items-center mt-2 space-x-2'>
                           <Checkbox
                             id='right_press_immeasurable'
                             checked={rightPressImmeasurable}
@@ -481,7 +481,7 @@ const EditHearingScreeningContent = () => {
 
                   {/* Left Ear */}
                   <div>
-                    <h4 className='font-medium mb-3'>Left Ear</h4>
+                    <h4 className='mb-3 font-medium'>Left Ear</h4>
                     <div className='space-y-3'>
                       <div>
                         <Label className='text-sm font-medium text-gray-700'>L+ Volume (ml)</Label>
@@ -492,7 +492,7 @@ const EditHearingScreeningContent = () => {
                           {...form.register('left_vol')}
                           disabled={leftVolImmeasurable}
                         />
-                        <div className='flex items-center space-x-2 mt-2'>
+                        <div className='flex items-center mt-2 space-x-2'>
                           <Checkbox
                             id='left_vol_immeasurable'
                             checked={leftVolImmeasurable}
@@ -519,7 +519,7 @@ const EditHearingScreeningContent = () => {
                           {...form.register('left_compliance')}
                           disabled={leftCompImmeasurable}
                         />
-                        <div className='flex items-center space-x-2 mt-2'>
+                        <div className='flex items-center mt-2 space-x-2'>
                           <Checkbox
                             id='left_comp_immeasurable'
                             checked={leftCompImmeasurable}
@@ -546,7 +546,7 @@ const EditHearingScreeningContent = () => {
                           {...form.register('left_press')}
                           disabled={leftPressImmeasurable}
                         />
-                        <div className='flex items-center space-x-2 mt-2'>
+                        <div className='flex items-center mt-2 space-x-2'>
                           <Checkbox
                             id='left_press_immeasurable'
                             checked={leftPressImmeasurable}
@@ -575,7 +575,7 @@ const EditHearingScreeningContent = () => {
               </CardHeader>
               <CardContent className='space-y-4'>
                 <div>
-                  <Label className='mb-2 block'>Clinical Observations</Label>
+                  <Label className='block mb-2'>Clinical Observations</Label>
                   <Textarea
                     {...form.register('clinical_notes')}
                     placeholder='Enter clinical observations and notes...'
@@ -623,7 +623,7 @@ const EditHearingScreeningContent = () => {
               Update the student's first name, last name, and current grade below.
             </DialogDescription>
           </DialogHeader>
-          <div className='space-y-4 py-4'>
+          <div className='py-4 space-y-4'>
             <div className='space-y-2'>
               <label className='text-sm font-medium text-gray-700'>First Name</label>
               <Input
