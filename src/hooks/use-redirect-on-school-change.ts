@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 
 export const useRedirectOnSchoolChange = (redirectTo: string) => {
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const navigate = useNavigate()
   const prevSchoolRef = useRef(currentSchool?.id)
 
