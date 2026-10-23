@@ -8,6 +8,7 @@ interface OrganizationContextType {
   currentOrganization: Organization | null
   userProfile: SLPProfile | null
   availableSchools: School[]
+  updateAvailableSchool: (school: School) => void
   isLoading: boolean
   refreshData: () => Promise<void>
 }
@@ -182,6 +183,15 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
     }
   }, [user])
 
+  const updateAvailableSchool = useCallback(
+    (updatedSchool: School) => {
+      setAvailableSchoolsState(prev =>
+        prev.map(school => (school.id === updatedSchool?.id ? updatedSchool : school))
+      )
+    },
+    [setAvailableSchoolsState]
+  )
+
   // Only fetch data once when user changes
   useEffect(() => {
     if (user?.id && !isInitialized) {
@@ -207,8 +217,17 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
       availableSchools,
       isLoading: isLoading || !isInitialized,
       refreshData,
+      updateAvailableSchool,
     }),
-    [currentOrganization, userProfile, availableSchools, isLoading, isInitialized, refreshData]
+    [
+      currentOrganization,
+      userProfile,
+      availableSchools,
+      isLoading,
+      isInitialized,
+      refreshData,
+      updateAvailableSchool,
+    ]
   )
 
   return <OrganizationContext.Provider value={value}>{children}</OrganizationContext.Provider>
