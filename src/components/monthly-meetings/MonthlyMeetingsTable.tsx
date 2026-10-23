@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/responsive-table'
 import { useMonthlyMeetingsBySchool } from '@/hooks/monthly-meetings/use-monthly-meetings-queries'
 import { useDeleteMonthlyMeeting } from '@/hooks/monthly-meetings/use-monthly-meetings-mutations'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { MonthlyMeeting } from '@/api/monthlymeetings'
 import MonthlyMeetingDetailsModal from '@/pages/monthly-meetings/MonthlyMeetingDetailsModal'
 import MonthlyMeetingBulkActions from '@/components/monthly-meetings/MonthlyMeetingBulkActions'
@@ -42,7 +42,7 @@ const MonthlyMeetingsTable = ({
   facilitatorFilter,
   meetingTypeFilter,
 }: MonthlyMeetingsTableProps) => {
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const [selectedMeetings, setSelectedMeetings] = useState<MonthlyMeeting[]>([])
   const [sortField, setSortField] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null)
@@ -174,7 +174,7 @@ const MonthlyMeetingsTable = ({
 
   if (error) {
     return (
-      <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
+      <div className='p-4 border border-red-200 rounded-lg bg-red-50'>
         <p className='text-red-800'>Error loading monthly meetings: {error.message}</p>
       </div>
     )
@@ -196,7 +196,7 @@ const MonthlyMeetingsTable = ({
         />
       )}
 
-      <div className='flex items-center justify-between mb-3 gap-2 flex-wrap'>
+      <div className='flex flex-wrap items-center justify-between gap-2 mb-3'>
         <SortControls
           sortField={sortField}
           setSortField={setSortField}
@@ -205,12 +205,12 @@ const MonthlyMeetingsTable = ({
           options={sortOptions}
         />
 
-        <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
+        <span className='inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full'>
           {filteredMeetings.length} meeting{filteredMeetings.length !== 1 ? 's' : ''} found
         </span>
       </div>
 
-      <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+      <div className='overflow-hidden bg-white border border-gray-200 rounded-lg'>
         <ResponsiveTable className='w-full'>
           <TableHeader>
             <tr>
@@ -253,7 +253,7 @@ const MonthlyMeetingsTable = ({
         </ResponsiveTable>
 
         {filteredMeetings.length === 0 && (
-          <div className='text-center py-8'>
+          <div className='py-8 text-center'>
             <p className='text-gray-500'>No monthly meetings found matching your criteria.</p>
           </div>
         )}
