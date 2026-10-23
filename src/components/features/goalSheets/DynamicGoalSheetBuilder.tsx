@@ -13,7 +13,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Download, Plus, Trash2 } from 'lucide-react'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useDynamicGoalSheet } from '@/hooks/goalSheets/use-dynamic-goal-sheets'
 import {
   useUpdatePageGoalText,
@@ -30,7 +30,7 @@ interface DynamicGoalSheetBuilderProps {
 
 const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
   const navigate = useNavigate()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   const { data: sheet, isLoading } = useDynamicGoalSheet(sheetId)
   const updatePageGoalText = useUpdatePageGoalText()
@@ -158,7 +158,7 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
           size='icon'
           onClick={handleAddPage}
           disabled={addPage.isPending}
-          className='w-12 h-12 rounded-full border-2'
+          className='w-12 h-12 border-2 rounded-full'
           aria-label='Add new goal sheet page'>
           <Plus className='w-6 h-6' />
         </Button>
