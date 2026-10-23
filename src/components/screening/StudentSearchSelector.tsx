@@ -15,6 +15,7 @@ import { Student } from '@/types/database'
 import { useStudentsByGrade, useStudentsBySchool } from '@/hooks/students/use-students'
 import { useToast } from '@/hooks/use-toast'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { studentsApi } from '@/api/students'
@@ -69,7 +70,8 @@ const StudentSearchSelector = ({
 
   const { toast } = useToast()
 
-  const { userProfile, availableSchools, currentSchool, isLoading: orgLoading } = useOrganization()
+  const { userProfile, availableSchools, isLoading: orgLoading } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const queryClient = useQueryClient()
 
   const createStudentMutation = useMutation({
