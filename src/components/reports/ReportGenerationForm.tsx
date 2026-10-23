@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useAuth } from '@/contexts/AuthContext'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -54,7 +54,7 @@ const ReportGenerationForm = () => {
   const [modalType, setModalType] = useState<'success' | 'error'>('success')
   const [modalMessage, setModalMessage] = useState('')
 
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const { user } = useAuth()
   const navigate = useNavigate()
 
