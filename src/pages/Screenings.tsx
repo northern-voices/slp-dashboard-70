@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import CreateScreeningModal from '@/components/screenings/CreateScreeningModal'
@@ -12,7 +12,7 @@ import { useScreenings, useScreeningsBySchool } from '@/hooks/screenings/use-scr
 import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 const ScreeningsContent = () => {
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   const { data: allScreeningsData } = useScreenings()
   const { data: schoolScreeningsData } = useScreeningsBySchool(currentSchool?.id, 'all')
@@ -108,11 +108,11 @@ const ScreeningsContent = () => {
     : 'Dr. Sarah Johnson'
 
   return (
-    <div className='max-w-7xl mx-auto'>
+    <div className='mx-auto max-w-7xl'>
       <div className='mb-8'>
         <div className='flex items-center justify-between mb-6'>
           <div>
-            <h1 className='text-3xl font-semibold text-gray-900 mb-2'>Speech Screenings</h1>
+            <h1 className='mb-2 text-3xl font-semibold text-gray-900'>Speech Screenings</h1>
             <p className='text-gray-600'>
               Manage and track all speech screenings
               {currentSchool && ` for ${currentSchool.name}`}
