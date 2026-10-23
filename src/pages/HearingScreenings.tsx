@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -12,7 +12,7 @@ import HearingScreeningsSkeleton from '@/components/skeletons/HearingScreeningsS
 import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 const HearingScreenings = () => {
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [dateRangeFilter, setDateRangeFilter] = useState('school_year')
@@ -67,11 +67,11 @@ const HearingScreenings = () => {
   if (isLoading) return <HearingScreeningsSkeleton />
 
   return (
-    <div className='max-w-7xl mx-auto'>
+    <div className='mx-auto max-w-7xl'>
       <div className='mb-8'>
         <div className='flex items-center justify-between mb-6'>
           <div>
-            <h1 className='text-3xl font-semibold text-gray-900 mb-2'>Hearing Screenings</h1>
+            <h1 className='mb-2 text-3xl font-semibold text-gray-900'>Hearing Screenings</h1>
             <p className='text-gray-600'>
               Manage and track all hearing screenings
               {currentSchool && ` for ${currentSchool.name}`}
