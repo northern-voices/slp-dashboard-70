@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import { upsertEmailHistory } from '@/api/emailHistory'
 import { useAuth } from '@/contexts/AuthContext'
 import { SPEECH_REPORT_OPTIONS, SPEECH_GOAL_SHEET_OPTIONS } from '@/constants/reportOptions'
 import MultiEmailInput from '@/components/reports/shared/MultiEmailInput'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
@@ -52,7 +52,7 @@ const BulkSendReportsModal = ({
   const defaultReportPassword = useDefaultReportPassword()
 
   const { user } = useAuth()
-  const { currentSchool } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
 
   const isHearingOnly = selectedScreenings.every(s => s.source_table === 'hearing')
 
@@ -199,7 +199,7 @@ const BulkSendReportsModal = ({
     return (
       <Dialog open={isOpen} onOpenChange={() => {}}>
         <DialogContent className='mx-auto'>
-          <div className='flex flex-col items-center text-center space-y-6'>
+          <div className='flex flex-col items-center space-y-6 text-center'>
             {/* Icon */}
             <div className='flex justify-center'>
               {resultType === 'success' ? (
@@ -214,16 +214,16 @@ const BulkSendReportsModal = ({
               <DialogTitle className='text-2xl font-semibold text-gray-900'>
                 {resultType === 'success' ? 'Reports Sent Successfully!' : 'Error Sending Reports'}
               </DialogTitle>
-              <DialogDescription className='text-gray-600 text-base leading-relaxed'>
+              <DialogDescription className='text-base leading-relaxed text-gray-600'>
                 {resultMessage}
               </DialogDescription>
             </div>
 
             {/* Action Button */}
-            <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
+            <div className='flex flex-col w-full gap-3 sm:flex-row sm:w-auto'>
               <Button
                 onClick={handleResultClose}
-                className='w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2'>
+                className='w-full px-6 py-2 sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground'>
                 {resultType === 'success' ? 'Done' : 'Try Again'}
               </Button>
             </div>
@@ -237,7 +237,7 @@ const BulkSendReportsModal = ({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle className='text-xl font-medium text-gray-700 flex items-center gap-2'>
+          <DialogTitle className='flex items-center gap-2 text-xl font-medium text-gray-700'>
             <Mail className='w-5 h-5' />
             Send Reports for {selectedScreenings.length} Screening
             {selectedScreenings.length !== 1 ? 's' : ''}
@@ -249,7 +249,7 @@ const BulkSendReportsModal = ({
           {!isHearingOnly && (
             <div className='space-y-3'>
               <Label className='text-sm font-medium'>Select Type of Report</Label>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+              <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
                 {[...SPEECH_REPORT_OPTIONS, ...SPEECH_GOAL_SHEET_OPTIONS].map(report => {
                   const Icon = report.icon
                   const isSelected = selectedReports.includes(report.value)
@@ -270,7 +270,7 @@ const BulkSendReportsModal = ({
                               : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                           }
                         `}>
-                      <div className='flex items-start space-x-3 w-full'>
+                      <div className='flex items-start w-full space-x-3'>
                         <div
                           className={`
                             flex-shrink-0 p-2 rounded-lg
@@ -326,7 +326,7 @@ const BulkSendReportsModal = ({
           )}
 
           {progressReportSelected && invalidProgressStudents.length > 0 && (
-            <div className='p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-sm'>
+            <div className='p-3 text-sm border rounded-lg border-amber-200 bg-amber-50 text-amber-800'>
               Progress reports require exactly 2 screenings selected per student. Adjust your
               selection for:{' '}
               {invalidProgressStudents.map(group => group[0].student_name).join(', ')}
@@ -337,17 +337,17 @@ const BulkSendReportsModal = ({
           {isHearingOnly && (
             <div className='space-y-3'>
               <Label className='text-sm font-medium'>Report Type</Label>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                <div className='relative cursor-default rounded-lg border-2 p-4 transition-all duration-200 w-full border-blue-600 bg-blue-50 shadow-sm'>
-                  <div className='flex items-start space-x-3 w-full'>
-                    <div className='flex-shrink-0 p-2 rounded-lg bg-blue-600 text-white'>
+              <div className='grid grid-cols-1 gap-3 md:grid-cols-2'>
+                <div className='relative w-full p-4 transition-all duration-200 border-2 border-blue-600 rounded-lg shadow-sm cursor-default bg-blue-50'>
+                  <div className='flex items-start w-full space-x-3'>
+                    <div className='flex-shrink-0 p-2 text-white bg-blue-600 rounded-lg'>
                       <BookOpen className='w-4 h-4' />
                     </div>
                     <div className='flex-1 min-w-0 overflow-hidden'>
-                      <h3 className='text-sm font-medium leading-tight truncate text-blue-900'>
+                      <h3 className='text-sm font-medium leading-tight text-blue-900 truncate'>
                         Hearing Screening Report
                       </h3>
-                      <p className='text-xs mt-1 leading-tight text-blue-700'>
+                      <p className='mt-1 text-xs leading-tight text-blue-700'>
                         Detailed hearing screening assessment and results overview
                       </p>
                     </div>
@@ -384,7 +384,7 @@ const BulkSendReportsModal = ({
               onClick={handleSendReports}
               variant='default'
               size='sm'
-              className='w-full h-9 bg-blue-600 hover:bg-blue-700 text-white'
+              className='w-full text-white bg-blue-600 h-9 hover:bg-blue-700'
               disabled={
                 recipientEmails.length === 0 ||
                 (!isHearingOnly && selectedReports.length === 0) ||
