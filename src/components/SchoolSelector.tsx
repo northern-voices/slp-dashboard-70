@@ -13,21 +13,20 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { School } from '@/types/database'
 
 const SchoolSelector = () => {
   const [open, setOpen] = React.useState(false)
-  const { currentSchool, availableSchools, setCurrentSchool, isLoading } = useOrganization()
+  const { availableSchools, isLoading } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
   const navigate = useNavigate()
-  const { schoolId } = useParams<{ schoolId: string }>()
   const location = useLocation()
 
-  // Function to navigate to school-based route
   const navigateToSchool = (school: School) => {
     const currentPath = location.pathname
 
-    // Close dropdown immediately for instant feedback
     setOpen(false)
 
     let newPath: string
@@ -43,10 +42,6 @@ const SchoolSelector = () => {
     }
 
     navigate(newPath, { replace: true })
-
-    setTimeout(() => {
-      setCurrentSchool(school)
-    }, 0)
   }
 
   if (isLoading) {
