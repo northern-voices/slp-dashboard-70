@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Activity, School } from '@/types/database'
+import { Activity } from '@/types/database'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import SchoolInfoCard from '@/components/SchoolInfoCard'
 import AddTeamMemberModal from '@/components/AddTeamMemberModal'
 import EditTeamMemberModal from '@/components/EditTeamMemberModal'
@@ -41,14 +42,10 @@ const DashboardContent = () => {
 
   const availableYears = getRecentAcademicYears(2)
 
-  const {
-    userProfile,
-    currentSchool,
-    isLoading,
-    currentOrganization,
-    refreshData,
-    setCurrentSchool,
-  } = useOrganization()
+  const { userProfile, isLoading, currentOrganization, refreshData, updateAvailableSchool } =
+    useOrganization()
+  const { currentSchool } = useCurrentSchool()
+
   const queryClient = useQueryClient()
 
   const {
@@ -146,7 +143,7 @@ const DashboardContent = () => {
 
       // update currentSchool
       if (updatedSchoolData) {
-        const updatedSchool: School = {
+        updateAvailableSchool({
           id: updatedSchoolData.id,
           organization_id: updatedSchoolData.organization_id,
           name: updatedSchoolData.name,
@@ -160,8 +157,7 @@ const DashboardContent = () => {
           primary_slp_id: updatedSchoolData.primary_slp_id || null,
           created_at: updatedSchoolData.created_at,
           updated_at: updatedSchoolData.updated_at,
-        }
-        setCurrentSchool(updatedSchool)
+        })
       }
 
       // Wait a bit for React to re-render with the new currentSchool then invalidate and refetch
@@ -193,7 +189,7 @@ const DashboardContent = () => {
 
       if (error) throw error
 
-      setCurrentSchool({ ...currentSchool, primary_slp_id: data.primarySlpId })
+      updateAvailableSchool({ ...currentSchool, primary_slp_id: data.primarySlpId })
 
       // Wait for a bit for React to re-render with the new currentSchool then invalidate and refetch
       await new Promise(resolve => setTimeout(resolve, 100))
