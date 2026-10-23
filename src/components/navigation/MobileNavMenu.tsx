@@ -6,10 +6,11 @@ import { Menu, X, Home, Users, FileText, Settings, Building2 } from 'lucide-reac
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import SchoolSelector from '@/components/SchoolSelector'
 import { getNavigationGroups } from '@/components/sidebar/sidebarNavigationData'
 import { cn } from '@/lib/utils'
-// import SLPSchoolSelector from '@/components/slp/SLPSchoolSelector'
+import { SCHOOL_FREE_ROUTES } from '@/constants/app'
 import { SLPProfile } from '@/types/database'
 import { UserRole } from '@/types/database'
 
@@ -40,18 +41,21 @@ const MobileNavMenu = ({
   const navigate = useNavigate()
   const location = useLocation()
   const { logout } = useAuth()
-  const { currentSchool } = useOrganization()
+  const { currentOrganization } = useOrganization()
+  const { currentSchool } = useCurrentSchool()
+  const isSchoolFreeRoute = SCHOOL_FREE_ROUTES.some(route => location.pathname.includes(route))
   const navigationGroups = getNavigationGroups(
     location,
     userRole,
-    userProfile as unknown as Record<string, unknown>
+    userProfile as unknown as Record<string, unknown>,
+    currentSchool
   )
   const initials = userName
     .split(' ')
     .map(n => n[0])
     .join('')
   const orgInitials =
-    currentSchool?.name
+    currentOrganization?.name
       ?.split(' ')
       .map(n => n[0])
       .join('') || 'ORG'
@@ -68,13 +72,13 @@ const MobileNavMenu = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side='left' className='w-80 p-0 bg-white'>
+      <SheetContent side='left' className='p-0 bg-white w-80'>
         <div className='flex flex-col h-full'>
           {/* Header with user info */}
           <SheetHeader className='p-6 border-b border-gray-100'>
             <div className='flex items-center gap-3'>
-              <Avatar className='h-10 w-10'>
-                <AvatarFallback className='bg-gray-100 text-gray-700 text-sm font-medium'>
+              <Avatar className='w-10 h-10'>
+                <AvatarFallback className='text-sm font-medium text-gray-700 bg-gray-100'>
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -86,21 +90,30 @@ const MobileNavMenu = ({
           </SheetHeader>
 
           {/* School Selector Section */}
-          <div className='p-4 border-b border-gray-100'>
-            <div className='space-y-2'>
-              <label className='block text-sm font-medium text-gray-700'>
-                {userRole === 'slp' ? 'Select School' : 'Current School'}
-              </label>
-              <SafeSchoolSelector userRole={userRole} />
+          {isSchoolFreeRoute ? (
+            <div className='p-4 border-b border-gray-100'>
+              <div className='space-y-2'>
+                <label className='block text-sm font-medium text-gray-700'>Organization</label>
+                <p className='text-sm text-gray-900 truncate'>{currentOrganization?.name}</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className='p-4 border-b border-gray-100'>
+              <div className='space-y-2'>
+                <label className='block text-sm font-medium text-gray-700'>
+                  {userRole === 'slp' ? 'Select School' : 'Current School'}
+                </label>
+                <SafeSchoolSelector userRole={userRole} />
+              </div>
+            </div>
+          )}
 
           {/* Navigation Menu */}
-          <div className='flex-1 overflow-y-auto p-4'>
+          <div className='flex-1 p-4 overflow-y-auto'>
             <nav className='space-y-6'>
               {navigationGroups.map(group => (
                 <div key={group.label} className='space-y-3'>
-                  <h3 className='text-xs font-semibold text-gray-400 uppercase tracking-wider px-2'>
+                  <h3 className='px-2 text-xs font-semibold tracking-wider text-gray-400 uppercase'>
                     {group.label}
                   </h3>
                   <div className='space-y-1'>
@@ -131,15 +144,15 @@ const MobileNavMenu = ({
           </div>
 
           {/* Footer with quick actions */}
-          <div className='p-4 border-t border-gray-100 space-y-2'>
+          <div className='p-4 space-y-2 border-t border-gray-100'>
             <div className='flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 min-h-[44px]'>
-              <Avatar className='h-5 w-5'>
-                <AvatarFallback className='bg-gray-100 text-gray-700 text-xs'>
+              <Avatar className='w-5 h-5'>
+                <AvatarFallback className='text-xs text-gray-700 bg-gray-100'>
                   {orgInitials}
                 </AvatarFallback>
               </Avatar>
               <div className='flex flex-col'>
-                <span className='font-medium'>{currentSchool?.name || 'Organization'}</span>
+                <span className='font-medium'>{currentOrganization?.name || 'Organization'}</span>
                 <span className='text-xs text-gray-500'>Organization Info</span>
               </div>
             </div>
