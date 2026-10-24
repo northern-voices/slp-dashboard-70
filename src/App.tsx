@@ -165,14 +165,7 @@ const App = () => (
                       <DashboardLayout />
                     </ProtectedRoute>
                   }>
-                  <Route
-                    path='/'
-                    element={
-                      <SchoolRouter>
-                        <Index />
-                      </SchoolRouter>
-                    }
-                  />
+                  <Route path='/' element={<SchoolRouter>{null}</SchoolRouter>} />
 
                   {/* School-based routes */}
                   <Route
@@ -217,85 +210,25 @@ const App = () => (
                   />
 
                   {/* Screening Routes */}
-                  <Route
-                    path='/screenings'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <Screenings />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
-                  />
-                  <Route
-                    path='/screening/speech'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <SpeechScreening />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
-                  />
+                  <Route path='/screenings' element={<SchoolRouter>{null}</SchoolRouter>} />
+                  <Route path='/screening/speech' element={<SchoolRouter>{null}</SchoolRouter>} />
                   <Route
                     path='/screening/rescreening'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <Rescreening />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/screening/rescreening/:studentId'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <Rescreening />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
-                  <Route
-                    path='/screenings/hearing'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
-                          <HearingScreenings />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
-                  />
-                  <Route
-                    path='/screening/hearing'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
-                          <HearingScreening />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
-                  />
+                  <Route path='/screenings/hearing' element={<SchoolRouter>{null}</SchoolRouter>} />
+                  <Route path='/screening/hearing' element={<SchoolRouter>{null}</SchoolRouter>} />
                   <Route
                     path='/edit-screening/:screeningId'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <EditScreening />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/edit-hearing-screening/:screeningId'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
-                          <EditHearingScreening />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
 
                   <Route
@@ -400,47 +333,21 @@ const App = () => (
                   />
 
                   {/* Students */}
-                  <Route
-                    path='/students'
-                    element={
-                      <SchoolRouter>
-                        <Students />
-                      </SchoolRouter>
-                    }
-                  />
+                  <Route path='/students' element={<SchoolRouter>{null}</SchoolRouter>} />
                   <Route
                     path='/students/:studentId'
-                    element={
-                      <SchoolRouter>
-                        <StudentProfile />
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/students/:studentId/progress-check'
-                    element={
-                      <SchoolRouter>
-                        <MonthlyProgressCheck />
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/students/:studentId/goal-sheet'
-                    element={
-                      <SchoolRouter>
-                        <GenerateGoalSheet />
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
 
-                  <Route
-                    path='/caseload'
-                    element={
-                      <SchoolRouter>
-                        <Caseload />
-                      </SchoolRouter>
-                    }
-                  />
+                  <Route path='/caseload' element={<SchoolRouter>{null}</SchoolRouter>} />
 
                   <Route
                     path='/school/:schoolId/caseload'
@@ -451,14 +358,7 @@ const App = () => (
                     }
                   />
 
-                  <Route
-                    path='/consent'
-                    element={
-                      <SchoolRouter>
-                        <Consent />
-                      </SchoolRouter>
-                    }
-                  />
+                  <Route path='/consent' element={<SchoolRouter>{null}</SchoolRouter>} />
                   <Route
                     path='/school/:schoolId/consent'
                     element={
@@ -471,51 +371,23 @@ const App = () => (
                   {/* Reports */}
                   <Route
                     path='/speech-screening-reports'
-                    element={
-                      <SchoolRouter>
-                        <Reports />
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/speech-screening-reports/school-wide-speech'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <SchoolWideReports />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/speech-screening-reports/school-wide-hearing'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
-                          <SchoolWideHearingReports />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/speech-screening-reports/speech'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <SpeechReports />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/speech-screening-reports/hearing'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'hearing_technician']}>
-                          <HearingReports />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
 
                   <Route
@@ -539,13 +411,7 @@ const App = () => (
 
                   <Route
                     path='/speech-screening-reports/goal-sheets'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <GoalSheets />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/school/:schoolId/speech-screening-reports/goal-sheets'
@@ -560,13 +426,7 @@ const App = () => (
 
                   <Route
                     path='/speech-screening-reports/school-wide-goal-sheets'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <SchoolWideGoalSheets />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/school/:schoolId/speech-screening-reports/school-wide-goal-sheets'
@@ -581,13 +441,7 @@ const App = () => (
 
                   <Route
                     path='/speech-screening-reports/dynamic-goal-sheets/new'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <DynamicGoalSheetNew />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/school/:schoolId/speech-screening-reports/dynamic-goal-sheets/new'
@@ -602,13 +456,7 @@ const App = () => (
 
                   <Route
                     path='/speech-screening-reports/dynamic-goal-sheets/:sheetId'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <DynamicGoalSheet />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/school/:schoolId/speech-screening-reports/dynamic-goal-sheets/:sheetId'
@@ -623,13 +471,7 @@ const App = () => (
 
                   <Route
                     path='/speech-screening-reports/dynamic-goal-sheets'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <DynamicGoalSheets />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/school/:schoolId/speech-screening-reports/dynamic-goal-sheets'
@@ -674,29 +516,14 @@ const App = () => (
                   />
 
                   {/* Monthly Meetings */}
-                  <Route
-                    path='/monthly-meetings'
-                    element={
-                      <SchoolRouter>
-                        <MonthlyMeetings />
-                      </SchoolRouter>
-                    }
-                  />
+                  <Route path='/monthly-meetings' element={<SchoolRouter>{null}</SchoolRouter>} />
                   <Route
                     path='/monthly-meetings/create'
-                    element={
-                      <SchoolRouter>
-                        <CreateMonthlyMeeting />
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
                     path='/monthly-meetings/edit/:meetingId'
-                    element={
-                      <SchoolRouter>
-                        <EditMonthlyMeeting />
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
 
                   <Route
@@ -735,22 +562,12 @@ const App = () => (
                   />
 
                   {/* School Support */}
-                  <Route
-                    path='/school-support'
-                    element={
-                      <SchoolRouter>
-                        <SchoolSupport />
-                      </SchoolRouter>
-                    }
-                  />
+                  <Route path='/school-support' element={<SchoolRouter>{null}</SchoolRouter>} />
                   <Route
                     path='/school-support/create'
-                    element={
-                      <SchoolRouter>
-                        <CreateSchoolSupportForm />
-                      </SchoolRouter>
-                    }
+                    element={<SchoolRouter>{null}</SchoolRouter>}
                   />
+
                   <Route
                     path='/school/:schoolId/school-support'
                     element={
@@ -789,33 +606,6 @@ const App = () => (
                   />
                   <Route
                     path='/notifications'
-                    element={
-                      <SchoolRouter>
-                        <Notifications />
-                      </SchoolRouter>
-                    }
-                  />
-
-                  <Route
-                    path='/school/:schoolId/management'
-                    element={
-                      <SchoolRouter>
-                        <RoleGuard allowedRoles={['admin', 'super_admin']}>
-                          <Management />
-                        </RoleGuard>
-                      </SchoolRouter>
-                    }
-                  />
-                  <Route
-                    path='/school/:schoolId/profile'
-                    element={
-                      <SchoolRouter>
-                        <Profile />
-                      </SchoolRouter>
-                    }
-                  />
-                  <Route
-                    path='/school/:schoolId/notifications'
                     element={
                       <SchoolRouter>
                         <Notifications />
