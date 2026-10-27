@@ -191,18 +191,18 @@ const Header = ({
                 <DropdownMenuItem
                   className='px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-50 focus:bg-gray-50'
                   asChild>
-                  <a href='/profile' className='flex items-center'>
+                  <Link to='/profile' className='flex items-center'>
                     <User className='w-4 h-4 mr-3' />
                     Profile
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className='px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-50 focus:bg-gray-50'
                   asChild>
-                  <a href='/profile?tab=account' className='flex items-center'>
+                  <Link to='/profile?tab=account' className='flex items-center'>
                     <SettingsIcon className='w-4 h-4 mr-3' />
                     Settings
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
                 {(resolvedRole === 'admin' || resolvedRole === 'super_admin') && (
                   <DropdownMenuItem
