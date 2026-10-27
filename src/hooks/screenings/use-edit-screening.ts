@@ -61,6 +61,12 @@ export const useEditScreening = () => {
       graduated: false,
       paused: false,
       general_articulation_notes: '',
+      absent: { isAbsent: false, notes: '' },
+      no_consent: { isNoConsent: false, notes: '' },
+      complex_needs: false,
+      unable_to_screen: false,
+      priority_re_screen: false,
+      priority_re_screen_notes: '',
       error_patterns: {
         attendance: {
           absent: false,
@@ -151,6 +157,7 @@ export const useEditScreening = () => {
             priority_re_screen_notes: '',
           },
           articulation: { soundErrors: [], articulationNotes: '' },
+          consent: { no_consent: false, no_consent_notes: '' },
           screening_metadata: {
             screening_date: '',
             qualifies_for_speech_program: false,
@@ -182,6 +189,10 @@ export const useEditScreening = () => {
           articulation: {
             ...defaultErrorPatterns.articulation,
             ...(screeningData.error_patterns?.articulation || {}),
+          },
+          consent: {
+            ...defaultErrorPatterns.consent,
+            ...(screeningData.error_patterns?.consent || {}),
           },
           screening_metadata: {
             ...defaultErrorPatterns.screening_metadata,
@@ -226,6 +237,21 @@ export const useEditScreening = () => {
           paused: screeningData.error_patterns?.screening_metadata?.paused || false,
           general_articulation_notes:
             screeningData.error_patterns?.articulation?.articulationNotes || '',
+          absent: {
+            isAbsent: screeningData.error_patterns?.attendance?.absent || false,
+            notes: screeningData.error_patterns?.attendance?.absence_notes || '',
+          },
+          no_consent: {
+            isNoConsent: screeningData.error_patterns?.consent?.no_consent || false,
+            notes:
+              (screeningData.error_patterns?.consent as { no_consent_notes?: string })
+                ?.no_consent_notes || '',
+          },
+          complex_needs: screeningData.result === 'complex_needs',
+          unable_to_screen: screeningData.result === 'unable_to_screen',
+          priority_re_screen: screeningData.error_patterns?.attendance?.priority_re_screen || false,
+          priority_re_screen_notes:
+            screeningData.error_patterns?.attendance?.priority_re_screen_notes || '',
           error_patterns: mergedErrorPatterns,
         })
       } catch (error) {
@@ -287,6 +313,18 @@ export const useEditScreening = () => {
           ...formData.error_patterns.articulation,
           articulationNotes: formData.general_articulation_notes || '',
         },
+        attendance: {
+          ...formData.error_patterns.attendance,
+          absent: formData.absent?.isAbsent || false,
+          absence_notes: formData.absent?.notes || '',
+          priority_re_screen: formData.priority_re_screen || false,
+          priority_re_screen_notes: formData.priority_re_screen_notes || '',
+        },
+        consent: {
+          ...formData.error_patterns.consent,
+          no_consent: formData.no_consent?.isNoConsent || false,
+          no_consent_notes: formData.no_consent?.notes || '',
+        },
         screening_metadata: {
           ...formData.error_patterns.screening_metadata,
           academic_year: formData.academic_year,
@@ -315,6 +353,7 @@ export const useEditScreening = () => {
       }
 
       const determineProgramStatus = (): ProgramStatus => {
+        if (formData.no_consent?.isNoConsent) return 'no_consent'
         if (formData.graduated) return 'graduated'
         if (formData.sub) return 'sub'
         if (formData.qualifies_for_speech_program) return 'qualified'
@@ -336,7 +375,15 @@ export const useEditScreening = () => {
           clinical_notes: formData.clinical_notes,
           referral_notes: formData.referral_notes,
           progress_notes: formData.progress_notes,
-          result: formData.speech_screen_result || formData.result,
+          result: formData.absent?.isAbsent
+            ? 'absent'
+            : formData.no_consent?.isNoConsent
+              ? 'non_registered_no_consent'
+              : formData.complex_needs
+                ? 'complex_needs'
+                : formData.unable_to_screen
+                  ? 'unable_to_screen'
+                  : formData.speech_screen_result || formData.result,
           vocabulary_support: formData.vocabulary_support,
           error_patterns: updatedErrorPatterns,
         },
