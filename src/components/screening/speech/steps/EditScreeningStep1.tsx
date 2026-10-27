@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -38,6 +40,87 @@ const EditScreeningStep1 = ({
   const { data: schoolGrades } = useSchoolGrades()
 
   const currentAcademicYear = getCurrentAcademicYear()
+
+  const [localAbsentValue, setLocalAbsentValue] = useState<boolean>(
+    () => form.getValues('absent.isAbsent') || false
+  )
+  const [localNoConsentValue, setLocalNoConsentValue] = useState<boolean>(
+    () => form.getValues('no_consent.isNoConsent') || false
+  )
+
+  const handleAbsentChange = useCallback(
+    (checked: boolean) => {
+      if (checked && localNoConsentValue) return
+
+      setLocalAbsentValue(checked)
+
+      if (checked) {
+        setLocalNoConsentValue(false)
+        form.setValue('no_consent', { isNoConsent: false, notes: '' })
+        form.setValue('qualifies_for_speech_program', false)
+        form.setValue('sub', false)
+      }
+
+      form.setValue('absent', {
+        isAbsent: checked,
+        notes: form.getValues('absent.notes') || '',
+      })
+
+      if (
+        !checked &&
+        !localNoConsentValue &&
+        !form.getValues('complex_needs') &&
+        !form.getValues('unable_to_screen')
+      ) {
+        form.setValue('priority_re_screen', false)
+        form.setValue('priority_re_screen_notes', '')
+      }
+    },
+    [form, localNoConsentValue]
+  )
+
+  const handleNoConsentChange = useCallback(
+    (checked: boolean) => {
+      if (checked && localAbsentValue) return
+
+      setLocalNoConsentValue(checked)
+
+      if (checked) {
+        setLocalAbsentValue(false)
+        form.setValue('absent', { isAbsent: false, notes: '' })
+        form.setValue('priority_re_screen', false)
+        form.setValue('priority_re_screen_notes', '')
+      }
+
+      form.setValue('no_consent', {
+        isNoConsent: checked,
+        notes: form.getValues('no_consent.notes') || '',
+      })
+
+      if (
+        !checked &&
+        !localAbsentValue &&
+        !form.getValues('complex_needs') &&
+        !form.getValues('unable_to_screen')
+      ) {
+        form.setValue('priority_re_screen', false)
+        form.setValue('priority_re_screen_notes', '')
+      }
+    },
+    [form, localAbsentValue]
+  )
+
+  useEffect(() => {
+    const formAbsentValue = form.getValues('absent.isAbsent')
+    if (formAbsentValue !== localAbsentValue) {
+      setLocalAbsentValue(formAbsentValue || false)
+    }
+
+    const formNoConsentValue = form.getValues('no_consent.isNoConsent')
+    if (formNoConsentValue !== localNoConsentValue) {
+      setLocalNoConsentValue(formNoConsentValue || false)
+    }
+  }, [form, localAbsentValue, localNoConsentValue])
 
   const availableAcademicYears = React.useMemo(() => {
     if (!selectedGrade) return []
@@ -76,6 +159,9 @@ const EditScreeningStep1 = ({
   const handleAcademicYearChange = (academicYear: string) => {
     form.setValue('academic_year', academicYear)
   }
+
+  const showPriorityReScreen =
+    localAbsentValue || Boolean(form.watch('complex_needs')) || Boolean(form.watch('unable_to_screen'))
 
   return (
     <div className='space-y-6'>
@@ -151,6 +237,158 @@ const EditScreeningStep1 = ({
               </Select>
             </div>
           )}
+
+          <div className='space-y-3'>
+            <div className='flex items-center space-x-2'>
+              <Checkbox
+                id='absent'
+                checked={localAbsentValue}
+                onCheckedChange={handleAbsentChange}
+                disabled={
+                  localNoConsentValue ||
+                  Boolean(form.watch('complex_needs')) ||
+                  Boolean(form.watch('unable_to_screen'))
+                }
+              />
+              <Label
+                htmlFor='absent'
+                className={`text-sm font-medium ${
+                  localNoConsentValue ||
+                  Boolean(form.watch('complex_needs')) ||
+                  Boolean(form.watch('unable_to_screen'))
+                    ? 'text-gray-400'
+                    : ''
+                }`}>
+                Absent
+              </Label>
+            </div>
+
+            <div className='flex items-center space-x-2'>
+              <Checkbox
+                id='no_consent'
+                checked={localNoConsentValue}
+                onCheckedChange={handleNoConsentChange}
+                disabled={
+                  localAbsentValue ||
+                  Boolean(form.watch('complex_needs')) ||
+                  Boolean(form.watch('unable_to_screen'))
+                }
+              />
+              <Label
+                htmlFor='no_consent'
+                className={`text-sm font-medium ${
+                  localAbsentValue ||
+                  Boolean(form.watch('complex_needs')) ||
+                  Boolean(form.watch('unable_to_screen'))
+                    ? 'text-gray-400'
+                    : ''
+                }`}>
+                No Consent (Test)
+              </Label>
+            </div>
+
+            <div className='flex items-center space-x-2'>
+              <Checkbox
+                id='complex_needs'
+                checked={Boolean(form.watch('complex_needs'))}
+                disabled={
+                  localAbsentValue || localNoConsentValue || Boolean(form.watch('unable_to_screen'))
+                }
+                onCheckedChange={checked => {
+                  form.setValue('complex_needs', Boolean(checked))
+                  if (checked) {
+                    form.setValue('unable_to_screen', false)
+                    setLocalAbsentValue(false)
+                    setLocalNoConsentValue(false)
+                    form.setValue('absent', { isAbsent: false, notes: '' })
+                    form.setValue('no_consent', { isNoConsent: false, notes: '' })
+                  }
+                  if (
+                    !checked &&
+                    !form.getValues('unable_to_screen') &&
+                    !localAbsentValue &&
+                    !localNoConsentValue
+                  ) {
+                    form.setValue('priority_re_screen', false)
+                    form.setValue('priority_re_screen_notes', '')
+                  }
+                }}
+              />
+              <Label
+                htmlFor='complex_needs'
+                className={`text-sm font-medium ${localAbsentValue || localNoConsentValue || Boolean(form.watch('unable_to_screen')) ? 'text-gray-400' : ''}`}>
+                Complex Needs (unable to screen)
+              </Label>
+            </div>
+
+            <div className='flex items-center space-x-2'>
+              <Checkbox
+                id='unable_to_screen'
+                checked={Boolean(form.watch('unable_to_screen'))}
+                disabled={
+                  localAbsentValue || localNoConsentValue || Boolean(form.watch('complex_needs'))
+                }
+                onCheckedChange={checked => {
+                  form.setValue('unable_to_screen', Boolean(checked))
+                  if (checked) {
+                    form.setValue('complex_needs', false)
+                    setLocalAbsentValue(false)
+                    setLocalNoConsentValue(false)
+                    form.setValue('absent', { isAbsent: false, notes: '' })
+                    form.setValue('no_consent', { isNoConsent: false, notes: '' })
+                  }
+                  if (
+                    !checked &&
+                    !form.getValues('complex_needs') &&
+                    !localAbsentValue &&
+                    !localNoConsentValue
+                  ) {
+                    form.setValue('priority_re_screen', false)
+                    form.setValue('priority_re_screen_notes', '')
+                  }
+                }}
+              />
+              <Label
+                htmlFor='unable_to_screen'
+                className={`text-sm font-medium ${localAbsentValue || localNoConsentValue || Boolean(form.watch('complex_needs')) ? 'text-gray-400' : ''}`}>
+                Student Refusal / Compliance (unable to screen)
+              </Label>
+            </div>
+
+            {showPriorityReScreen && (
+              <div>
+                <div className='flex items-center space-x-2'>
+                  <Checkbox
+                    id='priority_re_screen'
+                    checked={Boolean(form.watch('priority_re_screen'))}
+                    onCheckedChange={checked => {
+                      form.setValue('priority_re_screen', Boolean(checked))
+                      if (!checked) {
+                        form.setValue('priority_re_screen_notes', '')
+                      }
+                    }}
+                  />
+                  <Label htmlFor='priority_re_screen' className='text-sm font-medium'>
+                    Priority re-screen
+                  </Label>
+                </div>
+
+                {Boolean(form.watch('priority_re_screen')) && (
+                  <div className='mt-2'>
+                    <Label htmlFor='priority_re_screen_notes' className='text-sm font-medium'>
+                      Priority Re-screen Notes (optional)
+                    </Label>
+                    <Textarea
+                      {...form.register('priority_re_screen_notes')}
+                      placeholder='Enter notes about why this student needs a priority re-screen'
+                      rows={2}
+                      className='mt-1'
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
