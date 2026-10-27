@@ -25,16 +25,13 @@ export const useEditScreening = () => {
   const { currentSchool } = useCurrentSchool()
 
   const [screening, setScreening] = useState<Screening | null>(null)
-  const [screeningGrade, setScreeningGrade] = useState<string>('N/A')
-  const [studentCurrentGrade, setStudentCurrentGrade] = useState<string | null>(null)
-  const [gradesMatch, setGradesMatch] = useState<boolean>(true)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [studentData, setStudentData] = useState(null)
-  const [isEditingStudent, setIsEditingStudent] = useState(false)
-  const [editedFirstName, setEditedFirstName] = useState('')
-  const [editedLastName, setEditedLastName] = useState('')
-  const [editedGradeLevel, setEditedGradeLevel] = useState<string>('')
+  const [currentStep, setCurrentStep] = useState(1)
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [selectedGrade, setSelectedGrade] = useState<string>('')
   const [clinicalNotesOpen, setClinicalNotesOpen] = useState(false)
   const [referralNotesOpen, setReferralNotesOpen] = useState(false)
   const [progressNotesOpen, setProgressNotesOpen] = useState(false)
@@ -48,6 +45,7 @@ export const useEditScreening = () => {
   const form = useForm<SpeechScreeningFormValues>({
     mode: 'onChange',
     defaultValues: {
+      academic_year: '',
       screening_type: '',
       screening_date: '',
       clinical_notes: '',
@@ -59,6 +57,7 @@ export const useEditScreening = () => {
       vocabulary_support_recommended: false,
       qualifies_for_speech_program: false,
       sub: false,
+      to_be_determined: false,
       graduated: false,
       paused: false,
       general_articulation_notes: '',
@@ -78,6 +77,7 @@ export const useEditScreening = () => {
           qualifies_for_speech_program: false,
           vocabulary_support_recommended: false,
           sub: false,
+          to_be_determined: false,
           graduated: false,
           paused: false,
         },
@@ -118,10 +118,14 @@ export const useEditScreening = () => {
           try {
             student = await studentsApi.getStudent(screeningData.student_id)
             setStudentData(student)
+            setFirstName(student?.first_name || '')
+            setLastName(student?.last_name || '')
           } catch (error) {
             console.error('Error fetching student:', error)
           }
         }
+
+        let resolvedAcademicYear = getCurrentAcademicYear()
 
         if (currentSchool?.id) {
           try {
@@ -129,14 +133,9 @@ export const useEditScreening = () => {
 
             if (screeningData.grade_id) {
               const screeningGradeObj = grades.find(g => g.id === screeningData.grade_id)
-              if (screeningGradeObj) setScreeningGrade(screeningGradeObj.grade_level)
-            }
-
-            if (student?.current_grade_id) {
-              const studentGradeObj = grades.find(g => g.id === student.current_grade_id)
-              if (studentGradeObj) {
-                setStudentCurrentGrade(studentGradeObj.grade_level)
-                if (student.current_grade_id !== screeningData.grade_id) setGradesMatch(false)
+              if (screeningGradeObj) {
+                setSelectedGrade(screeningGradeObj.grade_level)
+                resolvedAcademicYear = screeningGradeObj.academic_year
               }
             }
           } catch (error) {
@@ -157,6 +156,7 @@ export const useEditScreening = () => {
             qualifies_for_speech_program: false,
             vocabulary_support_recommended: false,
             sub: false,
+            to_be_determined: false,
             graduated: false,
           },
           add_areas_of_concern: {
@@ -203,6 +203,7 @@ export const useEditScreening = () => {
         }
 
         form.reset({
+          academic_year: resolvedAcademicYear,
           screening_type: screeningData.screening_type || '',
           screening_date: screeningData.created_at
             ? format(new Date(screeningData.created_at), 'yyyy-MM-dd')
@@ -219,6 +220,8 @@ export const useEditScreening = () => {
           qualifies_for_speech_program:
             screeningData.error_patterns?.screening_metadata?.qualifies_for_speech_program || false,
           sub: screeningData.error_patterns?.screening_metadata?.sub || false,
+          to_be_determined:
+            screeningData.error_patterns?.screening_metadata?.to_be_determined || false,
           graduated: screeningData.error_patterns?.screening_metadata?.graduated || false,
           paused: screeningData.error_patterns?.screening_metadata?.paused || false,
           general_articulation_notes:
@@ -242,11 +245,41 @@ export const useEditScreening = () => {
 
   const handleGoBack = () => navigate(-1)
 
+  const handleNext = () => setCurrentStep(step => Math.min(step + 1, 2))
+  const handlePrevious = () => setCurrentStep(step => Math.max(step - 1, 1))
+
+  const canProceedToNext = () => {
+    return Boolean(firstName.trim() && lastName.trim() && selectedGrade && form.watch('academic_year'))
+  }
+
   const handleSave = async () => {
     if (!screening) return
+
+    if (!firstName.trim() || !lastName.trim()) {
+      toast({
+        title: 'Error',
+        description: 'First name and last name are required.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setSaving(true)
     try {
       const formData = form.getValues()
+
+      let resolvedGrade: SchoolGrade | null = null
+      if (selectedGrade && currentSchool?.id) {
+        try {
+          resolvedGrade = await schoolGradesApi.getOrCreateGrade(
+            currentSchool.id,
+            selectedGrade,
+            formData.academic_year || getCurrentAcademicYear()
+          )
+        } catch (error) {
+          console.error('Grade validation error:', error)
+        }
+      }
 
       const updatedErrorPatterns = {
         ...formData.error_patterns,
@@ -256,9 +289,11 @@ export const useEditScreening = () => {
         },
         screening_metadata: {
           ...formData.error_patterns.screening_metadata,
+          academic_year: formData.academic_year,
           vocabulary_support_recommended: formData.vocabulary_support_recommended,
           qualifies_for_speech_program: formData.qualifies_for_speech_program,
           sub: formData.sub,
+          to_be_determined: formData.to_be_determined,
           graduated: formData.graduated,
           paused: formData.paused,
         },
@@ -297,6 +332,7 @@ export const useEditScreening = () => {
         id: screening.id,
         data: {
           screening_type: formData.screening_type,
+          grade_id: resolvedGrade?.id || screening.grade_id,
           clinical_notes: formData.clinical_notes,
           referral_notes: formData.referral_notes,
           progress_notes: formData.progress_notes,
@@ -305,6 +341,26 @@ export const useEditScreening = () => {
           error_patterns: updatedErrorPatterns,
         },
       })
+
+      if (studentData?.id) {
+        await updateStudent.mutateAsync({
+          id: studentData.id,
+          studentData: {
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+          },
+        })
+
+        setStudentData({
+          ...studentData,
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+        })
+
+        setScreening(prev =>
+          prev ? { ...prev, student_name: `${firstName.trim()} ${lastName.trim()}` } : prev
+        )
+      }
 
       if (isLatestScreening && studentData) {
         try {
@@ -323,6 +379,8 @@ export const useEditScreening = () => {
       queryClient.invalidateQueries({ queryKey: ['screenings'] })
       queryClient.invalidateQueries({ queryKey: ['speech-screenings'] })
       if (studentData?.id) {
+        queryClient.invalidateQueries({ queryKey: ['students'] })
+        queryClient.invalidateQueries({ queryKey: ['students', studentData.id] })
         queryClient.invalidateQueries({ queryKey: ['screenings', 'by-student', studentData.id] })
         queryClient.invalidateQueries({
           queryKey: ['speech-screenings', 'by-student', studentData.id],
@@ -345,127 +403,29 @@ export const useEditScreening = () => {
     }
   }
 
-  const handleEditStudent = () => {
-    if (!studentData) {
-      toast({
-        title: 'Error',
-        description: 'Student data not loaded yet. Please try again.',
-        variant: 'destructive',
-      })
-      return
-    }
-    setEditedFirstName(studentData.first_name)
-    setEditedLastName(studentData.last_name)
-    setEditedGradeLevel(studentCurrentGrade || '')
-    setIsEditingStudent(true)
-  }
-
-  const handleSaveStudent = async () => {
-    if (!studentData?.id || !editedFirstName.trim() || !editedLastName.trim()) {
-      toast({
-        title: 'Error',
-        description: 'First name and last name are required.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    try {
-      let resolvedGrade: SchoolGrade | null = null
-
-      if (editedGradeLevel && currentSchool?.id) {
-        resolvedGrade = await schoolGradesApi.getOrCreateGrade(
-          currentSchool.id,
-          editedGradeLevel,
-          getCurrentAcademicYear()
-        )
-      }
-
-      await updateStudent.mutateAsync({
-        id: studentData.id,
-        studentData: {
-          first_name: editedFirstName.trim(),
-          last_name: editedLastName.trim(),
-          current_grade_id: resolvedGrade?.id,
-        },
-      })
-
-      const updatedStudent = {
-        ...studentData,
-        first_name: editedFirstName.trim(),
-        last_name: editedLastName.trim(),
-        current_grade_id: resolvedGrade?.id || null,
-      }
-      setStudentData(updatedStudent)
-
-      if (screening) {
-        setScreening({
-          ...screening,
-          student_name: `${editedFirstName.trim()} ${editedLastName.trim()}`,
-        })
-      }
-
-      if (resolvedGrade) {
-        setStudentCurrentGrade(resolvedGrade.grade_level)
-        setGradesMatch(screening?.grade_id === resolvedGrade?.id)
-      } else {
-        setStudentCurrentGrade(null)
-        setGradesMatch(screening?.grade_id ? false : true)
-      }
-
-      queryClient.invalidateQueries({ queryKey: ['students'] })
-      queryClient.invalidateQueries({ queryKey: ['students', studentData.id] })
-      queryClient.invalidateQueries({ queryKey: ['screenings'] })
-      queryClient.invalidateQueries({ queryKey: ['speech-screenings'] })
-
-      setIsEditingStudent(false)
-      toast({
-        title: 'Student updated',
-        description: 'Student information has been successfully updated.',
-      })
-    } catch (error) {
-      console.error('Error updating student:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to update student information. Please try again.',
-        variant: 'destructive',
-      })
-    }
-  }
-
-  const handleCancelEditStudent = () => {
-    setIsEditingStudent(false)
-    setEditedFirstName('')
-    setEditedLastName('')
-    setEditedGradeLevel('')
-  }
-
   return {
     form,
     screening,
-    screeningGrade,
-    studentCurrentGrade,
-    gradesMatch,
     loading,
     saving,
     studentData,
-    isEditingStudent,
-    editedFirstName,
-    editedLastName,
-    editedGradeLevel,
+    currentStep,
+    firstName,
+    lastName,
+    selectedGrade,
     clinicalNotesOpen,
     referralNotesOpen,
     progressNotesOpen,
-    setEditedFirstName,
-    setEditedLastName,
-    setEditedGradeLevel,
+    setFirstName,
+    setLastName,
+    setSelectedGrade,
     setClinicalNotesOpen,
     setReferralNotesOpen,
     setProgressNotesOpen,
     handleGoBack,
+    handleNext,
+    handlePrevious,
+    canProceedToNext,
     handleSave,
-    handleEditStudent,
-    handleSaveStudent,
-    handleCancelEditStudent,
   }
 }
