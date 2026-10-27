@@ -364,11 +364,13 @@ export const useEditScreening = () => {
 
       if (isLatestScreening && studentData) {
         try {
+          const latestGradeId = resolvedGrade?.id || screening.grade_id
           await updateStudent.mutateAsync({
             id: studentData.id,
             studentData: {
               program_status: determineProgramStatus(),
               service_status: determineServiceStatus(),
+              ...(latestGradeId ? { current_grade_id: latestGradeId } : {}),
             },
           })
         } catch (error) {
