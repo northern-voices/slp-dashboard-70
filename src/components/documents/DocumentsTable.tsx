@@ -11,24 +11,11 @@ import {
 } from '@/components/ui/responsive-table'
 import { format } from 'date-fns'
 import DocumentDetailsModal from '@/components/documents/DocumentDetailsModal'
-import { DocumentWithStudent } from '@/api/documents'
+import { documentTypeLabel, DocumentWithStudent } from '@/api/documents'
 
 interface DocumentsTableProps {
   documents: DocumentWithStudent[]
   isLoading: boolean
-}
-
-const documentTypeLabel = (type: string) => {
-  switch (type) {
-    case 'goal_sheet':
-      return 'Goal Sheet'
-    case 'initial_speech_report':
-      return 'Initial Speech Report'
-    case 'progress_speech_report':
-      return 'Progress Speech Report'
-    default:
-      return type
-  }
 }
 
 const DocumentsTable = ({ documents, isLoading }: DocumentsTableProps) => {
