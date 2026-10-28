@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
-import { documentsApi, DocumentType } from '@/api/documents'
+import { documentsApi, documentTypeLabel, DocumentType } from '@/api/documents'
 import { format } from 'date-fns'
 import { Loader2, Download, ImageOff, Pencil, Check, X } from 'lucide-react'
 import { useUpdateDocumentFileName } from '@/hooks/students/use-documents'
@@ -28,19 +28,6 @@ interface DocumentDetailsModalProps {
   isOpen: boolean
   onClose: () => void
   document: DocumentDetails | null
-}
-
-const documentTypeLabel = (type: string) => {
-  switch (type) {
-    case 'goal_sheet':
-      return 'Goal Sheet'
-    case 'initial_speech_report':
-      return 'Initial Speech Report'
-    case 'progress_speech_report':
-      return 'Progress Speech Report'
-    default:
-      return type
-  }
 }
 
 const DocumentDetailsModal = ({ isOpen, onClose, document: doc }: DocumentDetailsModalProps) => {
