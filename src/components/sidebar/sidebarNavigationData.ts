@@ -9,6 +9,7 @@ import {
   Ear,
   ClipboardList,
   ShieldCheck,
+  FileText,
 } from 'lucide-react'
 import { Location } from 'react-router-dom'
 import { LucideIcon } from 'lucide-react'
@@ -120,6 +121,17 @@ export const getNavigationGroups = (
       isActive:
         location.pathname === '/consent' ||
         (useSchoolRoutes && location.pathname.startsWith(`/school/${currentSchool.id}/consent`)),
+
+      skeleton: CaseloadSkeleton,
+    },
+    {
+      title: 'Documents',
+      url: useSchoolRoutes ? `/school/${currentSchool.id}/documents` : '/documents',
+      icon: FileText,
+      isActive:
+        location.pathname === '/documents' ||
+        (useSchoolRoutes &&
+          location.pathname.startsWith(`/school/${currentSchool.id}/documents`)),
 
       skeleton: CaseloadSkeleton,
     },
