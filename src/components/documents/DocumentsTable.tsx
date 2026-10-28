@@ -22,12 +22,12 @@ const documentTypeLabel = (type: string) => {
   switch (type) {
     case 'goal_sheet':
       return 'Goal Sheet'
-    case 'iep':
-      return 'IEP'
-    case 'evaluation_report':
-      return 'Evaluation Report'
+    case 'initial_speech_report':
+      return 'Initial Speech Report'
+    case 'progress_speech_report':
+      return 'Progress Speech Report'
     default:
-      return 'Other'
+      return type
   }
 }
 
