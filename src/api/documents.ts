@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 
-export type DocumentType = 'goal_sheet' | 'iep' | 'evaluation_report' | 'other'
+export type DocumentType = 'goal_sheet' | 'initial_speech_report' | 'progress_speech_report'
 
 export interface DocumentFileEntry {
   file: File
