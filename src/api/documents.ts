@@ -2,6 +2,19 @@ import { supabase } from '@/lib/supabase'
 
 export type DocumentType = 'goal_sheet' | 'initial_speech_report' | 'progress_speech_report'
 
+export const documentTypeLabel = (type: DocumentType): string => {
+  switch (type) {
+    case 'goal_sheet':
+      return 'Goal Sheet'
+    case 'initial_speech_report':
+      return 'Initial Speech Report'
+    case 'progress_speech_report':
+      return 'Progress Speech Report'
+    default:
+      return type
+  }
+}
+
 export interface DocumentFileEntry {
   file: File
   documentType: DocumentType
