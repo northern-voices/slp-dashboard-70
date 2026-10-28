@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useStudentsBySchool } from '@/hooks/students/use-students'
 import StudentPageMonthlyMeetingsTable from '@/components/monthly-meetings/StudentPageMonthlyMeetingsTable'
 import ConsentFormsSection from '@/components/students/ConsentFormsSection'
+import DocumentsSection from '@/components/students/DocumentsSection'
 import StudentProfileSkeleton from '@/components/skeletons/StudentProfileSkeleton'
 import StudentPageDynamicGoalSheetsTable from '@/components/features/goalSheets/StudentPageDynamicGoalSheetsTable'
 
@@ -144,6 +145,7 @@ const StudentProfileContent = () => {
         <StudentPageMonthlyMeetingsTable studentId={studentId} />
         <StudentPageDynamicGoalSheetsTable studentId={studentId} />
         <ConsentFormsSection student={student} />
+        <DocumentsSection student={student} />
       </div>
     </main>
   )
