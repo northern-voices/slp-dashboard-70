@@ -18,23 +18,10 @@ import { format } from 'date-fns'
 import { Student } from '@/types/database'
 import DocumentModal from './DocumentModal'
 import DocumentDetailsModal from '@/components/documents/DocumentDetailsModal'
-import { DocumentWithStudent } from '@/api/documents'
+import { documentTypeLabel, DocumentWithStudent } from '@/api/documents'
 
 interface DocumentsSectionProps {
   student: Student
-}
-
-const documentTypeLabel = (type: string) => {
-  switch (type) {
-    case 'goal_sheet':
-      return 'Goal Sheet'
-    case 'initial_speech_report':
-      return 'Initial Speech Report'
-    case 'progress_speech_report':
-      return 'Progress Speech Report'
-    default:
-      return type
-  }
 }
 
 const DocumentsSection = ({ student }: DocumentsSectionProps) => {
