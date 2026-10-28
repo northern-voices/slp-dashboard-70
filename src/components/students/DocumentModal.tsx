@@ -199,9 +199,8 @@ const DocumentModal = ({ isOpen, onClose, student }: DocumentModalProps) => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value='goal_sheet'>Goal Sheet</SelectItem>
-                        <SelectItem value='iep'>IEP</SelectItem>
-                        <SelectItem value='evaluation_report'>Evaluation Report</SelectItem>
-                        <SelectItem value='other'>Other</SelectItem>
+                        <SelectItem value='initial_speech_report'>Initial Speech Report</SelectItem>
+                        <SelectItem value='progress_speech_report'>Progress Speech Report</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
