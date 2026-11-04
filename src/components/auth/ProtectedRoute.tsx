@@ -8,12 +8,6 @@ interface ProtectedRouteProps {
   children: React.ReactNode
 }
 
-function decodeJwtPayload(jwt: string): Record<string, unknown> {
-  const payload = jwt.split('.')[1]
-  const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
-  return JSON.parse(atob(base64))
-}
-
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, isLoading } = useAuth()
   const location = useLocation()
@@ -34,49 +28,33 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     Promise.all([
       supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
       supabase.auth.mfa.listFactors(),
-      supabase.auth.getSession(),
     ])
-      .then(
-        async ([
-          { data: aal },
-          { data: factors },
-          {
-            data: { session },
-          },
-        ]) => {
-          const {
-            data: { user },
-          } = await supabase.auth.getUser()
+      .then(async ([{ data: aal }, { data: factors }]) => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
 
-          if (user?.app_metadata?.mfa_exempt === true) {
-            return
-          }
-
-          const preference = user?.user_metadata?.preferred_mfa ?? 'email'
-          const hasFactors = (factors?.totp?.length ?? 0) > 0
-
-          if (preference === 'totp' && hasFactors) {
-            if (aal?.nextLevel === 'aal2' && aal?.currentLevel !== 'aal2') {
-              setMfaRedirect('totp-challenge')
-            }
-          } else {
-            const sessionId = session
-              ? (decodeJwtPayload(session.access_token).session_id as string | undefined)
-              : undefined
-
-            const { data: profile } = await supabase
-              .from('users')
-              .select('email_mfa_verified_session_id')
-              .eq('id', user.id)
-              .single()
-
-            const emailVerified =
-              !!sessionId && profile?.email_mfa_verified_session_id === sessionId
-
-            if (!emailVerified) setMfaRedirect('email-challenge')
-          }
+        if (user?.app_metadata?.mfa_exempt === true) {
+          return
         }
-      )
+
+        const preference = user?.user_metadata?.preferred_mfa ?? 'email'
+        const hasFactors = (factors?.totp?.length ?? 0) > 0
+
+        if (preference === 'totp' && hasFactors) {
+          if (aal?.nextLevel === 'aal2' && aal?.currentLevel !== 'aal2') {
+            setMfaRedirect('totp-challenge')
+          }
+        } else {
+          const emailVerified = localStorage.getItem(`email_mfa_${user.id}`) === 'true'
+          console.log('[ProtectedRoute] email MFA check', {
+            userId: user.id,
+            emailVerified,
+            storedValue: localStorage.getItem(`email_mfa_${user.id}`),
+          })
+          if (!emailVerified) setMfaRedirect('email-challenge')
+        }
+      })
       .catch(error => {
         console.error('[ProtectedRoute] MFA check failed:', error)
       })
