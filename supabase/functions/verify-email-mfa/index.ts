@@ -70,7 +70,7 @@ Deno.serve(async (req: Request) => {
 
     // 2. Immediately kill the session verify just created.
     if (verifyData.access_token) {
-      await fetch(`${supabaseUrl}/auth/v1/logout?scope=global`, {
+      await fetch(`${supabaseUrl}/auth/v1/logout?scope=local`, {
         method: 'POST',
         headers: { apikey: anonKey, Authorization: `Bearer ${verifyData.access_token}` },
       }).catch(error => console.error('Failed to revoke scratch session:', error))
