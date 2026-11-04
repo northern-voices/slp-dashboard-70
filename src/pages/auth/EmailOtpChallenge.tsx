@@ -69,10 +69,8 @@ const EmailOtpChallenge = () => {
 
     setIsLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('verify-email-mfa', {
-        body: { email, token: code },
-      })
-      if (error || !data?.success) throw error ?? new Error(data?.error || 'Invalid code')
+      const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' })
+      if (error) throw error
 
       localStorage.setItem(`email_mfa_${userId}`, 'true')
       navigate(from, { replace: true })
