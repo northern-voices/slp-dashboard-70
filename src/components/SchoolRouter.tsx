@@ -14,7 +14,7 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const { schoolId, currentSchool } = useCurrentSchool()
-  const { availableSchools, isLoading, userProfile, loadError, refreshData } = useOrganization()
+  const { availableSchools, isLoading, userProfile } = useOrganization()
   const [lastSelectedSchoolId, setLastSelectedSchoolId] = useLocalStorage<string | null>(
     'lastSelectedSchoolId',
     null
@@ -86,24 +86,6 @@ const SchoolRouter: React.FC<SchoolRouterProps> = ({ children }) => {
 
   // If no schools available, show error
   if (availableSchools.length === 0 && !isSchoolFreeRoute) {
-    if (loadError) {
-      return (
-        <div className='flex items-center justify-center min-h-screen'>
-          <div className='text-center'>
-            <h2 className='mb-2 text-xl font-semibold text-gray-900'>Couldn't Load Your Schools</h2>
-            <p className='mb-4 text-gray-600'>
-              Something went wrong loading your school assignments.
-            </p>
-            <button
-              onClick={() => refreshData()}
-              className='rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700'>
-              Try Again
-            </button>
-          </div>
-        </div>
-      )
-    }
-
     return (
       <div className='flex items-center justify-center min-h-screen'>
         <div className='text-center'>
