@@ -44,6 +44,11 @@ const getGoalSummary = (sheet: DynamicGoalSheetWithPages) => {
   return rest.length > 0 ? `${firstPage.goal_text} (+${rest.length} more)` : firstPage.goal_text
 }
 
+const getSheetDisplayName = (sheet: DynamicGoalSheetWithPages) => {
+  const studentName = `${sheet.student?.first_name ?? ''} ${sheet.student?.last_name ?? ''}`.trim()
+  return `${studentName || 'Student'} - Goal Sheet - ${format(new Date(sheet.created_at), 'MMM d, yyyy')}`
+}
+
 const DynamicGoalSheetsListContent = ({
   sheets,
   isLoading,
@@ -92,7 +97,7 @@ const DynamicGoalSheetsListContent = ({
       <ResponsiveTable className='w-full'>
         <TableHeader>
           <tr>
-            {!hideStudentColumn && <TableHead>Student</TableHead>}
+            {!hideStudentColumn && <TableHead>Name</TableHead>}
             <TableHead className={hideStudentColumn ? 'w-1/3' : undefined}>Goal</TableHead>
             <TableHead className={hideStudentColumn ? 'w-1/5' : undefined}>Pages</TableHead>
             <TableHead className={hideStudentColumn ? 'w-1/5' : undefined}>Last Updated</TableHead>
@@ -107,9 +112,7 @@ const DynamicGoalSheetsListContent = ({
               className='cursor-pointer'
               mobileCardContent={
                 <div className='space-y-2'>
-                  <h3 className='font-medium'>
-                    {sheet.student?.first_name} {sheet.student?.last_name}
-                  </h3>
+                  <h3 className='font-medium'>{getSheetDisplayName(sheet)}</h3>
                   <p className='text-sm text-gray-600 truncate'>{getGoalSummary(sheet)}</p>
                   <p className='text-xs text-gray-500'>
                     {sheet.pages.length} page{sheet.pages.length === 1 ? '' : 's'} · Updated{' '}
@@ -119,9 +122,7 @@ const DynamicGoalSheetsListContent = ({
               }>
               {!hideStudentColumn && (
                 <TableCell className='max-w-0'>
-                  <div className='truncate'>
-                    {sheet.student?.first_name} {sheet.student?.last_name}
-                  </div>
+                  <div className='truncate'>{getSheetDisplayName(sheet)}</div>
                 </TableCell>
               )}
               <TableCell className='max-w-0'>
