@@ -10,7 +10,6 @@ interface OrganizationContextType {
   availableSchools: School[]
   updateAvailableSchool: (school: School) => void
   isLoading: boolean
-  loadError: boolean
   refreshData: () => Promise<void>
 }
 
@@ -37,7 +36,6 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   )
   const [isLoading, setIsLoading] = useState(true)
   const [isInitialized, setIsInitialized] = useState(false)
-  const [loadError, setLoadError] = useState(false)
 
   const { user } = useAuth()
 
@@ -48,8 +46,6 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
     }
 
     setIsLoading(true)
-    setLoadError(false)
-
     try {
       // Fetch user profile with organization data
       const { data: userData, error: userError } = await supabase
@@ -181,7 +177,6 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
       setIsInitialized(true)
     } catch (error) {
       console.error('Error loading organization data:', error)
-      setLoadError(true)
       setIsInitialized(true)
     } finally {
       setIsLoading(false)
@@ -221,7 +216,6 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
       userProfile,
       availableSchools,
       isLoading: isLoading || !isInitialized,
-      loadError,
       refreshData,
       updateAvailableSchool,
     }),
@@ -231,7 +225,6 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
       availableSchools,
       isLoading,
       isInitialized,
-      loadError,
       refreshData,
       updateAvailableSchool,
     ]
