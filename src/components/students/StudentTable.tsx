@@ -126,6 +126,9 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
   } = useStudentsBySchool(activeSchool?.id)
 
   const availableSchoolYears = useMemo(() => {
+    const currentYear = getCurrentAcademicYear()
+    const currentStart = getCurrentAcademicYearStart()
+    const lastSchoolYear = `${currentStart - 1}-${currentStart}`
     const years = new Set<string>()
 
     students.forEach(student => {
@@ -135,7 +138,8 @@ const StudentTable: React.FC<StudentTableProps> = ({ selectedSchool }) => {
       ]
 
       allScreenings.forEach(screening => {
-        years.add(getCurrentAcademicYear(new Date(screening.created_at)))
+        const year = getCurrentAcademicYear(new Date(screening.created_at))
+        if (year !== currentYear && year !== lastSchoolYear) years.add(year)
       })
     })
 

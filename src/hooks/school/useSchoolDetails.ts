@@ -41,7 +41,7 @@ export const useSchoolDetails = (currentSchool: School | null) => {
       if (currentSchool.primary_slp_id) {
         const { data: slpUser, error: slpError } = await supabase
           .from('users')
-          .select('first_name, last_name, email')
+          .select('first_name, last_name, email, phone')
           .eq('id', currentSchool.primary_slp_id)
           .single()
 
@@ -51,7 +51,7 @@ export const useSchoolDetails = (currentSchool: School | null) => {
           primarySLPData = {
             name: `${slpUser.first_name} ${slpUser.last_name}`,
             email: slpUser.email,
-            phone: '',
+            phone: slpUser.phone ? formatPhoneNumber(slpUser.phone) : '',
           }
         }
       }

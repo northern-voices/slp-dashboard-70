@@ -75,9 +75,11 @@ export const useCaseloadTableData = <T extends Student>(students: T[], schoolId?
   const schoolScreenings = useMemo(() => screeningsData?.screenings ?? [], [screeningsData])
 
   const availableSchoolYears = useMemo(() => {
+    const currentYear = getCurrentAcademicYear()
     const years = new Set<string>()
     allSchoolScreenings.forEach(s => {
-      years.add(getCurrentAcademicYear(new Date(s.created_at)))
+      const year = getCurrentAcademicYear(new Date(s.created_at))
+      if (year !== currentYear) years.add(year)
     })
     return Array.from(years).sort().reverse()
   }, [allSchoolScreenings])
