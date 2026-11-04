@@ -1,12 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useRef,
-} from 'react'
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { useToast } from '@/hooks/use-toast'
@@ -66,7 +58,6 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const sessionExpiredToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { toast } = useToast()
 
@@ -135,33 +126,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       })
 
       if (session?.user) {
-        if (sessionExpiredToastTimer.current) {
-          clearTimeout(sessionExpiredToastTimer.current)
-          sessionExpiredToastTimer.current = null
-        }
-
         const transformedUser = transformUser(session.user)
         setUser(transformedUser)
       } else {
         setUser(null)
 
         if (event === 'SIGNED_OUT') {
-          sessionExpiredToastTimer.current = setTimeout(() => {
-            toast({
-              title: 'Session expired',
-              description: 'Your session has expired. Please sign in again.',
-              variant: 'destructive',
-            })
-          }, 2000)
+          toast({
+            title: 'Session expired',
+            description: 'Your session has expired. Please sign in again.',
+            variant: 'destructive',
+          })
         }
       }
       setIsLoading(false)
     })
 
-    return () => {
-      subscription?.unsubscribe()
-      if (sessionExpiredToastTimer.current) clearTimeout(sessionExpiredToastTimer.current)
-    }
+    return () => subscription?.unsubscribe()
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
