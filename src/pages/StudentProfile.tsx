@@ -12,7 +12,7 @@ import StudentPageMonthlyMeetingsTable from '@/components/monthly-meetings/Stude
 import ConsentFormsSection from '@/components/students/ConsentFormsSection'
 import DocumentsSection from '@/components/students/DocumentsSection'
 import StudentProfileSkeleton from '@/components/skeletons/StudentProfileSkeleton'
-import StudentPageDynamicGoalSheetsTable from '@/components/features/goalSheets/StudentPageDynamicGoalSheetsTable'
+import StudentPageCustomizableGoalSheetsTable from '@/components/features/goalSheets/StudentPageCustomizableGoalSheetsTable'
 
 const StudentProfileContent = () => {
   const { studentId, schoolId } = useParams<{ studentId: string; schoolId: string }>()
@@ -143,7 +143,7 @@ const StudentProfileContent = () => {
           onAddSpeechScreening={handleAddSpeechScreening}
         />
         <StudentPageMonthlyMeetingsTable studentId={studentId} />
-        <StudentPageDynamicGoalSheetsTable studentId={studentId} />
+        <StudentPageCustomizableGoalSheetsTable studentId={studentId} />
         <ConsentFormsSection student={student} />
         <DocumentsSection student={student} />
       </div>
