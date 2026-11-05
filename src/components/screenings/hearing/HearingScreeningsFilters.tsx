@@ -13,6 +13,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { GRADE_MAPPING } from '@/constants/app'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
+
+const CURRENT_SCHOOL_YEAR_LABEL = `This School Year (${getCurrentAcademicYear()})`
 
 const RESULT_LABELS: Record<string, string> = {
   passed: 'Passed',
@@ -25,7 +28,7 @@ const DATE_RANGE_LABELS: Record<string, string> = {
   week: 'This Week',
   month: 'This Month',
   quarter: 'This Quarter',
-  school_year: 'This School Year',
+  school_year: CURRENT_SCHOOL_YEAR_LABEL,
 }
 
 interface HearingScreeningsFiltersProps {
@@ -216,7 +219,7 @@ const HearingScreeningsFilters = ({
                       <SelectItem value='week'>This Week</SelectItem>
                       <SelectItem value='month'>This Month</SelectItem>
                       <SelectItem value='quarter'>This Quarter</SelectItem>
-                      <SelectItem value='school_year'>This School Year</SelectItem>
+                      <SelectItem value='school_year'>{CURRENT_SCHOOL_YEAR_LABEL}</SelectItem>
                       {availableSchoolYears.map(year => (
                         <SelectItem key={year} value={`sy_${year}`}>
                           {year}
