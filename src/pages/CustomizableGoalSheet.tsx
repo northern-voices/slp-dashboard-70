@@ -1,9 +1,9 @@
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNavigate, useParams } from 'react-router-dom'
-import DynamicGoalSheetBuilder from '@/components/features/goalSheets/DynamicGoalSheetBuilder'
+import CustomizableGoalSheetBuilder from '@/components/features/goalSheets/CustomizableGoalSheetBuilder'
 
-const DynamicGoalSheet = () => {
+const CustomizableGoalSheet = () => {
   const navigate = useNavigate()
   const { sheetId } = useParams<{ sheetId: string }>()
 
@@ -26,11 +26,11 @@ const DynamicGoalSheet = () => {
         </div>
 
         <div className='w-full max-w-full'>
-          <DynamicGoalSheetBuilder sheetId={sheetId} />
+          <CustomizableGoalSheetBuilder sheetId={sheetId} />
         </div>
       </div>
     </div>
   )
 }
 
-export default DynamicGoalSheet
+export default CustomizableGoalSheet
