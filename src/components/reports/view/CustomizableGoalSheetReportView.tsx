@@ -1,18 +1,18 @@
 import { format } from 'date-fns'
 import { ReportBanner, ReportFooter } from './shared/ReportBannerChrome'
-import { DYNAMIC_GOAL_SHEET_RATING_OPTIONS } from '@/constants/dynamicGoalSheet'
-import type { DynamicGoalSheetSession } from '@/types/database'
+import { CUSTOMIZABLE_GOAL_SHEET_RATING_OPTIONS } from '@/constants/customizableGoalSheet'
+import type { CustomizableGoalSheetSession } from '@/types/database'
 
-interface DynamicGoalSheetReportPage {
+interface CustomizableGoalSheetReportPage {
   page_number: number
   goal_text: string
-  sessions: DynamicGoalSheetSession[]
+  sessions: CustomizableGoalSheetSession[]
 }
 
-interface DynamicGoalSheetReportData {
+interface CustomizableGoalSheetReportData {
   context: {
     student_name: string
-    pages: DynamicGoalSheetReportPage[]
+    pages: CustomizableGoalSheetReportPage[]
   }
 }
 
@@ -30,7 +30,7 @@ const SessionCard = ({
   index,
   goalText,
 }: {
-  session: DynamicGoalSheetSession
+  session: CustomizableGoalSheetSession
   index: number
   goalText: string
 }) => {
@@ -51,11 +51,8 @@ const SessionCard = ({
           isTan ? 'bg-[#f9f7f4]' : 'bg-[#eff3f6]'
         }`}>
         <div className='border-gray-300 sm:w-[38%] sm:pr-4 sm:border-r'>
-          <p className='mb-0.5 text-xs font-bold text-gray-900'>How did the student do?</p>
-          <p className="font-['Montserrat'] mb-1.5 text-[11px] italic text-gray-500">
-            Were they able to say the sound?
-          </p>
-          {DYNAMIC_GOAL_SHEET_RATING_OPTIONS.map(option => (
+          <p className='mb-1.5 text-xs font-bold text-gray-900'>How did the student do?</p>
+          {CUSTOMIZABLE_GOAL_SHEET_RATING_OPTIONS.map(option => (
             <Checkbox
               key={option.value}
               label={option.label}
@@ -109,7 +106,7 @@ const SessionCard = ({
   )
 }
 
-const DynamicGoalSheetReportView = ({ data }: { data: DynamicGoalSheetReportData }) => {
+const CustomizableGoalSheetReportView = ({ data }: { data: CustomizableGoalSheetReportData }) => {
   const { context } = data
   const totalPages = context.pages.length
 
@@ -165,4 +162,4 @@ const DynamicGoalSheetReportView = ({ data }: { data: DynamicGoalSheetReportData
   )
 }
 
-export default DynamicGoalSheetReportView
+export default CustomizableGoalSheetReportView
