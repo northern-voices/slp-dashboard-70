@@ -24,8 +24,8 @@ export const SPEECH_GOAL_SHEET_OPTIONS = [
     icon: Target,
   },
   {
-    value: 'dynamic-goal-sheet',
-    label: 'Dynamic Goal Sheet',
+    value: 'customizable-goal-sheet',
+    label: 'Customizable Goal Sheet',
     description: "Send one of this student's free-form goal sheets",
     icon: PenLine,
   },
