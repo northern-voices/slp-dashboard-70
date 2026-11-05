@@ -1,12 +1,12 @@
 import { supabase } from '@/lib/supabase'
 import type {
-  DynamicGoalSheetRating,
-  DynamicGoalSheetSession,
-  DynamicGoalSheetPageWithSessions,
-  DynamicGoalSheetWithPages,
+  CustomizableGoalSheetRating,
+  CustomizableGoalSheetSession,
+  CustomizableGoalSheetPageWithSessions,
+  CustomizableGoalSheetWithPages,
 } from '@/types/database'
 
-const DYNAMIC_GOAL_SHEET_SELECT = `
+const CUSTOMIZABLE_GOAL_SHEET_SELECT = `
     *,
     student:students (
       id,
@@ -35,7 +35,7 @@ const DYNAMIC_GOAL_SHEET_SELECT = `
     )
   `
 
-interface RawDynamicGoalSheet {
+interface RawCustomizableGoalSheet {
   id: string
   school_id: string
   student_id: string
@@ -55,7 +55,7 @@ interface RawDynamicGoalSheet {
       page_id: string
       session_number: number
       session_date: string | null
-      sound_rating: DynamicGoalSheetRating | null
+      sound_rating: CustomizableGoalSheetRating | null
       activities: string | null
       progress_notes: string | null
       additional_comments: string | null
@@ -65,7 +65,7 @@ interface RawDynamicGoalSheet {
   }>
 }
 
-const transformDynamicGoalSheet = (raw: RawDynamicGoalSheet): DynamicGoalSheetWithPages => ({
+const transformCustomizableGoalSheet = (raw: RawCustomizableGoalSheet): CustomizableGoalSheetWithPages => ({
   id: raw.id,
   school_id: raw.school_id,
   student_id: raw.student_id,
@@ -81,7 +81,7 @@ const transformDynamicGoalSheet = (raw: RawDynamicGoalSheet): DynamicGoalSheetWi
     })),
 })
 
-export const dynamicGoalSheetsApi = {
+export const customizableGoalSheetsApi = {
   createGoalSheet: async ({
     studentId,
     schoolId,
@@ -90,7 +90,7 @@ export const dynamicGoalSheetsApi = {
     studentId: string
     schoolId: string
     goalTexts: string[]
-  }): Promise<DynamicGoalSheetWithPages> => {
+  }): Promise<CustomizableGoalSheetWithPages> => {
     try {
       const { data: newSheet, error: sheetError } = await supabase
         .from('dynamic_goal_sheets')
@@ -123,46 +123,46 @@ export const dynamicGoalSheetsApi = {
 
       if (sessionError) throw sessionError
 
-      return dynamicGoalSheetsApi.getGoalSheetById(newSheet.id)
+      return customizableGoalSheetsApi.getGoalSheetById(newSheet.id)
     } catch (error) {
-      console.error('Error creating dynamic goal sheet:', error)
+      console.error('Error creating customizable goal sheet:', error)
       throw error
     }
   },
-  getGoalSheetById: async (id: string): Promise<DynamicGoalSheetWithPages> => {
+  getGoalSheetById: async (id: string): Promise<CustomizableGoalSheetWithPages> => {
     const { data, error } = await supabase
       .from('dynamic_goal_sheets')
-      .select(DYNAMIC_GOAL_SHEET_SELECT)
+      .select(CUSTOMIZABLE_GOAL_SHEET_SELECT)
       .eq('id', id)
       .single()
 
     if (error) throw error
 
-    return transformDynamicGoalSheet(data)
+    return transformCustomizableGoalSheet(data)
   },
 
-  getGoalSheetsByStudent: async (studentId: string): Promise<DynamicGoalSheetWithPages[]> => {
+  getGoalSheetsByStudent: async (studentId: string): Promise<CustomizableGoalSheetWithPages[]> => {
     const { data, error } = await supabase
       .from('dynamic_goal_sheets')
-      .select(DYNAMIC_GOAL_SHEET_SELECT)
+      .select(CUSTOMIZABLE_GOAL_SHEET_SELECT)
       .eq('student_id', studentId)
       .order('updated_at', { ascending: false })
 
     if (error) throw error
 
-    return data.map(transformDynamicGoalSheet)
+    return data.map(transformCustomizableGoalSheet)
   },
 
-  getGoalSheetsBySchool: async (schoolId: string): Promise<DynamicGoalSheetWithPages[]> => {
+  getGoalSheetsBySchool: async (schoolId: string): Promise<CustomizableGoalSheetWithPages[]> => {
     const { data, error } = await supabase
       .from('dynamic_goal_sheets')
-      .select(DYNAMIC_GOAL_SHEET_SELECT)
+      .select(CUSTOMIZABLE_GOAL_SHEET_SELECT)
       .eq('school_id', schoolId)
       .order('updated_at', { ascending: false })
 
     if (error) throw error
 
-    return data.map(transformDynamicGoalSheet)
+    return data.map(transformCustomizableGoalSheet)
   },
 
   updatePageGoalText: async (pageId: string, goalText: string): Promise<void> => {
@@ -177,7 +177,7 @@ export const dynamicGoalSheetsApi = {
   addPage: async (
     goalSheetId: string,
     goalText: string
-  ): Promise<DynamicGoalSheetPageWithSessions> => {
+  ): Promise<CustomizableGoalSheetPageWithSessions> => {
     try {
       const { data: existingPages, error: countError } = await supabase
         .from('dynamic_goal_sheet_pages')
@@ -210,12 +210,12 @@ export const dynamicGoalSheetsApi = {
         sessions: newSessions.sort((a, b) => a.session_number - b.session_number),
       }
     } catch (error) {
-      console.error('Error adding dynamic goal sheet page:', error)
+      console.error('Error adding customizable goal sheet page:', error)
       throw error
     }
   },
 
-  addSession: async (pageId: string): Promise<DynamicGoalSheetSession> => {
+  addSession: async (pageId: string): Promise<CustomizableGoalSheetSession> => {
     try {
       const { data: existingSessions, error: countError } = await supabase
         .from('dynamic_goal_sheet_sessions')
@@ -238,7 +238,7 @@ export const dynamicGoalSheetsApi = {
 
       return newSession
     } catch (error) {
-      console.error('Error adding dynamic goal sheet session:', error)
+      console.error('Error adding customizable goal sheet session:', error)
       throw error
     }
   },
@@ -247,12 +247,12 @@ export const dynamicGoalSheetsApi = {
     sessionId: string,
     data: Partial<{
       session_date: string | null
-      sound_rating: DynamicGoalSheetRating | null
+      sound_rating: CustomizableGoalSheetRating | null
       activities: string | null
       progress_notes: string | null
       additional_comments: string | null
     }>
-  ): Promise<DynamicGoalSheetSession> => {
+  ): Promise<CustomizableGoalSheetSession> => {
     const { data: updatedSession, error } = await supabase
       .from('dynamic_goal_sheet_sessions')
       .update({ ...data, updated_at: new Date().toISOString() })
