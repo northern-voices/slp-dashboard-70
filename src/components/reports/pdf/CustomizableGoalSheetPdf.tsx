@@ -1,8 +1,8 @@
 import { Document, Page, View, Text, StyleSheet, Font } from '@react-pdf/renderer'
 import { format } from 'date-fns'
 import { ReportBanner, ReportFooter } from './shared/reportBannerChrome'
-import { DYNAMIC_GOAL_SHEET_RATING_OPTIONS } from '@/constants/dynamicGoalSheet'
-import type { DynamicGoalSheetSession } from '@/types/database'
+import { CUSTOMIZABLE_GOAL_SHEET_RATING_OPTIONS } from '@/constants/customizableGoalSheet'
+import type { CustomizableGoalSheetSession } from '@/types/database'
 
 Font.register({
   family: 'Montserrat',
@@ -15,15 +15,15 @@ Font.register({
   ],
 })
 
-interface DynamicGoalSheetPdfPage {
+interface CustomizableGoalSheetPdfPage {
   pageNumber: number
   goalText: string
-  sessions: DynamicGoalSheetSession[]
+  sessions: CustomizableGoalSheetSession[]
 }
 
-interface DynamicGoalSheetPdfData {
+interface CustomizableGoalSheetPdfData {
   studentName: string
-  pages: DynamicGoalSheetPdfPage[]
+  pages: CustomizableGoalSheetPdfPage[]
 }
 
 const BANNER_BG = '#5b7a8b'
@@ -94,13 +94,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito',
     fontWeight: 700,
     color: '#111827',
-    marginBottom: 1,
-  },
-  sessionSubQuestion: {
-    fontSize: 7,
-    fontFamily: 'Montserrat',
-    fontStyle: 'italic',
-    color: '#6b7280',
     marginBottom: 3,
   },
   sessionText: { fontSize: 8, marginBottom: 3, lineHeight: 1.2 },
@@ -158,7 +151,7 @@ const Checkbox = ({ label, checked }: { label: string; checked?: boolean }) => (
   </View>
 )
 
-const DynamicGoalSheetPdf = ({ data }: { data: DynamicGoalSheetPdfData }) => {
+const CustomizableGoalSheetPdf = ({ data }: { data: CustomizableGoalSheetPdfData }) => {
   const totalPages = data.pages.length
 
   return (
@@ -200,8 +193,7 @@ const DynamicGoalSheetPdf = ({ data }: { data: DynamicGoalSheetPdfData }) => {
                   ]}>
                   <View style={styles.sessionLeft}>
                     <Text style={styles.sessionQuestion}>How did the student do?</Text>
-                    <Text style={styles.sessionSubQuestion}>Were they able to say the sound?</Text>
-                    {DYNAMIC_GOAL_SHEET_RATING_OPTIONS.map(option => (
+                    {CUSTOMIZABLE_GOAL_SHEET_RATING_OPTIONS.map(option => (
                       <Checkbox
                         key={option.value}
                         label={option.label}
@@ -272,4 +264,4 @@ const DynamicGoalSheetPdf = ({ data }: { data: DynamicGoalSheetPdfData }) => {
   )
 }
 
-export default DynamicGoalSheetPdf
+export default CustomizableGoalSheetPdf
