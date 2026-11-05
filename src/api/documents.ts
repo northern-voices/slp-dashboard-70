@@ -18,6 +18,7 @@ export const documentTypeLabel = (type: DocumentType): string => {
 export interface DocumentFileEntry {
   file: File
   documentType: DocumentType
+  title?: string
 }
 
 export interface DocumentData {
@@ -30,6 +31,7 @@ export interface DocumentWithStudent {
   id: string
   document_type: DocumentType
   document_date: string
+  title: string | null
   additional_notes: string | null
   file_name: string | null
   file_path: string | null
@@ -75,6 +77,7 @@ export const documentsApi = {
         type: string
         size: number
         documentType: DocumentType
+        title?: string
       }[] = []
 
       for (let i = 0; i < data.files.length; i++) {
@@ -93,6 +96,7 @@ export const documentsApi = {
           type: entry.file.type,
           size: entry.file.size,
           documentType: entry.documentType,
+          title: entry.title,
         })
       }
 
@@ -100,6 +104,7 @@ export const documentsApi = {
         student_id: studentId,
         ...(data.document_date ? { document_date: data.document_date } : {}),
         document_type: file.documentType,
+        title: file.title || null,
         additional_notes: data.additional_notes || null,
         file_path: file.path,
         file_name: file.name,
@@ -126,6 +131,7 @@ export const documentsApi = {
           id,
           document_type,
           document_date,
+          title,
           additional_notes,
           file_name,
           file_path,
@@ -220,6 +226,7 @@ export const documentsApi = {
           id,
           document_type,
           document_date,
+          title,
           additional_notes,
           file_name,
           file_path,
