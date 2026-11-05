@@ -14,27 +14,27 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Download, Plus, Trash2 } from 'lucide-react'
 import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
-import { useDynamicGoalSheet } from '@/hooks/goalSheets/use-dynamic-goal-sheets'
+import { useCustomizableGoalSheet } from '@/hooks/goalSheets/use-customizable-goal-sheets'
 import {
   useUpdatePageGoalText,
-  useDeleteDynamicGoalSheet,
+  useDeleteCustomizableGoalSheet,
   useAddPage,
-} from '@/hooks/goalSheets/use-dynamic-goal-sheets-mutations'
+} from '@/hooks/goalSheets/use-customizable-goal-sheets-mutations'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import DynamicGoalSheetPage from './DynamicGoalSheetPage'
-import { exportDynamicGoalSheetPdf } from '@/lib/exportDynamicGoalSheetPdf'
+import CustomizableGoalSheetPage from './CustomizableGoalSheetPage'
+import { exportCustomizableGoalSheetPdf } from '@/lib/exportCustomizableGoalSheetPdf'
 
-interface DynamicGoalSheetBuilderProps {
+interface CustomizableGoalSheetBuilderProps {
   sheetId: string
 }
 
-const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
+const CustomizableGoalSheetBuilder = ({ sheetId }: CustomizableGoalSheetBuilderProps) => {
   const navigate = useNavigate()
   const { currentSchool } = useCurrentSchool()
 
-  const { data: sheet, isLoading } = useDynamicGoalSheet(sheetId)
+  const { data: sheet, isLoading } = useCustomizableGoalSheet(sheetId)
   const updatePageGoalText = useUpdatePageGoalText()
-  const deleteGoalSheet = useDeleteDynamicGoalSheet()
+  const deleteGoalSheet = useDeleteCustomizableGoalSheet()
   const addPage = useAddPage()
 
   const [goalTextByPageId, setGoalTextByPageId] = useState<Record<string, string>>({})
@@ -63,7 +63,7 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
 
     setIsExportingPdf(true)
     try {
-      await exportDynamicGoalSheetPdf(sheet)
+      await exportCustomizableGoalSheetPdf(sheet)
     } catch (error) {
       console.error('Failed to export PDF:', error)
     } finally {
@@ -81,8 +81,8 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
     deleteGoalSheet.mutate(sheet.id, {
       onSuccess: () => {
         const path = currentSchool
-          ? `/school/${currentSchool.id}/speech-screening-reports/dynamic-goal-sheets`
-          : '/speech-screening-reports/dynamic-goal-sheets'
+          ? `/school/${currentSchool.id}/speech-screening-reports/customizable-goal-sheets`
+          : '/speech-screening-reports/customizable-goal-sheets'
         navigate(path)
       },
     })
@@ -139,7 +139,7 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
       </div>
 
       {sheet.pages.map(page => (
-        <DynamicGoalSheetPage
+        <CustomizableGoalSheetPage
           key={page.id}
           studentId={sheet.student_id}
           studentName={studentName}
@@ -167,4 +167,4 @@ const DynamicGoalSheetBuilder = ({ sheetId }: DynamicGoalSheetBuilderProps) => {
   )
 }
 
-export default DynamicGoalSheetBuilder
+export default CustomizableGoalSheetBuilder
