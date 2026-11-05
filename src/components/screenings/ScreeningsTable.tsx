@@ -565,10 +565,10 @@ const ScreeningsTable = ({
     setIsEmailModalOpen(true)
   }
 
-  const handleCreateDynamicGoalSheet = (screening: Screening) => {
+  const handleCreateCustomizableGoalSheet = (screening: Screening) => {
     const path = currentSchool
-      ? `/school/${currentSchool.id}/speech-screening-reports/dynamic-goal-sheets/new?studentId=${screening.student_id}`
-      : `/speech-screening-reports/dynamic-goal-sheets/new?studentId=${screening.student_id}`
+      ? `/school/${currentSchool.id}/speech-screening-reports/customizable-goal-sheets/new?studentId=${screening.student_id}`
+      : `/speech-screening-reports/customizable-goal-sheets/new?studentId=${screening.student_id}`
 
     navigate(path)
   }
@@ -1405,7 +1405,7 @@ const ScreeningsTable = ({
                   onViewStudent={handleViewStudent}
                   onEmailReport={handleEmailReport}
                   onDelete={handleDelete}
-                  onCreateDynamicGoalSheet={handleCreateDynamicGoalSheet}
+                  onCreateCustomizableGoalSheet={handleCreateCustomizableGoalSheet}
                   getGradeSelector={getGradeSelector}
                   getResultSelector={getResultSelector}
                   getProgramSelector={getProgramSelector}
