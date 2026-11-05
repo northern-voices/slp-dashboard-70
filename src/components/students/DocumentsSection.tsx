@@ -88,7 +88,14 @@ const DocumentsSection = ({ student }: DocumentsSectionProps) => {
               {documents.map(doc => (
                 <li key={doc.id} className='flex items-center justify-between py-3'>
                   <div className='flex flex-col gap-1'>
-                    <span className='text-sm font-medium'>{documentTypeLabel(doc.document_type)}</span>
+                    <span className='text-sm font-medium'>
+                      {doc.title || documentTypeLabel(doc.document_type)}
+                    </span>
+                    {doc.title && (
+                      <span className='text-xs text-muted-foreground'>
+                        {documentTypeLabel(doc.document_type)}
+                      </span>
+                    )}
                     {doc.file_name && (
                       <span className='text-xs text-muted-foreground'>{doc.file_name}</span>
                     )}
