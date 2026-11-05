@@ -2,18 +2,18 @@ import { ArrowLeft, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
-import { useDynamicGoalSheetsBySchool } from '@/hooks/goalSheets/use-dynamic-goal-sheets'
-import DynamicGoalSheetsListContent from '@/components/features/goalSheets/DynamicGoalSheetsListContent'
+import { useCustomizableGoalSheetsBySchool } from '@/hooks/goalSheets/use-customizable-goal-sheets'
+import CustomizableGoalSheetsListContent from '@/components/features/goalSheets/CustomizableGoalSheetsListContent'
 
-const DynamicGoalSheets = () => {
+const CustomizableGoalSheets = () => {
   const navigate = useNavigate()
   const { currentSchool } = useCurrentSchool()
-  const { data: sheets = [], isLoading } = useDynamicGoalSheetsBySchool(currentSchool?.id)
+  const { data: sheets = [], isLoading } = useCustomizableGoalSheetsBySchool(currentSchool?.id)
 
   const handleCreateNew = () => {
     const path = currentSchool
-      ? `/school/${currentSchool.id}/speech-screening-reports/dynamic-goal-sheets/new`
-      : '/speech-screening-reports/dynamic-goal-sheets/new'
+      ? `/school/${currentSchool.id}/speech-screening-reports/customizable-goal-sheets/new`
+      : '/speech-screening-reports/customizable-goal-sheets/new'
     navigate(path)
   }
 
@@ -35,7 +35,7 @@ const DynamicGoalSheets = () => {
           <div className='flex items-center justify-between'>
             <div className='space-y-1 sm:space-y-2'>
               <h1 className='text-xl font-semibold text-gray-900 sm:text-2xl lg:text-3xl'>
-                Dynamic Goal Sheets
+                Customizable Goal Sheets
               </h1>
               <p className='text-sm text-gray-600 sm:text-base'>
                 Browse and manage free-form goal sheets for your students
@@ -50,11 +50,11 @@ const DynamicGoalSheets = () => {
         </div>
 
         <div className='w-full max-w-full'>
-          <DynamicGoalSheetsListContent sheets={sheets} isLoading={isLoading} />
+          <CustomizableGoalSheetsListContent sheets={sheets} isLoading={isLoading} />
         </div>
       </div>
     </div>
   )
 }
 
-export default DynamicGoalSheets
+export default CustomizableGoalSheets
