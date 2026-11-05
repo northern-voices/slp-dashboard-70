@@ -28,46 +28,46 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
-import { useDeleteDynamicGoalSheet } from '@/hooks/goalSheets/use-dynamic-goal-sheets-mutations'
-import { exportDynamicGoalSheetPdf } from '@/lib/exportDynamicGoalSheetPdf'
-import type { DynamicGoalSheetWithPages } from '@/types/database'
+import { useDeleteCustomizableGoalSheet } from '@/hooks/goalSheets/use-customizable-goal-sheets-mutations'
+import { exportCustomizableGoalSheetPdf } from '@/lib/exportCustomizableGoalSheetPdf'
+import type { CustomizableGoalSheetWithPages } from '@/types/database'
 
-interface DynamicGoalSheetsListContentProps {
-  sheets: DynamicGoalSheetWithPages[]
+interface CustomizableGoalSheetsListContentProps {
+  sheets: CustomizableGoalSheetWithPages[]
   isLoading: boolean
   hideStudentColumn?: boolean
 }
 
-const getGoalSummary = (sheet: DynamicGoalSheetWithPages) => {
+const getGoalSummary = (sheet: CustomizableGoalSheetWithPages) => {
   const [firstPage, ...rest] = sheet.pages
   if (!firstPage) return ''
   return rest.length > 0 ? `${firstPage.goal_text} (+${rest.length} more)` : firstPage.goal_text
 }
 
-const getSheetDisplayName = (sheet: DynamicGoalSheetWithPages) => {
+const getSheetDisplayName = (sheet: CustomizableGoalSheetWithPages) => {
   const studentName = `${sheet.student?.first_name ?? ''} ${sheet.student?.last_name ?? ''}`.trim()
   return `${studentName || 'Student'} - Goal Sheet - ${format(new Date(sheet.created_at), 'MMM d, yyyy')}`
 }
 
-const DynamicGoalSheetsListContent = ({
+const CustomizableGoalSheetsListContent = ({
   sheets,
   isLoading,
   hideStudentColumn,
-}: DynamicGoalSheetsListContentProps) => {
+}: CustomizableGoalSheetsListContentProps) => {
   const navigate = useNavigate()
   const { currentSchool } = useCurrentSchool()
-  const deleteGoalSheet = useDeleteDynamicGoalSheet()
-  const [sheetToDelete, setSheetToDelete] = useState<DynamicGoalSheetWithPages | null>(null)
+  const deleteGoalSheet = useDeleteCustomizableGoalSheet()
+  const [sheetToDelete, setSheetToDelete] = useState<CustomizableGoalSheetWithPages | null>(null)
 
-  const handleOpen = (sheet: DynamicGoalSheetWithPages) => {
+  const handleOpen = (sheet: CustomizableGoalSheetWithPages) => {
     const path = currentSchool
-      ? `/school/${currentSchool.id}/speech-screening-reports/dynamic-goal-sheets/${sheet.id}`
-      : `/speech-screening-reports/dynamic-goal-sheets/${sheet.id}`
+      ? `/school/${currentSchool.id}/speech-screening-reports/customizable-goal-sheets/${sheet.id}`
+      : `/speech-screening-reports/customizable-goal-sheets/${sheet.id}`
     navigate(path)
   }
 
-  const handleExportPdf = (sheet: DynamicGoalSheetWithPages) => {
-    exportDynamicGoalSheetPdf(sheet).catch(error => {
+  const handleExportPdf = (sheet: CustomizableGoalSheetWithPages) => {
+    exportCustomizableGoalSheetPdf(sheet).catch(error => {
       console.error('Failed to export PDF:', error)
     })
   }
@@ -89,7 +89,7 @@ const DynamicGoalSheetsListContent = ({
 
   if (sheets.length === 0) {
     return (
-      <div className='py-8 text-sm text-center text-gray-500'>No dynamic goal sheets found.</div>
+      <div className='py-8 text-sm text-center text-gray-500'>No customizable goal sheets found.</div>
     )
   }
   return (
@@ -188,4 +188,4 @@ const DynamicGoalSheetsListContent = ({
   )
 }
 
-export default DynamicGoalSheetsListContent
+export default CustomizableGoalSheetsListContent
