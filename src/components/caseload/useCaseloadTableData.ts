@@ -6,7 +6,7 @@ import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useScreeningsBySchool } from '@/hooks/screenings/use-screenings'
 import { useConsentFormPresence } from '@/hooks/students/use-consent-forms'
 import { useReturningAbsentStudents } from '@/hooks/students/use-returning-absent-students'
-import { useDynamicGoalSheetsBySchool } from '@/hooks/goalSheets/use-dynamic-goal-sheets'
+import { useCustomizableGoalSheetsBySchool } from '@/hooks/goalSheets/use-customizable-goal-sheets'
 import { GRADE_MAPPING } from '@/constants/app'
 import { getStudentGrade, getSpeechEAName, RESULT_SORT_ORDER } from './caseloadUtils'
 import {
@@ -175,7 +175,7 @@ export const useCaseloadTableData = <T extends Student>(students: T[], schoolId?
     [consentStudentIds, schoolYearStart]
   )
 
-  const { data: schoolGoalSheets = [] } = useDynamicGoalSheetsBySchool(schoolId)
+  const { data: schoolGoalSheets = [] } = useCustomizableGoalSheetsBySchool(schoolId)
 
   const goalSheetStudentIds = useMemo(
     () => new Set(schoolGoalSheets.map(sheet => sheet.student_id)),
