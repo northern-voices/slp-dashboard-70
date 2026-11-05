@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 interface ScreeningFiltersProps {
   searchTerm: string
@@ -210,7 +211,9 @@ const ScreeningFilters = ({
                       <SelectItem value='week'>This Week</SelectItem>
                       <SelectItem value='month'>This Month</SelectItem>
                       <SelectItem value='quarter'>This Quarter</SelectItem>
-                      <SelectItem value='school_year'>This School Year</SelectItem>
+                      <SelectItem value='school_year'>
+                        This School Year ({getCurrentAcademicYear()})
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
