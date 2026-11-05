@@ -146,7 +146,7 @@ export interface Screening {
   source_table?: 'speech' | 'hearing'
 }
 
-export interface DynamicGoalSheet {
+export interface CustomizableGoalSheet {
   id: string
   school_id: string
   student_id: string
@@ -155,7 +155,7 @@ export interface DynamicGoalSheet {
   updated_at: string
 }
 
-export interface DynamicGoalSheetPage {
+export interface CustomizableGoalSheetPage {
   id: string
   goal_sheet_id: string
   page_number: number
@@ -164,12 +164,12 @@ export interface DynamicGoalSheetPage {
   updated_at: string
 }
 
-export interface DynamicGoalSheetSession {
+export interface CustomizableGoalSheetSession {
   id: string
   page_id: string
   session_number: number
   session_date: string | null
-  sound_rating: DynamicGoalSheetRating | null
+  sound_rating: CustomizableGoalSheetRating | null
   activities: string | null
   progress_notes: string | null
   additional_comments: string | null
@@ -177,16 +177,16 @@ export interface DynamicGoalSheetSession {
   updated_at: string
 }
 
-export interface DynamicGoalSheetPageWithSessions extends DynamicGoalSheetPage {
-  sessions: DynamicGoalSheetSession[]
+export interface CustomizableGoalSheetPageWithSessions extends CustomizableGoalSheetPage {
+  sessions: CustomizableGoalSheetSession[]
 }
 
-export interface DynamicGoalSheetWithPages extends DynamicGoalSheet {
-  pages: DynamicGoalSheetPageWithSessions[]
+export interface CustomizableGoalSheetWithPages extends CustomizableGoalSheet {
+  pages: CustomizableGoalSheetPageWithSessions[]
   student?: Pick<Student, 'id' | 'first_name' | 'last_name'>
 }
 
-export type DynamicGoalSheetRating =
+export type CustomizableGoalSheetRating =
   | 'not_saying'
   | 'sound_only'
   | 'most_words_with_cues'
