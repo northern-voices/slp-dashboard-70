@@ -321,8 +321,8 @@ const StudentInfoHeader = ({ student, onEdit, isLoading = false }: StudentInfoHe
               onPause={() => handlePause(localStudent)}
               onCreateGoalSheet={() => {
                 const path = currentSchool
-                  ? `/school/${currentSchool.id}/speech-screening-reports/dynamic-goal-sheets/new?studentId=${localStudent.id}`
-                  : `/speech-screening-reports/dynamic-goal-sheets/new?studentId=${localStudent.id}`
+                  ? `/school/${currentSchool.id}/speech-screening-reports/customizable-goal-sheets/new?studentId=${localStudent.id}`
+                  : `/speech-screening-reports/customizable-goal-sheets/new?studentId=${localStudent.id}`
 
                 navigate(path)
               }}
