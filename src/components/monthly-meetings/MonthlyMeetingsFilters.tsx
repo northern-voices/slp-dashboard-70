@@ -13,13 +13,16 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { useGetUsers } from '@/hooks/users/use-users'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
+
+const CURRENT_SCHOOL_YEAR_LABEL = `This School Year (${getCurrentAcademicYear()})`
 
 const DATE_RANGE_LABELS: Record<string, string> = {
   today: 'Today',
   week: 'This Week',
   month: 'This Month',
   quarter: 'This Quarter',
-  school_year: 'This School Year',
+  school_year: CURRENT_SCHOOL_YEAR_LABEL,
 }
 
 interface MonthlyMeetingsFiltersProps {
@@ -156,7 +159,7 @@ const MonthlyMeetingsFilters = ({
                       <SelectItem value='week'>This Week</SelectItem>
                       <SelectItem value='month'>This Month</SelectItem>
                       <SelectItem value='quarter'>This Quarter</SelectItem>
-                      <SelectItem value='school_year'>This School Year</SelectItem>
+                      <SelectItem value='school_year'>{CURRENT_SCHOOL_YEAR_LABEL}</SelectItem>
                       {availableSchoolYears.map(year => (
                         <SelectItem key={year} value={`sy_${year}`}>
                           {year}
