@@ -64,7 +64,9 @@ const DocumentsSection = ({ student }: DocumentsSectionProps) => {
     <>
       <Card>
         <CardHeader className='flex flex-row items-center justify-between'>
-          <CardTitle className='text-lg font-semibold'>Documents</CardTitle>
+          <CardTitle className='text-lg font-semibold'>
+            Additional Documents / Notes and Reports
+          </CardTitle>
           <Button size='sm' onClick={() => setIsModalOpen(true)}>
             <Plus className='w-4 h-4' />
             Add
