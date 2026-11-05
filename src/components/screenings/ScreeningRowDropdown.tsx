@@ -31,7 +31,7 @@ interface ScreeningRowDropdownProps {
   onPriorityRescreen: (screening: Screening) => void
   onResume: (screening: Screening) => void
   onPause: (screening: Screening) => void
-  onCreateDynamicGoalSheet: (screening: Screening) => void
+  onCreateCustomizableGoalSheet: (screening: Screening) => void
   needsPriorityRescreen?: boolean
   isPaused?: boolean
   isTransferredOut?: boolean
@@ -48,7 +48,7 @@ const ScreeningRowDropdown = ({
   onPriorityRescreen,
   onResume,
   onPause,
-  onCreateDynamicGoalSheet,
+  onCreateCustomizableGoalSheet,
   needsPriorityRescreen,
   isPaused,
   isTransferredOut,
@@ -85,7 +85,7 @@ const ScreeningRowDropdown = ({
         Send Report
       </DropdownMenuItem>
 
-      <DropdownMenuItem onClick={() => onCreateDynamicGoalSheet(screening)}>
+      <DropdownMenuItem onClick={() => onCreateCustomizableGoalSheet(screening)}>
         <ClipboardEdit className='w-4 h-4 mr-2' />
         Create Goal Sheet
       </DropdownMenuItem>
