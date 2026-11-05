@@ -36,13 +36,35 @@ const DynamicGoalSheetSessionCard = ({
 
   return (
     <div className='border border-[#b7b7b7] mb-3'>
-      <div className={`py-2 px-4 ${isTan ? 'bg-[#e9e2d9]' : 'bg-[#5b7a8b]'}`}>
+      <div
+        className={`flex items-center gap-3 py-2 px-4 ${isTan ? 'bg-[#e9e2d9]' : 'bg-[#5b7a8b]'}`}>
         <p
-          className={`font-['Montserrat'] font-bold text-center text-xs tracking-wide ${
+          className={`font-['Montserrat'] font-bold shrink-0 text-xs tracking-wide ${
             isTan ? 'text-[#4d4b4b]' : 'text-white'
           }`}>
           SESSION {session.session_number}
         </p>
+        <div className='flex items-start flex-1 min-w-0 gap-1 leading-snug'>
+          <span
+            className={`font-['Montserrat'] italic font-bold shrink-0 text-xs ${
+              isTan ? 'text-[#4d4b4b]' : 'text-white'
+            }`}>
+            Goal:
+          </span>
+          <textarea
+            ref={goalTextareaRef}
+            value={goalText}
+            onChange={e => onGoalTextChange(e.target.value)}
+            onBlur={onGoalTextBlur}
+            rows={1}
+            placeholder='Describe the goal for this student...'
+            className={`flex-1 p-0 overflow-hidden bg-transparent border-0 resize-none text-xs leading-snug focus:outline-none focus:ring-0 ${
+              isTan
+                ? 'text-[#4d4b4b] placeholder:text-[#4d4b4b]/60'
+                : 'text-white placeholder:text-white/70'
+            }`}
+          />
+        </div>
       </div>
       <div
         className={`flex flex-col gap-4 p-4 sm:flex-row sm:gap-0 ${isTan ? 'bg-[#f9f7f4]' : 'bg-[#eff3f6]'}`}>
@@ -57,18 +79,6 @@ const DynamicGoalSheetSessionCard = ({
         </div>
 
         <div className='text-xs sm:w-[62%] sm:pl-4'>
-          <div className='flex items-start gap-1 mb-1 leading-snug'>
-            <span className="font-['Montserrat'] italic font-bold shrink-0">Goal:</span>
-            <textarea
-              ref={goalTextareaRef}
-              value={goalText}
-              onChange={e => onGoalTextChange(e.target.value)}
-              onBlur={onGoalTextBlur}
-              rows={1}
-              placeholder='Describe the goal for this student...'
-              className='flex-1 p-0 overflow-hidden bg-transparent border-0 resize-none text-xs leading-snug focus:outline-none focus:ring-0'
-            />
-          </div>
           <p className='mb-3 text-gray-700'>Date: ______________________</p>
 
           <p className='mb-1 font-bold text-gray-900'>Activities / Games</p>
