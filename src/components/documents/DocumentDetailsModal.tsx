@@ -12,6 +12,7 @@ interface DocumentDetails {
   id: string
   document_type: DocumentType
   document_date: string
+  title: string | null
   additional_notes: string | null
   file_name: string | null
   file_path: string | null
@@ -158,6 +159,14 @@ const DocumentDetailsModal = ({ isOpen, onClose, document: doc }: DocumentDetail
               </p>
             </div>
           </div>
+
+          {/* Title */}
+          {doc.title && (
+            <div>
+              <p className='text-xs text-muted-foreground'>Title</p>
+              <p className='font-medium'>{doc.title}</p>
+            </div>
+          )}
 
           {/* Type */}
           <div>
