@@ -13,7 +13,10 @@ import { Filter, X, ChevronUp, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { GRADE_MAPPING } from '@/constants/app'
 import { SCREENING_RESULTS } from '@/constants/screeningResults'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
 import Multiselect from '../ui/multiselect'
+
+const CURRENT_SCHOOL_YEAR_LABEL = `This School Year (${getCurrentAcademicYear()})`
 
 const PROGRAM_STATUS_LABELS: Record<string, string> = {
   qualified: 'Qualified',
@@ -133,7 +136,7 @@ const CaseloadFilters = ({
     if (dateFilter !== 'all') {
       const label = dateFilter.startsWith('sy_')
         ? dateFilter.replace('sy_', '')
-        : 'This School Year'
+        : CURRENT_SCHOOL_YEAR_LABEL
       filters.push({ key: 'dateRange', label, onRemove: () => withReset(setDateFilter)('all') })
     }
 
@@ -280,11 +283,11 @@ const CaseloadFilters = ({
                 <label className='text-sm font-medium text-gray-700'>School Year</label>
                 <Select value={dateFilter} onValueChange={withReset(setDateFilter)}>
                   <SelectTrigger>
-                    <SelectValue placeholder='This School Year' />
+                    <SelectValue placeholder={CURRENT_SCHOOL_YEAR_LABEL} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='all'>All Time</SelectItem>
-                    <SelectItem value='school_year'>This School Year</SelectItem>
+                    <SelectItem value='school_year'>{CURRENT_SCHOOL_YEAR_LABEL}</SelectItem>
                     {availableSchoolYears.map(year => (
                       <SelectItem key={year} value={`sy_${year}`}>
                         {year}
