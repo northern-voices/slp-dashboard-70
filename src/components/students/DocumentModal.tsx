@@ -32,6 +32,7 @@ interface SelectedFile {
   key: string
   file: File
   documentType: DocumentType | ''
+  title: string
 }
 
 const DocumentModal = ({ isOpen, onClose, student }: DocumentModalProps) => {
@@ -56,6 +57,7 @@ const DocumentModal = ({ isOpen, onClose, student }: DocumentModalProps) => {
           key: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
           file,
           documentType: '' as DocumentType | '',
+          title: '',
         })),
       ])
     }
@@ -67,6 +69,10 @@ const DocumentModal = ({ isOpen, onClose, student }: DocumentModalProps) => {
 
   const updateFileType = (key: string, documentType: DocumentType) => {
     setSelectedFiles(prev => prev.map(f => (f.key === key ? { ...f, documentType } : f)))
+  }
+
+  const updateFileTitle = (key: string, title: string) => {
+    setSelectedFiles(prev => prev.map(f => (f.key === key ? { ...f, title } : f)))
   }
 
   const handleClose = () => {
@@ -105,6 +111,7 @@ const DocumentModal = ({ isOpen, onClose, student }: DocumentModalProps) => {
         files: selectedFiles.map(f => ({
           file: f.file,
           documentType: f.documentType as DocumentType,
+          title: f.title.trim() || undefined,
         })),
       },
       {
@@ -191,6 +198,12 @@ const DocumentModal = ({ isOpen, onClose, student }: DocumentModalProps) => {
                         <X className='h-4 w-4' />
                       </button>
                     </div>
+                    <Input
+                      placeholder='Title (optional)'
+                      value={f.title}
+                      onChange={e => updateFileTitle(f.key, e.target.value)}
+                      className='h-9'
+                    />
                     <Select
                       value={f.documentType}
                       onValueChange={val => updateFileType(f.key, val as DocumentType)}>
