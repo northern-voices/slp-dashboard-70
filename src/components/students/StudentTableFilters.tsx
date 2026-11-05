@@ -14,6 +14,10 @@ import {
 } from '@/components/ui/select'
 import { Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { GRADE_MAPPING } from '@/constants/app'
+import { getCurrentAcademicYear, getAcademicYearOptions } from '@/lib/academicYear'
+
+const CURRENT_SCHOOL_YEAR_LABEL = `This School Year (${getCurrentAcademicYear()})`
+const LAST_SCHOOL_YEAR_LABEL = `Last School Year (${getAcademicYearOptions()[0]})`
 
 const PROGRAM_LABELS: Record<string, string> = {
   qualified: 'Qualifies',
@@ -28,8 +32,8 @@ const DATE_RANGE_LABELS: Record<string, string> = {
   today: 'Today',
   week: 'This Week',
   month: 'This Month',
-  school_year: 'This School Year',
-  last_school_year: 'Last School Year',
+  school_year: CURRENT_SCHOOL_YEAR_LABEL,
+  last_school_year: LAST_SCHOOL_YEAR_LABEL,
 }
 
 interface StudentTableFiltersProps {
@@ -212,8 +216,8 @@ const StudentTableFilters = ({
                       <SelectItem value='today'>Today</SelectItem>
                       <SelectItem value='week'>This Week</SelectItem>
                       <SelectItem value='month'>This Month</SelectItem>
-                      <SelectItem value='school_year'>This School Year</SelectItem>
-                      <SelectItem value='last_school_year'>Last School Year</SelectItem>
+                      <SelectItem value='school_year'>{CURRENT_SCHOOL_YEAR_LABEL}</SelectItem>
+                      <SelectItem value='last_school_year'>{LAST_SCHOOL_YEAR_LABEL}</SelectItem>
                       {availableSchoolYears.map(year => (
                         <SelectItem key={year} value={`sy_${year}`}>
                           {year}
