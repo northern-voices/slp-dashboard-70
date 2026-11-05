@@ -88,16 +88,16 @@ const sections: {
     },
   },
   {
-    label: 'Dynamic Goal Sheets',
+    label: 'Customizable Goal Sheets',
     color: 'orange',
     individual: {
       description: 'Start a new free-form goal sheet for a student',
-      route: 'dynamic-goal-sheets/new',
+      route: 'customizable-goal-sheets/new',
       Icon: ClipboardEdit,
     },
     schoolWide: {
-      description: 'Browse and manage saved dynamic goal sheets',
-      route: 'dynamic-goal-sheets',
+      description: 'Browse and manage saved customizable goal sheets',
+      route: 'customizable-goal-sheets',
     },
   },
 ]
