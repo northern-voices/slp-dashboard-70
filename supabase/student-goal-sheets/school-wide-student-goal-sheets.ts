@@ -543,7 +543,7 @@ Deno.serve(async (req: Request) => {
           supabaseKey,
           screening.student_id
         )
-        if (dynamicGoalSheet) {
+        if (dynamicGoalSheet && isDynamicGoalSheetCurrent(dynamicGoalSheet, screening)) {
           const studentName = `${screening.students.first_name} ${screening.students.last_name}`
           documentObjects.push(
             createDynamicGoalSheetDocumentObject(studentName, 'Qualified', dynamicGoalSheet)
@@ -598,7 +598,7 @@ Deno.serve(async (req: Request) => {
           supabaseKey,
           screening.student_id
         )
-        if (dynamicGoalSheet) {
+        if (dynamicGoalSheet && isDynamicGoalSheetCurrent(dynamicGoalSheet, screening)) {
           const studentName = `${screening.students.first_name} ${screening.students.last_name}`
           documentObjects.push(
             createDynamicGoalSheetDocumentObject(studentName, 'Sub', dynamicGoalSheet)
@@ -1582,6 +1582,14 @@ async function getLatestDynamicGoalSheet(
 
   const sheets = await response.json()
   return sheets[0] ?? null
+}
+
+// A customizable goal sheet only takes priority over the algorithmic one when it's at
+// least as recent as the student's latest screening. If a newer screening has come in
+// since the customizable sheet was last touched, the customizable sheet is stale and the
+// algorithmic goal sheet (built from that newer screening) should be used instead.
+function isDynamicGoalSheetCurrent(dynamicGoalSheet: any, screening: any): boolean {
+  return new Date(dynamicGoalSheet.updated_at) >= new Date(screening.created_at)
 }
 
 // Builds the bulk-report document for a student whose Dynamic Goal Sheet takes
