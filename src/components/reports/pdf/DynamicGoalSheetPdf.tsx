@@ -60,25 +60,25 @@ const styles = StyleSheet.create({
   checkboxLabel: { fontSize: 7, flex: 1 },
 
   sessionCard: { borderWidth: 0.75, borderColor: '#b7b7b7', marginBottom: 6 },
-  sessionHeader: { paddingVertical: 4, paddingHorizontal: 10 },
+  sessionHeader: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   sessionHeaderDark: { backgroundColor: BANNER_BG },
   sessionHeaderTan: { backgroundColor: TAN_BG },
-  sessionHeaderTextLight: {
+  sessionHeaderLabel: {
     fontSize: 8,
     fontFamily: 'Montserrat',
     fontWeight: 700,
     letterSpacing: 1,
-    textAlign: 'center',
-    color: '#ffffff',
+    marginRight: 10,
+    flexShrink: 0,
   },
-  sessionHeaderTextDark: {
-    fontSize: 8,
-    fontFamily: 'Montserrat',
-    fontWeight: 700,
-    letterSpacing: 1,
-    textAlign: 'center',
-    color: '#4d4b4b',
-  },
+  sessionHeaderGoal: { flex: 1, fontSize: 8, lineHeight: 1.3 },
+  sessionHeaderTextLight: { color: '#ffffff' },
+  sessionHeaderTextDark: { color: '#4d4b4b' },
   sessionBody: { flexDirection: 'row', padding: 7 },
   sessionBodyLight: { backgroundColor: '#eff3f6' },
   sessionBodyCream: { backgroundColor: '#f9f7f4' },
@@ -178,8 +178,19 @@ const DynamicGoalSheetPdf = ({ data }: { data: DynamicGoalSheetPdfData }) => {
                     i === 1 ? styles.sessionHeaderTan : styles.sessionHeaderDark,
                   ]}>
                   <Text
-                    style={i === 1 ? styles.sessionHeaderTextDark : styles.sessionHeaderTextLight}>
+                    style={[
+                      styles.sessionHeaderLabel,
+                      i === 1 ? styles.sessionHeaderTextDark : styles.sessionHeaderTextLight,
+                    ]}>
                     SESSION {session.session_number}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.sessionHeaderGoal,
+                      i === 1 ? styles.sessionHeaderTextDark : styles.sessionHeaderTextLight,
+                    ]}>
+                    <Text style={styles.italicBold}>Goal: </Text>
+                    {page.goalText}
                   </Text>
                 </View>
                 <View
@@ -199,10 +210,6 @@ const DynamicGoalSheetPdf = ({ data }: { data: DynamicGoalSheetPdfData }) => {
                     ))}
                   </View>
                   <View style={styles.sessionRight}>
-                    <Text style={styles.sessionText}>
-                      <Text style={styles.italicBold}>Goal: </Text>
-                      {page.goalText}
-                    </Text>
                     <Text style={styles.dateLine}>
                       Date:{' '}
                       {session.session_date
