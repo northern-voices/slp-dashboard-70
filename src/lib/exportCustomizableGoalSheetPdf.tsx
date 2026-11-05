@@ -1,16 +1,16 @@
 import { format } from 'date-fns'
-import type { DynamicGoalSheetWithPages } from '@/types/database'
+import type { CustomizableGoalSheetWithPages } from '@/types/database'
 
-export const exportDynamicGoalSheetPdf = async (sheet: DynamicGoalSheetWithPages) => {
-  const [{ pdf }, { default: DynamicGoalSheetPdf }] = await Promise.all([
+export const exportCustomizableGoalSheetPdf = async (sheet: CustomizableGoalSheetWithPages) => {
+  const [{ pdf }, { default: CustomizableGoalSheetPdf }] = await Promise.all([
     import('@react-pdf/renderer'),
-    import('@/components/reports/pdf/DynamicGoalSheetPdf'),
+    import('@/components/reports/pdf/CustomizableGoalSheetPdf'),
   ])
 
   const studentName = `${sheet.student?.first_name ?? ''} ${sheet.student?.last_name ?? ''}`.trim()
 
   const blob = await pdf(
-    <DynamicGoalSheetPdf
+    <CustomizableGoalSheetPdf
       data={{
         studentName,
         pages: sheet.pages.map(page => ({
