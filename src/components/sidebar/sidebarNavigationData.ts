@@ -124,17 +124,17 @@ export const getNavigationGroups = (
 
       skeleton: CaseloadSkeleton,
     },
-    {
-      title: 'Documents',
-      url: useSchoolRoutes ? `/school/${currentSchool.id}/documents` : '/documents',
-      icon: FileText,
-      isActive:
-        location.pathname === '/documents' ||
-        (useSchoolRoutes &&
-          location.pathname.startsWith(`/school/${currentSchool.id}/documents`)),
-
-      skeleton: CaseloadSkeleton,
-    },
+    // {
+    //   title: 'Documents',
+    //   url: useSchoolRoutes ? `/school/${currentSchool.id}/documents` : '/documents',
+    //   icon: FileText,
+    //   isActive:
+    //     location.pathname === '/documents' ||
+    //     (useSchoolRoutes &&
+    //       location.pathname.startsWith(`/school/${currentSchool.id}/documents`)),
+    //
+    //   skeleton: CaseloadSkeleton,
+    // },
     // {
     //   title: 'School Support',
     //   url: useSchoolRoutes ? `/school/${currentSchool.id}/school-support` : '/school-support',
