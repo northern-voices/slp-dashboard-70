@@ -1,7 +1,7 @@
 import StudentSpeechReportView from './StudentSpeechReportView'
 import HearingScreenReportView from './HearingScreenReportView'
 import SpeechGoalSheetView from './SpeechGoalSheetView'
-import DynamicGoalSheetReportView from './DynamicGoalSheetReportView'
+import CustomizableGoalSheetReportView from './CustomizableGoalSheetReportView'
 import SpeechProgressReportView from './SpeechProgressReportView'
 import SchoolSpeechSummaryView from './SchoolSpeechSummaryView'
 import SchoolHearingSummaryView from './SchoolHearingSummaryView'
@@ -37,7 +37,7 @@ const BulkDocumentView = ({ data }: { data: BulkDocument }) => {
       return <SpeechGoalSheetView data={data as never} />
 
     case 'Dynamic Goal Sheet':
-      return <DynamicGoalSheetReportView data={data as never} />
+      return <CustomizableGoalSheetReportView data={data as never} />
 
     case 'Student Progress Report':
       return <SpeechProgressReportView data={data as never} />
