@@ -20,13 +20,15 @@ export const SPEECH_GOAL_SHEET_OPTIONS = [
   {
     value: 'initial-goal-sheet',
     label: 'Goal Sheet',
-    description: 'Individualized goal tracking sheet with specific objectives and progress metrics',
+    description:
+      "Standardized goal sheets using student's most recent speech screen results and the cycles approach to guide speech therapy",
     icon: Target,
   },
   {
     value: 'customizable-goal-sheet',
     label: 'Customizable Goal Sheet',
-    description: "Send one of this student's free-form goal sheets",
+    description:
+      "Customizable goal sheets that allows the SLP to create and modify goals based on student's specific needs",
     icon: PenLine,
   },
   // {
