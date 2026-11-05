@@ -4,17 +4,17 @@ import { Plus } from 'lucide-react'
 import StudentSearchSelector from '@/components/screening/StudentSearchSelector'
 import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useStudent } from '@/hooks/students/use-students'
-import { useCreateDynamicGoalSheet } from '@/hooks/goalSheets/use-dynamic-goal-sheets-mutations'
+import { useCreateCustomizableGoalSheet } from '@/hooks/goalSheets/use-customizable-goal-sheets-mutations'
 import { useToast } from '@/hooks/use-toast'
-import DynamicGoalSheetBuilder from './DynamicGoalSheetBuilder'
-import DynamicGoalSheetPage from './DynamicGoalSheetPage'
-import type { DynamicGoalSheetSession, Student } from '@/types/database'
+import CustomizableGoalSheetBuilder from './CustomizableGoalSheetBuilder'
+import CustomizableGoalSheetPage from './CustomizableGoalSheetPage'
+import type { CustomizableGoalSheetSession, Student } from '@/types/database'
 
-interface DynamicGoalSheetCreateFormProps {
+interface CustomizableGoalSheetCreateFormProps {
   lockedStudentId?: string
 }
 
-const PREVIEW_SESSIONS: DynamicGoalSheetSession[] = [1, 2, 3].map(session_number => ({
+const PREVIEW_SESSIONS: CustomizableGoalSheetSession[] = [1, 2, 3].map(session_number => ({
   id: `preview-${session_number}`,
   page_id: 'preview',
   session_number,
@@ -27,7 +27,7 @@ const PREVIEW_SESSIONS: DynamicGoalSheetSession[] = [1, 2, 3].map(session_number
   updated_at: '',
 }))
 
-const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateFormProps) => {
+const CustomizableGoalSheetCreateForm = ({ lockedStudentId }: CustomizableGoalSheetCreateFormProps) => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [draftGoalTexts, setDraftGoalTexts] = useState<string[]>([''])
   const [createdSheetId, setCreatedSheetId] = useState<string | null>(null)
@@ -36,7 +36,7 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
   const { toast } = useToast()
 
   const { data: lockedStudent, isLoading: isLoadingLockedStudent } = useStudent(lockedStudentId)
-  const createGoalSheet = useCreateDynamicGoalSheet()
+  const createGoalSheet = useCreateCustomizableGoalSheet()
 
   const student = lockedStudentId ? lockedStudent : selectedStudent
   const trimmedGoalTexts = draftGoalTexts.map(text => text.trim())
@@ -75,7 +75,7 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
   }
 
   if (createdSheetId) {
-    return <DynamicGoalSheetBuilder sheetId={createdSheetId} />
+    return <CustomizableGoalSheetBuilder sheetId={createdSheetId} />
   }
 
   const studentName = student
@@ -108,7 +108,7 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
       </div>
 
       {draftGoalTexts.map((goalText, index) => (
-        <DynamicGoalSheetPage
+        <CustomizableGoalSheetPage
           key={index}
           studentId={student?.id}
           studentName={studentName}
@@ -141,4 +141,4 @@ const DynamicGoalSheetCreateForm = ({ lockedStudentId }: DynamicGoalSheetCreateF
   )
 }
 
-export default DynamicGoalSheetCreateForm
+export default CustomizableGoalSheetCreateForm
