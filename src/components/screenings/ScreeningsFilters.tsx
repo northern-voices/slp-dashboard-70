@@ -13,6 +13,9 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Search, Filter, ChevronDown, ChevronUp, X, RefreshCw } from 'lucide-react'
 import { GRADE_MAPPING } from '@/constants/app'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
+
+const CURRENT_SCHOOL_YEAR_LABEL = `This School Year (${getCurrentAcademicYear()})`
 
 const RESULT_LABELS: Record<string, string> = {
   no_errors: 'No Errors',
@@ -33,7 +36,7 @@ const DATE_RANGE_LABELS: Record<string, string> = {
   week: 'This Week',
   month: 'This Month',
   quarter: 'This Quarter',
-  school_year: 'This School Year',
+  school_year: CURRENT_SCHOOL_YEAR_LABEL,
 }
 
 const PROGRAM_STATUS_OPTIONS = [
@@ -318,7 +321,7 @@ const ScreeningsFilters = ({
                       <SelectItem value='week'>This Week</SelectItem>
                       <SelectItem value='month'>This Month</SelectItem>
                       <SelectItem value='quarter'>This Quarter</SelectItem>
-                      <SelectItem value='school_year'>This School Year</SelectItem>
+                      <SelectItem value='school_year'>{CURRENT_SCHOOL_YEAR_LABEL}</SelectItem>
                       {availableSchoolYears.map(year => (
                         <SelectItem key={year} value={`sy_${year}`}>
                           {year}
