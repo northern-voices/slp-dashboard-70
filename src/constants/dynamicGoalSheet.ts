@@ -4,8 +4,7 @@ export const DYNAMIC_GOAL_SHEET_RATING_OPTIONS: Array<{
   value: DynamicGoalSheetRating
   label: string
 }> = [
-  { value: 'not_saying', label: 'Could not say the sound' },
-  { value: 'sound_only', label: 'Could say the sound (but not in words)' },
-  { value: 'most_words_with_cues', label: 'Could say the sound in most words (with adult cues)' },
-  { value: 'most_words_independent', label: 'Could say the sound in most words (no adult help)' },
+  { value: 'not_saying', label: 'Not yet demonstrated - Requires continued support' },
+  { value: 'most_words_with_cues', label: 'Emerging' },
+  { value: 'most_words_independent', label: 'Achieved' },
 ]
