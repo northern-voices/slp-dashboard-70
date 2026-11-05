@@ -1,7 +1,7 @@
-import type { DynamicGoalSheetRating } from '@/types/database'
+import type { CustomizableGoalSheetRating } from '@/types/database'
 
-export const DYNAMIC_GOAL_SHEET_RATING_OPTIONS: Array<{
-  value: DynamicGoalSheetRating
+export const CUSTOMIZABLE_GOAL_SHEET_RATING_OPTIONS: Array<{
+  value: CustomizableGoalSheetRating
   label: string
 }> = [
   { value: 'not_saying', label: 'Not yet demonstrated - Requires continued support' },
