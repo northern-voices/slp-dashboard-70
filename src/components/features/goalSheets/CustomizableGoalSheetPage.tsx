@@ -1,20 +1,20 @@
 import { ReportBanner, ReportFooter } from '@/components/reports/view/shared/ReportBannerChrome'
-import DynamicGoalSheetSessionCard from './DynamicGoalSheetSessionCard'
+import CustomizableGoalSheetSessionCard from './CustomizableGoalSheetSessionCard'
 import StudentScreeningSheet from './StudentScreeningSheet'
-import type { DynamicGoalSheetSession } from '@/types/database'
+import type { CustomizableGoalSheetSession } from '@/types/database'
 
-interface DynamicGoalSheetPageProps {
+interface CustomizableGoalSheetPageProps {
   studentId?: string
   studentName: string
   pageNumber: number
   totalPages: number
-  sessions: DynamicGoalSheetSession[]
+  sessions: CustomizableGoalSheetSession[]
   goalText: string
   onGoalTextChange: (value: string) => void
   onGoalTextBlur: () => void
 }
 
-const DynamicGoalSheetPage = ({
+const CustomizableGoalSheetPage = ({
   studentId,
   studentName,
   pageNumber,
@@ -23,7 +23,7 @@ const DynamicGoalSheetPage = ({
   goalText,
   onGoalTextChange,
   onGoalTextBlur,
-}: DynamicGoalSheetPageProps) => (
+}: CustomizableGoalSheetPageProps) => (
   <section className="flex flex-col w-full max-w-5xl mx-auto overflow-hidden bg-white rounded-lg shadow-sm font-['Nunito']">
     <link
       rel='stylesheet'
@@ -39,7 +39,7 @@ const DynamicGoalSheetPage = ({
       </div>
 
       {sessions.map((session, index) => (
-        <DynamicGoalSheetSessionCard
+        <CustomizableGoalSheetSessionCard
           key={session.id}
           session={session}
           index={index}
@@ -69,4 +69,4 @@ const DynamicGoalSheetPage = ({
   </section>
 )
 
-export default DynamicGoalSheetPage
+export default CustomizableGoalSheetPage
