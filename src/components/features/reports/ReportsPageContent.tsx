@@ -75,7 +75,7 @@ const sections: {
     },
   },
   {
-    label: 'Goal Sheets',
+    label: 'Goal Sheets - Following Cycles Approach',
     color: 'orange',
     individual: {
       description: 'Print or export goal sheets for a specific student',
