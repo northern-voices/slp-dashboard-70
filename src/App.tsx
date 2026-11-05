@@ -50,9 +50,9 @@ import EditMonthlyMeeting from './pages/monthly-meetings/EditMonthlyMeeting'
 import Caseload from './pages/Caseload'
 import GoalSheets from './pages/GoalSheets'
 import SchoolWideGoalSheets from './pages/SchoolWideGoalSheets'
-import DynamicGoalSheets from './pages/DynamicGoalSheets'
-import DynamicGoalSheetNew from './pages/DynamicGoalSheetNew'
-import DynamicGoalSheet from './pages/DynamicGoalSheet'
+import CustomizableGoalSheets from './pages/CustomizableGoalSheets'
+import CustomizableGoalSheetNew from './pages/CustomizableGoalSheetNew'
+import CustomizableGoalSheet from './pages/CustomizableGoalSheet'
 import MfaChallenge from './pages/auth/MfaChallenge'
 import MfaEnroll from './pages/auth/MfaEnroll'
 import EmailOtpChallenge from './pages/auth/EmailOtpChallenge'
@@ -451,45 +451,45 @@ const App = () => (
                   />
 
                   <Route
-                    path='/speech-screening-reports/dynamic-goal-sheets/new'
+                    path='/speech-screening-reports/customizable-goal-sheets/new'
                     element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
-                    path='/school/:schoolId/speech-screening-reports/dynamic-goal-sheets/new'
+                    path='/school/:schoolId/speech-screening-reports/customizable-goal-sheets/new'
                     element={
                       <SchoolRouter>
                         <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <DynamicGoalSheetNew />
+                          <CustomizableGoalSheetNew />
                         </RoleGuard>
                       </SchoolRouter>
                     }
                   />
 
                   <Route
-                    path='/speech-screening-reports/dynamic-goal-sheets/:sheetId'
+                    path='/speech-screening-reports/customizable-goal-sheets/:sheetId'
                     element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
-                    path='/school/:schoolId/speech-screening-reports/dynamic-goal-sheets/:sheetId'
+                    path='/school/:schoolId/speech-screening-reports/customizable-goal-sheets/:sheetId'
                     element={
                       <SchoolRouter>
                         <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <DynamicGoalSheet />
+                          <CustomizableGoalSheet />
                         </RoleGuard>
                       </SchoolRouter>
                     }
                   />
 
                   <Route
-                    path='/speech-screening-reports/dynamic-goal-sheets'
+                    path='/speech-screening-reports/customizable-goal-sheets'
                     element={<SchoolRouter>{null}</SchoolRouter>}
                   />
                   <Route
-                    path='/school/:schoolId/speech-screening-reports/dynamic-goal-sheets'
+                    path='/school/:schoolId/speech-screening-reports/customizable-goal-sheets'
                     element={
                       <SchoolRouter>
                         <RoleGuard allowedRoles={['admin', 'super_admin', 'slp']}>
-                          <DynamicGoalSheets />
+                          <CustomizableGoalSheets />
                         </RoleGuard>
                       </SchoolRouter>
                     }
