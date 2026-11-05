@@ -15,7 +15,7 @@ interface ScreeningTableRowProps {
   onViewStudent: (screening: Screening) => void
   onEmailReport: (screening: Screening) => void
   onDelete: (screening: Screening) => void
-  onCreateDynamicGoalSheet: (screening: Screening) => void
+  onCreateCustomizableGoalSheet: (screening: Screening) => void
   getGradeSelector: (screening: Screening) => React.ReactNode
   getResultSelector: (screening: Screening) => React.ReactNode
   getProgramSelector: (screening: Screening) => React.ReactNode
@@ -45,7 +45,7 @@ const ScreeningTableRow = ({
   onViewStudent,
   onEmailReport,
   onDelete,
-  onCreateDynamicGoalSheet,
+  onCreateCustomizableGoalSheet,
   getGradeSelector,
   getResultSelector,
   getProgramSelector,
@@ -127,7 +127,7 @@ const ScreeningTableRow = ({
               onViewStudent={onViewStudent}
               onEmailReport={onEmailReport}
               onDelete={onDelete}
-              onCreateDynamicGoalSheet={onCreateDynamicGoalSheet}
+              onCreateCustomizableGoalSheet={onCreateCustomizableGoalSheet}
               onAddConsent={onAddConsent}
               onPriorityRescreen={onPriorityRescreen}
               onResume={onResume}
@@ -229,7 +229,7 @@ const ScreeningTableRow = ({
           onViewStudent={onViewStudent}
           onEmailReport={onEmailReport}
           onDelete={onDelete}
-          onCreateDynamicGoalSheet={onCreateDynamicGoalSheet}
+          onCreateCustomizableGoalSheet={onCreateCustomizableGoalSheet}
           onAddConsent={onAddConsent}
           onPriorityRescreen={onPriorityRescreen}
           onResume={onResume}
