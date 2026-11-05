@@ -15,7 +15,7 @@ import HearingScreenReportView from '@/components/reports/view/HearingScreenRepo
 import BulkReportView from '@/components/reports/view/BulkReportView'
 import ProgramCaseloadView from '@/components/reports/view/ProgramCaseloadView'
 import ScreeningsTableView from '@/components/reports/view/ScreeningsTableView'
-import DynamicGoalSheetReportView from '@/components/reports/view/DynamicGoalSheetReportView'
+import CustomizableGoalSheetReportView from '@/components/reports/view/CustomizableGoalSheetReportView'
 
 type ViewState = 'locked' | 'verifying' | 'unlocked'
 
@@ -28,7 +28,7 @@ type PdfGenerator = (
 const REPORT_VIEWS: Record<string, ComponentType<{ data: never; reportType?: string }>> = {
   speech_screening_report: StudentSpeechReportView,
   goal_sheet: SpeechGoalSheetView,
-  dynamic_goal_sheet: DynamicGoalSheetReportView,
+  dynamic_goal_sheet: CustomizableGoalSheetReportView,
   progress_report: SpeechProgressReportView,
   monthly_meeting_report: MonthlyMeetingReportView,
   hearing_screening_report: HearingScreenReportView,
@@ -128,13 +128,13 @@ const generateGoalSheetPdf = async (reportData: unknown) => {
   return pdf(<SpeechGoalSheetPdf data={reportData as never} />).toBlob()
 }
 
-const generateDynamicGoalSheetPdf = async (reportData: unknown) => {
-  const [{ pdf }, { default: DynamicGoalSheetReportPdf }] = await Promise.all([
+const generateCustomizableGoalSheetPdf = async (reportData: unknown) => {
+  const [{ pdf }, { default: CustomizableGoalSheetReportPdf }] = await Promise.all([
     import('@react-pdf/renderer'),
-    import('@/components/reports/pdf/DynamicGoalSheetReportPdf'),
+    import('@/components/reports/pdf/CustomizableGoalSheetReportPdf'),
   ])
 
-  return pdf(<DynamicGoalSheetReportPdf data={reportData as never} />).toBlob()
+  return pdf(<CustomizableGoalSheetReportPdf data={reportData as never} />).toBlob()
 }
 
 const generateProgressReportPdf = async (reportData: unknown) => {
@@ -283,7 +283,7 @@ const generateScreeningsTablePdf = async (reportData: unknown) => {
 const PDF_GENERATORS: Record<string, PdfGenerator> = {
   speech_screening_report: generateSpeechScreeningPdf,
   goal_sheet: generateGoalSheetPdf,
-  dynamic_goal_sheet: generateDynamicGoalSheetPdf,
+  dynamic_goal_sheet: generateCustomizableGoalSheetPdf,
   progress_report: generateProgressReportPdf,
   monthly_meeting_report: generateMonthlyMeetingReportPdf,
   hearing_screening_report: generateHearingScreenReportPdf,
