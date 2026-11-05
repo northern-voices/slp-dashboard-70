@@ -1,9 +1,9 @@
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import DynamicGoalSheetCreateForm from '@/components/features/goalSheets/DynamicGoalSheetCreateForm'
+import CustomizableGoalSheetCreateForm from '@/components/features/goalSheets/CustomizableGoalSheetCreateForm'
 
-const DynamicGoalSheetNew = () => {
+const CustomizableGoalSheetNew = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const lockedStudentId = searchParams.get('studentId') ?? undefined
@@ -25,7 +25,7 @@ const DynamicGoalSheetNew = () => {
 
           <div className='space-y-1 sm:space-y-2'>
             <h1 className='text-xl font-semibold text-gray-900 sm:text-2xl lg:text-3xl'>
-              New Dynamic Goal Sheet
+              New Customizable Goal Sheet
             </h1>
             <p className='text-sm text-gray-600 sm:text-base'>
               Create a free-form goal sheet for a student
@@ -34,11 +34,11 @@ const DynamicGoalSheetNew = () => {
         </div>
 
         <div className='w-full max-w-full'>
-          <DynamicGoalSheetCreateForm lockedStudentId={lockedStudentId} />
+          <CustomizableGoalSheetCreateForm lockedStudentId={lockedStudentId} />
         </div>
       </div>
     </div>
   )
 }
 
-export default DynamicGoalSheetNew
+export default CustomizableGoalSheetNew
