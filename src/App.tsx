@@ -4,7 +4,7 @@ import { Toaster as SonnerToaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from '@/contexts/AuthContext'
+import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { OrganizationProvider } from '@/contexts/OrganizationContext'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import PublicRoute from '@/components/auth/PublicRoute'
@@ -60,6 +60,22 @@ import RoleGuard from './components/auth/RoleGuard'
 import Consent from './pages/Consent'
 import Documents from './pages/Documents'
 
+const ClockSkewBanner = () => {
+  const { clockSkewMinutes } = useAuth()
+
+  if (clockSkewMinutes === null) return null
+
+  const direction = clockSkewMinutes > 0 ? 'ahead of' : 'behind'
+
+  return (
+    <div className='fixed top-0 left-0 right-0 z-[100] bg-amber-500 text-amber-950 text-sm font-medium text-center py-2 px-4'>
+      Your computer's clock looks like it's set about {Math.abs(clockSkewMinutes)} minute
+      {Math.abs(clockSkewMinutes) === 1 ? '' : 's'} {direction} the real time. This can cause you
+      to be signed out unexpectedly — please check your device's date & time settings.
+    </div>
+  )
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -77,6 +93,7 @@ const App = () => (
     <TooltipProvider>
       <AuthProvider>
         <OrganizationProvider>
+          <ClockSkewBanner />
           <Toaster />
           <SonnerToaster />
           <OfflineSyncProvider>
