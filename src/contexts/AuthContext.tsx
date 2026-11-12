@@ -24,6 +24,7 @@ interface User {
 interface AuthContextType {
   user: User | null
   isLoading: boolean
+  clockSkewMinutes: number | null
   login: (email: string, password: string) => Promise<void>
   logout: () => void
   signup: (
@@ -66,6 +67,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [clockSkewMinutes, setClockSkewMinutes] = useState<number | null>(null)
   const sessionExpiredToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { toast } = useToast()
@@ -119,6 +121,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
 
+    const checkClockSkew = async () => {
+      try {
+        const response = await fetch(window.location.origin, {
+          method: 'HEAD',
+          cache: 'no-store',
+        })
+        const serverDate = response.headers.get('date')
+        if (!serverDate) return
+
+        const skewMinutes = Math.round((Date.now() - new Date(serverDate).getTime()) / 60000)
+        if (Math.abs(skewMinutes) >= 5) {
+          setClockSkewMinutes(skewMinutes)
+        }
+      } catch (error) {
+        console.error('Error checking clock skew:', error)
+      }
+    }
+
+    checkClockSkew()
     getInitialSession()
 
     // Listen for auth changes
@@ -429,6 +450,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     () => ({
       user,
       isLoading,
+      clockSkewMinutes,
       login,
       logout,
       signup,
@@ -440,7 +462,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       checkUserExists,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, isLoading]
+    [user, isLoading, clockSkewMinutes]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
