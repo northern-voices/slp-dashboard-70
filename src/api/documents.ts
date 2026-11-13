@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { toStorageSafeFileName } from '@/lib/storageFileName'
 
 export type DocumentType = 'goal_sheet' | 'initial_speech_report' | 'progress_speech_report'
 
@@ -82,7 +83,7 @@ export const documentsApi = {
 
       for (let i = 0; i < data.files.length; i++) {
         const entry = data.files[i]
-        const filePath = `${studentId}/${Date.now()}-${i}-${entry.file.name}`
+        const filePath = `${studentId}/${Date.now()}-${i}-${toStorageSafeFileName(entry.file.name)}`
 
         const { error: uploadError } = await supabase.storage
           .from('documents')
@@ -177,7 +178,7 @@ export const documentsApi = {
 
       for (let i = 0; i < data.entries.length; i++) {
         const entry = data.entries[i]
-        const filePath = `${entry.studentId}/${Date.now()}-${i}-${entry.file.name}`
+        const filePath = `${entry.studentId}/${Date.now()}-${i}-${toStorageSafeFileName(entry.file.name)}`
 
         const { error: uploadError } = await supabase.storage
           .from('documents')
