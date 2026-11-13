@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { toStorageSafeFileName } from '@/lib/storageFileName'
 
 export type ProvisionStatus = 'uploaded' | 'not_provided'
 
@@ -41,7 +42,7 @@ export const attendanceSheetsApi = {
     let fileSize: number | null = null
 
     if (data.provision_status === 'uploaded' && data.file) {
-      const safeName = data.file.name.replace(/\s+/g, '_')
+      const safeName = toStorageSafeFileName(data.file.name)
       filePath = `${schoolId}/${Date.now()}-${safeName}`
 
       const { error: uploadError } = await supabase.storage
