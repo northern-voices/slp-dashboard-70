@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { toStorageSafeFileName } from '@/lib/storageFileName'
 
 export type ConsentPurpose = 'screening_assessment' | 'therapy'
 export type ConsentType = 'verbal' | 'written'
@@ -76,7 +77,7 @@ export const consentFormsApi = {
 
       for (let i = 0; i < formData.files.length; i++) {
         const entry = formData.files[i]
-        const filePath = `${studentId}/${Date.now()}-${i}-${entry.file.name}`
+        const filePath = `${studentId}/${Date.now()}-${i}-${toStorageSafeFileName(entry.file.name)}`
 
         const { error: uploadError } = await supabase.storage
           .from('consent-forms')
@@ -175,7 +176,7 @@ export const consentFormsApi = {
 
       for (let i = 0; i < formData.entries.length; i++) {
         const entry = formData.entries[i]
-        const filePath = `${entry.studentId}/${Date.now()}-${i}-${entry.file.name}`
+        const filePath = `${entry.studentId}/${Date.now()}-${i}-${toStorageSafeFileName(entry.file.name)}`
 
         const { error: uploadError } = await supabase.storage
           .from('consent-forms')
