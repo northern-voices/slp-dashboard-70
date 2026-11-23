@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { AwsClient } from 'npm:aws4fetch@1'
 import { isWithinAcademicYear } from '../_shared/academicYear.ts'
+import { buildSchoolSummaryDocument } from '../_shared/schoolSummary.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -222,22 +223,6 @@ Deno.serve(async req => {
       throw new Error('No students found for this school')
     }
 
-    const gradesUrl = `${supabaseUrl}/rest/v1/school_grades?school_id=eq.${school_id}&select=id,grade_level`
-    const gradesResponse = await fetch(gradesUrl, {
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (!gradesResponse.ok) {
-      throw new Error(`Failed to fetch school grades: ${gradesResponse.status}`)
-    }
-
-    const schoolGrades = await gradesResponse.json()
-    const gradeLevelById = new Map(schoolGrades.map(grade => [grade.id, grade.grade_level]))
-
     const studentIds = students.map(student => student.id)
     console.log(`Found ${studentIds.length} students for school`)
 
@@ -300,181 +285,22 @@ Deno.serve(async req => {
     const latestScreenings = getLatestScreeningsPerStudent(filteredScreenings)
     console.log(`Processing ${latestScreenings.length} unique students`)
 
-    // 6. Transform records for the report
-    const transformRecord = screening => ({
-      name: `${screening.students.first_name} ${screening.students.last_name}`,
-      grade: screening.school_grades?.grade_level || '',
-      result: screening.result || '',
-      date: new Date(screening.created_at).toISOString().split('T')[0],
-      recommendations_and_referrals: screening.referral_notes || '',
-    })
-
-    // 7. Helper function to check if student qualifies for speech program
-    const isQualifiedStudent = screening => {
-      if (!screening.error_patterns) return false
-
-      let patterns = screening.error_patterns
-      if (typeof screening.error_patterns === 'string') {
-        try {
-          patterns = JSON.parse(screening.error_patterns)
-        } catch (e) {
-          console.error('Failed to parse error_patterns JSON for qualification check:', e)
-          return false
-        }
-      }
-
-      return (
-        patterns?.screening_metadata?.qualifies_for_speech_program === true ||
-        patterns?.screening_metadata?.qualifies_for_speech_program === 'true'
-      )
-    }
-
-    // 8. Helper function to check if student is a sub student
-    const isSubStudent = screening => {
-      if (!screening.error_patterns) return false
-
-      let patterns = screening.error_patterns
-      if (typeof screening.error_patterns === 'string') {
-        try {
-          patterns = JSON.parse(screening.error_patterns)
-        } catch (e) {
-          console.error('Failed to parse error_patterns JSON for sub check:', e)
-          return false
-        }
-      }
-
-      return (
-        patterns?.screening_metadata?.sub === true || patterns?.screening_metadata?.sub === 'true'
-      )
-    }
-
-    // 9. Separate students into qualified and sub categories. "school_year" only looks at screenings dated within the selected academic year (original behavior). "full_caseload" instead reads every student's current program_status directly, so a student who qualified in a prior year with no rescreen since still shows as currently eligible.
-    let qualifiedStudents
-    let subStudents
-
-    if (caseloadScope === 'full_caseload') {
-      // Latest screening per student across ALL years, so a later "No Consent" attempt
-      // overrides a stale qualified/sub program_status - such students shouldn't be on
-      // caseload at all, even though their record still says qualified/sub.
-      const latestScreeningByStudentId = new Map()
-      allScreenings.forEach(screening => {
-        const existing = latestScreeningByStudentId.get(screening.student_id)
-        if (!existing || new Date(screening.created_at) > new Date(existing.created_at)) {
-          latestScreeningByStudentId.set(screening.student_id, screening)
-        }
-      })
-      const hasNoConsent = student =>
-        latestScreeningByStudentId.get(student.id)?.result === 'non_registered_no_consent'
-
-      qualifiedStudents = students.filter(
-        student => student.program_status === 'qualified' && !hasNoConsent(student)
-      )
-      subStudents = students.filter(
-        student => student.program_status === 'sub' && !hasNoConsent(student)
-      )
-    } else {
-      qualifiedStudents = latestScreenings.filter(
-        screening => isQualifiedStudent(screening) && !isSubStudent(screening)
-      )
-      subStudents = latestScreenings.filter(isSubStudent)
-    }
-
-    const priorityRescreenStudents = latestScreenings.filter(
-      screening => screening.students?.needs_priority_rescreen === true
-    )
-
-    const studentsRecommendationsAndReferrals = latestScreenings.filter(screening => {
-      const referralNotes = screening.referral_notes || ''
-      return referralNotes.trim() !== ''
+    // 6. Build the summary document (shared with school-wide-send-student-report)
+    const summary = await buildSchoolSummaryDocument({
+      supabaseUrl,
+      supabaseKey,
+      schoolId: school_id,
+      schoolName,
+      academicYear: academic_year,
+      caseloadScope,
+      students,
+      allScreenings,
+      latestScreenings,
     })
 
     console.log(
-      `Found ${qualifiedStudents.length} qualified students and ${subStudents.length} sub students`
+      `Summary: ${summary.qualifiedCount} qualified, ${summary.subCount} sub, ${summary.recommendationsCount} with recommendations - template: ${summary.templateName}`
     )
-    console.log(`Found ${priorityRescreenStudents.length} students flagged for priority rescreen`)
-    console.log(`Found ${studentsRecommendationsAndReferrals.length} students with recommendations`)
-
-    // 9b. Get returning-absent students (qualified/sub last year, absent or not yet
-    //     screened this year). Only meaningful when this report's academic_year IS
-    //     the year currently in progress, since the RPC always compares against "now" -
-    //     showing it against a past academic_year would be comparing the wrong years.
-    const isReportForCurrentYear = isWithinAcademicYear(new Date().toISOString(), academic_year)
-    let returningAbsentStudents = []
-
-    if (isReportForCurrentYear) {
-      const returningAbsentResponse = await fetch(
-        `${supabaseUrl}/rest/v1/rpc/get_returning_absent_students`,
-        {
-          method: 'POST',
-          headers: {
-            apikey: supabaseKey,
-            Authorization: `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ p_school_id: school_id }),
-        }
-      )
-
-      if (!returningAbsentResponse.ok) {
-        throw new Error(
-          `Failed to fetch returning absent students: ${returningAbsentResponse.status}`
-        )
-      }
-
-      const returningAbsentRows = await returningAbsentResponse.json()
-      const studentById = new Map(students.map(student => [student.id, student]))
-
-      returningAbsentStudents = returningAbsentRows.map(row => {
-        const student = studentById.get(row.student_id)
-        return {
-          name: `${row.first_name} ${row.last_name}`,
-          grade: student ? gradeLevelById.get(student.current_grade_id) || '' : '',
-        }
-      })
-    }
-
-    console.log(`Found ${returningAbsentStudents.length} returning-absent students`)
-
-    // 10. Determine which template to use based on whether there are recommendations
-    const hasRecommendations = studentsRecommendationsAndReferrals.length > 0
-    const templateName = hasRecommendations
-      ? 'Schools Summary Report With Referrals'
-      : 'Schools Summary Report No Referrals'
-
-    console.log(`Using template: ${templateName}`)
-
-    // Section A needs a different transform depending on scope: "school_year" entries are screenings (use the existing transformRecord), "full_caseload" entries are raw student records with no associated screening, so grade comes from gradeLevelById instead.
-    const toSummaryStudent = student => ({
-      name: `${student.first_name} ${student.last_name}`,
-      grade: gradeLevelById.get(student.current_grade_id) || '',
-    })
-
-    const transformSectionA = caseloadScope === 'full_caseload' ? toSummaryStudent : transformRecord
-
-    // 11. Build the document object (this becomes the report_data behind the password gate)
-    const documentObject = {
-      metadata: {
-        file_name: `${schoolName}-Summary`,
-      },
-      template: {
-        name: templateName,
-        version: 1,
-      },
-      context: {
-        screening_date: academic_year,
-        slp: 'Lisa Brillinger',
-        qualified: qualifiedStudents.length > 0,
-        qualified_students: qualifiedStudents.map(transformSectionA),
-        sub: subStudents.length > 0,
-        sub_students: subStudents.map(transformSectionA),
-        priority_rescreen: priorityRescreenStudents.length > 0,
-        students_priority_rescreen: priorityRescreenStudents.map(transformRecord),
-        students_recommendations_and_referrals:
-          studentsRecommendationsAndReferrals.map(transformRecord),
-        returning_absent: returningAbsentStudents.length > 0,
-        returning_absent_students: returningAbsentStudents,
-      },
-    }
 
     // 12. Create a password-protected report token instead of emailing the PDF directly
     //    (the doc-gen Lambda never returns PDF bytes and always attaches a real PDF
@@ -485,7 +311,7 @@ Deno.serve(async req => {
       password,
       reportType: 'school_summary_report',
       reportData: {
-        documents: [documentObject],
+        documents: [summary.document],
         school_name: schoolName,
         academic_year,
         record_id: report_id ?? null,
@@ -553,11 +379,11 @@ Deno.serve(async req => {
         success: true,
         message: `School summary report generated and a secure link sent to ${override_emails.join(', ')}`,
         school_name: schoolName,
-        qualified_students: qualifiedStudents.length,
-        sub_students: subStudents.length,
-        students_with_recommendations: studentsRecommendationsAndReferrals.length,
+        qualified_students: summary.qualifiedCount,
+        sub_students: summary.subCount,
+        students_with_recommendations: summary.recommendationsCount,
         academic_year: academic_year,
-        template_used: templateName,
+        template_used: summary.templateName,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
