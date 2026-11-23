@@ -2,6 +2,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { AwsClient } from 'npm:aws4fetch@1'
 import { isWithinAcademicYear } from '../_shared/academicYear.ts'
+import { buildSchoolSummaryDocument } from '../_shared/schoolSummary.ts'
 
 interface StudentInfo {
   first_name: string
@@ -269,7 +270,8 @@ Deno.serve(async (req: Request) => {
 
     // 2. Get all speech screenings for the school within the academic year
     // First get all students for this school
-    const studentsUrl = `${supabaseUrl}/rest/v1/students?school_id=eq.${school_id}&select=id`
+    const studentsUrl = `${supabaseUrl}/rest/v1/students?school_id=eq.${school_id}&select=id,first_name,last_name,program_status,current_grade_id`
+
     const studentsResponse = await fetch(studentsUrl, {
       headers: {
         apikey: supabaseKey,
@@ -300,12 +302,12 @@ Deno.serve(async (req: Request) => {
       const batch = studentIds.slice(i, i + batchSize)
       console.log(
         `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
-          studentIds.length / batchSize,
-        )}: ${batch.length} students`,
+          studentIds.length / batchSize
+        )}: ${batch.length} students`
       )
 
       const screeningsUrl = `${supabaseUrl}/rest/v1/speech_screenings?student_id=in.(${batch.join(
-        ',',
+        ','
       )})&select=*,students(*),school_grades(*)`
 
       const screeningsResponse = await fetch(screeningsUrl, {
@@ -318,7 +320,7 @@ Deno.serve(async (req: Request) => {
 
       if (!screeningsResponse.ok) {
         console.error(
-          `Failed to fetch speech screenings for batch starting at index ${i}: ${screeningsResponse.status}`,
+          `Failed to fetch speech screenings for batch starting at index ${i}: ${screeningsResponse.status}`
         )
         throw new Error(`Failed to fetch speech screenings: ${screeningsResponse.status}`)
       }
@@ -338,11 +340,11 @@ Deno.serve(async (req: Request) => {
 
     // 3. Filter by academic year
     const filteredScreenings = allScreenings.filter((screening: any) =>
-      isWithinAcademicYear(screening.created_at, academic_year),
+      isWithinAcademicYear(screening.created_at, academic_year)
     )
 
     console.log(
-      `Found ${filteredScreenings.length} screenings within academic year ${academic_year}`,
+      `Found ${filteredScreenings.length} screenings within academic year ${academic_year}`
     )
 
     if (filteredScreenings.length === 0) {
@@ -375,7 +377,7 @@ Deno.serve(async (req: Request) => {
       } catch (error) {
         console.error(
           `Error processing student ${screening.students.first_name} ${screening.students.last_name}:`,
-          error,
+          error
         )
         // Continue processing other students even if one fails
       }
@@ -413,6 +415,21 @@ Deno.serve(async (req: Request) => {
       doc.metadata.directory = doc.context.grade.replace('/', '-') || 'Ungraded'
     })
 
+    // 7b. Build the school summary to bundle with the student reports. This must come
+    //     AFTER the grade sort and directory steps above, because they read
+    //     doc.context.grade and the summary document has no grade.
+    const summary = await buildSchoolSummaryDocument({
+      supabaseUrl,
+      supabaseKey,
+      schoolId: school_id,
+      schoolName,
+      academicYear: academic_year,
+      caseloadScope: 'full_caseload',
+      students,
+      allScreenings,
+      latestScreenings,
+    })
+
     // 8. Create a password-protected report token instead of emailing the PDFs directly
     //    (the doc-gen Lambda never returns PDF bytes and always attaches a real PDF
     //    whenever it emails, so it can't be used for a link-only notification)
@@ -422,7 +439,7 @@ Deno.serve(async (req: Request) => {
       password,
       reportType: 'school_wide_speech_screening_reports',
       reportData: {
-        documents: documentObjects,
+        documents: [summary.document, ...documentObjects],
         school_name: schoolName,
         academic_year,
         record_id: report_id ?? null,
@@ -499,7 +516,7 @@ Deno.serve(async (req: Request) => {
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
-      },
+      }
     )
   } catch (error) {
     console.error('Error generating school reports:', error)
@@ -512,7 +529,7 @@ Deno.serve(async (req: Request) => {
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
-      },
+      }
     )
   }
 })
@@ -568,7 +585,7 @@ function processErrorPatterns(errorPatterns: any): ProcessedError[] {
 
     const sound = soundError.sound || 'Unknown'
     const errorPatterns = (soundError.errorPatterns || []).filter(
-      (p: string) => p !== 'Stimulability',
+      (p: string) => p !== 'Stimulability'
     )
     const otherNotes = soundError.otherNotes?.toLowerCase() || ''
     const stoppingSounds = soundError.stoppingSounds || []
@@ -590,7 +607,7 @@ function processErrorPatterns(errorPatterns: any): ProcessedError[] {
               .replace(/\u201C/g, '') // Remove left smart quote
               .replace(/\u201D/g, '') // Remove right smart quote
               .replace(/"/g, '') // Remove straight quotes
-              .replace(/'/g, ''), // Remove single quotes
+              .replace(/'/g, '') // Remove single quotes
         )
         const combinedKey = normalizedPatterns.join(' and ')
         let errorInfo = errorPatternsLookup[sound]?.[combinedKey]
@@ -846,7 +863,7 @@ function createDocumentObject(studentInfo: StudentInfo, errors: ProcessedError[]
   const getTemplateName = (
     result: string,
     qualifiesForSpeechProgram: boolean,
-    sub: boolean,
+    sub: boolean
   ): string => {
     // Handle special cases first
     if (result === 'no_errors') {
