@@ -99,10 +99,11 @@ const ReportGenerationForm = () => {
     {
       value: 'initial-speech-reports',
       label: 'Initial Speech Reports (School Wide)',
-      description: 'Create detailed speech assessment reports covering multiple students',
+      description:
+        'Create detailed speech assessment reports for every student, plus a school summary',
       icon: Mic,
       tooltip:
-        'Produces comprehensive speech screening reports with articulation assessments, language evaluations, and therapy recommendations.',
+        'Produces comprehensive speech screening reports with articulation assessments, language evaluations, and therapy recommendations. The school-wide Summary Report (full caseload) is included in the same secure link.',
     },
     {
       value: 'school-summary-report',
