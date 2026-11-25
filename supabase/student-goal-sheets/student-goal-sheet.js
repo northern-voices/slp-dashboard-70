@@ -167,7 +167,29 @@ Deno.serve(async req => {
   }
   try {
     // Parse request body
-    const { speech_screening_id, level, override_emails, generated_by, password } = await req.json()
+    const {
+      speech_screening_id,
+      speech_screening_ids,
+      level,
+      override_emails,
+      generated_by,
+      password,
+      academic_year,
+    } = await req.json()
+
+    // Bulk "Email Reports" on the Screenings page sends a list of screenings: build every
+    // selected student's goal sheet and deliver them together behind one link, in one email
+    if (Array.isArray(speech_screening_ids) && speech_screening_ids.length > 0) {
+      return await handleBundledGoalSheets({
+        speechScreeningIds: speech_screening_ids,
+        level,
+        overrideEmails: override_emails,
+        generatedBy: generated_by,
+        password,
+        academicYear: academic_year,
+      })
+    }
+
     if (!speech_screening_id) {
       throw new Error('speech_screening_id is required')
     }
@@ -201,36 +223,11 @@ Deno.serve(async req => {
       `Found screening for student: ${screening.students.first_name} ${screening.students.last_name}`,
     )
 
-    // 3. Extract student info
-    const studentInfo = {
-      first_name: screening.students.first_name,
-      last_name: screening.students.last_name,
-      grade: screening.school_grades?.grade_level || '',
-      email: '',
-      date: new Date(screening.created_at).toISOString().split('T')[0],
-      school: screening.students.schools?.name || '',
-      speech_screen_result: screening.result?.replace('/', ':') || '',
-      vocabulary_support: screening.vocabulary_support || false,
-    }
-
-    // 2. Process error patterns for both levels up front. Each level's document
-    //    shows both tables (current sounds + what's completed/upcoming), and
-    //    "both" mode needs both documents anyway, so there's no per-level
-    //    savings to computing only one at a time.
-    const errorsByLevel = {
-      1: await processErrorPatterns(screening.error_patterns || {}, 1, studentInfo.grade),
-      2: await processErrorPatterns(screening.error_patterns || {}, 2, studentInfo.grade),
-    }
-    console.log(
-      `Processed ${errorsByLevel[1].length} Level 1 and ${errorsByLevel[2].length} Level 2 errors for goal sheet`,
+    // 2-3. Student info, both levels' errors, and which level(s) to send
+    const { studentInfo, errorsByLevel, levelsToSend } = await buildGoalSheetInputs(
+      screening,
+      level,
     )
-
-    // "Both" mode skips a level that comes back with nothing - this happens for
-    // a grade-1+ student whose only errors are later-developing sounds, which
-    // classifySoundErrors relabels entirely as Level 1 (see goalSheetLevels.ts),
-    // leaving Level 2 empty. Sending a blank second link would look broken.
-    const levelsToSend =
-      level === 'both' ? [1, 2].filter(lvl => errorsByLevel[lvl].length > 0) : [level]
     if (levelsToSend.length === 0) {
       throw new Error('No sound errors found for this speech screening')
     }
@@ -380,6 +377,250 @@ Deno.serve(async req => {
     )
   }
 })
+
+// Student info + both levels' processed errors + which level(s) to send for one
+// screening. Shared by the single-student and bundled paths so both build
+// identical goal sheets.
+async function buildGoalSheetInputs(screening, level) {
+  const studentInfo = {
+    first_name: screening.students.first_name,
+    last_name: screening.students.last_name,
+    grade: screening.school_grades?.grade_level || '',
+    email: '',
+    date: new Date(screening.created_at).toISOString().split('T')[0],
+    school: screening.students.schools?.name || '',
+    speech_screen_result: screening.result?.replace('/', ':') || '',
+    vocabulary_support: screening.vocabulary_support || false,
+  }
+
+  // Process error patterns for both levels up front. Each level's document
+  // shows both tables (current sounds + what's completed/upcoming), and
+  // "both" mode needs both documents anyway, so there's no per-level
+  // savings to computing only one at a time.
+  const errorsByLevel = {
+    1: await processErrorPatterns(screening.error_patterns || {}, 1, studentInfo.grade),
+    2: await processErrorPatterns(screening.error_patterns || {}, 2, studentInfo.grade),
+  }
+  console.log(
+    `Processed ${errorsByLevel[1].length} Level 1 and ${errorsByLevel[2].length} Level 2 errors for goal sheet`,
+  )
+
+  // "Both" mode skips a level that comes back with nothing - this happens for
+  // a grade-1+ student whose only errors are later-developing sounds, which
+  // classifySoundErrors relabels entirely as Level 1 (see goalSheetLevels.ts),
+  // leaving Level 2 empty. Sending a blank second link would look broken.
+  const levelsToSend =
+    level === 'both' ? [1, 2].filter(lvl => errorsByLevel[lvl].length > 0) : [level]
+
+  return { studentInfo, errorsByLevel, levelsToSend }
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// Bundled mode: every selected screening's goal sheet(s) behind ONE password-protected
+// link (shown like a school-wide goal sheet report), sent in ONE email. Each student's
+// sheet is built exactly as in single mode - same level rules, same createDocumentObject.
+async function handleBundledGoalSheets({
+  speechScreeningIds,
+  level,
+  overrideEmails,
+  generatedBy,
+  password,
+  academicYear,
+}) {
+  if (level !== 1 && level !== 2 && level !== 'both') {
+    throw new Error("level is required and must be 1, 2, or 'both'")
+  }
+  if (!password) {
+    throw new Error('password is required')
+  }
+
+  // No staging-table email fallback here - that's a per-student lookup
+  const recipientEmails = Array.isArray(overrideEmails) ? overrideEmails.filter(Boolean) : []
+  if (recipientEmails.length === 0) {
+    throw new Error('override_emails is required when sending goal sheets for multiple students')
+  }
+
+  const ids = speechScreeningIds.filter(id => UUID_RE.test(id))
+  if (ids.length === 0) {
+    throw new Error('No valid speech_screening_ids provided')
+  }
+
+  console.log(`Processing bundled goal sheets for ${ids.length} speech screenings`)
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const headers = {
+    apikey: supabaseKey,
+    Authorization: `Bearer ${supabaseKey}`,
+    'Content-Type': 'application/json',
+  }
+
+  // 1. Fetch the selected screenings with the same joins as single mode, 50 per request
+  const screenings = []
+  const batchSize = 50
+  for (let i = 0; i < ids.length; i += batchSize) {
+    const batch = ids.slice(i, i + batchSize)
+    const url = `${supabaseUrl}/rest/v1/speech_screenings?id=in.(${batch.join(
+      ',',
+    )})&select=*,students(*,schools(*)),school_grades(*)`
+
+    const response = await fetch(url, { headers })
+    if (!response.ok) {
+      throw new Error(`Failed to fetch selected speech screenings: ${response.status}`)
+    }
+    screenings.push(...(await response.json()))
+  }
+
+  if (screenings.length === 0) {
+    throw new Error('None of the selected speech screenings were found')
+  }
+
+  // Keep the order the user saw in the table (PostgREST returns in.() matches in DB order)
+  screenings.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id))
+
+  // 2. Build each student's goal sheet document(s). One bad screening shouldn't sink
+  //    the whole bundle, so failures are skipped and reported back.
+  const documents = []
+  const skippedStudents = []
+
+  for (const screening of screenings) {
+    const studentName = `${screening.students?.first_name} ${screening.students?.last_name}`
+
+    try {
+      const { studentInfo, errorsByLevel, levelsToSend } = await buildGoalSheetInputs(
+        screening,
+        level,
+      )
+
+      if (levelsToSend.length === 0) {
+        skippedStudents.push(studentName)
+        continue
+      }
+
+      for (const lvl of levelsToSend) {
+        const documentObject = createDocumentObject(
+          studentInfo,
+          errorsByLevel[lvl],
+          lvl,
+          errorsByLevel[lvl === 1 ? 2 : 1],
+        )
+
+        // ZIP-safe file name (single mode's "Name: NVSS Goal Sheet (Level 1)" has a
+        // colon, which Windows can't extract) plus a grade folder, like school-wide reports
+        documentObject.metadata = {
+          file_name: `${studentInfo.first_name}_${studentInfo.last_name}-GS-L${lvl}`,
+          directory: studentInfo.grade.replace('/', '-') || 'Ungraded',
+        }
+
+        documents.push(documentObject)
+      }
+    } catch (error) {
+      console.error(`Error building goal sheet for ${studentName}:`, error)
+      skippedStudents.push(studentName)
+    }
+  }
+
+  if (documents.length === 0) {
+    throw new Error('No goal sheets could be generated for the selected speech screenings')
+  }
+
+  // 3. Keep ZIP paths unique. The same student can be selected more than once (e.g. a
+  //    screening and a rescreen), and the ZIP download silently overwrites files that
+  //    share a path.
+  const pathOf = doc => `${doc.metadata.directory}/${doc.metadata.file_name}`
+  const allPaths = documents.map(pathOf)
+  const duplicatePaths = new Set(allPaths.filter((path, i) => allPaths.indexOf(path) !== i))
+  const usedPaths = new Set()
+
+  for (const doc of documents) {
+    if (duplicatePaths.has(pathOf(doc))) {
+      doc.metadata.file_name += `-${doc.context.date_of_screening}`
+    }
+
+    const baseName = doc.metadata.file_name
+    for (let n = 2; usedPaths.has(pathOf(doc)); n++) {
+      doc.metadata.file_name = `${baseName}-${n}`
+    }
+
+    usedPaths.add(pathOf(doc))
+  }
+
+  const schoolId = screenings[0].students?.school_id ?? null
+  const schoolName = (screenings[0].students?.schools?.name || '').split('(')[0].trim()
+
+  // 4. One password-protected token for the whole bundle. 'school_wide_goal_sheets' makes
+  //    the viewer show it like a school-wide goal sheet report (group picker + ZIP download).
+  const token = await createReportToken({
+    supabaseUrl,
+    supabaseKey,
+    password,
+    reportType: 'school_wide_goal_sheets',
+    reportData: {
+      documents,
+      school_name: schoolName,
+      academic_year: academicYear ?? null,
+      record_id: null,
+    },
+    schoolId,
+    createdBy: generatedBy,
+  })
+
+  const viewUrl = `${Deno.env.get('APP_BASE_URL')}/view-report/${token}`
+  const sheetsLabel = `${documents.length} selected goal sheet${documents.length === 1 ? '' : 's'}`
+
+  console.log(`Sending secure bundled goal sheet link to ${recipientEmails.join(', ')}...`)
+
+  await sendReportLinkEmail({
+    recipients: recipientEmails,
+    subject: `Goal Sheets - ${schoolName} (${documents.length} selected)`,
+    reportLabel: `${sheetsLabel} from ${schoolName}`,
+    links: [{ label: 'View Goal Sheets', url: viewUrl }],
+  })
+
+  console.log(`Secure bundled goal sheet link sent successfully`)
+
+  // 5. Log one row for the whole bundle
+  await fetch(`${supabaseUrl}/rest/v1/reports`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      school_id: schoolId,
+      report_type: 'school_wide_speech_goals_reports',
+      file_key: `goal_sheets_${schoolId}_${academicYear ?? 'selected'}`,
+      generated_by: generatedBy || null,
+      metadata: {
+        sent_to: recipientEmails,
+        scope: 'selected',
+        level,
+        screening_ids: screenings.map(s => s.id),
+        sheets_count: documents.length,
+        skipped_students: skippedStudents,
+        academic_year: academicYear ?? null,
+        school_name: schoolName,
+        delivery_method: 'password_protected_link',
+        report_token: token,
+      },
+    }),
+  })
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: `${sheetsLabel} generated and a secure link sent to ${recipientEmails.join(', ')}`,
+      school_name: schoolName,
+      sheets_count: documents.length,
+      skipped_students: skippedStudents,
+    }),
+    {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      },
+      status: 200,
+    },
+  )
+}
 
 // Processes error patterns from JSONB, restricted to sounds classified as the
 // requested Level (see _shared/goalSheetLevels.ts for the classification rules,
