@@ -174,10 +174,12 @@ export const edgeFunctionsApi = {
     schoolId: string,
     academicYear: string,
     overrideEmails: string[],
-    password: string
+    password: string,
+    screeningIds?: string[]
   ) {
     try {
       const generated_by = await this._getGeneratedBy()
+
       const { data, error } = await supabase.functions.invoke('school-wide-send-student-report', {
         body: {
           school_id: schoolId,
@@ -185,6 +187,7 @@ export const edgeFunctionsApi = {
           override_emails: overrideEmails,
           generated_by,
           password,
+          screening_ids: screeningIds,
         },
       })
 
