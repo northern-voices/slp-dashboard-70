@@ -222,8 +222,15 @@ Deno.serve(async (req: Request) => {
 
   try {
     // Parse request body
-    const { school_id, academic_year, override_emails, report_id, generated_by, password } =
-      await req.json()
+    const {
+      school_id,
+      academic_year,
+      override_emails,
+      report_id,
+      generated_by,
+      password,
+      screening_ids,
+    } = await req.json()
 
     if (!school_id) {
       throw new Error('school_id is required')
@@ -238,7 +245,14 @@ Deno.serve(async (req: Request) => {
       throw new Error('password is required')
     }
 
-    console.log(`Processing school reports for school: ${school_id}, year: ${academic_year}`)
+    // When screening_ids is sent (bulk "Email Reports" on the Screenings page), report on
+    // exactly those screenings instead of every student screened this academic year
+    const isSelection = Array.isArray(screening_ids) && screening_ids.length > 0
+
+    console.log(
+      `Processing school reports for school: ${school_id}, year: ${academic_year}` +
+        (isSelection ? `, ${screening_ids.length} selected screenings` : '')
+    )
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -268,92 +282,14 @@ Deno.serve(async (req: Request) => {
 
     console.log(`Found school: ${school.name}`)
 
-    // 2. Get all speech screenings for the school within the academic year
-    // First get all students for this school
-    const studentsUrl = `${supabaseUrl}/rest/v1/students?school_id=eq.${school_id}&select=id,first_name,last_name,program_status,current_grade_id`
-
-    const studentsResponse = await fetch(studentsUrl, {
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (!studentsResponse.ok) {
-      throw new Error(`Failed to fetch students: ${studentsResponse.status}`)
-    }
-
-    const students = await studentsResponse.json()
-    if (!students || students.length === 0) {
-      throw new Error('No students found for this school')
-    }
-
-    const studentIds = students.map((student: any) => student.id)
-    console.log(`Found ${studentIds.length} students for school`)
-
-    // Now get screenings for these students using batch processing
-    const allScreenings = []
-    const batchSize = 50 // Process 50 students at a time
-
-    console.log(`Processing ${studentIds.length} students in batches of ${batchSize}...`)
-
-    for (let i = 0; i < studentIds.length; i += batchSize) {
-      const batch = studentIds.slice(i, i + batchSize)
-      console.log(
-        `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
-          studentIds.length / batchSize
-        )}: ${batch.length} students`
-      )
-
-      const screeningsUrl = `${supabaseUrl}/rest/v1/speech_screenings?student_id=in.(${batch.join(
-        ','
-      )})&select=*,students(*),school_grades(*)`
-
-      const screeningsResponse = await fetch(screeningsUrl, {
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (!screeningsResponse.ok) {
-        console.error(
-          `Failed to fetch speech screenings for batch starting at index ${i}: ${screeningsResponse.status}`
-        )
-        throw new Error(`Failed to fetch speech screenings: ${screeningsResponse.status}`)
-      }
-
-      const batchScreenings = await screeningsResponse.json()
-      if (batchScreenings && batchScreenings.length > 0) {
-        allScreenings.push(...batchScreenings)
-      }
-
-      // Add a small delay between batches
-      if (i + batchSize < studentIds.length) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-    }
-
-    console.log(`Found ${allScreenings.length} total screenings for school`)
-
-    // 3. Filter by academic year
-    const filteredScreenings = allScreenings.filter((screening: any) =>
-      isWithinAcademicYear(screening.created_at, academic_year)
-    )
-
-    console.log(
-      `Found ${filteredScreenings.length} screenings within academic year ${academic_year}`
-    )
-
-    if (filteredScreenings.length === 0) {
-      throw new Error('No screenings found for the specified school and academic year')
-    }
-
-    // 4. Get the latest screening for each student
-    const latestScreenings = getLatestScreeningsPerStudent(filteredScreenings)
-    console.log(`Processing ${latestScreenings.length} unique students`)
+    // 2-4. Get the screenings to report on
+    const { students, allScreenings, latestScreenings } = isSelection
+      ? {
+          students: [],
+          allScreenings: [],
+          latestScreenings: await fetchSelectedScreenings(supabaseUrl, supabaseKey, screening_ids),
+        }
+      : await fetchSchoolYearScreenings(supabaseUrl, supabaseKey, school_id, academic_year)
 
     // 5. Process all student records to create document objects
     const documentObjects: any[] = []
@@ -415,20 +351,45 @@ Deno.serve(async (req: Request) => {
       doc.metadata.directory = doc.context.grade.replace('/', '-') || 'Ungraded'
     })
 
+    // 7a. Keep ZIP paths unique. A selection can include the same student more than once
+    //     (e.g. a screening and a rescreen), and the ZIP download silently overwrites
+    //     files that share a path.
+    const pathOf = (doc: any) => `${doc.metadata.directory}/${doc.metadata.file_name}`
+    const allPaths = documentObjects.map(pathOf)
+    const duplicatePaths = new Set(allPaths.filter((path, i) => allPaths.indexOf(path) !== i))
+    const usedPaths = new Set<string>()
+
+    documentObjects.forEach(doc => {
+      if (duplicatePaths.has(pathOf(doc))) {
+        doc.metadata.file_name += `-${doc.context.date_of_screening}`
+      }
+
+      const baseName = doc.metadata.file_name
+      for (let n = 2; usedPaths.has(pathOf(doc)); n++) {
+        doc.metadata.file_name = `${baseName}-${n}`
+      }
+
+      usedPaths.add(pathOf(doc))
+    })
+
     // 7b. Build the school summary to bundle with the student reports. This must come
     //     AFTER the grade sort and directory steps above, because they read
-    //     doc.context.grade and the summary document has no grade.
-    const summary = await buildSchoolSummaryDocument({
-      supabaseUrl,
-      supabaseKey,
-      schoolId: school_id,
-      schoolName,
-      academicYear: academic_year,
-      caseloadScope: 'full_caseload',
-      students,
-      allScreenings,
-      latestScreenings,
-    })
+    //     doc.context.grade and the summary document has no grade. Skipped for a
+    //     selection: the summary covers the whole school's caseload, not a hand-picked
+    //     set of students.
+    const summary = isSelection
+      ? null
+      : await buildSchoolSummaryDocument({
+          supabaseUrl,
+          supabaseKey,
+          schoolId: school_id,
+          schoolName,
+          academicYear: academic_year,
+          caseloadScope: 'full_caseload',
+          students,
+          allScreenings,
+          latestScreenings,
+        })
 
     // 8. Create a password-protected report token instead of emailing the PDFs directly
     //    (the doc-gen Lambda never returns PDF bytes and always attaches a real PDF
@@ -439,7 +400,7 @@ Deno.serve(async (req: Request) => {
       password,
       reportType: 'school_wide_speech_screening_reports',
       reportData: {
-        documents: [summary.document, ...documentObjects],
+        documents: summary ? [summary.document, ...documentObjects] : documentObjects,
         school_name: schoolName,
         academic_year,
         record_id: report_id ?? null,
@@ -452,10 +413,18 @@ Deno.serve(async (req: Request) => {
 
     console.log(`Sending secure report link to ${override_emails.join(', ')}...`)
 
+    const selectionLabel = `${documentObjects.length} selected student report${
+      documentObjects.length === 1 ? '' : 's'
+    }`
+
     await sendReportLinkEmail({
       recipients: override_emails,
-      subject: `Student Reports - ${schoolName} - ${academic_year}`,
-      reportLabel: `${schoolName}'s student reports for ${academic_year}`,
+      subject: isSelection
+        ? `Student Reports - ${schoolName} (${documentObjects.length} selected)`
+        : `Student Reports - ${schoolName} - ${academic_year}`,
+      reportLabel: isSelection
+        ? `${selectionLabel} from ${schoolName}`
+        : `${schoolName}'s student reports for ${academic_year}`,
       viewUrl,
     })
 
@@ -501,6 +470,8 @@ Deno.serve(async (req: Request) => {
           school_code: schoolCode,
           delivery_method: 'password_protected_link',
           report_token: token,
+          scope: isSelection ? 'selected' : 'school_wide',
+          screening_ids: isSelection ? latestScreenings.map((s: any) => s.id) : undefined,
         },
       }),
     })
@@ -533,6 +504,144 @@ Deno.serve(async (req: Request) => {
     )
   }
 })
+
+// Every student's latest screening in the academic year (the original school-wide behavior)
+async function fetchSchoolYearScreenings(
+  supabaseUrl: string,
+  supabaseKey: string,
+  school_id: string,
+  academic_year: string
+) {
+  // 2. Get all speech screenings for the school within the academic year
+  // First get all students for this school
+  const studentsUrl = `${supabaseUrl}/rest/v1/students?school_id=eq.${school_id}&select=id,first_name,last_name,program_status,current_grade_id`
+
+  const studentsResponse = await fetch(studentsUrl, {
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+    },
+  })
+
+  if (!studentsResponse.ok) {
+    throw new Error(`Failed to fetch students: ${studentsResponse.status}`)
+  }
+
+  const students = await studentsResponse.json()
+  if (!students || students.length === 0) {
+    throw new Error('No students found for this school')
+  }
+
+  const studentIds = students.map((student: any) => student.id)
+  console.log(`Found ${studentIds.length} students for school`)
+
+  // Now get screenings for these students using batch processing
+  const allScreenings = []
+  const batchSize = 50 // Process 50 students at a time
+
+  console.log(`Processing ${studentIds.length} students in batches of ${batchSize}...`)
+
+  for (let i = 0; i < studentIds.length; i += batchSize) {
+    const batch = studentIds.slice(i, i + batchSize)
+    console.log(
+      `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
+        studentIds.length / batchSize
+      )}: ${batch.length} students`
+    )
+
+    const screeningsUrl = `${supabaseUrl}/rest/v1/speech_screenings?student_id=in.(${batch.join(
+      ','
+    )})&select=*,students(*),school_grades(*)`
+
+    const screeningsResponse = await fetch(screeningsUrl, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!screeningsResponse.ok) {
+      console.error(
+        `Failed to fetch speech screenings for batch starting at index ${i}: ${screeningsResponse.status}`
+      )
+      throw new Error(`Failed to fetch speech screenings: ${screeningsResponse.status}`)
+    }
+
+    const batchScreenings = await screeningsResponse.json()
+    if (batchScreenings && batchScreenings.length > 0) {
+      allScreenings.push(...batchScreenings)
+    }
+
+    // Add a small delay between batches
+    if (i + batchSize < studentIds.length) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+  }
+
+  console.log(`Found ${allScreenings.length} total screenings for school`)
+
+  // 3. Filter by academic year
+  const filteredScreenings = allScreenings.filter((screening: any) =>
+    isWithinAcademicYear(screening.created_at, academic_year)
+  )
+
+  console.log(`Found ${filteredScreenings.length} screenings within academic year ${academic_year}`)
+
+  if (filteredScreenings.length === 0) {
+    throw new Error('No screenings found for the specified school and academic year')
+  }
+
+  // 4. Get the latest screening for each student
+  const latestScreenings = getLatestScreeningsPerStudent(filteredScreenings)
+  console.log(`Processing ${latestScreenings.length} unique students`)
+
+  return { students, allScreenings, latestScreenings }
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// Exactly the screenings the user ticked, with the same joins as the school-wide path.
+// No academic-year filter and no one-per-student de-dupe: the user chose these.
+async function fetchSelectedScreenings(
+  supabaseUrl: string,
+  supabaseKey: string,
+  screeningIds: string[]
+) {
+  const ids = screeningIds.filter(id => UUID_RE.test(id))
+  if (ids.length === 0) {
+    throw new Error('No valid screening_ids provided')
+  }
+
+  const screenings: any[] = []
+  const batchSize = 50
+
+  for (let i = 0; i < ids.length; i += batchSize) {
+    const batch = ids.slice(i, i + batchSize)
+    const url = `${supabaseUrl}/rest/v1/speech_screenings?id=in.(${batch.join(',')})&select=*,students(*),school_grades(*)`
+
+    const response = await fetch(url, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch selected screenings: ${response.status}`)
+    }
+
+    screenings.push(...(await response.json()))
+  }
+
+  if (screenings.length === 0) {
+    throw new Error('None of the selected screenings were found')
+  }
+
+  return screenings
+}
 
 // Helper function to get latest screening per student
 function getLatestScreeningsPerStudent(screenings: any[]): any[] {
