@@ -104,110 +104,98 @@ const BulkSendReportsModal = ({
       screening => screening.source_table === 'hearing'
     )
 
-    // All selected students' initial speech reports go out together in ONE email
-    const bundleSpeechReports =
-      selectedReports.includes('initial-speech-report') && speechScreenings.length > 0
-
-    // Same for initial goal sheets: one email for every selected student
-    const bundleGoalSheets =
-      selectedReports.includes('initial-goal-sheet') && speechScreenings.length > 0
-
-    // Hearing reports still go out one email per screening for now
-    const perScreeningJobs = hearingScreenings
-
     const progressPairs = progressReportSelected
       ? Object.values(screeningsByStudent).filter(group => group.length === 2)
       : []
 
-    const totalActions =
-      (bundleSpeechReports ? 1 : 0) +
-      (bundleGoalSheets ? 1 : 0) +
-      perScreeningJobs.length +
-      progressPairs.length
-
-    // Label bundles with the newest selected screening's academic year
+    // Label each bundle with its newest screening's academic year
     // (used in the ZIP file name and the reports log)
-    const bundleAcademicYear =
-      speechScreenings.length > 0
-        ? getCurrentAcademicYear(
-            new Date(Math.max(...speechScreenings.map(s => new Date(s.created_at).getTime())))
+    const academicYearOf = (screenings: Screening[]) =>
+      getCurrentAcademicYear(
+        new Date(Math.max(...screenings.map(s => new Date(s.created_at).getTime())))
+      )
+
+    // Every selected report type goes out as ONE email covering all selected students
+    const jobs: {
+      label: string
+      send: () => Promise<{ skipped_students?: string[] } | null>
+    }[] = []
+
+    if (selectedReports.includes('initial-speech-report') && speechScreenings.length > 0) {
+      jobs.push({
+        label: 'speech reports',
+        send: () => {
+          if (!currentSchool) throw new Error('No school selected')
+
+          return edgeFunctionsApi.schoolWideSendStudentReports(
+            currentSchool.id,
+            academicYearOf(speechScreenings),
+            recipientEmails,
+            password,
+            speechScreenings.map(s => s.id)
           )
-        : ''
+        },
+      })
+    }
+
+    if (selectedReports.includes('initial-goal-sheet') && speechScreenings.length > 0) {
+      jobs.push({
+        label: 'goal sheets',
+        send: () =>
+          edgeFunctionsApi.bulkGoalSheets(
+            speechScreenings.map(s => s.id),
+            Number(goalSheetLevel) as 1 | 2,
+            academicYearOf(speechScreenings),
+            recipientEmails,
+            password
+          ),
+      })
+    }
+
+    if (hearingScreenings.length > 0) {
+      jobs.push({
+        label: 'hearing reports',
+        send: () =>
+          edgeFunctionsApi.bulkHearingReports(
+            hearingScreenings.map(s => s.id),
+            academicYearOf(hearingScreenings),
+            recipientEmails,
+            password
+          ),
+      })
+    }
+
+    if (progressPairs.length > 0) {
+      jobs.push({
+        label: 'progress reports',
+        send: () =>
+          edgeFunctionsApi.bulkProgressReports(
+            progressPairs.map(pair => [pair[0].id, pair[1].id] as [string, string]),
+            academicYearOf(progressPairs.flat()),
+            recipientEmails,
+            password
+          ),
+      })
+    }
+
+    if (jobs.length === 0) return
 
     setIsLoading(true)
-    setProgress({ current: 0, total: totalActions })
+    setProgress({ current: 0, total: jobs.length })
 
     let successCount = 0
     let failCount = 0
-    let completed = 0
+    const skippedStudents: string[] = []
 
-    if (bundleSpeechReports) {
-      completed++
-      setProgress({ current: completed, total: totalActions })
-
-      try {
-        if (!currentSchool) throw new Error('No school selected')
-
-        await edgeFunctionsApi.schoolWideSendStudentReports(
-          currentSchool.id,
-          bundleAcademicYear,
-          recipientEmails,
-          password,
-          speechScreenings.map(s => s.id)
-        )
-        successCount++
-      } catch (error) {
-        console.error('Failed to send bundled speech reports:', error)
-        failCount++
-      }
-    }
-
-    if (bundleGoalSheets) {
-      completed++
-      setProgress({ current: completed, total: totalActions })
+    for (const [index, job] of jobs.entries()) {
+      setProgress({ current: index + 1, total: jobs.length })
 
       try {
-        await edgeFunctionsApi.bulkGoalSheets(
-          speechScreenings.map(s => s.id),
-          Number(goalSheetLevel) as 1 | 2,
-          bundleAcademicYear,
-          recipientEmails,
-          password
-        )
+        const result = await job.send()
+        skippedStudents.push(...(result?.skipped_students ?? []))
         successCount++
       } catch (error) {
-        console.error('Failed to send bundled goal sheets:', error)
-        failCount++
-      }
-    }
-
-    for (const screening of perScreeningJobs) {
-      completed++
-      setProgress({ current: completed, total: totalActions })
-
-      try {
-        await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmails, password)
-        successCount++
-      } catch (error) {
-        console.error(`Failed to send hearing report for screening ${screening.id}:`, error)
-        failCount++
-      }
-    }
-
-    for (const pair of progressPairs) {
-      completed++
-      setProgress({ current: completed, total: totalActions })
-
-      try {
-        await edgeFunctionsApi.studentProgressReport(
-          pair[0].id,
-          pair[1].id,
-          recipientEmails,
-          password
-        )
-        successCount++
-      } catch (error) {
-        console.error(`Failed to send progress report for student ${pair[0].student_id}:`, error)
+        console.error(`Failed to send bundled ${job.label}:`, error)
         failCount++
       }
     }
@@ -216,14 +204,21 @@ const BulkSendReportsModal = ({
 
     setIsLoading(false)
 
+    // Bundles skip a student they can't build (e.g. a progress pair with an absent
+    // screening) instead of failing everyone, so say who was left out
+    const skippedNote =
+      skippedStudents.length > 0 ? ` Not included: ${skippedStudents.join('; ')}.` : ''
+
     if (failCount === 0) {
       setResultType('success')
       setResultMessage(
-        `Successfully sent reports for ${selectedScreenings.length} screening(s) to ${recipientEmails.join(', ')}`
+        `Successfully sent reports for ${selectedScreenings.length} screening(s) to ${recipientEmails.join(', ')}.${skippedNote}`
       )
     } else {
       setResultType('error')
-      setResultMessage(`Sent ${successCount} of ${totalActions} email(s); ${failCount} failed`)
+      setResultMessage(
+        `Sent ${successCount} of ${jobs.length} email(s); ${failCount} failed.${skippedNote}`
+      )
     }
     setShowResult(true)
   }
