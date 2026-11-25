@@ -149,7 +149,26 @@ Deno.serve(async req => {
 
   try {
     // Parse request body
-    const { hearing_screening_id, override_emails, generated_by, password } = await req.json()
+    const {
+      hearing_screening_id,
+      hearing_screening_ids,
+      override_emails,
+      generated_by,
+      password,
+      academic_year,
+    } = await req.json()
+
+    // Bulk "Email Reports" on the Screenings page sends a list of screenings: build every
+    // selected student's hearing report and deliver them together behind one link, in one email
+    if (Array.isArray(hearing_screening_ids) && hearing_screening_ids.length > 0) {
+      return await handleBundledHearingReports({
+        hearingScreeningIds: hearing_screening_ids,
+        overrideEmails: override_emails,
+        generatedBy: generated_by,
+        password,
+        academicYear: academic_year,
+      })
+    }
 
     if (!hearing_screening_id) {
       throw new Error('hearing_screening_id is required')
@@ -190,46 +209,8 @@ Deno.serve(async req => {
       `Found hearing screening for student: ${screening.students.first_name} ${screening.students.last_name}`
     )
 
-    // 2. Get school code - hardcoded to NVSS2025 for now
-    const schoolCode = 'NVSS2025'
-
-    // 3. Extract student info - NOW WITH ALL THE RESULT FIELDS
-    const studentInfo = {
-      first_name: screening.students.first_name,
-      last_name: screening.students.last_name,
-      grade: screening.school_grades?.grade_level || '',
-      email: '',
-      date_of_screening: new Date(screening.created_at).toISOString().split('T')[0],
-      school: screening.students.schools?.name || '',
-      school_code: schoolCode,
-
-      // Raw measurement values
-      right_ear_volume_ml: screening.right_volume_db?.toString() || '',
-      right_ear_compliance_ml: screening.right_compliance?.toString() || '',
-      right_ear_press_dapa: screening.right_pressure?.toString() || '',
-
-      // Right ear result interpretations (NOW PROPERLY MAPPED)
-      right_ear_volume_result: screening.right_ear_volume_result || '',
-      right_ear_compliance_result: screening.right_ear_compliance_result || '',
-      right_ear_press_result: screening.right_ear_pressure_result || '',
-
-      // Raw measurement values for left ear
-      left_ear_volume_ml: screening.left_volume_db?.toString() || '',
-      left_ear_compliance_ml: screening.left_compliance?.toString() || '',
-      left_ear_press_dapa: screening.left_pressure?.toString() || '',
-
-      // Left ear result interpretations (NOW PROPERLY MAPPED)
-      left_ear_volume_result: screening.left_ear_volume_result || '',
-      left_ear_compliance_result: screening.left_ear_compliance_result || '',
-      left_ear_press_result: screening.left_ear_pressure_result || '',
-
-      // Overall ear results - CRITICAL FOR PASS/FAIL LOGIC
-      right_ear_result: screening.right_ear_result || '',
-      left_ear_result: screening.left_ear_result || '',
-
-      referral_notes: screening.referral_notes || '',
-      note: screening.clinical_notes || '',
-    }
+    // 2-3. Extract student info with all the result fields
+    const studentInfo = buildHearingStudentInfo(screening)
 
     // 4. Require at least one recipient email (no staging table fallback available)
     if (!Array.isArray(override_emails) || override_emails.length === 0) {
@@ -344,6 +325,234 @@ Deno.serve(async req => {
     )
   }
 })
+
+// Student info with every measurement + result field the hearing templates use. Shared
+// by the single-student and bundled paths so both build identical reports.
+function buildHearingStudentInfo(screening) {
+  // School code - hardcoded to NVSS2025 for now
+  const schoolCode = 'NVSS2025'
+
+  return {
+    first_name: screening.students.first_name,
+    last_name: screening.students.last_name,
+    grade: screening.school_grades?.grade_level || '',
+    email: '',
+    date_of_screening: new Date(screening.created_at).toISOString().split('T')[0],
+    school: screening.students.schools?.name || '',
+    school_code: schoolCode,
+
+    // Raw measurement values
+    right_ear_volume_ml: screening.right_volume_db?.toString() || '',
+    right_ear_compliance_ml: screening.right_compliance?.toString() || '',
+    right_ear_press_dapa: screening.right_pressure?.toString() || '',
+
+    // Right ear result interpretations (NOW PROPERLY MAPPED)
+    right_ear_volume_result: screening.right_ear_volume_result || '',
+    right_ear_compliance_result: screening.right_ear_compliance_result || '',
+    right_ear_press_result: screening.right_ear_pressure_result || '',
+
+    // Raw measurement values for left ear
+    left_ear_volume_ml: screening.left_volume_db?.toString() || '',
+    left_ear_compliance_ml: screening.left_compliance?.toString() || '',
+    left_ear_press_dapa: screening.left_pressure?.toString() || '',
+
+    // Left ear result interpretations (NOW PROPERLY MAPPED)
+    left_ear_volume_result: screening.left_ear_volume_result || '',
+    left_ear_compliance_result: screening.left_ear_compliance_result || '',
+    left_ear_press_result: screening.left_ear_pressure_result || '',
+
+    // Overall ear results - CRITICAL FOR PASS/FAIL LOGIC
+    right_ear_result: screening.right_ear_result || '',
+    left_ear_result: screening.left_ear_result || '',
+
+    referral_notes: screening.referral_notes || '',
+    note: screening.clinical_notes || '',
+  }
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// Bundled mode: every selected screening's hearing report behind ONE password-protected
+// link (shown like a school-wide hearing report), sent in ONE email. Each report is built
+// exactly as in single mode - same student info, same createDocumentObject templates.
+async function handleBundledHearingReports({
+  hearingScreeningIds,
+  overrideEmails,
+  generatedBy,
+  password,
+  academicYear,
+}) {
+  if (!password) {
+    throw new Error('password is required')
+  }
+
+  const recipientEmails = Array.isArray(overrideEmails) ? overrideEmails.filter(Boolean) : []
+  if (recipientEmails.length === 0) {
+    throw new Error('override_emails is required when sending hearing reports for multiple students')
+  }
+
+  const ids = hearingScreeningIds.filter(id => UUID_RE.test(id))
+  if (ids.length === 0) {
+    throw new Error('No valid hearing_screening_ids provided')
+  }
+
+  console.log(`Processing bundled hearing reports for ${ids.length} hearing screenings`)
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const headers = {
+    apikey: supabaseKey,
+    Authorization: `Bearer ${supabaseKey}`,
+    'Content-Type': 'application/json',
+  }
+
+  // 1. Fetch the selected screenings with the same joins as single mode, 50 per request
+  const screenings = []
+  const batchSize = 50
+  for (let i = 0; i < ids.length; i += batchSize) {
+    const batch = ids.slice(i, i + batchSize)
+    const url = `${supabaseUrl}/rest/v1/hearing_screenings?id=in.(${batch.join(
+      ','
+    )})&select=*,students(*,schools(*)),school_grades(*)`
+
+    const response = await fetch(url, { headers })
+    if (!response.ok) {
+      throw new Error(`Failed to fetch selected hearing screenings: ${response.status}`)
+    }
+    screenings.push(...(await response.json()))
+  }
+
+  if (screenings.length === 0) {
+    throw new Error('None of the selected hearing screenings were found')
+  }
+
+  // Keep the order the user saw in the table (PostgREST returns in.() matches in DB order)
+  screenings.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id))
+
+  // 2. Build each student's hearing report. One bad screening shouldn't sink the whole
+  //    bundle, so failures are skipped and reported back.
+  const documents = []
+  const skippedStudents = []
+
+  for (const screening of screenings) {
+    const studentName = `${screening.students?.first_name} ${screening.students?.last_name}`
+
+    try {
+      const studentInfo = buildHearingStudentInfo(screening)
+      const documentObject = createDocumentObject(studentInfo)
+
+      // Grade folder, like the school-wide hearing report (Staff gets its own folder)
+      documentObject.metadata.directory = studentInfo.grade.replace('/', '-') || 'Ungraded'
+
+      documents.push(documentObject)
+    } catch (error) {
+      console.error(`Error building hearing report for ${studentName}:`, error)
+      skippedStudents.push(studentName)
+    }
+  }
+
+  if (documents.length === 0) {
+    throw new Error('No hearing reports could be generated for the selected hearing screenings')
+  }
+
+  // 3. Keep ZIP paths unique. The same student can be selected more than once, and the
+  //    ZIP download silently overwrites files that share a path.
+  const pathOf = doc => `${doc.metadata.directory}/${doc.metadata.file_name}`
+  const allPaths = documents.map(pathOf)
+  const duplicatePaths = new Set(allPaths.filter((path, i) => allPaths.indexOf(path) !== i))
+  const usedPaths = new Set()
+
+  for (const doc of documents) {
+    if (duplicatePaths.has(pathOf(doc))) {
+      doc.metadata.file_name += ` (${doc.context.date_of_screening})`
+    }
+
+    const baseName = doc.metadata.file_name
+    for (let n = 2; usedPaths.has(pathOf(doc)); n++) {
+      doc.metadata.file_name = `${baseName} (${n})`
+    }
+
+    usedPaths.add(pathOf(doc))
+  }
+
+  const schoolId = screenings[0].students?.school_id ?? null
+  const fullSchoolName = screenings[0].students?.schools?.name || ''
+  const schoolName = fullSchoolName.split('(')[0].trim()
+
+  // 4. One password-protected token for the whole bundle. 'school_wide_hearing_reports'
+  //    makes the viewer show it like a school-wide hearing report (grade picker + ZIP).
+  const token = await createReportToken({
+    supabaseUrl,
+    supabaseKey,
+    password,
+    reportType: 'school_wide_hearing_reports',
+    reportData: {
+      documents,
+      school_name: fullSchoolName,
+      academic_year: academicYear ?? null,
+    },
+    schoolId,
+    createdBy: generatedBy,
+  })
+
+  const viewUrl = `${Deno.env.get('APP_BASE_URL')}/view-report/${token}`
+  const reportsLabel = `${documents.length} selected hearing report${
+    documents.length === 1 ? '' : 's'
+  }`
+
+  console.log(`Sending secure bundled hearing report link to ${recipientEmails.join(', ')}...`)
+
+  await sendReportLinkEmail({
+    recipients: recipientEmails,
+    subject: `Hearing Reports - ${schoolName} (${documents.length} selected)`,
+    reportLabel: `${reportsLabel} from ${schoolName}`,
+    viewUrl,
+  })
+
+  console.log(`Secure bundled hearing report link sent successfully`)
+
+  // 5. Log one row for the whole bundle
+  await fetch(`${supabaseUrl}/rest/v1/reports`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      school_id: schoolId,
+      report_type: 'school_wide_hearing_screenings_report',
+      is_bulk: true,
+      file_key: `hearing_reports_bulk_${schoolId}_${academicYear ?? 'selected'}`,
+      generated_by: generatedBy || null,
+      metadata: {
+        sent_to: recipientEmails,
+        scope: 'selected',
+        screening_ids: screenings.map(s => s.id),
+        student_count: documents.length,
+        skipped_students: skippedStudents,
+        academic_year: academicYear ?? null,
+        school_name: fullSchoolName,
+        includes_summary_report: false,
+        delivery_method: 'password_protected_link',
+        report_token: token,
+      },
+    }),
+  })
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: `${reportsLabel} generated and a secure link sent to ${recipientEmails.join(', ')}`,
+      school_name: fullSchoolName,
+      student_count: documents.length,
+      skipped_students: skippedStudents,
+    }),
+    {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      },
+      status: 200,
+    }
+  )
+}
 
 function createDocumentObject(studentInfo) {
   // Determine template name based on notes and results (matching Airtable logic)
