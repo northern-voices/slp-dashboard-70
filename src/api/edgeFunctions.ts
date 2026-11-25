@@ -520,4 +520,66 @@ export const edgeFunctionsApi = {
       throw error
     }
   },
+
+  async bulkHearingReports(
+    hearingScreeningIds: string[],
+    academicYear: string,
+    overrideEmails: string[],
+    password: string
+  ) {
+    try {
+      const generated_by = await this._getGeneratedBy()
+
+      const { data, error } = await supabase.functions.invoke('swift-handler', {
+        body: {
+          hearing_screening_ids: hearingScreeningIds,
+          academic_year: academicYear,
+          override_emails: overrideEmails,
+          generated_by,
+          password,
+        },
+      })
+
+      if (error) {
+        console.error('Error:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Failed to generate bulk hearing reports:', error)
+      throw error
+    }
+  },
+
+  async bulkProgressReports(
+    screeningPairs: [string, string][],
+    academicYear: string,
+    overrideEmails: string[],
+    password: string
+  ) {
+    try {
+      const generated_by = await this._getGeneratedBy()
+
+      const { data, error } = await supabase.functions.invoke('student-progress-report', {
+        body: {
+          screening_pairs: screeningPairs,
+          academic_year: academicYear,
+          override_emails: overrideEmails,
+          generated_by,
+          password,
+        },
+      })
+
+      if (error) {
+        console.error('Error:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Failed to generate bulk progress reports:', error)
+      throw error
+    }
+  },
 }
