@@ -26,6 +26,7 @@ import { useCurrentSchool } from '@/hooks/school/useCurrentSchool'
 import { useEmailSuggestions } from '@/hooks/useEmailSuggestions'
 import ReportPasswordInput from '@/components/reports/shared/ReportPasswordInput'
 import { useDefaultReportPassword } from '@/hooks/useDefaultReportPassword'
+import { getCurrentAcademicYear } from '@/lib/academicYear'
 
 interface BulkSendReportsModalProps {
   isOpen: boolean
@@ -96,49 +97,78 @@ const BulkSendReportsModal = ({
     if (progressReportSelected && invalidProgressStudents.length > 0) return
     if (selectedReports.includes('initial-goal-sheet') && !goalSheetLevel) return
 
-    const otherReportTypes = selectedReports.filter(report => report !== 'progress-speech-report')
+    const speechScreenings = selectedScreenings.filter(
+      screening => screening.source_table !== 'hearing'
+    )
+    const hearingScreenings = selectedScreenings.filter(
+      screening => screening.source_table === 'hearing'
+    )
+
+    // All selected students' initial speech reports go out together in ONE email
+    const bundleSpeechReports =
+      selectedReports.includes('initial-speech-report') && speechScreenings.length > 0
+
+    // Still one email per screening for nwo
+    const perScreeningJobs = [
+      ...hearingScreenings,
+      ...(selectedReports.includes('initial-goal-sheet') ? speechScreenings : []),
+    ]
+
     const progressPairs = progressReportSelected
       ? Object.values(screeningsByStudent).filter(group => group.length === 2)
       : []
 
-    const screeningsToProcess = selectedScreenings.filter(
-      screening => screening.source_table === 'hearing' || otherReportTypes.length > 0
-    )
+    const totalActions =
+      (bundleSpeechReports ? 1 : 0) + perScreeningJobs.length + progressPairs.length
 
     setIsLoading(true)
-
-    const totalActions = screeningsToProcess.length + progressPairs.length
-
     setProgress({ current: 0, total: totalActions })
 
     let successCount = 0
     let failCount = 0
     let completed = 0
 
-    for (const screening of screeningsToProcess) {
+    if (bundleSpeechReports) {
       completed++
       setProgress({ current: completed, total: totalActions })
 
       try {
-        const isHearing = screening.source_table === 'hearing'
+        if (!currentSchool) throw new Error('No school selected')
 
-        if (isHearing) {
+        // Label the bundle with the newest selected screening's academic year
+        // (used in the ZIP file name and the reports log)
+        const newestCreatedAt = Math.max(
+          ...speechScreenings.map(s => new Date(s.created_at).getTime())
+        )
+
+        await edgeFunctionsApi.schoolWideSendStudentReports(
+          currentSchool.id,
+          getCurrentAcademicYear(new Date(newestCreatedAt)),
+          recipientEmails,
+          password,
+          speechScreenings.map(s => s.id)
+        )
+        successCount++
+      } catch (error) {
+        console.error('Failed to send bundled speech reports:', error)
+        failCount++
+      }
+    }
+    for (const screening of perScreeningJobs) {
+      completed++
+      setProgress({ current: completed, total: totalActions })
+
+      try {
+        if (screening.source_table === 'hearing') {
           await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmails, password)
         } else {
-          for (const reportType of selectedReports) {
-            if (reportType === 'initial-speech-report') {
-              await edgeFunctionsApi.sendStudentReport(screening.id, recipientEmails, password)
-            } else if (reportType === 'initial-goal-sheet') {
-              await edgeFunctionsApi.studentGoalSheet(
-                screening.id,
-                Number(goalSheetLevel) as 1 | 2,
-                recipientEmails,
-                password
-              )
-            }
-          }
+          await edgeFunctionsApi.studentGoalSheet(
+            screening.id,
+            Number(goalSheetLevel) as 1 | 2,
+            recipientEmails,
+            password
+          )
         }
-
         successCount++
       } catch (error) {
         console.error(`Failed to send report for screening ${screening.id}:`, error)
@@ -171,11 +201,11 @@ const BulkSendReportsModal = ({
     if (failCount === 0) {
       setResultType('success')
       setResultMessage(
-        `Successfully sent reports for ${successCount} screening(s) to ${recipientEmails.join(', ')}`
+        `Successfully sent reports for ${selectedScreenings.length} screening(s) to ${recipientEmails.join(', ')}`
       )
     } else {
       setResultType('error')
-      setResultMessage(`Sent ${successCount} report(s), failed ${failCount}`)
+      setResultMessage(`Sent ${successCount} of ${totalActions} email(s); ${failCount} failed`)
     }
     setShowResult(true)
   }
