@@ -108,18 +108,31 @@ const BulkSendReportsModal = ({
     const bundleSpeechReports =
       selectedReports.includes('initial-speech-report') && speechScreenings.length > 0
 
-    // Still one email per screening for nwo
-    const perScreeningJobs = [
-      ...hearingScreenings,
-      ...(selectedReports.includes('initial-goal-sheet') ? speechScreenings : []),
-    ]
+    // Same for initial goal sheets: one email for every selected student
+    const bundleGoalSheets =
+      selectedReports.includes('initial-goal-sheet') && speechScreenings.length > 0
+
+    // Hearing reports still go out one email per screening for now
+    const perScreeningJobs = hearingScreenings
 
     const progressPairs = progressReportSelected
       ? Object.values(screeningsByStudent).filter(group => group.length === 2)
       : []
 
     const totalActions =
-      (bundleSpeechReports ? 1 : 0) + perScreeningJobs.length + progressPairs.length
+      (bundleSpeechReports ? 1 : 0) +
+      (bundleGoalSheets ? 1 : 0) +
+      perScreeningJobs.length +
+      progressPairs.length
+
+    // Label bundles with the newest selected screening's academic year
+    // (used in the ZIP file name and the reports log)
+    const bundleAcademicYear =
+      speechScreenings.length > 0
+        ? getCurrentAcademicYear(
+            new Date(Math.max(...speechScreenings.map(s => new Date(s.created_at).getTime())))
+          )
+        : ''
 
     setIsLoading(true)
     setProgress({ current: 0, total: totalActions })
@@ -135,15 +148,9 @@ const BulkSendReportsModal = ({
       try {
         if (!currentSchool) throw new Error('No school selected')
 
-        // Label the bundle with the newest selected screening's academic year
-        // (used in the ZIP file name and the reports log)
-        const newestCreatedAt = Math.max(
-          ...speechScreenings.map(s => new Date(s.created_at).getTime())
-        )
-
         await edgeFunctionsApi.schoolWideSendStudentReports(
           currentSchool.id,
-          getCurrentAcademicYear(new Date(newestCreatedAt)),
+          bundleAcademicYear,
           recipientEmails,
           password,
           speechScreenings.map(s => s.id)
@@ -154,24 +161,35 @@ const BulkSendReportsModal = ({
         failCount++
       }
     }
+
+    if (bundleGoalSheets) {
+      completed++
+      setProgress({ current: completed, total: totalActions })
+
+      try {
+        await edgeFunctionsApi.bulkGoalSheets(
+          speechScreenings.map(s => s.id),
+          Number(goalSheetLevel) as 1 | 2,
+          bundleAcademicYear,
+          recipientEmails,
+          password
+        )
+        successCount++
+      } catch (error) {
+        console.error('Failed to send bundled goal sheets:', error)
+        failCount++
+      }
+    }
+
     for (const screening of perScreeningJobs) {
       completed++
       setProgress({ current: completed, total: totalActions })
 
       try {
-        if (screening.source_table === 'hearing') {
-          await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmails, password)
-        } else {
-          await edgeFunctionsApi.studentGoalSheet(
-            screening.id,
-            Number(goalSheetLevel) as 1 | 2,
-            recipientEmails,
-            password
-          )
-        }
+        await edgeFunctionsApi.generateHearingReport(screening.id, recipientEmails, password)
         successCount++
       } catch (error) {
-        console.error(`Failed to send report for screening ${screening.id}:`, error)
+        console.error(`Failed to send hearing report for screening ${screening.id}:`, error)
         failCount++
       }
     }
