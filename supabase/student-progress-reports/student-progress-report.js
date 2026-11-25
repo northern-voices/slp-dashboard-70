@@ -147,8 +147,28 @@ Deno.serve(async req => {
 
   try {
     // Parse request body
-    const { speech_screening_id_1, speech_screening_id_2, override_emails, generated_by, password } =
-      await req.json()
+    const {
+      speech_screening_id_1,
+      speech_screening_id_2,
+      screening_pairs,
+      override_emails,
+      generated_by,
+      password,
+      academic_year,
+    } = await req.json()
+
+    // Bulk "Email Reports" on the Screenings page sends a list of [id, id] pairs (one pair
+    // per student): build every progress report and deliver them together behind one link,
+    // in one email
+    if (Array.isArray(screening_pairs) && screening_pairs.length > 0) {
+      return await handleBundledProgressReports({
+        screeningPairs: screening_pairs,
+        overrideEmails: override_emails,
+        generatedBy: generated_by,
+        password,
+        academicYear: academic_year,
+      })
+    }
 
     if (!speech_screening_id_1 || !speech_screening_id_2) {
       throw new Error('speech_screening_id_1 and speech_screening_id_2 are required')
@@ -186,48 +206,15 @@ Deno.serve(async req => {
       throw new Error('One or both speech screenings could not be found')
     }
 
-    if (screenings[0].student_id !== screenings[1].student_id) {
-      throw new Error('Both screenings must belong to the same student to generate a progress report')
-    }
-
-    const isAbsent = s => s.result === 'absent' || s.error_patterns?.attendance?.absent === true
-    if (screenings.some(isAbsent)) {
-      throw new Error('Cannot generate progress report: one of the selected screenings is marked as absent.')
-    }
-
-    // 2. Sort chronologically — earlier screening is "initial", later is "progress"
-    const [previousScreening, currentScreening] = [...screenings].sort(
-      (a, b) => new Date(a.created_at) - new Date(b.created_at),
-    )
-
-    console.log(
-      `Found screening for student: ${currentScreening.students.first_name} ${currentScreening.students.last_name}`,
-    )
-    console.log(
-      `Comparing initial screening (${previousScreening.created_at}) with progress screening (${currentScreening.created_at})`,
-    )
-
-    // 3. Process error patterns from both screenings
-    const currentErrors = processErrorPatterns(currentScreening.error_patterns || {})
-    const previousErrors = processErrorPatterns(previousScreening.error_patterns || {})
-
-    console.log(
-      `Current errors: ${currentErrors.length}, Previous errors: ${previousErrors.length}`,
-    )
-
-    // 4. Build primary table — one row per (sound, pattern), joined across both screenings
-    const primaryTableErrors = buildPrimaryTableErrors(previousErrors, currentErrors)
-
-    console.log(`Primary table rows: ${primaryTableErrors.length}`)
-
-    // 5. Extract student info
-    const studentInfo = {
-      first_name: currentScreening.students.first_name,
-      last_name: currentScreening.students.last_name,
-      grade: currentScreening.school_grades?.grade_level || '',
-      email: '',
-      school: currentScreening.students.schools?.name || '',
-    }
+    // 2-5, 7-9. Validate the pair, compare the two screenings, and build the report document
+    const {
+      previousScreening,
+      currentScreening,
+      studentInfo,
+      primaryTableErrors,
+      progressNotes,
+      documentObject,
+    } = buildProgressReport(screenings)
 
     // 6. Determine recipient emails: use override_emails if provided, else fall back to staging table email
     let recipientEmails = Array.isArray(override_emails) ? override_emails.filter(Boolean) : []
@@ -255,16 +242,6 @@ Deno.serve(async req => {
       }
     }
     studentInfo.email = recipientEmails[0]
-
-    // 7. Extract progress_notes from the progress screening
-    const progressNotes = currentScreening.progress_notes || ''
-
-    // 8. Format screening dates
-    const initialScreenDate = formatDate(previousScreening.created_at)
-    const progressScreenDate = formatDate(currentScreening.created_at)
-
-    // 9. Create document object (this becomes the report_data behind the password gate)
-    const documentObject = createDocumentObject({ studentInfo, primaryTableErrors, progressNotes, initialScreenDate, progressScreenDate })
 
     // 10. Create a password-protected report token instead of emailing the PDF directly
     //     (the doc-gen Lambda never returns PDF bytes and always attaches a real PDF
@@ -347,6 +324,275 @@ Deno.serve(async req => {
     )
   }
 })
+
+// Validates a pair of screenings, compares them, and builds the progress report document
+// (this becomes the report_data behind the password gate). Shared by the single-student
+// and bundled paths so both validate and build identical reports.
+function buildProgressReport(screenings) {
+  if (screenings[0].student_id !== screenings[1].student_id) {
+    throw new Error('Both screenings must belong to the same student to generate a progress report')
+  }
+
+  const isAbsent = s => s.result === 'absent' || s.error_patterns?.attendance?.absent === true
+  if (screenings.some(isAbsent)) {
+    throw new Error('Cannot generate progress report: one of the selected screenings is marked as absent.')
+  }
+
+  // Sort chronologically — earlier screening is "initial", later is "progress"
+  const [previousScreening, currentScreening] = [...screenings].sort(
+    (a, b) => new Date(a.created_at) - new Date(b.created_at),
+  )
+
+  console.log(
+    `Found screening for student: ${currentScreening.students.first_name} ${currentScreening.students.last_name}`,
+  )
+  console.log(
+    `Comparing initial screening (${previousScreening.created_at}) with progress screening (${currentScreening.created_at})`,
+  )
+
+  // Process error patterns from both screenings
+  const currentErrors = processErrorPatterns(currentScreening.error_patterns || {})
+  const previousErrors = processErrorPatterns(previousScreening.error_patterns || {})
+
+  console.log(
+    `Current errors: ${currentErrors.length}, Previous errors: ${previousErrors.length}`,
+  )
+
+  // Build primary table — one row per (sound, pattern), joined across both screenings
+  const primaryTableErrors = buildPrimaryTableErrors(previousErrors, currentErrors)
+
+  console.log(`Primary table rows: ${primaryTableErrors.length}`)
+
+  const studentInfo = {
+    first_name: currentScreening.students.first_name,
+    last_name: currentScreening.students.last_name,
+    grade: currentScreening.school_grades?.grade_level || '',
+    email: '',
+    school: currentScreening.students.schools?.name || '',
+  }
+
+  // progress_notes come from the later (progress) screening
+  const progressNotes = currentScreening.progress_notes || ''
+
+  const documentObject = createDocumentObject({
+    studentInfo,
+    primaryTableErrors,
+    progressNotes,
+    initialScreenDate: formatDate(previousScreening.created_at),
+    progressScreenDate: formatDate(currentScreening.created_at),
+  })
+
+  return {
+    previousScreening,
+    currentScreening,
+    studentInfo,
+    primaryTableErrors,
+    progressNotes,
+    documentObject,
+  }
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// Bundled mode: one progress report per [id, id] pair behind ONE password-protected link
+// (shown like a school-wide progress report), sent in ONE email. Each report is validated
+// and built exactly as in single mode via buildProgressReport.
+async function handleBundledProgressReports({
+  screeningPairs,
+  overrideEmails,
+  generatedBy,
+  password,
+  academicYear,
+}) {
+  if (!password) {
+    throw new Error('password is required')
+  }
+
+  const recipientEmails = Array.isArray(overrideEmails) ? overrideEmails.filter(Boolean) : []
+  if (recipientEmails.length === 0) {
+    throw new Error('override_emails is required when sending progress reports for multiple students')
+  }
+
+  const pairs = screeningPairs.filter(
+    pair =>
+      Array.isArray(pair) &&
+      pair.length === 2 &&
+      pair.every(id => UUID_RE.test(id)) &&
+      pair[0] !== pair[1],
+  )
+  if (pairs.length === 0) {
+    throw new Error('No valid screening_pairs provided (each must be two different screening ids)')
+  }
+
+  console.log(`Processing bundled progress reports for ${pairs.length} screening pairs`)
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const headers = {
+    apikey: supabaseKey,
+    Authorization: `Bearer ${supabaseKey}`,
+    'Content-Type': 'application/json',
+  }
+
+  // 1. Fetch every screening in every pair with the same joins as single mode, 50 per request
+  const ids = [...new Set(pairs.flat())]
+  const screeningById = new Map()
+  const batchSize = 50
+  for (let i = 0; i < ids.length; i += batchSize) {
+    const batch = ids.slice(i, i + batchSize)
+    const url = `${supabaseUrl}/rest/v1/speech_screenings?id=in.(${batch.join(
+      ',',
+    )})&select=*,students(*,schools(*)),school_grades(*)`
+
+    const response = await fetch(url, { headers })
+    if (!response.ok) {
+      throw new Error(`Failed to fetch selected speech screenings: ${response.status}`)
+    }
+    for (const screening of await response.json()) {
+      screeningById.set(screening.id, screening)
+    }
+  }
+
+  // 2. Build one report per pair, in the order the pairs were sent. A pair that fails
+  //    validation (e.g. an absent screening) is skipped with its reason instead of sinking
+  //    the whole bundle.
+  const documents = []
+  const builtPairs = []
+  const skippedStudents = []
+
+  for (const pair of pairs) {
+    const screenings = pair.map(id => screeningById.get(id))
+    const known = screenings.find(Boolean)
+    const studentName = known
+      ? `${known.students?.first_name} ${known.students?.last_name}`
+      : 'Unknown student'
+
+    try {
+      if (screenings.some(s => !s)) {
+        throw new Error('One or both speech screenings could not be found')
+      }
+
+      const { studentInfo, documentObject, previousScreening, currentScreening } =
+        buildProgressReport(screenings)
+
+      // ZIP-safe file name (single mode's "Name: NVSS Progress Report" has a colon, which
+      // Windows can't extract) plus a grade folder, like the school-wide progress report
+      documentObject.metadata = {
+        file_name: `${studentInfo.first_name}_${studentInfo.last_name}-PR`,
+        directory: studentInfo.grade.replace('/', '-') || 'Ungraded',
+      }
+
+      documents.push(documentObject)
+      builtPairs.push([previousScreening.id, currentScreening.id])
+    } catch (error) {
+      console.error(`Error building progress report for ${studentName}:`, error)
+      skippedStudents.push(`${studentName} - ${error.message}`)
+    }
+  }
+
+  if (documents.length === 0) {
+    throw new Error(
+      `No progress reports could be generated for the selected screenings: ${skippedStudents.join('; ')}`,
+    )
+  }
+
+  // 3. Keep ZIP paths unique (two different students can share a name and grade, and the
+  //    ZIP download silently overwrites files that share a path)
+  const pathOf = doc => `${doc.metadata.directory}/${doc.metadata.file_name}`
+  const allPaths = documents.map(pathOf)
+  const duplicatePaths = new Set(allPaths.filter((path, i) => allPaths.indexOf(path) !== i))
+  const usedPaths = new Set()
+
+  documents.forEach((doc, i) => {
+    if (duplicatePaths.has(pathOf(doc))) {
+      const progressDate = new Date(screeningById.get(builtPairs[i][1]).created_at)
+        .toISOString()
+        .split('T')[0]
+      doc.metadata.file_name += `-${progressDate}`
+    }
+
+    const baseName = doc.metadata.file_name
+    for (let n = 2; usedPaths.has(pathOf(doc)); n++) {
+      doc.metadata.file_name = `${baseName}-${n}`
+    }
+
+    usedPaths.add(pathOf(doc))
+  })
+
+  const firstBuilt = screeningById.get(builtPairs[0][1])
+  const schoolId = firstBuilt.students?.school_id ?? null
+  const schoolName = (firstBuilt.students?.schools?.name || '').split('(')[0].trim()
+
+  // 4. One password-protected token for the whole bundle. 'school_wide_progress_reports'
+  //    makes the viewer show it like a school-wide progress report (grade picker + ZIP).
+  const token = await createReportToken({
+    supabaseUrl,
+    supabaseKey,
+    password,
+    reportType: 'school_wide_progress_reports',
+    reportData: {
+      documents,
+      school_name: schoolName,
+      academic_year: academicYear ?? null,
+      record_id: null,
+    },
+    schoolId,
+    createdBy: generatedBy,
+  })
+
+  const viewUrl = `${Deno.env.get('APP_BASE_URL')}/view-report/${token}`
+  const reportsLabel = `${documents.length} selected progress report${
+    documents.length === 1 ? '' : 's'
+  }`
+
+  console.log(`Sending secure bundled progress report link to ${recipientEmails.join(', ')}...`)
+
+  await sendReportLinkEmail({
+    recipients: recipientEmails,
+    subject: `Progress Reports - ${schoolName} (${documents.length} selected)`,
+    reportLabel: `${reportsLabel} from ${schoolName}`,
+    viewUrl,
+  })
+
+  console.log(`Secure bundled progress report link sent successfully`)
+
+  // 5. Log one row for the whole bundle
+  await fetch(`${supabaseUrl}/rest/v1/reports`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      school_id: schoolId,
+      report_type: 'school_wide_speech_progress_reports',
+      file_key: `progress_reports_${schoolId}_${academicYear ?? 'selected'}`,
+      generated_by: generatedBy || null,
+      metadata: {
+        sent_to: recipientEmails,
+        scope: 'selected',
+        screening_pairs: builtPairs,
+        reports_count: documents.length,
+        skipped_students: skippedStudents,
+        academic_year: academicYear ?? null,
+        school_name: schoolName,
+        delivery_method: 'password_protected_link',
+        report_token: token,
+      },
+    }),
+  })
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: `${reportsLabel} generated and a secure link sent to ${recipientEmails.join(', ')}`,
+      school_name: schoolName,
+      reports_count: documents.length,
+      skipped_students: skippedStudents,
+    }),
+    {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    },
+  )
+}
 
 function getStimulabilityRank(stimulabilityOption) {
   const normalized = (stimulabilityOption || '').toLowerCase().trim()
