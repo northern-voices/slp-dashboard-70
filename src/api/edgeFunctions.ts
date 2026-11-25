@@ -487,4 +487,37 @@ export const edgeFunctionsApi = {
       throw error
     }
   },
+
+  async bulkGoalSheets(
+    speechScreeningIds: string[],
+    level: 1 | 2 | 'both',
+    academicYear: string,
+    overrideEmails: string[],
+    password: string
+  ) {
+    try {
+      const generated_by = await this._getGeneratedBy()
+
+      const { data, error } = await supabase.functions.invoke('student-goal-sheet', {
+        body: {
+          speech_screening_ids: speechScreeningIds,
+          level,
+          academic_year: academicYear,
+          override_emails: overrideEmails,
+          generated_by,
+          password,
+        },
+      })
+
+      if (error) {
+        console.error('Error:', error)
+        throw error
+      }
+
+      return data
+    } catch (error) {
+      console.error('Failed to generate bulk student goal sheets:', error)
+      throw error
+    }
+  },
 }
