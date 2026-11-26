@@ -125,3 +125,129 @@ export const emptyCommunicationModes = (): CommunicationModes => ({
   aac_text: '',
   other_text: '',
 })
+
+// ── Database rows ────────────────────────────────────────────
+
+// Mirrors the compass_action_status enum in Postgres
+export const COMPASS_ACTION_STATUS_OPTIONS = [
+  { value: 'to_be_completed', label: 'To Be Completed' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
+] as const
+
+export type CompassActionStatus = (typeof COMPASS_ACTION_STATUS_OPTIONS)[number]['value']
+
+// compass_student_communication_profiles
+export interface CompassProfile {
+  id: string
+  student_id: string
+  school_id: string
+  clinician_id: string | null
+  created_by: string | null
+
+  // A1 · Student information (dates are 'YYYY-MM-DD')
+  student_name: string | null
+  school_name: string | null
+  clinician_name: string | null
+  date_of_birth: string | null
+  date_of_evaluation: string | null
+  report_date: string
+  guardians: Guardian[]
+  languages: string | null
+
+  // A2 · Diagnoses & clinical considerations
+  diagnoses_private_notes: string | null
+  diagnoses_report: string | null
+
+  // A3 / A4 · Support team, what matters most
+  support_team: SupportTeamMember[]
+  priorities: Priority[]
+
+  // B · 01 About me
+  about_me_private_notes: string | null
+  about_me_report: string | null
+
+  // B · 02 How / what I communicate
+  communication_modes_private: CommunicationModes
+  communication_modes_report: CommunicationModes
+  communication_functions_private: CommunicationFunctions
+  communication_functions_report: CommunicationFunctions
+
+  // C · How you can support me
+  support_categories: SupportCategories
+
+  // D · My communication plan
+  plan_private_notes: string | null
+  plan_report: string | null
+
+  created_at: string
+  updated_at: string
+}
+
+// compass_profile_goals
+export interface CompassGoal {
+  id: string
+  profile_id: string
+  objective: string
+  notes: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+// compass_profile_action_items
+export interface CompassActionItem {
+  id: string
+  profile_id: string
+  description: string
+  assigned_to: string | null
+  status: CompassActionStatus | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+// A profile with its goals and action items, as the form loads it
+export interface CompassProfileWithItems extends CompassProfile {
+  goals: CompassGoal[]
+  action_items: CompassActionItem[]
+}
+
+// The lighter row used for the list on the student page
+export type CompassProfileSummary = Pick<
+  CompassProfile,
+  | 'id'
+  | 'student_id'
+  | 'date_of_evaluation'
+  | 'report_date'
+  | 'clinician_name'
+  | 'created_by'
+  | 'created_at'
+  | 'updated_at'
+>
+
+// ── What the API accepts ─────────────────────────────────────
+
+// Creating a profile: the links are required, the prefilled snapshots are optional
+export type CompassProfileCreateInput = Pick<CompassProfile, 'student_id' | 'school_id'> &
+  Partial<
+    Pick<
+      CompassProfile,
+      'clinician_id' | 'student_name' | 'school_name' | 'clinician_name' | 'date_of_birth'
+    >
+  >
+
+// Fields the form may change. Never the id, the student/school links,
+// created_by (pinned by a trigger) or the timestamps (set by the database)
+export type CompassProfileUpdate = Partial<
+  Omit<
+    CompassProfile,
+    'id' | 'student_id' | 'school_id' | 'created_by' | 'created_at' | 'updated_at'
+  >
+>
+
+export type CompassGoalUpdate = Partial<Pick<CompassGoal, 'objective' | 'notes' | 'sort_order'>>
+
+export type CompassActionItemUpdate = Partial<
+  Pick<CompassActionItem, 'description' | 'assigned_to' | 'status' | 'sort_order'>
+>
