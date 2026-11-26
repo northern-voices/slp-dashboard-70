@@ -48,3 +48,80 @@ export const SUPPORT_CATEGORY_OPTIONS = [
 ] as const
 
 export type SupportCategory = (typeof SUPPORT_CATEGORY_OPTIONS)[number]['value']
+
+// ── jsonb shapes ─────────────────────────────────────────────
+
+// A1 · Parent(s) / guardian(s): one entry per person
+export interface Guardian {
+  name: string
+  phone: string
+  email: string
+  preferred_contact: string
+}
+
+// A3 · Student support team: only name_or_org is required
+export interface SupportTeamMember {
+  name_or_org: string
+  role: string
+  contact: string
+}
+
+// A4 · What matters most
+export interface Priority {
+  text: string
+  identified_by: string
+}
+
+// B · 02 How I currently communicate (stored once for private, once for report)
+export interface CommunicationModes {
+  selected: CommunicationMode[]
+  aac_text: string
+  other_text: string
+}
+
+// B · 02 What I currently communicate: each function has a checkbox and its own notes
+export interface CommunicationFunctionEntry {
+  checked: boolean
+  notes: string
+}
+
+export type CommunicationFunctions = Partial<
+  Record<CommunicationFunction, CommunicationFunctionEntry>
+> & {
+  other_label?: string
+}
+
+// C · How you can support me: each category has its own private notes and report content
+export interface SupportCategoryEntry {
+  selected: boolean
+  private_notes: string
+  report_content: string
+}
+
+export type SupportCategories = Partial<Record<SupportCategory, SupportCategoryEntry>>
+
+// ── Empty values (fresh object every call) ───────────────────
+
+export const emptyGuardian = (): Guardian => ({
+  name: '',
+  phone: '',
+  email: '',
+  preferred_contact: '',
+})
+
+export const emptySupportTeamMember = (): SupportTeamMember => ({
+  name_or_org: '',
+  role: '',
+  contact: '',
+})
+
+export const emptyPriority = (): Priority => ({
+  text: '',
+  identified_by: '',
+})
+
+export const emptyCommunicationModes = (): CommunicationModes => ({
+  selected: [],
+  aac_text: '',
+  other_text: '',
+})
