@@ -1,4 +1,11 @@
-import { format, parseISO, isValid, differenceInYears } from 'date-fns'
+import {
+  format,
+  parseISO,
+  isValid,
+  differenceInYears,
+  differenceInMonths,
+  isBefore,
+} from 'date-fns'
 
 export const dateUtils = {
   /**
@@ -69,6 +76,30 @@ export const dateUtils = {
    */
   getCurrentInputDate(): string {
     return this.formatInputDate(new Date())
+  },
+
+  /**
+   * Age on a given date in years and months, e.g. "11 years; 10 months".
+   * Both dates are 'YYYY-MM-DD'. Returns null if either is missing or invalid,
+   * or if onDate is before the date of birth.
+   */
+  formatAgeAt(
+    dateOfBirth: string | null | undefined,
+    onDate: string | null | undefined
+  ): string | null {
+    if (!dateOfBirth || !onDate) return null
+
+    const birth = parseDateSafely(dateOfBirth)
+    const on = parseDateSafely(onDate)
+    if (!isValid(birth) || !isValid(on) || isBefore(on, birth)) return null
+
+    const totalMonths = differenceInMonths(on, birth)
+    const years = Math.floor(totalMonths / 12)
+    const months = totalMonths % 12
+
+    const yearText = `${years} ${years === 1 ? 'year' : 'years'}`
+    const monthText = `${months} ${months === 1 ? 'month' : 'months'}`
+    return `${yearText}; ${monthText}`
   },
 }
 
