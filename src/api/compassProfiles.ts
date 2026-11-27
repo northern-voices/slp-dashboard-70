@@ -44,3 +44,74 @@ const normalizeProfileWithItems = (raw: CompassProfileWithItems): CompassProfile
   goals: [...raw.goals].sort(bySortOrder),
   action_items: [...raw.action_items].sort(bySortOrder),
 })
+
+export const compassProfilesApi = {
+  getProfilesByStudent: async (studentId: string): Promise<CompassProfileSummary[]> => {
+    const { data, error } = await supabase
+      .from('compass_student_communication_profiles')
+      .select(PROFILE_SUMMARY_SELECT)
+      .eq('student_id', studentId)
+      .order('date_of_evaluation', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    return data ?? []
+  },
+
+  getProfileById: async (id: string): Promise<CompassProfileWithItems> => {
+    const { data, error } = await supabase
+      .from('compass_student_communication_profiles')
+      .select(PROFILE_WITH_ITEMS_SELECT)
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+
+    return normalizeProfileWithItems(data)
+  },
+
+  createProfile: async (input: CompassProfileCreateInput): Promise<CompassProfileWithItems> => {
+    const { data, error } = await supabase
+      .from('compass_student_communication_profiles')
+      .insert({
+        ...input,
+        report_date: dateUtils.getCurrentInputDate(),
+      })
+      .select(PROFILE_WITH_ITEMS_SELECT)
+      .single()
+
+    if (error) throw error
+
+    return normalizeProfileWithItems(data)
+  },
+
+  updateProfile: async (id: string, patch: CompassProfileUpdate): Promise<CompassProfile> => {
+    const { data, error } = await supabase
+      .from('compass_student_communication_profiles')
+      .update(patch)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return normalizeProfile(data)
+  },
+
+  deleteProfile: async (id: string): Promise<void> => {
+    const { data, error } = await supabase
+      .from('compass_student_communication_profiles')
+      .delete()
+      .eq('id', id)
+      .select('id')
+
+    if (error) throw error
+
+    if (!data || data.length === 0) {
+      throw new Error(
+        "This profile couldn't be deleted. Only the person who created it, or an admin, can delete a COMPASS profile."
+      )
+    }
+  },
+}
