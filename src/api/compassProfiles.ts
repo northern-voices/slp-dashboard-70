@@ -26,8 +26,13 @@ const PROFILE_WITH_ITEMS_SELECT = `
 const bySortOrder = (a: { sort_order: number }, b: { sort_order: number }) =>
   a.sort_order - b.sort_order
 
-export const nextSortOrder = (items: { sort_order: number }[]): number =>
-  items.reduce((max, item) => Math.max(max, item.sort_order), -1) + 1
+export const nextSortOrder = (items: { sort_order: number }[]): number => {
+  let max = -1
+  for (const item of items) {
+    max = Math.max(max, item.sort_order)
+  }
+  return max + 1
+}
 
 const normalizeModes = (
   value: Partial<CommunicationModes> | null | undefined
@@ -152,4 +157,37 @@ export const compassProfilesApi = {
   },
 
   // ── Action items (D · Action items & next steps) ────────
+  addActionItem: async (profileId: string, sortOrder: number): Promise<CompassActionItem> => {
+    const { data, error } = await supabase
+      .from('compass_profile_action_items')
+      .insert({ profile_id: profileId, description: '', sort_order: sortOrder })
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return data
+  },
+
+  updateActionItem: async (
+    id: string,
+    patch: CompassActionItemUpdate
+  ): Promise<CompassActionItem> => {
+    const { data, error } = await supabase
+      .from('compass_profile_action_items')
+      .update(patch)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return data
+  },
+
+  deleteActionItem: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('compass_profile_action_items').delete().eq('id', id)
+
+    if (error) throw error
+  },
 }
